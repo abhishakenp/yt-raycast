@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ship — Task Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0a0a12; overflow:hidden; font-family:'JetBrains Mono',monospace; }
+  canvas { display:block; width:100vw; height:100vh; }
+
+  /* Overlay UI */
+  .overlay {
+    position:fixed; top:0; left:0; right:0;
+    display:flex; align-items:center; gap:20px;
+    padding:12px 20px;
+    background:linear-gradient(180deg, rgba(10,10,18,0.95) 0%, rgba(10,10,18,0) 100%);
+    pointer-events:none; z-index:10;
+  }
+  .overlay > * { pointer-events:auto; }
+  .title { font-size:14px; font-weight:700; color:#6c5ce7; white-space:nowrap; }
+  .stats { display:flex; gap:14px; font-size:11px; color:#8b949e; }
+  .stats b { color:#e6edf3; font-weight:600; }
+  .progress-wrap {
+    flex:1; min-width:80px; max-width:220px;
+    height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden;
+  }
+  .progress-bar {
+    height:100%; width:0%; border-radius:2px;
+    background:#00e676; transition:width 0.4s ease;
+  }
+  .run-btn {
+    padding:8px 24px; background:#6c5ce7; color:#fff; border:none;
+    border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;
+    font-family:inherit; transition:all 0.2s; letter-spacing:0.5px;
+  }
+  .run-btn:hover:not(:disabled) { background:#a29bfe; }
+  .run-btn:disabled { opacity:0.35; cursor:not-allowed; }
+
+  /* Log panel */
+  .log-panel {
+    position:fixed; bottom:0; left:0; right:0;
+    max-height:180px; overflow-y:auto;
+    background:rgba(10,10,18,0.92);
+    border-top:1px solid rgba(108,92,231,0.3);
+    padding:8px 16px; z-index:20;
+    font-size:10px; color:#8b949e;
+    display:none;
+  }
+  .log-panel.active { display:block; }
+  .log-panel .log-line { padding:1px 0; white-space:pre-wrap; word-break:break-all; }
+  .log-panel .log-line.err { color:#f85149; }
+  .log-panel .log-line.ok { color:#3fb950; }
+  .log-panel .log-line.info { color:#58a6ff; }
+  .log-toggle {
+    padding:4px 12px; background:rgba(108,92,231,0.2); color:#8b949e; border:none;
+    border-radius:4px; font-size:10px; cursor:pointer; font-family:inherit;
+  }
+  .log-toggle:hover { background:rgba(108,92,231,0.4); color:#e6edf3; }
+</style>
+</head>
+<body>
+
+<div class="overlay">
+  <div class="title">SHIP</div>
+  <div class="stats">
+    <span>Total <b id="s-total">0</b></span>
+    <span>Done <b id="s-done">0</b></span>
+    <span>Failed <b id="s-failed">0</b></span>
+    <span>Running <b id="s-run">0</b></span>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progress"></div></div>
+  <button class="run-btn" id="run-btn" disabled>RUN</button>
+  <button class="log-toggle" id="log-toggle">LOGS</button>
+</div>
+
+<div class="log-panel" id="log-panel"></div>
+
+<canvas id="c"></canvas>
+
+<script>
+// ─── Config ────────────────────────────────────────────────────
+const WORKER_SPACING = 280;
+const ROW_HEIGHT = 180;
+const BUBBLE_LIFETIME = 6;
+const ORB_TRAIL_LEN = 14;
+
+// ─── Sprite data (16x16 pixel art) ────────────────────────────
+const SPRITE_FRAMES = [
+  [
+    '................','......HHHH......','.....HHHHHH.....','....HSSSSSH.....',
+    '....SEEEESH.....','....SEEEESH.....','....SSMMSS......','.....SSSS.......',
+    '....CCCCCC......','...CCCCCCCC.....','...CCCCCCCC.....','...CC.CC.CC.....',
+    '....CCCCCC......','....LL..LL......','....LL..LL......','...BBB..BBB.....',
+  ],
+  [
+    '................','................','......HHHH......','.....HHHHHH.....',
+    '....HSSSSSH.....','....SEEEESH.....','....SEEEESH.....','....SSMMSS......',
+    '.....SSSS.......','....CCCCCC......','...CCCCCCCC.....','...CCCCCCCC.....',
+    '...CC.CC.CC.....','....CCCCCC......','....LL..LL......','...BBB..BBB.....',
+  ],
+];
+
+const WORKER_PALETTES = [
+  {H:'#00cec9',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#00b894',L:'#2d3436',B:'#636e72'},
+  {H:'#fdcb6e',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#e17055',L:'#2d3436',B:'#636e72'},
+  {H:'#74b9ff',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#0984e3',L:'#2d3436',B:'#636e72'},
+  {H:'#ff7675',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#d63031',L:'#2d3436',B:'#636e72'},
+  {H:'#a29bfe',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#6c5ce7',L:'#2d3436',B:'#636e72'},
+  {H:'#55efc4',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#00b894',L:'#2d3436',B:'#636e72'},
+];
+const ORCH_PALETTE = {H:'#6c5ce7',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#6c5ce7',L:'#2d3436',B:'#636e72'};
+
+const spriteCache = new Map();
+function renderSpriteFrames(palette) {
+  return SPRITE_FRAMES.map(frame => {
+    const c = new OffscreenCanvas(48,48), ctx = c.getContext('2d'), px = 3;
+    for (let y=0;y<16;y++) for (let x=0;x<16;x++) {
+      const ch = frame[y][x]; if (ch==='.') continue;
+      ctx.fillStyle = palette[ch]||'#fff';
+      ctx.fillRect(x*px, y*px, px, px);
+    }
+    return c;
+  });
+}
+function getWorkerSprite(i) {
+  const k = 'w'+i; if (spriteCache.has(k)) return spriteCache.get(k);
+  const f = renderSpriteFrames(WORKER_PALETTES[i % WORKER_PALETTES.length]);
+  spriteCache.set(k,f); return f;
+}
+function getOrchSprite() {
+  if (spriteCache.has('o')) return spriteCache.get('o');
+  const f = renderSpriteFrames(ORCH_PALETTE);
+  spriteCache.set('o',f); return f;
+}
+
+// ─── Global state ──────────────────────────────────────────────
+let tasks = [];
+let taskMap = {};
+let agents = new Map();
+let orchestrator = null;
+let orbs = [];
+let scrollX = 0, scrollY = 0, targetScrollY = 0;
+let maxScrollX = 0, maxScrollY = 0;
+let isRunning = false;
+let executionStarted = false;
+let lastTime = 0;
+
+// ─── Agent ─────────────────────────────────────────────────────
+function createAgent(task, index, x, y, isOrch) {
+  const name = isOrch ? 'Archon' : (task.title.length > 18 ? task.title.slice(0,16)+'..' : task.title);
+  return {
+    id: isOrch ? '__orch__' : task.id,
+    name, taskTitle: isOrch ? '' : task.title,
+    workerIndex: index, isOrchestrator: !!isOrch,
+    x, y, targetX: x, targetY: y,
+    state: isOrch ? 'ready' : 'spawning',
+    spawnAlpha: isOrch ? 1 : 0,
+    frameIndex: 0, frameTimer: 0,
+    ringAngle: 0, doneCheckScale: 0,
+    frames: isOrch ? getOrchSprite() : getWorkerSprite(index),
+    particles: [], bubble: null,
+    files: isOrch ? [] : (task.files||[]),
+    deps: isOrch ? [] : (task.dependsOn||[]),
+  };
+}
+
+function emitParticles(agent, type) {
+  const colors = type === 'spawn'
+    ? ['#00e676','#69f0ae','#b9f6ca','#00c853']
+    : ['#ff5252','#ffd740','#69f0ae','#40c4ff','#ea80fc','#ff6e40','#6c5ce7','#00e676'];
+  const count = type === 'spawn' ? 12 : 24;
+  for (let i=0;i<count;i++) {
+    const angle = type === 'spawn'
+      ? (Math.PI*2*i)/count
+      : -Math.PI/2 + (Math.random()-0.5)*Math.PI*0.8;
+    const speed = type === 'spawn' ? 40+Math.random()*40 : 80+Math.random()*100;
+    agent.particles.push({
+      x: agent.x + (type==='spawn' ? 0 : (Math.random()-0.5)*20),
+      y: agent.y + (type==='spawn' ? 24 : 0),
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed - (type==='spawn' ? 20 : 0),
+      color: colors[Math.floor(Math.random()*colors.length)],
+      life: (type==='spawn' ? 0.8 : 1.2) + Math.random()*0.4,
+      maxLife: (type==='spawn' ? 0.8 : 1.2) + Math.random()*0.4,
+      size: 2 + Math.random()*(type==='spawn' ? 2 : 3),
+    });
+  }
+}
+
+function updateAgent(a, dt) {
+  const lerpSpeed = 4;
+  a.x += (a.targetX - a.x) * lerpSpeed * dt;
+  a.y += (a.targetY - a.y) * lerpSpeed * dt;
+  if (a.isOrchestrator) a.spawnAlpha = Math.min(1, a.spawnAlpha + dt*3);
+  a.frameTimer += dt;
+  if (a.frameTimer > 0.5) { a.frameTimer=0; a.frameIndex=(a.frameIndex+1)%a.frames.length; }
+  if (a.state==='thinking' || (a.isOrchestrator && (a.state==='spawning'||a.state==='active')))
+    a.ringAngle += dt * 3;
+  if (a.state==='done') a.doneCheckScale = Math.min(1, a.doneCheckScale + dt*4);
+  // bubble
+  if (a.bubble) {
+    a.bubble.life -= dt;
+    if (a.bubble.life > BUBBLE_LIFETIME-0.3) a.bubble.alpha = Math.min(1, a.bubble.alpha+dt*5);
+    else if (a.bubble.life < 0.5) a.bubble.alpha = Math.max(0, a.bubble.life/0.5);
+    else a.bubble.alpha = 1;
+    if (a.bubble.life <= 0) a.bubble = null;
+  }
+  // particles
+  for (let i=a.particles.length-1;i>=0;i--) {
+    const p=a.particles[i]; p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=60*dt;
+    if (p.life<=0) a.particles.splice(i,1);
+  }
+}
+
+function renderAgent(ctx, a) {
+  ctx.save();
+  ctx.globalAlpha = a.spawnAlpha;
+  const frame = a.frames[a.frameIndex];
+  if (frame) ctx.drawImage(frame, a.x-24, a.y-24, 48, 48);
+  ctx.globalAlpha = 1;
+
+  // Spinning ring
+  if ((a.isOrchestrator && (a.state==='spawning'||a.state==='active'))
+    || (!a.isOrchestrator && a.state==='thinking')) {
+    const r = 30;
+    ctx.save(); ctx.lineWidth=2;
+    ctx.strokeStyle='rgba(108,92,231,0.15)';
+    ctx.beginPath(); ctx.arc(a.x,a.y,r,0,Math.PI*2); ctx.stroke();
+    ctx.strokeStyle='#6c5ce7'; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(a.x,a.y,r,a.ringAngle,a.ringAngle+Math.PI*0.8); ctx.stroke();
+    ctx.strokeStyle='rgba(108,92,231,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(a.x,a.y,r,a.ringAngle+Math.PI,a.ringAngle+Math.PI+Math.PI*0.4); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Done checkmark
+  if (a.state==='done' && a.doneCheckScale>0) {
+    const cx=a.x+22, cy=a.y-22, s=a.doneCheckScale;
+    ctx.save(); ctx.translate(cx,cy); ctx.scale(s,s);
+    ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fillStyle='#00e676'; ctx.fill();
+    ctx.strokeStyle='#0a0a0f'; ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(-4,0); ctx.lineTo(-1,3); ctx.lineTo(4,-3); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Failed X
+  if (a.state==='failed') {
+    const cx=a.x+22, cy=a.y-22;
+    ctx.save(); ctx.translate(cx,cy);
+    ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fillStyle='#ff5252'; ctx.fill();
+    ctx.strokeStyle='#0a0a0f'; ctx.lineWidth=2; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-3,-3); ctx.lineTo(3,3); ctx.moveTo(3,-3); ctx.lineTo(-3,3); ctx.stroke();
+    ctx.restore();
+  }
+
+  // File badge
+  if (a.files.length > 0) {
+    const bx=a.x-28, by=a.y-24;
+    ctx.save(); ctx.font="bold 8px 'JetBrains Mono',monospace";
+    const label = ''+a.files.length, tw=ctx.measureText(label).width;
+    const pw=tw+10, ph=14;
+    ctx.fillStyle='rgba(64,196,255,0.9)';
+    ctx.beginPath(); ctx.roundRect(bx-pw/2,by-ph/2,pw,ph,7); ctx.fill();
+    ctx.fillStyle='#0a0a0f'; ctx.textAlign='center'; ctx.fillText(label,bx,by+3);
+    ctx.restore();
+  }
+
+  // Name tag
+  ctx.font="bold 10px 'JetBrains Mono',monospace"; ctx.textAlign='center';
+  ctx.fillStyle = a.isOrchestrator ? '#6c5ce7' : '#00e676';
+  ctx.fillText(a.name, a.x, a.y+36);
+
+  // Task title (workers)
+  if (a.taskTitle && !a.isOrchestrator) {
+    ctx.font="9px 'JetBrains Mono',monospace"; ctx.fillStyle='rgba(224,224,232,0.5)';
+    const short = a.taskTitle.length>30 ? a.taskTitle.slice(0,28)+'...' : a.taskTitle;
+    ctx.fillText(short, a.x, a.y+48);
+  }
+
+  // Status label (workers)
+  if (!a.isOrchestrator) {
+    ctx.font="8px 'JetBrains Mono',monospace";
+    if (a.state==='thinking') { ctx.fillStyle='#ffd740'; ctx.fillText('working...', a.x, a.y+58); }
+    else if (a.state==='done') { ctx.fillStyle='#00e676'; ctx.fillText('completed', a.x, a.y+58); }
+    else if (a.state==='failed') { ctx.fillStyle='#ff5252'; ctx.fillText('failed', a.x, a.y+58); }
+  }
+
+  ctx.restore();
+
+  // Particles
+  for (const p of a.particles) {
+    const al = Math.max(0, p.life/p.maxLife);
+    ctx.save(); ctx.globalAlpha=al; ctx.fillStyle=p.color;
+    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
+    ctx.restore();
+  }
+
+  // Bubble
+  if (a.bubble && a.bubble.alpha > 0) {
+    renderBubble(ctx, a.bubble, a.x, a.y-40);
+  }
+}
+
+// ─── Bubble ────────────────────────────────────────────────────
+function createBubble(text, type) {
+  const t = text.length>120 ? text.slice(0,117)+'...' : text;
+  return { text:t, type:type||'speech', life:BUBBLE_LIFETIME, alpha:0, lines:null };
+}
+
+function renderBubble(ctx, b, x, y) {
+  ctx.save(); ctx.globalAlpha = b.alpha;
+  ctx.font = "9px 'JetBrains Mono',monospace";
+  if (!b.lines) {
+    const words = b.text.split(/\s+/), lines = []; let cur='';
+    for (const w of words) {
+      const test = cur ? cur+' '+w : w;
+      if (ctx.measureText(test).width > 160 && cur) { lines.push(cur); cur=w; }
+      else cur=test;
+    }
+    if (cur) lines.push(cur);
+    if (lines.length>6) { lines.length=6; lines[5]=lines[5].slice(0,-3)+'...'; }
+    b.lines = lines;
+  }
+  const lines=b.lines, maxW=Math.max(...lines.map(l=>ctx.measureText(l).width));
+  const pad=10, w=maxW+pad*2, h=lines.length*13+pad*2-4;
+  const bx=x-w/2, by=y-h-14;
+
+  if (b.type==='speech') {
+    ctx.fillStyle='#fff'; ctx.strokeStyle='#2d3436'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(bx,by,w,h,8); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x-5,by+h); ctx.lineTo(x,by+h+8); ctx.lineTo(x+5,by+h);
+    ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#2d3436';
+  } else {
+    ctx.fillStyle='rgba(30,30,46,0.94)'; ctx.strokeStyle='#6c5ce7'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.roundRect(bx,by,w,h,8); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x-2,by+h+5,3,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x+3,by+h+10,2,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#e0e0e8';
+  }
+  for (let i=0;i<lines.length;i++) ctx.fillText(lines[i], bx+pad, by+pad+10+i*13);
+  ctx.restore();
+}
+
+// ─── Orb ───────────────────────────────────────────────────────
+function createOrb(fx,fy,tx,ty,kind,targetId) {
+  return {
+    fromX:fx,fromY:fy,toX:tx,toY:ty,kind,
+    t:0,speed:1.1,done:false,x:fx,y:fy,
+    trail:[], targetAgentId:targetId||null,
+    coreColor: kind==='delegate' ? '#a29bfe':'#55efc4',
+    glowColor: kind==='delegate' ? '#6c5ce7':'#00b894',
+    trailRGB: kind==='delegate' ? [108,92,231]:[0,230,118],
+  };
+}
+
+function updateOrb(orb, dt) {
+  if (orb.done) return false;
+  orb.t += dt * orb.speed;
+  if (orb.t>=1) { orb.t=1; orb.done=true; }
+  const u=1-orb.t, mx=(orb.fromX+orb.toX)/2, my=(orb.fromY+orb.toY)/2;
+  const dx=orb.toX-orb.fromX;
+  const perpX=mx+(orb.kind==='delegate'?-1:1)*Math.abs(dx)*0.25, perpY=my-30;
+  orb.x = u*u*orb.fromX + 2*u*orb.t*perpX + orb.t*orb.t*orb.toX;
+  orb.y = u*u*orb.fromY + 2*u*orb.t*perpY + orb.t*orb.t*orb.toY;
+  orb.trail.push({x:orb.x,y:orb.y,alpha:1});
+  if (orb.trail.length>ORB_TRAIL_LEN) orb.trail.shift();
+  for (let i=0;i<orb.trail.length;i++) orb.trail[i].alpha=(i+1)/orb.trail.length;
+  return !orb.done;
+}
+
+function renderOrb(ctx, orb) {
+  if (orb.trail.length===0) return;
+  ctx.save();
+  const [r,g,b] = orb.trailRGB;
+  for (let i=0;i<orb.trail.length;i++) {
+    const p=orb.trail[i], sz=2+(i/orb.trail.length)*3;
+    ctx.globalAlpha=p.alpha*0.5; ctx.fillStyle=`rgb(${r},${g},${b})`;
+    ctx.beginPath(); ctx.arc(p.x,p.y,sz,0,Math.PI*2); ctx.fill();
+  }
+  if (orb.trail.length>1) {
+    ctx.globalAlpha=0.2; ctx.strokeStyle=orb.glowColor; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(orb.trail[0].x,orb.trail[0].y);
+    for (let i=1;i<orb.trail.length;i++) ctx.lineTo(orb.trail[i].x,orb.trail[i].y);
+    ctx.stroke();
+  }
+  if (!orb.done) {
+    ctx.globalAlpha=0.3; ctx.fillStyle=orb.glowColor;
+    ctx.beginPath(); ctx.arc(orb.x,orb.y,10,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=1; ctx.fillStyle=orb.coreColor;
+    ctx.shadowColor=orb.glowColor; ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.arc(orb.x,orb.y,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.shadowBlur=0;
+    ctx.beginPath(); ctx.arc(orb.x,orb.y,1.5,0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ─── Dependency links ──────────────────────────────────────────
+function renderDependencyLinks(ctx) {
+  ctx.save(); ctx.setLineDash([4,6]); ctx.lineWidth=1.5; ctx.lineCap='round';
+  for (const t of tasks) {
+    if (!t.dependsOn || t.dependsOn.length===0) continue;
+    const to = agents.get(t.id); if (!to) continue;
+    if (to.state==='done') continue;
+    for (const depId of t.dependsOn) {
+      const from = agents.get(depId); if (!from) continue;
+      let color = 'rgba(108,92,231,0.2)';
+      if (from.state==='done') color = 'rgba(0,230,118,0.3)';
+      else if (from.state==='thinking') color = 'rgba(255,215,64,0.3)';
+      ctx.strokeStyle = color;
+      const sx=from.x, sy=from.y-35, ex=to.x, ey=to.y+35;
+      const cpY = (sy-ey)*0.4;
+      ctx.beginPath(); ctx.moveTo(sx,sy);
+      ctx.bezierCurveTo(sx,sy-cpY, ex,ey+cpY, ex,ey); ctx.stroke();
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(ex,ey,3,0,Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.setLineDash([]); ctx.restore();
+}
+
+// ─── World background ─────────────────────────────────────────
+function renderWorld(ctx, w, h) {
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,'#0a0a12'); grad.addColorStop(1,'#0f0f1a');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,255,255,0.025)'; ctx.lineWidth=1;
+  for (let x=0;x<w;x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for (let y=0;y<h;y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  // Zone divider
+  const divY = h*0.22;
+  ctx.save(); ctx.setLineDash([8,6]); ctx.strokeStyle='rgba(108,92,231,0.15)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(40,divY); ctx.lineTo(w-40,divY); ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+  // Zone labels
+  ctx.save(); ctx.font="600 10px 'JetBrains Mono',monospace";
+  ctx.fillStyle='rgba(108,92,231,0.25)'; ctx.textAlign='left';
+  ctx.fillText('ORCHESTRATOR', 16, divY-10);
+  ctx.fillText('WORKERS', 16, divY+18);
+  ctx.restore();
+}
+
+// ─── Layout ────────────────────────────────────────────────────
+let taskDepths = {};
+
+function computeLayout(w, h) {
+  taskDepths = {};
+  function getDepth(id) {
+    if (taskDepths[id] !== undefined) return taskDepths[id];
+    const t = taskMap[id]; if (!t) return 0;
+    const deps = (t.dependsOn||[]).filter(d => taskMap[d]);
+    if (deps.length===0) { taskDepths[id]=0; return 0; }
+    taskDepths[id] = -1;
+    const d = 1 + Math.max(...deps.map(getDepth));
+    taskDepths[id] = d; return d;
+  }
+  tasks.forEach(t => getDepth(t.id));
+  const maxD = Math.max(0, ...Object.values(taskDepths));
+
+  const layers = [];
+  for (let d=0;d<=maxD;d++) layers.push(tasks.filter(t => taskDepths[t.id]===d));
+
+  let maxRowCount = 0;
+  layers.forEach(l => { if (l.length>maxRowCount) maxRowCount=l.length; });
+  const contentW = Math.max(w, maxRowCount * WORKER_SPACING);
+  let maxH = 0;
+
+  const positions = {};
+  layers.forEach((layer, di) => {
+    if (layer.length===0) return;
+    const y = 40 + (maxD - di) * ROW_HEIGHT;
+    maxH = Math.max(maxH, y+200);
+    const count = layer.length;
+    const rowW = (count-1)*WORKER_SPACING;
+    const offX = (contentW - rowW)/2;
+    layer.forEach((t,i) => { positions[t.id] = { x: offX + i*WORKER_SPACING, y }; });
+  });
+
+  return { positions, contentW, contentH: maxH+300 };
+}
+
+// ─── Sync tasks → agents ───────────────────────────────────────
+let prevStatus = {};
+let spawnOrbsSent = false;
+
+function syncAgents(w, h) {
+  if (tasks.length===0) return;
+  if (!orchestrator) {
+    orchestrator = createAgent({}, -1, w/2, h*0.12, true);
+    orchestrator.x = w/2; orchestrator.y = h*0.12;
+  }
+  orchestrator.targetX = w/2;
+  orchestrator.targetY = h*0.12;
+  if (orchestrator.y < 0) orchestrator.y = orchestrator.targetY;
+
+  const workerZoneTop = h*0.22 + 28;
+  const { positions, contentW, contentH } = computeLayout(w, h);
+
+  // Center if narrow
+  if (contentW < w) {
+    const off = (w - contentW)/2;
+    for (const k in positions) positions[k].x += off;
+  }
+
+  maxScrollX = Math.max(0, contentW - w);
+  maxScrollY = Math.max(0, contentH - (h - workerZoneTop));
+
+  tasks.forEach((t, idx) => {
+    const pos = positions[t.id] || {x:w/2, y:40};
+    const finalY = pos.y + workerZoneTop;
+    const agent = agents.get(t.id);
+    const prev = prevStatus[t.id];
+
+    if (!agent) {
+      const a = createAgent(t, idx, pos.x, finalY, false);
+      a.state = 'spawning'; a.spawnAlpha = 0;
+      agents.set(t.id, a);
+    } else {
+      const newState = t.status==='PENDING' ? 'active'
+        : t.status==='IN_PROGRESS' ? 'thinking'
+        : t.status==='DONE' ? 'done' : 'failed';
+
+      if (prev !== t.status) {
+        if (t.status==='IN_PROGRESS' && prev==='PENDING') {
+          orbs.push(createOrb(orchestrator.targetX, orchestrator.targetY, agent.targetX, agent.targetY, 'delegate'));
+          agent.bubble = createBubble('Working on: '+(t.title.length>40?t.title.slice(0,38)+'..':t.title));
+        } else if (t.status==='DONE' && prev==='IN_PROGRESS') {
+          emitParticles(agent, 'celebrate');
+          orbs.push(createOrb(agent.targetX, agent.targetY, orchestrator.targetX, orchestrator.targetY, 'report'));
+          agent.bubble = createBubble('Done! Task ready.');
+        } else if (t.status==='FAILED') {
+          agent.bubble = createBubble('Task failed!');
+        }
+      }
+      agent.state = newState;
+      agent.targetX = pos.x;
+      agent.targetY = finalY;
+    }
+    prevStatus[t.id] = t.status;
+  });
+
+  // Send initial reveal orbs once
+  if (!spawnOrbsSent && agents.size > 0) {
+    spawnOrbsSent = true;
+    scrollX = maxScrollX / 2;
+    for (const [id, a] of agents) {
+      if (!a.isOrchestrator) {
+        orbs.push(createOrb(orchestrator.x, orchestrator.y, a.targetX, a.targetY, 'delegate', id));
+      }
+    }
+  }
+
+  // Orchestrator state
+  if (!executionStarted) {
+    orchestrator.state = 'ready'; orchestrator.bubble = null;
+  } else if (!tasks.every(t=>t.status==='DONE' || t.status==='FAILED')) {
+    if (orchestrator.state !== 'active') orchestrator.bubble = createBubble('Monitoring...','speech');
+    orchestrator.state = 'active';
+  } else {
+    if (orchestrator.state !== 'done') orchestrator.bubble = createBubble('All tasks completed!');
+    orchestrator.state = 'done';
+  }
+}
+
+// ─── Stats ─────────────────────────────────────────────────────
+function updateStats() {
+  const total=tasks.length;
+  const done=tasks.filter(t=>t.status==='DONE').length;
+  const failed=tasks.filter(t=>t.status==='FAILED').length;
+  const running=tasks.filter(t=>t.status==='IN_PROGRESS').length;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-failed').textContent=failed;
+  document.getElementById('s-run').textContent=running;
+  const pct = total>0 ? ((done+failed)/total*100) : 0;
+  const bar = document.getElementById('progress');
+  bar.style.width = pct+'%';
+  bar.style.background = failed>0 && done===0 ? '#ff5252' : '#00e676';
+}
+
+// ─── Canvas setup ──────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth+'px';
+  canvas.style.height = window.innerHeight+'px';
+}
+resize();
+window.addEventListener('resize', resize);
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY))
+    scrollX = Math.max(0, Math.min(maxScrollX, scrollX+e.deltaX));
+  else {
+    scrollY = Math.max(0, Math.min(maxScrollY, scrollY+e.deltaY));
+    targetScrollY = scrollY;
+  }
+}, {passive:false});
+
+// ─── Animation loop ────────────────────────────────────────────
+function tick(now) {
+  const dt = Math.min(0.033, (now - lastTime)/1000);
+  lastTime = now;
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width/dpr, h = canvas.height/dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  renderWorld(ctx, w, h);
+
+  const workerZoneTop = h*0.22+28;
+
+  syncAgents(w, h);
+  if (orchestrator) updateAgent(orchestrator, dt);
+  for (const a of agents.values()) updateAgent(a, dt);
+
+  // Orbs
+  for (let i=orbs.length-1;i>=0;i--) {
+    if (!updateOrb(orbs[i], dt)) {
+      const orb = orbs[i];
+      if (orb.targetAgentId) {
+        const ta = agents.get(orb.targetAgentId);
+        if (ta) { ta.spawnAlpha=1; ta.state='ready'; emitParticles(ta,'spawn'); }
+      }
+      orbs.splice(i,1);
+    }
+  }
+
+  // Worker zone clipped + scrolled
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, workerZoneTop, w, h-workerZoneTop); ctx.clip();
+  ctx.translate(-scrollX, -scrollY);
+
+  renderDependencyLinks(ctx);
+
+  const sortedWorkers = [...agents.values()].sort((a,b)=>a.y-b.y);
+  for (const a of sortedWorkers) renderAgent(ctx, a);
+  for (const orb of orbs) renderOrb(ctx, orb);
+
+  ctx.restore();
+
+  // Orchestrator zone (fixed, no scroll)
+  if (orchestrator) {
+    renderAgent(ctx, orchestrator);
+    // Persistent label
+    let labelText='', labelColor='#a0a0a0';
+    if (orchestrator.state==='active') { labelText='Monitoring'; labelColor='#00d4aa'; }
+    else if (orchestrator.state==='done') { labelText='Completed'; labelColor='#6c5ce7'; }
+    if (labelText) {
+      ctx.save(); ctx.font="10px 'JetBrains Mono',monospace";
+      ctx.fillStyle=labelColor; ctx.textAlign='center';
+      ctx.fillText(labelText, orchestrator.x, orchestrator.y+50);
+      ctx.restore();
+    }
+  }
+
+  // Horizontal scroll indicator
+  if (maxScrollX > 0) {
+    const barW=w-80, thumbRatio=w/(w+maxScrollX);
+    const thumbW=Math.max(30,barW*thumbRatio);
+    const thumbX=40+(scrollX/maxScrollX)*(barW-thumbW);
+    ctx.save(); ctx.globalAlpha=0.2; ctx.fillStyle='#6c5ce7';
+    ctx.beginPath(); ctx.roundRect(thumbX,h-6,thumbW,3,2); ctx.fill();
+    ctx.restore();
+  }
+
+  requestAnimationFrame(tick);
+}
+
+// ─── Data loading + SSE ────────────────────────────────────────
+async function loadTasks() {
+  const resp = await fetch('/api/tasks');
+  tasks = await resp.json();
+  taskMap = {};
+  tasks.forEach(t => taskMap[t.id] = t);
+  updateStats();
+  document.getElementById('run-btn').disabled = false;
+}
+
+function connectSSE() {
+  const es = new EventSource('/api/events');
+  es.onmessage = e => {
+    const ev = JSON.parse(e.data);
+    switch(ev.type) {
+      case 'run_started':
+        executionStarted = true;
+        document.getElementById('run-btn').disabled = true;
+        document.getElementById('run-btn').textContent = 'RUNNING...';
+        break;
+      case 'task_started':
+        if (taskMap[ev.id]) taskMap[ev.id].status = 'IN_PROGRESS';
+        updateStats();
+        break;
+      case 'task_completed':
+        if (taskMap[ev.id]) taskMap[ev.id].status = 'DONE';
+        updateStats();
+        break;
+      case 'task_failed':
+        if (taskMap[ev.id]) taskMap[ev.id].status = 'FAILED';
+        updateStats();
+        break;
+      case 'run_completed':
+        isRunning = false;
+        document.getElementById('run-btn').disabled = false;
+        document.getElementById('run-btn').textContent = 'RUN';
+        break;
+      case 'log':
+        appendLog(ev.message || '');
+        break;
+    }
+  };
+  es.onerror = () => { es.close(); setTimeout(connectSSE, 2000); };
+}
+
+function appendLog(msg) {
+  const panel = document.getElementById('log-panel');
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  if (/FAILED|ERROR|EXCEPTION|BLOCKED/i.test(msg)) line.className += ' err';
+  else if (/DONE|OK|complete/i.test(msg)) line.className += ' ok';
+  else if (/Wave|Starting|Workspace/i.test(msg)) line.className += ' info';
+  line.textContent = msg;
+  panel.appendChild(line);
+  panel.scrollTop = panel.scrollHeight;
+  // Auto-show on first log
+  if (!panel.classList.contains('active')) panel.classList.add('active');
+}
+
+document.getElementById('log-toggle').addEventListener('click', () => {
+  document.getElementById('log-panel').classList.toggle('active');
+});
+
+document.getElementById('run-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true; btn.textContent = 'STARTING...';
+  try { await fetch('/api/run', {method:'POST'}); }
+  catch(e) { btn.disabled=false; btn.textContent='RUN'; }
+});
+
+// ─── Init ──────────────────────────────────────────────────────
+loadTasks().then(() => {
+  connectSSE();
+  lastTime = performance.now();
+  requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>

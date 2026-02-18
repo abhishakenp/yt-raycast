@@ -1,0 +1,54 @@
+[
+  {
+    "fingerprint": "e69d2fe5904d2c85",
+    "error_codes": [
+      "TS2322",
+      "TS2554",
+      "TS2613",
+      "TS2741"
+    ],
+    "category": "other",
+    "error_lines": [
+      "src/app/page.tsx(5,8): error TS2613: Module '\"/Users/livio/Desktop/studio/src/components/model-selector\"' has no default export. Did you mean to use 'import { ModelSelector } from \"/Users/livio/Desktop/studio/src/components/model-selector\"' instead?",
+      "src/app/page.tsx(40,61): error TS2554: Expected 1 arguments, but got 2.",
+      "src/app/page.tsx(107,12): error TS2741: Property 'isGenerating' is missing in type '{ selectedModel: string; onGenerate: (params: GenerationParams) => Promise<void>; }' but required in type 'PromptPanelProps'.",
+      "src/app/page.tsx(115,15): error TS2322: Type '{ images: GeneratedImage[]; onToggleFavorite: (id: string) => void; onDelete: (id: string) => void; onOpen: (img: GeneratedImage) => void; }' is not assignable to type 'IntrinsicAttributes & ImageGalleryProps'.",
+      "src/app/page.tsx(123,14): error TS2741: Property 'onSelectImage' is missing in type '{ images: GeneratedImage[]; isOpen: true; onToggle: () => void; }' but required in type 'HistorySidebarProps'."
+    ],
+    "fix_description": "Fixed 13 errors (TS2322, TS2551, TS2554, TS2613, TS2739) in 5 waves, 51s. Files: src/app/page.tsx, src/app/page.tsx, src/components/history-sidebar.tsx",
+    "files_changed": [
+      "src/app/page.tsx",
+      "src/app/page.tsx",
+      "src/components/history-sidebar.tsx"
+    ],
+    "frequency": 2,
+    "success_rate": 1.0,
+    "first_seen": "2026-02-18",
+    "last_seen": "2026-02-18"
+  },
+  {
+    "fingerprint": "72ab32889be3426b",
+    "error_codes": [
+      "TS2305",
+      "TS2307"
+    ],
+    "category": "duplicate",
+    "error_lines": [
+      "src/app/page.tsx(12,23): error TS2307: Cannot find module '@/components/ModelCard' or its corresponding type declarations.",
+      "src/app/page.tsx(13,25): error TS2307: Cannot find module '@/components/PromptInput' or its corresponding type declarations.",
+      "src/app/page.tsx(14,21): error TS2307: Cannot find module '@/components/Gallery' or its corresponding type declarations.",
+      "src/app/page.tsx(15,28): error TS2307: Cannot find module '@/components/HistorySidebar' or its corresponding type declarations.",
+      "src/app/page.tsx(16,17): error TS2305: Module '\"@/lib/types\"' has no exported member 'Generation'."
+    ],
+    "fix_description": "Fixed 13 errors (TS2305, TS2307, TS2322, TS7006) in 3 waves, 35s. Files: src/lib/types.ts, src/lib/mock-data.ts, src/components/ModelCard.tsx",
+    "files_changed": [
+      "src/lib/types.ts",
+      "src/lib/mock-data.ts",
+      "src/components/ModelCard.tsx"
+    ],
+    "frequency": 1,
+    "success_rate": 1.0,
+    "first_seen": "2026-02-18",
+    "last_seen": "2026-02-18"
+  }
+]
