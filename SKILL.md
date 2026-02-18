@@ -1,7 +1,7 @@
 ---
 name: ship-fast
 description: "Fast full-stack code generation: spec → design system → tasks → parallel Groq execution → auto-fix. Uses gpt-oss:120b at ~1200 tps with ui-ux-pro-max design system. Usage: /ship-fast [what to build or change]"
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, Skill
 user-invokable: true
 ---
 
@@ -347,3 +347,62 @@ If too vague (e.g. "fix it", "make it better"):
 1. Run Phase 1 (explore) first
 2. Ask ONE targeted question to clarify scope
 3. Resume from Phase 2
+
+---
+
+## /ship-fast reset — Wipe Code + Re-execute
+
+Invoked via `/ship-fast reset [flags] [description]`. Wipes implementation code and re-runs the pipeline.
+
+### Argument parsing
+
+Flags after `reset`:
+- **No flags** (default): Keep `spec.md`, `project-context.json`, `tasks.json`, `tasks-skeleton.json`, `design-system/`, `references/`. Only wipe implementation code.
+- **"no spec"** / **"fresh spec"**: Also delete `spec.md` and `project-context.json`
+- **"no tasks"** / **"fresh tasks"**: Also delete `tasks.json`, `tasks-skeleton.json`
+- **"no design"** / **"fresh design"**: Also delete `design-system/`
+- **"full"** / **"from scratch"**: Delete everything
+
+If a build description follows (e.g. `reset no tasks a dashboard app`), pass it to /ship-fast. Otherwise reuse `SYSTEM GOAL` from existing `spec.md`.
+
+### Confirmation
+
+Ask via AskUserQuestion before deleting. Show what will be KEPT vs DELETED.
+
+### Wipe
+
+**Default mode (keep docs):**
+```bash
+cd <cwd>
+# Kill running processes
+pkill -f generate_project_code 2>/dev/null
+kill $(lsof -ti:7420) 2>/dev/null
+kill $(lsof -ti:3000) 2>/dev/null
+
+# Remove everything EXCEPT preserved files
+find . -maxdepth 1 ! -name '.' ! -name 'spec.md' ! -name 'project-context.json' \
+  ! -name 'tasks.json' ! -name 'tasks-skeleton.json' ! -name 'design-system' \
+  ! -name 'references' ! -name 'ship.log' -exec rm -rf {} +
+```
+Adapt exclusions based on flags.
+
+**Full reset:**
+```bash
+cd <cwd> && rm -rf ./* ./.[!.]* 2>/dev/null
+```
+
+### Reset task statuses
+
+If tasks.json is preserved, reset all statuses to PENDING:
+```bash
+python3 -c "
+import json
+d = json.load(open('tasks.json'))
+for t in d['tasks']: t['status'] = 'PENDING'
+json.dump(d, open('tasks.json', 'w'), indent=2)
+"
+```
+
+### Re-run
+
+Invoke `/ship-fast` with the appropriate arguments. If spec + tasks exist, skip to Phase 3 (Execute). If tasks were removed, regenerate from Phase 2. If spec was removed, start from Phase 1.
