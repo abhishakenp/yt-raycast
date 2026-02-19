@@ -1,0 +1,66 @@
+// TEMPLATE: CRUD hook for {{ENTITY}} using React Query + Convex
+// Replace {{ENTITY}}, {{entity}}, {{entities}}, {{FIELDS}} with actual values
+
+"use client";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
+
+// --- Types ---
+export type {{ENTITY}} = {
+  _id: Id<"{{entities}}">;
+  {{FIELDS}}
+  _creationTime: number;
+};
+
+export type Create{{ENTITY}}Input = {
+  {{CREATE_FIELDS}}
+};
+
+export type Update{{ENTITY}}Input = Partial<Create{{ENTITY}}Input> & {
+  id: Id<"{{entities}}">;
+};
+
+// --- Hooks ---
+export const use{{ENTITY}}s = () => {
+  return useQuery(convexQuery(api.{{entities}}.list, {}));
+};
+
+export const use{{ENTITY}} = (id: Id<"{{entities}}"> | undefined) => {
+  return useQuery({
+    ...convexQuery(api.{{entities}}.get, id ? { id } : "skip"),
+    enabled: !!id,
+  });
+};
+
+export const useCreate{{ENTITY}} = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: useConvexMutation(api.{{entities}}.create),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: convexQuery(api.{{entities}}.list, {}).queryKey });
+    },
+  });
+};
+
+export const useUpdate{{ENTITY}} = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: useConvexMutation(api.{{entities}}.update),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: convexQuery(api.{{entities}}.list, {}).queryKey });
+    },
+  });
+};
+
+export const useDelete{{ENTITY}} = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: useConvexMutation(api.{{entities}}.remove),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: convexQuery(api.{{entities}}.list, {}).queryKey });
+    },
+  });
+};

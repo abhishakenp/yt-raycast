@@ -1,0 +1,67 @@
+// TEMPLATE: Form component for {{ENTITY}}
+// Replace {{ENTITY}}, {{entity}}, {{entities}}, {{FORM_FIELDS}}
+// File: components/{{ENTITY}}Form.tsx
+
+"use client";
+
+import { use{{ENTITY}}Form } from "@/hooks/use{{ENTITY}}Form";
+import type { {{ENTITY}} } from "@/hooks/use{{ENTITY}}s";
+
+interface {{ENTITY}}FormProps {
+  existing?: {{ENTITY}} | null;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export const {{ENTITY}}Form = ({ existing, onSuccess, onCancel }: {{ENTITY}}FormProps) => {
+  const { form, onSubmit, isSubmitting } = use{{ENTITY}}Form(existing);
+  const { register, formState: { errors } } = form;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit(e);
+    onSuccess?.();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {{FORM_FIELDS}}
+
+      <div className="flex items-center gap-3 pt-2">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+        >
+          {isSubmitting ? "Saving..." : existing ? "Update" : "Create"}
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    </form>
+  );
+};
+
+// --- Field Template (Groq replaces {{FORM_FIELDS}} with these) ---
+// <div>
+//   <label htmlFor="fieldName" className="mb-1 block text-sm font-medium">
+//     Field Label
+//   </label>
+//   <input
+//     id="fieldName"
+//     type="text"
+//     {...register("fieldName")}
+//     className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+//     placeholder="Enter value"
+//   />
+//   {errors.fieldName && (
+//     <p className="mt-1 text-xs text-destructive">{errors.fieldName.message}</p>
+//   )}
+// </div>

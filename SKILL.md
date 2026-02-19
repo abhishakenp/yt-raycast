@@ -1,299 +1,284 @@
 ---
 name: ship-fast
-description: "Fast full-stack code generation: spec → design system → tasks → parallel Groq execution → auto-fix. Uses gpt-oss:120b at ~1200 tps with ui-ux-pro-max design system. Usage: /ship-fast [what to build or change]"
+description: "Fast full-stack code generation: spec → design system → HTML-first homepage → parallel Groq execution → auto-fix → manual TSX convert. Uses gpt-oss:120b at ~1200 tps. Perceived speed priority: user sees homepage in ~5s. Usage: /ship-fast [what to build or change]"
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, Skill
 user-invokable: true
 ---
 
-# /ship — Spec → Tasks → Execute → Fix
+# /ship — Spec → Design → Homepage → Tasks → Execute → Fix
 
 Execute all phases sequentially in ONE pass. No confirmation between phases.
+
+**Core principle: PERCEIVED SPEED.** The user must see a rendered homepage within ~5 seconds. Everything else happens behind the scenes.
+
+**No Chrome MCP during execution.** Never use browser DevTools tools during the pipeline. Open pages via `open` or `webbrowser` only.
+
+## Architecture: HTML-First
+
+1. **No scaffold task** — no `create-next-app`, no Node/Bun project setup during generation
+2. **Pure HTML/CSS with Tailwind CDN** — generates `.html` files served via simple local server
+3. **Homepage is Task 1** — generated and served immediately, user sees result in ~5s
+4. **All other tasks run in parallel** — frontend pages + backend templates via Groq
+5. **Manual conversion later** — user triggers `/ship-fast convert` to transform HTML → Next.js + TSX
 
 ## Timing (MANDATORY)
 
 Persist timestamps across Bash calls via temp files. Log to console AND `~/.ship.log`.
 
 ```bash
-# Phase start:
 date +%s > /tmp/ship-ts-start.txt
 echo "--- /ship started at $(date '+%Y-%m-%d %H:%M:%S') ---" | tee -a ~/.ship.log
-
-# After each phase:
-date +%s > /tmp/ship-ts-<phase>-end.txt
-DURATION=$(( $(cat /tmp/ship-ts-<phase>-end.txt) - $(cat /tmp/ship-ts-<phase>-start.txt) ))
-echo "[timing] <phase>: ${DURATION}s" | tee -a ~/.ship.log
 ```
 
 ---
 
-## Phase 1: SPEC
+## Pre-Phase: Existing Project Detection
 
-### Path A: Empty directory
-- Assume: Next.js 16 + TypeScript + Tailwind v4 + App Router + src/ + bun
-- Write spec.md directly (format below)
-- Consult `references/library-versions.md` for pinned versions
+**When `/ship-fast` is called with no arguments**, before starting any phase, check if the current directory already contains artifacts from a previous run (`spec.md`, `tasks.json`, `src/`, `index.html`, `design-system/`, etc.).
 
-### Path B: Existing project
-- Read key configs (package.json, tsconfig.json, globals.css, next.config.*, 1-2 source files)
-- Write spec.md based on understanding
+If existing artifacts are detected, use **AskUserQuestion** with 3 options:
 
-### spec.md format (keep under 15 lines)
-```
-SYSTEM GOAL:
-Build <what the user asked for>
+1. **"Continue"** — Pick up where the previous run left off. Determine the appropriate phase based on what already exists:
+   - Has `spec.md` + `design-system/MASTER.md` but no `tasks.json` → resume from Phase 2 (homepage)
+   - Has `tasks.json` but tasks are incomplete → resume from Phase 3 (execution)
+   - Has completed tasks but no fix loop → resume from Phase 4 (fix loop)
+   - Everything looks complete → skip to Phase 5 (launch + report)
 
-FEATURES:
-- Feature 1
-- Feature 2
-- Feature 3
+2. **"Reset"** — Keep `spec.md`, `project-context.json`, `design-system/`, and `references/`, but wipe all implementation code (`index.html`, generated HTML files, `tasks.json`, `tasks-skeleton.json`). Re-execute from Phase 2.
 
-TECH STACK:
-Next.js 16, React 19, TypeScript, Tailwind v4, Bun
+3. **"Reset hard"** — Wipe EVERYTHING in the directory and start completely from scratch. The user provides a new prompt describing what to build.
 
-CONSTRAINTS:
-- Constraint 1
-- Constraint 2
-```
-
-### project-context.json (keep under 40 lines)
-After spec.md, write `project-context.json` with structural facts only:
-```json
-{
-  "file_tree": ["src/components/", "src/lib/", "src/app/"],
-  "conventions": { "import_alias": "@/*", "framework": "Next.js 16, App Router", "styling": "Tailwind v4" },
-  "dependencies": ["next", "react", "typescript", "tailwindcss"],
-  "notes": "Key patterns or build quirks"
-}
-```
+If the directory is empty or has no recognizable ship-fast artifacts, proceed normally (prompt the user for what to build if no arguments were given).
 
 ---
 
-## Phase 2: DESIGN SYSTEM + TASKS
+## Phase 1: SPEC + DESIGN (~5s total, parallel)
 
-### Step 0: Generate design system (Claude Code, BEFORE tasks)
+### Spec (write immediately)
+- Write `spec.md` as natural prose, under 200 words
+- Write `project-context.json` with structural facts
 
-**This runs BEFORE any task planning or Groq calls.** The design system is a prerequisite that feeds into both task-1's scaffold action and all feature task Groq prompts.
+### Design system (parallel with spec)
+Run ui-ux-pro-max skill:
+```bash
+mkdir -p design-system
+python3 ~/.claude/skills/ui-ux-pro-max/.claude/skills/ui-ux-pro-max/scripts/search.py \
+  "<description>" --design-system -p "<project-name>" -f markdown --persist --output-dir .
+```
 
-1. Run the ui-ux-pro-max skill to generate `design-system/MASTER.md`:
-   ```bash
-   mkdir -p design-system
-   python3 ~/.claude/skills/ui-ux-pro-max/.claude/skills/ui-ux-pro-max/scripts/search.py \
-     "<SYSTEM GOAL from spec.md>" --design-system -p "<project-name>" -f markdown --persist \
-     --output-dir .
-   ```
+**Review and curate** the generated MASTER.md:
+- Must match the spec constraints (dark mode, color scheme, etc.)
+- Must contain: color tokens, typography, spacing, effects, anti-patterns
+- Keep under 50 lines
+- If auto-generated doesn't match, Claude Code writes a corrected MASTER.md manually
 
-2. **Review and curate** the generated MASTER.md:
-   - If the auto-generated colors/style don't match the spec's constraints (e.g. spec says "dark mode purple" but tool generates pink/light), Claude Code writes a corrected MASTER.md manually
-   - MASTER.md must contain: color tokens (brand, surface, bg, text, muted, border), typography, spacing, effects, anti-patterns
-   - Keep under 50 lines
+---
 
-3. **Derive globals.css content** from MASTER.md tokens. This will be embedded in task-1's scaffold action:
-   ```css
-   @import "tailwindcss";
-   @theme {
-     --color-brand: <from MASTER.md>;
-     --color-brand-light: <from MASTER.md>;
-     --color-surface: <from MASTER.md>;
-     --color-surface-light: <from MASTER.md>;
-     --color-surface-lighter: <from MASTER.md>;
-   }
-   html, body { height: 100%; }
-   body { background-color: <from MASTER.md>; color: <from MASTER.md>; }
-   ```
-   Only use `@theme` for truly CUSTOM tokens — never redefine built-in Tailwind colors.
+## Phase 2: HOMEPAGE FIRST (~3-5s)
 
-**Why before tasks:** The design system content is injected into:
-- **task-1's action**: The scaffold bash script includes the correct `globals.css` with design tokens
-- **Every Groq prompt**: Feature task prompts include the MASTER.md so generated code uses the right colors/tokens
+**This is the critical perceived-speed moment.** Generate and serve the homepage HTML BEFORE any task planning.
 
-### Task structure (MANDATORY)
+### Step 1: Generate homepage HTML via Groq
+
+Single Groq call with the spec + design system to generate a complete `index.html`:
+
+```bash
+curl -s https://api.groq.com/openai/v1/chat/completions \
+  -H "Authorization: Bearer $GROQ_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-120b",
+    "messages": [
+      {"role": "system", "content": "You are a frontend code generator. Output ONLY a complete HTML file. Use Tailwind CSS via CDN. The page must be beautiful, polished, and fully responsive. Include animations and micro-interactions via inline CSS/JS. Use Google Fonts via CDN link. No external dependencies beyond Tailwind CDN and Google Fonts."},
+      {"role": "user", "content": "Generate a complete index.html for:\n\n<spec.md content>\n\nDesign system:\n<MASTER.md content>\n\nRequirements:\n- Single self-contained HTML file with Tailwind CDN\n- Dark mode using the exact color tokens from the design system\n- Include ALL sections visible in the viewport (header, hero/main content, key interactive elements)\n- Placeholder/mock data for dynamic content\n- Smooth animations (CSS transitions, keyframes)\n- Responsive layout\n- Professional polish — this is what the user sees first\n\nOutput ONLY the HTML. No markdown fences, no explanation."}
+    ],
+    "temperature": 0.3,
+    "max_tokens": 8000
+  }' | python3 -c "import sys,json; print(json.load(sys.stdin)['choices'][0]['message']['content'])" > index.html
+```
+
+### Step 2: Serve and open immediately
+
+```bash
+# Start simple file server
+python3 -m http.server 3000 --directory . &
+SERVER_PID=$!
+echo $SERVER_PID > /tmp/ship-server-pid.txt
+
+# Open in browser
+sleep 0.5
+open http://localhost:3000
+```
+
+The user now sees the homepage. Continue to Phase 3 in the background.
+
+---
+
+## Phase 3: TASKS + EXECUTION (runs while homepage is visible)
+
+### Dashboard with side drawer preview
+
+Launch the executor dashboard. It opens on `localhost:7420` but the user's PRIMARY view is the homepage at `localhost:3000`.
+
+The executor dashboard has a **right-side drawer** that:
+- Slides in from the right, **pushing content left** (not overlaying)
+- Shows an embedded preview of the homepage (like a computer screen inside the drawer)
+- The preview starts **dimmed with an indeterminate loader** on top
+- As frontend tasks complete (features visible in viewport), the loader transitions to **determinate** (progress bar)
+- When enough features are implemented, the loader disappears
+- The bonhommes and teleportation animations continue in the left panel
+
+```bash
+SHIP_PROMPT="<user prompt>" \
+IRIS_WORKSPACE="<absolute-project-path>" \
+python3 ~/.skills/ship-fast/scripts/executor.py &
+```
+
+### Task structure
 
 | Task | Role | dependsOn | Type |
 |------|------|-----------|------|
-| task-1 | Scaffold project + write globals.css with design tokens | [] | COMMAND |
-| task-2..N-1 | Feature tasks | ["task-1"] | CODE GEN |
-| task-N | Final install + verify | ["task-1"..."task-N-1"] | COMMAND |
+| task-1 | Homepage HTML (already done in Phase 2) | [] | DONE |
+| task-2..N-1 | Feature pages + components as HTML | [] | CODE GEN |
+| backend-1..M | Backend templates (CRUD hooks) | [] | TEMPLATE |
+| task-N | Final assembly + verify | [all] | COMMAND |
 
-No separate design system task in the executor. Design system is generated by Claude Code in Step 0 and baked into task-1 and Groq prompts.
+**Key difference:** No scaffold task. No dependency chains between feature tasks. All tasks run in parallel from wave 1.
 
-### Step 1: Plan task skeleton
+### Task planning (Claude Code, ~5s)
 
-Claude Code plans 5-12 tasks directly (no Groq needed):
-- Each task: id, title, description (50-150 tokens), files, verify, done, dependsOn
-- task-1: scaffold (dependsOn: []) — includes globals.css with design tokens from Step 0
-- task-2..N-1: feature tasks, one file each, ALL depend on ["task-1"] only
-- task-N: install + verify — consult `references/task-templates.md` for exact script
-- Consult `references/morph-strategy.md` for bootstrap vs iteration rules
+Plan 5-12 tasks:
+- **Frontend tasks**: One HTML file per page/component. Each is self-contained with Tailwind CDN.
+- **Backend tasks**: CRUD templates using the template system (see Backend Templates below).
+- All tasks depend only on task-1 (homepage, already DONE).
 
-### Step 2: Generate action fields via parallel Groq calls
+### Generate action fields via parallel Groq calls
 
-For **command tasks** (task-1 scaffold, final verify): Claude Code writes the action directly from templates. **task-1 MUST include the globals.css content derived from the design system in Step 0.**
+For **frontend tasks**: Groq generates complete HTML files with Tailwind CDN + design system tokens.
 
-For **code generation tasks** (feature tasks, task-2 through task-N-1): Launch parallel Groq calls.
+**IMPORTANT**: Every Groq prompt includes:
+1. The design system (MASTER.md content)
+2. The project context
+3. Instruction to use Tailwind CDN (`<script src="https://cdn.tailwindcss.com">`) and Google Fonts
 
-**IMPORTANT**: The Groq prompt for feature tasks MUST include the design system (MASTER.md) content so generated code follows the style contract:
+For **backend tasks**: Use the template system (see below) — Morph an example template for each entity.
 
-```bash
-for i in $(seq 2 $((N-1))); do
-  (
-    curl -s https://api.groq.com/openai/v1/chat/completions \
-      -H "Authorization: Bearer $GROQ_API_KEY" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "model": "openai/gpt-oss-120b",
-        "messages": [
-          {"role": "system", "content": "You are a code generator for a stateless execution pipeline. Output ONLY the action text — step-by-step instructions with COMPLETE source code. No JSON, no markdown fences."},
-          {"role": "user", "content": "Mode: <BOOTSTRAP|ITERATION>\nProject context:\n<project-context.json>\n\nDesign system:\n<design-system/MASTER.md content>\n\nTask: <title + description>\nFile(s): <file paths>\n\nGenerate the action field with COMPLETE file content, all imports, inline types. Follow the design system for colors/fonts/style."}
-        ],
-        "temperature": 0.3,
-        "max_tokens": 8000
-      }' | python3 -c "import sys,json; print(json.load(sys.stdin)['choices'][0]['message']['content'])" > /tmp/task-${i}-action.txt
-  ) &
-done
-wait
-```
+### Assemble tasks.json and execute
 
-### Step 3: Assemble tasks.json
+Same merge + validation flow as before. Submit to Focus MCP for tracking.
 
-Merge skeleton + action files:
-```python
-python3 -c "
-import json
-skeleton = json.load(open('tasks-skeleton.json'))
-for task in skeleton['tasks']:
-    tid = task['id'].split('-')[1]
-    try:
-        with open(f'/tmp/task-{tid}-action.txt') as f:
-            task['action'] = f.read().strip()
-    except FileNotFoundError:
-        pass
-json.dump(skeleton, open('tasks.json', 'w'), indent=2)
-print(f'Merged {len(skeleton[\"tasks\"])} tasks')
-"
-```
-
-Also submit to Focus MCP: `focus_bulk_create_tasks` for tracking visibility.
-
-### Step 4: Validate
-- `python3 -c "import json; json.load(open('tasks.json'))"` — valid JSON
-- Read tasks.json — verify no PLACEHOLDER actions remain
-- If any task has PLACEHOLDER or Groq failed: Claude Code writes that action directly (per-task fallback)
+**Auto-wait for executor completion** — poll tasks.json every 10s. Proceed to fix loop when done.
 
 ---
 
-## Phase 3: EXECUTE
+## Phase 4: FIX LOOP (Claude Code)
 
-### Step A: Launch executor with visual dashboard
+After executor finishes:
 
-```bash
-IRIS_WORKSPACE="<absolute-project-path>" python3 ~/.skills/ship-fast/scripts/executor.py
-```
+1. **Verify all HTML files exist** and contain valid markup
+2. **Check for broken references** between pages (links, shared assets)
+3. **Validate design consistency** — ensure all pages use the same color tokens from MASTER.md
+4. **Dev server verification:**
+   ```bash
+   kill $(lsof -ti:3000) 2>/dev/null
+   python3 -m http.server 3000 --directory . &
+   sleep 2
+   open http://localhost:3000
+   ```
 
-Opens animated dashboard at `localhost:7420` with pixel-art workers, task progress, dependency waves, and live SSE logs. Click "RUN" to start. Executor auto-shuts down after completion.
+No TypeScript fix loop needed in HTML-first mode. That happens during `/ship-fast convert`.
 
-Report to user:
-```
-Groq execution launched — N tasks
-Wave 1: task-1 (scaffold + design tokens — command execution)
-Wave 2: task-2..task-N-1 (parallel code generation, design system in prompts)
-Wave 3: task-N (final verify — command execution)
-Dashboard: http://localhost:7420 — Click "RUN" to start.
-```
+---
 
-**Auto-wait for executor completion** — poll `tasks.json` every 10s until all tasks are DONE or FAILED, then proceed to Step B automatically. Do NOT ask the user to confirm — Claude Code handles this.
+## Phase 5: LAUNCH + REPORT
 
-```bash
-# Poll loop — no timeout, wait as long as needed
-while true; do
-  PENDING=$(python3 -c "
-import json
-d = json.load(open('tasks.json'))
-pending = [t['id'] for t in d['tasks'] if t['status'] in ('PENDING', 'IN_PROGRESS')]
-done = [t['id'] for t in d['tasks'] if t['status'] == 'DONE']
-failed = [t['id'] for t in d['tasks'] if t['status'] == 'FAILED']
-print(f'{len(pending)}|{len(done)}|{len(failed)}')
-  ")
-  P=$(echo $PENDING | cut -d'|' -f1)
-  D=$(echo $PENDING | cut -d'|' -f2)
-  F=$(echo $PENDING | cut -d'|' -f3)
-  echo "Tasks: $D done, $P pending/running, $F failed"
-  [ "$P" -eq 0 ] && break
-  sleep 10
-done
-echo "Executor finished — $D done, $F failed. Proceeding to fix loop."
-```
+1. Ensure server is running on `localhost:3000`
+2. Open browser to homepage
+3. Print timing summary:
+   ```bash
+   echo "/ship complete"
+   echo "──────────────────────────────"
+   echo "Spec+Design: ${SPEC_D}s"
+   echo "Homepage:    ${HOME_D}s"
+   echo "Tasks:       ${TASKS_D}s"
+   echo "Execute:     ${RUN_D}s"
+   echo "Total:       ${TOTAL_D}s"
+   echo "──────────────────────────────"
+   ```
 
-If any tasks FAILED, read `tasks.json` to check which ones and log warnings, but still proceed to Step B (the fix loop handles compilation issues regardless).
+---
 
-**Important**: Use a Bash call with a generous timeout (e.g. 600000ms / 10 min) for this poll loop. The executor typically takes 1-4 minutes depending on task count.
+## Backend Templates (CRUD Template System)
 
-### Step B: Fix loop (Claude Code)
+Since backend patterns repeat, we use a **template + morph** approach:
 
-1. **Deps & config verification:**
-   - `bun i` to ensure all deps installed
-   - Verify tsconfig.json has `paths: { "@/*": ["./src/*"] }` and `moduleResolution: "bundler"`
-   - Verify postcss.config.mjs uses string key: `{ plugins: { "@tailwindcss/postcss": {} } }`
-   - `bun add -d @tailwindcss/postcss@latest`
-   - `rm -rf .next`
+### Base template (one-time generation)
 
-2. **Validate globals.css** (MANDATORY — consult `references/tailwind-v4-rules.md`):
-   - Read `src/app/globals.css`
-   - If it contains ANY forbidden pattern (`@tailwind`, built-in color redefinition in `@theme`, `* { margin: 0 }`, `@apply`) → overwrite with the design system version from `design-system/MASTER.md` tokens
-   - If scaffold overwrote the design system globals.css, restore it from the tokens in MASTER.md
-   - This is NON-NEGOTIABLE
+Claude Code generates ONE complete CRUD example for a reference entity (e.g., "User"):
+- `hooks/useUsers.ts` — Custom hook using React Query + Convex
+- `hooks/useUserForm.ts` — React Hook Form hook with Zod validation
+- `components/UserForm.tsx` — Form component using the hook
+- `components/UserList.tsx` — List component with the query hook
+- `lib/convex/users.ts` — Convex functions (query, mutation)
 
-3. **TypeScript fix loop (agentic morph strategy):**
+### Morph for each entity
+
+For each additional entity (e.g., "Product", "Order"), Groq morphs the template:
+- Replace entity name, fields, validation rules
+- Adjust Convex schema and functions
+- Keep the same patterns (React Hook Form + React Query + Convex)
+
+This is **much faster** than generating from scratch because:
+- Groq just does find-and-replace + field adaptation
+- Pattern is already proven correct
+- Fewer tokens needed per entity
+
+### Template storage
+
+Templates live in `references/templates/`:
+- `references/templates/crud-hook.ts.template` — React Query + Convex hook
+- `references/templates/crud-form-hook.ts.template` — React Hook Form hook
+- `references/templates/crud-form.tsx.template` — Form component
+- `references/templates/crud-list.tsx.template` — List component
+- `references/templates/convex-functions.ts.template` — Convex query/mutation
+
+---
+
+## /ship-fast convert — HTML → Next.js + TSX
+
+**Manual trigger.** User runs `/ship-fast convert` when ready to switch to the real framework.
+
+### What it does:
+
+1. **Scaffold Next.js** (using the standard task-1 template from `references/task-templates.md`)
+2. **Convert each HTML file to TSX:**
+   - Extract the HTML body content
+   - Wrap in a React component
+   - Convert class → className, for → htmlFor, etc.
+   - Move inline styles to Tailwind classes where possible
+   - Add 'use client' only where genuinely needed (event handlers, hooks)
+   - Import from `@/components/` for shared elements
+3. **Move design tokens** from Tailwind CDN config to `globals.css` with `@theme`
+4. **Install dependencies** — `bun add lucide-react framer-motion` etc.
+5. **Run TypeScript fix loop:**
    ```bash
    python3 ~/.skills/ship-fast/scripts/tsc-fix-loop.py .
    ```
-   The script uses an agentic loop with morph strategy:
-   - Runs `tsc --noEmit` to collect ALL errors (not stopping at first)
-   - Sends ALL errors + ALL errored file contents to Groq in ONE call
-   - Groq returns fixes via `write_file` tool calls (one per file)
-   - Applies ALL patches at once (one wave), then re-runs tsc
-   - Convergence detection: bails after 2 stalled waves (error count not decreasing)
-   - Max 10 waves, typically converges in 2-3
-   If fails: manually fix remaining errors, then re-run.
+6. **Verify dev server** starts clean
+7. **Report** conversion results
 
-4. **Dev server verification (10s listen):**
-   ```bash
-   kill $(lsof -ti:3000) 2>/dev/null
-   bun run dev > /tmp/dev-server-output.log 2>&1 &
-   DEV_PID=$!
-   sleep 10
-   cat /tmp/dev-server-output.log
-   ```
-   If errors: kill server, fix, repeat. Keep going until clean.
+### Conversion is a Groq task
 
-### Step C: Launch + Report
-
-1. Open Warp terminal with `bun run dev`:
-   ```bash
-   open -a Warp && sleep 1
-   osascript -e 'tell application "System Events" to tell process "Warp" to keystroke "t" using command down' && sleep 0.5
-   osascript -e 'tell application "System Events" to tell process "Warp" to keystroke "cd <path> && bun run dev"' && sleep 0.2
-   osascript -e 'tell application "System Events" to tell process "Warp" to key code 36'
-   ```
-
-2. Open `http://localhost:3000` in browser.
-
-3. Print timing + metrics summary (MANDATORY):
-   ```bash
-   RUN_END=$(date +%s)
-   SHIP_START=$(cat /tmp/ship-ts-start.txt)
-   SPEC_D=$(( $(cat /tmp/ship-ts-spec-end.txt) - $(cat /tmp/ship-ts-spec-start.txt) ))
-   TASKS_D=$(( $(cat /tmp/ship-ts-tasks-end.txt) - $(cat /tmp/ship-ts-tasks-start.txt) ))
-   RUN_D=$(( $RUN_END - $(cat /tmp/ship-ts-run-start.txt) ))
-   TOTAL_D=$(( $RUN_END - $SHIP_START ))
-   echo ""
-   echo "/ship complete"
-   echo "──────────────────────────────"
-   echo "Spec:     ${SPEC_D}s"
-   echo "Tasks:    ${TASKS_D}s"
-   echo "Execute:  ${RUN_D}s"
-   echo "Total:    ${TOTAL_D}s"
-   echo "──────────────────────────────"
-   ```
+Each HTML file → TSX conversion is a Groq call:
+```
+Convert this HTML page to a Next.js TSX component:
+- Use React 19 patterns
+- Import from @/components/ for shared UI
+- Add 'use client' ONLY if needed
+- Use the design system tokens from globals.css (not inline colors)
+- Keep all Tailwind classes
+- Convert HTML attributes to JSX (className, htmlFor, etc.)
+```
 
 ---
 
@@ -301,108 +286,87 @@ If any tasks FAILED, read `tasks.json` to check which ones and log warnings, but
 
 - No confirmation between phases (unless prompt is too vague)
 - No docs/tests/README unless asked
-- 5-12 tasks: task-1 (scaffold with design tokens) + 3-9 feature tasks + final verify
-- Design system generated by Claude Code BEFORE tasks (Step 0), baked into task-1 globals.css and Groq prompts
-- All feature tasks depend on ["task-1"] only — no separate design system task
-- **SSR-first**: Prefer server components by default. `'use client'` is a LAST RESORT — only when a component genuinely needs hooks, browser APIs, or event handlers that cannot be lifted to a parent. For customer-facing projects, server-side rendering is the priority.
-- Keep existing project conventions — do NOT invent new folders unless required
-- Use existing utilities and components — do not recreate
-- Architecture stability: prefer existing structure from project-context.json
+- **No Chrome MCP during execution** — don't slow down with browser DevTools
+- **HTML-first**: Generate pure HTML/CSS served via simple server
+- Homepage generated and visible within ~5s
+- All feature tasks run in parallel (no dependency chains beyond task-1)
+- Design system from MASTER.md used in all Groq prompts
+- Backend uses template + morph pattern (React Hook Form + React Query + Convex)
+- **SSR-first after conversion**: When converting to Next.js, prefer server components. `'use client'` only where truly needed.
 
 ## Metrics (CRITICAL)
 
-- **TPS**: Display output tokens/second for every Groq call (action generation + execution). The executor tracks and logs TPS per task and aggregate.
-- **Per-step timing**: Each phase logs wall-clock duration to `~/.ship.log` and console via `/tmp/ship-ts-*.txt` temp files.
-- **Cost estimation**: After execution, calculate `(prompt_tokens * input_price + output_tokens * output_price)` for gpt-oss:120b.
-- **Final summary** must include: spec time, task creation time, execution time, fix loop time, total time, total tokens, aggregate TPS, estimated cost.
+- **TPS**: Display output tokens/second for every Groq call
+- **Per-step timing**: Each phase logs wall-clock duration
+- **Homepage time-to-render**: Measure from /ship start to browser open
+- **Final summary**: spec time, homepage time, task creation time, execution time, total time, total tokens, aggregate TPS
 
 ## Memory System (Self-Improving Error Intelligence)
 
-The fix loop has a 3-layer memory system that learns from every run:
+Same 3-layer system:
 
 **Layer 1: Error Bank** (`~/.claude/skills/ship-fast/memory/errors.json`)
-- Raw error→fix pairs, fingerprinted via n-gram Jaccard similarity
-- Auto-deduplicates: entries with >60% similarity are merged
-- Tracks frequency, success rate, category, first/last seen
-
 **Layer 2: Patterns** (`~/.claude/skills/ship-fast/memory/patterns.json`)
-- High-level rules extracted by Groq every 5 runs
-- Injected into fix prompt system message for future runs
-- Example: `[import] TS2307: Add @/ path alias to tsconfig paths`
-
 **Layer 3: Stats** (`~/.claude/skills/ship-fast/memory/stats.json`)
-- Lifetime metrics: total runs, errors seen/fixed, memory hit rate
-- Compaction and extraction timestamps
 
-**Flow:**
-1. **Pre-fix (recall)**: Before each wave, search memory for similar past errors → inject known fixes as context hints to Groq
-2. **Post-fix (retrospective)**: After the loop completes (success or fail), a background thread stores error→fix pairs, updates frequency/success, and periodically triggers pattern extraction
-3. **Auto-compaction**: When bank exceeds 150 entries, merges similar entries and prunes low-value ones down to 80
-
-**CLI inspection:** `python3 ~/.claude/skills/ship-fast/scripts/memory.py [status|errors|patterns|compact|extract]`
+**CLI:** `python3 ~/.claude/skills/ship-fast/scripts/memory.py [status|errors|patterns|compact|extract]`
 
 ## Vague prompts
 
-If too vague (e.g. "fix it", "make it better"):
+If too vague:
 1. Run Phase 1 (explore) first
 2. Ask ONE targeted question to clarify scope
 3. Resume from Phase 2
 
 ---
 
-## /ship-fast reset — Wipe Code + Re-execute
+## /ship-fast reset — Wipe + Re-execute
 
-Invoked via `/ship-fast reset [flags] [description]`. Wipes implementation code and re-runs the pipeline.
+Kill running processes first, then wipe selectively based on the variant.
 
-### Argument parsing
-
-Flags after `reset`:
-- **No flags** (default): Keep `spec.md`, `project-context.json`, `tasks.json`, `tasks-skeleton.json`, `design-system/`, `references/`. Only wipe implementation code.
-- **"no spec"** / **"fresh spec"**: Also delete `spec.md` and `project-context.json`
-- **"no tasks"** / **"fresh tasks"**: Also delete `tasks.json`, `tasks-skeleton.json`
-- **"no design"** / **"fresh design"**: Also delete `design-system/`
-- **"full"** / **"from scratch"**: Delete everything
-
-If a build description follows (e.g. `reset no tasks a dashboard app`), pass it to /ship-fast. Otherwise reuse `SYSTEM GOAL` from existing `spec.md`.
-
-### Confirmation
-
-Ask via AskUserQuestion before deleting. Show what will be KEPT vs DELETED.
-
-### Wipe
-
-**Default mode (keep docs):**
 ```bash
-cd <cwd>
-# Kill running processes
-pkill -f generate_project_code 2>/dev/null
+# Always kill processes first
 kill $(lsof -ti:7420) 2>/dev/null
 kill $(lsof -ti:3000) 2>/dev/null
+```
 
-# Remove everything EXCEPT preserved files
+### Variants
+
+| Command | Keeps | Wipes | Resumes from |
+|---------|-------|-------|--------------|
+| `/ship-fast reset` | spec.md, project-context.json, design-system/, references/, tasks.json | All implementation code (HTML files, src/, generated components) | Phase 3 (re-execute tasks) |
+| `/ship-fast reset hard` | Nothing | EVERYTHING — complete clean slate | Phase 1 (user provides new prompt) |
+| `/ship-fast reset no spec` | design-system/, references/, tasks.json, project-context.json | spec.md + all implementation code | Phase 1 (re-generate spec, then resume) |
+| `/ship-fast reset no tasks` | spec.md, project-context.json, design-system/, references/ | tasks.json, tasks-skeleton.json + all implementation code | Phase 2 (re-plan tasks from spec) |
+| `/ship-fast reset no design` | spec.md, project-context.json, references/, tasks.json | design-system/ + all implementation code | Phase 1 design step (re-generate design system, then resume) |
+
+### Default wipe command (`/ship-fast reset`)
+```bash
+# Keep spec, context, tasks, design-system, references
 find . -maxdepth 1 ! -name '.' ! -name 'spec.md' ! -name 'project-context.json' \
   ! -name 'tasks.json' ! -name 'tasks-skeleton.json' ! -name 'design-system' \
   ! -name 'references' ! -name 'ship.log' -exec rm -rf {} +
 ```
-Adapt exclusions based on flags.
 
-**Full reset:**
+### Hard wipe (`/ship-fast reset hard`)
 ```bash
-cd <cwd> && rm -rf ./* ./.[!.]* 2>/dev/null
+# Wipe absolutely everything
+find . -maxdepth 1 ! -name '.' -exec rm -rf {} +
 ```
 
-### Reset task statuses
-
-If tasks.json is preserved, reset all statuses to PENDING:
+### Selective wipes
 ```bash
-python3 -c "
-import json
-d = json.load(open('tasks.json'))
-for t in d['tasks']: t['status'] = 'PENDING'
-json.dump(d, open('tasks.json', 'w'), indent=2)
-"
+# reset no spec — also wipe spec.md
+find . -maxdepth 1 ! -name '.' ! -name 'project-context.json' \
+  ! -name 'tasks.json' ! -name 'tasks-skeleton.json' ! -name 'design-system' \
+  ! -name 'references' ! -name 'ship.log' -exec rm -rf {} +
+
+# reset no tasks — also wipe tasks
+find . -maxdepth 1 ! -name '.' ! -name 'spec.md' ! -name 'project-context.json' \
+  ! -name 'design-system' ! -name 'references' ! -name 'ship.log' -exec rm -rf {} +
+
+# reset no design — also wipe design-system/
+find . -maxdepth 1 ! -name '.' ! -name 'spec.md' ! -name 'project-context.json' \
+  ! -name 'tasks.json' ! -name 'tasks-skeleton.json' \
+  ! -name 'references' ! -name 'ship.log' -exec rm -rf {} +
 ```
-
-### Re-run
-
-Invoke `/ship-fast` with the appropriate arguments. If spec + tasks exist, skip to Phase 3 (Execute). If tasks were removed, regenerate from Phase 2. If spec was removed, start from Phase 1.

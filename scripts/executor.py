@@ -46,10 +46,28 @@ run_thread = None
 _server = None
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DASHBOARD_PATH = os.path.join(SCRIPT_DIR, "dashboard.html")
+DASHBOARD_V2_PATH = os.path.join(SCRIPT_DIR, "dashboard-v2.html")
+DASHBOARD_PATH = DASHBOARD_V2_PATH  # Use split-screen dashboard by default
+DASHBOARD_LEGACY_PATH = os.path.join(SCRIPT_DIR, "dashboard.html")
+PREVIEW_PORT = 7421
 
 CONTEXT_CAP = 12000
 UPSTREAM_CAP = 4000
+
+
+def notify_preview(endpoint: str, data: dict):
+    """Send update to the preview server (best-effort, non-blocking)."""
+    def _send():
+        try:
+            url = f"http://127.0.0.1:{PREVIEW_PORT}/api/{endpoint}"
+            payload = json.dumps(data).encode()
+            req = urllib.request.Request(url, data=payload, headers={
+                "Content-Type": "application/json",
+            })
+            urllib.request.urlopen(req, timeout=3)
+        except Exception:
+            pass
+    threading.Thread(target=_send, daemon=True).start()
 
 
 def emit(event_type: str, data: dict):
@@ -386,6 +404,7 @@ def run_tasks():
             log(f"  > {t['id']}: {t['title']} ({len(t.get('files', []))} files)")
             t["status"] = "IN_PROGRESS"
             emit("task_started", {"id": t["id"]})
+            notify_preview("task-status", {"id": t["id"], "status": "IN_PROGRESS"})
 
         with ThreadPoolExecutor(max_workers=min(4, len(ready))) as pool:
             futures = {pool.submit(generate_for_task, t): t for t in ready}
@@ -403,6 +422,7 @@ def run_tasks():
                             task["output"] = stderr
                             log(f"FAILED {tid}: command exit {rc}")
                             emit("task_failed", {"id": tid, "error": stderr[:200]})
+                            notify_preview("task-status", {"id": tid, "status": "FAILED"})
                         else:
                             task["output"] = result.get("content", "")
                             completed_files[tid] = task.get("files", [])
@@ -410,6 +430,7 @@ def run_tasks():
                             completed.add(tid)
                             log(f"DONE {tid} (command execution)")
                             emit("task_completed", {"id": tid})
+                            notify_preview("task-status", {"id": tid, "status": "DONE"})
                         save_tasks()
                         continue
 
@@ -419,6 +440,7 @@ def run_tasks():
                         task["output"] = content
                         log(f"FAILED {tid}: {content[:150]}")
                         emit("task_failed", {"id": tid, "error": content[:200]})
+                        notify_preview("task-status", {"id": tid, "status": "FAILED"})
                     else:
                         tps_info = format_tps(result)
                         accumulate_stats(aggregate_stats, result)
@@ -441,6 +463,7 @@ def run_tasks():
                         completed.add(tid)
                         log(f"DONE {tid}")
                         emit("task_completed", {"id": tid})
+                        notify_preview("task-status", {"id": tid, "status": "DONE"})
                     save_tasks()
                 except Exception as e:
                     task["status"] = "FAILED"
@@ -478,6 +501,10 @@ def run_tasks():
         "tokens": total_tokens,
         "output_tps": round(output_tps, 0),
     })
+
+    # Notify preview server to redirect to the real app
+    notify_preview("redirect", {"url": "http://localhost:3000"})
+
     is_running = False
 
     if _server:
@@ -502,8 +529,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._serve_dashboard()
         elif self.path == "/api/tasks":
             self._serve_tasks()
+        elif self.path == "/preview-url" or self.path == "/api/preview-url":
+            self._serve_preview_url()
         elif self.path.startswith("/api/events"):
             self._serve_sse()
+        elif self.path.startswith("/assets/"):
+            self._serve_asset()
         else:
             self.send_error(404)
 
@@ -514,8 +545,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def _serve_dashboard(self):
+        # Prefer dashboard-v2, fall back to legacy
+        path = DASHBOARD_PATH
+        if not os.path.exists(path):
+            path = DASHBOARD_LEGACY_PATH
         try:
-            with open(DASHBOARD_PATH, "r") as f:
+            with open(path, "r") as f:
                 html = f.read()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -524,6 +559,37 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.wfile.write(html.encode())
         except FileNotFoundError:
             self.send_error(500, "dashboard.html not found")
+
+    def _serve_asset(self):
+        # Serve files from the skill's assets directory
+        asset_name = self.path.split("/assets/", 1)[-1]
+        asset_path = os.path.join(SCRIPT_DIR, "..", "assets", asset_name)
+        asset_path = os.path.normpath(asset_path)
+        if not os.path.isfile(asset_path):
+            self.send_error(404, "Asset not found")
+            return
+        ext = os.path.splitext(asset_name)[1].lower()
+        content_types = {
+            ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
+            ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml",
+            ".css": "text/css", ".js": "application/javascript",
+        }
+        ct = content_types.get(ext, "application/octet-stream")
+        with open(asset_path, "rb") as f:
+            data = f.read()
+        self.send_response(200)
+        self.send_header("Content-Type", ct)
+        self.send_header("Content-Length", str(len(data)))
+        self._cors()
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _serve_preview_url(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self._cors()
+        self.end_headers()
+        self.wfile.write(json.dumps({"url": f"http://localhost:{PREVIEW_PORT}"}).encode())
 
     def _serve_tasks(self):
         self.send_response(200)
@@ -601,15 +667,32 @@ def load_tasks():
     try:
         with open(tasks_path, "r") as f:
             data = json.load(f)
-    except FileNotFoundError:
-        print(f"Error: {tasks_path} not found.")
-        sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"Error: Could not decode JSON from {tasks_path}.")
-        sys.exit(1)
+        tasks_data = data.get("tasks", [])
+        print(f"Loaded {len(tasks_data)} tasks from {tasks_path}")
+    except (FileNotFoundError, json.JSONDecodeError):
+        # tasks.json not ready yet — start with empty list, poll later
+        tasks_data = []
+        print(f"[executor] tasks.json not ready — starting in intro mode, will poll...")
 
-    tasks_data = data.get("tasks", [])
-    print(f"Loaded {len(tasks_data)} tasks from {tasks_path}")
+
+def poll_for_tasks():
+    """Background thread that polls for tasks.json until it has tasks."""
+    workspace = os.environ.get("IRIS_WORKSPACE", os.getcwd())
+    tasks_path = os.path.join(workspace, "tasks.json")
+    while not tasks_data:
+        time.sleep(1)
+        try:
+            with open(tasks_path, "r") as f:
+                data = json.load(f)
+            loaded = data.get("tasks", [])
+            if loaded:
+                tasks_data.clear()
+                tasks_data.extend(loaded)
+                print(f"[executor] Loaded {len(tasks_data)} tasks from {tasks_path}")
+                emit("tasks_loaded", {"count": len(tasks_data)})
+                break
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
 
 
 def save_tasks():
@@ -625,6 +708,19 @@ def save_tasks():
 
 def main():
     load_tasks()
+
+    # Emit intro text if provided via env, and save to prompts.txt
+    ship_prompt = os.environ.get("SHIP_PROMPT", "")
+    if ship_prompt:
+        emit("intro_text", {"text": ship_prompt})
+        workspace = os.environ.get("IRIS_WORKSPACE", ".")
+        try:
+            prompts_path = os.path.join(workspace, "prompts.txt")
+            with open(prompts_path, "a") as f:
+                f.write(ship_prompt + "\n")
+            log(f"Saved prompt to {prompts_path}")
+        except Exception as e:
+            log(f"Failed to save prompt: {e}")
 
     class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
         daemon_threads = True
@@ -647,6 +743,10 @@ def main():
     server = ThreadedHTTPServer(("127.0.0.1", PORT), DashboardHandler)
     _server = server
     print(f"Dashboard: http://localhost:{PORT}")
+
+    # If no tasks yet, start polling in background
+    if not tasks_data:
+        threading.Thread(target=poll_for_tasks, daemon=True).start()
 
     threading.Timer(0.5, lambda: webbrowser.open(f"http://localhost:{PORT}")).start()
 
