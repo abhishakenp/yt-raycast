@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ship — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#000; overflow:hidden;
+    font-family:'Inter',system-ui,sans-serif; color:#e2e0f0;
+    display:flex; height:100vh;
+    transition: background 1.8s cubic-bezier(0.4,0,0.2,1);
+  }
+  body.dashboard-active { background:#09080f; }
+
+  /* ─── Intro Overlay ─── */
+  .intro-overlay {
+    position:fixed; inset:0; z-index:200;
+    background:#000; display:flex;
+    flex-direction:column; align-items:center; justify-content:center;
+    transition: opacity 1s ease, transform 1.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  .intro-overlay.exiting {
+    opacity:0; transform:translateY(-6vh);
+    pointer-events:none;
+  }
+  .intro-overlay.hidden { display:none; }
+
+  .intro-logo {
+    display:flex; align-items:center; gap:16px;
+    transform:scale(2.8); opacity:0;
+    transition: transform 1.4s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 0.8s ease,
+                margin-top 1.4s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .intro-logo.visible { opacity:1; transform:scale(2.8); }
+  .intro-logo.shaking {
+    animation:rocketShake 0.08s ease-in-out infinite alternate;
+  }
+  .intro-logo.settled {
+    transform:scale(1.1);
+    margin-top:-10vh;
+    animation:rocketLaunch 0.6s cubic-bezier(0.36,0.07,0.19,0.97) forwards,
+              rocketGlow 1.2s ease-out forwards;
+  }
+  @keyframes rocketShake {
+    0% { transform:scale(2.8) translate(-2px, 1px) rotate(-0.5deg); }
+    25% { transform:scale(2.8) translate(2px, -1px) rotate(0.5deg); }
+    50% { transform:scale(2.8) translate(-1px, -2px) rotate(-0.3deg); }
+    75% { transform:scale(2.8) translate(1px, 2px) rotate(0.3deg); }
+    100% { transform:scale(2.8) translate(2px, -1px) rotate(0.5deg); }
+  }
+  @keyframes rocketLaunch {
+    0% { transform:scale(2.8); filter:brightness(1); }
+    30% { transform:scale(3.0); filter:brightness(1.8); }
+    60% { transform:scale(1.2); filter:brightness(1.2); }
+    100% { transform:scale(1.1); filter:brightness(1); }
+  }
+  @keyframes rocketGlow {
+    0% { filter:drop-shadow(0 0 40px rgba(124,58,237,0.8)) drop-shadow(0 0 80px rgba(167,139,250,0.4)); }
+    50% { filter:drop-shadow(0 0 60px rgba(124,58,237,0.6)) drop-shadow(0 0 120px rgba(167,139,250,0.3)); }
+    100% { filter:drop-shadow(0 0 30px rgba(124,58,237,0.2)); }
+  }
+
+  .logo-icon {
+    width:52px; height:52px; position:relative;
+  }
+  .logo-icon svg { width:100%; height:100%; }
+
+  .logo-text {
+    font-family:'JetBrains Mono',monospace;
+    font-size:64px; font-weight:700;
+    letter-spacing:6px;
+    background:linear-gradient(135deg, #7c3aed 0%, #a78bfa 40%, #c4b5fd 60%, #7c3aed 100%);
+    background-size:200% 200%;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    animation:gradientShift 3s ease infinite;
+    filter:drop-shadow(0 0 30px rgba(124,58,237,0.4));
+  }
+  @keyframes gradientShift {
+    0%,100% { background-position:0% 50%; }
+    50% { background-position:100% 50%; }
+  }
+
+  .logo-glow {
+    position:absolute; inset:-40px;
+    background:radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+    border-radius:50%; pointer-events:none;
+    animation:glowPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%,100% { opacity:0.6; transform:scale(1); }
+    50% { opacity:1; transform:scale(1.15); }
+  }
+
+  .intro-typing {
+    margin-top:36px; max-width:800px; width:90%;
+    text-align:center; opacity:0;
+    transition:opacity 0.6s ease;
+  }
+  .intro-typing.visible { opacity:1; }
+
+  .typing-text {
+    font-family:'Inter',sans-serif;
+    font-size:36px; line-height:1.4;
+    color:rgba(226,224,240,0.85);
+    font-weight:500; letter-spacing:0.3px;
+  }
+  .typing-cursor {
+    display:inline-block; width:2px; height:1.2em;
+    background:#7c3aed; vertical-align:text-bottom;
+    margin-left:2px;
+    animation:cursorBlink 0.8s step-end infinite;
+  }
+  @keyframes cursorBlink {
+    0%,100% { opacity:1; } 50% { opacity:0; }
+  }
+
+  .intro-phase-label {
+    position:absolute; bottom:32px; left:50%;
+    transform:translateX(-50%);
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px; color:rgba(167,139,250,0.7);
+    letter-spacing:1.5px; text-transform:uppercase;
+    opacity:0;
+    transition: opacity 0.5s ease,
+                bottom 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                font-size 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                color 1.2s ease;
+  }
+  .intro-phase-label.visible { opacity:1; }
+  .intro-phase-label.switching {
+    animation:statusSwitch 0.4s ease;
+  }
+  @keyframes statusSwitch {
+    0% { opacity:1; transform:translateX(-50%) translateY(0); }
+    40% { opacity:0; transform:translateX(-50%) translateY(-8px); }
+    60% { opacity:0; transform:translateX(-50%) translateY(8px); }
+    100% { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+
+  /* Post-typing: logo+prompt slide up and shrink, status grows */
+  .intro-logo.post-typing {
+    transform:scale(0.5);
+    margin-top:-45vh;
+    opacity:0.3;
+    transition: transform 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                margin-top 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 1.2s ease;
+  }
+  .intro-typing.post-typing {
+    transform:translateY(-20vh) scale(0.6);
+    opacity:0.2;
+    transition: transform 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 1.2s ease;
+  }
+  .intro-phase-label.post-typing {
+    bottom:45vh;
+    font-size:22px;
+    color:rgba(167,139,250,0.9);
+    letter-spacing:2.5px;
+  }
+
+  /* ─── Dashboard Container (hidden during intro) ─── */
+  .dashboard-wrap {
+    display:flex; width:100%; height:100%;
+    opacity:0; transition:opacity 0.8s ease 0.4s;
+    pointer-events:none;
+  }
+  .dashboard-wrap.active { opacity:1; pointer-events:auto; }
+
+  /* ─── Left Panel: Tasks ─── */
+  .left-panel {
+    display:flex; flex-direction:column;
+    background:#0f0d1a; border-right:1px solid #2d2a3e;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1),
+                min-width 1s cubic-bezier(0.4,0,0.2,1),
+                opacity 0.6s ease;
+    overflow:hidden; position:relative;
+    width:100%; min-width:280px;
+  }
+  .left-panel.drawer-open {
+    width:45%; min-width:280px;
+  }
+  .left-panel.collapsed {
+    width:0; min-width:0; opacity:0;
+    border-right:none;
+  }
+
+  .panel-header {
+    padding:16px 20px 12px;
+    border-bottom:1px solid #2d2a3e;
+    flex-shrink:0;
+  }
+  .panel-header h1 {
+    font-family:'JetBrains Mono',monospace;
+    font-size:16px; font-weight:700; color:#7c3aed;
+    letter-spacing:1px;
+  }
+  .panel-header .subtitle {
+    font-size:11px; color:#8b86a8; margin-top:2px;
+  }
+
+  .stats-bar {
+    display:flex; gap:16px; padding:10px 20px;
+    border-bottom:1px solid #2d2a3e;
+    font-size:11px; color:#8b86a8; flex-shrink:0;
+  }
+  .stats-bar b { color:#e2e0f0; font-weight:600; }
+
+  /* ─── Task List ─── */
+  .task-list {
+    flex:1; overflow-y:auto; padding:8px 12px;
+    scrollbar-width:thin; scrollbar-color:#2d2a3e transparent;
+  }
+  .task-list::-webkit-scrollbar { width:4px; }
+  .task-list::-webkit-scrollbar-track { background:transparent; }
+  .task-list::-webkit-scrollbar-thumb { background:#2d2a3e; border-radius:2px; }
+
+  .task-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; margin:4px 0;
+    background:#1a1726; border:1px solid #2d2a3e;
+    border-radius:10px;
+    transition: all 0.3s ease;
+    animation: taskSlideIn 0.4s ease-out backwards;
+  }
+  .task-item:hover { border-color:rgba(124,58,237,0.3); }
+  .task-item.running {
+    border-color:rgba(124,58,237,0.4);
+    background:linear-gradient(135deg, #1a1726 0%, rgba(124,58,237,0.08) 100%);
+  }
+  .task-item.done {
+    border-color:rgba(0,230,118,0.2);
+    opacity:0.7;
+  }
+  .task-item.failed {
+    border-color:rgba(248,81,73,0.3);
+  }
+  .task-item.teleporting {
+    animation: taskTeleport 0.6s ease-in forwards;
+  }
+
+  @keyframes taskSlideIn {
+    from { opacity:0; transform:translateX(-20px); }
+    to { opacity:1; transform:translateX(0); }
+  }
+  @keyframes taskTeleport {
+    0% { opacity:1; transform:scale(1); }
+    50% { opacity:0.8; transform:scale(1.05); filter:brightness(2); }
+    100% { opacity:0; transform:scale(0.3); filter:brightness(3); }
+  }
+
+  .agent-avatar {
+    width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; flex-shrink:0;
+    position:relative;
+  }
+  .agent-avatar canvas { width:32px; height:32px; border-radius:6px; }
+  .agent-avatar .spinner {
+    position:absolute; inset:-3px;
+    border:2px solid transparent; border-top-color:#7c3aed;
+    border-radius:50%; animation:spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .task-info { flex:1; min-width:0; }
+  .task-title {
+    font-size:12px; font-weight:600; color:#e2e0f0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .task-files {
+    font-size:10px; color:#8b86a8; margin-top:2px;
+    font-family:'JetBrains Mono',monospace;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  .status-badge {
+    padding:3px 8px; border-radius:6px;
+    font-size:9px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.5px; flex-shrink:0;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .status-badge.pending { background:#252233; color:#8b86a8; }
+  .status-badge.running { background:rgba(124,58,237,0.2); color:#a78bfa; }
+  .status-badge.done { background:rgba(0,230,118,0.15); color:#69f0ae; }
+  .status-badge.failed { background:rgba(248,81,73,0.15); color:#ff5252; }
+
+  /* ─── Progress Bar (frontend) ─── */
+  .progress-section {
+    padding:12px 20px; border-top:1px solid #2d2a3e; flex-shrink:0;
+  }
+  .progress-label {
+    display:flex; justify-content:space-between;
+    font-size:10px; color:#8b86a8; margin-bottom:6px;
+  }
+  .progress-track {
+    height:4px; background:#252233; border-radius:2px; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; width:0%; border-radius:2px;
+    background:linear-gradient(90deg, #7c3aed, #a78bfa);
+    transition:width 0.5s ease;
+  }
+  .progress-fill.has-failures {
+    background:linear-gradient(90deg, #7c3aed, #ff5252);
+  }
+
+  /* ─── Log Panel ─── */
+  .log-section {
+    border-top:1px solid #2d2a3e; flex-shrink:0;
+    max-height:0; overflow:hidden;
+    transition:max-height 0.3s ease;
+  }
+  .log-section.open { max-height:160px; }
+  .log-toggle {
+    display:flex; align-items:center; gap:6px;
+    padding:8px 20px; cursor:pointer;
+    font-size:10px; color:#8b86a8; border:none; background:none;
+    width:100%; text-align:left;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .log-toggle:hover { color:#e2e0f0; }
+  .log-toggle .arrow { transition:transform 0.3s; }
+  .log-section.open .log-toggle .arrow { transform:rotate(90deg); }
+  .log-content {
+    max-height:120px; overflow-y:auto; padding:0 16px 8px;
+    scrollbar-width:thin; scrollbar-color:#2d2a3e transparent;
+  }
+  .log-line {
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px; padding:1px 0; color:#8b86a8;
+    white-space:pre-wrap; word-break:break-all;
+  }
+  .log-line.err { color:#ff5252; }
+  .log-line.ok { color:#69f0ae; }
+  .log-line.info { color:#7c3aed; }
+
+  /* ─── Right Panel: Browser Preview Drawer ─── */
+  .right-panel {
+    width:0; overflow:hidden;
+    display:flex; flex-direction:column;
+    padding:0;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1),
+                padding 0.8s cubic-bezier(0.4,0,0.2,1);
+    position:relative;
+  }
+  .right-panel.open {
+    padding:12px 16px 16px 8px;
+    /* Width is controlled dynamically by JS based on frontend task completion */
+  }
+  .right-panel.expanded {
+    width:100%; padding:12px 16px 16px 16px;
+  }
+
+  .browser-chrome {
+    display:flex; flex-direction:column;
+    background:#1a1726; border:1px solid #2d2a3e;
+    border-radius:12px; overflow:hidden; flex:1;
+    box-shadow:0 4px 24px rgba(0,0,0,0.3);
+    min-width:0;
+  }
+
+  .browser-toolbar {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; background:#0f0d1a;
+    border-bottom:1px solid #2d2a3e;
+  }
+  .browser-dots {
+    display:flex; gap:6px; flex-shrink:0;
+  }
+  .browser-dots span {
+    width:10px; height:10px; border-radius:50%;
+  }
+  .browser-dots span:nth-child(1) { background:#ff5f57; }
+  .browser-dots span:nth-child(2) { background:#febc2e; }
+  .browser-dots span:nth-child(3) { background:#28c840; }
+
+  .browser-url {
+    flex:1; padding:5px 12px;
+    background:#252233; border:1px solid #2d2a3e;
+    border-radius:6px; font-size:11px; color:#8b86a8;
+    font-family:'JetBrains Mono',monospace;
+    display:flex; align-items:center; gap:6px;
+    min-width:0;
+  }
+  .browser-url .lock { color:#69f0ae; font-size:10px; }
+  .browser-url .url-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .browser-status {
+    font-size:9px; color:#8b86a8; padding:0 8px;
+    font-family:'JetBrains Mono',monospace;
+    flex-shrink:0;
+    display:flex; align-items:center; gap:4px;
+  }
+  .browser-status .dot {
+    width:6px; height:6px; border-radius:50%;
+    background:#69f0ae; animation:pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.3; }
+  }
+
+  .browser-content {
+    flex:1; position:relative; background:#09080f;
+  }
+  .browser-content iframe {
+    width:100%; height:100%; border:none;
+    background:#09080f;
+  }
+
+  /* ─── Preview Loading Bar (non-blocking, top of browser content) ─── */
+  .preview-loading {
+    position:absolute; top:0; left:0; right:0;
+    height:3px; z-index:10;
+    background:rgba(37,34,51,0.6);
+    overflow:hidden;
+    transition:opacity 0.6s ease;
+    pointer-events:none;
+  }
+  .preview-loading.hidden { opacity:0; }
+
+  .preview-loading-text {
+    display:none;
+  }
+
+  .preview-progress {
+    width:100%; height:100%;
+  }
+  .preview-progress-fill {
+    height:100%; width:0%; border-radius:0 2px 2px 0;
+    background:linear-gradient(90deg, #7c3aed, #a78bfa);
+    box-shadow:0 0 8px rgba(124,58,237,0.4), 0 0 16px rgba(124,58,237,0.2);
+    transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  /* Indeterminate shimmer before first task completes */
+  .preview-loading:not(.determinate) .preview-progress-fill {
+    width:30%;
+    animation:indeterminateShimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes indeterminateShimmer {
+    0% { transform:translateX(-100%); }
+    100% { transform:translateX(400%); }
+  }
+  .preview-loading.determinate .preview-progress-fill {
+    animation:none;
+    transform:none;
+  }
+
+  /* ─── Backend Progress Bar (bottom of right panel) ─── */
+  .backend-progress {
+    position:absolute; bottom:16px; left:8px; right:16px;
+    height:3px; border-radius:2px;
+    background:rgba(37,34,51,0.6);
+    overflow:hidden; opacity:0;
+    transition:opacity 0.8s ease;
+    z-index:10;
+  }
+  .backend-progress.visible { opacity:1; }
+  .backend-progress-fill {
+    height:100%; width:0%; border-radius:2px;
+    background:linear-gradient(90deg, rgba(124,58,237,0.6), rgba(167,139,250,0.4));
+    box-shadow:0 0 8px rgba(124,58,237,0.3), 0 0 16px rgba(124,58,237,0.15);
+    transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
+    position:relative;
+  }
+  .backend-progress-fill::after {
+    content:''; position:absolute; right:0; top:-2px; bottom:-2px; width:20px;
+    background:radial-gradient(ellipse at right, rgba(167,139,250,0.5), transparent);
+    border-radius:0 2px 2px 0;
+    animation:glowTrail 1.5s ease-in-out infinite;
+  }
+  @keyframes glowTrail {
+    0%,100% { opacity:0.4; } 50% { opacity:1; }
+  }
+
+  /* ─── Completion overlay ─── */
+  .completion-banner {
+    position:fixed; top:0; left:0; right:0;
+    padding:12px 24px;
+    background:linear-gradient(135deg, rgba(124,58,237,0.9), rgba(167,139,250,0.9));
+    color:#fff; text-align:center;
+    font-weight:600; font-size:14px;
+    transform:translateY(-100%);
+    transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    z-index:300;
+    backdrop-filter:blur(8px);
+  }
+  .completion-banner.visible { transform:translateY(0); }
+
+  /* ─── RUN button ─── */
+  .run-section {
+    padding:12px 20px; border-top:1px solid #2d2a3e; flex-shrink:0;
+  }
+  .run-btn {
+    width:100%; padding:10px;
+    background:linear-gradient(135deg, #7c3aed, #6d28d9);
+    color:#fff; border:none; border-radius:8px;
+    font-size:12px; font-weight:700; cursor:pointer;
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:1px; transition:all 0.2s;
+  }
+  .run-btn:hover:not(:disabled) {
+    background:linear-gradient(135deg, #a78bfa, #7c3aed);
+    box-shadow:0 0 20px rgba(124,58,237,0.3);
+  }
+  .run-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  /* ─── Debug burger + panel (debug mode only) ─── */
+  .debug-burger {
+    display:none;
+    position:fixed; top:16px; right:16px; z-index:400;
+    width:36px; height:36px; border:none; border-radius:8px;
+    background:rgba(37,34,51,0.7); backdrop-filter:blur(8px);
+    cursor:pointer; flex-direction:column;
+    align-items:center; justify-content:center; gap:4px;
+    transition:background 0.2s;
+  }
+  .debug-burger:hover { background:rgba(124,58,237,0.3); }
+  .debug-burger span {
+    display:block; width:16px; height:2px;
+    background:#8b86a8; border-radius:1px;
+    transition:transform 0.3s, opacity 0.2s;
+  }
+  .debug-burger.open span:nth-child(1) { transform:rotate(45deg) translate(3px,3px); }
+  .debug-burger.open span:nth-child(2) { opacity:0; }
+  .debug-burger.open span:nth-child(3) { transform:rotate(-45deg) translate(3px,-3px); }
+  body.debug-mode .debug-burger { display:flex; }
+
+  .debug-panel {
+    display:none;
+    position:fixed; top:0; right:0; bottom:0;
+    width:380px; z-index:350;
+    background:rgba(15,13,26,0.95); backdrop-filter:blur(12px);
+    border-left:1px solid #2d2a3e;
+    transform:translateX(100%);
+    transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    flex-direction:column;
+  }
+  body.debug-mode .debug-panel { display:flex; }
+  .debug-panel.open { transform:translateX(0); }
+
+  .debug-panel-header {
+    padding:16px 20px 12px;
+    border-bottom:1px solid #2d2a3e;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .debug-panel-header h2 {
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px; font-weight:700; color:#7c3aed;
+    letter-spacing:1px; text-transform:uppercase;
+  }
+  .debug-panel-header .event-count {
+    font-size:10px; color:#8b86a8;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  .debug-feed {
+    flex:1; overflow-y:auto; padding:8px 12px;
+    scrollbar-width:thin; scrollbar-color:#2d2a3e transparent;
+  }
+  .debug-feed::-webkit-scrollbar { width:4px; }
+  .debug-feed::-webkit-scrollbar-track { background:transparent; }
+  .debug-feed::-webkit-scrollbar-thumb { background:#2d2a3e; border-radius:2px; }
+
+  .debug-event {
+    padding:8px 10px; margin:4px 0;
+    background:#1a1726; border:1px solid #2d2a3e;
+    border-radius:8px; font-family:'JetBrains Mono',monospace;
+    font-size:10px; animation:taskSlideIn 0.3s ease-out;
+  }
+  .debug-event .ev-type {
+    color:#a78bfa; font-weight:600; text-transform:uppercase;
+    font-size:9px; letter-spacing:0.5px;
+  }
+  .debug-event .ev-time {
+    color:#555; font-size:9px; float:right;
+  }
+  .debug-event .ev-body {
+    color:#8b86a8; margin-top:4px; word-break:break-all;
+    white-space:pre-wrap; line-height:1.4;
+  }
+  .debug-event.ev-error { border-color:rgba(248,81,73,0.3); }
+  .debug-event.ev-error .ev-type { color:#ff5252; }
+  .debug-event.ev-success { border-color:rgba(0,230,118,0.2); }
+  .debug-event.ev-success .ev-type { color:#69f0ae; }
+
+  /* ─── Particles canvas ─── */
+  .particles-canvas {
+    position:fixed; inset:0; pointer-events:none; z-index:250;
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Audio: Rocket launch SFX ─── -->
+<audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
+
+<!-- ─── Intro Overlay ─── -->
+<div class="intro-overlay" id="intro-overlay">
+  <div class="logo-glow"></div>
+  <div class="intro-logo" id="intro-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#g1)" opacity="0.9"/>
+        <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#g2)" opacity="0.8"/>
+        <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#g2)" opacity="0.8"/>
+        <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#g1)"/>
+        <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7"/>
+        <circle cx="26" cy="16" r="2" fill="#c4b5fd"/>
+        <defs>
+          <linearGradient id="g1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#7c3aed"/><stop offset="1" stop-color="#a78bfa"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#6d28d9"/><stop offset="1" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <span class="logo-text">SHIP</span>
+  </div>
+
+  <div class="intro-typing" id="intro-typing">
+    <span class="typing-text" id="typing-text"></span><span class="typing-cursor" id="typing-cursor"></span>
+  </div>
+
+  <div class="intro-phase-label" id="intro-phase-label">preparing</div>
+</div>
+
+<!-- ─── Dashboard ─── -->
+<div class="dashboard-wrap" id="dashboard-wrap">
+
+  <div class="left-panel" id="left-panel">
+    <div class="panel-header">
+      <h1>SHIP</h1>
+      <div class="subtitle" id="phase-text">Initializing...</div>
+    </div>
+
+    <div class="stats-bar">
+      <span>Total <b id="s-total">0</b></span>
+      <span>Done <b id="s-done">0</b></span>
+      <span>Failed <b id="s-failed">0</b></span>
+      <span>Running <b id="s-run">0</b></span>
+    </div>
+
+    <!-- Canvas-based crew visualization -->
+    <canvas id="crew-canvas" style="flex: 1; background: linear-gradient(135deg, #0a0a12 0%, #0f0f1a 100%); display: block;"></canvas>
+
+    <div class="progress-section">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="log-section" id="log-section">
+      <button class="log-toggle" id="log-toggle">
+        <span class="arrow">&#9654;</span> LOGS
+      </button>
+      <div class="log-content" id="log-content"></div>
+    </div>
+
+    <div class="run-section">
+      <button class="run-btn" id="run-btn" disabled>RUN</button>
+    </div>
+  </div>
+
+  <div class="right-panel" id="right-panel">
+    <div class="browser-chrome">
+      <div class="browser-toolbar">
+        <div class="browser-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="browser-url">
+          <span class="lock">&#9679;</span>
+          <span class="url-text" id="url-text">localhost:3000</span>
+        </div>
+        <div class="browser-status">
+          <span class="dot" id="status-dot"></span>
+          <span id="status-text">Preview</span>
+        </div>
+      </div>
+      <div class="browser-content">
+        <iframe id="preview-iframe" src="about:blank"></iframe>
+        <div class="preview-loading" id="preview-loading">
+          <div class="preview-progress">
+            <div class="preview-progress-fill" id="preview-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="backend-progress" id="backend-progress">
+      <div class="backend-progress-fill" id="backend-progress-fill"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="completion-banner" id="completion-banner">
+  All tasks completed — app is live!
+</div>
+
+<canvas class="particles-canvas" id="particles-canvas"></canvas>
+
+<!-- ─── Debug Panel (visible only in debug mode: ?debug=1) ─── -->
+<button class="debug-burger" id="debug-burger">
+  <span></span><span></span><span></span>
+</button>
+<div class="debug-panel" id="debug-panel">
+  <div class="debug-panel-header">
+    <h2>Live Events</h2>
+    <span class="event-count" id="debug-event-count">0 events</span>
+  </div>
+  <div class="debug-feed" id="debug-feed"></div>
+</div>
+
+  <script>
+// ─── State Testing Mode ────────────────────────────────────────────
+// This file tests dashboard states by simulating state transitions
+// It uses the same HTML template as dashboard-v2.html but with a state machine
+
+    // ─── Pixel-art sprite data (16x16) ──────────────────────────────────
+    const SPRITE_FRAMES = [
+      ['................','......HHHH......','.....HHHHHH.....','....HSSSSSH.....',
+       '....SEEEESH.....','....SEEEESH.....','....SSMMSS......','.....SSSS.......',
+       '....CCCCCC......','...CCCCCCCC.....','...CCCCCCCC.....','...CC.CC.CC.....',
+       '....CCCCCC......','....LL..LL......','....LL..LL......','...BBB..BBB.....']
+    ];
+    const PALETTES = [
+      {H:'#00cec9',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#00b894',L:'#2d3436',B:'#636e72'},
+      {H:'#fdcb6e',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#e17055',L:'#2d3436',B:'#636e72'},
+      {H:'#74b9ff',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#0984e3',L:'#2d3436',B:'#636e72'},
+      {H:'#ff7675',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#d63031',L:'#2d3436',B:'#636e72'},
+      {H:'#a29bfe',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#6c5ce7',L:'#2d3436',B:'#636e72'},
+      {H:'#55efc4',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#00b894',L:'#2d3436',B:'#636e72'},
+    ];
+
+    const spriteCache = new Map();
+    function renderSprite(paletteIndex) {
+      const key = 'p' + paletteIndex;
+      if (spriteCache.has(key)) return spriteCache.get(key);
+      const palette = PALETTES[paletteIndex % PALETTES.length];
+      const frame = SPRITE_FRAMES[0];
+      const c = document.createElement('canvas');
+      c.width = 32; c.height = 32;
+      const ctx = c.getContext('2d');
+      const px = 2;
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+          const ch = frame[y][x];
+          if (ch === '.') continue;
+          ctx.fillStyle = palette[ch] || '#fff';
+          ctx.fillRect(x * px, y * px, px, px);
+        }
+      }
+      spriteCache.set(key, c);
+      return c;
+    }
+
+    function getWorkerSprite(idx) {
+      const sprite = renderSprite(idx);
+      return [sprite];
+    }
+
+    function getOrchestratorSprite() {
+      // Use a special palette index for orchestrator
+      const sprite = renderSprite(PALETTES.length - 1);
+      return [sprite];
+    }
+
+    // State machine for testing dashboard transitions
+    const STATES = [
+      { name: 'INTRO', desc: '1. Logo animation, typing', duration: 4, setup: setupIntro, teardown: teardownIntro },
+      { name: 'SPECS', desc: '2. Dashboard visible, tasks loading', duration: 3, setup: setupSpecs, teardown: null },
+      { name: 'TASKS', desc: '3. 8 pending tasks, progress bar', duration: 3, setup: setupTasks, teardown: null },
+      { name: 'RUNNING', desc: '4. Some tasks running with spinners', duration: 3, setup: setupRunning, teardown: null },
+      { name: 'DRAWER', desc: '5. Preview drawer opens (50% split)', duration: 3, setup: setupDrawer, teardown: null },
+      { name: 'PROGRESS', desc: '6. Frontend ~75% done, dynamic width', duration: 3, setup: setupProgress, teardown: null },
+      { name: 'COLLAPSE', desc: '7. Frontend done, left collapses', duration: 3, setup: setupCollapse, teardown: null },
+      { name: 'DONE', desc: '8. All tasks complete, banner shown', duration: 3, setup: setupDone, teardown: null },
+      { name: 'FAILED', desc: '9. One task failed (red state)', duration: 3, setup: setupFailed, teardown: null },
+      { name: 'FINAL', desc: '10. Mixed states, stable', duration: 3, setup: setupFinal, teardown: null },
+    ];
+
+    let currentStateIndex = 0;
+    let stateStartTime = 0;
+    let animationFrameId = null;
+    let tasks = [];
+
+    function createMockTask(id, title, files = []) {
+      return { id, title, files, status: 'PENDING' };
+    }
+
+    // Canvas-based crew visualization
+    let crewAgents = [];
+    let crewOrchestrator = null;
+    let canvasAnimationFrame = null;
+
+    // CrewAgent structure:
+    // {id, x, y, targetX, targetY, state, spriteIndex, frameIndex, frameTimer, ringAngle, doneScale}
+
+    function createCrewAgent(task, idx) {
+      return {
+        id: task.id,
+        x: 0,
+        y: 0,
+        targetX: 0,
+        targetY: 0,
+        state: task.status || 'PENDING',
+        spriteIndex: idx,
+        frameIndex: 0,
+        frameTimer: 0,
+        ringAngle: 0,
+        doneScale: task.status === 'DONE' ? 1 : 0,
+      };
+    }
+
+    function updateCrewAgents() {
+      const canvas = document.getElementById('crew-canvas');
+      if (!canvas) return;
+
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+
+      // Create orchestrator
+      if (!crewOrchestrator) {
+        crewOrchestrator = {
+          x: w / 2,
+          y: h * 0.12,
+          targetX: w / 2,
+          targetY: h * 0.12,
+          state: 'active',
+          frameIndex: 0,
+          frameTimer: 0,
+          ringAngle: 0,
+        };
+      }
+
+      // Update or create agents
+      crewAgents = [];
+      const spacing = Math.min(200, w / Math.max(tasks.length, 1) - 40);
+      const workerY = h * 0.4;
+
+      tasks.forEach((task, idx) => {
+        let agent = crewAgents.find(a => a.id === task.id);
+        if (!agent) {
+          agent = createCrewAgent(task, idx);
+          crewAgents.push(agent);
+        }
+
+        // Position workers in a row
+        agent.targetX = w / 2 - (spacing * (tasks.length - 1)) / 2 + idx * spacing;
+        agent.targetY = workerY;
+        agent.state = task.status || 'PENDING';
+
+        // Smooth movement
+        agent.x += (agent.targetX - agent.x) * 0.1;
+        agent.y += (agent.targetY - agent.y) * 0.1;
+      });
+
+      updateStats();
+    }
+
+    function updateCrewState(dt = 0.016) {
+      // Update orchestrator
+      if (crewOrchestrator) {
+        if (crewOrchestrator.state === 'active') {
+          crewOrchestrator.ringAngle += dt * 3;
+        }
+      }
+
+      // Update workers
+      crewAgents.forEach((agent) => {
+        if (agent.state === 'IN_PROGRESS' || agent.state === 'THINKING') {
+          agent.ringAngle += dt * 3;
+          agent.doneScale = 0;
+        } else if (agent.state === 'DONE') {
+          agent.doneScale = Math.min(1, agent.doneScale + dt * 4);
+        } else {
+          agent.doneScale = 0;
+        }
+      });
+    }
+
+    function renderCrewCanvas() {
+      const canvas = document.getElementById('crew-canvas');
+      if (!canvas) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      const dpr = window.devicePixelRatio;
+
+      // Always reset canvas dimensions to clear transforms
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+
+      // Scale context for high-DPI displays
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      // Update crew state
+      updateCrewState();
+
+      // Draw grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+      ctx.lineWidth = 1;
+      const gridSize = 40;
+      for (let x = 0; x < w; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      // Draw orchestrator divider
+      const divY = h * 0.22;
+      ctx.save();
+      ctx.setLineDash([8, 6]);
+      ctx.strokeStyle = 'rgba(108, 92, 231, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(40, divY);
+      ctx.lineTo(w - 40, divY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // Zone labels
+      ctx.save();
+      ctx.font = '600 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(108, 92, 231, 0.25)';
+      ctx.textAlign = 'left';
+      ctx.fillText('ORCHESTRATOR', 16, divY - 10);
+      ctx.fillText('WORKERS', 16, divY + 18);
+      ctx.restore();
+
+      // Render orchestrator
+      if (crewOrchestrator) {
+        renderCrewSprite(ctx, crewOrchestrator.x, crewOrchestrator.y, -1, crewOrchestrator.state, crewOrchestrator.ringAngle);
+        ctx.save();
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#6c5ce7';
+        ctx.textAlign = 'center';
+        ctx.fillText('Archon', crewOrchestrator.x, crewOrchestrator.y + 36);
+        ctx.restore();
+      }
+
+      // Render dependency lines
+      renderDependencyLines(ctx, w, h);
+
+      // Render workers
+      crewAgents.forEach((agent) => {
+        renderCrewSprite(ctx, agent.x, agent.y, agent.spriteIndex, agent.state, agent.ringAngle, agent.doneScale);
+        ctx.save();
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#00e676';
+        ctx.textAlign = 'center';
+        ctx.fillText(agent.id.replace('task-', 'W'), agent.x, agent.y + 36);
+        ctx.restore();
+      });
+
+      canvasAnimationFrame = requestAnimationFrame(renderCrewCanvas);
+    }
+
+    function renderCrewSprite(ctx, x, y, spriteIndex, state, ringAngle, doneScale = 0) {
+      // Get sprite
+      const frames = spriteIndex === -1 ? getOrchestratorSprite() : getWorkerSprite(spriteIndex);
+      const frame = frames[0];
+
+      // Draw sprite
+      ctx.save();
+      ctx.globalAlpha = state === 'PENDING' ? 0.6 : 1;
+      if (frame) {
+        ctx.drawImage(frame, x - 24, y - 24, 48, 48);
+      }
+      ctx.restore();
+
+      // Draw ring if thinking/active
+      if (state === 'IN_PROGRESS' || state === 'THINKING' || (spriteIndex === -1 && state === 'active')) {
+        const r = 30;
+        ctx.save();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(108, 92, 231, 0.15)';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.stroke();
+        const arcLen = Math.PI * 0.8;
+        ctx.strokeStyle = '#6c5ce7';
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(x, y, r, ringAngle, ringAngle + arcLen);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Draw done checkmark
+      if (state === 'DONE' && doneScale > 0) {
+        const cx = x + 22;
+        const cy = y - 22;
+        const s = doneScale;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(s, s);
+        ctx.beginPath();
+        ctx.arc(0, 0, 9, 0, Math.PI * 2);
+        ctx.fillStyle = '#00e676';
+        ctx.fill();
+        ctx.strokeStyle = '#0a0a0f';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-4, 0);
+        ctx.lineTo(-1, 3);
+        ctx.lineTo(4, -3);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Draw failed X
+      if (state === 'FAILED') {
+        const cx = x + 22;
+        const cy = y - 22;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.beginPath();
+        ctx.arc(0, 0, 9, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff5252';
+        ctx.fill();
+        ctx.strokeStyle = '#0a0a0f';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-3, -3);
+        ctx.lineTo(3, 3);
+        ctx.moveTo(3, -3);
+        ctx.lineTo(-3, 3);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function renderDependencyLines(ctx, w, h) {
+      // Simple demo: no task dependencies yet
+      // Will be populated when tasks have dependsOn property
+      ctx.save();
+      ctx.setLineDash([4, 6]);
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(108, 92, 231, 0.2)';
+      // Lines will be drawn here when we have task dependencies
+      ctx.restore();
+    }
+
+    function startCrewAnimation() {
+      if (canvasAnimationFrame) cancelAnimationFrame(canvasAnimationFrame);
+      updateCrewAgents();
+      renderCrewCanvas();
+    }
+
+    function updateStats() {
+      const total = tasks.length;
+      const done = tasks.filter(t => t.status === 'DONE').length;
+      const failed = tasks.filter(t => t.status === 'FAILED').length;
+      const running = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+
+      document.getElementById('s-total').textContent = total;
+      document.getElementById('s-done').textContent = done;
+      document.getElementById('s-failed').textContent = failed;
+      document.getElementById('s-run').textContent = running;
+
+      const pct = total > 0 ? Math.round((done + failed) / total * 100) : 0;
+      document.getElementById('progress-pct').textContent = pct + '%';
+      const fill = document.getElementById('progress-fill');
+      fill.style.width = pct + '%';
+      if (failed > 0) fill.classList.add('has-failures');
+      else fill.classList.remove('has-failures');
+    }
+
+    // Setup functions for each state
+    function setupIntro() {
+      const logo = document.getElementById('intro-logo');
+      const typing = document.getElementById('intro-typing');
+      const phase = document.getElementById('intro-phase-label');
+
+      logo.classList.remove('visible', 'shaking', 'settled', 'post-typing');
+      typing.classList.remove('visible', 'post-typing');
+      phase.classList.remove('visible', 'switching', 'post-typing');
+
+      document.getElementById('dashboard-wrap').classList.remove('active');
+      document.body.classList.remove('dashboard-active');
+
+      setTimeout(() => logo.classList.add('visible'), 100);
+      setTimeout(() => typing.classList.add('visible'), 800);
+      setTimeout(() => phase.classList.add('visible'), 1000);
+      document.getElementById('typing-text').textContent = 'Building test dashboard...';
+    }
+
+    function teardownIntro() {
+      document.getElementById('intro-overlay').classList.add('exiting');
+      document.body.classList.add('dashboard-active');
+      document.getElementById('dashboard-wrap').classList.add('active');
+      setTimeout(() => {
+        document.getElementById('intro-overlay').classList.add('hidden');
+      }, 600);
+    }
+
+    function setupSpecs() {
+      tasks.length = 0;
+      tasks.push(
+        createMockTask('task-1', 'Design system setup', ['src/components/Button.tsx']),
+        createMockTask('task-2', 'Form components', ['src/components/Form.tsx']),
+        createMockTask('task-3', 'Homepage layout', ['src/app/page.tsx'])
+      );
+      document.getElementById('phase-text').textContent = 'Generating spec...';
+      updateCrewAgents();
+    }
+
+    function setupTasks() {
+      tasks.length = 0;
+      for (let i = 0; i < 5; i++) {
+        tasks.push(createMockTask(`task-${i}`, `Task ${i + 1}`, ['file1.tsx', 'file2.ts']));
+      }
+      document.getElementById('phase-text').textContent = 'Tasks loaded';
+      updateCrewAgents();
+    }
+
+    function setupRunning() {
+      if (tasks.length > 0) tasks[0].status = 'IN_PROGRESS';
+      if (tasks.length > 1) tasks[1].status = 'IN_PROGRESS';
+      if (tasks.length > 2) tasks[2].status = 'DONE';
+      document.getElementById('phase-text').textContent = 'Executing...';
+      updateCrewAgents();
+    }
+
+    function setupDrawer() {
+      tasks.forEach((t, idx) => {
+        if (idx < 3) t.status = 'DONE';
+        else if (idx < 4) t.status = 'IN_PROGRESS';
+      });
+      document.getElementById('phase-text').textContent = 'Generating homepage...';
+      document.getElementById('status-text').textContent = 'Compiling';
+      updateCrewAgents();
+    }
+
+    function setupProgress() {
+      const doneCount = Math.floor(tasks.length * 0.75);
+      tasks.forEach((t, idx) => {
+        if (idx < doneCount) t.status = 'DONE';
+        else if (idx < doneCount + 1) t.status = 'IN_PROGRESS';
+      });
+
+      document.getElementById('phase-text').textContent = doneCount + '/' + tasks.length + ' tasks done...';
+      updateCrewAgents();
+    }
+
+    function setupCollapse() {
+      tasks.forEach((t, idx) => {
+        if (idx < tasks.length - 1) t.status = 'DONE';
+        else t.status = 'IN_PROGRESS';
+      });
+
+      document.getElementById('status-text').textContent = 'Live';
+      document.getElementById('phase-text').textContent = 'Almost done!';
+      updateCrewAgents();
+    }
+
+    function setupDone() {
+      tasks.forEach(t => t.status = 'DONE');
+      document.getElementById('completion-banner').classList.add('visible');
+      document.getElementById('phase-text').textContent = 'All tasks complete!';
+      updateCrewAgents();
+    }
+
+    function setupFailed() {
+      tasks.forEach((t, idx) => {
+        if (idx === 2) t.status = 'FAILED';
+        else t.status = 'DONE';
+      });
+      document.getElementById('progress-fill').classList.add('has-failures');
+      document.getElementById('phase-text').textContent = (tasks.length - 1) + '/' + tasks.length + ' tasks done (1 failed)';
+      updateCrewAgents();
+    }
+
+    function setupFinal() {
+      tasks.forEach((t, idx) => {
+        if (idx === 2) t.status = 'FAILED';
+        else t.status = 'DONE';
+      });
+      document.getElementById('phase-text').textContent = 'Build complete — 1 failure';
+      updateCrewAgents();
+    }
+
+    // Timer and transitions
+    function updateTimer() {
+      const elapsed = (Date.now() - stateStartTime) / 1000;
+      const state = STATES[currentStateIndex];
+      const remaining = Math.max(0, state.duration - elapsed);
+
+      if (elapsed >= state.duration) {
+        currentStateIndex = (currentStateIndex + 1) % STATES.length;
+        transitionState();
+      }
+
+      animationFrameId = requestAnimationFrame(updateTimer);
+    }
+
+    function transitionState() {
+      const state = STATES[currentStateIndex];
+
+      // Teardown previous
+      if (currentStateIndex > 0) {
+        const prev = STATES[currentStateIndex - 1];
+        if (prev.teardown) prev.teardown();
+      }
+
+      // Setup new state
+      state.setup();
+      stateStartTime = Date.now();
+    }
+
+    // Initialize
+    window.addEventListener('load', startCrewAnimation);
+    transitionState();
+    updateTimer();
+  </script>
+</body>
+</html>
