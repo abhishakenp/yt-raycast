@@ -1346,6 +1346,10 @@ function connectExecutorSSE() {
             exitIntro();
             setTimeout(openDrawer, 400);
           }, delay);
+        } else if (drawerOpen) {
+          // Reset case: drawer already open, just reload the preview
+          const iframe = document.getElementById('preview-iframe');
+          if (iframe) iframe.src = iframe.src;
         } else {
           openDrawer();
         }

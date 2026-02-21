@@ -3,17 +3,11 @@
 ship.py — Deterministic orchestrator for the ship-fast pipeline.
 
 Replaces the 523-line SKILL.md that Claude Code used to interpret.
-Phases: prompt → dashboard → spec+design → homepage → tasks → execute → fix → report
+Phases: setup → verify → homepage → tasks → wait → fix → report
 
 Usage:
-    python3 ship.py "build a todo app"       # Fresh run
     python3 ship.py                          # Auto-detect: continue or read prompt.txt
-    python3 ship.py --reset                  # Keep spec/design/tasks, wipe code
-    python3 ship.py --reset-hard             # Wipe everything except prompt.txt
-    python3 ship.py --reset-no-spec          # Re-generate spec
-    python3 ship.py --reset-no-home          # Re-generate homepage
-    python3 ship.py --reset-no-tasks         # Re-plan tasks
-    python3 ship.py --reset-no-design        # Re-generate design system
+    (resets are handled by the skill, not this script)
 """
 
 import atexit
@@ -83,11 +77,42 @@ class Timer:
 
     def report(self) -> str:
         self.stop("total")
-        lines = ["/ship complete", "──────────────────────────────"]
-        for name, d in self._durations.items():
-            label = name.replace("_", " ").title()
-            lines.append(f"{label:16s} {d:.1f}s")
-        lines.append("──────────────────────────────")
+        total = self._durations.get("total", 0)
+
+        # Group: top-level phases first, then sub-timings indented
+        top = ["setup", "verify", "homepage", "tasks", "execute", "fix"]
+        sub_prefix = {
+            "tasks": ["skeleton", "frontend_gen", "backend_gen"],
+        }
+
+        lines = [
+            "",
+            "╔══════════════════════════════════╗",
+            "║       /ship — timing report      ║",
+            "╠══════════════════════════════════╣",
+        ]
+        for name in top:
+            d = self._durations.get(name, 0)
+            if d == 0:
+                continue
+            label = name.replace("_", " ").capitalize()
+            lines.append(f"║  {label:<22s} {d:>5.1f}s ║")
+            # Sub-timings
+            for sub in sub_prefix.get(name, []):
+                sd = self._durations.get(sub, 0)
+                if sd > 0:
+                    slabel = sub.replace("_", " ")
+                    lines.append(f"║    └ {slabel:<18s} {sd:>5.1f}s ║")
+
+        lines.append(f"╠══════════════════════════════════╣")
+        lines.append(f"║  {'Total':<22s} {total:>5.1f}s ║")
+        lines.append(f"╚══════════════════════════════════╝")
+
+        # Task stats if available
+        for name, val in self._durations.items():
+            if name.startswith("_stat_"):
+                pass  # reserved for future
+
         return "\n".join(lines)
 
 
@@ -195,15 +220,25 @@ def kill_port(port: int):
 # ── Status / executor communication ──────────────────────────────────────────
 
 def post_status(status: str, phase: str):
-    try:
-        subprocess.run(
-            ["curl", "-s", "-X", "POST", f"http://localhost:{EXECUTOR_PORT}/api/status",
-             "-H", "Content-Type: application/json",
-             "-d", json.dumps({"status": status, "phase": phase})],
-            capture_output=True, timeout=5
-        )
-    except Exception:
-        pass
+    """Post status to executor dashboard. Retries critical events like homepage_ready."""
+    max_attempts = 5 if phase == "homepage_ready" else 1
+    for attempt in range(max_attempts):
+        try:
+            r = subprocess.run(
+                ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
+                 "-X", "POST", f"http://localhost:{EXECUTOR_PORT}/api/status",
+                 "-H", "Content-Type: application/json",
+                 "-d", json.dumps({"status": status, "phase": phase})],
+                capture_output=True, text=True, timeout=5
+            )
+            if r.returncode == 0 and r.stdout.strip() == "200":
+                return
+        except Exception:
+            pass
+        if attempt < max_attempts - 1:
+            time.sleep(1)
+    if max_attempts > 1:
+        print(f"  WARNING: failed to post {phase} to executor after {max_attempts} attempts")
 
 
 def wait_executor_has_tasks(timeout: int = 30):
@@ -227,6 +262,20 @@ def wait_executor_has_tasks(timeout: int = 30):
     return False
 
 
+def reload_executor():
+    """Tell executor to reload tasks.json from disk (clears stale state after reset)."""
+    try:
+        r = subprocess.run(
+            ["curl", "-s", "-X", "POST", f"http://localhost:{EXECUTOR_PORT}/api/reload",
+             "-H", "Content-Type: application/json", "-d", "{}"],
+            capture_output=True, text=True, timeout=5
+        )
+        if r.returncode == 0:
+            print(f"  executor: reloaded — {r.stdout.strip()}")
+    except Exception as e:
+        print(f"  WARNING: reload_executor failed: {e}")
+
+
 def trigger_run():
     try:
         r = subprocess.run(
@@ -243,8 +292,20 @@ def trigger_run():
 # ── Subprocess launchers ──────────────────────────────────────────────────────
 
 def start_executor(workspace: str, prompt: str) -> subprocess.Popen:
+    # Reuse existing executor if already running (started by Claude in Step 1)
+    try:
+        r = subprocess.run(
+            ["curl", "-s", f"http://localhost:{EXECUTOR_PORT}/api/tasks"],
+            capture_output=True, timeout=2
+        )
+        if r.returncode == 0:
+            print(f"  executor already running on :{EXECUTOR_PORT}")
+            return None
+    except Exception:
+        pass
+
     kill_port(EXECUTOR_PORT)
-    env = {**os.environ, "IRIS_WORKSPACE": workspace, "SHIP_PROMPT": prompt}
+    env = {**os.environ, "IRIS_WORKSPACE": workspace, "SHIP_PROMPT": prompt, "SHIP_NO_BROWSER": "1"}
     p = subprocess.Popen(
         [sys.executable, str(SCRIPT_DIR / "executor.py")],
         env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
@@ -278,10 +339,13 @@ def start_http_server(workspace: str) -> subprocess.Popen:
 # ── Resume / reset logic ─────────────────────────────────────────────────────
 
 def detect_resume_phase(workspace: str) -> int:
-    """Return the phase number to start from based on existing artifacts."""
+    """Return the phase number to start from based on existing artifacts.
+
+    Phases: 0=setup, 1=verify, 2=homepage, 3=tasks, 4=wait, 5=fix, 6=report
+    """
     w = Path(workspace)
     has_spec = (w / "spec.md").exists()
-    has_design = any(w.glob("design-system/**/MASTER.md"))
+    has_design = (w / "design-system.md").exists()
     has_homepage = (w / "index.html").exists()
     has_tasks = (w / "tasks.json").exists()
 
@@ -299,35 +363,23 @@ def detect_resume_phase(workspace: str) -> int:
     if not has_spec:
         return 1
     if not has_design:
-        return 1  # design only (spec exists)
+        return 1
     if not has_homepage:
-        return 2
-    return 3
+        return 2  # generate homepage
+    return 3  # tasks
 
 
 def reset_workspace(workspace: str, variant: str):
     """Selectively wipe workspace based on reset variant."""
     w = Path(workspace)
 
-    # Files that survive all resets
-    always_keep = {"prompt.txt"}
-
     # Per-variant keep sets
     keep_sets = {
-        "reset": {"prompt.txt", "spec.md", "project-context.json", "tasks.json",
-                  "tasks-skeleton.json", "design-system", "references", "ship.log"},
+        "reset": {"prompt.txt", "spec.md", "project-context.json", "design-system.md", "references", "ship.log"},
         "reset-hard": {"prompt.txt"},
-        "reset-no-spec": {"prompt.txt", "tasks.json",
-                          "tasks-skeleton.json", "design-system", "references", "ship.log"},
-        "reset-no-home": {"prompt.txt", "spec.md", "project-context.json",
-                          "design-system", "references", "ship.log"},
-        "reset-no-tasks": {"prompt.txt", "spec.md", "project-context.json",
-                           "index.html", "design-system", "references", "ship.log"},
-        "reset-no-design": {"prompt.txt", "spec.md", "project-context.json",
-                            "tasks.json", "tasks-skeleton.json", "references", "ship.log"},
     }
 
-    keep = keep_sets.get(variant, always_keep)
+    keep = keep_sets.get(variant, {"prompt.txt"})
 
     for item in w.iterdir():
         if item.name in keep:
@@ -353,15 +405,15 @@ def phase0_setup(workspace: str, prompt: str, timer: Timer):
     print(f"  workspace: {workspace}")
     print(f"{'='*60}\n")
 
-    # Save prompt.txt
+    # Save prompt.txt (only if it doesn't already exist)
     prompt_path = Path(workspace) / "prompt.txt"
-    prompt_path.write_text(prompt)
+    if not prompt_path.exists():
+        prompt_path.write_text(prompt)
 
-    # Kill stale ports
-    kill_port(EXECUTOR_PORT)
+    # Kill stale preview port (executor may already be running from SKILL.md Step 1)
     kill_port(PREVIEW_PORT)
 
-    # Launch executor (dashboard at :7420)
+    # Launch executor if not already running
     start_executor(workspace, prompt)
 
     # Log start
@@ -383,7 +435,7 @@ def phase1_verify(workspace: str, prompt: str, timer: Timer):
     # Check which artifacts exist
     spec_exists = (w / "spec.md").exists()
     context_exists = (w / "project-context.json").exists()
-    design_exists = any(w.glob("design-system/**/MASTER.md"))
+    design_exists = (w / "design-system.md").exists()
 
     if not spec_exists or not context_exists:
         print("\n  🤖 Generating spec.md + project-context.json...")
@@ -403,66 +455,54 @@ def phase1_verify(workspace: str, prompt: str, timer: Timer):
         print("\n  🤖 Generating design system...")
         # This would require calling /ui-ux-pro-max
         # For now, error with instructions
-        print(f"  ⚠️  Missing: design-system/<slug>/MASTER.md")
-        print(f"  (Auto-generation via /ui-ux-pro-max not yet implemented)")
+        print(f"  ⚠️  Missing: design-system.md")
         print(f"  Please run /ui-ux-pro-max or use /ship-fast with Claude automation")
         sys.exit(1)
 
     # Log what was found
     print("  ✓ spec.md")
     print("  ✓ project-context.json")
-    design_paths = list(w.glob("design-system/**/MASTER.md"))
-    if design_paths:
-        print(f"  ✓ design-system: {design_paths[0].relative_to(w)}")
+    if design_exists:
+        print(f"  ✓ design-system.md")
 
     timer.stop("verify")
     print(f"Phase 1 (verify artifacts): {timer.get('verify'):.1f}s")
 
 
 def phase2_homepage(workspace: str, timer: Timer):
-    """Generate homepage HTML, start preview server, notify dashboard."""
+    """Generate index.html via Groq using spec + design system."""
     timer.start("homepage")
     w = Path(workspace)
 
-    # Start preview server FIRST
-    start_http_server(workspace)
-
-    # Deceptive status: "Generating tasks..." while actually making homepage
-    post_status("Generating tasks...", "tasks")
-
-    # Read spec + design system
+    # Read spec
     spec = ""
     try:
         spec = (w / "spec.md").read_text()
     except Exception:
         pass
 
+    # Read design system
     design = ""
-    # Search recursively for MASTER.md in case of nested paths
-    masters = list(w.glob("design-system/**/MASTER.md"))
-    if masters:
-        design = masters[0].read_text()
-        print(f"  design system: loaded from {masters[0].relative_to(w)} ({len(design)} chars)")
-    else:
-        print("  WARNING: no design system MASTER.md found — homepage will use generic styling")
+    design_path = w / "design-system.md"
+    if design_path.exists():
+        design = design_path.read_text()
 
-    if not spec:
-        print("  WARNING: spec.md is empty or missing")
+    # Start preview server
+    start_http_server(workspace)
 
+    # Post deceptive status (user sees "Generating tasks..." while homepage builds)
+    post_status("Generating tasks...", "tasks")
+
+    print("\n  Generating homepage...")
     result = call_groq(
         prompt=(
             f"Generate a complete index.html for:\n\n{spec}\n\n"
-            f"Design system (USE THESE EXACT COLORS, FONTS, AND SPACING):\n{design}\n\n"
+            f"Design system:\n{design}\n\n"
             f"Requirements:\n"
             f"- Single self-contained HTML file with Tailwind CDN\n"
-            f"  (<script src=\"https://cdn.tailwindcss.com\"></script>)\n"
-            f"- Dark mode using the exact color tokens from the design system\n"
-            f"- Include ALL sections visible in viewport (header, hero, key interactive elements)\n"
-            f"- Placeholder/mock data for dynamic content\n"
-            f"- Smooth animations (CSS transitions, keyframes)\n"
-            f"- Responsive layout\n"
-            f"- Professional polish\n"
-            f"- Google Fonts via CDN link\n\n"
+            f"- Apply the exact color tokens and fonts from the design system\n"
+            f"- Responsive layout with smooth animations\n"
+            f"- Placeholder/mock data where needed\n\n"
             f"Output ONLY the HTML. No markdown fences, no explanation."
         ),
         system=(
@@ -471,19 +511,21 @@ def phase2_homepage(workspace: str, timer: Timer):
             "Include animations and micro-interactions via inline CSS/JS. "
             "Use Google Fonts via CDN link. No external dependencies beyond Tailwind CDN and Google Fonts."
         ),
+        temperature=0.7,
         max_tokens=8000,
     )
 
     content = result.get("content", "")
-    # Strip markdown fences if present
-    content = re.sub(r"^```html?\s*\n?", "", content)
-    content = re.sub(r"\n?```\s*$", "", content)
+    if content:
+        # Strip markdown fences if present
+        content = re.sub(r"^```html?\s*\n?", "", content)
+        content = re.sub(r"\n?```\s*$", "", content)
+        (w / "index.html").write_text(content)
+        print(f"  index.html: {len(content)} chars | {format_tps(result)}")
+    else:
+        print(f"  ERROR: homepage generation failed — {result.get('error', 'empty response')}")
 
-    (w / "index.html").write_text(content)
-    tps = format_tps(result)
-    print(f"  homepage: {len(content)} chars | {tps}")
-
-    # Notify dashboard: homepage ready → exits intro, shows split view
+    # Notify dashboard
     post_status("Homepage ready", "homepage_ready")
 
     timer.stop("homepage")
@@ -508,11 +550,12 @@ def phase3_tasks(workspace: str, prompt: str, timer: Timer):
         pass
 
     design = ""
-    masters = list(w.glob("design-system/**/MASTER.md"))
-    if masters:
-        design = masters[0].read_text()
+    design_path = w / "design-system.md"
+    if design_path.exists():
+        design = design_path.read_text()
 
     # Step 1: Generate task skeleton
+    timer.start("skeleton")
     post_status("Planning tasks...", "planning")
     skeleton_result = call_groq(
         prompt=(
@@ -554,8 +597,18 @@ def phase3_tasks(workspace: str, prompt: str, timer: Timer):
              "status": "DONE", "dependsOn": []},
         ]}
 
+    timer.stop("skeleton")
     tasks = skeleton.get("tasks", [])
-    print(f"  skeleton: {len(tasks)} tasks | {format_tps(skeleton_result)}")
+
+    # Normalize statuses: LLMs may output "TODO", "pending", etc. — executor expects "PENDING" or "DONE"
+    for t in tasks:
+        status = t.get("status", "").upper()
+        if status in ("DONE", "FAILED"):
+            t["status"] = status
+        else:
+            t["status"] = "PENDING"
+
+    print(f"  skeleton: {len(tasks)} tasks | {format_tps(skeleton_result)} | {timer.get('skeleton'):.1f}s")
 
     # Save skeleton
     (w / "tasks-skeleton.json").write_text(json.dumps(skeleton, indent=2))
@@ -570,6 +623,7 @@ def phase3_tasks(workspace: str, prompt: str, timer: Timer):
 
     # Step 3: Parallel Groq calls for frontend task actions
     if frontend_tasks:
+        timer.start("frontend_gen")
         post_status(f"Generating {len(frontend_tasks)} tasks...", "generating")
         calls = []
         for t in frontend_tasks:
@@ -607,6 +661,9 @@ def phase3_tasks(workspace: str, prompt: str, timer: Timer):
             else:
                 print(f"  {t['id']}: FAILED — {r.get('error', 'empty response')}")
 
+        timer.stop("frontend_gen")
+        print(f"  frontend gen: {timer.get('frontend_gen'):.1f}s ({len(frontend_tasks)} tasks)")
+
     # Step 4: Assemble tasks.json
     (w / "tasks.json").write_text(json.dumps(skeleton, indent=2))
     print(f"  tasks.json: {len(tasks)} tasks written")
@@ -617,8 +674,9 @@ def phase3_tasks(workspace: str, prompt: str, timer: Timer):
     except json.JSONDecodeError:
         print("  ERROR: tasks.json is invalid JSON!")
 
-    # Step 5: Wait for executor to load tasks, then trigger run
-    wait_executor_has_tasks(timeout=15)
+    # Step 5: Reload executor (clears stale state from previous run), then trigger
+    reload_executor()
+    time.sleep(0.5)
     trigger_run()
 
     # Step 6: Generate backend task actions in parallel (if any)
@@ -629,6 +687,7 @@ def phase3_tasks(workspace: str, prompt: str, timer: Timer):
     ]
 
     if backend_tasks:
+        timer.start("backend_gen")
         post_status(f"Generating {len(backend_tasks)} backend tasks...", "backend")
         calls = []
         for t in backend_tasks:
@@ -660,6 +719,8 @@ def phase3_tasks(workspace: str, prompt: str, timer: Timer):
                 print(f"  {t['id']}: hot-patched | {format_tps(r)}")
 
         (w / "tasks.json").write_text(json.dumps(data, indent=2))
+        timer.stop("backend_gen")
+        print(f"  backend gen: {timer.get('backend_gen'):.1f}s ({len(backend_tasks)} tasks)")
 
     timer.stop("tasks")
     print(f"Phase 3 (tasks): {timer.get('tasks'):.1f}s")
@@ -679,7 +740,7 @@ def phase4_wait(workspace: str, timer: Timer):
         try:
             data = json.loads(tasks_path.read_text())
             tasks = data.get("tasks", [])
-            pending = [t for t in tasks if t.get("status") in ("PENDING", "IN_PROGRESS")]
+            pending = [t for t in tasks if t.get("status") not in ("DONE", "FAILED")]
             done = [t for t in tasks if t.get("status") == "DONE"]
             failed = [t for t in tasks if t.get("status") == "FAILED"]
 
@@ -695,8 +756,8 @@ def phase4_wait(workspace: str, timer: Timer):
                 stall_count = 0
                 last_done = len(done)
 
-            if stall_count > 60:  # 5 minutes of no progress
-                print("  WARNING: execution stalled for 5 minutes")
+            if stall_count > 18:  # 90 seconds of no progress
+                print("  WARNING: execution stalled for 90 seconds")
                 break
 
         except Exception as e:
@@ -762,58 +823,26 @@ def main():
 
     workspace = os.getcwd()
     timer = Timer()
-    args = sys.argv[1:]
 
-    # Handle reset variants
-    reset_variant = None
-    prompt = None
+    # Determine prompt from prompt.txt (no CLI args — resets are handled by the skill)
+    prompt_path = Path(workspace) / "prompt.txt"
+    if prompt_path.exists():
+        prompt = prompt_path.read_text().strip()
+    else:
+        print("No prompt.txt found. Run /ship-fast first.")
+        sys.exit(1)
 
-    for arg in args:
-        if arg.startswith("--reset"):
-            reset_variant = arg.lstrip("-")
-            break
-        elif not arg.startswith("-"):
-            prompt = arg
+    # Detect resume phase from existing artifacts
+    start_phase = detect_resume_phase(workspace)
+    if start_phase > 0:
+        print(f"Resuming from phase {start_phase} (existing artifacts detected)")
 
-    if reset_variant:
-        kill_port(EXECUTOR_PORT)
-        kill_port(PREVIEW_PORT)
-        reset_workspace(workspace, reset_variant)
-
-    # Determine prompt
-    if prompt is None:
-        prompt_path = Path(workspace) / "prompt.txt"
-        if prompt_path.exists():
-            prompt = prompt_path.read_text().strip()
-        else:
-            print("No prompt provided and no prompt.txt found.")
-            print("Usage: python3 ship.py \"build a todo app\"")
-            sys.exit(1)
-
-    # Determine starting phase
-    start_phase = 0
-    if reset_variant:
-        phase_map = {
-            "reset": 0,           # re-execute from scratch (keeps spec/design/tasks)
-            "reset-hard": 0,      # full wipe
-            "reset-no-spec": 1,   # re-generate spec
-            "reset-no-design": 1, # re-generate design
-            "reset-no-home": 2,   # re-generate homepage
-            "reset-no-tasks": 3,  # re-plan tasks
-        }
-        start_phase = phase_map.get(reset_variant, 0)
-    elif not any(args) or prompt:
-        # Check for existing artifacts
-        start_phase = detect_resume_phase(workspace)
-        if start_phase > 0 and not reset_variant:
-            print(f"Resuming from phase {start_phase} (existing artifacts detected)")
-
-    # Execute phases
+    # Execute phases: 0=setup, 1=verify, 2=homepage, 3=tasks, 4=wait, 5=fix, 6=report
     if start_phase <= 0:
         phase0_setup(workspace, prompt, timer)
 
     if start_phase <= 1:
-        if start_phase > 0 and start_phase <= 1:
+        if start_phase == 1:
             phase0_setup(workspace, prompt, timer)
         phase1_verify(workspace, prompt, timer)
 
@@ -830,6 +859,25 @@ def main():
     if start_phase <= 4:
         if start_phase == 4:
             phase0_setup(workspace, prompt, timer)
+            # Resuming: homepage and tasks already exist but executor has stale state
+            if (Path(workspace) / "index.html").exists():
+                post_status("Homepage ready", "homepage_ready")
+            # Normalize statuses in tasks.json (fix TODO → PENDING)
+            tasks_path = Path(workspace) / "tasks.json"
+            if tasks_path.exists():
+                try:
+                    data = json.loads(tasks_path.read_text())
+                    for t in data.get("tasks", []):
+                        status = t.get("status", "").upper()
+                        if status not in ("DONE", "FAILED", "PENDING", "IN_PROGRESS"):
+                            t["status"] = "PENDING"
+                    tasks_path.write_text(json.dumps(data, indent=2))
+                except Exception:
+                    pass
+            # Reload executor with fresh tasks, then trigger execution
+            reload_executor()
+            time.sleep(0.5)
+            trigger_run()
         phase4_wait(workspace, timer)
 
     if start_phase <= 5:

@@ -26,19 +26,14 @@ IRIS_WORKSPACE=$(pwd) python3 ~/.skills/ship-fast/scripts/executor.py &
 # Opens http://localhost:7420 to monitor progress in real-time
 ```
 
-**Why executor?** The executor runs a dashboard server that:
-- Displays your prompt.txt on startup
-- Shows real-time progress as Claude works (spec generation, design system, homepage generation)
-- Displays the generated homepage in a split-screen view
-- Monitors task execution progress
-- Provides visual feedback throughout the entire workflow
+The executor runs a dashboard server showing real-time progress, the generated homepage in split-screen, and task execution status.
 
 ### Step 2: Generate spec.md + project-context.json
 
 Post status to dashboard:
 ```bash
 curl -s http://localhost:7420/api/status -X POST -H "Content-Type: application/json" \
-  -d '{"message": "Generating spec.md + project-context.json...", "phase": "spec"}'
+  -d '{"status": "Generating specs...", "phase": "spec"}' &
 ```
 
 Claude analyzes the prompt and writes intentional specifications:
@@ -63,63 +58,45 @@ Claude analyzes the prompt and writes intentional specifications:
 }
 ```
 
-### Step 3: Generate Design Direction
-
-Claude creates a design brief from the spec:
-- Specific color palette reasoning (why these colors match the mood?)
-- Typography approach (which fonts, why?)
-- Component philosophy (buttons, cards, inputs styling)
-- Spacing & layout system
-- Visual hierarchy rules
-
-This becomes the **design brief** that guides /ui-ux-pro-max.
-
-### Step 4: Generate Design System
+### Step 3: Generate Design System
 
 Post status to dashboard:
 ```bash
 curl -s http://localhost:7420/api/status -X POST -H "Content-Type: application/json" \
-  -d '{"message": "Generating design system via /ui-ux-pro-max...", "phase": "design_system"}'
+  -d '{"status": "Generating design system...", "phase": "design"}' &
 ```
 
-Call /ui-ux-pro-max to generate design system:
+1. Run the ui-ux-pro-max skill:
+```bash
+mkdir -p design-system
+python3 ~/.claude/skills/ui-ux-pro-max/.claude/skills/ui-ux-pro-max/scripts/search.py \
+  "<SYSTEM GOAL from spec.md>" --design-system -p "<project-name>" -f markdown --persist \
+  --output-dir .
+```
+
+2. Move the generated file to root as `design-system.md`:
+```bash
+mv design-system/<slug>/MASTER.md design-system.md
+rm -rf design-system
+```
+
+Use `design-system.md` as-is — do NOT review or rewrite it.
+
+### Step 4: Run ship.py
+
+Once spec and design system exist, run ship.py **with NO arguments and NO flags**:
 
 ```bash
-/ui-ux-pro-max generate design system for [project] with [mood] and [color direction]
+python3 ~/.skills/ship-fast/scripts/ship.py
 ```
 
-Creates `design-system/<slug>/MASTER.md` with:
-- Color palette (primary, secondary, accents, neutrals with hex codes)
-- Typography (font families, sizing scales, weights)
-- Component library (buttons, cards, forms, navigation)
-- Spacing & sizing tokens
-- Shadows, borders, transitions
-- Usage examples
+**NEVER pass --reset or --reset-hard here** — that would wipe the files you just created.
 
-### Step 5: Auto-Reconcile Design
-
-Claude reviews the generated design system:
-- Verify colors match the design direction intent
-- Check typography pairings are cohesive
-- Ensure components align with the mood
-- Auto-adjust MASTER.md if needed to match the brief
-- Approve the final design
-
-This ensures design tokens are exactly what was intended, not just what was generated.
-
-### Step 6: Run ship.py
-
-Once spec, design brief, and design system exist:
-
-```bash
-python3 ~/.skills/ship-fast/scripts/ship.py "<PROMPT>"
-```
-
-ship.py orchestrates 7 phases:
-1. **Setup** — Create workspace directories
-2. **Verify** — Confirm spec, context, design exist ✓
-3. **Homepage** — Generate HTML via Groq (visible in dashboard ~5s)
-4. **Tasks** — Plan features (backend + frontend)
+ship.py orchestrates:
+1. **Setup** — Launch executor if needed, start preview server
+2. **Verify** — Confirm spec, context, design exist
+3. **Homepage** — Generate index.html via Groq (reads spec + MASTER.md)
+4. **Tasks** — Plan features (backend + frontend) via Groq
 5. **Execute** — Parallel Groq execution (~1200 tps)
 6. **Fix** — Auto-fix broken links, missing components
 7. **Report** — Timings, output summary, file paths
@@ -131,17 +108,16 @@ Dashboard shows real-time progress for steps 3-7.
 ## Reset Variants
 
 ```bash
-/ship-fast reset              # Keep spec/design/tasks, wipe code
-/ship-fast reset-hard         # Wipe everything, start from prompt.txt
-/ship-fast reset-no-spec      # Re-generate spec only
-/ship-fast reset-no-design    # Re-generate design system only
+/ship-fast reset              # Wipe all HTML, tasks, src/ — keep spec, design, prompt
+                              # Then: Step 1 (ensure executor running), then Step 4 (ship.py)
+/ship-fast reset-hard         # Wipe everything except prompt.txt — re-run full workflow from Step 1
 ```
 
-Or direct ship.py:
-```bash
-python3 ~/.skills/ship-fast/scripts/ship.py --reset
-python3 ~/.skills/ship-fast/scripts/ship.py --reset-hard
-```
+**reset** wipes generated files, then runs Step 1 (start executor if not already running — do NOT kill an existing one), then jumps straight to Step 4 (ship.py).
+**reset-hard** re-launches the executor dashboard (Step 1) since everything is regenerated.
+
+Reset wipes: all `.html` files (including `index.html`), `tasks.json`, `tasks-skeleton.json`, `src/`, generated code.
+Reset keeps: `prompt.txt`, `spec.md`, `project-context.json`, `design-system.md`.
 
 ---
 
@@ -150,8 +126,7 @@ python3 ~/.skills/ship-fast/scripts/ship.py --reset-hard
 - `prompt.txt` — Your original request
 - `spec.md` — Auto-generated spec
 - `project-context.json` — Auto-generated metadata
-- `design-direction.md` — Claude's design brief (internal)
-- `design-system/<slug>/MASTER.md` — Auto-generated design tokens
+- `design-system.md` — Design tokens (generated by /ui-ux-pro-max)
 - `index.html` — Generated homepage
 - `tasks.json` — Generated task definitions
 - `src/` — Generated code (components, utilities, API routes)
