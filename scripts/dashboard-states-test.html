@@ -846,8 +846,13 @@
 
       // Update or create agents
       crewAgents = [];
-      const spacing = Math.min(200, w / Math.max(tasks.length, 1) - 40);
       const workerY = h * 0.4;
+
+      // Calculate spacing: distribute workers evenly across canvas width with padding
+      const padding = 80;
+      const availableWidth = w - padding * 2;
+      const spacing = tasks.length > 1 ? availableWidth / (tasks.length - 1) : availableWidth / 2;
+      const startX = padding + (tasks.length > 1 ? 0 : availableWidth / 2);
 
       tasks.forEach((task, idx) => {
         let agent = crewAgents.find(a => a.id === task.id);
@@ -856,14 +861,19 @@
           crewAgents.push(agent);
         }
 
-        // Position workers in a row
-        agent.targetX = w / 2 - (spacing * (tasks.length - 1)) / 2 + idx * spacing;
+        // Position workers in a row, evenly distributed
+        agent.targetX = startX + idx * spacing;
         agent.targetY = workerY;
         agent.state = task.status || 'PENDING';
 
-        // Smooth movement
-        agent.x += (agent.targetX - agent.x) * 0.1;
-        agent.y += (agent.targetY - agent.y) * 0.1;
+        // Move towards target position
+        if (Math.abs(agent.x - agent.targetX) > 1 || Math.abs(agent.y - agent.targetY) > 1) {
+          agent.x += (agent.targetX - agent.x) * 0.2;
+          agent.y += (agent.targetY - agent.y) * 0.2;
+        } else {
+          agent.x = agent.targetX;
+          agent.y = agent.targetY;
+        }
       });
 
       updateStats();
@@ -879,6 +889,16 @@
 
       // Update workers
       crewAgents.forEach((agent) => {
+        // Smooth position interpolation
+        if (Math.abs(agent.x - agent.targetX) > 1 || Math.abs(agent.y - agent.targetY) > 1) {
+          agent.x += (agent.targetX - agent.x) * 0.15;
+          agent.y += (agent.targetY - agent.y) * 0.15;
+        } else {
+          agent.x = agent.targetX;
+          agent.y = agent.targetY;
+        }
+
+        // Animation state
         if (agent.state === 'IN_PROGRESS' || agent.state === 'THINKING') {
           agent.ringAngle += dt * 3;
           agent.doneScale = 0;
