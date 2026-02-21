@@ -123,11 +123,46 @@
     position:absolute; bottom:32px; left:50%;
     transform:translateX(-50%);
     font-family:'JetBrains Mono',monospace;
-    font-size:11px; color:rgba(139,134,168,0.5);
-    letter-spacing:1px; text-transform:uppercase;
-    opacity:0; transition:opacity 0.5s ease;
+    font-size:13px; color:rgba(167,139,250,0.7);
+    letter-spacing:1.5px; text-transform:uppercase;
+    opacity:0;
+    transition: opacity 0.5s ease,
+                bottom 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                font-size 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                color 1.2s ease;
   }
   .intro-phase-label.visible { opacity:1; }
+  .intro-phase-label.switching {
+    animation:statusSwitch 0.4s ease;
+  }
+  @keyframes statusSwitch {
+    0% { opacity:1; transform:translateX(-50%) translateY(0); }
+    40% { opacity:0; transform:translateX(-50%) translateY(-8px); }
+    60% { opacity:0; transform:translateX(-50%) translateY(8px); }
+    100% { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+
+  /* Post-typing: logo+prompt slide up and shrink, status grows */
+  .intro-logo.post-typing {
+    transform:scale(0.5);
+    margin-top:-45vh;
+    opacity:0.3;
+    transition: transform 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                margin-top 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 1.2s ease;
+  }
+  .intro-typing.post-typing {
+    transform:translateY(-20vh) scale(0.6);
+    opacity:0.2;
+    transition: transform 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 1.2s ease;
+  }
+  .intro-phase-label.post-typing {
+    bottom:45vh;
+    font-size:22px;
+    color:rgba(167,139,250,0.9);
+    letter-spacing:2.5px;
+  }
 
   /* ─── Dashboard Container (hidden during intro) ─── */
   .dashboard-wrap {
@@ -315,7 +350,8 @@
     position:relative;
   }
   .right-panel.open {
-    width:55%; padding:12px 16px 16px 8px;
+    padding:12px 16px 16px 8px;
+    /* Width is controlled dynamically by JS based on frontend task completion */
   }
   .right-panel.expanded {
     width:100%; padding:12px 16px 16px 16px;
@@ -377,50 +413,42 @@
     background:#09080f;
   }
 
-  /* ─── Preview Loading Overlay ─── */
+  /* ─── Preview Loading Bar (non-blocking, top of browser content) ─── */
   .preview-loading {
-    position:absolute; inset:0;
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    background:rgba(9,8,15,0.85);
-    backdrop-filter:blur(4px);
-    gap:20px; z-index:10;
+    position:absolute; top:0; left:0; right:0;
+    height:3px; z-index:10;
+    background:rgba(37,34,51,0.6);
+    overflow:hidden;
     transition:opacity 0.6s ease;
+    pointer-events:none;
   }
-  .preview-loading.hidden { opacity:0; pointer-events:none; }
-
-  /* Indeterminate spinner ring */
-  .spinner-ring {
-    width:56px; height:56px;
-    border:3px solid rgba(124,58,237,0.15);
-    border-top-color:#7c3aed;
-    border-radius:50%;
-    animation:spin 1s linear infinite;
-  }
+  .preview-loading.hidden { opacity:0; }
 
   .preview-loading-text {
-    font-size:12px; color:#8b86a8;
-    font-family:'JetBrains Mono',monospace;
+    display:none;
   }
 
-  /* Determinate progress bar (appears when tasks start completing) */
   .preview-progress {
-    width:200px; height:4px; background:rgba(37,34,51,0.8);
-    border-radius:2px; overflow:hidden;
-    opacity:0; transition:opacity 0.4s ease;
-    margin-top:-8px;
-  }
-  .preview-loading.determinate .spinner-ring {
-    animation:none; border-color:rgba(124,58,237,0.15);
-    border-top-color:rgba(124,58,237,0.3);
-  }
-  .preview-loading.determinate .preview-progress {
-    opacity:1;
+    width:100%; height:100%;
   }
   .preview-progress-fill {
-    height:100%; width:0%; border-radius:2px;
+    height:100%; width:0%; border-radius:0 2px 2px 0;
     background:linear-gradient(90deg, #7c3aed, #a78bfa);
+    box-shadow:0 0 8px rgba(124,58,237,0.4), 0 0 16px rgba(124,58,237,0.2);
     transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  /* Indeterminate shimmer before first task completes */
+  .preview-loading:not(.determinate) .preview-progress-fill {
+    width:30%;
+    animation:indeterminateShimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes indeterminateShimmer {
+    0% { transform:translateX(-100%); }
+    100% { transform:translateX(400%); }
+  }
+  .preview-loading.determinate .preview-progress-fill {
+    animation:none;
+    transform:none;
   }
 
   /* ─── Backend Progress Bar (bottom of right panel) ─── */
@@ -662,11 +690,9 @@
       <div class="browser-content">
         <iframe id="preview-iframe" src="about:blank"></iframe>
         <div class="preview-loading" id="preview-loading">
-          <div class="spinner-ring"></div>
           <div class="preview-progress">
             <div class="preview-progress-fill" id="preview-progress-fill"></div>
           </div>
-          <span class="preview-loading-text" id="preview-loading-text">Building homepage...</span>
         </div>
       </div>
     </div>
@@ -751,6 +777,7 @@ let executorConnected = false;
 let introActive = true;
 let introPromptText = '';
 let typingDone = false;
+let pendingStatus = '';
 
 // ─── Task classification ───────────────────────────────────
 function isFrontendTask(task) {
@@ -778,38 +805,66 @@ function getTaskCounts() {
 }
 
 // ─── Open the preview drawer ────────────────────────────────
+let frontendComplete = false;
+
 function openDrawer() {
   if (drawerOpen) return;
   drawerOpen = true;
-  document.getElementById('left-panel').classList.add('drawer-open');
-  document.getElementById('right-panel').classList.add('open');
+  const leftPanel = document.getElementById('left-panel');
+  const rightPanel = document.getElementById('right-panel');
+  leftPanel.classList.add('drawer-open');
+  rightPanel.classList.add('open');
+  // Start at 50% width
+  rightPanel.style.width = '50%';
+  leftPanel.style.width = '50%';
   loadPreview();
 }
 
-// ─── Update preview loading state ───────────────────────────
+// ─── Update preview loading + dynamic split width ───────────
 function updatePreviewProgress() {
   if (!drawerOpen) return;
   const loading = document.getElementById('preview-loading');
   const progressFill = document.getElementById('preview-progress-fill');
-  const loadingText = document.getElementById('preview-loading-text');
+  const leftPanel = document.getElementById('left-panel');
+  const rightPanel = document.getElementById('right-panel');
 
   const counts = getTaskCounts();
-  const total = tasks.length;
-  if (total === 0) return;
+  if (counts.frontendTotal === 0) return;
 
-  const donePct = Math.round(((counts.totalDone) / total) * 100);
+  // Frontend completion percentage (min 50% for split width)
+  const rawPct = counts.frontendTotal > 0
+    ? (counts.frontendDone / counts.frontendTotal) * 100
+    : 0;
+  const rightWidth = Math.max(50, rawPct);
+  const leftWidth = 100 - rightWidth;
 
-  // Switch to determinate mode once tasks start completing
-  if (counts.totalDone > 0 && !loading.classList.contains('determinate')) {
-    loading.classList.add('determinate');
-    loadingText.textContent = 'Building features...';
+  // Animate the split width based on frontend progress
+  if (!frontendComplete) {
+    rightPanel.style.width = rightWidth + '%';
+    leftPanel.style.width = leftWidth + '%';
   }
 
-  progressFill.style.width = donePct + '%';
+  // Update the thin top progress bar
+  const progressPct = Math.round(rawPct);
+  progressFill.style.width = progressPct + '%';
 
-  // Hide loading overlay when enough features are done (>70%) or preview loaded
-  if (donePct >= 70 || previewLoaded) {
+  // Switch to determinate mode once tasks start completing
+  if (counts.frontendDone > 0 && !loading.classList.contains('determinate')) {
+    loading.classList.add('determinate');
+  }
+
+  // When all frontend tasks are done: hide bar, collapse left panel, expand right
+  if (counts.frontendDone >= counts.frontendTotal && !frontendComplete) {
+    frontendComplete = true;
     loading.classList.add('hidden');
+
+    setTimeout(() => {
+      leftPanel.classList.add('collapsed');
+      rightPanel.classList.remove('open');
+      rightPanel.classList.add('expanded');
+      rightPanel.style.width = '';
+      leftPanel.style.width = '';
+    }, 600);
   }
 }
 
@@ -917,6 +972,21 @@ function startTyping() {
     } else {
       clearInterval(interval);
       typingDone = true;
+      // Hide cursor
+      document.getElementById('typing-cursor').style.display = 'none';
+      // Post-typing animation: slide logo+prompt up, grow status
+      setTimeout(() => {
+        document.getElementById('intro-logo').classList.add('post-typing');
+        document.getElementById('intro-typing').classList.add('post-typing');
+        document.getElementById('intro-phase-label').classList.add('post-typing');
+      }, 800);
+      // Flush any queued status update
+      if (pendingStatus) {
+        const statusLabel = document.getElementById('intro-phase-label');
+        statusLabel.textContent = pendingStatus;
+        statusLabel.classList.add('visible');
+        pendingStatus = '';
+      }
     }
   }, TYPING_SPEED_MS);
 }
@@ -1091,7 +1161,7 @@ function triggerTeleport(taskId) {
   }
 }
 
-// ─── Completion: collapse left, expand right ───────────────
+// ─── Completion: all tasks done (frontend already collapsed, backend bar done) ───
 function triggerCompletion() {
   if (allDone) return;
   allDone = true;
@@ -1100,14 +1170,21 @@ function triggerCompletion() {
   banner.classList.add('visible');
   setTimeout(() => banner.classList.remove('visible'), 4000);
 
-  // Hide preview loading overlay
+  // Hide preview loading overlay (should already be hidden from frontend completion)
   document.getElementById('preview-loading').classList.add('hidden');
 
-  setTimeout(() => {
+  // Hide backend progress bar with fade
+  const bp = document.getElementById('backend-progress');
+  bp.style.transition = 'opacity 1.5s ease';
+  bp.style.opacity = '0';
+  setTimeout(() => bp.classList.remove('visible'), 1500);
+
+  // Ensure right panel is fully expanded (should already be from frontend completion)
+  if (!frontendComplete) {
     document.getElementById('left-panel').classList.add('collapsed');
     document.getElementById('right-panel').classList.remove('open');
     document.getElementById('right-panel').classList.add('expanded');
-  }, 1000);
+  }
 
   emitCelebrationParticles();
 }
@@ -1171,22 +1248,34 @@ lastParticleTime = performance.now();
 requestAnimationFrame(animateParticles);
 
 // ─── Preview iframe loading ────────────────────────────────
-function loadPreview() {
-  const iframe = document.getElementById('preview-iframe');
-  const loadingText = document.getElementById('preview-loading-text');
+let preloadStarted = false;
 
-  loadingText.textContent = 'Loading preview...';
+function preloadPreview() {
+  // Start loading the iframe hidden (before split view opens) so it's ready
+  if (preloadStarted) return;
+  preloadStarted = true;
+  const iframe = document.getElementById('preview-iframe');
   iframe.src = `http://localhost:${APP_PORT}`;
   iframe.onload = () => {
     previewLoaded = true;
-    // Hide the loading overlay once iframe renders
-    document.getElementById('preview-loading').classList.add('hidden');
     document.getElementById('url-text').textContent = `localhost:${APP_PORT}`;
     document.getElementById('status-text').textContent = 'Live';
   };
   iframe.onerror = () => {
-    setTimeout(loadPreview, 1000);
+    // Retry silently — server might not be ready yet
+    setTimeout(() => {
+      iframe.src = `http://localhost:${APP_PORT}`;
+    }, 1000);
   };
+}
+
+function loadPreview() {
+  if (!preloadStarted) preloadPreview();
+  // If already loaded, force a reload to pick up latest homepage
+  else if (previewLoaded) {
+    const iframe = document.getElementById('preview-iframe');
+    iframe.src = iframe.src;
+  }
 }
 
 // ─── SSE: Connect to executor ──────────────────────────────
@@ -1208,6 +1297,32 @@ function connectExecutorSSE() {
         introPromptText = ev.text || '';
         break;
 
+      case 'status_update':
+        // Filter out unwanted status messages
+        if (/homepage ready|generating feature/i.test(ev.status || '')) break;
+        // Show real-time phase status (e.g. "Generating spec...", "Generating design system...")
+        // Only display after typing animation is complete
+        if (introActive) {
+          const statusLabel = document.getElementById('intro-phase-label');
+          if (typingDone) {
+            // Animate the switch if already visible
+            if (statusLabel.classList.contains('visible') && statusLabel.textContent !== (ev.status || '')) {
+              statusLabel.classList.add('switching');
+              setTimeout(() => {
+                statusLabel.textContent = ev.status || '';
+                statusLabel.classList.remove('switching');
+              }, 200);
+            } else {
+              statusLabel.textContent = ev.status || '';
+              statusLabel.classList.add('visible');
+            }
+          } else {
+            // Queue it — will be shown once typing finishes
+            pendingStatus = ev.status || '';
+          }
+        }
+        break;
+
       case 'phase':
         if (introActive) {
           const label = document.getElementById('intro-phase-label');
@@ -1216,16 +1331,23 @@ function connectExecutorSSE() {
         break;
 
       case 'tasks_loaded':
-        // Tasks are ready — transition from intro to dashboard
-        if (introActive) {
-          const delay = typingDone ? 600 : 1500;
-          setTimeout(exitIntro, delay);
-        }
+        // Tasks skeleton loaded — fetch and render them in the left panel immediately
+        // (even during intro, so the task list is ready when split view opens)
+        loadTasks();
         break;
 
       case 'homepage_ready':
-        // Homepage HTML is generated and served — open the drawer
-        openDrawer();
+        // Homepage is generated and served — preload iframe, exit intro, open split view
+        preloadPreview();
+        if (introActive) {
+          const delay = typingDone ? 600 : 1500;
+          setTimeout(() => {
+            exitIntro();
+            setTimeout(openDrawer, 400);
+          }, delay);
+        } else {
+          openDrawer();
+        }
         break;
 
       case 'run_started':
@@ -1299,22 +1421,27 @@ function checkAllDone() {
 }
 
 // ─── Load tasks from executor ──────────────────────────────
+let tasksLoadedOnce = false;
+
 async function loadTasks() {
   try {
     const resp = await fetch(`http://localhost:${EXECUTOR_PORT}/api/tasks`);
     const data = await resp.json();
     if (data.length === 0) {
-      setTimeout(loadTasks, 1000);
+      if (!tasksLoadedOnce) setTimeout(loadTasks, 1000);
       return;
     }
     tasks = data;
     taskMap = {};
     tasks.forEach(t => taskMap[t.id] = t);
+    tasksLoadedOnce = true;
     renderTasks();
     document.getElementById('run-btn').disabled = false;
-    document.getElementById('phase-text').textContent = `${tasks.length} tasks loaded`;
+    if (!introActive) {
+      document.getElementById('phase-text').textContent = `${tasks.length} tasks loaded`;
+    }
   } catch {
-    setTimeout(loadTasks, 1000);
+    if (!tasksLoadedOnce) setTimeout(loadTasks, 1000);
   }
 }
 

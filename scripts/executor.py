@@ -83,7 +83,7 @@ def log(msg: str):
 
 
 def call_groq(prompt: str) -> dict:
-    """Call Groq API (OpenAI-compatible chat completions)."""
+    """Call Groq API via curl subprocess (urllib blocked on some macOS configs)."""
     url = f"{GROQ_HOST.rstrip('/')}/openai/v1/chat/completions"
     payload = json.dumps({
         "model": MODEL,
@@ -91,30 +91,30 @@ def call_groq(prompt: str) -> dict:
         "temperature": 0.3,
         "max_tokens": 8000,
         "stream": False,
-    }).encode()
-    req = urllib.request.Request(url, data=payload, headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {GROQ_API_KEY}",
     })
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            data = json.loads(resp.read())
-            choice = data.get("choices", [{}])[0]
-            content = choice.get("message", {}).get("content", "")
-            usage = data.get("usage", {})
-            # Groq returns usage in OpenAI format
-            prompt_tokens = usage.get("prompt_tokens", 0)
-            completion_tokens = usage.get("completion_tokens", 0)
-            # Timing from x-groq headers or usage
-            total_time = usage.get("total_time", 0)
-            return {
-                "content": content,
-                "eval_count": completion_tokens,
-                "prompt_eval_count": prompt_tokens,
-                "total_time": total_time,
-            }
-    except urllib.error.HTTPError as e:
-        return {"content": f"[HTTP {e.code}] {e.read().decode()[:500]}", "error": True}
+        result = subprocess.run(
+            ["curl", "-s", url,
+             "-H", f"Authorization: Bearer {GROQ_API_KEY}",
+             "-H", "Content-Type: application/json",
+             "-d", payload],
+            capture_output=True, text=True, timeout=120
+        )
+        data = json.loads(result.stdout)
+        if "error" in data:
+            return {"content": f"[API Error] {data['error']}", "error": True}
+        choice = data.get("choices", [{}])[0]
+        content = choice.get("message", {}).get("content", "")
+        usage = data.get("usage", {})
+        prompt_tokens = usage.get("prompt_tokens", 0)
+        completion_tokens = usage.get("completion_tokens", 0)
+        total_time = usage.get("total_time", 0)
+        return {
+            "content": content,
+            "eval_count": completion_tokens,
+            "prompt_eval_count": prompt_tokens,
+            "total_time": total_time,
+        }
     except Exception as e:
         return {"content": f"[Error] {e}", "error": True}
 
@@ -541,8 +541,32 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/api/run":
             self._handle_run()
+        elif self.path == "/api/status":
+            self._handle_status()
         else:
             self.send_error(404)
+
+    def _handle_status(self):
+        """Receive phase status updates from Claude Code (e.g. 'Generating spec...')."""
+        content_len = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_len) if content_len > 0 else b""
+        try:
+            data = json.loads(body)
+            status_text = data.get("status", "")
+            phase = data.get("phase", "")
+            log(f"[status] {phase}: {status_text}")
+            # Special phase triggers: emit dedicated SSE events
+            if phase == "homepage_ready":
+                emit("homepage_ready", {"status": status_text})
+            else:
+                emit("status_update", {"status": status_text, "phase": phase})
+        except Exception:
+            pass
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self._cors()
+        self.end_headers()
+        self.wfile.write(json.dumps({"ok": True}).encode())
 
     def _serve_dashboard(self):
         # Prefer dashboard-v2, fall back to legacy

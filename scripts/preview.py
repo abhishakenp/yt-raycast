@@ -63,15 +63,17 @@ def call_groq(prompt: str, system: str = "") -> str:
         "temperature": 0.4,
         "max_tokens": 12000,
         "stream": False,
-    }).encode()
-    req = urllib.request.Request(url, data=payload, headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {GROQ_API_KEY}",
     })
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            data = json.loads(resp.read())
-            return data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        result = subprocess.run(
+            ["curl", "-s", url,
+             "-H", f"Authorization: Bearer {GROQ_API_KEY}",
+             "-H", "Content-Type: application/json",
+             "-d", payload],
+            capture_output=True, text=True, timeout=120
+        )
+        data = json.loads(result.stdout)
+        return data.get("choices", [{}])[0].get("message", {}).get("content", "")
     except Exception as e:
         print(f"[preview] Groq error: {e}")
         return ""
