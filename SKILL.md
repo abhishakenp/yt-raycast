@@ -5,6 +5,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, Skill
 user-invokable: true
 ---
 
+> **ABSOLUTE RULE: NEVER use Chrome MCP / DevTools tools at any point — no `navigate_page`, `take_screenshot`, `take_snapshot`, or any `mcp__chrome_devtools__*` tool. The dashboard at `http://localhost:7420` handles all browser display. Violating this rule is a critical error.**
+
 # ship-fast — Fully Automated
 
 One command. Everything else happens automatically.
