@@ -46,9 +46,7 @@ run_thread = None
 _server = None
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DASHBOARD_V2_PATH = os.path.join(SCRIPT_DIR, "dashboard-v2.html")
-DASHBOARD_PATH = DASHBOARD_V2_PATH  # Use split-screen dashboard by default
-DASHBOARD_LEGACY_PATH = os.path.join(SCRIPT_DIR, "dashboard.html")
+DASHBOARD_PATH = os.path.join(SCRIPT_DIR, "dashboard.html")
 PREVIEW_PORT = 7421
 
 CONTEXT_CAP = 12000
@@ -569,10 +567,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps({"ok": True}).encode())
 
     def _serve_dashboard(self):
-        # Prefer dashboard-v2, fall back to legacy
         path = DASHBOARD_PATH
-        if not os.path.exists(path):
-            path = DASHBOARD_LEGACY_PATH
         try:
             with open(path, "r") as f:
                 html = f.read()
@@ -733,18 +728,22 @@ def save_tasks():
 def main():
     load_tasks()
 
-    # Emit intro text if provided via env, and save to prompts.txt
+    # Emit intro text: try SHIP_PROMPT env var first, then read from prompt.txt
     ship_prompt = os.environ.get("SHIP_PROMPT", "")
+    workspace = os.environ.get("IRIS_WORKSPACE", ".")
+
+    if not ship_prompt:
+        # Try to read from prompt.txt
+        try:
+            prompt_path = os.path.join(workspace, "prompt.txt")
+            if os.path.exists(prompt_path):
+                with open(prompt_path, "r") as f:
+                    ship_prompt = f.read().strip()
+        except Exception as e:
+            log(f"Failed to read prompt.txt: {e}")
+
     if ship_prompt:
         emit("intro_text", {"text": ship_prompt})
-        workspace = os.environ.get("IRIS_WORKSPACE", ".")
-        try:
-            prompts_path = os.path.join(workspace, "prompts.txt")
-            with open(prompts_path, "a") as f:
-                f.write(ship_prompt + "\n")
-            log(f"Saved prompt to {prompts_path}")
-        except Exception as e:
-            log(f"Failed to save prompt: {e}")
 
     class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
         daemon_threads = True

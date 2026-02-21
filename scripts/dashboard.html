@@ -3,106 +3,1023 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ship — Task Dashboard</title>
+<title>Ship — Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#0a0a12; overflow:hidden; font-family:'JetBrains Mono',monospace; }
-  canvas { display:block; width:100vw; height:100vh; }
+  body {
+    background:#000; overflow:hidden;
+    font-family:'Inter',system-ui,sans-serif; color:#e2e0f0;
+    display:flex; height:100vh;
+    transition: background 1.8s cubic-bezier(0.4,0,0.2,1);
+  }
+  body.dashboard-active { background:#09080f; }
 
-  /* Overlay UI */
-  .overlay {
-    position:fixed; top:0; left:0; right:0;
-    display:flex; align-items:center; gap:20px;
-    padding:12px 20px;
-    background:linear-gradient(180deg, rgba(10,10,18,0.95) 0%, rgba(10,10,18,0) 100%);
-    pointer-events:none; z-index:10;
+  /* ─── Intro Overlay ─── */
+  .intro-overlay {
+    position:fixed; inset:0; z-index:200;
+    background:#000; display:flex;
+    flex-direction:column; align-items:center; justify-content:center;
+    transition: opacity 1s ease, transform 1.2s cubic-bezier(0.4,0,0.2,1);
   }
-  .overlay > * { pointer-events:auto; }
-  .title { font-size:14px; font-weight:700; color:#6c5ce7; white-space:nowrap; }
-  .stats { display:flex; gap:14px; font-size:11px; color:#8b949e; }
-  .stats b { color:#e6edf3; font-weight:600; }
-  .progress-wrap {
-    flex:1; min-width:80px; max-width:220px;
-    height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden;
+  .intro-overlay.exiting {
+    opacity:0; transform:translateY(-6vh);
+    pointer-events:none;
   }
-  .progress-bar {
+  .intro-overlay.hidden { display:none; }
+
+  .intro-logo {
+    display:flex; align-items:center; gap:16px;
+    transform:scale(2.8); opacity:0;
+    transition: transform 1.4s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 0.8s ease,
+                margin-top 1.4s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .intro-logo.visible { opacity:1; transform:scale(2.8); }
+  .intro-logo.shaking {
+    animation:rocketShake 0.08s ease-in-out infinite alternate;
+  }
+  .intro-logo.settled {
+    transform:scale(1.1);
+    margin-top:-10vh;
+    animation:rocketLaunch 0.6s cubic-bezier(0.36,0.07,0.19,0.97) forwards,
+              rocketGlow 1.2s ease-out forwards;
+  }
+  @keyframes rocketShake {
+    0% { transform:scale(2.8) translate(-2px, 1px) rotate(-0.5deg); }
+    25% { transform:scale(2.8) translate(2px, -1px) rotate(0.5deg); }
+    50% { transform:scale(2.8) translate(-1px, -2px) rotate(-0.3deg); }
+    75% { transform:scale(2.8) translate(1px, 2px) rotate(0.3deg); }
+    100% { transform:scale(2.8) translate(2px, -1px) rotate(0.5deg); }
+  }
+  @keyframes rocketLaunch {
+    0% { transform:scale(2.8); filter:brightness(1); }
+    30% { transform:scale(3.0); filter:brightness(1.8); }
+    60% { transform:scale(1.2); filter:brightness(1.2); }
+    100% { transform:scale(1.1); filter:brightness(1); }
+  }
+  @keyframes rocketGlow {
+    0% { filter:drop-shadow(0 0 40px rgba(124,58,237,0.8)) drop-shadow(0 0 80px rgba(167,139,250,0.4)); }
+    50% { filter:drop-shadow(0 0 60px rgba(124,58,237,0.6)) drop-shadow(0 0 120px rgba(167,139,250,0.3)); }
+    100% { filter:drop-shadow(0 0 30px rgba(124,58,237,0.2)); }
+  }
+
+  .logo-icon {
+    width:52px; height:52px; position:relative;
+  }
+  .logo-icon svg { width:100%; height:100%; }
+
+  .logo-text {
+    font-family:'JetBrains Mono',monospace;
+    font-size:64px; font-weight:700;
+    letter-spacing:6px;
+    background:linear-gradient(135deg, #7c3aed 0%, #a78bfa 40%, #c4b5fd 60%, #7c3aed 100%);
+    background-size:200% 200%;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    animation:gradientShift 3s ease infinite;
+    filter:drop-shadow(0 0 30px rgba(124,58,237,0.4));
+  }
+  @keyframes gradientShift {
+    0%,100% { background-position:0% 50%; }
+    50% { background-position:100% 50%; }
+  }
+
+  .logo-glow {
+    position:absolute; inset:-40px;
+    background:radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+    border-radius:50%; pointer-events:none;
+    animation:glowPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%,100% { opacity:0.6; transform:scale(1); }
+    50% { opacity:1; transform:scale(1.15); }
+  }
+
+  .intro-typing {
+    margin-top:36px; max-width:800px; width:90%;
+    text-align:center; opacity:0;
+    transition:opacity 0.6s ease;
+  }
+  .intro-typing.visible { opacity:1; }
+
+  .typing-text {
+    font-family:'Inter',sans-serif;
+    font-size:36px; line-height:1.4;
+    color:rgba(226,224,240,0.85);
+    font-weight:500; letter-spacing:0.3px;
+  }
+  .typing-cursor {
+    display:inline-block; width:2px; height:1.2em;
+    background:#7c3aed; vertical-align:text-bottom;
+    margin-left:2px;
+    animation:cursorBlink 0.8s step-end infinite;
+  }
+  @keyframes cursorBlink {
+    0%,100% { opacity:1; } 50% { opacity:0; }
+  }
+
+  .intro-phase-label {
+    position:absolute; bottom:32px; left:50%;
+    transform:translateX(-50%);
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px; color:rgba(167,139,250,0.7);
+    letter-spacing:1.5px; text-transform:uppercase;
+    opacity:0;
+    transition: opacity 0.5s ease,
+                bottom 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                font-size 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                color 1.2s ease;
+  }
+  .intro-phase-label.visible { opacity:1; }
+  .intro-phase-label.switching {
+    animation:statusSwitch 0.4s ease;
+  }
+  @keyframes statusSwitch {
+    0% { opacity:1; transform:translateX(-50%) translateY(0); }
+    40% { opacity:0; transform:translateX(-50%) translateY(-8px); }
+    60% { opacity:0; transform:translateX(-50%) translateY(8px); }
+    100% { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+
+  /* Post-typing: logo+prompt slide up and shrink, status grows */
+  .intro-logo.post-typing {
+    transform:scale(0.5);
+    margin-top:-45vh;
+    opacity:0.3;
+    transition: transform 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                margin-top 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 1.2s ease;
+  }
+  .intro-typing.post-typing {
+    transform:translateY(-12vh) scale(0.8);
+    opacity:1;
+    margin-top:15px;
+    transition: transform 1.2s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 1.2s ease;
+  }
+  .intro-phase-label.post-typing {
+    bottom:45vh;
+    font-size:22px;
+    color:rgba(167,139,250,0.9);
+    letter-spacing:2.5px;
+  }
+
+  /* ─── Dashboard Container (hidden during intro) ─── */
+  .dashboard-wrap {
+    display:flex; width:100%; height:100%;
+    opacity:0; transition:opacity 0.8s ease 0.4s;
+    pointer-events:none;
+  }
+  .dashboard-wrap.active { opacity:1; pointer-events:auto; }
+
+  /* ─── Left Panel: Tasks ─── */
+  .left-panel {
+    display:flex; flex-direction:column;
+    background:#0f0d1a; border-right:1px solid #2d2a3e;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1),
+                min-width 1s cubic-bezier(0.4,0,0.2,1),
+                opacity 0.6s ease;
+    overflow:hidden; position:relative;
+    width:100%; min-width:280px;
+  }
+  .left-panel.drawer-open {
+    width:45%; min-width:280px;
+  }
+  .left-panel.collapsed {
+    width:0; min-width:0; opacity:0;
+    border-right:none;
+  }
+
+  .panel-header {
+    padding:16px 20px 12px;
+    border-bottom:1px solid #2d2a3e;
+    flex-shrink:0;
+  }
+  .panel-header h1 {
+    font-family:'JetBrains Mono',monospace;
+    font-size:16px; font-weight:700; color:#7c3aed;
+    letter-spacing:1px;
+  }
+  .panel-header .subtitle {
+    font-size:11px; color:#8b86a8; margin-top:2px;
+  }
+
+  .stats-bar {
+    display:flex; gap:16px; padding:10px 20px;
+    border-bottom:1px solid #2d2a3e;
+    font-size:11px; color:#8b86a8; flex-shrink:0;
+  }
+  .stats-bar b { color:#e2e0f0; font-weight:600; }
+
+  /* ─── Task List ─── */
+  .task-list {
+    flex:1; overflow-y:auto; padding:8px 12px;
+    scrollbar-width:thin; scrollbar-color:#2d2a3e transparent;
+  }
+  .task-list::-webkit-scrollbar { width:4px; }
+  .task-list::-webkit-scrollbar-track { background:transparent; }
+  .task-list::-webkit-scrollbar-thumb { background:#2d2a3e; border-radius:2px; }
+
+  .task-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; margin:4px 0;
+    background:#1a1726; border:1px solid #2d2a3e;
+    border-radius:10px;
+    transition: all 0.3s ease;
+    animation: taskSlideIn 0.4s ease-out backwards;
+  }
+  .task-item:hover { border-color:rgba(124,58,237,0.3); }
+  .task-item.running {
+    border-color:rgba(124,58,237,0.4);
+    background:linear-gradient(135deg, #1a1726 0%, rgba(124,58,237,0.08) 100%);
+  }
+  .task-item.done {
+    border-color:rgba(0,230,118,0.2);
+    opacity:0.7;
+  }
+  .task-item.failed {
+    border-color:rgba(248,81,73,0.3);
+  }
+  .task-item.teleporting {
+    animation: taskTeleport 0.6s ease-in forwards;
+  }
+
+  @keyframes taskSlideIn {
+    from { opacity:0; transform:translateX(-20px); }
+    to { opacity:1; transform:translateX(0); }
+  }
+  @keyframes taskTeleport {
+    0% { opacity:1; transform:scale(1); }
+    50% { opacity:0.8; transform:scale(1.05); filter:brightness(2); }
+    100% { opacity:0; transform:scale(0.3); filter:brightness(3); }
+  }
+
+  .agent-avatar {
+    width:32px; height:32px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; flex-shrink:0;
+    position:relative;
+  }
+  .agent-avatar canvas { width:32px; height:32px; border-radius:6px; }
+  .agent-avatar .spinner {
+    position:absolute; inset:-3px;
+    border:2px solid transparent; border-top-color:#7c3aed;
+    border-radius:50%; animation:spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .task-info { flex:1; min-width:0; }
+  .task-title {
+    font-size:12px; font-weight:600; color:#e2e0f0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .task-files {
+    font-size:10px; color:#8b86a8; margin-top:2px;
+    font-family:'JetBrains Mono',monospace;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  .status-badge {
+    padding:3px 8px; border-radius:6px;
+    font-size:9px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.5px; flex-shrink:0;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .status-badge.pending { background:#252233; color:#8b86a8; }
+  .status-badge.running { background:rgba(124,58,237,0.2); color:#a78bfa; }
+  .status-badge.done { background:rgba(0,230,118,0.15); color:#69f0ae; }
+  .status-badge.failed { background:rgba(248,81,73,0.15); color:#ff5252; }
+
+  /* ─── Progress Bar (frontend) ─── */
+  .progress-section {
+    padding:12px 20px; border-top:1px solid #2d2a3e; flex-shrink:0;
+  }
+  .progress-label {
+    display:flex; justify-content:space-between;
+    font-size:10px; color:#8b86a8; margin-bottom:6px;
+  }
+  .progress-track {
+    height:4px; background:#252233; border-radius:2px; overflow:hidden;
+  }
+  .progress-fill {
     height:100%; width:0%; border-radius:2px;
-    background:#00e676; transition:width 0.4s ease;
+    background:linear-gradient(90deg, #7c3aed, #a78bfa);
+    transition:width 0.5s ease;
   }
-  .run-btn {
-    padding:8px 24px; background:#6c5ce7; color:#fff; border:none;
-    border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;
-    font-family:inherit; transition:all 0.2s; letter-spacing:0.5px;
+  .progress-fill.has-failures {
+    background:linear-gradient(90deg, #7c3aed, #ff5252);
   }
-  .run-btn:hover:not(:disabled) { background:#a29bfe; }
-  .run-btn:disabled { opacity:0.35; cursor:not-allowed; }
 
-  /* Log panel */
-  .log-panel {
-    position:fixed; bottom:0; left:0; right:0;
-    max-height:180px; overflow-y:auto;
-    background:rgba(10,10,18,0.92);
-    border-top:1px solid rgba(108,92,231,0.3);
-    padding:8px 16px; z-index:20;
-    font-size:10px; color:#8b949e;
+  /* ─── Log Panel ─── */
+  .log-section {
+    border-top:1px solid #2d2a3e; flex-shrink:0;
+    max-height:0; overflow:hidden;
+    transition:max-height 0.3s ease;
+  }
+  .log-section.open { max-height:160px; }
+  .log-toggle {
+    display:flex; align-items:center; gap:6px;
+    padding:8px 20px; cursor:pointer;
+    font-size:10px; color:#8b86a8; border:none; background:none;
+    width:100%; text-align:left;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .log-toggle:hover { color:#e2e0f0; }
+  .log-toggle .arrow { transition:transform 0.3s; }
+  .log-section.open .log-toggle .arrow { transform:rotate(90deg); }
+  .log-content {
+    max-height:120px; overflow-y:auto; padding:0 16px 8px;
+    scrollbar-width:thin; scrollbar-color:#2d2a3e transparent;
+  }
+  .log-line {
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px; padding:1px 0; color:#8b86a8;
+    white-space:pre-wrap; word-break:break-all;
+  }
+  .log-line.err { color:#ff5252; }
+  .log-line.ok { color:#69f0ae; }
+  .log-line.info { color:#7c3aed; }
+
+  /* ─── Right Panel: Browser Preview Drawer ─── */
+  .right-panel {
+    width:0; overflow:hidden;
+    display:flex; flex-direction:column;
+    padding:0;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1),
+                padding 0.8s cubic-bezier(0.4,0,0.2,1);
+    position:relative;
+  }
+  .right-panel.open {
+    padding:12px 16px 16px 8px;
+    /* Width is controlled dynamically by JS based on frontend task completion */
+  }
+  .right-panel.expanded {
+    width:100%; padding:12px 16px 16px 16px;
+  }
+
+  .browser-chrome {
+    display:flex; flex-direction:column;
+    background:#1a1726; border:1px solid #2d2a3e;
+    border-radius:12px; overflow:hidden; flex:1;
+    box-shadow:0 4px 24px rgba(0,0,0,0.3);
+    min-width:0;
+  }
+
+  .browser-toolbar {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; background:#0f0d1a;
+    border-bottom:1px solid #2d2a3e;
+  }
+  .browser-dots {
+    display:flex; gap:6px; flex-shrink:0;
+  }
+  .browser-dots span {
+    width:10px; height:10px; border-radius:50%;
+  }
+  .browser-dots span:nth-child(1) { background:#ff5f57; }
+  .browser-dots span:nth-child(2) { background:#febc2e; }
+  .browser-dots span:nth-child(3) { background:#28c840; }
+
+  .browser-url {
+    flex:1; padding:5px 12px;
+    background:#252233; border:1px solid #2d2a3e;
+    border-radius:6px; font-size:11px; color:#8b86a8;
+    font-family:'JetBrains Mono',monospace;
+    display:flex; align-items:center; gap:6px;
+    min-width:0;
+  }
+  .browser-url .lock { color:#69f0ae; font-size:10px; }
+  .browser-url .url-text { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .browser-status {
+    font-size:9px; color:#8b86a8; padding:0 8px;
+    font-family:'JetBrains Mono',monospace;
+    flex-shrink:0;
+    display:flex; align-items:center; gap:4px;
+  }
+  .browser-status .dot {
+    width:6px; height:6px; border-radius:50%;
+    background:#69f0ae; animation:pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.3; }
+  }
+
+  .browser-content {
+    flex:1; position:relative; background:#09080f;
+  }
+  .browser-content iframe {
+    width:100%; height:100%; border:none;
+    background:#09080f;
+  }
+
+  /* ─── Preview Loading Bar (non-blocking, top of browser content) ─── */
+  .preview-loading {
+    position:absolute; top:0; left:0; right:0;
+    height:3px; z-index:10;
+    background:rgba(37,34,51,0.6);
+    overflow:hidden;
+    transition:opacity 0.6s ease;
+    pointer-events:none;
+  }
+  .preview-loading.hidden { opacity:0; }
+
+  .preview-loading-text {
     display:none;
   }
-  .log-panel.active { display:block; }
-  .log-panel .log-line { padding:1px 0; white-space:pre-wrap; word-break:break-all; }
-  .log-panel .log-line.err { color:#f85149; }
-  .log-panel .log-line.ok { color:#3fb950; }
-  .log-panel .log-line.info { color:#58a6ff; }
-  .log-toggle {
-    padding:4px 12px; background:rgba(108,92,231,0.2); color:#8b949e; border:none;
-    border-radius:4px; font-size:10px; cursor:pointer; font-family:inherit;
+
+  .preview-progress {
+    width:100%; height:100%;
   }
-  .log-toggle:hover { background:rgba(108,92,231,0.4); color:#e6edf3; }
+  .preview-progress-fill {
+    height:100%; width:0%; border-radius:0 2px 2px 0;
+    background:linear-gradient(90deg, #7c3aed, #a78bfa);
+    box-shadow:0 0 8px rgba(124,58,237,0.4), 0 0 16px rgba(124,58,237,0.2);
+    transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  /* Indeterminate shimmer before first task completes */
+  .preview-loading:not(.determinate) .preview-progress-fill {
+    width:30%;
+    animation:indeterminateShimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes indeterminateShimmer {
+    0% { transform:translateX(-100%); }
+    100% { transform:translateX(400%); }
+  }
+  .preview-loading.determinate .preview-progress-fill {
+    animation:none;
+    transform:none;
+  }
+
+  /* ─── Backend Progress Bar (bottom of right panel) ─── */
+  .backend-progress {
+    position:absolute; bottom:16px; left:8px; right:16px;
+    height:3px; border-radius:2px;
+    background:rgba(37,34,51,0.6);
+    overflow:hidden; opacity:0;
+    transition:opacity 0.8s ease;
+    z-index:10;
+  }
+  .backend-progress.visible { opacity:1; }
+  .backend-progress-fill {
+    height:100%; width:0%; border-radius:2px;
+    background:linear-gradient(90deg, rgba(124,58,237,0.6), rgba(167,139,250,0.4));
+    box-shadow:0 0 8px rgba(124,58,237,0.3), 0 0 16px rgba(124,58,237,0.15);
+    transition:width 0.8s cubic-bezier(0.4,0,0.2,1);
+    position:relative;
+  }
+  .backend-progress-fill::after {
+    content:''; position:absolute; right:0; top:-2px; bottom:-2px; width:20px;
+    background:radial-gradient(ellipse at right, rgba(167,139,250,0.5), transparent);
+    border-radius:0 2px 2px 0;
+    animation:glowTrail 1.5s ease-in-out infinite;
+  }
+  @keyframes glowTrail {
+    0%,100% { opacity:0.4; } 50% { opacity:1; }
+  }
+
+  /* ─── Completion overlay ─── */
+  .completion-banner {
+    position:fixed; top:0; left:0; right:0;
+    padding:12px 24px;
+    background:linear-gradient(135deg, rgba(124,58,237,0.9), rgba(167,139,250,0.9));
+    color:#fff; text-align:center;
+    font-weight:600; font-size:14px;
+    transform:translateY(-100%);
+    transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    z-index:300;
+    backdrop-filter:blur(8px);
+  }
+  .completion-banner.visible { transform:translateY(0); }
+
+  /* ─── RUN button ─── */
+  .run-section {
+    padding:12px 20px; border-top:1px solid #2d2a3e; flex-shrink:0;
+  }
+  .run-btn {
+    width:100%; padding:10px;
+    background:linear-gradient(135deg, #7c3aed, #6d28d9);
+    color:#fff; border:none; border-radius:8px;
+    font-size:12px; font-weight:700; cursor:pointer;
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:1px; transition:all 0.2s;
+  }
+  .run-btn:hover:not(:disabled) {
+    background:linear-gradient(135deg, #a78bfa, #7c3aed);
+    box-shadow:0 0 20px rgba(124,58,237,0.3);
+  }
+  .run-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+  /* ─── Debug burger + panel (debug mode only) ─── */
+  .debug-burger {
+    display:none;
+    position:fixed; top:16px; right:16px; z-index:400;
+    width:36px; height:36px; border:none; border-radius:8px;
+    background:rgba(37,34,51,0.7); backdrop-filter:blur(8px);
+    cursor:pointer; flex-direction:column;
+    align-items:center; justify-content:center; gap:4px;
+    transition:background 0.2s;
+  }
+  .debug-burger:hover { background:rgba(124,58,237,0.3); }
+  .debug-burger span {
+    display:block; width:16px; height:2px;
+    background:#8b86a8; border-radius:1px;
+    transition:transform 0.3s, opacity 0.2s;
+  }
+  .debug-burger.open span:nth-child(1) { transform:rotate(45deg) translate(3px,3px); }
+  .debug-burger.open span:nth-child(2) { opacity:0; }
+  .debug-burger.open span:nth-child(3) { transform:rotate(-45deg) translate(3px,-3px); }
+  body.debug-mode .debug-burger { display:flex; }
+
+  .debug-panel {
+    display:none;
+    position:fixed; top:0; right:0; bottom:0;
+    width:380px; z-index:350;
+    background:rgba(15,13,26,0.95); backdrop-filter:blur(12px);
+    border-left:1px solid #2d2a3e;
+    transform:translateX(100%);
+    transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    flex-direction:column;
+  }
+  body.debug-mode .debug-panel { display:flex; }
+  .debug-panel.open { transform:translateX(0); }
+
+  .debug-panel-header {
+    padding:16px 20px 12px;
+    border-bottom:1px solid #2d2a3e;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .debug-panel-header h2 {
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px; font-weight:700; color:#7c3aed;
+    letter-spacing:1px; text-transform:uppercase;
+  }
+  .debug-panel-header .event-count {
+    font-size:10px; color:#8b86a8;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  .debug-feed {
+    flex:1; overflow-y:auto; padding:8px 12px;
+    scrollbar-width:thin; scrollbar-color:#2d2a3e transparent;
+  }
+  .debug-feed::-webkit-scrollbar { width:4px; }
+  .debug-feed::-webkit-scrollbar-track { background:transparent; }
+  .debug-feed::-webkit-scrollbar-thumb { background:#2d2a3e; border-radius:2px; }
+
+  .debug-event {
+    padding:8px 10px; margin:4px 0;
+    background:#1a1726; border:1px solid #2d2a3e;
+    border-radius:8px; font-family:'JetBrains Mono',monospace;
+    font-size:10px; animation:taskSlideIn 0.3s ease-out;
+  }
+  .debug-event .ev-type {
+    color:#a78bfa; font-weight:600; text-transform:uppercase;
+    font-size:9px; letter-spacing:0.5px;
+  }
+  .debug-event .ev-time {
+    color:#555; font-size:9px; float:right;
+  }
+  .debug-event .ev-body {
+    color:#8b86a8; margin-top:4px; word-break:break-all;
+    white-space:pre-wrap; line-height:1.4;
+  }
+  .debug-event.ev-error { border-color:rgba(248,81,73,0.3); }
+  .debug-event.ev-error .ev-type { color:#ff5252; }
+  .debug-event.ev-success { border-color:rgba(0,230,118,0.2); }
+  .debug-event.ev-success .ev-type { color:#69f0ae; }
+
+  /* ─── Particles canvas ─── */
+  .particles-canvas {
+    position:fixed; inset:0; pointer-events:none; z-index:250;
+  }
 </style>
 </head>
 <body>
 
-<div class="overlay">
-  <div class="title">SHIP</div>
-  <div class="stats">
-    <span>Total <b id="s-total">0</b></span>
-    <span>Done <b id="s-done">0</b></span>
-    <span>Failed <b id="s-failed">0</b></span>
-    <span>Running <b id="s-run">0</b></span>
+<!-- ─── Audio: Rocket launch SFX ─── -->
+<audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
+
+<!-- ─── Intro Overlay ─── -->
+<div class="intro-overlay" id="intro-overlay">
+  <div class="logo-glow"></div>
+  <div class="intro-logo" id="intro-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#g1)" opacity="0.9"/>
+        <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#g2)" opacity="0.8"/>
+        <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#g2)" opacity="0.8"/>
+        <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#g1)"/>
+        <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7"/>
+        <circle cx="26" cy="16" r="2" fill="#c4b5fd"/>
+        <defs>
+          <linearGradient id="g1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#7c3aed"/><stop offset="1" stop-color="#a78bfa"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#6d28d9"/><stop offset="1" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <span class="logo-text">SHIP</span>
   </div>
-  <div class="progress-wrap"><div class="progress-bar" id="progress"></div></div>
-  <button class="run-btn" id="run-btn" disabled>RUN</button>
-  <button class="log-toggle" id="log-toggle">LOGS</button>
+
+  <div class="intro-typing" id="intro-typing">
+    <span class="typing-text" id="typing-text"></span><span class="typing-cursor" id="typing-cursor"></span>
+  </div>
+
+  <div class="intro-phase-label" id="intro-phase-label">preparing</div>
 </div>
 
-<div class="log-panel" id="log-panel"></div>
+<!-- ─── Dashboard ─── -->
+<div class="dashboard-wrap" id="dashboard-wrap">
 
-<canvas id="c"></canvas>
+  <div class="left-panel" id="left-panel">
+    <div class="panel-header">
+      <h1>SHIP</h1>
+      <div class="subtitle" id="phase-text">Initializing...</div>
+    </div>
+
+    <div class="stats-bar">
+      <span>Total <b id="s-total">0</b></span>
+      <span>Done <b id="s-done">0</b></span>
+      <span>Failed <b id="s-failed">0</b></span>
+      <span>Running <b id="s-run">0</b></span>
+    </div>
+
+    <div class="task-list" id="task-list"></div>
+
+    <div class="progress-section">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="log-section" id="log-section">
+      <button class="log-toggle" id="log-toggle">
+        <span class="arrow">&#9654;</span> LOGS
+      </button>
+      <div class="log-content" id="log-content"></div>
+    </div>
+
+    <div class="run-section">
+      <button class="run-btn" id="run-btn" disabled>RUN</button>
+    </div>
+  </div>
+
+  <div class="right-panel" id="right-panel">
+    <div class="browser-chrome">
+      <div class="browser-toolbar">
+        <div class="browser-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="browser-url">
+          <span class="lock">&#9679;</span>
+          <span class="url-text" id="url-text">localhost:3000</span>
+        </div>
+        <div class="browser-status">
+          <span class="dot" id="status-dot"></span>
+          <span id="status-text">Preview</span>
+        </div>
+      </div>
+      <div class="browser-content">
+        <iframe id="preview-iframe" src="about:blank"></iframe>
+        <div class="preview-loading" id="preview-loading">
+          <div class="preview-progress">
+            <div class="preview-progress-fill" id="preview-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="backend-progress" id="backend-progress">
+      <div class="backend-progress-fill" id="backend-progress-fill"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="completion-banner" id="completion-banner">
+  All tasks completed — app is live!
+</div>
+
+<canvas class="particles-canvas" id="particles-canvas"></canvas>
+
+<!-- ─── Debug Panel (visible only in debug mode: ?debug=1) ─── -->
+<button class="debug-burger" id="debug-burger">
+  <span></span><span></span><span></span>
+</button>
+<div class="debug-panel" id="debug-panel">
+  <div class="debug-panel-header">
+    <h2>Live Events</h2>
+    <span class="event-count" id="debug-event-count">0 events</span>
+  </div>
+  <div class="debug-feed" id="debug-feed"></div>
+</div>
 
 <script>
-// ─── Config ────────────────────────────────────────────────────
-const WORKER_SPACING = 280;
-const ROW_HEIGHT = 180;
-const BUBBLE_LIFETIME = 6;
-const ORB_TRAIL_LEN = 14;
+// ─── Config ────────────────────────────────────────────────
+const EXECUTOR_PORT = 7420;
+const APP_PORT = 3000;
+const TYPING_SPEED_MS = 40;
 
-// ─── Sprite data (16x16 pixel art) ────────────────────────────
+// ─── Debug mode (?debug=1) ─────────────────────────────────
+const DEBUG_MODE = new URLSearchParams(location.search).has('debug');
+let debugEventCount = 0;
+
+if (DEBUG_MODE) {
+  document.body.classList.add('debug-mode');
+  document.getElementById('debug-burger').addEventListener('click', () => {
+    document.getElementById('debug-burger').classList.toggle('open');
+    document.getElementById('debug-panel').classList.toggle('open');
+  });
+}
+
+function debugLog(type, data) {
+  if (!DEBUG_MODE) return;
+  debugEventCount++;
+  const feed = document.getElementById('debug-feed');
+  const countEl = document.getElementById('debug-event-count');
+  countEl.textContent = debugEventCount + ' event' + (debugEventCount !== 1 ? 's' : '');
+
+  const el = document.createElement('div');
+  let cls = 'debug-event';
+  if (/fail|error|exception/i.test(type)) cls += ' ev-error';
+  else if (/done|complete|ok/i.test(type)) cls += ' ev-success';
+  el.className = cls;
+
+  const now = new Date();
+  const ts = now.toLocaleTimeString('en-GB', { hour12: false }) + '.' + String(now.getMilliseconds()).padStart(3, '0');
+
+  let body = '';
+  if (typeof data === 'string') body = data;
+  else if (data) body = JSON.stringify(data, null, 2);
+
+  el.innerHTML = '<span class="ev-type">' + type + '</span><span class="ev-time">' + ts + '</span>' +
+    (body ? '<div class="ev-body">' + body.replace(/</g,'&lt;') + '</div>' : '');
+
+  feed.appendChild(el);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+// ─── State ─────────────────────────────────────────────────
+let tasks = [];
+let taskMap = {};
+let isRunning = false;
+let allDone = false;
+let drawerOpen = false;
+let previewLoaded = false;
+let executorConnected = false;
+let introActive = true;
+let introPromptText = '';
+let typingDone = false;
+let pendingStatus = '';
+
+// ─── Task classification ───────────────────────────────────
+function isFrontendTask(task) {
+  const files = task.files || [];
+  const title = (task.title || '').toLowerCase();
+  if (title.includes('scaffold') || title.includes('verify') || title.includes('install'))
+    return false;
+  return files.some(f =>
+    f.endsWith('.tsx') || f.endsWith('.css') || f.endsWith('.html') ||
+    f.includes('components/') || f.includes('app/page') || f.includes('app/layout') ||
+    f.includes('pages/') || f.includes('/ui/')
+  );
+}
+
+function getTaskCounts() {
+  const frontend = tasks.filter(isFrontendTask);
+  const backend = tasks.filter(t => !isFrontendTask(t));
+  const frontendDone = frontend.filter(t => t.status === 'DONE' || t.status === 'FAILED').length;
+  const backendDone = backend.filter(t => t.status === 'DONE' || t.status === 'FAILED').length;
+  return {
+    frontendTotal: frontend.length, frontendDone,
+    backendTotal: backend.length, backendDone,
+    totalDone: frontendDone + backendDone,
+  };
+}
+
+// ─── Open the preview drawer ────────────────────────────────
+let frontendComplete = false;
+
+function openDrawer() {
+  if (drawerOpen) return;
+  drawerOpen = true;
+  const leftPanel = document.getElementById('left-panel');
+  const rightPanel = document.getElementById('right-panel');
+  leftPanel.classList.add('drawer-open');
+  rightPanel.classList.add('open');
+  // Start at 50% width
+  rightPanel.style.width = '50%';
+  leftPanel.style.width = '50%';
+  loadPreview();
+}
+
+// ─── Update preview loading + dynamic split width ───────────
+function updatePreviewProgress() {
+  if (!drawerOpen) return;
+  const loading = document.getElementById('preview-loading');
+  const progressFill = document.getElementById('preview-progress-fill');
+  const leftPanel = document.getElementById('left-panel');
+  const rightPanel = document.getElementById('right-panel');
+
+  const counts = getTaskCounts();
+  if (counts.frontendTotal === 0) return;
+
+  // Frontend completion percentage (min 50% for split width)
+  const rawPct = counts.frontendTotal > 0
+    ? (counts.frontendDone / counts.frontendTotal) * 100
+    : 0;
+  const rightWidth = Math.max(50, rawPct);
+  const leftWidth = 100 - rightWidth;
+
+  // Animate the split width based on frontend progress
+  if (!frontendComplete) {
+    rightPanel.style.width = rightWidth + '%';
+    leftPanel.style.width = leftWidth + '%';
+  }
+
+  // Update the thin top progress bar
+  const progressPct = Math.round(rawPct);
+  progressFill.style.width = progressPct + '%';
+
+  // Switch to determinate mode once tasks start completing
+  if (counts.frontendDone > 0 && !loading.classList.contains('determinate')) {
+    loading.classList.add('determinate');
+  }
+
+  // When all frontend tasks are done: hide bar, collapse left panel, expand right
+  if (counts.frontendDone >= counts.frontendTotal && !frontendComplete) {
+    frontendComplete = true;
+    loading.classList.add('hidden');
+
+    setTimeout(() => {
+      leftPanel.classList.add('collapsed');
+      rightPanel.classList.remove('open');
+      rightPanel.classList.add('expanded');
+      rightPanel.style.width = '';
+      leftPanel.style.width = '';
+    }, 600);
+  }
+}
+
+// ─── Update backend progress bar ────────────────────────────
+function updateBackendProgress() {
+  const counts = getTaskCounts();
+  const bp = document.getElementById('backend-progress');
+  const bpf = document.getElementById('backend-progress-fill');
+  if (counts.backendTotal > 0) {
+    bp.classList.add('visible');
+    const pct = Math.round((counts.backendDone / counts.backendTotal) * 100);
+    bpf.style.width = pct + '%';
+  } else {
+    bp.classList.remove('visible');
+  }
+}
+
+// ─── Intro Animation ───────────────────────────────────────
+function startIntro() {
+  const logo = document.getElementById('intro-logo');
+  const phase = document.getElementById('intro-phase-label');
+
+  // Step 1: fade in logo (200ms delay)
+  setTimeout(() => logo.classList.add('visible'), 200);
+
+  // Step 2: rocket shake — build up energy (800ms after visible) + play launch SFX
+  setTimeout(() => {
+    logo.classList.add('shaking');
+    emitExhaustParticles();
+    const sfx = document.getElementById('launch-sfx');
+    if (sfx) { sfx.volume = 0.7; sfx.play().catch(() => {}); }
+  }, 1000);
+
+  // Step 3: launch! settle logo up + shrink (2s) — stop shaking, fire upward
+  setTimeout(() => {
+    logo.classList.remove('shaking');
+    logo.classList.add('settled');
+    phase.classList.add('visible');
+    emitLaunchBurst();
+  }, 2000);
+
+  // Step 4: start typing (3s)
+  setTimeout(() => {
+    document.getElementById('intro-typing').classList.add('visible');
+    startTyping();
+  }, 3000);
+}
+
+// Exhaust particles during shake phase
+function emitExhaustParticles() {
+  const logo = document.getElementById('intro-logo');
+  if (!logo.classList.contains('shaking')) return;
+  const rect = logo.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.bottom;
+  for (let i = 0; i < 3; i++) {
+    particles.push({
+      x: cx + (Math.random() - 0.5) * 40,
+      y: cy + Math.random() * 10,
+      vx: (Math.random() - 0.5) * 60,
+      vy: 80 + Math.random() * 120,
+      color: ['#7c3aed','#a78bfa','#f97316','#fbbf24'][Math.floor(Math.random()*4)],
+      life: 0.4 + Math.random() * 0.3,
+      maxLife: 0.7,
+      size: 2 + Math.random() * 3,
+    });
+  }
+  setTimeout(emitExhaustParticles, 50);
+}
+
+// Big burst on launch
+function emitLaunchBurst() {
+  const logo = document.getElementById('intro-logo');
+  const rect = logo.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const colors = ['#7c3aed','#a78bfa','#c4b5fd','#f97316','#fbbf24','#fff'];
+  for (let i = 0; i < 40; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 100 + Math.random() * 300;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 0.6 + Math.random() * 0.8,
+      maxLife: 1.4,
+      size: 2 + Math.random() * 5,
+    });
+  }
+}
+
+function startTyping() {
+  if (!introPromptText) {
+    // Wait for prompt text from executor
+    setTimeout(startTyping, 200);
+    return;
+  }
+  const el = document.getElementById('typing-text');
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < introPromptText.length) {
+      el.textContent += introPromptText[i];
+      i++;
+    } else {
+      clearInterval(interval);
+      typingDone = true;
+      // Hide cursor
+      document.getElementById('typing-cursor').style.display = 'none';
+      // Post-typing animation: slide logo+prompt up, grow status
+      setTimeout(() => {
+        document.getElementById('intro-logo').classList.add('post-typing');
+        document.getElementById('intro-typing').classList.add('post-typing');
+        document.getElementById('intro-phase-label').classList.add('post-typing');
+      }, 800);
+      // Flush any queued status update
+      if (pendingStatus) {
+        const statusLabel = document.getElementById('intro-phase-label');
+        statusLabel.textContent = pendingStatus;
+        statusLabel.classList.add('visible');
+        pendingStatus = '';
+      }
+    }
+  }, TYPING_SPEED_MS);
+}
+
+function exitIntro() {
+  if (!introActive) return;
+  introActive = false;
+
+  const overlay = document.getElementById('intro-overlay');
+  const wrap = document.getElementById('dashboard-wrap');
+
+  // Activate dashboard background
+  document.body.classList.add('dashboard-active');
+
+  // Exit intro with slide-up + fade
+  overlay.classList.add('exiting');
+
+  // Show dashboard — left panel at full width, no drawer yet
+  wrap.classList.add('active');
+
+  // Remove intro from DOM after animation
+  setTimeout(() => overlay.classList.add('hidden'), 1400);
+}
+
+// ─── Pixel art sprites for agent avatars ───────────────────
 const SPRITE_FRAMES = [
-  [
-    '................','......HHHH......','.....HHHHHH.....','....HSSSSSH.....',
-    '....SEEEESH.....','....SEEEESH.....','....SSMMSS......','.....SSSS.......',
-    '....CCCCCC......','...CCCCCCCC.....','...CCCCCCCC.....','...CC.CC.CC.....',
-    '....CCCCCC......','....LL..LL......','....LL..LL......','...BBB..BBB.....',
-  ],
-  [
-    '................','................','......HHHH......','.....HHHHHH.....',
-    '....HSSSSSH.....','....SEEEESH.....','....SEEEESH.....','....SSMMSS......',
-    '.....SSSS.......','....CCCCCC......','...CCCCCCCC.....','...CCCCCCCC.....',
-    '...CC.CC.CC.....','....CCCCCC......','....LL..LL......','...BBB..BBB.....',
-  ],
+  ['................','......HHHH......','.....HHHHHH.....','....HSSSSSH.....',
+   '....SEEEESH.....','....SEEEESH.....','....SSMMSS......','.....SSSS.......',
+   '....CCCCCC......','...CCCCCCCC.....','...CCCCCCCC.....','...CC.CC.CC.....',
+   '....CCCCCC......','....LL..LL......','....LL..LL......','...BBB..BBB.....']
 ];
-
-const WORKER_PALETTES = [
+const PALETTES = [
   {H:'#00cec9',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#00b894',L:'#2d3436',B:'#636e72'},
   {H:'#fdcb6e',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#e17055',L:'#2d3436',B:'#636e72'},
   {H:'#74b9ff',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#0984e3',L:'#2d3436',B:'#636e72'},
@@ -110,645 +1027,458 @@ const WORKER_PALETTES = [
   {H:'#a29bfe',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#6c5ce7',L:'#2d3436',B:'#636e72'},
   {H:'#55efc4',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#00b894',L:'#2d3436',B:'#636e72'},
 ];
-const ORCH_PALETTE = {H:'#6c5ce7',S:'#ffeaa7',E:'#2d3436',M:'#e17055',C:'#6c5ce7',L:'#2d3436',B:'#636e72'};
 
 const spriteCache = new Map();
-function renderSpriteFrames(palette) {
-  return SPRITE_FRAMES.map(frame => {
-    const c = new OffscreenCanvas(48,48), ctx = c.getContext('2d'), px = 3;
-    for (let y=0;y<16;y++) for (let x=0;x<16;x++) {
-      const ch = frame[y][x]; if (ch==='.') continue;
-      ctx.fillStyle = palette[ch]||'#fff';
-      ctx.fillRect(x*px, y*px, px, px);
+function renderSprite(paletteIndex) {
+  const key = 'p' + paletteIndex;
+  if (spriteCache.has(key)) return spriteCache.get(key);
+  const palette = PALETTES[paletteIndex % PALETTES.length];
+  const frame = SPRITE_FRAMES[0];
+  const c = document.createElement('canvas');
+  c.width = 32; c.height = 32;
+  const ctx = c.getContext('2d');
+  const px = 2;
+  for (let y = 0; y < 16; y++) {
+    for (let x = 0; x < 16; x++) {
+      const ch = frame[y][x];
+      if (ch === '.') continue;
+      ctx.fillStyle = palette[ch] || '#fff';
+      ctx.fillRect(x * px, y * px, px, px);
     }
-    return c;
+  }
+  spriteCache.set(key, c);
+  return c;
+}
+
+// ─── Task list rendering ───────────────────────────────────
+function renderTasks() {
+  const container = document.getElementById('task-list');
+  const existing = new Set();
+  tasks.forEach(t => existing.add(t.id));
+
+  container.querySelectorAll('.task-item').forEach(el => {
+    if (!existing.has(el.dataset.id)) el.remove();
   });
-}
-function getWorkerSprite(i) {
-  const k = 'w'+i; if (spriteCache.has(k)) return spriteCache.get(k);
-  const f = renderSpriteFrames(WORKER_PALETTES[i % WORKER_PALETTES.length]);
-  spriteCache.set(k,f); return f;
-}
-function getOrchSprite() {
-  if (spriteCache.has('o')) return spriteCache.get('o');
-  const f = renderSpriteFrames(ORCH_PALETTE);
-  spriteCache.set('o',f); return f;
+
+  tasks.forEach((task, idx) => {
+    let el = container.querySelector(`[data-id="${task.id}"]`);
+    const status = task.status || 'PENDING';
+
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'task-item';
+      el.dataset.id = task.id;
+      el.style.animationDelay = (idx * 0.08) + 's';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'agent-avatar';
+      const spriteCanvas = renderSprite(idx);
+      avatar.appendChild(spriteCanvas.cloneNode(true));
+      const cloned = avatar.querySelector('canvas');
+      cloned.width = 32; cloned.height = 32;
+      cloned.getContext('2d').drawImage(spriteCanvas, 0, 0);
+
+      const spinnerDiv = document.createElement('div');
+      spinnerDiv.className = 'spinner';
+      spinnerDiv.style.display = 'none';
+      avatar.appendChild(spinnerDiv);
+
+      const info = document.createElement('div');
+      info.className = 'task-info';
+      const title = document.createElement('div');
+      title.className = 'task-title';
+      title.textContent = task.title || task.id;
+      const files = document.createElement('div');
+      files.className = 'task-files';
+      files.textContent = (task.files || []).join(', ') || 'no files';
+      info.appendChild(title);
+      info.appendChild(files);
+
+      const badge = document.createElement('span');
+      badge.className = 'status-badge pending';
+      badge.textContent = 'wait';
+
+      el.appendChild(avatar);
+      el.appendChild(info);
+      el.appendChild(badge);
+      container.appendChild(el);
+    }
+
+    const badge = el.querySelector('.status-badge');
+    const spinner = el.querySelector('.spinner');
+    el.classList.remove('running', 'done', 'failed', 'teleporting');
+
+    if (status === 'IN_PROGRESS') {
+      el.classList.add('running');
+      badge.className = 'status-badge running';
+      badge.textContent = 'run';
+      if (spinner) spinner.style.display = 'block';
+    } else if (status === 'DONE') {
+      el.classList.add('done');
+      badge.className = 'status-badge done';
+      badge.textContent = 'done';
+      if (spinner) spinner.style.display = 'none';
+    } else if (status === 'FAILED') {
+      el.classList.add('failed');
+      badge.className = 'status-badge failed';
+      badge.textContent = 'fail';
+      if (spinner) spinner.style.display = 'none';
+    } else {
+      badge.className = 'status-badge pending';
+      badge.textContent = 'wait';
+      if (spinner) spinner.style.display = 'none';
+    }
+  });
+
+  updateStats();
+  updatePreviewProgress();
+  updateBackendProgress();
 }
 
-// ─── Global state ──────────────────────────────────────────────
-let tasks = [];
-let taskMap = {};
-let agents = new Map();
-let orchestrator = null;
-let orbs = [];
-let scrollX = 0, scrollY = 0, targetScrollY = 0;
-let maxScrollX = 0, maxScrollY = 0;
-let isRunning = false;
-let executionStarted = false;
-let lastTime = 0;
+function updateStats() {
+  const total = tasks.length;
+  const done = tasks.filter(t => t.status === 'DONE').length;
+  const failed = tasks.filter(t => t.status === 'FAILED').length;
+  const running = tasks.filter(t => t.status === 'IN_PROGRESS').length;
 
-// ─── Agent ─────────────────────────────────────────────────────
-function createAgent(task, index, x, y, isOrch) {
-  const name = isOrch ? 'Archon' : (task.title.length > 18 ? task.title.slice(0,16)+'..' : task.title);
-  return {
-    id: isOrch ? '__orch__' : task.id,
-    name, taskTitle: isOrch ? '' : task.title,
-    workerIndex: index, isOrchestrator: !!isOrch,
-    x, y, targetX: x, targetY: y,
-    state: isOrch ? 'ready' : 'spawning',
-    spawnAlpha: isOrch ? 1 : 0,
-    frameIndex: 0, frameTimer: 0,
-    ringAngle: 0, doneCheckScale: 0,
-    frames: isOrch ? getOrchSprite() : getWorkerSprite(index),
-    particles: [], bubble: null,
-    files: isOrch ? [] : (task.files||[]),
-    deps: isOrch ? [] : (task.dependsOn||[]),
-  };
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-done').textContent = done;
+  document.getElementById('s-failed').textContent = failed;
+  document.getElementById('s-run').textContent = running;
+
+  const pct = total > 0 ? Math.round((done + failed) / total * 100) : 0;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  const fill = document.getElementById('progress-fill');
+  fill.style.width = pct + '%';
+  if (failed > 0) fill.classList.add('has-failures');
+  else fill.classList.remove('has-failures');
 }
 
-function emitParticles(agent, type) {
-  const colors = type === 'spawn'
-    ? ['#00e676','#69f0ae','#b9f6ca','#00c853']
-    : ['#ff5252','#ffd740','#69f0ae','#40c4ff','#ea80fc','#ff6e40','#6c5ce7','#00e676'];
-  const count = type === 'spawn' ? 12 : 24;
-  for (let i=0;i<count;i++) {
-    const angle = type === 'spawn'
-      ? (Math.PI*2*i)/count
-      : -Math.PI/2 + (Math.random()-0.5)*Math.PI*0.8;
-    const speed = type === 'spawn' ? 40+Math.random()*40 : 80+Math.random()*100;
-    agent.particles.push({
-      x: agent.x + (type==='spawn' ? 0 : (Math.random()-0.5)*20),
-      y: agent.y + (type==='spawn' ? 24 : 0),
-      vx: Math.cos(angle)*speed,
-      vy: Math.sin(angle)*speed - (type==='spawn' ? 20 : 0),
-      color: colors[Math.floor(Math.random()*colors.length)],
-      life: (type==='spawn' ? 0.8 : 1.2) + Math.random()*0.4,
-      maxLife: (type==='spawn' ? 0.8 : 1.2) + Math.random()*0.4,
-      size: 2 + Math.random()*(type==='spawn' ? 2 : 3),
+// ─── Teleport animation on completion ──────────────────────
+function triggerTeleport(taskId) {
+  const el = document.querySelector(`[data-id="${taskId}"]`);
+  if (el && !el.classList.contains('teleporting')) {
+    el.classList.add('teleporting');
+  }
+}
+
+// ─── Completion: all tasks done (frontend already collapsed, backend bar done) ───
+function triggerCompletion() {
+  if (allDone) return;
+  allDone = true;
+
+  const banner = document.getElementById('completion-banner');
+  banner.classList.add('visible');
+  setTimeout(() => banner.classList.remove('visible'), 4000);
+
+  // Hide preview loading overlay (should already be hidden from frontend completion)
+  document.getElementById('preview-loading').classList.add('hidden');
+
+  // Hide backend progress bar with fade
+  const bp = document.getElementById('backend-progress');
+  bp.style.transition = 'opacity 1.5s ease';
+  bp.style.opacity = '0';
+  setTimeout(() => bp.classList.remove('visible'), 1500);
+
+  // Ensure right panel is fully expanded (should already be from frontend completion)
+  if (!frontendComplete) {
+    document.getElementById('left-panel').classList.add('collapsed');
+    document.getElementById('right-panel').classList.remove('open');
+    document.getElementById('right-panel').classList.add('expanded');
+  }
+
+  emitCelebrationParticles();
+}
+
+// ─── Particles ─────────────────────────────────────────────
+const particlesCanvas = document.getElementById('particles-canvas');
+const pCtx = particlesCanvas.getContext('2d');
+let particles = [];
+
+function resizeParticles() {
+  particlesCanvas.width = window.innerWidth * devicePixelRatio;
+  particlesCanvas.height = window.innerHeight * devicePixelRatio;
+  particlesCanvas.style.width = window.innerWidth + 'px';
+  particlesCanvas.style.height = window.innerHeight + 'px';
+}
+resizeParticles();
+window.addEventListener('resize', resizeParticles);
+
+function emitCelebrationParticles() {
+  const colors = ['#7c3aed','#a78bfa','#69f0ae','#ffd740','#ff6e40','#40c4ff','#ea80fc'];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: window.innerWidth * Math.random(),
+      y: window.innerHeight + 10,
+      vx: (Math.random() - 0.5) * 300,
+      vy: -400 - Math.random() * 300,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 2 + Math.random(),
+      maxLife: 2 + Math.random(),
+      size: 3 + Math.random() * 4,
     });
   }
 }
 
-function updateAgent(a, dt) {
-  const lerpSpeed = 4;
-  a.x += (a.targetX - a.x) * lerpSpeed * dt;
-  a.y += (a.targetY - a.y) * lerpSpeed * dt;
-  if (a.isOrchestrator) a.spawnAlpha = Math.min(1, a.spawnAlpha + dt*3);
-  a.frameTimer += dt;
-  if (a.frameTimer > 0.5) { a.frameTimer=0; a.frameIndex=(a.frameIndex+1)%a.frames.length; }
-  if (a.state==='thinking' || (a.isOrchestrator && (a.state==='spawning'||a.state==='active')))
-    a.ringAngle += dt * 3;
-  if (a.state==='done') a.doneCheckScale = Math.min(1, a.doneCheckScale + dt*4);
-  // bubble
-  if (a.bubble) {
-    a.bubble.life -= dt;
-    if (a.bubble.life > BUBBLE_LIFETIME-0.3) a.bubble.alpha = Math.min(1, a.bubble.alpha+dt*5);
-    else if (a.bubble.life < 0.5) a.bubble.alpha = Math.max(0, a.bubble.life/0.5);
-    else a.bubble.alpha = 1;
-    if (a.bubble.life <= 0) a.bubble = null;
+let lastParticleTime = 0;
+function animateParticles(now) {
+  const dt = Math.min(0.033, (now - lastParticleTime) / 1000);
+  lastParticleTime = now;
+
+  const dpr = devicePixelRatio;
+  pCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+  pCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 300 * dt;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    const alpha = Math.max(0, p.life / p.maxLife);
+    pCtx.globalAlpha = alpha;
+    pCtx.fillStyle = p.color;
+    pCtx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
   }
-  // particles
-  for (let i=a.particles.length-1;i>=0;i--) {
-    const p=a.particles[i]; p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=60*dt;
-    if (p.life<=0) a.particles.splice(i,1);
-  }
+  pCtx.globalAlpha = 1;
+
+  requestAnimationFrame(animateParticles);
 }
+lastParticleTime = performance.now();
+requestAnimationFrame(animateParticles);
 
-function renderAgent(ctx, a) {
-  ctx.save();
-  ctx.globalAlpha = a.spawnAlpha;
-  const frame = a.frames[a.frameIndex];
-  if (frame) ctx.drawImage(frame, a.x-24, a.y-24, 48, 48);
-  ctx.globalAlpha = 1;
+// ─── Preview iframe loading ────────────────────────────────
+let preloadStarted = false;
 
-  // Spinning ring
-  if ((a.isOrchestrator && (a.state==='spawning'||a.state==='active'))
-    || (!a.isOrchestrator && a.state==='thinking')) {
-    const r = 30;
-    ctx.save(); ctx.lineWidth=2;
-    ctx.strokeStyle='rgba(108,92,231,0.15)';
-    ctx.beginPath(); ctx.arc(a.x,a.y,r,0,Math.PI*2); ctx.stroke();
-    ctx.strokeStyle='#6c5ce7'; ctx.lineCap='round';
-    ctx.beginPath(); ctx.arc(a.x,a.y,r,a.ringAngle,a.ringAngle+Math.PI*0.8); ctx.stroke();
-    ctx.strokeStyle='rgba(108,92,231,0.5)'; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.arc(a.x,a.y,r,a.ringAngle+Math.PI,a.ringAngle+Math.PI+Math.PI*0.4); ctx.stroke();
-    ctx.restore();
-  }
-
-  // Done checkmark
-  if (a.state==='done' && a.doneCheckScale>0) {
-    const cx=a.x+22, cy=a.y-22, s=a.doneCheckScale;
-    ctx.save(); ctx.translate(cx,cy); ctx.scale(s,s);
-    ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fillStyle='#00e676'; ctx.fill();
-    ctx.strokeStyle='#0a0a0f'; ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round';
-    ctx.beginPath(); ctx.moveTo(-4,0); ctx.lineTo(-1,3); ctx.lineTo(4,-3); ctx.stroke();
-    ctx.restore();
-  }
-
-  // Failed X
-  if (a.state==='failed') {
-    const cx=a.x+22, cy=a.y-22;
-    ctx.save(); ctx.translate(cx,cy);
-    ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fillStyle='#ff5252'; ctx.fill();
-    ctx.strokeStyle='#0a0a0f'; ctx.lineWidth=2; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(-3,-3); ctx.lineTo(3,3); ctx.moveTo(3,-3); ctx.lineTo(-3,3); ctx.stroke();
-    ctx.restore();
-  }
-
-  // File badge
-  if (a.files.length > 0) {
-    const bx=a.x-28, by=a.y-24;
-    ctx.save(); ctx.font="bold 8px 'JetBrains Mono',monospace";
-    const label = ''+a.files.length, tw=ctx.measureText(label).width;
-    const pw=tw+10, ph=14;
-    ctx.fillStyle='rgba(64,196,255,0.9)';
-    ctx.beginPath(); ctx.roundRect(bx-pw/2,by-ph/2,pw,ph,7); ctx.fill();
-    ctx.fillStyle='#0a0a0f'; ctx.textAlign='center'; ctx.fillText(label,bx,by+3);
-    ctx.restore();
-  }
-
-  // Name tag
-  ctx.font="bold 10px 'JetBrains Mono',monospace"; ctx.textAlign='center';
-  ctx.fillStyle = a.isOrchestrator ? '#6c5ce7' : '#00e676';
-  ctx.fillText(a.name, a.x, a.y+36);
-
-  // Task title (workers)
-  if (a.taskTitle && !a.isOrchestrator) {
-    ctx.font="9px 'JetBrains Mono',monospace"; ctx.fillStyle='rgba(224,224,232,0.5)';
-    const short = a.taskTitle.length>30 ? a.taskTitle.slice(0,28)+'...' : a.taskTitle;
-    ctx.fillText(short, a.x, a.y+48);
-  }
-
-  // Status label (workers)
-  if (!a.isOrchestrator) {
-    ctx.font="8px 'JetBrains Mono',monospace";
-    if (a.state==='thinking') { ctx.fillStyle='#ffd740'; ctx.fillText('working...', a.x, a.y+58); }
-    else if (a.state==='done') { ctx.fillStyle='#00e676'; ctx.fillText('completed', a.x, a.y+58); }
-    else if (a.state==='failed') { ctx.fillStyle='#ff5252'; ctx.fillText('failed', a.x, a.y+58); }
-  }
-
-  ctx.restore();
-
-  // Particles
-  for (const p of a.particles) {
-    const al = Math.max(0, p.life/p.maxLife);
-    ctx.save(); ctx.globalAlpha=al; ctx.fillStyle=p.color;
-    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
-    ctx.restore();
-  }
-
-  // Bubble
-  if (a.bubble && a.bubble.alpha > 0) {
-    renderBubble(ctx, a.bubble, a.x, a.y-40);
-  }
-}
-
-// ─── Bubble ────────────────────────────────────────────────────
-function createBubble(text, type) {
-  const t = text.length>120 ? text.slice(0,117)+'...' : text;
-  return { text:t, type:type||'speech', life:BUBBLE_LIFETIME, alpha:0, lines:null };
-}
-
-function renderBubble(ctx, b, x, y) {
-  ctx.save(); ctx.globalAlpha = b.alpha;
-  ctx.font = "9px 'JetBrains Mono',monospace";
-  if (!b.lines) {
-    const words = b.text.split(/\s+/), lines = []; let cur='';
-    for (const w of words) {
-      const test = cur ? cur+' '+w : w;
-      if (ctx.measureText(test).width > 160 && cur) { lines.push(cur); cur=w; }
-      else cur=test;
-    }
-    if (cur) lines.push(cur);
-    if (lines.length>6) { lines.length=6; lines[5]=lines[5].slice(0,-3)+'...'; }
-    b.lines = lines;
-  }
-  const lines=b.lines, maxW=Math.max(...lines.map(l=>ctx.measureText(l).width));
-  const pad=10, w=maxW+pad*2, h=lines.length*13+pad*2-4;
-  const bx=x-w/2, by=y-h-14;
-
-  if (b.type==='speech') {
-    ctx.fillStyle='#fff'; ctx.strokeStyle='#2d3436'; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.roundRect(bx,by,w,h,8); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x-5,by+h); ctx.lineTo(x,by+h+8); ctx.lineTo(x+5,by+h);
-    ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#2d3436';
-  } else {
-    ctx.fillStyle='rgba(30,30,46,0.94)'; ctx.strokeStyle='#6c5ce7'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.roundRect(bx,by,w,h,8); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.arc(x-2,by+h+5,3,0,Math.PI*2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.arc(x+3,by+h+10,2,0,Math.PI*2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#e0e0e8';
-  }
-  for (let i=0;i<lines.length;i++) ctx.fillText(lines[i], bx+pad, by+pad+10+i*13);
-  ctx.restore();
-}
-
-// ─── Orb ───────────────────────────────────────────────────────
-function createOrb(fx,fy,tx,ty,kind,targetId) {
-  return {
-    fromX:fx,fromY:fy,toX:tx,toY:ty,kind,
-    t:0,speed:1.1,done:false,x:fx,y:fy,
-    trail:[], targetAgentId:targetId||null,
-    coreColor: kind==='delegate' ? '#a29bfe':'#55efc4',
-    glowColor: kind==='delegate' ? '#6c5ce7':'#00b894',
-    trailRGB: kind==='delegate' ? [108,92,231]:[0,230,118],
+function preloadPreview() {
+  // Start loading the iframe hidden (before split view opens) so it's ready
+  if (preloadStarted) return;
+  preloadStarted = true;
+  const iframe = document.getElementById('preview-iframe');
+  iframe.src = `http://localhost:${APP_PORT}`;
+  iframe.onload = () => {
+    previewLoaded = true;
+    document.getElementById('url-text').textContent = `localhost:${APP_PORT}`;
+    document.getElementById('status-text').textContent = 'Live';
+  };
+  iframe.onerror = () => {
+    // Retry silently — server might not be ready yet
+    setTimeout(() => {
+      iframe.src = `http://localhost:${APP_PORT}`;
+    }, 1000);
   };
 }
 
-function updateOrb(orb, dt) {
-  if (orb.done) return false;
-  orb.t += dt * orb.speed;
-  if (orb.t>=1) { orb.t=1; orb.done=true; }
-  const u=1-orb.t, mx=(orb.fromX+orb.toX)/2, my=(orb.fromY+orb.toY)/2;
-  const dx=orb.toX-orb.fromX;
-  const perpX=mx+(orb.kind==='delegate'?-1:1)*Math.abs(dx)*0.25, perpY=my-30;
-  orb.x = u*u*orb.fromX + 2*u*orb.t*perpX + orb.t*orb.t*orb.toX;
-  orb.y = u*u*orb.fromY + 2*u*orb.t*perpY + orb.t*orb.t*orb.toY;
-  orb.trail.push({x:orb.x,y:orb.y,alpha:1});
-  if (orb.trail.length>ORB_TRAIL_LEN) orb.trail.shift();
-  for (let i=0;i<orb.trail.length;i++) orb.trail[i].alpha=(i+1)/orb.trail.length;
-  return !orb.done;
+function loadPreview() {
+  if (!preloadStarted) preloadPreview();
+  // If already loaded, force a reload to pick up latest homepage
+  else if (previewLoaded) {
+    const iframe = document.getElementById('preview-iframe');
+    iframe.src = iframe.src;
+  }
 }
 
-function renderOrb(ctx, orb) {
-  if (orb.trail.length===0) return;
-  ctx.save();
-  const [r,g,b] = orb.trailRGB;
-  for (let i=0;i<orb.trail.length;i++) {
-    const p=orb.trail[i], sz=2+(i/orb.trail.length)*3;
-    ctx.globalAlpha=p.alpha*0.5; ctx.fillStyle=`rgb(${r},${g},${b})`;
-    ctx.beginPath(); ctx.arc(p.x,p.y,sz,0,Math.PI*2); ctx.fill();
-  }
-  if (orb.trail.length>1) {
-    ctx.globalAlpha=0.2; ctx.strokeStyle=orb.glowColor; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.moveTo(orb.trail[0].x,orb.trail[0].y);
-    for (let i=1;i<orb.trail.length;i++) ctx.lineTo(orb.trail[i].x,orb.trail[i].y);
-    ctx.stroke();
-  }
-  if (!orb.done) {
-    ctx.globalAlpha=0.3; ctx.fillStyle=orb.glowColor;
-    ctx.beginPath(); ctx.arc(orb.x,orb.y,10,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1; ctx.fillStyle=orb.coreColor;
-    ctx.shadowColor=orb.glowColor; ctx.shadowBlur=12;
-    ctx.beginPath(); ctx.arc(orb.x,orb.y,4,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#fff'; ctx.shadowBlur=0;
-    ctx.beginPath(); ctx.arc(orb.x,orb.y,1.5,0,Math.PI*2); ctx.fill();
-  }
-  ctx.restore();
-}
+// ─── SSE: Connect to executor ──────────────────────────────
+function connectExecutorSSE() {
+  const es = new EventSource(`http://localhost:${EXECUTOR_PORT}/api/events`);
 
-// ─── Dependency links ──────────────────────────────────────────
-function renderDependencyLinks(ctx) {
-  ctx.save(); ctx.setLineDash([4,6]); ctx.lineWidth=1.5; ctx.lineCap='round';
-  for (const t of tasks) {
-    if (!t.dependsOn || t.dependsOn.length===0) continue;
-    const to = agents.get(t.id); if (!to) continue;
-    if (to.state==='done') continue;
-    for (const depId of t.dependsOn) {
-      const from = agents.get(depId); if (!from) continue;
-      let color = 'rgba(108,92,231,0.2)';
-      if (from.state==='done') color = 'rgba(0,230,118,0.3)';
-      else if (from.state==='thinking') color = 'rgba(255,215,64,0.3)';
-      ctx.strokeStyle = color;
-      const sx=from.x, sy=from.y-35, ex=to.x, ey=to.y+35;
-      const cpY = (sy-ey)*0.4;
-      ctx.beginPath(); ctx.moveTo(sx,sy);
-      ctx.bezierCurveTo(sx,sy-cpY, ex,ey+cpY, ex,ey); ctx.stroke();
-      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(ex,ey,3,0,Math.PI*2); ctx.fill();
+  es.onopen = () => {
+    executorConnected = true;
+    if (!introActive) {
+      document.getElementById('phase-text').textContent = 'Connected to executor';
     }
-  }
-  ctx.setLineDash([]); ctx.restore();
-}
+  };
 
-// ─── World background ─────────────────────────────────────────
-function renderWorld(ctx, w, h) {
-  const grad = ctx.createLinearGradient(0,0,0,h);
-  grad.addColorStop(0,'#0a0a12'); grad.addColorStop(1,'#0f0f1a');
-  ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='rgba(255,255,255,0.025)'; ctx.lineWidth=1;
-  for (let x=0;x<w;x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-  for (let y=0;y<h;y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-  // Zone divider
-  const divY = h*0.22;
-  ctx.save(); ctx.setLineDash([8,6]); ctx.strokeStyle='rgba(108,92,231,0.15)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(40,divY); ctx.lineTo(w-40,divY); ctx.stroke();
-  ctx.setLineDash([]); ctx.restore();
-  // Zone labels
-  ctx.save(); ctx.font="600 10px 'JetBrains Mono',monospace";
-  ctx.fillStyle='rgba(108,92,231,0.25)'; ctx.textAlign='left';
-  ctx.fillText('ORCHESTRATOR', 16, divY-10);
-  ctx.fillText('WORKERS', 16, divY+18);
-  ctx.restore();
-}
-
-// ─── Layout ────────────────────────────────────────────────────
-let taskDepths = {};
-
-function computeLayout(w, h) {
-  taskDepths = {};
-  function getDepth(id) {
-    if (taskDepths[id] !== undefined) return taskDepths[id];
-    const t = taskMap[id]; if (!t) return 0;
-    const deps = (t.dependsOn||[]).filter(d => taskMap[d]);
-    if (deps.length===0) { taskDepths[id]=0; return 0; }
-    taskDepths[id] = -1;
-    const d = 1 + Math.max(...deps.map(getDepth));
-    taskDepths[id] = d; return d;
-  }
-  tasks.forEach(t => getDepth(t.id));
-  const maxD = Math.max(0, ...Object.values(taskDepths));
-
-  const layers = [];
-  for (let d=0;d<=maxD;d++) layers.push(tasks.filter(t => taskDepths[t.id]===d));
-
-  let maxRowCount = 0;
-  layers.forEach(l => { if (l.length>maxRowCount) maxRowCount=l.length; });
-  const contentW = Math.max(w, maxRowCount * WORKER_SPACING);
-  let maxH = 0;
-
-  const positions = {};
-  layers.forEach((layer, di) => {
-    if (layer.length===0) return;
-    const y = 40 + (maxD - di) * ROW_HEIGHT;
-    maxH = Math.max(maxH, y+200);
-    const count = layer.length;
-    const rowW = (count-1)*WORKER_SPACING;
-    const offX = (contentW - rowW)/2;
-    layer.forEach((t,i) => { positions[t.id] = { x: offX + i*WORKER_SPACING, y }; });
-  });
-
-  return { positions, contentW, contentH: maxH+300 };
-}
-
-// ─── Sync tasks → agents ───────────────────────────────────────
-let prevStatus = {};
-let spawnOrbsSent = false;
-
-function syncAgents(w, h) {
-  if (tasks.length===0) return;
-  if (!orchestrator) {
-    orchestrator = createAgent({}, -1, w/2, h*0.12, true);
-    orchestrator.x = w/2; orchestrator.y = h*0.12;
-  }
-  orchestrator.targetX = w/2;
-  orchestrator.targetY = h*0.12;
-  if (orchestrator.y < 0) orchestrator.y = orchestrator.targetY;
-
-  const workerZoneTop = h*0.22 + 28;
-  const { positions, contentW, contentH } = computeLayout(w, h);
-
-  // Center if narrow
-  if (contentW < w) {
-    const off = (w - contentW)/2;
-    for (const k in positions) positions[k].x += off;
-  }
-
-  maxScrollX = Math.max(0, contentW - w);
-  maxScrollY = Math.max(0, contentH - (h - workerZoneTop));
-
-  tasks.forEach((t, idx) => {
-    const pos = positions[t.id] || {x:w/2, y:40};
-    const finalY = pos.y + workerZoneTop;
-    const agent = agents.get(t.id);
-    const prev = prevStatus[t.id];
-
-    if (!agent) {
-      const a = createAgent(t, idx, pos.x, finalY, false);
-      a.state = 'spawning'; a.spawnAlpha = 0;
-      agents.set(t.id, a);
-    } else {
-      const newState = t.status==='PENDING' ? 'active'
-        : t.status==='IN_PROGRESS' ? 'thinking'
-        : t.status==='DONE' ? 'done' : 'failed';
-
-      if (prev !== t.status) {
-        if (t.status==='IN_PROGRESS' && prev==='PENDING') {
-          orbs.push(createOrb(orchestrator.targetX, orchestrator.targetY, agent.targetX, agent.targetY, 'delegate'));
-          agent.bubble = createBubble('Working on: '+(t.title.length>40?t.title.slice(0,38)+'..':t.title));
-        } else if (t.status==='DONE' && prev==='IN_PROGRESS') {
-          emitParticles(agent, 'celebrate');
-          orbs.push(createOrb(agent.targetX, agent.targetY, orchestrator.targetX, orchestrator.targetY, 'report'));
-          agent.bubble = createBubble('Done! Task ready.');
-        } else if (t.status==='FAILED') {
-          agent.bubble = createBubble('Task failed!');
-        }
-      }
-      agent.state = newState;
-      agent.targetX = pos.x;
-      agent.targetY = finalY;
-    }
-    prevStatus[t.id] = t.status;
-  });
-
-  // Send initial reveal orbs once
-  if (!spawnOrbsSent && agents.size > 0) {
-    spawnOrbsSent = true;
-    scrollX = maxScrollX / 2;
-    for (const [id, a] of agents) {
-      if (!a.isOrchestrator) {
-        orbs.push(createOrb(orchestrator.x, orchestrator.y, a.targetX, a.targetY, 'delegate', id));
-      }
-    }
-  }
-
-  // Orchestrator state
-  if (!executionStarted) {
-    orchestrator.state = 'ready'; orchestrator.bubble = null;
-  } else if (!tasks.every(t=>t.status==='DONE' || t.status==='FAILED')) {
-    if (orchestrator.state !== 'active') orchestrator.bubble = createBubble('Monitoring...','speech');
-    orchestrator.state = 'active';
-  } else {
-    if (orchestrator.state !== 'done') orchestrator.bubble = createBubble('All tasks completed!');
-    orchestrator.state = 'done';
-  }
-}
-
-// ─── Stats ─────────────────────────────────────────────────────
-function updateStats() {
-  const total=tasks.length;
-  const done=tasks.filter(t=>t.status==='DONE').length;
-  const failed=tasks.filter(t=>t.status==='FAILED').length;
-  const running=tasks.filter(t=>t.status==='IN_PROGRESS').length;
-  document.getElementById('s-total').textContent=total;
-  document.getElementById('s-done').textContent=done;
-  document.getElementById('s-failed').textContent=failed;
-  document.getElementById('s-run').textContent=running;
-  const pct = total>0 ? ((done+failed)/total*100) : 0;
-  const bar = document.getElementById('progress');
-  bar.style.width = pct+'%';
-  bar.style.background = failed>0 && done===0 ? '#ff5252' : '#00e676';
-}
-
-// ─── Canvas setup ──────────────────────────────────────────────
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-
-function resize() {
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  canvas.style.width = window.innerWidth+'px';
-  canvas.style.height = window.innerHeight+'px';
-}
-resize();
-window.addEventListener('resize', resize);
-
-canvas.addEventListener('wheel', e => {
-  e.preventDefault();
-  if (Math.abs(e.deltaX) > Math.abs(e.deltaY))
-    scrollX = Math.max(0, Math.min(maxScrollX, scrollX+e.deltaX));
-  else {
-    scrollY = Math.max(0, Math.min(maxScrollY, scrollY+e.deltaY));
-    targetScrollY = scrollY;
-  }
-}, {passive:false});
-
-// ─── Animation loop ────────────────────────────────────────────
-function tick(now) {
-  const dt = Math.min(0.033, (now - lastTime)/1000);
-  lastTime = now;
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.width/dpr, h = canvas.height/dpr;
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-
-  renderWorld(ctx, w, h);
-
-  const workerZoneTop = h*0.22+28;
-
-  syncAgents(w, h);
-  if (orchestrator) updateAgent(orchestrator, dt);
-  for (const a of agents.values()) updateAgent(a, dt);
-
-  // Orbs
-  for (let i=orbs.length-1;i>=0;i--) {
-    if (!updateOrb(orbs[i], dt)) {
-      const orb = orbs[i];
-      if (orb.targetAgentId) {
-        const ta = agents.get(orb.targetAgentId);
-        if (ta) { ta.spawnAlpha=1; ta.state='ready'; emitParticles(ta,'spawn'); }
-      }
-      orbs.splice(i,1);
-    }
-  }
-
-  // Worker zone clipped + scrolled
-  ctx.save();
-  ctx.beginPath(); ctx.rect(0, workerZoneTop, w, h-workerZoneTop); ctx.clip();
-  ctx.translate(-scrollX, -scrollY);
-
-  renderDependencyLinks(ctx);
-
-  const sortedWorkers = [...agents.values()].sort((a,b)=>a.y-b.y);
-  for (const a of sortedWorkers) renderAgent(ctx, a);
-  for (const orb of orbs) renderOrb(ctx, orb);
-
-  ctx.restore();
-
-  // Orchestrator zone (fixed, no scroll)
-  if (orchestrator) {
-    renderAgent(ctx, orchestrator);
-    // Persistent label
-    let labelText='', labelColor='#a0a0a0';
-    if (orchestrator.state==='active') { labelText='Monitoring'; labelColor='#00d4aa'; }
-    else if (orchestrator.state==='done') { labelText='Completed'; labelColor='#6c5ce7'; }
-    if (labelText) {
-      ctx.save(); ctx.font="10px 'JetBrains Mono',monospace";
-      ctx.fillStyle=labelColor; ctx.textAlign='center';
-      ctx.fillText(labelText, orchestrator.x, orchestrator.y+50);
-      ctx.restore();
-    }
-  }
-
-  // Horizontal scroll indicator
-  if (maxScrollX > 0) {
-    const barW=w-80, thumbRatio=w/(w+maxScrollX);
-    const thumbW=Math.max(30,barW*thumbRatio);
-    const thumbX=40+(scrollX/maxScrollX)*(barW-thumbW);
-    ctx.save(); ctx.globalAlpha=0.2; ctx.fillStyle='#6c5ce7';
-    ctx.beginPath(); ctx.roundRect(thumbX,h-6,thumbW,3,2); ctx.fill();
-    ctx.restore();
-  }
-
-  requestAnimationFrame(tick);
-}
-
-// ─── Data loading + SSE ────────────────────────────────────────
-async function loadTasks() {
-  const resp = await fetch('/api/tasks');
-  tasks = await resp.json();
-  taskMap = {};
-  tasks.forEach(t => taskMap[t.id] = t);
-  updateStats();
-  document.getElementById('run-btn').disabled = false;
-}
-
-function connectSSE() {
-  const es = new EventSource('/api/events');
   es.onmessage = e => {
     const ev = JSON.parse(e.data);
-    switch(ev.type) {
+    debugLog(ev.type, ev);
+    switch (ev.type) {
+      case 'intro_text':
+        introPromptText = ev.text || '';
+        break;
+
+      case 'status_update':
+        // Filter out unwanted status messages
+        if (/homepage ready|generating feature/i.test(ev.status || '')) break;
+        // Show real-time phase status (e.g. "Generating spec...", "Generating design system...")
+        // Only display after typing animation is complete
+        if (introActive) {
+          const statusLabel = document.getElementById('intro-phase-label');
+          if (typingDone) {
+            // Animate the switch if already visible
+            if (statusLabel.classList.contains('visible') && statusLabel.textContent !== (ev.status || '')) {
+              statusLabel.classList.add('switching');
+              setTimeout(() => {
+                statusLabel.textContent = ev.status || '';
+                statusLabel.classList.remove('switching');
+              }, 200);
+            } else {
+              statusLabel.textContent = ev.status || '';
+              statusLabel.classList.add('visible');
+            }
+          } else {
+            // Queue it — will be shown once typing finishes
+            pendingStatus = ev.status || '';
+          }
+        }
+        break;
+
+      case 'phase':
+        if (introActive) {
+          const label = document.getElementById('intro-phase-label');
+          label.textContent = ev.message || ev.phase || '';
+        }
+        break;
+
+      case 'tasks_loaded':
+        // Tasks skeleton loaded — fetch and render them in the left panel immediately
+        // (even during intro, so the task list is ready when split view opens)
+        loadTasks();
+        break;
+
+      case 'homepage_ready':
+        // Homepage is generated and served — preload iframe, exit intro, open split view
+        preloadPreview();
+        if (introActive) {
+          const delay = typingDone ? 600 : 1500;
+          setTimeout(() => {
+            exitIntro();
+            setTimeout(openDrawer, 400);
+          }, delay);
+        } else {
+          openDrawer();
+        }
+        break;
+
       case 'run_started':
-        executionStarted = true;
+        isRunning = true;
         document.getElementById('run-btn').disabled = true;
         document.getElementById('run-btn').textContent = 'RUNNING...';
+        document.getElementById('phase-text').textContent = 'Executing tasks...';
         break;
+
       case 'task_started':
-        if (taskMap[ev.id]) taskMap[ev.id].status = 'IN_PROGRESS';
-        updateStats();
+        if (taskMap[ev.id]) {
+          taskMap[ev.id].status = 'IN_PROGRESS';
+          renderTasks();
+        }
         break;
+
       case 'task_completed':
-        if (taskMap[ev.id]) taskMap[ev.id].status = 'DONE';
-        updateStats();
+        if (taskMap[ev.id]) {
+          taskMap[ev.id].status = 'DONE';
+          renderTasks();
+          triggerTeleport(ev.id);
+          checkAllDone();
+
+          // If this was a frontend task, try reloading the preview
+          if (isFrontendTask(taskMap[ev.id]) && previewLoaded) {
+            const iframe = document.getElementById('preview-iframe');
+            iframe.src = iframe.src; // force reload
+          }
+        }
         break;
+
       case 'task_failed':
-        if (taskMap[ev.id]) taskMap[ev.id].status = 'FAILED';
-        updateStats();
+        if (taskMap[ev.id]) {
+          taskMap[ev.id].status = 'FAILED';
+          renderTasks();
+          checkAllDone();
+        }
         break;
+
       case 'run_completed':
         isRunning = false;
         document.getElementById('run-btn').disabled = false;
         document.getElementById('run-btn').textContent = 'RUN';
+        document.getElementById('phase-text').textContent = `Done: ${ev.completed}/${ev.total} tasks in ${ev.elapsed}s`;
+        checkAllDone();
         break;
+
       case 'log':
         appendLog(ev.message || '');
         break;
     }
   };
-  es.onerror = () => { es.close(); setTimeout(connectSSE, 2000); };
+
+  es.onerror = () => {
+    es.close();
+    executorConnected = false;
+    setTimeout(connectExecutorSSE, 2000);
+  };
 }
 
+function checkAllDone() {
+  if (tasks.length === 0) return;
+  const pending = tasks.filter(t => t.status === 'PENDING' || t.status === 'IN_PROGRESS');
+  if (pending.length === 0 && !allDone) {
+    document.getElementById('phase-text').textContent = 'Tasks complete — preparing app...';
+    // If drawer is open, trigger completion
+    if (drawerOpen) {
+      setTimeout(triggerCompletion, 1500);
+    }
+  }
+}
+
+// ─── Load tasks from executor ──────────────────────────────
+let tasksLoadedOnce = false;
+
+async function loadTasks() {
+  try {
+    const resp = await fetch(`http://localhost:${EXECUTOR_PORT}/api/tasks`);
+    const data = await resp.json();
+    if (data.length === 0) {
+      if (!tasksLoadedOnce) setTimeout(loadTasks, 1000);
+      return;
+    }
+    tasks = data;
+    taskMap = {};
+    tasks.forEach(t => taskMap[t.id] = t);
+    tasksLoadedOnce = true;
+    renderTasks();
+    document.getElementById('run-btn').disabled = false;
+    if (!introActive) {
+      document.getElementById('phase-text').textContent = `${tasks.length} tasks loaded`;
+    }
+  } catch {
+    if (!tasksLoadedOnce) setTimeout(loadTasks, 1000);
+  }
+}
+
+// ─── Log panel ─────────────────────────────────────────────
 function appendLog(msg) {
-  const panel = document.getElementById('log-panel');
+  const content = document.getElementById('log-content');
   const line = document.createElement('div');
   line.className = 'log-line';
   if (/FAILED|ERROR|EXCEPTION|BLOCKED/i.test(msg)) line.className += ' err';
   else if (/DONE|OK|complete/i.test(msg)) line.className += ' ok';
   else if (/Wave|Starting|Workspace/i.test(msg)) line.className += ' info';
   line.textContent = msg;
-  panel.appendChild(line);
-  panel.scrollTop = panel.scrollHeight;
-  // Auto-show on first log
-  if (!panel.classList.contains('active')) panel.classList.add('active');
+  content.appendChild(line);
+  content.scrollTop = content.scrollHeight;
 }
 
 document.getElementById('log-toggle').addEventListener('click', () => {
-  document.getElementById('log-panel').classList.toggle('active');
+  document.getElementById('log-section').classList.toggle('open');
 });
 
 document.getElementById('run-btn').addEventListener('click', async () => {
   const btn = document.getElementById('run-btn');
-  btn.disabled = true; btn.textContent = 'STARTING...';
-  try { await fetch('/api/run', {method:'POST'}); }
-  catch(e) { btn.disabled=false; btn.textContent='RUN'; }
+  btn.disabled = true;
+  btn.textContent = 'STARTING...';
+  try {
+    await fetch(`http://localhost:${EXECUTOR_PORT}/api/run`, { method: 'POST' });
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'RUN';
+  }
 });
 
-// ─── Init ──────────────────────────────────────────────────────
-loadTasks().then(() => {
-  connectSSE();
-  lastTime = performance.now();
-  requestAnimationFrame(tick);
-});
+// ─── Init ──────────────────────────────────────────────────
+startIntro();
+loadTasks();
+connectExecutorSSE();
 </script>
 </body>
 </html>
