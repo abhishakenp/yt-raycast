@@ -1,147 +1,175 @@
 ---
 name: ship-fast
-description: "Fast full-stack code generation: spec → design system → HTML-first homepage → parallel Groq execution → auto-fix → manual TSX convert. Uses gpt-oss:120b at ~1200 tps. Perceived speed priority: user sees homepage in ~5s. Usage: /ship-fast [what to build or change]"
+description: "Fully automated full-stack code generation: prompt → spec → design → homepage → tasks → execution. One command does everything."
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, Skill
 user-invokable: true
 ---
 
-# ship-fast Workflow
+# ship-fast — Fully Automated
 
-**NEVER use Chrome MCP / DevTools tools during the entire pipeline.** No `navigate_page`, no `take_screenshot`, no `take_snapshot`. Never open `localhost:3000` in a browser — the homepage is ONLY shown inside the dashboard's split view at `localhost:7420`. This OVERRIDES the global CLAUDE.md rule about opening localhost in the browser after starting a server.
-
-## ⚠️ IMPORTANT: Manual Steps BEFORE Running ship.py
-
-The `/ship-fast` commands below **only run the Python orchestrator**. You must complete these steps MANUALLY first:
-
-### Step 1: Save prompt.txt & open dashboard
+One command. Everything else happens automatically.
 
 ```bash
-echo "<user prompt>" > prompt.txt
+/ship-fast "build an image generation studio"
+/ship-fast                                    # Reuse existing prompt.txt
+```
 
-# Start executor with workspace set to current directory
+---
+
+## Complete Workflow
+
+### Step 1: Save Prompt & Start Dashboard
+
+```bash
+echo "<USER PROMPT>" > prompt.txt
 IRIS_WORKSPACE=$(pwd) python3 ~/.skills/ship-fast/scripts/executor.py &
+# Opens http://localhost:7420 to monitor progress in real-time
 ```
 
-Then open browser: `http://localhost:7420`
+**Why executor?** The executor runs a dashboard server that:
+- Displays your prompt.txt on startup
+- Shows real-time progress as Claude works (spec generation, design system, homepage generation)
+- Displays the generated homepage in a split-screen view
+- Monitors task execution progress
+- Provides visual feedback throughout the entire workflow
 
-The dashboard will display your prompt.txt and be ready for steps 2-4.
+### Step 2: Generate spec.md + project-context.json
 
-### Step 2: Write spec + context (Claude ONLY)
-
-**YOU must write these files — ship.py will NOT generate them:**
-
-**spec.md** (natural prose, ~200 words):
-```
-# [Project Name]
-
-[Description of product, pages, visual direction, mood, interactions]
-
-**Visual Direction:** [Colors, atmosphere, design approach]
-**Key Pages:** [List of main pages/sections]
+Post status to dashboard:
+```bash
+curl -s http://localhost:7420/api/status -X POST -H "Content-Type: application/json" \
+  -d '{"message": "Generating spec.md + project-context.json...", "phase": "spec"}'
 ```
 
-**project-context.json**:
+Claude analyzes the prompt and writes intentional specifications:
+
+**spec.md** (~200-300 words, natural prose):
+- Project vision & what it does
+- Target users & key features
+- Pages/sections needed
+- Visual mood & atmosphere
+- Technical considerations
+
+**project-context.json** (structured metadata):
 ```json
 {
-  "project_name": "...",
-  "slug": "kebab-case-name",
-  "pages": ["Home", "Page2", ...],
-  "entities": ["Entity1", "Entity2", ...],
-  "features": ["feature 1", "feature 2", ...],
-  "mood": "sleek futuristic / warm minimal / etc",
-  "color_direction": "dark background with cyan accents / etc"
+  "project_name": "Image Generation Studio",
+  "slug": "image-gen-studio",
+  "pages": ["Home", "Editor", "Gallery", "Settings"],
+  "entities": ["Image", "Prompt", "Model", "Gallery"],
+  "features": ["Text-to-Image", "Batch Processing", "History"],
+  "mood": "sleek futuristic / minimalist dark",
+  "color_direction": "dark background with cyan & purple accents"
 }
 ```
 
-### Step 3: Generate design system (Claude + /ui-ux-pro-max)
+### Step 3: Generate Design Direction
 
-```bash
-/ui-ux-pro-max [mood, color_direction, project details]
-```
+Claude creates a design brief from the spec:
+- Specific color palette reasoning (why these colors match the mood?)
+- Typography approach (which fonts, why?)
+- Component philosophy (buttons, cards, inputs styling)
+- Spacing & layout system
+- Visual hierarchy rules
 
-Post progress to dashboard:
-```bash
-curl -s http://localhost:7420/api/status -X POST -H "Content-Type: application/json" \
-  -d '{"message": "Generating design system...", "phase": "design"}'
-```
+This becomes the **design brief** that guides /ui-ux-pro-max.
 
-### Step 4: Review & curate design system (Claude ONLY)
+### Step 4: Generate Design System
 
-Edit `design-system/<slug>/MASTER.md` to align colors/fonts/spacing with your spec intent.
-
-Post completion:
+Post status to dashboard:
 ```bash
 curl -s http://localhost:7420/api/status -X POST -H "Content-Type: application/json" \
-  -d '{"message": "Design system review complete", "phase": "design_review"}'
+  -d '{"message": "Generating design system via /ui-ux-pro-max...", "phase": "design_system"}'
 ```
+
+Call /ui-ux-pro-max to generate design system:
+
+```bash
+/ui-ux-pro-max generate design system for [project] with [mood] and [color direction]
+```
+
+Creates `design-system/<slug>/MASTER.md` with:
+- Color palette (primary, secondary, accents, neutrals with hex codes)
+- Typography (font families, sizing scales, weights)
+- Component library (buttons, cards, forms, navigation)
+- Spacing & sizing tokens
+- Shadows, borders, transitions
+- Usage examples
+
+### Step 5: Auto-Reconcile Design
+
+Claude reviews the generated design system:
+- Verify colors match the design direction intent
+- Check typography pairings are cohesive
+- Ensure components align with the mood
+- Auto-adjust MASTER.md if needed to match the brief
+- Approve the final design
+
+This ensures design tokens are exactly what was intended, not just what was generated.
+
+### Step 6: Run ship.py
+
+Once spec, design brief, and design system exist:
+
+```bash
+python3 ~/.skills/ship-fast/scripts/ship.py "<PROMPT>"
+```
+
+ship.py orchestrates 7 phases:
+1. **Setup** — Create workspace directories
+2. **Verify** — Confirm spec, context, design exist ✓
+3. **Homepage** — Generate HTML via Groq (visible in dashboard ~5s)
+4. **Tasks** — Plan features (backend + frontend)
+5. **Execute** — Parallel Groq execution (~1200 tps)
+6. **Fix** — Auto-fix broken links, missing components
+7. **Report** — Timings, output summary, file paths
+
+Dashboard shows real-time progress for steps 3-7.
 
 ---
 
-## Then Run ship.py
+## Reset Variants
 
-**After completing steps 1-4 above**, ship.py handles the rest:
-
-```bash
-python3 ~/.skills/ship-fast/scripts/ship.py "<user prompt>"
-```
-
-### What ship.py does:
-1. Verify spec.md, project-context.json, design-system/<slug>/MASTER.md exist (hard requirement)
-2. Generate homepage HTML via Groq
-3. Plan & execute tasks in parallel
-4. Fix broken links, verify output, report timings
-
-### Auto-continue (no args):
-```bash
-python3 ~/.skills/ship-fast/scripts/ship.py
-```
-Detects existing artifacts and resumes from the right phase.
-
-### Reset variants (shorthands):
-
-**`/ship-fast reset-hard`** — Manual sequence (run these commands):
-```bash
-# 1. Wipe everything except prompt.txt
-python3 ~/.skills/ship-fast/scripts/ship.py --reset-hard
-
-# 2. Start executor/dashboard with workspace set
-IRIS_WORKSPACE=$(pwd) python3 ~/.skills/ship-fast/scripts/executor.py &
-
-# 3. Open dashboard in browser
-# http://localhost:7420
-```
-Dashboard will show your prompt.txt. Ready for steps 2-4 (write spec, generate design, review)
-
-Other reset variants:
 ```bash
 /ship-fast reset              # Keep spec/design/tasks, wipe code
-/ship-fast reset-no-home      # Re-generate homepage
-/ship-fast reset-no-tasks     # Re-plan tasks
+/ship-fast reset-hard         # Wipe everything, start from prompt.txt
+/ship-fast reset-no-spec      # Re-generate spec only
+/ship-fast reset-no-design    # Re-generate design system only
 ```
 
-Or run directly:
+Or direct ship.py:
 ```bash
 python3 ~/.skills/ship-fast/scripts/ship.py --reset
 python3 ~/.skills/ship-fast/scripts/ship.py --reset-hard
-python3 ~/.skills/ship-fast/scripts/ship.py --reset-no-home
-python3 ~/.skills/ship-fast/scripts/ship.py --reset-no-tasks
 ```
 
 ---
 
-## How It Works
+## Output Files
 
-The orchestrator runs 7 phases automatically:
-0. Save prompt → kill stale ports → launch executor dashboard
-1. Verify spec + design system exist (hard requirement — errors if missing)
-2. Generate homepage HTML via Groq (uses design system + spec)
-3. Task skeleton + parallel frontend Groq calls
-4. Wait for executor completion
-5. Verify HTML files, check broken links
-6. Print timing report
+- `prompt.txt` — Your original request
+- `spec.md` — Auto-generated spec
+- `project-context.json` — Auto-generated metadata
+- `design-direction.md` — Claude's design brief (internal)
+- `design-system/<slug>/MASTER.md` — Auto-generated design tokens
+- `index.html` — Generated homepage
+- `tasks.json` — Generated task definitions
+- `src/` — Generated code (components, utilities, API routes)
 
-## Dependencies
+---
 
-- **Groq API key** (`GROQ_API_KEY` env var) — for Groq calls
-- **`/ui-ux-pro-max` skill** — for design system generation (Step 3 only)
-- **executor.py running** at `:7420` — for dashboard
+## Technical Notes
+
+**NEVER use Chrome MCP / DevTools tools** — no `navigate_page`, `take_screenshot`, `take_snapshot`. Homepage is ONLY in the dashboard's split-view at `http://localhost:7420`.
+
+**Architecture:**
+- HTML-first: No Node/Bun setup during generation
+- Tailwind CDN: Pure CSS, responsive, zero build step
+- Parallel execution: All tasks run in parallel via Groq
+- Auto-fix: Detects & repairs broken links, missing files
+- Manual TSX convert: User runs `/convert` later to transform HTML → Next.js
+
+**Environment:**
+- `GROQ_API_KEY` — Required for Groq LLM calls
+- `IRIS_WORKSPACE` — Set to $(pwd) when starting executor
+- `GROQ_MODEL` — Defaults to `openai/gpt-oss-120b`
