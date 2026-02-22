@@ -7,19 +7,40 @@ export async function detectSiteType(prompt, log) {
   const { system, user, temperature, maxTokens } = siteTypePrompt(prompt)
   const result = await groq(user, { system, temperature, maxTokens })
 
-  // Debug: log raw Groq response
-  const groqResponse = (result.content ?? '').trim()
+  // Get raw response and clean it aggressively
+  let groqResponse = (result.content ?? '').trim()
 
+  // Remove quotes, JSON artifacts, and extra whitespace
+  groqResponse = groqResponse
+    .replace(/^["']/, '')  // Remove leading quote
+    .replace(/["']$/, '')  // Remove trailing quote
+    .replace(/[\n\r]/g, '') // Remove newlines
+    .trim()
+
+  // Clean to only letters
   const raw = groqResponse
     .toLowerCase()
     .replace(/[^a-z]/g, '')
-  const siteType = VALID_SITE_TYPES.includes(raw) ? raw : 'saas'
+
+  // Find best match
+  let siteType = 'saas'
+  if (VALID_SITE_TYPES.includes(raw)) {
+    siteType = raw
+  } else {
+    // Try to find partial matches
+    for (const validType of VALID_SITE_TYPES) {
+      if (raw.includes(validType) || validType.includes(raw)) {
+        siteType = validType
+        break
+      }
+    }
+  }
 
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
 
   // Log detection details
-  if (groqResponse !== siteType) {
-    console.log(`[SITE TYPE] Groq returned: "${groqResponse}" → cleaned: "${raw}" → final: "${siteType}"`)
+  if (groqResponse.toLowerCase() !== siteType) {
+    console.log(`[SITE TYPE] Raw: "${groqResponse}" → cleaned: "${raw}" → matched: "${siteType}"`)
   }
 
   log(`  site type: ${siteType}${tpsStr}`)
