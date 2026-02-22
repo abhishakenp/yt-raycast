@@ -1,0 +1,160 @@
+import { groqParallel } from '../llm/groq.js'
+import { stripFences, formatTps } from '../llm/utils.js'
+import { slug, writeFile } from './workspace.js'
+import { updateTask } from '../server/state.js'
+import { HOME_LABELS } from '../config.js'
+import { pagePrompt, backendPrompt } from '../prompts/page.js'
+
+let _workspace = null
+let _taskList = []
+
+export function setTaskState(workspace, tasks) {
+  _workspace = workspace
+  _taskList = tasks
+}
+
+export function getTaskList() {
+  return _taskList
+}
+
+function saveTasks() {
+  if (_workspace) writeFile(_workspace, 'tasks.json', JSON.stringify({ tasks: _taskList }, null, 2))
+}
+
+function processResults(taskList, results, workspace, getFname, log) {
+  for (let i = 0; i < taskList.length; i++) {
+    const t = taskList[i]
+    const r = results[i]
+    const task = _taskList.find((x) => x.id === t.id)
+    if (!r?.content || r.error) {
+      log(`  ${t.id}: FAILED \u2014 ${r?.error ?? 'empty response'}`)
+      if (task) task.status = 'FAILED'
+      updateTask({ id: t.id, status: 'FAILED' })
+      saveTasks()
+      continue
+    }
+    const content = stripFences(r.content)
+    const fname = getFname(t)
+    writeFile(workspace, fname, content)
+    if (task) {
+      task.status = 'DONE'
+      task.files = [fname]
+    }
+    updateTask({ id: t.id, status: 'DONE', files: [fname] })
+    saveTasks()
+    const tpsStr = formatTps(r) ? ` | ${formatTps(r)}` : ''
+    log(`  ${t.id} \u2192 ${fname}: ${content.length} chars${tpsStr}`)
+  }
+}
+
+export function sumTokens(results) {
+  let inputTokens = 0
+  let outputTokens = 0
+  let cost = 0
+  for (const r of results) {
+    if (r) {
+      inputTokens += r.inputTokens ?? 0
+      outputTokens += r.outputTokens ?? 0
+      cost += r.cost ?? 0
+    }
+  }
+  return { inputTokens, outputTokens, cost }
+}
+
+export function deriveTasks(ctx) {
+  const tasks = []
+
+  tasks.push({
+    id: 'task-1',
+    title: 'Homepage',
+    status: 'DONE',
+    filename: 'index.html',
+    dependsOn: [],
+  })
+
+  let pageIdx = 2
+  for (const page of ctx.pages ?? []) {
+    if (HOME_LABELS.includes(page.toLowerCase())) continue
+    const filename = `${slug(page)}.html`
+    tasks.push({
+      id: `task-${pageIdx}`,
+      title: page,
+      description: `${page} page for ${ctx.project_name ?? 'the project'}`,
+      filename,
+      status: 'PENDING',
+      dependsOn: [],
+    })
+    pageIdx++
+  }
+
+  let backendIdx = 1
+  for (const feature of ctx.features ?? []) {
+    tasks.push({
+      id: `backend-${backendIdx}`,
+      title: feature,
+      description: `Backend logic for: ${feature}`,
+      status: 'PENDING',
+      dependsOn: [],
+    })
+    backendIdx++
+  }
+
+  return tasks
+}
+
+export async function generateAllTasks(
+  tasks,
+  ctx,
+  homepageHtml,
+  designBrief,
+  workspace,
+  log,
+  status,
+) {
+  const isFrontend = (t) => t.status !== 'DONE' && !String(t.id).startsWith('backend-')
+  const isBackend = (t) => String(t.id).startsWith('backend-') && t.status !== 'DONE'
+
+  const pageTasks = tasks.filter((t) => isFrontend(t) && t.filename && t.filename !== 'index.html')
+  const backendTasks = tasks.filter(isBackend)
+
+  log('\n  \u2500\u2500 Generating tasks \u2500\u2500')
+  status('Generating tasks\u2026', 'generating')
+
+  const allPages = tasks
+    .filter((t) => t.filename)
+    .map((t) => ({ title: t.title, filename: t.filename }))
+  const navList = allPages.map((p) => `- ${p.title}: ${p.filename}`).join('\n')
+
+  const pageCalls = pageTasks.map((t) => pagePrompt(t, navList, homepageHtml))
+  const backendCalls = backendTasks.map((t) => backendPrompt(t, ctx))
+
+  const allCalls = [...pageCalls, ...backendCalls]
+  if (allCalls.length === 0) {
+    log('  No tasks to generate')
+    return { pages: { count: 0 }, backend: { count: 0 }, navList }
+  }
+
+  const allResults = await groqParallel(allCalls)
+
+  const pageResults = allResults.slice(0, pageCalls.length)
+  const backendResults = allResults.slice(pageCalls.length)
+
+  if (pageTasks.length > 0) {
+    processResults(pageTasks, pageResults, workspace, (t) => t.filename, log)
+  }
+  if (backendTasks.length > 0) {
+    processResults(
+      backendTasks,
+      backendResults,
+      workspace,
+      (t) => t.filename || `${slug(t.title ?? t.id)}.js`,
+      log,
+    )
+  }
+
+  return {
+    pages: { count: pageTasks.length, ...sumTokens(pageResults) },
+    backend: { count: backendTasks.length, ...sumTokens(backendResults) },
+    navList,
+  }
+}

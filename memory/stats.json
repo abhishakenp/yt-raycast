@@ -1,9 +1,0 @@
-{
-  "total_runs": 8,
-  "total_errors_seen": 39,
-  "total_errors_fixed": 39,
-  "memory_hits": 1,
-  "memory_misses": 10,
-  "last_compaction": null,
-  "last_pattern_extraction": null
-}
