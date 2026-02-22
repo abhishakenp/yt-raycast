@@ -9,7 +9,14 @@ export async function generateContext(prompt, designBrief, siteType, workspace, 
   const { system, user, temperature, maxTokens } = contextPrompt(prompt, designBrief, siteType)
   const result = await groq(user, { system, temperature, maxTokens })
 
-  const ctx = parseJson(result.content) ?? {
+  // Clean stats markers that might break JSON parsing
+  let cleanedContent = result.content
+    .replace(/<\|stats\|>[\s\S]*?<\/\|stats\|>/g, '')
+    .trim()
+
+  const parsed = parseJson(cleanedContent)
+
+  const ctx = parsed || {
     project_name: prompt.slice(0, 40),
     slug: slug(prompt.slice(0, 30)),
     tagline: '',
@@ -19,6 +26,10 @@ export async function generateContext(prompt, designBrief, siteType, workspace, 
     features: [],
     mood: 'modern dark',
     color_direction: 'dark with purple accents',
+  }
+
+  if (!parsed) {
+    log(`  ⚠️  context: JSON parsing failed, using fallback. Content: ${cleanedContent.slice(0, 100)}...`)
   }
 
   writeFile(workspace, 'project-context.json', JSON.stringify(ctx, null, 2))
