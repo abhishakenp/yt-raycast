@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Collector | Help</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root {
+            --primary: #3B82F6;
+            --secondary: #6B7280;
+            --accent: #F59E0B;
+            --background: #111827;
+            --surface: #1F2937;
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --border: #374151;
+        }
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#6B7280',
+                        accent: '#F59E0B',
+                        background: '#111827',
+                        surface: '#1F2937',
+                        'text-primary': '#F9FAFB',
+                        'text-secondary': '#9CA3AF',
+                        border: '#374151'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+  
+    <style>
+      :root {
+
+      }
+      * {
+        transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    fill 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    stroke 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {},
+            fontFamily: {}
+          }
+        }
+      }
+
+      window.addEventListener('message', (e) => {
+        if (e.data.type === 'UPDATE_THEME') {
+          const theme = e.data.colors;
+          for (const [name, value] of Object.entries(theme)) {
+            document.documentElement.style.setProperty(`--color-${name}`, value);
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body class="bg-background text-text-primary min-h-screen overflow-x-hidden">
+    <!-- Navigation -->
+    <nav class="flex items-center justify-between p-4 bg-surface border-b border-border sticky top-0 z-50">
+      <div class="flex items-center gap-4">
+        <svg class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+        </svg>
+        <span class="font-semibold text-lg">Chat Collector</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 rounded-md font-medium bg-primary text-white hover:opacity-90 transition-opacity">
+          Import Chats
+        </button>
+        <a href="index.html" class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+          Home
+        </a>
+        <a href="archive.html" class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+          Archive
+        </a>
+        <a href="settings.html" class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+          Settings
+        </a>
+        <a href="help.html" class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+          Help
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 py-12">
+      <section class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          Help & Documentation
+        </h1>
+        <p class="text-lg text-text-secondary">
+          Find answers to common questions, learn how to get the most out of Chat Collector, and get in touch with support.
+        </p>
+      </section>
+
+      <section class="mb-16">
+        <img src="https://picsum.photos/seed/help/800/400" alt="Help illustration" class="w-full rounded-lg mb-8 shadow-lg">
+        <h2 class="text-2xl font-semibold mb-4 text-primary">Getting Started</h2>
+        <p class="text-text-secondary mb-4">
+          Chat Collector is designed to be intuitive. Follow these steps to begin archiving your AI conversations:
+        </p>
+        <ol class="list-decimal list-inside space-y-2 text-text-secondary">
+          <li>Click the <strong>Import Chats</strong> button in the navigation bar.</li>
+          <li>Select the provider(s) you want to import from (OpenAI, Anthropic, Gemini).</li>
+          <li>Choose a date range or import all available history.</li>
+          <li>Review the preview and confirm the import.</li>
+          <li>All chats will appear in your local archive, ready for tagging and searching.</li>
+        </ol>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-2xl font-semibold mb-4 text-primary">Frequently Asked Questions</h2>
+        <div class="space-y-6">
+          <details class="bg-surface rounded-lg border border-border p-4">
+            <summary class="font-medium cursor-pointer text-text-primary">How does Chat Collector keep my data private?</summary>
+            <p class="mt-2 text-text-secondary">
+              All data is stored locally on your device. No data is sent to external servers unless you explicitly export it. The app runs offline by default, ensuring full privacy.
+            </p>
+          </details>
+
+          <details class="bg-surface rounded-lg border border-border p-4">
+            <summary class="font-medium cursor-pointer text-text-primary">Can I import chats from multiple providers at once?</summary>
+            <p class="mt-2 text-text-secondary">
+              Yes! The import wizard supports selecting multiple providers in a single session. The tool automatically deduplicates overlapping conversations.
+            </p>
+          </details>
+
+          <details class="bg-surface rounded-lg border border-border p-4">
+            <summary class="font-medium cursor-pointer text-text-primary">What file format is used for the archive?</summary>
+            <p class="mt-2 text-text-secondary">
+              Chats are saved as JSON files inside a structured folder hierarchy. This format is both human‑readable and easy to import into other tools.
+            </p>
+          </details>
+
+          <details class="bg-surface rounded-lg border border-border p-4">
+            <summary class="font-medium cursor-pointer text-text-primary">How can I delete a conversation from a provider after archiving?</summary>
+            <p class="mt-2 text-text-secondary">
+              Use the <strong>Check‑out</strong> feature in the dashboard. Select the conversation(s) you wish to remove, then click “Delete from Provider”. The local copy remains untouched.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-2xl font-semibold mb-4 text-primary">Support & Feedback</h2>
+        <p class="text-text-secondary mb-4">
+          If you need further assistance, feel free to reach out:
+        </p>
+        <ul class="list-disc list-inside text-text-secondary space-y-2">
+          <li>Email: <a href="mailto:support@chatcollector.dev" class="text-primary hover:underline">support@chatcollector.dev</a></li>
+          <li>GitHub Issues: <a href="https://github.com/yourrepo/chat-collector/issues" target="_blank" class="text-primary hover:underline">github.com/yourrepo/chat-collector/issues</a></li>
+          <li>Community Discord: <a href="https://discord.gg/yourdiscord" target="_blank" class="text-primary hover:underline">Join our Discord</a></li>
+        </ul>
+      </section>
+
+      <section class="text-center">
+        <a href="settings.html" class="inline-block px-6 py-3 bg-primary text-white rounded-md font-medium hover:opacity-90 transition-opacity">
+          Go to Settings
+        </a>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-sm text-text-secondary py-8 border-t border-border">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div class="flex items-center gap-6">
+            <a href="#" class="hover:text-text-primary">Privacy Policy</a>
+            <a href="#" class="hover:text-text-primary">Terms of Service</a>
+            <a href="#" class="hover:text-text-primary">Feedback</a>
+          </div>
+          <div>
+            Version 1.0.0 • Built with privacy first
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+
+</html>

@@ -1,6 +1,5 @@
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { broadcast, setPrompt, setTasks, updateTask, signalHomepageReady } from '../server/state.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { groqParallel } from '../llm/groq.js'
 import { writeFile } from './workspace.js'
@@ -8,25 +7,26 @@ import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
 import { generateHomepage } from './phase-homepage.js'
-import { deriveTasks, generateAllTasks, setTaskState } from './phase-tasks.js'
+import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
 import { formatRunAllReport, formatEditReport } from './report.js'
 import { editPrompt } from '../prompts/edit.js'
 
-const log = (msg) => {
+const log = (sessionCtx) => (msg) => {
   console.log(msg)
-  broadcast({ type: 'log', message: msg })
+  sessionCtx.broadcast({ type: 'log', message: msg })
 }
 
-const status = (message, phase) => {
+const status = (sessionCtx) => (message, phase) => {
   console.log(`  [${phase}] ${message}`)
-  broadcast({ type: 'status', message, phase })
+  sessionCtx.broadcast({ type: 'status', message, phase })
 }
 
-export async function runEdit({ prompt, workspace }) {
+export async function runEdit({ prompt, workspace, sessionCtx }) {
+  const _log = log(sessionCtx)
   const t0 = Date.now()
 
-  setPrompt(prompt)
+  sessionCtx.setPrompt(prompt)
 
   const tasksData = JSON.parse(readFileSync(join(workspace, 'tasks.json'), 'utf-8'))
   const tasks = tasksData.tasks ?? []
@@ -36,14 +36,13 @@ export async function runEdit({ prompt, workspace }) {
     ...t,
     status: t.filename?.endsWith('.html') ? 'PENDING' : 'DONE',
   }))
-  setTaskState(workspace, taskList)
-  setTasks(taskList)
+  sessionCtx.setTasks(taskList)
   writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
 
-  log(
+  _log(
     `\n  \u2500\u2500 Edit mode: applying "${prompt.slice(0, 80)}" to ${htmlTasks.length} HTML files \u2500\u2500`,
   )
-  status('Editing pages\u2026', 'editing')
+  status(sessionCtx)('Editing pages\u2026', 'editing')
 
   const homepageHtml = existsSync(join(workspace, 'index.html'))
     ? readFileSync(join(workspace, 'index.html'), 'utf-8')
@@ -63,8 +62,8 @@ export async function runEdit({ prompt, workspace }) {
   const validCalls = calls.filter(Boolean)
 
   if (validCalls.length === 0) {
-    log('  No HTML files to edit')
-    broadcast({ type: 'run_completed', elapsed: 0, completed: 0, total: 0 })
+    _log('  No HTML files to edit')
+    sessionCtx.broadcast({ type: 'run_completed', elapsed: 0, completed: 0, total: 0 })
     return
   }
 
@@ -78,9 +77,9 @@ export async function runEdit({ prompt, workspace }) {
     const task = taskList.find((x) => x.id === t.id)
 
     if (!r?.content || r.error) {
-      log(`  ${t.filename}: FAILED \u2014 ${r?.error ?? 'empty response'}`)
+      _log(`  ${t.filename}: FAILED \u2014 ${r?.error ?? 'empty response'}`)
       if (task) task.status = 'FAILED'
-      updateTask({ id: t.id, status: 'FAILED' })
+      sessionCtx.updateTask({ id: t.id, status: 'FAILED' })
       writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
       continue
     }
@@ -88,14 +87,14 @@ export async function runEdit({ prompt, workspace }) {
     const content = stripFences(r.content)
     writeFile(workspace, t.filename, content)
     if (task) task.status = 'DONE'
-    updateTask({ id: t.id, status: 'DONE' })
+    sessionCtx.updateTask({ id: t.id, status: 'DONE' })
     writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
     done++
     const tpsStr = formatTps(r) ? ` | ${formatTps(r)}` : ''
-    log(`  ${t.filename}: ${content.length} chars${tpsStr}`)
+    _log(`  ${t.filename}: ${content.length} chars${tpsStr}`)
   }
 
-  signalHomepageReady()
+  sessionCtx.signalHomepageReady()
 
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
   const totalInput = results.reduce((s, r) => s + (r?.inputTokens ?? 0), 0)
@@ -110,8 +109,8 @@ export async function runEdit({ prompt, workspace }) {
     totalOutput,
     totalCost,
   )
-  log(report)
-  broadcast({
+  _log(report)
+  sessionCtx.broadcast({
     type: 'run_completed',
     elapsed: Number.parseFloat(elapsed),
     completed: done,
@@ -120,7 +119,9 @@ export async function runEdit({ prompt, workspace }) {
   })
 }
 
-export async function runAll({ prompt, workspace }) {
+export async function runAll({ prompt, workspace, sessionCtx }) {
+  const _log = log(sessionCtx)
+  const _status = status(sessionCtx)
   const t0 = Date.now()
   const timings = {}
   const tick = (name) => {
@@ -128,62 +129,71 @@ export async function runAll({ prompt, workspace }) {
   }
 
   writeFileSync(join(workspace, 'prompt.txt'), prompt)
-  setPrompt(prompt)
+  sessionCtx.setPrompt(prompt)
 
   let ctx = null
   let homepage = null
 
   tick('t0')
 
-  status('Generating spec\u2026', 'spec')
-  const designStats = await generateDesignBrief(prompt, workspace, log)
+  _status('Generating spec\u2026', 'spec')
+  const designStats = await generateDesignBrief(prompt, workspace, _log)
   const designBrief = designStats.brief
   tick('design_end')
 
-  const detectStats = await detectSiteType(prompt, log)
+  const detectStats = await detectSiteType(prompt, _log)
   const siteType = detectStats.siteType
   tick('detect_end')
 
-  const ctxStats = await generateContext(prompt, designBrief, siteType, workspace, log)
+  const ctxStats = await generateContext(prompt, designBrief, siteType, workspace, _log)
   ctx = ctxStats.ctx
   tick('ctx_end')
 
   let homepageStats = { inputTokens: 0, outputTokens: 0, cost: 0 }
   const needHomepage = !homepage
   if (needHomepage) {
-    status('Generating tasks\u2026', 'generating')
-    homepageStats = await generateHomepage(prompt, ctx, designBrief, workspace, log)
+    _status('Generating tasks\u2026', 'generating')
+    homepageStats = await generateHomepage(prompt, ctx, designBrief, workspace, _log, sessionCtx)
     homepage = homepageStats.html
     tick('homepage_end')
   } else {
-    log(`  index.html: ${homepage.length} chars (cached)`)
-    signalHomepageReady()
+    _log(`  index.html: ${homepage.length} chars (cached)`)
+    sessionCtx.signalHomepageReady()
     tick('homepage_end')
   }
   const ctxPages = ctx.pages?.length ?? 0
   const homepageChars = homepage?.length ?? 0
 
   if (!homepage) {
-    log('  Error: index.html not found')
+    _log('  Error: index.html not found')
     return
   }
 
   tick('derive_start')
   const tasks = deriveTasks(ctx)
-  setTaskState(workspace, tasks)
-  setTasks(tasks)
+  sessionCtx.setTasks(tasks)
   writeFile(workspace, 'tasks.json', JSON.stringify({ tasks }, null, 2))
-  log(
+  _log(
     `  Derived ${tasks.length} tasks (${tasks.filter((t) => t.filename).length} pages, ${tasks.filter((t) => String(t.id).startsWith('backend-')).length} backend)`,
   )
   tick('derive_end')
 
   tick('gen_start')
-  const genStats = await generateAllTasks(tasks, ctx, homepage, designBrief, workspace, log, status)
+  const taskCtx = { taskList: tasks, updateTask: sessionCtx.updateTask }
+  const genStats = await generateAllTasks(
+    tasks,
+    ctx,
+    homepage,
+    designBrief,
+    workspace,
+    _log,
+    _status,
+    taskCtx,
+  )
   tick('gen_end')
 
   tick('navfix_start')
-  const navFixStats = (await fixHomepageNav(genStats.navList, workspace, log)) ?? {
+  const navFixStats = (await fixHomepageNav(genStats.navList, workspace, _log)) ?? {
     count: 0,
     inputTokens: 0,
     outputTokens: 0,
@@ -194,7 +204,12 @@ export async function runAll({ prompt, workspace }) {
   const total = tasks.length
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
 
-  broadcast({ type: 'run_completed', elapsed: Number.parseFloat(elapsed), completed: done, total })
+  sessionCtx.broadcast({
+    type: 'run_completed',
+    elapsed: Number.parseFloat(elapsed),
+    completed: done,
+    total,
+  })
 
   const report = formatRunAllReport(timings, {
     elapsed,
@@ -211,14 +226,18 @@ export async function runAll({ prompt, workspace }) {
     navFixStats,
   })
 
-  log(report)
-  broadcast({
+  _log(report)
+  sessionCtx.broadcast({
     type: 'run_completed',
     elapsed: Number.parseFloat(elapsed),
     completed: done,
     total,
     report,
   })
+
+  // Background: Generate alternative design for "Magic Theme"
+  _log('  Generating alternative design context...')
+  generateAlternativeDesign(prompt, workspace, sessionCtx, _log)
 
   try {
     const homeDir = process.env.HOME
@@ -229,4 +248,84 @@ export async function runAll({ prompt, workspace }) {
   } catch {
     /* log writing is best-effort */
   }
+}
+
+// Generate alternative design with fallback colors
+export async function generateAlternativeDesign(prompt, workspace, sessionCtx, _log) {
+  try {
+    const designBriefPrompt = `Generate an alternative, high-contrast, sophisticated color scheme for: "${prompt}"
+
+Return ONLY a JSON block in this format:
+\`\`\`json
+{
+  "primary": "#HEX",
+  "secondary": "#HEX",
+  "accent": "#HEX",
+  "background": "#HEX",
+  "surface": "#HEX",
+  "text": "#HEX"
+}
+\`\`\`
+
+Requirements:
+- Use HEX color codes
+- Make it visually distinct from typical light/dark defaults
+- High contrast for accessibility
+- Sophisticated, modern palette
+- Different from standard blue/gray themes`
+
+    const res = await generateDesignBrief(designBriefPrompt, workspace, () => {})
+    const configMatch = res.brief.match(/```json\s*(\{[\s\S]*?\})\s*```/)
+
+    if (configMatch) {
+      try {
+        const config = JSON.parse(configMatch[1])
+        // Validate required fields
+        if (config.primary && config.secondary && config.accent && config.background && config.surface && config.text) {
+          sessionCtx.setAlternativeDesign(config)
+          _log('  ✓ Alternative design generated successfully')
+          return config
+        } else {
+          _log('  ✗ Alternative design missing required color fields')
+        }
+      } catch (parseErr) {
+        _log(`  ✗ Alternative design JSON parse error: ${parseErr.message}`)
+      }
+    } else {
+      _log('  ✗ Alternative design JSON not found in response')
+    }
+  } catch (err) {
+    _log(`  ✗ Alternative design generation failed: ${err.message}`)
+  }
+
+  // Fallback: Generate a sophisticated color palette
+  const fallbackColors = generateFallbackColors(prompt)
+  sessionCtx.setAlternativeDesign(fallbackColors)
+  _log('  ✓ Alternative design generated from fallback palette')
+  return fallbackColors
+}
+
+// Generate fallback colors based on hash of prompt
+function generateFallbackColors(prompt) {
+  const palettes = [
+    // Purple & Gold
+    { primary: '#8B5CF6', secondary: '#A78BFA', accent: '#FBBF24', background: '#1F1335', surface: '#2D1B47', text: '#F3E8FF' },
+    // Teal & Coral
+    { primary: '#14B8A6', secondary: '#2DD4BF', accent: '#FB7185', background: '#0F2F2E', surface: '#134E4A', text: '#CCFBF1' },
+    // Emerald & Orange
+    { primary: '#10B981', secondary: '#6EE7B7', accent: '#FB923C', background: '#051F1C', surface: '#065F46', text: '#D1FAE5' },
+    // Indigo & Pink
+    { primary: '#6366F1', secondary: '#818CF8', accent: '#EC4899', background: '#1E1B4B', surface: '#312E81', text: '#E0E7FF' },
+    // Cyan & Rose
+    { primary: '#06B6D4', secondary: '#22D3EE', accent: '#F43F5E', background: '#082F4F', surface: '#0E3A47', text: '#CFFAFE' },
+  ]
+
+  // Use hash to pick palette
+  let hash = 0
+  for (let i = 0; i < prompt.length; i++) {
+    hash = ((hash << 5) - hash) + prompt.charCodeAt(i)
+    hash = hash & hash // Convert to 32-bit integer
+  }
+  const paletteIdx = Math.abs(hash) % palettes.length
+  return palettes[paletteIdx]
 }

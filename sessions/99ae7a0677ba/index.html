@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Collector | Own Your AI History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+      --primary: #3b82f6;
+      --secondary: #64748b;
+      --accent: #f59e0b;
+      --background: #0f172a;
+      --surface: #1e293b;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--background);
+      color: var(--text-primary);
+    }
+    
+    .glass {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .glow {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    
+    .provider-card {
+      transition: all 0.3s ease;
+    }
+    
+    .provider-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .search-input {
+      transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+    
+    .feature-icon {
+      transition: all 0.3s ease;
+    }
+    
+    .feature-icon:hover {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+  </style>
+  
+    <style>
+      :root {
+
+      }
+      * {
+        transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    fill 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    stroke 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {},
+            fontFamily: {}
+          }
+        }
+      }
+
+      window.addEventListener('message', (e) => {
+        if (e.data.type === 'UPDATE_THEME') {
+          const theme = e.data.colors;
+          for (const [name, value] of Object.entries(theme)) {
+            document.documentElement.style.setProperty(`--color-${name}`, value);
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body class="antialiased">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <a href="index.html" class="flex items-center space-x-2">
+            <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              <path d="M12 22V12" stroke="currentColor" stroke-width="2" />
+              <path d="M22 7L12 12L2 7" stroke="currentColor" stroke-width="2" />
+              <path d="M2 17L12 12L22 17" stroke="currentColor" stroke-width="2" />
+            </svg>
+            <span class="text-xl font-semibold">Chat Collector</span>
+          </a>
+          <div class="flex items-center space-x-4">
+            <a href="dashboard.html" class="text-text-secondary hover:text-text-primary transition">Dashboard</a>
+            <a href="import.html" class="text-text-secondary hover:text-text-primary transition">Import</a>
+            <a href="export.html" class="text-text-secondary hover:text-text-primary transition">Export</a>
+            <a href="settings.html" class="text-text-secondary hover:text-text-primary transition">Settings</a>
+            <a href="help.html" class="text-text-secondary hover:text-text-primary transition">Help</a>
+            <button id="theme-toggle" class="p-2 rounded-lg bg-surface hover:bg-gray-800 transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div class="text-center fade-in">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+          Own Your AI Conversations
+          <span class="block text-primary mt-2">Forever</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-text-secondary max-w-3xl mx-auto mb-8">
+          Centralize ChatGPT, Claude, and Gemini chats in a private local archive.
+          Search, tag, export — all under your control.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="import.html" class="px-8 py-3 rounded-lg bg-primary text-white font-medium hover:opacity-90 transition inline-flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
+            Start Importing
+          </a>
+          <button onclick="scrollToDemo()" class="px-8 py-3 rounded-lg bg-surface border border-gray-800 text-text-primary font-medium hover:bg-gray-800 transition">
+            See Demo
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-16 fade-in stagger-1">
+        <div class="glass rounded-lg p-6 text-center">
+          <div class="text-3xl font-bold text-primary mb-1">2,847</div>
+          <div class="text-sm text-text-secondary">Chats Archived</div>
+        </div>
+        <div class="glass rounded-lg p-6 text-center">
+          <div class="text-3xl font-bold text-primary mb-1">14.2 GB</div>
+          <div class="text-sm text-text-secondary">Local Storage</div>
+        </div>
+        <div class="glass rounded-lg p-6 text-center">
+          <div class="text-3xl font-bold text-primary mb-1">Last sync</div>
+          <div class="text-sm text-text-secondary">2 minutes ago</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <!-- Sources -->
+      <div class="mb-12 fade-in stagger-2">
+        <h2 class="text-2xl font-semibold mb-6 text-center">Connected Sources</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+          <div class="provider-card glass rounded-lg p-6 border border-gray-800">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-lg bg-black flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M22.2819 9.8211a5.9847 5.9847 0 00-.516-4.91 6.0462 6.0462 0 00-6.665-3.039l-1.672-2.791a.626.626 0 00-.832-.232l-3.582 1.957a.626.626 0 00-.282.832l1.672 2.791a4.027 4.027 0 000 4.91l-1.672 2.791a.626.626 0 00.282.832l3.582 1.957a.626.626 0 00.832-.232l1.672-2.791a6.0462 6.0462 0 006.665-3.039 5.9847 5.9847 0 00.516-4.91z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-medium">OpenAI</h3>
+                <p class="text-sm text-text-secondary">1,234 chats</p>
+              </div>
+            </div>
+            <div class="flex items-center text-sm text-green-400">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="3" />
+              </svg>
+              Connected
+            </div>
+          </div>
+
+          <div class="provider-card glass rounded-lg p-6 border border-gray-800">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4.341 15.547c.442.266.442.738 0 1.004-.266.16-.266.443 0 .603.442.266.442.738 0 1.004-.265.16-.265.443 0 .603.442.266.442.738 0 1.004-.265.16-.265.443 0 .603.442.266.442.738 0 1.004-.266.16-.266.443 0 .603.442.266.442.738 0 1.004l-2.404 1.404c-.442.266-1.004-.16-1.004-.603V8.543c0-.442.562-.869 1.004-.603l7.44 4.34c.442.266.442.738 0 1.004l-7.44 4.34c-.442.266-1.004-.16-1.004-.603V6.54c0-.442.562-.869 1.004-.603L7.4 6.34c.442.266.442.738 0 1.004L4.34 9.688c-.442.266-1.004-.16-1.004-.603V6.54c0-.442.562-.869 1.004-.603l2.404-1.404c.442-.266 1.004.16 1.004.603v13.087c0 .442-.562.869-1.004.603L4.341 15.547z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-medium">Anthropic</h3>
+                <p class="text-sm text-text-secondary">892 chats</p>
+              </div>
+            </div>
+            <div class="flex items-center text-sm text-green-400">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="3" />
+              </svg>
+              Connected
+            </div>
+          </div>
+
+          <div class="provider-card glass rounded-lg p-6 border border-gray-800">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-medium">Gemini</h3>
+                <p class="text-sm text-text-secondary">721 chats</p>
+              </div>
+            </div>
+            <div class="flex items-center text-sm text-yellow-400">
+              <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="3" />
+              </svg>
+              Pending
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Chats -->
+      <div class="glass rounded-lg border border-gray-800 fade-in stagger-3">
+        <div class="border-b border-gray-800 p-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 class="text-xl font-semibold">Recent Chats</h2>
+            <div class="flex items-center space-x-3">
+              <div class="relative">
+                <input type="text" placeholder="Search chats..." class="search-input bg-surface border border-gray-800 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full sm:w-64">
+                <svg class="w-5 h-5 text-text-secondary absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <select class="bg-surface border border-gray-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option>All Providers</option>
+                <option>OpenAI</option>
+                <option>Anthropic</option>
+                <option>Gemini</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="divide-y divide-gray-800">
+          <div class="p-4 hover:bg-gray-800 transition cursor-pointer group">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="text-sm text-text-secondary">OpenAI</span>
+                  <span class="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">GPT-4</span>
+                </div>
+                <h3 class="font-medium mb-1">Building a React Component Library</h3>
+                <p class="text-sm text-text-secondary line-clamp-2">How would you structure a reusable component library with proper TypeScript support...</p>
+              </div>
+              <div class="flex items-center space-x-2 ml-4">
+                <span class="text-xs text-text-secondary">2h ago</span>
+                <button class="opacity-0 group-hover:opacity-100 transition">
+                  <svg class="w-4 h-4 text-text-secondary hover:text-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 hover:bg-gray-800 transition cursor-pointer group">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="text-sm text-text-secondary">Anthropic</span>
+                  <span class="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded">Claude-3</span>
+                </div>
+                <h3 class="font-medium mb-1">Python Data Pipeline Architecture</h3>
+                <p class="text-sm text-text-secondary line-clamp-2">Best practices for building scalable data processing pipelines with Apache Airflow...</p>
+              </div>
+              <div class="flex items-center space-x-2 ml-4">
+                <span class="text-xs text-text-secondary">5h ago</span>
+                <button class="opacity-0 group-hover:opacity-100 transition">
+                  <svg class="w-4 h-4 text-text-secondary hover:text-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 hover:bg-gray-800 transition cursor-pointer group">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="text-sm text-text-secondary">Gemini</span>
+                  <span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">Pro</span>
+                </div>
+                <h3 class="font-medium mb-1">Machine Learning Model Comparison</h3>
+                <p class="text-sm text-text-secondary line-clamp-2">Comparing different ML models for time series forecasting - which approach works best...</p>
+              </div>
+              <div class="flex items-center space-x-2 ml-4">
+                <span class="text-xs text-text-secondary">1d ago</span>
+                <button class="opacity-0 group-hover:opacity-100 transition">
+                  <svg class="w-4 h-4 text-text-secondary hover:text-text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-800 p-4 text-center">
+          <button class="text-primary hover:opacity-90 transition">Load more</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div class="text-center mb-12 fade-in">
+        <h2 class="text-3xl font-bold mb-4">Privacy-First Features</h2>
+        <p class="text-text-secondary max-w-2xl mx-auto">Everything you need to own your AI conversations without compromise</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass rounded-lg p-6 text-center fade-in stagger-1">
+          <div class="feature-icon w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">End-to-End Encryption</h3>
+          <p class="text-sm text-text-secondary">Your chats are encrypted locally before storage</p>
+        </div>
+
+        <div class="glass rounded-lg p-6 text-center fade-in stagger-2">
+          <div class="feature-icon w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4m8-4v10c0 2.21-3.582 4-8 4" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">Local-Only Storage</h3>
+          <p class="text-sm text-text-secondary">No data leaves your machine</p>
+        </div>
+
+        <div class="glass rounded-lg p-6 text-center fade-in stagger-3">
+          <div class="feature-icon w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">Cross-Provider Sync</h3>
+          <p class="text-sm text-text-secondary">Link related threads across providers</p>
+        </div>
+
+        <div class="glass rounded-lg p-6 text-center fade-in stagger-1">
+          <div class="feature-icon w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">Remote Delete</h3>
+          <p class="text-sm text-text-secondary">Remove chats from provider servers</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto text-center">
+      <div class="glass rounded-2xl p-6 sm:p-8 md:p-12 fade-in">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-4">Ready to Own Your AI History?</h2>
+        <p class="text-text-secondary mb-8 max-w-2xl mx-auto">
+          Join thousands of users who've taken control of their AI conversations.
+          Start archiving today — it's free and open source.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="import.html" class="px-8 py-3 rounded-lg bg-primary text-white font-medium hover:opacity-90 transition inline-flex items-center justify-center">
+            Get Started Free
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </a>
+          <button class="px-8 py-3 rounded-lg bg-surface border border-gray-800 text-text-primary font-medium hover:bg-gray-800 transition">
+            View Documentation
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-8 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto text-center">
+        <p class="text-sm text-text-secondary">
+          2024 Chat Collector. Open source. Built for privacy.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+    // Smooth scroll to demo
+    function scrollToDemo() {
+      document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Theme toggle
+    document.getElementById('theme-toggle').addEventListener('click', function() {
+      document.body.classList.toggle('light-mode');
+    });
+    
+    // Intersection observer for fade-ins
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('fade-in');
+        }
+      });
+    }, observerOptions);
+    
+    document.querySelectorAll('.stagger-1, .stagger-2, .stagger-3').forEach(el => {
+      observer.observe(el);
+    });
+  </script>
+  </body>
+
+</html>

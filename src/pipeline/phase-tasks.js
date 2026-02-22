@@ -1,51 +1,8 @@
 import { groqParallel } from '../llm/groq.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { slug, writeFile } from './workspace.js'
-import { updateTask } from '../server/state.js'
 import { HOME_LABELS } from '../config.js'
 import { pagePrompt, backendPrompt } from '../prompts/page.js'
-
-let _workspace = null
-let _taskList = []
-
-export function setTaskState(workspace, tasks) {
-  _workspace = workspace
-  _taskList = tasks
-}
-
-export function getTaskList() {
-  return _taskList
-}
-
-function saveTasks() {
-  if (_workspace) writeFile(_workspace, 'tasks.json', JSON.stringify({ tasks: _taskList }, null, 2))
-}
-
-function processResults(taskList, results, workspace, getFname, log) {
-  for (let i = 0; i < taskList.length; i++) {
-    const t = taskList[i]
-    const r = results[i]
-    const task = _taskList.find((x) => x.id === t.id)
-    if (!r?.content || r.error) {
-      log(`  ${t.id}: FAILED \u2014 ${r?.error ?? 'empty response'}`)
-      if (task) task.status = 'FAILED'
-      updateTask({ id: t.id, status: 'FAILED' })
-      saveTasks()
-      continue
-    }
-    const content = stripFences(r.content)
-    const fname = getFname(t)
-    writeFile(workspace, fname, content)
-    if (task) {
-      task.status = 'DONE'
-      task.files = [fname]
-    }
-    updateTask({ id: t.id, status: 'DONE', files: [fname] })
-    saveTasks()
-    const tpsStr = formatTps(r) ? ` | ${formatTps(r)}` : ''
-    log(`  ${t.id} \u2192 ${fname}: ${content.length} chars${tpsStr}`)
-  }
-}
 
 export function sumTokens(results) {
   let inputTokens = 0
@@ -102,6 +59,36 @@ export function deriveTasks(ctx) {
   return tasks
 }
 
+function processResults(taskCtx, filteredTasks, results, workspace, getFname, log) {
+  const { taskList, updateTask } = taskCtx
+  const saveTasks = () =>
+    writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
+
+  for (let i = 0; i < filteredTasks.length; i++) {
+    const t = filteredTasks[i]
+    const r = results[i]
+    const task = taskList.find((x) => x.id === t.id)
+    if (!r?.content || r.error) {
+      log(`  ${t.id}: FAILED \u2014 ${r?.error ?? 'empty response'}`)
+      if (task) task.status = 'FAILED'
+      updateTask({ id: t.id, status: 'FAILED' })
+      saveTasks()
+      continue
+    }
+    const content = stripFences(r.content)
+    const fname = getFname(t)
+    writeFile(workspace, fname, content)
+    if (task) {
+      task.status = 'DONE'
+      task.files = [fname]
+    }
+    updateTask({ id: t.id, status: 'DONE', files: [fname] })
+    saveTasks()
+    const tpsStr = formatTps(r) ? ` | ${formatTps(r)}` : ''
+    log(`  ${t.id} \u2192 ${fname}: ${content.length} chars${tpsStr}`)
+  }
+}
+
 export async function generateAllTasks(
   tasks,
   ctx,
@@ -110,6 +97,7 @@ export async function generateAllTasks(
   workspace,
   log,
   status,
+  taskCtx,
 ) {
   const isFrontend = (t) => t.status !== 'DONE' && !String(t.id).startsWith('backend-')
   const isBackend = (t) => String(t.id).startsWith('backend-') && t.status !== 'DONE'
@@ -140,10 +128,11 @@ export async function generateAllTasks(
   const backendResults = allResults.slice(pageCalls.length)
 
   if (pageTasks.length > 0) {
-    processResults(pageTasks, pageResults, workspace, (t) => t.filename, log)
+    processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log)
   }
   if (backendTasks.length > 0) {
     processResults(
+      taskCtx,
       backendTasks,
       backendResults,
       workspace,

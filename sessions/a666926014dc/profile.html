@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lidmi — Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background-color:#111827; }
+    .card-hover:hover { transform:translateY(-4px); }
+    .fade-in { animation:fadeIn .6s ease-out forwards; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+  <a href="index.html" class="flex items-center gap-2 text-xl font-bold text-white">
+    <svg class="w-6 h-6 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.41 13.59L12 13.17l-3.41 3.42-1.41-1.41L10.59 12 7.17 8.59l1.41-1.41L12 10.59l3.41-3.41 1.41 1.41L13.41 12l3.41 3.41-1.41 1.18z"/></svg>
+    Lidmi
+  </a>
+  <div class="hidden md:flex items-center gap-6 text-sm">
+    <a href="events.html" class="hover:text-indigo-400 transition">Events</a>
+    <a href="dashboard.html" class="hover:text-indigo-400 transition">Dashboard</a>
+    <a href="profile.html" class="hover:text-indigo-400 transition">Profile</a>
+    <a href="payments.html" class="hover:text-indigo-400 transition">Payments</a>
+    <a href="about.html" class="hover:text-indigo-400 transition">About</a>
+  </div>
+  <div class="flex items-center gap-3">
+    <button class="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-sm hover:border-gray-600 transition">Log In</button>
+    <button class="px-4 py-2 rounded-md bg-indigo-600 text-sm hover:bg-indigo-500 transition">Sign Up</button>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-6 py-12">
+
+  <!-- PROFILE BANNER -->
+  <section class="relative rounded-xl overflow-hidden mb-12">
+    <img src="https://picsum.photos/seed/profile/1200/400" alt="Profile banner" class="w-full h-64 object-cover">
+    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+    <div class="absolute bottom-4 left-6 flex items-center gap-4">
+      <img src="https://i.pravatar.cc/100?u=profile" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-indigo-600">
+      <div>
+        <h1 class="text-3xl font-bold text-white">Alexandra “Alex” Rivera</h1>
+        <p class="text-gray-300">Travel enthusiast • Food lover • Event organizer</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS & ACTIONS -->
+  <section class="grid md:grid-cols-3 gap-8 mb-16">
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+      <div class="text-3xl font-bold text-indigo-400 mb-2">128</div>
+      <div class="text-sm text-gray-400">Events Hosted</div>
+    </div>
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+      <div class="text-3xl font-bold text-indigo-400 mb-2">342</div>
+      <div class="text-sm text-gray-400">Events Joined</div>
+    </div>
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+      <div class="text-3xl font-bold text-indigo-400 mb-2">4.9</div>
+      <div class="text-sm text-gray-400">Avg. Rating</div>
+    </div>
+  </section>
+
+  <div class="flex flex-col lg:flex-row gap-8">
+    <!-- LEFT COLUMN: Upcoming & Past Events -->
+    <div class="lg:w-2/3 space-y-12">
+
+      <!-- Upcoming Events -->
+      <section>
+        <h2 class="text-2xl font-bold mb-6">Upcoming Events</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Event Card -->
+          <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+            <img class="h-40 w-full object-cover" src="https://picsum.photos/seed/upcoming1/800/400" alt="Event">
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Sunset Rooftop Jam</h3>
+              <p class="text-gray-400 text-sm mb-2">Berlin • 3 days left</p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">€15 / person</span>
+                <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">View</button>
+              </div>
+            </div>
+          </div>
+          <!-- Event Card -->
+          <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+            <img class="h-40 w-full object-cover" src="https://picsum.photos/seed/upcoming2/800/400" alt="Event">
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Tokyo Street Food Walk</h3>
+              <p class="text-gray-400 text-sm mb-2">Tokyo • 5 days left</p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">€25 / person</span>
+                <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">View</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Past Events -->
+      <section>
+        <h2 class="text-2xl font-bold mb-6">Past Events</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- Past Event Card -->
+          <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+            <img class="h-40 w-full object-cover" src="https://picsum.photos/seed/past1/800/400" alt="Event">
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">Stargazing Picnic</h3>
+              <p class="text-gray-400 text-sm mb-2">Zurich • Completed</p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">€10 / person</span>
+                <button class="px-3 py-1.5 rounded-md bg-gray-700 hover:bg-gray-600 text-xs">Details</button>
+              </div>
+            </div>
+          </div>
+          <!-- Past Event Card -->
+          <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+            <img class="h-40 w-full object-cover" src="https://picsum.photos/seed/past2/800/400" alt="Event">
+            <div class="p-5">
+              <h3 class="font-semibold mb-2">City Bike Tour</h3>
+              <p class="text-gray-400 text-sm mb-2">Amsterdam • Completed</p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-300">Free</span>
+                <button class="px-3 py-1.5 rounded-md bg-gray-700 hover:bg-gray-600 text-xs">Details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Profile Details -->
+    <aside class="lg:w-1/3 space-y-8">
+      <section class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4">About Me</h2>
+        <p class="text-gray-300 mb-4">
+          Hey! I'm Alex, a digital nomad who loves discovering hidden gems in every city I visit. I started Lidmi to bring people together around shared passions—whether that's music, food, or the great outdoors. When I'm not curating events, you can find me sketching in cafés or planning my next hike.
+        </p>
+        <div class="flex gap-4">
+          <a href="#" class="flex-1 text-center px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-sm">Edit Profile</a>
+          <a href="#" class="flex-1 text-center px-3 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-sm">Settings</a>
+        </div>
+      </section>
+
+      <section class="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4">Connections</h2>
+        <div class="flex -space-x-2">
+          <img class="w-10 h-10 rounded-full border-2 border-gray-800" src="https://i.pravatar.cc/40?u=4" alt="Friend">
+          <img class="w-10 h-10 rounded-full border-2 border-gray-800" src="https://i.pravatar.cc/40?u=5" alt="Friend">
+          <img class="w-10 h-10 rounded-full border-2 border-gray-800" src="https://i.pravatar.cc/40?u=6" alt="Friend">
+          <img class="w-10 h-10 rounded-full border-2 border-gray-800" src="https://i.pravatar.cc/40?u=7" alt="Friend">
+          <span class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-700 text-xs text-gray-300 border-2 border-gray-800">+12</span>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-gray-950 border-t border-gray-800 px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm text-gray-400">
+  <div>
+    <div class="flex items-center gap-2 mb-4 text-white font-bold">
+      <svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.41 13.59L12 13.17l-3.41 3.42-1.41-1.41L10.59 12 7.17 8.59l1.41-1.41L12 10.59l3.41-3.41 1.41 1.41L13.41 12l3.41 3.41-1.41 1.18z"/></svg>
+      Lidmi
+    </div>
+    <p class="text-xs">Create, join, and enjoy social events anywhere.</p>
+  </div>
+  <div>
+    <div class="text-white font-semibold mb-3">Product</div>
+    <a class="block mb-2 hover:text-white" href="events.html">Events</a>
+    <a class="block mb-2 hover:text-white" href="dashboard.html">Dashboard</a>
+    <a class="block mb-2 hover:text-white" href="profile.html">Profile</a>
+    <a class="block mb-2 hover:text-white" href="payments.html">Payments</a>
+  </div>
+  <div>
+    <div class="text-white font-semibold mb-3">Company</div>
+    <a class="block mb-2 hover:text-white" href="about.html">About</a>
+    <a class="block mb-2 hover:text-white" href="#">Careers</a>
+    <a class="block mb-2 hover:text-white" href="#">Press</a>
+    <a class="block mb-2 hover:text-white" href="#">Blog</a>
+  </div>
+  <div>
+    <div class="text-white font-semibold mb-3">Legal</div>
+    <a class="block mb-2 hover:text-white" href="#">Privacy</a>
+    <a class="block mb-2 hover:text-white" href="#">Terms</a>
+    <a class="block mb-2 hover:text-white" href="#">Cookies</a>
+    <a class="block mb-2 hover:text-white" href="#">Licenses</a>
+  </div>
+</footer>
+
+</body>
+</html>

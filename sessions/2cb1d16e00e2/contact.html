@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact – Chat Collector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#3B82F6",
+            secondary: "#6B7280",
+            accent: "#F59E0B",
+            background: "#111827",
+            surface: "#1F2937",
+            "text-primary": "#F9FAFB",
+            "text-secondary": "#9CA3AF"
+          },
+          fontFamily: {
+            sans: ["Inter", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .toggle-dot { transform: translateX(-100%); }
+    .toggle-checkbox:checked ~ .toggle-dot { transform: translateX(0); }
+  </style>
+
+  <style>
+    :root {
+
+    }
+    * {
+      transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  fill 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  stroke 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {},
+          fontFamily: {}
+        }
+      }
+    }
+
+    window.addEventListener('message', (e) => {
+      if (e.data.type === 'UPDATE_THEME') {
+        const theme = e.data.colors;
+        for (const [name, value] of Object.entries(theme)) {
+          document.documentElement.style.setProperty(`--color-${name}`, value);
+        }
+      }
+    });
+  </script>
+</head>
+<body class="bg-background text-text-primary min-h-screen flex flex-col items-center px-4 py-8">
+  <!-- Nav -->
+  <nav class="flex items-center justify-between w-full max-w-5xl mx-auto p-4 rounded-lg bg-surface shadow-sm">
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4"/>
+      </svg>
+      <span class="text-lg font-semibold">Chat Collector</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="text-sm text-text-secondary hover:text-text-primary">Home</a>
+      <a href="features.html" class="text-sm text-text-secondary hover:text-text-primary">Features</a>
+      <a href="pricing.html" class="text-sm text-text-secondary hover:text-text-primary">Pricing</a>
+      <a href="faq.html" class="text-sm text-text-secondary hover:text-text-primary">FAQ</a>
+      <a href="contact.html" class="text-sm font-medium text-primary hover:text-primary">Contact</a>
+      <button id="darkToggle" class="px-3 py-1 rounded-md bg-surface border border-gray-800 hover:border-primary text-text-primary text-sm">Dark</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="w-full max-w-5xl mt-12 mb-24">
+    <section class="text-center mb-12">
+      <h1 class="text-3xl md:text-5xl font-semibold mb-4">Get in Touch</h1>
+      <p class="text-text-secondary max-w-2xl mx-auto">
+        Have a question, feedback, or need support? We're here to help. Fill out the form below or reach us through the channels listed.
+      </p>
+    </section>
+
+    <section class="grid md:grid-cols-2 gap-8">
+      <!-- Contact Form -->
+      <div class="bg-surface rounded-lg border border-gray-800 p-6 shadow-sm">
+        <form class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1" for="name">Name</label>
+            <input id="name" type="text" placeholder="Your name"
+              class="w-full px-3 py-2 rounded-md bg-background border border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="email">Email</label>
+            <input id="email" type="email" placeholder="you@example.com"
+              class="w-full px-3 py-2 rounded-md bg-background border border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="subject">Subject</label>
+            <input id="subject" type="text" placeholder="Subject"
+              class="w-full px-3 py-2 rounded-md bg-background border border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="message">Message</label>
+            <textarea id="message" rows="5" placeholder="Your message..."
+              class="w-full px-3 py-2 rounded-md bg-background border border-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+          </div>
+          <button type="submit"
+            class="w-full px-5 py-2 rounded-lg font-medium bg-primary text-background hover:opacity-90">
+            Send Message
+          </button>
+        </form>
+      </div>
+
+      <!-- Contact Details & Image -->
+      <div class="flex flex-col gap-6">
+        <img src="https://picsum.photos/seed/contact/800/400" alt="Contact illustration"
+          class="w-full h-auto rounded-lg shadow-sm object-cover"/>
+
+        <div class="bg-surface rounded-lg border border-gray-800 p-6 shadow-sm">
+          <h2 class="text-xl font-semibold mb-3">Contact Information</h2>
+          <ul class="space-y-2 text-text-secondary">
+            <li><strong>Email:</strong> <a href="mailto:support@chatcollector.dev" class="underline hover:text-text-primary">support@chatcollector.dev</a></li>
+            <li><strong>Phone:</strong> <a href="tel:+1234567890" class="underline hover:text-text-primary">+1 (234) 567‑890</a></li>
+            <li><strong>Address:</strong> 123 AI Lane, Silicon Valley, CA 94025, USA</li>
+            <li><strong>Twitter:</strong> <a href="https://twitter.com/chatcollector" target="_blank" class="underline hover:text-text-primary">@chatcollector</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-text-secondary text-xs mt-auto py-6 w-full">
+    <p>All data stays on your device. <a href="privacy.html" class="underline hover:text-text-primary">Privacy Policy</a></p>
+    <p class="mt-1">v1.0.0</p>
+  </footer>
+</body>
+</html>

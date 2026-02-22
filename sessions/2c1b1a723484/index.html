@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Collector – Own your AI chat history locally</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html { font-family: 'Inter', sans-serif; }
+    body { background:#0d1117; color:#e6edf3; }
+    ::selection { background:#58a6ff; color:#fff; }
+    .bg-background { background:#0d1117; }
+    .bg-surface { background:#161b22; }
+    .text-text { color:#e6edf3; }
+    .text-muted { color:#8b949e; }
+    .border-gray-700 { border-color:#30363d; }
+    .bg-primary { background:#238636; }
+    .focus\\:ring-primary:focus { --tw-ring-color:#238636; }
+  </style>
+</head>
+<body class="bg-background text-text">
+  <nav class="flex items-center justify-between p-4 bg-surface border-b border-gray-700">
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span class="font-bold text-lg">Chat Collector</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="px-3 py-1.5 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90">Home</a>
+      <a href="dashboard.html" class="px-3 py-1.5 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90">Dashboard</a>
+      <a href="search.html" class="px-3 py-1.5 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90">Search</a>
+      <a href="settings.html" class="px-3 py-1.5 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90">Settings</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-opacity-80 transition text-sm">Dark</button>
+      <a href="providers.html" class="px-3 py-1.5 rounded-lg bg-primary text-white text-sm font-medium hover:opacity-90">Connect Providers</a>
+    </div>
+  </nav>
+
+  <header class="max-w-3xl mx-auto py-20 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold mb-3">Own and manage your AI chat history locally</h1>
+    <p class="text-muted text-base mb-6">Import, encrypt, search, tag, and export conversations from ChatGPT, Claude, Gemini — all kept private on your machine.</p>
+    <a href="dashboard.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium bg-primary text-white hover:opacity-90">Import Now<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+  </header>
+
+  <section class="max-w-5xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+    <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm">
+      <div class="text-muted text-sm mb-1">Total Chats</div>
+      <div class="text-2xl font-semibold">3,421</div>
+    </div>
+    <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm">
+      <div class="text-muted text-sm mb-1">Last Sync</div>
+      <div class="text-2xl font-semibold">2 min ago</div>
+    </div>
+    <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm">
+      <div class="text-muted text-sm mb-1">Storage Used</div>
+      <div class="text-2xl font-semibold">847 MB</div>
+    </div>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-4 mb-12">
+    <h2 class="text-xl font-semibold mb-4">Connected Providers</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://i.pravatar.cc/40?u=openai" class="w-10 h-10 rounded-full">
+          <div>
+            <div class="font-medium">OpenAI</div>
+            <div class="text-muted text-sm">1,287 threads</div>
+          </div>
+        </div>
+        <span class="text-green-400 text-sm">Connected</span>
+      </div>
+      <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="https://i.pravatar.cc/40?u=anthropic" class="w-10 h-10 rounded-full">
+          <div>
+            <div class="font-medium">Anthropic</div>
+            <div class="text-muted text-sm">842 threads</div>
+          </div>
+        </div>
+        <span class="text-green-400 text-sm">Connected</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-4 mb-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold">Recent Threads</h2>
+      <a href="dashboard.html" class="text-primary text-sm hover:underline">View all</a>
+    </div>
+    <div class="space-y-3">
+      <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+        <div>
+          <div class="font-medium">Refactor auth flow with JWT</div>
+          <div class="text-muted text-sm">OpenAI · 3 hours ago · 12 messages</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1.5 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">Tag</button>
+          <button class="px-3 py-1.5 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">Export</button>
+        </div>
+      </div>
+      <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+        <div>
+          <div class="font-medium">Quantum computing intro</div>
+          <div class="text-muted text-sm">Anthropic · 5 hours ago · 8 messages</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1.5 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">Tag</button>
+          <button class="px-3 py-1.5 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">Export</button>
+        </div>
+      </div>
+      <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+        <div>
+          <div class="font-medium">Docker multi-stage builds</div>
+          <div class="text-muted text-sm">OpenAI · 1 day ago · 15 messages</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1.5 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">Tag</button>
+          <button class="px-3 py-1.5 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">Export</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-4 mb-12">
+    <h2 class="text-xl font-semibold mb-4">Quick Search</h2>
+    <form action="search.html" class="flex gap-3">
+      <input type="text" name="q" placeholder="Search by keyword, tag, or provider…" class="flex-1 px-4 py-2 rounded-lg bg-surface border border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none">
+      <button class="px-4 py-2 rounded-lg font-medium bg-primary text-white hover:opacity-90">Search</button>
+    </form>
+    <div class="flex flex-wrap gap-2 mt-3">
+      <span class="text-muted text-sm">Popular:</span>
+      <a href="search.html?q=auth" class="text-primary text-sm hover:underline">auth</a>
+      <a href="search.html?q=typescript" class="text-primary text-sm hover:underline">typescript</a>
+      <a href="search.html?q=claude" class="text-primary text-sm hover:underline">claude</a>
+      <a href="search.html?q=openai" class="text-primary text-sm hover:underline">openai</a>
+    </div>
+  </section>
+
+  <footer class="mt-20 py-6 text-center text-muted text-sm border-t border-gray-700">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-4">
+        <a href="https://docs.chatcollector.dev" class="hover:text-white">Docs</a>
+        <a href="https://github.com/chatcollector/privacy" class="hover:text-white">Privacy</a>
+        <span>v1.0.0</span>
+      </div>
+      <div>© 2024 Chat Collector</div>
+    </div>
+  </footer>
+</body>
+</html>

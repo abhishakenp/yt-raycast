@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <title>AdultStream – Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .hero-bg { background: #111827; }
+    .text-primary { color: #F43F5E; }
+    .bg-primary { background-color: #F43F5E; }
+    .border-primary { border-color: #F43F5E; }
+    .ring-primary { --tw-ring-color: #F43F5E; }
+    .hover\:bg-primary:hover { background-color: #F43F5E; }
+    .shadow-rose-glow { box-shadow: 0 0 20px 0 rgba(244, 63, 94, 0.35); }
+    .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25); }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+<nav class="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+  <a href="index.html" class="flex items-center space-x-2">
+    <svg class="h-7 w-7 text-primary" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+      <circle cx="12" cy="12" r="5"/>
+    </svg>
+    <span class="text-xl font-bold">AdultStream</span>
+  </a>
+  <ul class="hidden md:flex items-center space-x-6 text-sm">
+    <li><a href="categories.html" class="hover:text-primary">Categories</a></li>
+    <li><a href="featured.html" class="hover:text-primary">Featured</a></li>
+    <li><a href="trending.html" class="hover:text-primary">Trending</a></li>
+    <li><a href="creators.html" class="hover:text-primary">Creators</a></li>
+    <li><a href="profile.html" class="text-primary font-medium">Profile</a></li>
+  </ul>
+  <div class="flex items-center space-x-3">
+    <a href="#" class="px-4 py-2 rounded-lg border border-gray-700 hover:border-primary hover:text-primary">Log In</a>
+    <a href="#" class="px-4 py-2 rounded-lg bg-primary hover:bg-rose-600 text-white font-medium shadow-rose-glow">Start Watching</a>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-6 py-12 space-y-12">
+
+  <!-- Banner & Avatar -->
+  <section class="relative rounded-lg overflow-hidden">
+    <img src="https://picsum.photos/seed/profile/800/400" alt="Profile banner" class="w-full h-48 object-cover">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/70 to-transparent"></div>
+    <div class="absolute -bottom-12 left-6 flex items-center space-x-4">
+      <img src="https://picsum.photos/seed/avatar/120/120" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-gray-900 object-cover">
+      <div class="text-white">
+        <h1 class="text-2xl font-bold">Alexandra “Lexi” Monroe</h1>
+        <p class="text-gray-300 text-sm">Premium Member • Joined Jan 2022</p>
+      </div>
+    </div>
+    <div class="absolute top-4 right-6">
+      <a href="#" class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium">Edit Profile</a>
+    </div>
+  </section>
+
+  <!-- Account Overview -->
+  <section class="grid md:grid-cols-3 gap-6">
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-gray-100 mb-4">Account Details</h2>
+      <dl class="space-y-2 text-sm text-gray-300">
+        <div class="flex justify-between"><dt>Email:</dt><dd class="font-medium text-gray-200">lexi.monroe@example.com</dd></div>
+        <div class="flex justify-between"><dt>Username:</dt><dd class="font-medium text-gray-200">LexiM</dd></div>
+        <div class="flex justify-between"><dt>Country:</dt><dd class="font-medium text-gray-200">United States</dd></div>
+        <div class="flex justify-between"><dt>Birthday:</dt><dd class="font-medium text-gray-200">May 14, 1995</dd></div>
+      </dl>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-gray-100 mb-4">Subscription</h2>
+      <p class="text-gray-300 mb-3">Premium Plan – <span class="text-primary font-medium">Active</span></p>
+      <p class="text-gray-400 text-sm mb-4">Renews on <span class="font-medium text-gray-200">15 Oct 2026</span></p>
+      <a href="#" class="inline-block px-4 py-2 rounded-lg bg-primary hover:bg-rose-600 text-white font-medium shadow-rose-glow">Manage Subscription</a>
+    </div>
+
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-gray-100 mb-4">Statistics</h2>
+      <ul class="space-y-2 text-sm text-gray-300">
+        <li>Videos Watched: <span class="font-medium text-gray-200">1,842</span></li>
+        <li>Hours Streamed: <span class="font-medium text-gray-200">276 h</span></li>
+        <li>Favorites: <span class="font-medium text-gray-200">124</span></li>
+        <li>Comments Posted: <span class="font-medium text-gray-200">58</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Recent Activity -->
+  <section>
+    <h2 class="text-2xl font-bold mb-6">Recent Activity</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gray-800 rounded-lg p-4 card-hover">
+        <h3 class="text-lg font-semibold text-gray-100 mb-2">Recently Watched</h3>
+        <ul class="space-y-3 text-sm text-gray-300">
+          <li class="flex items-center">
+            <img src="https://picsum.photos/seed/rec1/80/45" alt="thumb" class="w-20 h-12 object-cover rounded mr-3">
+            <div>
+              <p class="font-medium text-gray-200">Midnight Rendezvous</p>
+              <p class="text-gray-500">5 min ago • 12 min</p>
+            </div>
+          </li>
+          <li class="flex items-center">
+            <img src="https://picsum.photos/seed/rec2/80/45" alt="thumb" class="w-20 h-12 object-cover rounded mr-3">
+            <div>
+              <p class="font-medium text-gray-200">Silk & Shadows</p>
+              <p class="text-gray-500">2 days ago • 8 min</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="bg-gray-800 rounded-lg p-4 card-hover">
+        <h3 class="text-lg font-semibold text-gray-100 mb-2">Latest Comments</h3>
+        <ul class="space-y-3 text-sm text-gray-300">
+          <li>
+            <p class="font-medium text-gray-200">“Amazing chemistry! 🔥”</p>
+            <p class="text-gray-500">on <span class="text-primary">Intimate Passion</span> • 3 h ago</p>
+          </li>
+          <li>
+            <p class="font-medium text-gray-200">“Great lighting and vibe.”</p>
+            <p class="text-gray-500">on <span class="text-primary">Lustful Nights</span> • 1 day ago</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Favorite Videos -->
+  <section>
+    <h2 class="text-2xl font-bold mb-6">Favorite Videos</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div class="bg-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/fav1/400/225" alt="thumb" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-200 mb-1">Velvet Touch</h3>
+          <p class="text-gray-400 text-xs">9 min • HD</p>
+        </div>
+      </div>
+      <div class="bg-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/fav2/400/225" alt="thumb" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-200 mb-1">Midnight Whisper</h3>
+          <p class="text-gray-400 text-xs">11 min • 4K</p>
+        </div>
+      </div>
+      <div class="bg-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/fav3/400/225" alt="thumb" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-200 mb-1">Crimson Desire</h3>
+          <p class="text-gray-400 text-xs">7 min • HD</p>
+        </div>
+      </div>
+      <div class="bg-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/fav4/400/225" alt="thumb" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-200 mb-1">Silken Secrets</h3>
+          <p class="text-gray-400 text-xs">10 min • HD</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="bg-gray-800 rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-4">Account Settings</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <a href="#" class="flex items-center space-x-3 p-4 rounded-lg bg-gray-900 hover:bg-gray-800 card-hover">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <span class="text-gray-200 font-medium">Change Password</span>
+      </a>
+      <a href="#" class="flex items-center space-x-3 p-4 rounded-lg bg-gray-900 hover:bg-gray-800 card-hover">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        <span class="text-gray-200 font-medium">Two‑Factor Authentication</span>
+      </a>
+      <a href="#" class="flex items-center space-x-3 p-4 rounded-lg bg-gray-900 hover:bg-gray-800 card-hover">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 0a2 2 0 100-4 2 2 0 000 4zm-8 0a2 2 0 100-4 2 2 0 000 4z"/></svg>
+        <span class="text-gray-200 font-medium">Notification Preferences</span>
+      </a>
+      <a href="#" class="flex items-center space-x-3 p-4 rounded-lg bg-gray-900 hover:bg-gray-800 card-hover">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        <span class="text-gray-200 font-medium">Delete Account</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="bg-gray-900 border-t border-gray-800 mt-20">
+  <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm text-gray-400">
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Product</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Pricing</a></li>
+        <li><a href="#" class="hover:text-primary">Features</a></li>
+        <li><a href="#" class="hover:text-primary">Security</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Support</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Help Center</a></li>
+        <li><a href="#" class="hover:text-primary">Contact Us</a></li>
+        <li><a href="#" class="hover:text-primary">Community</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Legal</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Privacy Policy</a></li>
+        <li><a href="#" class="hover:text-primary">Terms of Service</a></li>
+        <li><a href="#" class="hover:text-primary">18 U.S.C §2257</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Company</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">About</a></li>
+        <li><a href="#" class="hover:text-primary">Careers</a></li>
+        <li><a href="#" class="hover:text-primary">Press</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 pb-6 text-center text-xs text-gray-500">
+    © <span id="year"></span> AdultStream. All Rights Reserved.
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>

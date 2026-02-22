@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImageGen Studio — Gallery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-background: #0d0d0d;
+      --color-surface: #111111;
+      --color-border: rgba(255,255,255,0.08);
+      --color-primary: #7c3aed;
+      --color-text-primary: #f5f5f5;
+      --color-text-secondary: #a1a1aa;
+    }
+    body {
+      background: var(--color-background);
+      color: var(--color-text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .text-gradient {
+      background: linear-gradient(90deg, #7c3aed 0%, #2563eb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn-primary {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    .card {
+      background: var(--color-surface);
+      border-radius: 0.5rem;
+      border: 1px solid var(--color-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .masonry-grid {
+      column-count: 3;
+      column-gap: 1.5rem;
+    }
+    .masonry-item {
+      display: inline-block;
+      width: 100%;
+      margin-bottom: 1.5rem;
+      break-inside: avoid;
+    }
+    .ring-focus:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--color-primary);
+    }
+    .overflow-ellipsis {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- Nav -->
+  <nav class="flex items-center justify-between px-6 py-4 bg-surface border-b border-border">
+    <div class="flex items-center space-x-3">
+      <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <path d="M3 9l2-2 4 4 4-4 2 2v8H3z"></path>
+      </svg>
+      <span class="font-semibold text-lg">ImageGen Studio</span>
+    </div>
+    <div class="flex items-center space-x-6 text-sm">
+      <a href="index.html" class="text-text-primary hover:text-primary font-medium">Home</a>
+      <a href="generate.html" class="text-text-secondary hover:text-primary">Generate</a>
+      <a href="gallery.html" class="text-text-secondary hover:text-primary">Gallery</a>
+      <a href="pricing.html" class="text-text-secondary hover:text-primary">Pricing</a>
+      <a href="sign-in.html" class="text-text-secondary hover:text-primary">Sign In</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-12 space-y-12">
+
+    <!-- Hero -->
+    <section class="text-center space-y-4">
+      <h1 class="text-4xl md:text-5xl font-bold">Gallery Showcase</h1>
+      <p class="text-lg text-text-secondary max-w-2xl mx-auto">
+        Explore a curated collection of AI‑generated artwork created by our community. Click any image to view details or download.
+      </p>
+    </section>
+
+    <!-- Gallery Grid -->
+    <section class="masonry-grid">
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery1/800/500" alt="Gallery Image 1" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery2/800/600" alt="Gallery Image 2" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery3/800/450" alt="Gallery Image 3" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery4/800/550" alt="Gallery Image 4" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery5/800/400" alt="Gallery Image 5" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery6/800/650" alt="Gallery Image 6" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery7/800/480" alt="Gallery Image 7" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery8/800/530" alt="Gallery Image 8" class="w-full object-cover">
+      </div>
+      <div class="masonry-item card overflow-hidden">
+        <img src="https://picsum.photos/seed/gallery9/800/470" alt="Gallery Image 9" class="w-full object-cover">
+      </div>
+    </section>
+
+    <div class="text-center pt-6">
+      <button class="btn-primary px-6 py-2 rounded-lg text-sm font-medium">Load More</button>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-surface border-t border-border px-6 py-8 text-sm text-text-secondary">
+    <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div>
+        <div class="font-semibold text-text-primary mb-3">Product</div>
+        <ul class="space-y-2">
+          <li><a href="generate.html" class="hover:text-primary">Generate</a></li>
+          <li><a href="gallery.html" class="hover:text-primary">Gallery</a></li>
+          <li><a href="pricing.html" class="hover:text-primary">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold text-text-primary mb-3">Resources</div>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-primary">Docs</a></li>
+          <li><a href="#" class="hover:text-primary">API</a></li>
+          <li><a href="#" class="hover:text-primary">Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold text-text-primary mb-3">Company</div>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-primary">About</a></li>
+          <li><a href="#" class="hover:text-primary">Careers</a></li>
+          <li><a href="#" class="hover:text-primary">Blog</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-semibold text-text-primary mb-3">Social</div>
+        <ul class="space-y-2">
+          <li><a href="#" class="hover:text-primary">Twitter</a></li>
+          <li><a href="#" class="hover:text-primary">Discord</a></li>
+          <li><a href="#" class="hover:text-primary">GitHub</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto mt-8 border-t border-border pt-6 text-center text-xs">
+      © 2024 ImageGen Studio. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>

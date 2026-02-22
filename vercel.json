@@ -1,0 +1,22 @@
+{
+  "name": "ship-fast",
+  "version": 2,
+  "buildCommand": "bun install",
+  "env": {
+    "HOME": {
+      "required": false
+    }
+  },
+  "functions": {
+    "src/index.js": {
+      "runtime": "nodejs@20.x",
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/preview/:sessionId/(.*)",
+      "destination": "/preview/:sessionId/$1"
+    }
+  ]
+}

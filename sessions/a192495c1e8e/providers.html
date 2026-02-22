@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Collector — Providers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background-color: #111827;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+  <!-- Nav -->
+  <nav class="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800">
+    <div class="flex items-center space-x-2">
+      <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 10.38.3.04.6.04.9 0C18.16 26.74 22 22.55 22 17V7l-10-5z"/></svg>
+      <span class="font-semibold text-lg">Chat Collector</span>
+    </div>
+
+    <!-- Primary navigation links -->
+    <div class="flex items-center space-x-6">
+      <a href="index.html" class="text-gray-400 hover:text-white">Home</a>
+      <a href="providers.html" class="text-gray-400 hover:text-white font-medium underline">Providers</a>
+      <a href="library.html" class="text-gray-400 hover:text-white">Library</a>
+      <a href="chat-detail.html" class="text-gray-400 hover:text-white">Chat Detail</a>
+      <a href="settings.html" class="text-gray-400 hover:text-white">Settings</a>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <button id="themeToggle" class="text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      </button>
+      <a href="settings.html" class="text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.997.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-12">
+
+    <!-- Hero image -->
+    <section class="mb-12">
+      <img src="https://picsum.photos/seed/providers/800/400" alt="Providers overview" class="w-full rounded-lg shadow-lg">
+      <h1 class="text-3xl md:text-4xl font-bold mt-6 mb-3 text-center">Connect Your AI Providers</h1>
+      <p class="text-gray-400 text-center mb-8">Manage connections, view status, and configure settings for each supported AI service.</p>
+    </section>
+
+    <!-- Provider cards -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-6">Supported Providers</h2>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- OpenAI -->
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <img src="https://picsum.photos/seed/openai/80/80" alt="OpenAI" class="w-12 h-12 rounded-full"/>
+              <div>
+                <div class="font-medium text-lg">OpenAI</div>
+                <div class="text-sm text-gray-400">ChatGPT, GPT‑4, DALL·E</div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-300 mb-4">
+              Import your ChatGPT threads, keep code snippets, images and file attachments intact. Full control over your data.
+            </p>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-green-400 font-medium">Connected</span>
+            <a href="providers.html#openai" class="text-blue-400 hover:underline">Settings</a>
+          </div>
+        </div>
+
+        <!-- Anthropic -->
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <img src="https://picsum.photos/seed/anthropic/80/80" alt="Anthropic" class="w-12 h-12 rounded-full"/>
+              <div>
+                <div class="font-medium text-lg">Anthropic</div>
+                <div class="text-sm text-gray-400">Claude 2, Claude Instant</div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-300 mb-4">
+              Seamlessly pull Claude conversations, preserving formatting and attachments for later reference.
+            </p>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-green-400 font-medium">Connected</span>
+            <a href="providers.html#anthropic" class="text-blue-400 hover:underline">Settings</a>
+          </div>
+        </div>
+
+        <!-- Google Gemini -->
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <img src="https://picsum.photos/seed/gemini/80/80" alt="Gemini" class="w-12 h-12 rounded-full"/>
+              <div>
+                <div class="font-medium text-lg">Google Gemini</div>
+                <div class="text-sm text-gray-400">Gemini Pro, Gemini Flash</div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-300 mb-4">
+              Coming soon. Join the waitlist to be notified when Gemini integration is ready.
+            </p>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-500 font-medium">Unavailable</span>
+            <a href="providers.html#gemini" class="text-blue-400 hover:underline">Notify me</a>
+          </div>
+        </div>
+
+        <!-- Cohere -->
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <img src="https://picsum.photos/seed/cohere/80/80" alt="Cohere" class="w-12 h-12 rounded-full"/>
+              <div>
+                <div class="font-medium text-lg">Cohere</div>
+                <div class="text-sm text-gray-400">Command R, Command R+</div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-300 mb-4">
+              Early access program – import your command‑based chats and keep them private.
+            </p>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-yellow-400 font-medium">Beta</span>
+            <a href="providers.html#cohere" class="text-blue-400 hover:underline">Request Access</a>
+          </div>
+        </div>
+
+        <!-- Mistral -->
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <img src="https://picsum.photos/seed/mistral/80/80" alt="Mistral" class="w-12 h-12 rounded-full"/>
+              <div>
+                <div class="font-medium text-lg">Mistral</div>
+                <div class="text-sm text-gray-400">Mistral‑7B, Mixtral</div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-300 mb-4">
+              Import chats from Mistral’s API. Currently in development.
+            </p>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-500 font-medium">Unavailable</span>
+            <a href="providers.html#mistral" class="text-blue-400 hover:underline">Notify me</a>
+          </div>
+        </div>
+
+        <!-- Ollama (Local) -->
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center space-x-3 mb-4">
+              <img src="https://picsum.photos/seed/ollama/80/80" alt="Ollama" class="w-12 h-12 rounded-full"/>
+              <div>
+                <div class="font-medium text-lg">Ollama (Local)</div>
+                <div class="text-sm text-gray-400">LLaMA, Mistral, etc.</div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-300 mb-4">
+              Connect to your locally‑running Ollama server and archive self‑hosted model chats.
+            </p>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-green-400 font-medium">Connected</span>
+            <a href="providers.html#ollama" class="text-blue-400 hover:underline">Settings</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to add a new provider -->
+    <section class="mt-12">
+      <h2 class="text-2xl font-semibold mb-4">Add a New Provider</h2>
+      <p class="text-gray-300 mb-6">
+        Want to see another AI service in Chat Collector? Follow the steps below:
+      </p>
+      <ol class="list-decimal list-inside space-y-2 text-gray-300">
+        <li>Open the <strong>Settings</strong> page.</li>
+        <li>Click <strong>“Add Provider”</strong> and select the service.</li>
+        <li>Enter your API key or OAuth credentials.</li>
+        <li>Save – the provider will appear here once the connection is verified.</li>
+      </ol>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-400 text-sm py-8 border-t border-gray-800 mt-12">
+    <p>All data stays on your device. <a href="https://github.com/your-org/chat-collector" class="text-blue-400 hover:underline">Open source</a> &bull; <a href="#" class="text-blue-400 hover:underline">Privacy</a></p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ship</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #000;
+        font-family: 'Inter', system-ui, sans-serif;
+        color: #e2e0f0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      /* ─── Ambient glow ─── */
+      .bg-glow {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .bg-glow::before {
+        content: '';
+        position: absolute;
+        top: 15%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: glowPulse 4s ease-in-out infinite;
+      }
+      @keyframes glowPulse {
+        0%,
+        100% {
+          opacity: 0.6;
+          transform: translateX(-50%) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: translateX(-50%) scale(1.15);
+        }
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 640px;
+        width: 100%;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* ─── Logo ─── */
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+      .logo-icon {
+        width: 64px;
+        height: 64px;
+      }
+      .logo-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+      .logo-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 56px;
+        font-weight: 700;
+        letter-spacing: 5px;
+        background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 40%, #c4b5fd 60%, #7c3aed 100%);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s ease infinite;
+        filter: drop-shadow(0 0 20px rgba(124, 58, 237, 0.3));
+      }
+      @keyframes gradientShift {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      .subtitle {
+        font-size: 18px;
+        color: #c4b5fd;
+        margin-bottom: 12px;
+        letter-spacing: 0.3px;
+        text-align: center;
+        line-height: 1.5;
+        max-width: 520px;
+        font-weight: 500;
+      }
+      .burn-text {
+        font-size: 12px;
+        color: #6b6880;
+        margin-bottom: 40px;
+        text-align: center;
+        max-width: 540px;
+        font-family: 'JetBrains Mono', monospace;
+        line-height: 1.6;
+        opacity: 0.8;
+      }
+
+      /* ─── Input area ─── */
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        width: 100%;
+        margin-bottom: 0;
+      }
+      .prompt-input {
+        width: 100%;
+        min-height: 120px;
+        padding: 16px 18px;
+        background: #0f0d1a;
+        border: 1px solid #2d2a3e;
+        border-radius: 12px;
+        color: #e2e0f0;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        outline: none;
+        resize: vertical;
+        transition:
+          border-color 0.25s,
+          box-shadow 0.25s;
+      }
+      .prompt-input:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+      }
+      .prompt-input::placeholder {
+        color: #4a4660;
+      }
+
+      .submit-btn {
+        align-self: flex-end;
+        padding: 16px 28px;
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+          opacity 0.2s,
+          transform 0.15s,
+          box-shadow 0.25s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .submit-btn:hover {
+        opacity: 0.9;
+        box-shadow: 0 0 24px rgba(124, 58, 237, 0.3);
+      }
+      .submit-btn:active {
+        transform: scale(0.97);
+      }
+      .submit-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .submit-btn .zap-icon {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+
+      .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      .loading .spinner {
+        display: inline-block;
+      }
+      .loading .btn-label {
+        display: none;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ─── Sessions list ─── */
+      .sessions {
+        width: 100%;
+        margin-top: 48px;
+        border-top: 1px solid #2d2a3e;
+        padding-top: 20px;
+      }
+      .sessions h2 {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: rgba(167, 139, 250, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 12px;
+      }
+      .session-list {
+        list-style: none;
+      }
+      .session-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: #0f0d1a;
+        border: 1px solid #2d2a3e;
+        border-radius: 8px;
+        margin-bottom: 6px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.25s;
+      }
+      .session-item:hover {
+        background: #16132a;
+        border-color: #7c3aed;
+      }
+      .session-prompt {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 16px;
+        font-size: 13px;
+        color: #e2e0f0;
+      }
+      .session-meta {
+        font-family: 'JetBrains Mono', monospace;
+        color: #8b86a8;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-glow"></div>
+
+    <div class="container">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#g1)" opacity="0.9" />
+            <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#g2)" opacity="0.8" />
+            <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#g2)" opacity="0.8" />
+            <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#g1)" />
+            <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7" />
+            <circle cx="26" cy="16" r="2" fill="#c4b5fd" />
+            <defs>
+              <linearGradient id="g1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#7c3aed" />
+                <stop offset="1" stop-color="#a78bfa" />
+              </linearGradient>
+              <linearGradient
+                id="g2"
+                x1="14"
+                y1="22"
+                x2="38"
+                y2="40"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stop-color="#6d28d9" />
+                <stop offset="1" stop-color="#7c3aed" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-text">SHIP FAST</span>
+      </div>
+
+      <p class="subtitle">
+        Describe a website, and it will be built faster than it takes you to read this sentence.
+      </p>
+
+      <p class="burn-text">
+        For people building team of agents and bragging about creating website in 20 minutes to 1
+        hour, I'm sorry I had to end the game that brutally.
+      </p>
+
+      <form id="prompt-form" class="input-group">
+        <textarea
+          class="prompt-input"
+          id="prompt-input"
+          placeholder="A modern SaaS landing page for a time tracking app..."
+          autofocus
+          autocomplete="off"
+          rows="4"
+        ></textarea>
+        <button type="submit" class="submit-btn" id="submit-btn">
+          <svg
+            class="zap-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          <span class="btn-label">GENERATE</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+
+      <div class="sessions" id="sessions-section" style="display: none">
+        <h2>Recent Sessions</h2>
+        <ul class="session-list" id="session-list"></ul>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('prompt-form')
+      const input = document.getElementById('prompt-input')
+      const btn = document.getElementById('submit-btn')
+
+      // Enter submits, Shift+Enter for newline
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault()
+          form.requestSubmit()
+        }
+      })
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const prompt = input.value.trim()
+        if (!prompt) return
+
+        btn.disabled = true
+        btn.classList.add('loading')
+
+        try {
+          const res = await fetch('/api/sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt }),
+          })
+          const data = await res.json()
+          if (data.id) {
+            location.href = `/session/${data.id}`
+          } else {
+            alert(data.error || 'Failed to create session')
+            btn.disabled = false
+            btn.classList.remove('loading')
+          }
+        } catch (err) {
+          alert('Connection error: ' + err.message)
+          btn.disabled = false
+          btn.classList.remove('loading')
+        }
+      })
+
+      async function loadSessions() {
+        try {
+          const res = await fetch('/api/sessions')
+          const sessions = await res.json()
+          if (sessions.length === 0) return
+
+          const section = document.getElementById('sessions-section')
+          const list = document.getElementById('session-list')
+          section.style.display = 'block'
+
+          list.innerHTML = sessions
+            .map(
+              (s) => `
+            <li class="session-item" onclick="location.href='/session/${s.id}'">
+              <span class="session-prompt">${s.prompt.replace(/</g, '&lt;').slice(0, 100)}</span>
+              <span class="session-meta">${s.done}/${s.taskCount} tasks</span>
+            </li>
+          `,
+            )
+            .join('')
+        } catch {
+          /* ignore */
+        }
+      }
+
+      loadSessions()
+    </script>
+  </body>
+</html>

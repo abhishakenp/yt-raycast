@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <title>AdultStream – Creators</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .hero-bg { background: #111827; }
+    .text-primary { color: #F43F5E; }
+    .bg-primary { background-color: #F43F5E; }
+    .border-primary { border-color: #F43F5E; }
+    .ring-primary { --tw-ring-color: #F43F5E; }
+    .hover\:bg-primary:hover { background-color: #F43F5E; }
+    .shadow-rose-glow { box-shadow: 0 0 20px 0 rgba(244, 63, 94, 0.35); }
+    .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25); }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+<nav class="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+  <a href="index.html" class="flex items-center space-x-2">
+    <svg class="h-7 w-7 text-primary" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+      <circle cx="12" cy="12" r="5"/>
+    </svg>
+    <span class="text-xl font-bold">AdultStream</span>
+  </a>
+  <ul class="hidden md:flex items-center space-x-6 text-sm">
+    <li><a href="categories.html" class="hover:text-primary">Categories</a></li>
+    <li><a href="featured.html" class="hover:text-primary">Featured</a></li>
+    <li><a href="trending.html" class="hover:text-primary">Trending</a></li>
+    <li><a href="creators.html" class="hover:text-primary">Creators</a></li>
+    <li><a href="profile.html" class="hover:text-primary">Profile</a></li>
+  </ul>
+  <div class="flex items-center space-x-3">
+    <a href="#" class="px-4 py-2 rounded-lg border border-gray-700 hover:border-primary hover:text-primary">Log In</a>
+    <a href="#" class="px-4 py-2 rounded-lg bg-primary hover:bg-rose-600 text-white font-medium shadow-rose-glow">Start Watching</a>
+  </div>
+</nav>
+
+<header class="hero-bg">
+  <div class="max-w-5xl mx-auto text-center px-6 py-24 md:py-32">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4">Meet Our Top Creators</h1>
+    <p class="text-gray-300 mb-8 max-w-2xl mx-auto">Discover the talent behind AdultStream’s most popular videos. Follow, support, and interact with creators you love.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="#" class="px-6 py-3 rounded-lg bg-primary hover:bg-rose-600 text-white font-semibold shadow-rose-glow">Explore All Creators</a>
+      <a href="#" class="px-6 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-semibold">Become a Creator</a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
+
+  <!-- Featured Creator -->
+  <section>
+    <h2 class="text-2xl md:text-3xl font-bold mb-6">Featured Creator</h2>
+    <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden flex flex-col md:flex-row card-hover">
+      <img src="https://picsum.photos/seed/creator-featured/800/400" alt="Featured Creator" class="w-full md:w-1/2 h-64 object-cover">
+      <div class="p-6 flex flex-col justify-between">
+        <div>
+          <h3 class="text-2xl font-semibold mb-2">Sasha Blaze</h3>
+          <p class="text-gray-400 mb-4">Sasha creates immersive 4K experiences that blend storytelling with sensuality. With over 3.2M followers, she’s a staple of the platform.</p>
+          <ul class="flex flex-wrap gap-2 text-sm text-gray-300">
+            <li class="bg-gray-800 px-3 py-1 rounded">4K Streaming</li>
+            <li class="bg-gray-800 px-3 py-1 rounded">Live Cam</li>
+            <li class="bg-gray-800 px-3 py-1 rounded">Exclusive Content</li>
+          </ul>
+        </div>
+        <div class="mt-4 flex items-center space-x-4">
+          <a href="#" class="px-4 py-2 rounded-lg bg-primary hover:bg-rose-600 text-white font-medium shadow-rose-glow">View Profile</a>
+          <a href="#" class="px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary hover:text-white">Subscribe</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Creator Categories -->
+  <section>
+    <h2 class="text-2xl md:text-3xl font-bold mb-6">Creators by Category</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Category Card -->
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 card-hover">
+        <h3 class="text-xl font-semibold mb-4">Amateur</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <img src="https://picsum.photos/seed/creator-amateur-1/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-amateur-2/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-amateur-3/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-amateur-4/200/200" alt="Creator" class="rounded-lg object-cover">
+        </div>
+        <a href="#" class="block mt-4 text-primary hover:underline">Explore Amateur Creators →</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 card-hover">
+        <h3 class="text-xl font-semibold mb-4">MILF</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <img src="https://picsum.photos/seed/creator-milf-1/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-milf-2/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-milf-3/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-milf-4/200/200" alt="Creator" class="rounded-lg object-cover">
+        </div>
+        <a href="#" class="block mt-4 text-primary hover:underline">Explore MILF Creators →</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 card-hover">
+        <h3 class="text-xl font-semibold mb-4">Lesbian</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <img src="https://picsum.photos/seed/creator-lesbian-1/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-lesbian-2/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-lesbian-3/200/200" alt="Creator" class="rounded-lg object-cover">
+          <img src="https://picsum.photos/seed/creator-lesbian-4/200/200" alt="Creator" class="rounded-lg object-cover">
+        </div>
+        <a href="#" class="block mt-4 text-primary hover:underline">Explore Lesbian Creators →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- All Creators Grid -->
+  <section>
+    <h2 class="text-2xl md:text-3xl font-bold mb-6">All Creators</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Creator Card -->
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-1/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Mia Storm</h3>
+        <p class="text-xs text-gray-400 mb-2">2.4M followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-2/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Ethan Blaze</h3>
+        <p class="text-xs text-gray-400 mb-2">1.9M followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-3/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Luna Nova</h3>
+        <p class="text-xs text-gray-400 mb-2">1.6M followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-4/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Riley Fox</h3>
+        <p class="text-xs text-gray-400 mb-2">1.3M followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-5/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Ava Moon</h3>
+        <p class="text-xs text-gray-400 mb-2">1.1M followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-6/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Jax Steele</h3>
+        <p class="text-xs text-gray-400 mb-2">950K followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-7/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Zoe Ember</h3>
+        <p class="text-xs text-gray-400 mb-2">870K followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator-8/200/200" alt="Creator" class="w-24 h-24 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Kai Rivers</h3>
+        <p class="text-xs text-gray-400 mb-2">820K followers</p>
+        <a href="#" class="inline-block px-3 py-1 rounded bg-primary hover:bg-rose-600 text-white text-sm">View Profile</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
+    <h2 class="text-2xl md:text-3xl font-bold mb-4">Become a Creator on AdultStream</h2>
+    <p class="text-gray-300 mb-6 max-w-xl mx-auto">Earn revenue, grow your fanbase, and showcase your talent to millions. Join today and start creating.</p>
+    <a href="#" class="inline-block px-6 py-3 rounded-lg bg-primary hover:bg-rose-600 text-white font-semibold shadow-rose-glow">Start Your Journey</a>
+  </section>
+
+</main>
+
+<footer class="bg-gray-900 border-t border-gray-800 mt-20">
+  <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm text-gray-400">
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Product</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Pricing</a></li>
+        <li><a href="#" class="hover:text-primary">Features</a></li>
+        <li><a href="#" class="hover:text-primary">Security</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Support</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Help Center</a></li>
+        <li><a href="#" class="hover:text-primary">Contact Us</a></li>
+        <li><a href="#" class="hover:text-primary">Community</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Legal</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Privacy Policy</a></li>
+        <li><a href="#" class="hover:text-primary">Terms of Service</a></li>
+        <li><a href="#" class="hover:text-primary">18 U.S.C §2257</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Company</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">About</a></li>
+        <li><a href="#" class="hover:text-primary">Careers</a></li>
+        <li><a href="#" class="hover:text-primary">Press</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 pb-6 text-center text-xs text-gray-500">
+    © <span id="year"></span> AdultStream. All Rights Reserved.
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>

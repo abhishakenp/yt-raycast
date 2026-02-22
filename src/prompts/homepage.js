@@ -14,7 +14,7 @@ export function homepagePrompt(prompt, ctx, designBrief) {
     })
     .join('\n')
 
-  const typeBlock = SITE_TYPE_INSTRUCTIONS[st] ?? SITE_TYPE_INSTRUCTIONS['landing']
+  const typeBlock = SITE_TYPE_INSTRUCTIONS[st] || SITE_TYPE_INSTRUCTIONS.landing
   const pagesBlock = isOnePager
     ? 'ONE-PAGER. All content in this file. Anchor links (#features, #pricing) for nav.'
     : `MULTI-PAGE. This is ONLY the homepage. Other pages are separate files.\nNav hrefs:\n${navLinks}`
@@ -25,11 +25,19 @@ export function homepagePrompt(prompt, ctx, designBrief) {
   const entitiesBlock = ctx?.entities?.length ? `\nKey entities: ${ctx.entities.join(', ')}\n` : ''
   const taglineBlock = ctx?.tagline ? `\nTagline: "${ctx.tagline}"\n` : ''
 
-  return (
-    `index.html \u2014 ${st}:\n${prompt}\n\n` +
-    `Project: ${ctx?.project_name ?? 'My App'}${taglineBlock}${featuresBlock}${entitiesBlock}\n` +
-    `${typeBlock}\n${pagesBlock}\n\n` +
-    `Design system:\n${designBrief || 'Clean, professional, dark mode. Inter font. Muted palette.'}\n\n` +
-    'Tailwind CDN. Realistic mock data. Lorem Picsum images. Output ONLY HTML.'
-  )
+  return `index.html — ${st}:
+${prompt}
+
+Project: ${ctx?.project_name ?? 'My App'}${taglineBlock}${featuresBlock}${entitiesBlock}
+${typeBlock}
+${pagesBlock}
+
+Design system:
+${designBrief || 'Clean, professional, dark mode. Inter font. Muted palette.'}
+
+IMPORTANT:
+- Use semantic Tailwind classes from the design system (e.g., bg-primary, text-secondary, border-surface).
+- Avoid literal colors like bg-blue-500. Use bg-primary instead.
+- Use Google Fonts as defined in the typography section.
+- Tailwind Play CDN is already available. Output ONLY HTML.`
 }

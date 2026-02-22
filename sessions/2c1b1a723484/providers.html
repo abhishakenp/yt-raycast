@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <title>Providers – Chat Collector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html { font-family: 'Inter', sans-serif; }
+    body { background:#0d1117; color:#e6edf3; }
+    ::selection { background:#58a6ff; color:#fff; }
+    .bg-background { background:#0d1117; }
+    .bg-surface { background:#161b22; }
+    .text-text { color:#e6edf3; }
+    .text-muted { color:#8b949e; }
+    .border-gray-700 { border-color:#30363d; }
+    .bg-primary { background:#238636; }
+    .focus\\:ring-primary:focus { --tw-ring-color:#238636; }
+  </style>
+</head>
+<body class="bg-background text-text">
+  <!-- Navigation -->
+  <nav class="flex items-center justify-between p-4 bg-surface border-b border-gray-700">
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span class="font-bold text-lg">Chat Collector</span>
+    </div>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="index.html" class="px-3 py-1.5 rounded-lg hover:bg-surface transition">Home</a>
+      <a href="dashboard.html" class="px-3 py-1.5 rounded-lg hover:bg-surface transition">Dashboard</a>
+      <a href="providers.html" class="px-3 py-1.5 rounded-lg bg-primary text-white font-medium hover:opacity-90">Providers</a>
+      <a href="search.html" class="px-3 py-1.5 rounded-lg hover:bg-surface transition">Search</a>
+      <a href="settings.html" class="px-3 py-1.5 rounded-lg hover:bg-surface transition">Settings</a>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-4 py-12">
+    <!-- Page Header -->
+    <header class="text-center mb-10">
+      <h1 class="text-4xl md:text-5xl font-bold mb-3">Manage Your AI Providers</h1>
+      <p class="text-muted text-base">Connect, configure, and monitor the AI services you use with Chat Collector.</p>
+    </header>
+
+    <!-- Hero Image -->
+    <section class="mb-12">
+      <img src="https://picsum.photos/seed/providers/800/400" alt="Providers illustration" class="w-full rounded-lg shadow-md">
+    </section>
+
+    <!-- Connected Providers List -->
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold">Connected Providers</h2>
+        <button class="px-4 py-2 rounded-lg bg-primary text-white font-medium hover:opacity-90">Add New Provider</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- OpenAI -->
+        <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/openai/80/80" alt="OpenAI" class="w-12 h-12 rounded-full">
+            <div>
+              <div class="font-medium">OpenAI</div>
+              <div class="text-muted text-sm">API Key: <span class="font-mono">sk-••••••••••••</span></div>
+            </div>
+          </div>
+          <span class="text-green-400 text-sm">Connected</span>
+        </div>
+
+        <!-- Anthropic -->
+        <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/anthropic/80/80" alt="Anthropic" class="w-12 h-12 rounded-full">
+            <div>
+              <div class="font-medium">Anthropic</div>
+              <div class="text-muted text-sm">API Key: <span class="font-mono">sk-••••••••••••</span></div>
+            </div>
+          </div>
+          <span class="text-green-400 text-sm">Connected</span>
+        </div>
+
+        <!-- Google Gemini -->
+        <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/gemini/80/80" alt="Gemini" class="w-12 h-12 rounded-full">
+            <div>
+              <div class="font-medium">Google Gemini</div>
+              <div class="text-muted text-sm">API Key: <span class="font-mono">sk-••••••••••••</span></div>
+            </div>
+          </div>
+          <span class="text-green-400 text-sm">Connected</span>
+        </div>
+
+        <!-- Azure OpenAI -->
+        <div class="bg-surface rounded-lg border border-gray-700 p-4 shadow-sm flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="https://picsum.photos/seed/azure/80/80" alt="Azure OpenAI" class="w-12 h-12 rounded-full">
+            <div>
+              <div class="font-medium">Azure OpenAI</div>
+              <div class="text-muted text-sm">Endpoint: <span class="font-mono">eastus2.api.cognitive.azure.com</span></div>
+            </div>
+          </div>
+          <span class="text-red-400 text-sm">Disconnected</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Provider Configuration Form -->
+    <section class="bg-surface rounded-lg border border-gray-700 p-6 shadow-sm">
+      <h2 class="text-xl font-semibold mb-4">Add a New Provider</h2>
+      <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col">
+          <label class="mb-1 text-muted">Provider Name</label>
+          <input type="text" placeholder="e.g., OpenAI, Anthropic…" class="px-4 py-2 rounded-lg bg-surface border border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none">
+        </div>
+        <div class="flex flex-col">
+          <label class="mb-1 text-muted">API Key / Token</label>
+          <input type="password" placeholder="Enter your secret key" class="px-4 py-2 rounded-lg bg-surface border border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none">
+        </div>
+        <div class="flex flex-col md:col-span-2">
+          <label class="mb-1 text-muted">Additional Settings (JSON)</label>
+          <textarea rows="4" placeholder='{"model":"gpt-4","temperature":0.7}' class="px-4 py-2 rounded-lg bg-surface border border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
+        </div>
+        <div class="flex items-center md:col-span-2">
+          <button type="submit" class="px-5 py-2.5 rounded-lg font-medium bg-primary text-white hover:opacity-90">Save Provider</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- Footer (identical to homepage) -->
+  <footer class="mt-20 py-6 text-center text-muted text-sm border-t border-gray-700">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-4">
+        <a href="https://docs.chatcollector.dev" class="hover:text-white">Docs</a>
+        <a href="https://github.com/chatcollector/privacy" class="hover:text-white">Privacy</a>
+        <span>v1.0.0</span>
+      </div>
+      <div>© 2024 Chat Collector</div>
+    </div>
+  </footer>
+</body>
+</html>

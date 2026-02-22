@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lidmi — Events</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background-color:#111827; }
+    .card-hover:hover { transform:translateY(-4px); }
+    .fade-in { animation:fadeIn .6s ease-out forwards; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+  <a href="index.html" class="flex items-center gap-2 text-xl font-bold text-white">
+    <svg class="w-6 h-6 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.41 13.59L12 13.17l-3.41 3.42-1.41-1.41L10.59 12 7.17 8.59l1.41-1.41L12 10.59l3.41-3.41 1.41 1.41L13.41 12l3.41 3.41-1.41 1.18z"/></svg>
+    Lidmi
+  </a>
+  <div class="hidden md:flex items-center gap-6 text-sm">
+    <a href="events.html" class="hover:text-indigo-400 transition">Events</a>
+    <a href="dashboard.html" class="hover:text-indigo-400 transition">Dashboard</a>
+    <a href="profile.html" class="hover:text-indigo-400 transition">Profile</a>
+    <a href="payments.html" class="hover:text-indigo-400 transition">Payments</a>
+    <a href="about.html" class="hover:text-indigo-400 transition">About</a>
+  </div>
+  <div class="flex items-center gap-3">
+    <button class="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-sm hover:border-gray-600 transition">Log In</button>
+    <button class="px-4 py-2 rounded-md bg-indigo-600 text-sm hover:bg-indigo-500 transition">Sign Up</button>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="max-w-7xl mx-auto px-6 py-12">
+
+  <!-- HERO -->
+  <section class="text-center mb-12 fade-in">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4">Discover Events Near You</h1>
+    <p class="text-lg md:text-xl text-gray-300 mb-6 max-w-2xl mx-auto">
+      From underground concerts to rooftop picnics, explore curated events happening around the globe.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <input type="text" placeholder="Search events…" class="px-4 py-2 w-64 rounded-md bg-gray-800 border border-gray-700 focus:outline-none focus:border-indigo-500">
+      <button class="px-6 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 font-medium">Search</button>
+    </div>
+  </section>
+
+  <!-- EVENT GRID -->
+  <section>
+    <h2 class="text-3xl font-bold mb-8 text-center">Featured Events</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <!-- Event Card 1 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event1/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-indigo-600/20 text-indigo-300 px-2 py-1 rounded">Music</span>
+            <span class="text-xs text-gray-400">3 days left</span>
+          </div>
+          <h3 class="font-semibold mb-1">Neon Night DJ Set</h3>
+          <p class="text-gray-400 text-sm mb-3">A pulsating electronic night in downtown Berlin.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">€20 / person</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 2 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event2/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-teal-600/20 text-teal-300 px-2 py-1 rounded">Food</span>
+            <span class="text-xs text-gray-400">5 days left</span>
+          </div>
+          <h3 class="font-semibold mb-1">Sushi & Sake Evening</h3>
+          <p class="text-gray-400 text-sm mb-3">Taste authentic Osaka sushi with a curated sake pairing.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">€35 / person</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 3 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event3/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-purple-600/20 text-purple-300 px-2 py-1 rounded">Outdoor</span>
+            <span class="text-xs text-gray-400">1 week left</span>
+          </div>
+          <h3 class="font-semibold mb-1">Moonlight Kayak Tour</h3>
+          <p class="text-gray-400 text-sm mb-3">Glide across the lake under a full moon, guided by experts.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">€45 / person</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 4 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event4/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-pink-600/20 text-pink-300 px-2 py-1 rounded">Art</span>
+            <span class="text-xs text-gray-400">2 days left</span>
+          </div>
+          <h3 class="font-semibold mb-1">Street Art Walk</h3>
+          <p class="text-gray-400 text-sm mb-3">Explore hidden murals with local graffiti artists.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">Free</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 5 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event5/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-yellow-600/20 text-yellow-300 px-2 py-1 rounded">Workshop</span>
+            <span class="text-xs text-gray-400">4 days left</span>
+          </div>
+          <h3 class="font-semibold mb-1">DIY Terrarium Class</h3>
+          <p class="text-gray-400 text-sm mb-3">Create your own mini‑ecosystem with a professional botanist.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">€30 / person</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 6 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event6/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-red-600/20 text-red-300 px-2 py-1 rounded">Fitness</span>
+            <span class="text-xs text-gray-400">6 days left</span>
+          </div>
+          <h3 class="font-semibold mb-1">Sunrise Yoga on the Beach</h3>
+          <p class="text-gray-400 text-sm mb-3">Start your day with a calming flow and ocean breeze.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">€15 / person</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 7 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event7/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-green-600/20 text-green-300 px-2 py-1 rounded">Tech</span>
+            <span class="text-xs text-gray-400">3 days left</span>
+          </div>
+          <h3 class="font-semibold mb-1">VR Gaming Night</h3>
+          <p class="text-gray-400 text-sm mb-3">Compete in immersive VR arenas with friends.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">€25 / person</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 8 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event8/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-indigo-600/20 text-indigo-300 px-2 py-1 rounded">Film</span>
+            <span class="text-xs text-gray-400">5 days left</span>
+          </div>
+          <h3 class="font-semibold mb-1">Indie Film Screening</h3>
+          <p class="text-gray-400 text-sm mb-3">Watch award‑winning shorts followed by a Q&amp;A.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">€12 / person</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Card 9 -->
+      <div class="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden card-hover transition">
+        <img class="h-48 w-full object-cover" src="https://picsum.photos/seed/event9/800/400" alt="Event">
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs bg-orange-600/20 text-orange-300 px-2 py-1 rounded">Community</span>
+            <span class="text-xs text-gray-400">1 day left</span>
+          </div>
+          <h3 class="font-semibold mb-1">Neighborhood Clean‑Up</h3>
+          <p class="text-gray-400 text-sm mb-3">Join locals to keep the park tidy and enjoy a free lunch.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-300">Free</span>
+            <button class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PAGINATION -->
+  <section class="mt-12 flex justify-center">
+    <nav class="flex gap-2">
+      <button class="px-3 py-1 rounded-md bg-gray-800 border border-gray-700 hover:border-gray-600">Prev</button>
+      <button class="px-3 py-1 rounded-md bg-indigo-600 hover:bg-indigo-500">1</button>
+      <button class="px-3 py-1 rounded-md bg-gray-800 border border-gray-700 hover:border-gray-600">2</button>
+      <button class="px-3 py-1 rounded-md bg-gray-800 border border-gray-700 hover:border-gray-600">3</button>
+      <button class="px-3 py-1 rounded-md bg-gray-800 border border-gray-700 hover:border-gray-600">Next</button>
+    </nav>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-gray-950 border-t border-gray-800 px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm text-gray-400">
+  <div>
+    <div class="flex items-center gap-2 mb-4 text-white font-bold">
+      <svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.41 13.59L12 13.17l-3.41 3.42-1.41-1.41L10.59 12 7.17 8.59l1.41-1.41L12 10.59l3.41-3.41 1.41 1.41L13.41 12l3.41 3.41-1.41 1.18z"/></svg>
+      Lidmi
+    </div>
+    <p class="text-xs">Create, join, and enjoy social events anywhere.</p>
+  </div>
+  <div>
+    <div class="text-white font-semibold mb-3">Product</div>
+    <a class="block mb-2 hover:text-white" href="events.html">Events</a>
+    <a class="block mb-2 hover:text-white" href="dashboard.html">Dashboard</a>
+    <a class="block mb-2 hover:text-white" href="profile.html">Profile</a>
+    <a class="block mb-2 hover:text-white" href="payments.html">Payments</a>
+  </div>
+  <div>
+    <div class="text-white font-semibold mb-3">Company</div>
+    <a class="block mb-2 hover:text-white" href="about.html">About</a>
+    <a class="block mb-2 hover:text-white" href="#">Careers</a>
+    <a class="block mb-2 hover:text-white" href="#">Press</a>
+    <a class="block mb-2 hover:text-white" href="#">Blog</a>
+  </div>
+  <div>
+    <div class="text-white font-semibold mb-3">Legal</div>
+    <a class="block mb-2 hover:text-white" href="#">Privacy</a>
+    <a class="block mb-2 hover:text-white" href="#">Terms</a>
+    <a class="block mb-2 hover:text-white" href="#">Cookies</a>
+    <a class="block mb-2 hover:text-white" href="#">Licenses</a>
+  </div>
+</footer>
+
+</body>
+</html>

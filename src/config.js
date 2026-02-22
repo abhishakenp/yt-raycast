@@ -1,5 +1,4 @@
 export const DASHBOARD_PORT = 7420
-export const PREVIEW_PORT = 3001
 
 export const GROQ_API_KEY = process.env.GROQ_API_KEY
 export const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'

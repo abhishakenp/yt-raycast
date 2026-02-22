@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Collector — Own your AI chat history</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background-color: #111827;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+  <!-- Nav -->
+  <nav class="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800">
+    <a href="index.html" class="flex items-center space-x-2">
+      <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 10.38.3.04.6.04.9 0C18.16 26.74 22 22.55 22 17V7l-10-5z"/></svg>
+      <span class="font-semibold text-lg">Chat Collector</span>
+    </a>
+    <div class="flex items-center space-x-4">
+      <button id="themeToggle" class="text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      </button>
+      <a href="providers.html" class="text-gray-400 hover:text-white">Providers</a>
+      <a href="library.html" class="text-gray-400 hover:text-white">Library</a>
+      <a href="chat-detail.html" class="text-gray-400 hover:text-white">Chat Detail</a>
+      <a href="settings.html" class="text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.997.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="max-w-4xl mx-auto px-6 py-16 text-center">
+    <h1 class="text-3xl md:text-4xl font-bold mb-3">Own and manage your AI chat history locally</h1>
+    <p class="text-gray-400 mb-8">Import, organize, and export conversations from OpenAI, Anthropic, Gemini — all in one private archive.</p>
+    <div class="flex justify-center space-x-4 mb-12">
+      <button class="inline-flex items-center px-5 py-2.5 rounded-lg font-medium bg-blue-600 hover:bg-blue-500 text-white">Import Chats</button>
+      <button class="inline-flex items-center px-5 py-2.5 rounded-lg font-medium bg-gray-800 border border-gray-700 hover:border-gray-600 text-gray-200">Explore Library</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-6 text-center">
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
+        <div class="text-2xl font-semibold">2,847</div>
+        <div class="text-sm text-gray-400">Chats archived</div>
+      </div>
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
+        <div class="text-2xl font-semibold">1.4 GB</div>
+        <div class="text-sm text-gray-400">Local storage</div>
+      </div>
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm">
+        <div class="text-2xl font-semibold">Zero</div>
+        <div class="text-sm text-gray-400">Cloud leaks</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Providers -->
+  <section class="max-w-6xl mx-auto px-6 py-12">
+    <h2 class="text-xl font-semibold mb-6">Supported Providers</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm">
+        <div class="flex items-center space-x-3 mb-4">
+          <img src="https://i.pravatar.cc/40?u=openai" alt="OpenAI" class="w-10 h-10 rounded-full"/>
+          <div>
+            <div class="font-medium">OpenAI</div>
+            <div class="text-xs text-gray-400">ChatGPT</div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-300 mb-4">Import threads, preserve code blocks & attachments.</p>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-green-400">Connected</span>
+          <a href="providers.html" class="text-blue-400 hover:underline">Settings</a>
+        </div>
+      </div>
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm">
+        <div class="flex items-center space-x-3 mb-4">
+          <img src="https://i.pravatar.cc/40?u=anthropic" alt="Anthropic" class="w-10 h-10 rounded-full"/>
+          <div>
+            <div class="font-medium">Anthropic</div>
+            <div class="text-xs text-gray-400">Claude</div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-300 mb-4">Import threads, preserve code blocks & attachments.</p>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-green-400">Connected</span>
+          <a href="providers.html" class="text-blue-400 hover:underline">Settings</a>
+        </div>
+      </div>
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-sm">
+        <div class="flex items-center space-x-3 mb-4">
+          <img src="https://i.pravatar.cc/40?u=gemini" alt="Gemini" class="w-10 h-10 rounded-full"/>
+          <div>
+            <div class="font-medium">Google</div>
+            <div class="text-xs text-gray-400">Gemini</div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-300 mb-4">Coming soon. Join waitlist.</p>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-500">Unavailable</span>
+          <a href="providers.html" class="text-blue-400 hover:underline">Notify me</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Library -->
+  <section class="max-w-6xl mx-auto px-6 py-12">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold">Your Library</h2>
+      <a href="library.html" class="text-blue-400 hover:underline text-sm">View all</a>
+    </div>
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm mb-6">
+      <input type="text" placeholder="Search chats, tags, or participants…" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+    </div>
+    <div class="space-y-4">
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <img src="https://i.pravatar.cc/32?u=c1" alt="user" class="w-8 h-8 rounded-full"/>
+          <div>
+            <div class="font-medium">React Suspense deep dive</div>
+            <div class="text-xs text-gray-400">OpenAI • 23 hours ago • 14 messages</div>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">react</span>
+          <a href="chat-detail.html" class="text-blue-400 hover:underline text-sm">View</a>
+        </div>
+      </div>
+      <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <img src="https://i.pravatar.cc/32?u=c2" alt="user" class="w-8 h-8 rounded-full"/>
+          <div>
+            <div class="font-medium">Claude: Python async patterns</div>
+            <div class="text-xs text-gray-400">Anthropic • 2 days ago • 9 messages</div>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">python</span>
+          <a href="chat-detail.html" class="text-blue-400 hover:underline text-sm">View</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-400 text-sm py-8 border-t border-gray-800 mt-12">
+    <p>All data stays on your device. <a href="https://github.com/your-org/chat-collector" class="text-blue-400 hover:underline">Open source</a> &bull; <a href="#" class="text-blue-400 hover:underline">Privacy</a></p>
+  </footer>
+
+</body>
+</html>

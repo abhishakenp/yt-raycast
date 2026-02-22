@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Collector — Chat Detail</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background-color: #111827;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+  <!-- Nav -->
+  <nav class="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800">
+    <div class="flex items-center space-x-2">
+      <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 10.38.3.04.6.04.9 0C18.16 26.74 22 22.55 22 17V7l-10-5z"/></svg>
+      <span class="font-semibold text-lg">Chat Collector</span>
+    </div>
+    <div class="flex items-center space-x-6">
+      <a href="index.html" class="text-gray-400 hover:text-white text-sm">Home</a>
+      <a href="providers.html" class="text-gray-400 hover:text-white text-sm">Providers</a>
+      <a href="library.html" class="text-gray-400 hover:text-white text-sm">Library</a>
+      <a href="chat-detail.html" class="text-gray-400 hover:text-white text-sm">Chat Detail</a>
+      <a href="settings.html" class="text-gray-400 hover:text-white text-sm">Settings</a>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button id="themeToggle" class="text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      </button>
+      <a href="settings.html" class="text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.997.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-6 py-12">
+    <!-- Back link -->
+    <div class="mb-6">
+      <a href="library.html" class="flex items-center text-blue-400 hover:underline text-sm">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to Library
+      </a>
+    </div>
+
+    <!-- Header image -->
+    <img src="https://picsum.photos/seed/chat-detail/800/400" alt="Chat illustration" class="w-full rounded-lg mb-8">
+
+    <!-- Chat meta -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold">React Suspense deep dive</h1>
+        <p class="text-gray-400 text-sm">OpenAI • 23 hours ago • 14 messages</p>
+      </div>
+      <div class="flex space-x-2">
+        <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">react</span>
+        <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">hooks</span>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="space-y-6">
+      <!-- Message 1 (User) -->
+      <div class="flex items-start space-x-3">
+        <img src="https://i.pravatar.cc/40?u=user1" alt="User" class="w-10 h-10 rounded-full"/>
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 max-w-xl">
+          <p class="text-gray-200">Hey, could you explain how React Suspense works under the hood? I keep seeing it in tutorials but never quite get the details.</p>
+          <span class="block text-xs text-gray-500 mt-2">You • 23h ago</span>
+        </div>
+      </div>
+
+      <!-- Message 2 (Assistant) -->
+      <div class="flex items-start justify-end space-x-3">
+        <div class="bg-blue-900 border border-blue-800 rounded-lg p-4 max-w-xl text-right">
+          <p class="text-gray-100">Sure! Suspense lets you declaratively “wait” for something—like data fetching—while rendering a fallback UI. Internally it uses a <code class="bg-gray-700 px-1 rounded">Promise</code> that, when pending, tells React to pause rendering that part of the tree.</p>
+          <span class="block text-xs text-gray-400 mt-2">ChatGPT • 22h 58m ago</span>
+        </div>
+        <img src="https://i.pravatar.cc/40?u=assistant" alt="Assistant" class="w-10 h-10 rounded-full"/>
+      </div>
+
+      <!-- Message 3 (User) -->
+      <div class="flex items-start space-x-3">
+        <img src="https://i.pravatar.cc/40?u=user1" alt="User" class="w-10 h-10 rounded-full"/>
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 max-w-xl">
+          <p class="text-gray-200">Got it. How does it interact with <code class="bg-gray-700 px-1 rounded">useTransition</code>?</p>
+          <span class="block text-xs text-gray-500 mt-2">You • 22h 45m ago</span>
+        </div>
+      </div>
+
+      <!-- Message 4 (Assistant) -->
+      <div class="flex items-start justify-end space-x-3">
+        <div class="bg-blue-900 border border-blue-800 rounded-lg p-4 max-w-xl text-right">
+          <p class="text-gray-100"><code class="bg-gray-700 px-1 rounded">useTransition</code> lets you mark state updates as “transitions”. When a transition is pending, React can keep the UI responsive by showing a fallback (often a <code class="bg-gray-700 px-1 rounded">Suspense</code> boundary) while the new UI is prepared.</p>
+          <span class="block text-xs text-gray-400 mt-2">ChatGPT • 22h 40m ago</span>
+        </div>
+        <img src="https://i.pravatar.cc/40?u=assistant" alt="Assistant" class="w-10 h-10 rounded-full"/>
+      </div>
+
+      <!-- Message 5 (User) -->
+      <div class="flex items-start space-x-3">
+        <img src="https://i.pravatar.cc/40?u=user1" alt="User" class="w-10 h-10 rounded-full"/>
+        <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 max-w-xl">
+          <p class="text-gray-200">Thanks! One last thing – can I use Suspense for data fetching with the new <code class="bg-gray-700 px-1 rounded">use</code> hook?</p>
+          <span class="block text-xs text-gray-500 mt-2">You • 22h 30m ago</span>
+        </div>
+      </div>
+
+      <!-- Message 6 (Assistant) -->
+      <div class="flex items-start justify-end space-x-3">
+        <div class="bg-blue-900 border border-blue-800 rounded-lg p-4 max-w-xl text-right">
+          <p class="text-gray-100">Exactly! The experimental <code class="bg-gray-700 px-1 rounded">use</code> hook lets you directly await promises inside components, and it works seamlessly with <code class="bg-gray-700 px-1 rounded">Suspense</code>. Just remember it’s still an RFC and may change.</p>
+          <span class="block text-xs text-gray-400 mt-2">ChatGPT • 22h 25m ago</span>
+        </div>
+        <img src="https://i.pravatar.cc/40?u=assistant" alt="Assistant" class="w-10 h-10 rounded-full"/>
+      </div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="mt-12 flex items-center space-x-4">
+      <input type="text" placeholder="Type a message…" class="flex-1 bg-gray-800 border border-gray-700 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md">Send</button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-gray-400 text-sm py-8 border-t border-gray-800 mt-12">
+    <p>All data stays on your device. <a href="https://github.com/your-org/chat-collector" class="text-blue-400 hover:underline">Open source</a> &bull; <a href="#" class="text-blue-400 hover:underline">Privacy</a></p>
+  </footer>
+
+</body>
+</html>

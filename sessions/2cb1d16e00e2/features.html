@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Collector – Features</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#3B82F6",
+            secondary: "#6B7280",
+            accent: "#F59E0B",
+            background: "#111827",
+            surface: "#1F2937",
+            "text-primary": "#F9FAFB",
+            "text-secondary": "#9CA3AF"
+          },
+          fontFamily: {
+            sans: ["Inter", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .toggle-dot { transform: translateX(-100%); }
+    .toggle-checkbox:checked ~ .toggle-dot { transform: translateX(0); }
+  </style>
+
+  <style>
+    :root {
+
+    }
+    * {
+      transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  fill 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                  stroke 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {},
+          fontFamily: {}
+        }
+      }
+    }
+
+    window.addEventListener('message', (e) => {
+      if (e.data.type === 'UPDATE_THEME') {
+        const theme = e.data.colors;
+        for (const [name, value] of Object.entries(theme)) {
+          document.documentElement.style.setProperty(`--color-${name}`, value);
+        }
+      }
+    });
+  </script>
+</head>
+<body class="bg-background text-text-primary min-h-screen flex flex-col items-center px-4 py-8">
+  <!-- Nav -->
+  <nav class="flex items-center justify-between w-full max-w-5xl mx-auto p-4 rounded-lg bg-surface shadow-sm">
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4"/>
+      </svg>
+      <span class="text-lg font-semibold">Chat Collector</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="text-sm text-text-secondary hover:text-text-primary">Home</a>
+      <a href="features.html" class="text-sm text-text-secondary hover:text-text-primary">Features</a>
+      <a href="pricing.html" class="text-sm text-text-secondary hover:text-text-primary">Pricing</a>
+      <a href="faq.html" class="text-sm text-text-secondary hover:text-text-primary">FAQ</a>
+      <a href="contact.html" class="text-sm text-text-secondary hover:text-text-primary">Contact</a>
+      <button id="darkToggle" class="px-3 py-1 rounded-md bg-surface border border-gray-800 hover:border-primary text-text-primary text-sm">Dark</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="w-full max-w-5xl mt-12">
+    <!-- Hero -->
+    <section class="text-center mb-12">
+      <h1 class="text-3xl md:text-5xl font-semibold mb-4">Powerful Features for Your AI Chat History</h1>
+      <p class="text-text-secondary mb-6">Everything you need to keep, search, and organize conversations from every major AI provider.</p>
+    </section>
+
+    <!-- Feature Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+      <!-- Feature 1 -->
+      <article class="bg-surface rounded-lg border border-gray-800 overflow-hidden shadow-sm">
+        <img src="https://picsum.photos/seed/features/800/400" alt="Unified Inbox" class="w-full h-48 object-cover">
+        <div class="p-6">
+          <h2 class="text-xl font-medium mb-2">Unified Inbox</h2>
+          <p class="text-text-secondary mb-4">Collect chats from OpenAI, Anthropic, Gemini and more into a single, searchable archive.</p>
+          <ul class="list-disc list-inside text-text-secondary space-y-1">
+            <li>Automatic sync across providers</li>
+            <li>Tag and categorize each conversation</li>
+            <li>Full‑text search with filters</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- Feature 2 -->
+      <article class="bg-surface rounded-lg border border-gray-800 overflow-hidden shadow-sm">
+        <img src="https://picsum.photos/seed/features/801/400" alt="Privacy First" class="w-full h-48 object-cover">
+        <div class="p-6">
+          <h2 class="text-xl font-medium mb-2">Privacy First Architecture</h2>
+          <p class="text-text-secondary mb-4">All data stays on your device—nothing is sent to the cloud unless you choose to export.</p>
+          <ul class="list-disc list-inside text-text-secondary space-y-1">
+            <li>End‑to‑end encryption at rest</li>
+            <li>Local‑only storage (no remote servers)</li>
+            <li>One‑click export to JSON or Markdown</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- Feature 3 -->
+      <article class="bg-surface rounded-lg border border-gray-800 overflow-hidden shadow-sm">
+        <img src="https://picsum.photos/seed/features/802/400" alt="Smart Insights" class="w-full h-48 object-cover">
+        <div class="p-6">
+          <h2 class="text-xl font-medium mb-2">Smart Insights</h2>
+          <p class="text-text-secondary mb-4">Turn your chat history into actionable knowledge with AI‑powered summarization.</p>
+          <ul class="list-disc list-inside text-text-secondary space-y-1">
+            <li>Generate meeting minutes automatically</li>
+            <li>Extract key ideas and topics</li>
+            <li>Create custom reports on demand</li>
+          </ul>
+        </div>
+      </article>
+
+      <!-- Feature 4 -->
+      <article class="bg-surface rounded-lg border border-gray-800 overflow-hidden shadow-sm">
+        <img src="https://picsum.photos/seed/features/803/400" alt="Custom Workflows" class="w-full h-48 object-cover">
+        <div class="p-6">
+          <h2 class="text-xl font-medium mb-2">Custom Workflows</h2>
+          <p class="text-text-secondary mb-4">Automate repetitive tasks with built‑in scripting and webhooks.</p>
+          <ul class="list-disc list-inside text-text-secondary space-y-1">
+            <li>Trigger actions on new messages</li>
+            <li>Integrate with your favorite note‑taking apps</li>
+            <li>Schedule periodic backups</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="text-center py-8 bg-surface rounded-lg border border-gray-800">
+      <h2 class="text-2xl font-semibold mb-4">Ready to take control of your AI conversations?</h2>
+      <p class="text-text-secondary mb-6">Download the app, connect your providers, and start organizing today.</p>
+      <button class="px-6 py-2 rounded-lg font-medium bg-primary text-background hover:opacity-90">Get Started</button>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-text-secondary text-xs mt-auto py-6">
+    <p>All data stays on your device. <a href="privacy.html" class="underline hover:text-text-primary">Privacy Policy</a></p>
+    <p class="mt-1">v1.0.0</p>
+  </footer>
+</body>
+</html>

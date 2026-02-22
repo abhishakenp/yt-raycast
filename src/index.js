@@ -2,7 +2,7 @@
 import { execSync } from 'node:child_process'
 
 try {
-  execSync('kill $(lsof -t -i:7420 -i:3001) 2>/dev/null', { stdio: 'ignore' })
+  execSync('kill $(lsof -t -i:7420) 2>/dev/null', { stdio: 'ignore' })
 } catch {
   /* port cleanup is best-effort */
 }
@@ -11,10 +11,9 @@ process.on('unhandledRejection', (err) =>
   console.error('  unhandled rejection:', err?.message ?? err),
 )
 
-import { existsSync, readFileSync, mkdirSync } from 'node:fs'
-import { resolve, join } from 'node:path'
-import { startServer } from './server/index.js'
-import { runAll, runEdit } from './pipeline/runner.js'
+import { existsSync, mkdirSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { startServer, startCLISession } from './server/index.js'
 
 if (!process.env.GROQ_API_KEY) {
   console.error('Error: GROQ_API_KEY not set')
@@ -30,49 +29,40 @@ for (const arg of args) {
   else promptArg = arg
 }
 
-const workspace = resolve(workspaceArg ?? process.cwd())
+// Sessions directory for multi-session mode
+const sessionsDir = resolve(workspaceArg ?? process.cwd(), 'sessions')
+if (!existsSync(sessionsDir)) mkdirSync(sessionsDir, { recursive: true })
 
-if (!existsSync(workspace)) {
-  mkdirSync(workspace, { recursive: true })
-  console.log(`  Created workspace: ${workspace}`)
-}
-
-const promptFile = `${workspace}/prompt.txt`
-
-const prompt =
-  promptArg ?? (existsSync(promptFile) ? readFileSync(promptFile, 'utf-8').trim() : null)
-if (!prompt) {
-  console.error('Usage: node src/index.js "your prompt" [/path/to/workspace]')
-  console.error('       node src/index.js /path/to/workspace  (uses prompt.txt)')
-  process.exit(1)
-}
-
-console.log(`\n  ship-fast \u2500 ${prompt.slice(0, 80)}${prompt.length > 80 ? '\u2026' : ''}`)
-console.log(`  workspace: ${workspace}\n`)
-
-let editMode = false
-try {
-  const tasksFile = join(workspace, 'tasks.json')
-  const hasIndex = existsSync(join(workspace, 'index.html'))
-  if (hasIndex && existsSync(tasksFile)) {
-    const data = JSON.parse(readFileSync(tasksFile, 'utf-8'))
-    const tasks = data.tasks ?? []
-    editMode = tasks.length > 0 && tasks.every((t) => ['DONE', 'FAILED'].includes(t.status))
+if (promptArg) {
+  // ─── CLI mode: single session with explicit prompt ─────────
+  const workspace = resolve(workspaceArg ?? process.cwd())
+  if (!existsSync(workspace)) {
+    mkdirSync(workspace, { recursive: true })
+    console.log(`  Created workspace: ${workspace}`)
   }
-} catch {
-  /* tasks.json may not exist or be invalid */
-}
 
-console.log(
-  `  MODE: ${editMode ? 'edit (applying changes to existing site)' : 'generate (fresh build)'}\n`,
-)
+  console.log(
+    `\n  ship-fast \u2500 ${promptArg.slice(0, 80)}${promptArg.length > 80 ? '\u2026' : ''}`,
+  )
+  console.log(`  workspace: ${workspace}\n`)
 
-const serverReady = startServer(workspace)
-const generation = editMode ? runEdit({ prompt, workspace }) : runAll({ prompt, workspace })
+  await startServer(sessionsDir)
 
-serverReady.then(async () => {
+  const { session, generation } = await startCLISession(workspace, promptArg)
+
+  const { default: open } = await import('open')
+  open(`http://localhost:7420/session/${session.id}`)
+
+  await generation
+} else {
+  // ─── Server-only mode: prompt page, multi-session ──────────
+  console.log('\n  ship-fast \u2500 server mode (multi-session)')
+  console.log(`  sessions: ${sessionsDir}\n`)
+
+  await startServer(sessionsDir)
+
   const { default: open } = await import('open')
   open('http://localhost:7420')
-})
 
-await generation
+  console.log('  Waiting for prompts at http://localhost:7420\n')
+}

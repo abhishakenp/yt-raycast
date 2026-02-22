@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <title>AdultStream – Featured Videos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .hero-bg { background: #111827; }
+    .text-primary { color: #F43F5E; }
+    .bg-primary { background-color: #F43F5E; }
+    .border-primary { border-color: #F43F5E; }
+    .ring-primary { --tw-ring-color: #F43F5E; }
+    .hover\:bg-primary:hover { background-color: #F43F5E; }
+    .shadow-rose-glow { box-shadow: 0 0 20px 0 rgba(244, 63, 94, 0.35); }
+    .card-hover { transition: transform .2s ease, box-shadow .2s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.25); }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-50">
+
+<nav class="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+  <a href="index.html" class="flex items-center space-x-2">
+    <svg class="h-7 w-7 text-primary" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+      <circle cx="12" cy="12" r="5"/>
+    </svg>
+    <span class="text-xl font-bold">AdultStream</span>
+  </a>
+  <ul class="hidden md:flex items-center space-x-6 text-sm">
+    <li><a href="categories.html" class="hover:text-primary">Categories</a></li>
+    <li><a href="featured.html" class="hover:text-primary">Featured</a></li>
+    <li><a href="trending.html" class="hover:text-primary">Trending</a></li>
+    <li><a href="creators.html" class="hover:text-primary">Creators</a></li>
+    <li><a href="profile.html" class="hover:text-primary">Profile</a></li>
+  </ul>
+  <div class="flex items-center space-x-3">
+    <a href="#" class="px-4 py-2 rounded-lg border border-gray-700 hover:border-primary hover:text-primary">Log In</a>
+    <a href="#" class="px-4 py-2 rounded-lg bg-primary hover:bg-rose-600 text-white font-medium shadow-rose-glow">Start Watching</a>
+  </div>
+</nav>
+
+<header class="hero-bg">
+  <div class="max-w-5xl mx-auto text-center px-6 py-24 md:py-32">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4">Featured Videos</h1>
+    <p class="text-gray-300 mb-8 max-w-2xl mx-auto">Hand‑picked collections from top creators, curated just for you. Dive into exclusive releases, behind‑the‑scenes content, and the hottest trends.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="#" class="px-6 py-3 rounded-lg bg-primary hover:bg-rose-600 text-white font-semibold shadow-rose-glow">Explore All Featured</a>
+      <a href="#" class="px-6 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-semibold">Browse Categories</a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
+
+  <!-- Editor's Picks -->
+  <section>
+    <h2 class="text-2xl md:text-3xl font-bold mb-6">Editor’s Picks</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured1/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Midnight Whisper</h3>
+          <p class="text-gray-400 text-xs mb-2">9m • HD</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>94% liked</span>
+            <span>1.3M views</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured2/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Velvet Touch</h3>
+          <p class="text-gray-400 text-xs mb-2">11m • 4K</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>89% liked</span>
+            <span>980K views</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured3/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Silk & Shadows</h3>
+          <p class="text-gray-400 text-xs mb-2">7m • HD</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>96% liked</span>
+            <span>1.7M views</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured4/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Crimson Desire</h3>
+          <p class="text-gray-400 text-xs mb-2">10m • HD</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>92% liked</span>
+            <span>1.1M views</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- New Releases -->
+  <section>
+    <h2 class="text-2xl md:text-3xl font-bold mb-6">New Releases</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured5/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Electric Pulse</h3>
+          <p class="text-gray-400 text-xs mb-2">8m • 4K</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>90% liked</span>
+            <span>850K views</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured6/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Moonlit Rendezvous</h3>
+          <p class="text-gray-400 text-xs mb-2">12m • HD</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>88% liked</span>
+            <span>720K views</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured7/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Satin Secrets</h3>
+          <p class="text-gray-400 text-xs mb-2">9m • HD</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>93% liked</span>
+            <span>1.0M views</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden card-hover">
+        <img src="https://picsum.photos/seed/featured8/400/225" alt="Thumbnail" class="w-full h-40 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold mb-2">Velvet Nightfall</h3>
+          <p class="text-gray-400 text-xs mb-2">6m • 4K</p>
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>95% liked</span>
+            <span>1.4M views</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spotlight: Top Creators -->
+  <section>
+    <h2 class="text-2xl md:text-3xl font-bold mb-6">Spotlight – Top Creators</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator1/80/80" alt="Creator" class="w-20 h-20 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Ava Blaze</h3>
+        <p class="text-xs text-gray-400">2.1M followers</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator2/80/80" alt="Creator" class="w-20 h-20 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Jax Storm</h3>
+        <p class="text-xs text-gray-400">1.9M followers</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator3/80/80" alt="Creator" class="w-20 h-20 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Mia Velvet</h3>
+        <p class="text-xs text-gray-400">1.6M followers</p>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center card-hover">
+        <img src="https://picsum.photos/seed/creator4/80/80" alt="Creator" class="w-20 h-20 rounded-full mx-auto mb-3 object-cover">
+        <h3 class="font-semibold">Zane Noir</h3>
+        <p class="text-xs text-gray-400">1.8M followers</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
+    <h2 class="text-2xl md:text-3xl font-bold mb-4">Ready for More?</h2>
+    <p class="text-gray-300 mb-6 max-w-xl mx-auto">Unlock unlimited access to all featured content, exclusive releases, and premium creator streams. No commitment, cancel anytime.</p>
+    <a href="#" class="inline-block px-6 py-3 rounded-lg bg-primary hover:bg-rose-600 text-white font-semibold shadow-rose-glow">Start Free Trial</a>
+  </section>
+
+</main>
+
+<footer class="bg-gray-900 border-t border-gray-800 mt-20">
+  <div class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm text-gray-400">
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Product</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Pricing</a></li>
+        <li><a href="#" class="hover:text-primary">Features</a></li>
+        <li><a href="#" class="hover:text-primary">Security</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Support</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Help Center</a></li>
+        <li><a href="#" class="hover:text-primary">Contact Us</a></li>
+        <li><a href="#" class="hover:text-primary">Community</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Legal</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">Privacy Policy</a></li>
+        <li><a href="#" class="hover:text-primary">Terms of Service</a></li>
+        <li><a href="#" class="hover:text-primary">18 U.S.C §2257</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-gray-50 font-semibold mb-4">Company</h3>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-primary">About</a></li>
+        <li><a href="#" class="hover:text-primary">Careers</a></li>
+        <li><a href="#" class="hover:text-primary">Press</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 pb-6 text-center text-xs text-gray-500">
+    © <span id="year"></span> AdultStream. All Rights Reserved.
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>

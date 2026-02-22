@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Collector | Own and manage your AI chat history locally</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root {
+            --primary: #3B82F6;
+            --secondary: #6B7280;
+            --accent: #F59E0B;
+            --background: #111827;
+            --surface: #1F2937;
+            --text-primary: #F9FAFB;
+            --text-secondary: #9CA3AF;
+            --border: #374151;
+        }
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#6B7280',
+                        accent: '#F59E0B',
+                        background: '#111827',
+                        surface: '#1F2937',
+                        'text-primary': '#F9FAFB',
+                        'text-secondary': '#9CA3AF',
+                        border: '#374151'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+  
+    <style>
+      :root {
+
+      }
+      * {
+        transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    fill 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                    stroke 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {},
+            fontFamily: {}
+          }
+        }
+      }
+
+      window.addEventListener('message', (e) => {
+        if (e.data.type === 'UPDATE_THEME') {
+          const theme = e.data.colors;
+          for (const [name, value] of Object.entries(theme)) {
+            document.documentElement.style.setProperty(`--color-${name}`, value);
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body class="bg-background text-text-primary min-h-screen overflow-x-hidden">
+    <!-- Navigation -->
+    <nav class="flex items-center justify-between p-4 bg-surface border-b border-border sticky top-0 z-50">
+      <div class="flex items-center gap-4">
+        <svg class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+        </svg>
+        <span class="font-semibold text-lg">Chat Collector</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button class="px-4 py-2 rounded-md font-medium bg-primary text-white hover:opacity-90 transition-opacity">
+          Import Chats
+        </button>
+        <a href="archive.html" class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+          Archive
+        </a>
+        <a href="settings.html" class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+          Settings
+        </a>
+        <a href="help.html" class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+          Help
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-12 space-y-12">
+      <h1 class="text-3xl font-bold mb-6 text-center">Settings</h1>
+
+      <!-- General Settings -->
+      <section class="bg-surface rounded-lg border border-border p-6">
+        <h2 class="text-xl font-semibold mb-4">General</h2>
+        <div class="grid gap-4">
+          <label class="flex items-center justify-between">
+            <span>Enable automatic imports</span>
+            <input type="checkbox" class="form-checkbox h-5 w-5 text-primary bg-background border border-border rounded" checked>
+          </label>
+          <label class="flex items-center justify-between">
+            <span>Show notifications</span>
+            <input type="checkbox" class="form-checkbox h-5 w-5 text-primary bg-background border border-border rounded">
+          </label>
+        </div>
+      </section>
+
+      <!-- Appearance Settings -->
+      <section class="bg-surface rounded-lg border border-border p-6">
+        <h2 class="text-xl font-semibold mb-4">Appearance</h2>
+        <div class="grid gap-4">
+          <label class="flex items-center justify-between">
+            <span>Theme</span>
+            <select class="bg-background border border-border rounded-md p-1 text-text-secondary">
+              <option>System</option>
+              <option>Light</option>
+              <option selected>Dark</option>
+            </select>
+          </label>
+          <label class="flex items-center justify-between">
+            <span>Primary color</span>
+            <input type="color" value="#3B82F6" class="border border-border rounded-md p-0.5">
+          </label>
+        </div>
+      </section>
+
+      <!-- Data Management -->
+      <section class="bg-surface rounded-lg border border-border p-6">
+        <h2 class="text-xl font-semibold mb-4">Data Management</h2>
+        <div class="grid gap-4">
+          <button class="px-4 py-2 rounded-md font-medium bg-primary text-white hover:opacity-90 transition-opacity">
+            Export All Chats
+          </button>
+          <button class="px-4 py-2 rounded-md font-medium bg-primary text-white hover:opacity-90 transition-opacity">
+            Import from File
+          </button>
+          <button class="px-4 py-2 rounded-md font-medium bg-surface border border-border hover:bg-surface/80 transition-colors">
+            Clear Local Archive
+          </button>
+        </div>
+      </section>
+
+      <!-- Account Settings -->
+      <section class="bg-surface rounded-lg border border-border p-6">
+        <h2 class="text-xl font-semibold mb-4">Account</h2>
+        <div class="grid gap-4">
+          <div class="flex items-center gap-4">
+            <img src="https://picsum.photos/seed/settings/80/80" alt="User avatar" class="rounded-full w-20 h-20">
+            <div>
+              <p class="font-medium">Username: <span class="text-text-secondary">johndoe</span></p>
+              <p class="font-medium">Email: <span class="text-text-secondary">john@example.com</span></p>
+            </div>
+          </div>
+          <button class="px-4 py-2 rounded-md font-medium bg-primary text-white hover:opacity-90 transition-opacity">
+            Manage Account
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-sm text-text-secondary py-8 border-t border-border">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div class="flex items-center gap-6">
+            <a href="#" class="hover:text-text-primary">Privacy Policy</a>
+            <a href="#" class="hover:text-text-primary">Terms of Service</a>
+            <a href="#" class="hover:text-text-primary">Feedback</a>
+          </div>
+          <div>
+            Version 1.0.0 • Built with privacy first
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ChatVault — Own Your AI Chats</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100">
+  <header class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4m16-4H4m16 8H4m16 4H4"/>
+      </svg>
+      <div class="font-semibold text-xl">ChatVault</div>
+    </div>
+    <nav class="hidden md:flex items-center gap-6 text-sm">
+      <a href="index.html" class="text-slate-200 hover:text-white">Home</a>
+      <a href="library.html" class="text-slate-400 hover:text-white">Library</a>
+      <a href="import.html" class="text-slate-400 hover:text-white">Import</a>
+      <a href="export.html" class="text-slate-400 hover:text-white">Export</a>
+      <a href="docs.html" class="text-slate-400 hover:text-white">Docs</a>
+    </nav>
+    <div class="flex items-center gap-4">
+      <input class="hidden sm:block px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Search…">
+      <a href="settings.html" class="p-2 rounded-lg hover:bg-slate-800">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </a>
+      <div class="w-8 h-8 rounded-full bg-slate-700 bg-cover bg-center" style="background-image:url('https://i.pravatar.cc/64?u=you')"></div>
+    </div>
+  </header>
+
+  <section class="px-6 py-12 text-center">
+    <h1 class="text-4xl font-bold mb-2">Own Your AI Chats</h1>
+    <p class="text-slate-400 mb-8">Local, private, unified archive for every conversation.</p>
+    <div class="flex items-center justify-center gap-4">
+      <a href="import.html" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500">Import Now</a>
+      <a href="library.html" class="px-5 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700">Browse Library</a>
+    </div>
+  </section>
+
+  <section class="px-6 pb-12">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Local-Only Storage</h3>
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-400">Your chats never leave your machine. Zero cloud persistence.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">End-to-End Encryption</h3>
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-400">AES-256 encryption keeps data unreadable to anyone but you.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Provider Import</h3>
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-400">One-click fetch from OpenAI, Claude, Gemini and more.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Incremental Collection</h3>
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-400">Only new conversations are pulled, saving bandwidth and time.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Deduplication</h3>
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-400">Identical messages are merged automatically across imports.</p>
+      </div>
+      <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Search & Tagging</h3>
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="text-sm text-slate-400">Instant full-text search and flexible tagging for organization.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 pb-12">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-2xl font-semibold mb-6">Connected Sources</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div class="p-4 rounded-lg border border-slate-700 bg-slate-800 flex items-center gap-3">
+          <img class="w-8 h-8 rounded" src="https://i.pravatar.cc/64?u=openai" alt="OpenAI">
+          <div>
+            <div class="font-medium">OpenAI</div>
+            <div class="text-xs text-slate-400">1,243 chats</div>
+          </div>
+        </div>
+        <div class="p-4 rounded-lg border border-slate-700 bg-slate-800 flex items-center gap-3">
+          <img class="w-8 h-8 rounded" src="https://i.pravatar.cc/64?u=anthropic" alt="Anthropic">
+          <div>
+            <div class="font-medium">Claude</div>
+            <div class="text-xs text-slate-400">892 chats</div>
+          </div>
+        </div>
+        <div class="p-4 rounded-lg border border-slate-700 bg-slate-800 flex items-center gap-3">
+          <img class="w-8 h-8 rounded" src="https://i.pravatar.cc/64?u=gemini" alt="Gemini">
+          <div>
+            <div class="font-medium">Gemini</div>
+            <div class="text-xs text-slate-400">267 chats</div>
+          </div>
+        </div>
+        <div class="p-4 rounded-lg border border-slate-700 bg-slate-800 flex items-center justify-center">
+          <button class="text-sm text-blue-400 hover:text-blue-300">+ Add Source</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 pb-12">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold">Recent Chats</h2>
+        <a href="library.html" class="text-sm text-blue-400 hover:text-blue-300">View All</a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+          <div class="flex items-center gap-3 mb-3">
+            <img class="w-8 h-8 rounded-full bg-cover bg-center" src="https://i.pravatar.cc/64?u=chat1" alt="Chat">
+            <div>
+              <h3 class="font-semibold">React Best Practices 2024</h3>
+              <p class="text-xs text-slate-400">OpenAI · 2h ago</p>
+            </div>
+          </div>
+          <p class="text-sm text-slate-300 line-clamp-2">We discussed component composition, hooks, and performance optimization patterns.</p>
+          <div class="flex items-center gap-2 mt-3 text-xs">
+            <span class="px-2 py-1 rounded bg-slate-700">react</span>
+            <span class="px-2 py-1 rounded bg-slate-700">hooks</span>
+          </div>
+        </div>
+        <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+          <div class="flex items-center gap-3 mb-3">
+            <img class="w-8 h-8 rounded-full bg-cover bg-center" src="https://i.pravatar.cc/64?u=chat2" alt="Chat">
+            <div>
+              <h3 class="font-semibold">Python Data Pipelines</h3>
+              <p class="text-xs text-slate-400">Claude · 5h ago</p>
+            </div>
+          </div>
+          <p class="text-sm text-slate-300 line-clamp-2">Covered Airflow vs Prefect, error handling, and idempotency tricks.</p>
+          <div class="flex items-center gap-2 mt-3 text-xs">
+            <span class="px-2 py-1 rounded bg-slate-700">python</span>
+            <span class="px-2 py-1 rounded bg-slate-700">data</span>
+          </div>
+        </div>
+        <div class="p-4 rounded-lg border border-slate-700 bg-slate-800">
+          <div class="flex items-center gap-3 mb-3">
+            <img class="w-8 h-8 rounded-full bg-cover bg-center" src="https://i.pravatar.cc/64?u=chat3" alt="Chat">
+            <div>
+              <h3 class="font-semibold">Design Token Strategy</h3>
+              <p class="text-xs text-slate-400">Gemini · 1d ago</p>
+            </div>
+          </div>
+          <p class="text-sm text-slate-300 line-clamp-2">Explored naming conventions, Figma integration, and dark-mode scaling.</p>
+          <div class="flex items-center gap-2 mt-3 text-xs">
+            <span class="px-2 py-1 rounded bg-slate-700">design</span>
+            <span class="px-2 py-1 rounded bg-slate-700">tokens</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 pb-12">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-2xl font-semibold mb-3">Export Anytime</h2>
+      <p class="text-slate-400 mb-6">Choose your format: JSON, CSV, Markdown, or PDF. Bulk-export by tag, date, or provider.</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <button class="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700">JSON</button>
+        <button class="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700">CSV</button>
+        <button class="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700">Markdown</button>
+        <button class="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700">PDF</button>
+        <a href="export.html" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500">Export All</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="px-6 py-8 border-t border-slate-800 text-center text-sm text-slate-400">
+    <div class="flex items-center justify-center gap-4 mb-2">
+      <a href="docs.html" class="hover:text-white">Docs</a>
+      <a href="#" class="hover:text-white">Privacy</a>
+      <a href="#" class="hover:text-white">Feedback</a>
+    </div>
+    <div>© 2024 ChatVault</div>
+  </footer>
+</body>
+</html>
