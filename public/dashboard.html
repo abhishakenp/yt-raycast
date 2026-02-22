@@ -1248,20 +1248,11 @@
             <div class="browser-status">
               <span class="dot" id="status-dot"></span>
               <span id="status-text">Preview</span>
-              <button
-                id="generate-design-btn"
-                onclick="generateAlternativeDesign()"
-                title="Generate Alternative Theme"
-              >
-                🎨 GENERATE
-              </button>
-              <button
-                id="theme-magic-btn"
-                onclick="applyMagicTheme()"
-                title="Magic: Switch Theme"
-              >
-                ✨ MAGIC THEME
-              </button>
+              <!-- generate/theme buttons hidden for now -->
+              <!--
+              <button id="generate-design-btn" onclick="generateAlternativeDesign()" title="Generate Alternative Theme">🎨 GENERATE</button>
+              <button id="theme-magic-btn" onclick="applyMagicTheme()" title="Magic: Switch Theme">✨ MAGIC THEME</button>
+              -->
             </div>
             <button
               id="split-toggle-btn"
@@ -1305,7 +1296,7 @@
       // ─── Config ────────────────────────────────────────────────
       const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
       const PREVIEW_BASE = `${location.origin}/preview/${SESSION_ID}`
-      const WS_URL = `ws://${location.host}?session=${SESSION_ID}`
+      const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}?session=${SESSION_ID}`
       const TYPING_SPEED_MS = 40
 
       // ─── Audio unlock: ensure launch SFX can play ──────────────
@@ -2229,6 +2220,20 @@
       })
 
       // ─── Init ──────────────────────────────────────────────────
+      // Fetch session info — load prompt and detect if already done
+      fetch(`/api/sessions/${SESSION_ID}`)
+        .then((r) => r.json())
+        .then((session) => {
+          if (session.prompt && !introPromptText) {
+            introPromptText = session.prompt
+          }
+          const isDone = session.taskCount > 0 && session.done === session.taskCount
+          if (isDone) {
+            const sfx = document.getElementById('launch-sfx')
+            if (sfx) sfx.remove()
+          }
+        })
+        .catch(() => {})
       startIntro()
       connectWS()
     </script>

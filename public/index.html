@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ship Fast — AI Website Generator in Seconds</title>
-    <meta name="description" content="Describe a website and get it built faster than it takes to read a sentence. AI-powered full-stack code generation." />
+    <meta name="description" content="The time to build a SaaS is now measured in seconds. AI-powered full-stack code generation." />
     <meta name="keywords" content="AI website generator, code generation, website builder, AI coding, ship fast" />
     <meta name="author" content="Ship Fast" />
     <meta name="robots" content="index, follow" />
@@ -16,7 +16,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://ship-fast.devliv.io" />
     <meta property="og:title" content="Ship Fast — AI Website Generator in Seconds" />
-    <meta property="og:description" content="Describe a website and get it built faster than it takes to read a sentence. AI-powered full-stack code generation." />
+    <meta property="og:description" content="The time to build a SaaS is now measured in seconds. AI-powered full-stack code generation." />
     <meta property="og:image" content="https://ship-fast.devliv.io/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -26,7 +26,7 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Ship Fast — AI Website Generator in Seconds" />
-    <meta name="twitter:description" content="Describe a website and get it built faster than it takes to read a sentence. AI-powered full-stack code generation." />
+    <meta name="twitter:description" content="The time to build a SaaS is now measured in seconds. AI-powered full-stack code generation." />
     <meta name="twitter:image" content="https://ship-fast.devliv.io/og-image.png" />
 
     <!-- Plausible Analytics (proxied) -->
@@ -148,22 +148,12 @@
       .subtitle {
         font-size: 18px;
         color: #c4b5fd;
-        margin-bottom: 12px;
+        margin-bottom: 40px;
         letter-spacing: 0.3px;
         text-align: center;
         line-height: 1.5;
         max-width: 520px;
         font-weight: 500;
-      }
-      .burn-text {
-        font-size: 12px;
-        color: #6b6880;
-        margin-bottom: 40px;
-        text-align: center;
-        max-width: 540px;
-        font-family: 'JetBrains Mono', monospace;
-        line-height: 1.6;
-        opacity: 0.8;
       }
 
       /* ─── Input area ─── */
@@ -312,9 +302,49 @@
         font-size: 11px;
         white-space: nowrap;
       }
+
+      .wappalyzer-banner {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #22c55e;
+        color: #000;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        padding: 6px 12px;
+        z-index: 100;
+      }
+
+      .social-links {
+        position: fixed;
+        bottom: 20px;
+        left: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 10;
+      }
+      .social-links a {
+        color: #4a4660;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+      }
+      .social-links a:hover {
+        color: #a78bfa;
+      }
+      .social-links a svg {
+        width: 18px;
+        height: 18px;
+      }
     </style>
   </head>
   <body>
+    <div class="wappalyzer-banner" id="wappalyzer-banner">Sorry, Wappalyzer won't help you this time 😎</div>
     <div class="bg-glow"></div>
 
     <div class="container">
@@ -350,12 +380,7 @@
       </div>
 
       <p class="subtitle">
-        Describe a website, and it will be built faster than it takes you to read this sentence.
-      </p>
-
-      <p class="burn-text">
-        For people building team of agents and bragging about creating website in 20 minutes to 1
-        hour, I'm sorry I had to end the game that brutally.
+        The time to build a SaaS is now measured in seconds.
       </p>
 
       <form id="prompt-form" class="input-group">
@@ -388,6 +413,18 @@
         <h2>Recent Sessions</h2>
         <ul class="session-list" id="session-list"></ul>
       </div>
+    </div>
+
+    <div class="social-links">
+      <a href="https://liviogama.com" target="_blank" rel="noopener" aria-label="Website">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/in/livio-gamassia/" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+      <a href="https://x.com/LivioGama" target="_blank" rel="noopener" aria-label="X">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
     </div>
 
     <script>
@@ -458,6 +495,13 @@
       }
 
       loadSessions()
+
+      // Wappalyzer detection
+      try {
+        fetch('chrome-extension://gppongmhjkpfnbhagpmjfkannfbllamg/js/js.js')
+          .then(() => { document.getElementById('wappalyzer-banner').style.display = 'block' })
+          .catch(() => {})
+      } catch {}
     </script>
   </body>
 </html>

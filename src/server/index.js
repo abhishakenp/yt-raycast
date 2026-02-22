@@ -30,12 +30,16 @@ export async function startServer(sessionsDir) {
       res.send(Buffer.from(await r.arrayBuffer()))
     } catch { res.status(502).end() }
   })
-  app.post('/api/event', async (req, res) => {
+  app.post('/api/event', express.text({ type: '*/*' }), async (req, res) => {
     try {
       const r = await fetch(`${plausibleHost}/api/event`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'User-Agent': req.headers['user-agent'] || '', 'X-Forwarded-For': req.ip },
-        body: JSON.stringify(req.body),
+        headers: {
+          'Content-Type': 'text/plain',
+          'User-Agent': req.headers['user-agent'] || '',
+          'X-Forwarded-For': req.headers['x-forwarded-for'] || req.ip,
+        },
+        body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
       })
       res.status(r.status).end()
     } catch { res.status(502).end() }
@@ -104,6 +108,13 @@ export async function startServer(sessionsDir) {
   // ─── API: List sessions ───────────────────────────────────
   app.get('/api/sessions', (_req, res) => {
     res.json(getAllSessions())
+  })
+
+  // ─── API: Session info ───────────────────────────────────
+  app.get('/api/sessions/:id', async (req, res) => {
+    const session = await getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    res.json({ id: session.id, prompt: session.prompt, createdAt: session.createdAt, homepageReady: session.homepageReady, taskCount: session.tasks.length, done: session.tasks.filter((t) => t.status === 'DONE').length })
   })
 
   // ─── API: Session tasks ───────────────────────────────────

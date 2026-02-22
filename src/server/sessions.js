@@ -81,13 +81,34 @@ export async function getSession(id) {
     }
   }
 
+  // Load prompt from disk
+  let prompt = ''
+  try {
+    const promptPath = join(workspace, 'prompt.txt')
+    if (existsSync(promptPath)) prompt = readFileSync(promptPath, 'utf-8').trim()
+  } catch { /* prompt file may not exist */ }
+
+  // Load tasks from disk
+  let tasks = []
+  try {
+    const tasksPath = join(workspace, 'tasks.json')
+    if (existsSync(tasksPath)) {
+      const data = JSON.parse(readFileSync(tasksPath, 'utf-8'))
+      tasks = data.tasks ?? []
+    }
+  } catch { /* tasks file may not exist */ }
+
+  // Check if homepage exists
+  const homepageReady = existsSync(join(workspace, 'index.html'))
+
   // Reconstruct session from disk
   const session = {
     id,
     workspace,
-    prompt: '',
+    prompt,
     createdAt: Date.now(),
-    tasks: [],
+    tasks,
+    homepageReady,
     homepageReady: false,
     alternativeDesign,
     lastStatus: null,

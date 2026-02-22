@@ -61,7 +61,7 @@ export async function groqHomepage(prompt) {
       'Use inline SVG for icons, never emojis. ' +
       'Make it breathtaking \u2014 every pixel must feel intentional.',
     prompt,
-    temperature: 0.7,
+    temperature: 0.2,
     maxTokens: 8000,
   })
 }
