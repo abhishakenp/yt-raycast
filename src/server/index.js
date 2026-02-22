@@ -20,6 +20,27 @@ export async function startServer(sessionsDir) {
   const app = express()
   app.use(express.json())
 
+  // ─── Plausible Analytics Proxy ──────────────────────────
+  const plausibleHost = 'https://plausible.liviogama.com'
+  app.get('/js/script.js', async (_req, res) => {
+    try {
+      const r = await fetch(`${plausibleHost}/js/script.js`)
+      res.set('Content-Type', 'application/javascript')
+      res.set('Cache-Control', 'public, max-age=86400')
+      res.send(Buffer.from(await r.arrayBuffer()))
+    } catch { res.status(502).end() }
+  })
+  app.post('/api/event', async (req, res) => {
+    try {
+      const r = await fetch(`${plausibleHost}/api/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'User-Agent': req.headers['user-agent'] || '', 'X-Forwarded-For': req.ip },
+        body: JSON.stringify(req.body),
+      })
+      res.status(r.status).end()
+    } catch { res.status(502).end() }
+  })
+
   // Serve public and assets statically
   app.use('/assets', express.static(assetsDir))
   app.use(express.static(publicDir))
@@ -43,6 +64,15 @@ export async function startServer(sessionsDir) {
 
     const session = createSession(_sessionsDir, prompt.trim())
     const sessionCtx = makeSessionState(session)
+
+    // Slack notification in production
+    if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+      fetch(process.env.SLACK_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: `🚀 New Ship Fast prompt:\n> ${prompt.trim().slice(0, 500)}` }),
+      }).catch(() => {})
+    }
 
     // Determine edit vs generate mode
     let editMode = false
