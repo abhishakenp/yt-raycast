@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MarketHub — Find anything, sell everything</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { primary: '#3b82f6' }
+        }
+      }
+    }
+  </script>
+  <style>
+
+  :root {
+    /* Color Palette */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f8f9fa;
+    --color-bg-tertiary: #f1f5f9;
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #64748b;
+    --color-text-muted: #94a3b8;
+    --color-border: #e2e8f0;
+
+    /* Accent Colors */
+    --color-accent-1: #6366f1;
+    --color-accent-2: #8b5cf6;
+    --color-accent-3: #3b82f6;
+
+    /* Gradients */
+    --gradient-accent: linear-gradient(135deg, #6366f1, #8b5cf6);
+    --gradient-accent-alt: linear-gradient(135deg, #8b5cf6, #3b82f6);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; }
+    .hero-mesh {
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 30%, rgba(59,130,246,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 60%, rgba(59,130,246,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 50% 10%, rgba(147,197,253,0.10) 0%, transparent 60%);
+    }
+  
+</style>
+</head>
+<body class="bg-white text-slate-800 antialiased">
+
+  <!-- ============ FLOATING NAVBAR ============ -->
+  <nav class="fixed top-4 left-4 right-4 z-50 mx-auto max-w-6xl">
+    <div class="flex items-center justify-between rounded-2xl border border-white/60 bg-white/70 px-6 py-3 shadow-lg shadow-slate-200/40 backdrop-blur-xl">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2 cursor-pointer">
+        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600">
+          <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        </div>
+        <span class="text-xl font-bold text-slate-900">MarketHub</span>
+      </a>
+      <!-- Nav Links -->
+      <div class="hidden items-center gap-8 md:flex">
+        <a href="#listings" class="cursor-pointer text-sm font-medium text-slate-600 transition-all duration-200 hover:text-blue-600">Browse</a>
+        <a href="#cta" class="cursor-pointer text-sm font-medium text-slate-600 transition-all duration-200 hover:text-blue-600">Sell</a>
+        <a href="#" class="cursor-pointer text-sm font-medium text-slate-600 transition-all duration-200 hover:text-blue-600">Categories</a>
+      </div>
+      <!-- CTA -->
+      <a href="#cta" class="cursor-pointer rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-600/30">Sign Up</a>
+    </div>
+  </nav>
+
+  <!-- ============ HERO SECTION ============ -->
+  <section class="hero-mesh relative overflow-hidden pt-36 pb-24">
+    <div class="mx-auto max-w-6xl px-6 text-center">
+      <!-- Headline -->
+      <h1 class="mx-auto max-w-3xl text-5xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-6xl">
+        Find anything, sell <span class="text-blue-600">everything</span>
+      </h1>
+      <p class="mx-auto mt-5 max-w-xl text-lg text-slate-500">
+        The modern marketplace connecting buyers and sellers worldwide. Simple, secure, and built for you.
+      </p>
+
+      <!-- Search Bar -->
+      <div class="mx-auto mt-10 max-w-2xl">
+        <div class="relative flex items-center rounded-full border border-slate-200 bg-white shadow-lg shadow-slate-200/50">
+          <div class="pointer-events-none pl-5">
+            <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <input type="text" placeholder="Search products, services..." class="w-full bg-transparent py-4 px-4 text-base text-slate-700 placeholder-slate-400 outline-none" />
+          <button class="mr-2 cursor-pointer rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-blue-700">Search</button>
+        </div>
+      </div>
+
+      <!-- Category Pills -->
+      <div class="mx-auto mt-8 flex max-w-xl flex-wrap items-center justify-center gap-3">
+        <a href="#" class="cursor-pointer rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600">Electronics</a>
+        <a href="#" class="cursor-pointer rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600">Services</a>
+        <a href="#" class="cursor-pointer rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600">Home</a>
+        <a href="#" class="cursor-pointer rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600">Fashion</a>
+        <a href="#" class="cursor-pointer rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600">Sports</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURED LISTINGS ============ -->
+  <section id="listings" class="py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="mb-12 text-center">
+        <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl">Featured Listings</h2>
+        <p class="mt-3 text-slate-500">Hand-picked items from top-rated sellers</p>
+      </div>
+      <div class="grid gap-8 sm:grid-cols-2">
+        <!-- Card 1 -->
+        <div class="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:shadow-lg">
+          <div class="overflow-hidden">
+            <img src="https://picsum.photos/500/350?random=1" alt="Listing" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </div>
+          <div class="p-6">
+            <div class="flex items-start justify-between">
+              <h3 class="text-lg font-semibold text-slate-900">Vintage Leather Backpack</h3>
+              <span class="text-lg font-bold text-blue-600">$89</span>
+            </div>
+            <div class="mt-3 flex items-center gap-3 text-sm text-slate-500">
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span>Sarah M.</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>New York</span>
+              </div>
+            </div>
+            <a href="#" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition-all duration-200 hover:gap-2 cursor-pointer">
+              View Details
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:shadow-lg">
+          <div class="overflow-hidden">
+            <img src="https://picsum.photos/500/350?random=2" alt="Listing" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </div>
+          <div class="p-6">
+            <div class="flex items-start justify-between">
+              <h3 class="text-lg font-semibold text-slate-900">Minimalist Desk Lamp</h3>
+              <span class="text-lg font-bold text-blue-600">$45</span>
+            </div>
+            <div class="mt-3 flex items-center gap-3 text-sm text-slate-500">
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span>James K.</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>San Francisco</span>
+              </div>
+            </div>
+            <a href="#" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition-all duration-200 hover:gap-2 cursor-pointer">
+              View Details
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:shadow-lg">
+          <div class="overflow-hidden">
+            <img src="https://picsum.photos/500/350?random=3" alt="Listing" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </div>
+          <div class="p-6">
+            <div class="flex items-start justify-between">
+              <h3 class="text-lg font-semibold text-slate-900">Wireless Noise-Cancelling Headphones</h3>
+              <span class="text-lg font-bold text-blue-600">$199</span>
+            </div>
+            <div class="mt-3 flex items-center gap-3 text-sm text-slate-500">
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span>Mia T.</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>Austin</span>
+              </div>
+            </div>
+            <a href="#" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition-all duration-200 hover:gap-2 cursor-pointer">
+              View Details
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+        <!-- Card 4 -->
+        <div class="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:shadow-lg">
+          <div class="overflow-hidden">
+            <img src="https://picsum.photos/500/350?random=4" alt="Listing" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </div>
+          <div class="p-6">
+            <div class="flex items-start justify-between">
+              <h3 class="text-lg font-semibold text-slate-900">Handmade Ceramic Vase Set</h3>
+              <span class="text-lg font-bold text-blue-600">$62</span>
+            </div>
+            <div class="mt-3 flex items-center gap-3 text-sm text-slate-500">
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span>Elena R.</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>Portland</span>
+              </div>
+            </div>
+            <a href="#" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition-all duration-200 hover:gap-2 cursor-pointer">
+              View Details
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="bg-slate-50 py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="mb-16 text-center">
+        <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl">How It Works</h2>
+        <p class="mt-3 text-slate-500">Three simple steps to get started</p>
+      </div>
+      <div class="relative grid gap-12 md:grid-cols-3 md:gap-8">
+        <!-- Dotted line connector -->
+        <div class="absolute top-14 left-[20%] right-[20%] hidden border-t-2 border-dashed border-slate-300 md:block" aria-hidden="true"></div>
+
+        <!-- Step 1 -->
+        <div class="relative text-center">
+          <div class="mx-auto mb-6 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-600/30">1</div>
+          <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md">
+            <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-slate-900">Browse</h3>
+          <p class="mt-2 text-sm text-slate-500">Discover thousands of listings from trusted sellers around the world</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative text-center">
+          <div class="mx-auto mb-6 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-600/30">2</div>
+          <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md">
+            <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-slate-900">Connect</h3>
+          <p class="mt-2 text-sm text-slate-500">Message sellers directly to ask questions and negotiate deals</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative text-center">
+          <div class="mx-auto mb-6 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-600/30">3</div>
+          <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md">
+            <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="text-xl font-semibold text-slate-900">Purchase</h3>
+          <p class="mt-2 text-sm text-slate-500">Secure, easy transactions with buyer protection built in</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRUST STATS ============ -->
+  <section class="py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="grid gap-8 sm:grid-cols-3">
+        <div class="text-center">
+          <div class="text-4xl font-extrabold text-slate-900 sm:text-5xl">50K+</div>
+          <p class="mt-2 text-sm font-medium text-slate-500">Active sellers worldwide</p>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl font-extrabold text-slate-900 sm:text-5xl">1M+</div>
+          <p class="mt-2 text-sm font-medium text-slate-500">Products listed and growing</p>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl font-extrabold text-slate-900 sm:text-5xl">99.9%</div>
+          <p class="mt-2 text-sm font-medium text-slate-500">Platform uptime guaranteed</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FINAL CTA ============ -->
+  <section id="cta" class="bg-slate-50 py-24">
+    <div class="mx-auto max-w-6xl px-6 text-center">
+      <h2 class="text-3xl font-bold text-slate-900 sm:text-4xl">Start selling today</h2>
+      <p class="mx-auto mt-4 max-w-lg text-slate-500">Join thousands of sellers already growing their business on MarketHub. It only takes a minute to get started.</p>
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <a href="#" class="cursor-pointer rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:shadow-xl hover:shadow-blue-600/30 hover:brightness-110">Create Account</a>
+        <a href="#" class="cursor-pointer rounded-xl border-2 border-slate-300 px-8 py-3.5 text-sm font-semibold text-slate-700 transition-all duration-200 hover:border-blue-600 hover:text-blue-600">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="border-t border-slate-200 bg-white py-16">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+        <!-- Col 1: Brand -->
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+              <svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+            </div>
+            <span class="text-lg font-bold text-slate-900">MarketHub</span>
+          </div>
+          <p class="mt-4 text-sm text-slate-500">The modern marketplace for everyone. Buy and sell with confidence.</p>
+        </div>
+        <!-- Col 2: Product -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900">Product</h4>
+          <ul class="mt-4 space-y-3">
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Browse Listings</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Sell an Item</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Pricing</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Categories</a></li>
+          </ul>
+        </div>
+        <!-- Col 3: Company -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900">Company</h4>
+          <ul class="mt-4 space-y-3">
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">About Us</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Careers</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Blog</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Press</a></li>
+          </ul>
+        </div>
+        <!-- Col 4: Support -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-900">Support</h4>
+          <ul class="mt-4 space-y-3">
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Help Center</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Safety Tips</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Privacy Policy</a></li>
+            <li><a href="#" class="cursor-pointer text-sm text-slate-500 transition-all duration-200 hover:text-blue-600">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-12 border-t border-slate-200 pt-8 text-center text-sm text-slate-400">
+        &copy; 2026 MarketHub. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

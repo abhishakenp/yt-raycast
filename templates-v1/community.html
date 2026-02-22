@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevSphere - Where Developers Connect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <style>
+
+  :root {
+    /* Color Palette */
+    --color-bg-primary: #09090b;
+    --color-bg-secondary: #1a1a2e;
+    --color-bg-tertiary: #16213e;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-muted: #94a3b8;
+    --color-border: #ffffff0d;
+
+    /* Accent Colors */
+    --color-accent-1: #a78bfa;
+    --color-accent-2: #818cf8;
+    --color-accent-3: #38bdf8;
+
+    /* Gradients */
+    --gradient-accent: linear-gradient(135deg, #a78bfa, #818cf8);
+    --gradient-accent-alt: linear-gradient(135deg, #818cf8, #38bdf8);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  }
+
+
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .gradient-text {
+      background: linear-gradient(135deg, #a855f7, #d946ef, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gradient-border {
+      position: relative;
+      background: #1a1a2e;
+      border-radius: 1rem;
+    }
+    .gradient-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 1rem;
+      padding: 1px;
+      background: linear-gradient(135deg, #a855f7, #d946ef, #ec4899);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .glow-purple { box-shadow: 0 0 60px rgba(168, 85, 247, 0.15), 0 0 120px rgba(168, 85, 247, 0.05); }
+    .glow-card:hover { box-shadow: 0 0 30px rgba(168, 85, 247, 0.2); transform: translateY(-2px); }
+    .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .hero-grid {
+      background-image: radial-gradient(rgba(168, 85, 247, 0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .float { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); }  }
+  
+</style>
+</head>
+<body class="bg-[#0a0a14] text-gray-100 antialiased">
+
+  <!-- Nav -->
+  <nav class="fixed top-0 w-full z-50 backdrop-blur-xl bg-[#0a0a14]/80 border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <span class="text-lg font-bold tracking-tight">DevSphere</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm text-gray-400">
+        <a href="#topics" class="hover:text-white transition-colors">Topics</a>
+        <a href="#members" class="hover:text-white transition-colors">Members</a>
+        <a href="#activity" class="hover:text-white transition-colors">Activity</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline-block text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5">Sign in</a>
+        <a href="#join" class="text-sm font-semibold px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 transition-all shadow-lg shadow-purple-500/20">Join Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden hero-grid">
+    <!-- Ambient blobs -->
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[128px] pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-600/10 rounded-full blur-[128px] pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5 text-purple-300 text-sm mb-8">
+        <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
+        2,847 developers online now
+      </div>
+
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] mb-6">
+        The community for<br />
+        <span class="gradient-text">developers who ship</span>
+      </h1>
+
+      <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10">
+        Join 12,400+ engineers sharing knowledge, building in public, and leveling up together. No noise. Just real conversations about code, architecture, and craft.
+      </p>
+
+      <!-- Stats row -->
+      <div class="flex flex-wrap justify-center gap-8 sm:gap-14 mb-12">
+        <div>
+          <div class="text-3xl sm:text-4xl font-extrabold gradient-text">12,400+</div>
+          <div class="text-sm text-gray-500 mt-1">Members</div>
+        </div>
+        <div>
+          <div class="text-3xl sm:text-4xl font-extrabold gradient-text">850+</div>
+          <div class="text-sm text-gray-500 mt-1">Topics Weekly</div>
+        </div>
+        <div>
+          <div class="text-3xl sm:text-4xl font-extrabold gradient-text">98%</div>
+          <div class="text-sm text-gray-500 mt-1">Response Rate</div>
+        </div>
+        <div>
+          <div class="text-3xl sm:text-4xl font-extrabold gradient-text">45</div>
+          <div class="text-sm text-gray-500 mt-1">Countries</div>
+        </div>
+      </div>
+
+      <!-- CTAs -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#join" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold text-base shadow-xl shadow-purple-500/25 transition-all">
+          Join DevSphere
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+        <a href="#topics" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-white/10 text-gray-300 font-medium hover:bg-white/5 transition-all text-base">
+          Explore Topics
+        </a>
+      </div>
+
+      <!-- Avatars -->
+      <div class="flex items-center justify-center mt-10 gap-1">
+        <div class="flex -space-x-2">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 border-2 border-[#0a0a14] flex items-center justify-center text-[10px] font-bold">AK</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-600 border-2 border-[#0a0a14] flex items-center justify-center text-[10px] font-bold">ML</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 border-2 border-[#0a0a14] flex items-center justify-center text-[10px] font-bold">JS</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 border-2 border-[#0a0a14] flex items-center justify-center text-[10px] font-bold">RZ</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 border-2 border-[#0a0a14] flex items-center justify-center text-[10px] font-bold">NP</div>
+        </div>
+        <span class="text-sm text-gray-500 ml-3">+320 joined this week</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trending Topics -->
+  <section id="topics" class="py-24 sm:py-32">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <span class="text-sm font-semibold text-purple-400 uppercase tracking-widest">Trending Now</span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mt-3 tracking-tight">Hot topics this week</h2>
+        <p class="text-gray-400 mt-4 max-w-xl mx-auto text-lg">Real discussions happening right now. Dive into conversations with engineers who've been there.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Topic 1 -->
+        <div class="gradient-border p-6 glow-card transition-all duration-300 cursor-pointer group">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <span class="text-xs font-medium text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-full">Frontend</span>
+          </div>
+          <h3 class="font-bold text-lg mb-2 group-hover:text-purple-300 transition-colors">React Server Components: Worth the hype?</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Deep dive into RSC patterns that actually work in production. 47 engineers share their real experiences.</p>
+          <div class="flex items-center justify-between text-xs text-gray-600">
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> 142 replies</span>
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> 1.2k views</span>
+          </div>
+        </div>
+
+        <!-- Topic 2 -->
+        <div class="gradient-border p-6 glow-card transition-all duration-300 cursor-pointer group">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-400">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+            </div>
+            <span class="text-xs font-medium text-fuchsia-400 bg-fuchsia-500/10 px-2.5 py-1 rounded-full">Backend</span>
+          </div>
+          <h3 class="font-bold text-lg mb-2 group-hover:text-fuchsia-300 transition-colors">Postgres vs. the new wave of databases</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">When to reach for Turso, Neon, or PlanetScale over plain Postgres. Performance benchmarks included.</p>
+          <div class="flex items-center justify-between text-xs text-gray-600">
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> 98 replies</span>
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> 890 views</span>
+          </div>
+        </div>
+
+        <!-- Topic 3 -->
+        <div class="gradient-border p-6 glow-card transition-all duration-300 cursor-pointer group">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            </div>
+            <span class="text-xs font-medium text-pink-400 bg-pink-500/10 px-2.5 py-1 rounded-full">AI/ML</span>
+          </div>
+          <h3 class="font-bold text-lg mb-2 group-hover:text-pink-300 transition-colors">Building AI agents that actually work</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Practical patterns for agentic workflows. Tool calling, memory, and orchestration in production apps.</p>
+          <div class="flex items-center justify-between text-xs text-gray-600">
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> 213 replies</span>
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> 2.1k views</span>
+          </div>
+        </div>
+
+        <!-- Topic 4 -->
+        <div class="gradient-border p-6 glow-card transition-all duration-300 cursor-pointer group">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            </div>
+            <span class="text-xs font-medium text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full">Mobile</span>
+          </div>
+          <h3 class="font-bold text-lg mb-2 group-hover:text-cyan-300 transition-colors">React Native vs Flutter in 2026</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Updated comparison with real shipping apps. Performance, DX, and hiring market analysis.</p>
+          <div class="flex items-center justify-between text-xs text-gray-600">
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> 76 replies</span>
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> 640 views</span>
+          </div>
+        </div>
+
+        <!-- Topic 5 -->
+        <div class="gradient-border p-6 glow-card transition-all duration-300 cursor-pointer group">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span class="text-xs font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full">Career</span>
+          </div>
+          <h3 class="font-bold text-lg mb-2 group-hover:text-amber-300 transition-colors">Senior eng salary negotiation playbook</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Crowdsourced comp data and negotiation scripts. Anonymized offers from FAANG to startups.</p>
+          <div class="flex items-center justify-between text-xs text-gray-600">
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> 189 replies</span>
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> 3.4k views</span>
+          </div>
+        </div>
+
+        <!-- Topic 6 -->
+        <div class="gradient-border p-6 glow-card transition-all duration-300 cursor-pointer group">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+            </div>
+            <span class="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">DevOps</span>
+          </div>
+          <h3 class="font-bold text-lg mb-2 group-hover:text-emerald-300 transition-colors">Zero-downtime deploys with Docker + Kamal</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Step-by-step walkthrough of blue-green deployments. From single VPS to multi-region setups.</p>
+          <div class="flex items-center justify-between text-xs text-gray-600">
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> 64 replies</span>
+            <span class="flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> 520 views</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Member Highlights -->
+  <section id="members" class="py-24 sm:py-32 relative">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/[0.02] to-transparent pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-6 relative z-10">
+      <div class="text-center mb-16">
+        <span class="text-sm font-semibold text-fuchsia-400 uppercase tracking-widest">Community</span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mt-3 tracking-tight">Meet our members</h2>
+        <p class="text-gray-400 mt-4 max-w-xl mx-auto text-lg">Engineers from every stack, every stage. From bootcamp grads to staff engineers at top companies.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Member 1 -->
+        <div class="bg-[#12121f] rounded-2xl p-6 text-center border border-white/5 hover:border-purple-500/20 transition-all duration-300 glow-card">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-xl font-bold mx-auto mb-4">SK</div>
+          <h4 class="font-bold text-base">Sarah Kim</h4>
+          <p class="text-sm text-purple-400 mt-0.5">Staff Engineer @ Vercel</p>
+          <p class="text-xs text-gray-500 mt-3 leading-relaxed">Open source maintainer. Built the React performance guide with 4k stars.</p>
+          <div class="flex justify-center gap-3 mt-4">
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">TypeScript</span>
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">React</span>
+          </div>
+        </div>
+
+        <!-- Member 2 -->
+        <div class="bg-[#12121f] rounded-2xl p-6 text-center border border-white/5 hover:border-fuchsia-500/20 transition-all duration-300 glow-card">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-700 flex items-center justify-center text-xl font-bold mx-auto mb-4">MR</div>
+          <h4 class="font-bold text-base">Marcus Rivera</h4>
+          <p class="text-sm text-fuchsia-400 mt-0.5">Founding Eng @ Liveblocks</p>
+          <p class="text-xs text-gray-500 mt-3 leading-relaxed">Real-time systems nerd. Writes the weekly "Systems Thinking" column.</p>
+          <div class="flex justify-center gap-3 mt-4">
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">Rust</span>
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">WebSockets</span>
+          </div>
+        </div>
+
+        <!-- Member 3 -->
+        <div class="bg-[#12121f] rounded-2xl p-6 text-center border border-white/5 hover:border-cyan-500/20 transition-all duration-300 glow-card">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center text-xl font-bold mx-auto mb-4">AP</div>
+          <h4 class="font-bold text-base">Aisha Patel</h4>
+          <p class="text-sm text-cyan-400 mt-0.5">Senior SRE @ Datadog</p>
+          <p class="text-xs text-gray-500 mt-3 leading-relaxed">Observability evangelist. Runs the monthly "Incident Stories" AMA.</p>
+          <div class="flex justify-center gap-3 mt-4">
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">Go</span>
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">K8s</span>
+          </div>
+        </div>
+
+        <!-- Member 4 -->
+        <div class="bg-[#12121f] rounded-2xl p-6 text-center border border-white/5 hover:border-amber-500/20 transition-all duration-300 glow-card">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-700 flex items-center justify-center text-xl font-bold mx-auto mb-4">TN</div>
+          <h4 class="font-bold text-base">Tomasz Nowak</h4>
+          <p class="text-sm text-amber-400 mt-0.5">Indie Hacker</p>
+          <p class="text-xs text-gray-500 mt-3 leading-relaxed">Built 3 profitable SaaS products. Shares revenue updates and learnings weekly.</p>
+          <div class="flex justify-center gap-3 mt-4">
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">Next.js</span>
+            <span class="text-xs text-gray-600 bg-white/5 px-2.5 py-1 rounded-full">Stripe</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Activity Feed -->
+  <section id="activity" class="py-24 sm:py-32">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <span class="text-sm font-semibold text-pink-400 uppercase tracking-widest">Live Feed</span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mt-3 tracking-tight">Always something happening</h2>
+        <p class="text-gray-400 mt-4 max-w-xl mx-auto text-lg">A glimpse of today's conversations. This is just the surface.</p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Activity 1 -->
+        <div class="flex gap-4 bg-[#12121f] rounded-2xl p-5 border border-white/5 hover:border-purple-500/10 transition-all">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex-shrink-0 flex items-center justify-center text-xs font-bold">DL</div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="font-semibold text-sm">Dan Levine</span>
+              <span class="text-xs text-gray-600">replied to</span>
+              <span class="text-sm text-purple-400 font-medium truncate">Scaling WebSocket connections past 100k</span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">"We switched from Socket.io to native WS + Redis pub/sub and dropped our p99 latency from 340ms to 12ms. Happy to share the architecture diagram..."</p>
+            <div class="flex items-center gap-4 mt-2.5 text-xs text-gray-600">
+              <span>12 min ago</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                24
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity 2 -->
+        <div class="flex gap-4 bg-[#12121f] rounded-2xl p-5 border border-white/5 hover:border-fuchsia-500/10 transition-all">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex-shrink-0 flex items-center justify-center text-xs font-bold">JW</div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="font-semibold text-sm">Jenny Wu</span>
+              <span class="text-xs text-gray-600">started a new topic</span>
+              <span class="text-sm text-fuchsia-400 font-medium truncate">Show & Tell: My open-source CLI framework</span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">"After 6 months of building in public, I'm releasing v1.0 of Bolt CLI. Type-safe args, auto-generated help, plugin system. Would love your feedback!"</p>
+            <div class="flex items-center gap-4 mt-2.5 text-xs text-gray-600">
+              <span>38 min ago</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                67
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity 3 -->
+        <div class="flex gap-4 bg-[#12121f] rounded-2xl p-5 border border-white/5 hover:border-cyan-500/10 transition-all">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-600 flex-shrink-0 flex items-center justify-center text-xs font-bold">RO</div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="font-semibold text-sm">Rina Okonkwo</span>
+              <span class="text-xs text-gray-600">shared a resource in</span>
+              <span class="text-sm text-cyan-400 font-medium truncate">#career-growth</span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">"Compiled a list of 30+ system design interview questions with detailed solutions. All based on real interviews at Meta, Google, and Stripe this year."</p>
+            <div class="flex items-center gap-4 mt-2.5 text-xs text-gray-600">
+              <span>1 hr ago</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                103
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity 4 -->
+        <div class="flex gap-4 bg-[#12121f] rounded-2xl p-5 border border-white/5 hover:border-amber-500/10 transition-all">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex-shrink-0 flex items-center justify-center text-xs font-bold">KH</div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <span class="font-semibold text-sm">Kai Hernandez</span>
+              <span class="text-xs text-gray-600">answered in</span>
+              <span class="text-sm text-amber-400 font-medium truncate">Help: Drizzle ORM migration issues</span>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed">"The issue is your `drizzle.config.ts` is pointing to the wrong schema path. Change it to `./src/db/schema.ts` and rerun `drizzle-kit generate`. Here's the full fix..."</p>
+            <div class="flex items-center gap-4 mt-2.5 text-xs text-gray-600">
+              <span>2 hrs ago</span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Accepted answer
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section id="join" class="py-24 sm:py-32 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/[0.04] to-transparent pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none"></div>
+
+    <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+        Ready to join the<br /><span class="gradient-text">conversation?</span>
+      </h2>
+      <p class="text-lg text-gray-400 mt-6 max-w-xl mx-auto leading-relaxed">
+        Free forever. No spam. No ads. Just a focused space for developers who care about their craft. Takes 30 seconds to join.
+      </p>
+
+      <!-- Email form -->
+      <div class="mt-10 flex flex-col sm:flex-row items-center gap-3 max-w-md mx-auto">
+        <input type="email" placeholder="you@email.com" class="w-full px-5 py-3.5 rounded-full bg-white/5 border border-white/10 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all" />
+        <button class="w-full sm:w-auto whitespace-nowrap px-8 py-3.5 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 font-semibold text-sm shadow-xl shadow-purple-500/25 transition-all">
+          Get Started
+        </button>
+      </div>
+
+      <p class="text-xs text-gray-600 mt-4">No credit card required. Unsubscribe anytime.</p>
+
+      <!-- Trust signals -->
+      <div class="flex flex-wrap justify-center gap-6 mt-12 text-sm text-gray-500">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Free forever
+        </span>
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          No spam
+        </span>
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          12,400+ members
+        </span>
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          98% response rate
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <!-- Brand -->
+        <div class="sm:col-span-2 lg:col-span-1">
+          <a href="#" class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <span class="text-lg font-bold tracking-tight">DevSphere</span>
+          </a>
+          <p class="text-sm text-gray-500 leading-relaxed max-w-xs">The home for developers who ship. Join conversations that actually move your career forward.</p>
+        </div>
+
+        <!-- Community -->
+        <div>
+          <h5 class="font-semibold text-sm mb-4 text-gray-300">Community</h5>
+          <ul class="space-y-2.5 text-sm text-gray-500">
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Topics</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Members</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Events</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Leaderboard</a></li>
+          </ul>
+        </div>
+
+        <!-- Resources -->
+        <div>
+          <h5 class="font-semibold text-sm mb-4 text-gray-300">Resources</h5>
+          <ul class="space-y-2.5 text-sm text-gray-500">
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Blog</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Newsletter</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Open Source</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Brand Kit</a></li>
+          </ul>
+        </div>
+
+        <!-- Legal -->
+        <div>
+          <h5 class="font-semibold text-sm mb-4 text-gray-300">Company</h5>
+          <ul class="space-y-2.5 text-sm text-gray-500">
+            <li><a href="#" class="hover:text-gray-300 transition-colors">About</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Privacy</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Terms</a></li>
+            <li><a href="#" class="hover:text-gray-300 transition-colors">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-gray-600">&copy; 2026 DevSphere. All rights reserved.</p>
+        <div class="flex items-center gap-5">
+          <!-- GitHub -->
+          <a href="#" class="text-gray-600 hover:text-gray-400 transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <!-- Twitter/X -->
+          <a href="#" class="text-gray-600 hover:text-gray-400 transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <!-- Discord -->
+          <a href="#" class="text-gray-600 hover:text-gray-400 transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

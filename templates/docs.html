@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation</title>
+  <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Inter";
+      background-color: #f7f7f7;
+    }
+  </style>
+</head>
+<body class="dark:bg-surface">
+  <header class="py-20">
+    <div class="flex justify-between items-center">
+      <input type="search" class="w-64 text-lg" placeholder="Search...">
+      <button class="text-lg rounded-full hover:shadow-md transition-colors duration-100 ease-in-out" id="search-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#fff">
+          <rect width="24" height="24" fill="none" rx="6" />
+          <path d="M20 3H4v2h4v4h-4v6h-4v-6h-2v-2h3.2L16 9.8l5.8-6.8V3h4V1H20V-1h-4v2h4V5h-4V9.8L11.8 12h-2v2h3.2l4.8 8.8 4.8-8.8h-4.8z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <main class="max-w-4xl">
+    <h1 class="text-3xl text-lg mt-10">Documentation</h1>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="w-1/2 p-20 rounded-full shadow-md border border-surface">
+        <h2 class="text-2xl font-bold">API Reference</h2>
+        <ul class="list-none">
+          <li><a href="#" class="text-lg hover:text-accent">API v1</a></li>
+          <li><a href="#" class="text-lg hover:text-accent">API v2</a></li>
+        </ul>
+      </div>
+      <div class="w-1/2 p-20 rounded-full shadow-md border border-surface">
+        <h2 class="text-2xl font-bold">Tutorials</h2>
+        <ul class="list-none">
+          <li><a href="#" class="text-lg hover:text-accent">Getting Started</a></li>
+          <li><a href="#" class="text-lg hover:text-accent">Troubleshooting</a></li>
+        </ul>
+      </div>
+    </div>
+    <footer class="py-20">
+      <div class="flex items-center">
+        <p class="text-lg">&copy; 2023 Documentation</p>
+        <button class="text-lg rounded-full hover:shadow-md transition-colors duration-100 ease-in-out" id="back-to-top">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#fff">
+            <path d="M14 14.2V3.8L17 3.8v7.4Z" />
+            <path d="M0 0h24v24H0V0Z" />
+          </svg>
+        </button>
+      </div>
+    </footer>
+  </main>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    const searchButton = document.getElementById('search-button');
+    searchButton.addEventListener('click', () => {
+      // Add your search functionality here
+    });
+    const backToTopButton = document.getElementById('back-to-top');
+    backToTopButton.addEventListener('click', () => {
+      // Add your back to top functionality here
+    });
+  </script>
+</body>
+</html>
+<|stats|>{"created_at":1771785980.967352,"done":true,"done_reason":"stop","total_duration":0.07776212692260742,"logprobs":null,"topk":8,"ttft":0.014023542404174805,"reason":"termination token 128009/<|eot_id|> detected","status":0,"prefill_tokens":381,"prefill_rate":27168.59899012224,"decode_tokens":926,"decode_rate":15674.452267471659,"total_tokens":1307,"total_time":0.0731208324432373,"roundtrip_time":87}<|/stats|>

@@ -2,10 +2,11 @@ import { createServer as createHttpServer } from 'node:http'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
-import { DASHBOARD_PORT } from '../config.js'
+import { DASHBOARD_PORT, VALID_SITE_TYPES } from '../config.js'
 import { createSession, getSession, getAllSessions, makeSessionState, initSessionDir } from './sessions.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
+import { groqTemplate } from '../llm/groq.js'
 import { existsSync, readFileSync } from 'node:fs'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
@@ -154,6 +155,30 @@ export async function startServer(sessionsDir) {
     })
 
     res.json({ ok: true, message: 'Generating alternative design...' })
+  })
+
+  // ─── API: Generate template for site type ──────────────────
+  app.get('/api/templates/:siteType', async (req, res) => {
+    const siteType = req.params.siteType?.toLowerCase()
+
+    if (!siteType || !VALID_SITE_TYPES.includes(siteType)) {
+      return res.status(400).json({
+        error: `Invalid site type. Valid options: ${VALID_SITE_TYPES.join(', ')}`,
+      })
+    }
+
+    try {
+      const result = await groqTemplate(siteType)
+
+      if (result.error) {
+        return res.status(500).json({ error: result.error })
+      }
+
+      res.set('Content-Type', 'text/html; charset=utf-8')
+      res.send(result.content)
+    } catch (err) {
+      res.status(500).json({ error: err.message })
+    }
   })
 
   // ─── Preview: per-session workspace static files ──────────

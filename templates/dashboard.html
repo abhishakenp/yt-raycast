@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard template">
+    <meta name="author" content="Your Name">
+    <title>Dashboard Template</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.1/dist/tailwind.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        const icons = {
+            "icon-star": "",
+            "icon-chart": "",
+            "icon-chart-line": "",
+            "icon-check": "",
+            "icon-check-square": "",
+            "icon-x-circle": "",
+            "icon-star-half": ""
+        };
+    </script>
+    <script>
+        // Load fonts
+        const font = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap";
+        document.body.style.fontFamily = "Inter, sans-serif";
+    </script>
+</head>
+<body class="bg-slate-900">
+    <main class="flex flex-col justify-center items-center max-w-4xl mx-auto p-20 md:p-28">
+        <section class="flex flex-col items-center justify-center py-20 md:py-28">
+            <div class="flex flex-col items-center">
+                <div class="text-slate-100">
+                    <h1 class="text-lg text-center font-bold">Data Insights</h1>
+                </div>
+                <div class="text-slate-400">
+                    <p class="text-lg text-center">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod.</p>
+                </div>
+                <div class="flex">
+                    <button class="bg-cyan-500 rounded-full text-white py-2 px-4 text-lg font-bold hover:text-blue-500">Explore</button>
+                </div>
+            </div>
+        </section>
+        <section class="flex flex-col">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Metric 1</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">1234</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Metric 2</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">5678</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Metric 3</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">9012</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Metric 4</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">3456</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="flex flex-col">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Feature 1</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">Description of feature 1</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Feature 2</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">Description of feature 2</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Feature 3</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">Description of feature 3</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Feature 4</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">Description of feature 4</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="flex flex-col">
+            <div class="grid grid-cols-1 gap-4">
+                <div class="grid col-auto">
+                    <div class="flex flex-col items-center">
+                        <div class="text-slate-100">
+                            <h2 class="text-lg text-center font-bold">Integrations</h2>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="text-slate-100">
+                                <img src="logo1.svg" class="w-24 h-24 mx-auto">
+                            </div>
+                            <div class="text-slate-100">
+                                <img src="logo2.svg" class="w-24 h-24 mx-auto">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="flex flex-col">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Pricing</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">Free Plan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid col-auto">
+                    <div class="bg-slate-800 text-slate-100 p-4 rounded-md">
+                        <div class="flex flex-col items-center">
+                            <div class="py-2">
+                                <h3 class="text-lg font-bold">Premium Plan</h3>
+                            </div>
+                            <div class="py-2">
+                                <p class="text-lg">$19.99/month</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="flex flex-col">
+            <div class="flex flex-col items-center">
+                <button class="bg-cyan-500 rounded-full text-white py-2 px-4 text-lg font-bold hover:text-blue-500">Sign up</button>
+            </div>
+        </section>
+        <section class="flex flex-col items-center">
+            <div class="text-slate-400 text-lg">
+                <p class="text-lg">Copyright 2023 Your Company. All rights reserved.</p>
+            </div>
+        </section>
+    </main>
+    <section class="grid grid-cols-1 gap-4 justify-center items-center">
+        <div class="text-slate-400 text-lg">
+            <a href="#" class="text-slate-100">Terms of Use</a>
+        </div>
+        <div class="text-slate-400 text-lg">
+            <a href="#" class="text-slate-100">Privacy Policy</a>
+        </div>
+    </section>
+</body>
+</html>
+<|stats|>{"created_at":1771785979.542843,"done":true,"done_reason":"stop","total_duration":0.158660888671875,"logprobs":null,"topk":8,"ttft":0.01493525505065918,"reason":"termination token 128009/<|eot_id|> detected","status":0,"prefill_tokens":407,"prefill_rate":27250.957457337612,"decode_tokens":2102,"decode_rate":15436.056236628043,"total_tokens":2509,"total_time":0.15111923217773438,"roundtrip_time":166}<|/stats|>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Design System - Centralized Classes */
+        :root {
+            --color-bg-primary: #0f172a;
+            --color-bg-secondary: #1e293b;
+            --color-bg-tertiary: #0f172a;
+            --color-text-primary: #f1f5f9;
+            --color-text-secondary: #94a3b8;
+            --color-accent: #06b6d4;
+            --color-accent-dark: #0891b2;
+            --color-border: #1e293b;
+        }
+
+        /* Semantic classes for easy replacement */
+        .bg-primary { background-color: var(--color-bg-primary); }
+        .bg-secondary { background-color: var(--color-bg-secondary); }
+        .bg-tertiary { background-color: var(--color-bg-tertiary); }
+        .text-primary { color: var(--color-text-primary); }
+        .text-secondary { color: var(--color-text-secondary); }
+        .text-accent { color: var(--color-accent); }
+        .border-accent { border-color: var(--color-accent); }
+        .border-primary { border-color: var(--color-border); }
+
+        /* Button variants */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
+            color: var(--color-text-primary);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-text-primary);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--color-border);
+            border-radius: 9999px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        /* Card variant */
+        .card {
+            background-color: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+        .card:hover {
+            border-color: var(--color-accent);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            background-color: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            color: var(--color-accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Section label */
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-accent);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-primary text-primary">
+    <!-- Nav -->
+    <nav class="border-b border-primary sticky top-0 bg-primary/80 backdrop-blur-sm">
+        <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-accent">BRAND_NAME</div>
+            <div class="hidden md:flex gap-8 items-center">
+                <a href="#features" class="text-secondary hover:text-primary transition">Features</a>
+                <a href="#pricing" class="text-secondary hover:text-primary transition">Pricing</a>
+                <a href="#" class="text-secondary hover:text-primary transition">Docs</a>
+                <button class="btn-primary">Start Free</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="py-20 md:py-32">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <div class="badge" style="margin-bottom: 1.5rem;">NEW_FEATURE_LABEL</div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-primary">
+                HERO_HEADLINE
+            </h1>
+            <p class="text-xl md:text-2xl text-secondary mb-8 max-w-2xl mx-auto">
+                HERO_SUBTITLE
+            </p>
+            <button class="btn-primary">HERO_CTA_TEXT</button>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-20 md:py-28 border-t border-primary">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="section-label">FEATURES_LABEL</p>
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-4 text-primary">FEATURES_HEADLINE</h2>
+                <p class="text-secondary text-lg">FEATURES_SUBTITLE</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card">
+                    <div class="w-12 h-12 rounded-lg mb-4 flex items-center justify-center text-accent text-2xl">🚀</div>
+                    <h3 class="text-lg font-semibold mb-2 text-primary">FEATURE_1_NAME</h3>
+                    <p class="text-secondary">FEATURE_1_DESC</p>
+                </div>
+                <div class="card">
+                    <div class="w-12 h-12 rounded-lg mb-4 flex items-center justify-center text-accent text-2xl">🔒</div>
+                    <h3 class="text-lg font-semibold mb-2 text-primary">FEATURE_2_NAME</h3>
+                    <p class="text-secondary">FEATURE_2_DESC</p>
+                </div>
+                <div class="card">
+                    <div class="w-12 h-12 rounded-lg mb-4 flex items-center justify-center text-accent text-2xl">📊</div>
+                    <h3 class="text-lg font-semibold mb-2 text-primary">FEATURE_3_NAME</h3>
+                    <p class="text-secondary">FEATURE_3_DESC</p>
+                </div>
+                <div class="card">
+                    <div class="w-12 h-12 rounded-lg mb-4 flex items-center justify-center text-accent text-2xl">⚙️</div>
+                    <h3 class="text-lg font-semibold mb-2 text-primary">FEATURE_4_NAME</h3>
+                    <p class="text-secondary">FEATURE_4_DESC</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 md:py-28 border-t border-primary">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="section-label">PRICING_LABEL</p>
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-4 text-primary">PRICING_HEADLINE</h2>
+                <p class="text-secondary text-lg">PRICING_SUBTITLE</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-2xl font-bold mb-2 text-primary">PLAN_1_NAME</h3>
+                    <p class="text-secondary mb-6">PLAN_1_DESC</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-primary">PLAN_1_PRICE</span>
+                        <span class="text-secondary">/month</span>
+                    </div>
+                    <button class="btn-secondary">PLAN_1_CTA</button>
+                    <ul class="space-y-3 text-secondary text-sm mt-6">
+                        <li>✓ PLAN_1_FEATURE_1</li>
+                        <li>✓ PLAN_1_FEATURE_2</li>
+                        <li>✓ PLAN_1_FEATURE_3</li>
+                    </ul>
+                </div>
+                <div class="card" style="background: linear-gradient(to bottom right, rgba(6, 182, 212, 0.1), transparent); border-color: var(--color-accent);">
+                    <div style="display: inline-block; background-color: var(--color-accent); color: var(--color-bg-primary); padding: 0.25rem 1rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; margin-bottom: 1rem;">POPULAR</div>
+                    <h3 class="text-2xl font-bold mb-2 text-primary">PLAN_2_NAME</h3>
+                    <p class="text-secondary mb-6">PLAN_2_DESC</p>
+                    <div class="mb-6">
+                        <span class="text-4xl font-bold text-primary">PLAN_2_PRICE</span>
+                        <span class="text-secondary">/month</span>
+                    </div>
+                    <button class="btn-primary">PLAN_2_CTA</button>
+                    <ul class="space-y-3 text-secondary text-sm mt-6">
+                        <li>✓ PLAN_2_FEATURE_1</li>
+                        <li>✓ PLAN_2_FEATURE_2</li>
+                        <li>✓ PLAN_2_FEATURE_3</li>
+                        <li>✓ PLAN_2_FEATURE_4</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-20 md:py-28 border-t border-primary">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-6 text-primary">CTA_HEADLINE</h2>
+            <p class="text-xl text-secondary mb-8 max-w-2xl mx-auto">CTA_SUBTITLE</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="btn-primary">CTA_PRIMARY_TEXT</button>
+                <button class="btn-secondary">CTA_SECONDARY_TEXT</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-primary py-12">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="font-semibold mb-4 text-primary">FOOTER_COL1_TITLE</h4>
+                    <ul class="space-y-2 text-secondary text-sm">
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL1_LINK1</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL1_LINK2</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL1_LINK3</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4 text-primary">FOOTER_COL2_TITLE</h4>
+                    <ul class="space-y-2 text-secondary text-sm">
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL2_LINK1</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL2_LINK2</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL2_LINK3</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4 text-primary">FOOTER_COL3_TITLE</h4>
+                    <ul class="space-y-2 text-secondary text-sm">
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL3_LINK1</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL3_LINK2</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL3_LINK3</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4 text-primary">FOOTER_COL4_TITLE</h4>
+                    <ul class="space-y-2 text-secondary text-sm">
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL4_LINK1</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL4_LINK2</a></li>
+                        <li><a href="#" class="hover:text-accent transition">FOOTER_COL4_LINK3</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-primary pt-8 text-center text-secondary text-sm">
+                <p>FOOTER_COPYRIGHT</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

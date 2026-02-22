@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus SDK - Documentation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+
+  :root {
+    /* Color Palette */
+    --color-bg-primary: #09090b;
+    --color-bg-secondary: #1a1a2e;
+    --color-bg-tertiary: #16213e;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-muted: #94a3b8;
+    --color-border: #ffffff0d;
+
+    /* Accent Colors */
+    --color-accent-1: #a78bfa;
+    --color-accent-2: #818cf8;
+    --color-accent-3: #38bdf8;
+
+    /* Gradients */
+    --gradient-accent: linear-gradient(135deg, #a78bfa, #818cf8);
+    --gradient-accent-alt: linear-gradient(135deg, #818cf8, #38bdf8);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  }
+
+
+    ::selection { background: #3b82f680; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    .gradient-border { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #3b82f6); background-size: 200% 200%; animation: shimmer 6s ease infinite; }
+    @keyframes shimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    .search-glow:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.3), 0 0 20px rgba(59,130,246,0.1); }
+  
+</style>
+</head>
+<body class="bg-slate-950 text-slate-300 antialiased">
+
+  <!-- Nav -->
+  <nav class="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/60">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <a href="#" class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg gradient-border flex items-center justify-center">
+            <svg class="w-4.5 h-4.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>
+          </div>
+          <span class="text-white font-bold text-lg tracking-tight">Nexus</span>
+          <span class="text-[11px] font-medium text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">v3.2</span>
+        </a>
+        <div class="hidden md:flex items-center gap-6 text-sm">
+          <a href="#docs" class="text-slate-400 hover:text-white transition-colors">Docs</a>
+          <a href="#api" class="text-slate-400 hover:text-white transition-colors">API Reference</a>
+          <a href="#guides" class="text-slate-400 hover:text-white transition-colors">Guides</a>
+          <a href="#" class="text-slate-400 hover:text-white transition-colors">Changelog</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="#" class="hidden sm:flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a href="#" class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg transition-colors">Get API Key</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 text-sm text-blue-400 bg-blue-500/10 border border-blue-500/20 px-4 py-1.5 rounded-full mb-8">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        New: Nexus SDK v3.2 with Edge Functions support
+      </div>
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-6">
+        Build faster with<br>
+        <span class="bg-gradient-to-r from-blue-400 via-blue-500 to-violet-500 bg-clip-text text-transparent">Nexus SDK</span>
+      </h1>
+      <p class="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+        The complete developer toolkit for authentication, database, storage, and real-time features. Ship production-ready apps in minutes, not weeks.
+      </p>
+
+      <!-- Search -->
+      <div class="max-w-xl mx-auto mb-16 relative">
+        <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <input type="text" placeholder="Search documentation..." class="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-12 pr-20 py-4 text-white placeholder:text-slate-500 focus:outline-none search-glow transition-shadow text-[15px]">
+        <div class="absolute inset-y-0 right-4 flex items-center">
+          <kbd class="hidden sm:inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-800 border border-slate-700 px-2 py-1 rounded-md font-mono">
+            <span class="text-[10px]">&#8984;</span>K
+          </kbd>
+        </div>
+      </div>
+
+      <!-- Quick Start Code Block -->
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-2xl shadow-black/40">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-slate-900/80">
+            <div class="flex items-center gap-3">
+              <div class="flex gap-1.5">
+                <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-700"></div>
+              </div>
+              <span class="text-xs text-slate-500 font-mono">quickstart.ts</span>
+            </div>
+            <button onclick="navigator.clipboard.writeText(this.closest('.bg-slate-900').querySelector('code').textContent)" class="text-xs text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <pre class="px-5 py-5 text-left text-[13px] sm:text-sm leading-relaxed overflow-x-auto"><code><span class="text-violet-400">import</span> <span class="text-slate-300">{ NexusClient }</span> <span class="text-violet-400">from</span> <span class="text-emerald-400">'@nexus/sdk'</span>
+
+<span class="text-slate-500">// Initialize the client</span>
+<span class="text-violet-400">const</span> <span class="text-blue-300">nexus</span> <span class="text-slate-500">=</span> <span class="text-violet-400">new</span> <span class="text-yellow-300">NexusClient</span><span class="text-slate-500">({</span>
+  <span class="text-blue-300">apiKey</span><span class="text-slate-500">:</span> <span class="text-emerald-400">process.env.NEXUS_API_KEY</span><span class="text-slate-500">,</span>
+  <span class="text-blue-300">project</span><span class="text-slate-500">:</span> <span class="text-emerald-400">'my-app'</span>
+<span class="text-slate-500">})</span>
+
+<span class="text-slate-500">// Authenticate a user</span>
+<span class="text-violet-400">const</span> <span class="text-slate-300">{ user, session }</span> <span class="text-slate-500">=</span> <span class="text-violet-400">await</span> <span class="text-blue-300">nexus</span><span class="text-slate-500">.</span><span class="text-blue-300">auth</span><span class="text-slate-500">.</span><span class="text-yellow-300">signIn</span><span class="text-slate-500">({</span>
+  <span class="text-blue-300">email</span><span class="text-slate-500">:</span> <span class="text-emerald-400">'user@example.com'</span><span class="text-slate-500">,</span>
+  <span class="text-blue-300">password</span><span class="text-slate-500">:</span> <span class="text-emerald-400">'secure-password'</span>
+<span class="text-slate-500">})</span>
+
+<span class="text-slate-500">// Query the database</span>
+<span class="text-violet-400">const</span> <span class="text-slate-300">posts</span> <span class="text-slate-500">=</span> <span class="text-violet-400">await</span> <span class="text-blue-300">nexus</span><span class="text-slate-500">.</span><span class="text-blue-300">db</span><span class="text-slate-500">.</span><span class="text-yellow-300">from</span><span class="text-slate-500">(</span><span class="text-emerald-400">'posts'</span><span class="text-slate-500">)</span>
+  <span class="text-slate-500">.</span><span class="text-yellow-300">select</span><span class="text-slate-500">(</span><span class="text-emerald-400">'*'</span><span class="text-slate-500">)</span>
+  <span class="text-slate-500">.</span><span class="text-yellow-300">where</span><span class="text-slate-500">({</span> <span class="text-blue-300">authorId</span><span class="text-slate-500">:</span> <span class="text-blue-300">user</span><span class="text-slate-500">.</span><span class="text-blue-300">id</span> <span class="text-slate-500">})</span>
+  <span class="text-slate-500">.</span><span class="text-yellow-300">orderBy</span><span class="text-slate-500">(</span><span class="text-emerald-400">'createdAt'</span><span class="text-slate-500">,</span> <span class="text-emerald-400">'desc'</span><span class="text-slate-500">)</span></code></pre>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
+          <a href="#docs" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg transition-colors">
+            Get Started
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </a>
+          <a href="#api" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-6 py-3 rounded-lg transition-colors">
+            API Reference
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Topic Cards -->
+  <section id="docs" class="py-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Explore the Platform</h2>
+        <p class="text-slate-400 text-lg max-w-xl mx-auto">Everything you need to build, deploy, and scale your application.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+
+        <!-- Auth Card -->
+        <a href="#" class="group bg-slate-900/60 border border-slate-800 rounded-xl p-6 sm:p-7 card-hover block">
+          <div class="w-11 h-11 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors">Authentication</h3>
+          <p class="text-sm text-slate-400 leading-relaxed mb-4">Email/password, OAuth providers, magic links, MFA, and session management with built-in security best practices.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">OAuth 2.0</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">JWT</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">RBAC</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">SSO</span>
+          </div>
+        </a>
+
+        <!-- Database Card -->
+        <a href="#" class="group bg-slate-900/60 border border-slate-800 rounded-xl p-6 sm:p-7 card-hover block">
+          <div class="w-11 h-11 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-emerald-400 transition-colors">Database</h3>
+          <p class="text-sm text-slate-400 leading-relaxed mb-4">Fully managed Postgres with type-safe queries, migrations, branching, and real-time subscriptions out of the box.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Postgres</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Realtime</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Migrations</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Branching</span>
+          </div>
+        </a>
+
+        <!-- Storage Card -->
+        <a href="#" class="group bg-slate-900/60 border border-slate-800 rounded-xl p-6 sm:p-7 card-hover block">
+          <div class="w-11 h-11 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-violet-400 transition-colors">Storage</h3>
+          <p class="text-sm text-slate-400 leading-relaxed mb-4">S3-compatible object storage with automatic image optimization, CDN delivery, and presigned upload URLs.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">CDN</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Image transforms</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Presigned URLs</span>
+          </div>
+        </a>
+
+        <!-- Webhooks Card -->
+        <a href="#" class="group bg-slate-900/60 border border-slate-800 rounded-xl p-6 sm:p-7 card-hover block">
+          <div class="w-11 h-11 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+          </div>
+          <h3 class="text-lg font-semibold text-white mb-2 group-hover:text-amber-400 transition-colors">Webhooks</h3>
+          <p class="text-sm text-slate-400 leading-relaxed mb-4">Reliable event delivery with automatic retries, signature verification, delivery logs, and fan-out support.</p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">HMAC signing</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Retries</span>
+            <span class="text-xs text-slate-500 bg-slate-800 px-2.5 py-1 rounded-md">Event log</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- API Reference -->
+  <section id="api" class="py-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">API Reference</h2>
+        <p class="text-slate-400 text-lg max-w-xl mx-auto">Comprehensive reference for every module, method, and type in the SDK.</p>
+      </div>
+
+      <div class="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-800/70">
+        <!-- Row 1 -->
+        <a href="#" class="flex items-center justify-between px-6 py-4 hover:bg-slate-800/40 transition-colors group">
+          <div class="flex items-center gap-4">
+            <code class="text-sm text-blue-400 font-mono font-medium">nexus.auth</code>
+            <span class="text-sm text-slate-500">--</span>
+            <span class="text-sm text-slate-400">Authentication & user management</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-600 font-mono hidden sm:inline">24 methods</span>
+            <svg class="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </a>
+        <!-- Row 2 -->
+        <a href="#" class="flex items-center justify-between px-6 py-4 hover:bg-slate-800/40 transition-colors group">
+          <div class="flex items-center gap-4">
+            <code class="text-sm text-emerald-400 font-mono font-medium">nexus.db</code>
+            <span class="text-sm text-slate-500">--</span>
+            <span class="text-sm text-slate-400">Database queries & subscriptions</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-600 font-mono hidden sm:inline">31 methods</span>
+            <svg class="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </a>
+        <!-- Row 3 -->
+        <a href="#" class="flex items-center justify-between px-6 py-4 hover:bg-slate-800/40 transition-colors group">
+          <div class="flex items-center gap-4">
+            <code class="text-sm text-violet-400 font-mono font-medium">nexus.storage</code>
+            <span class="text-sm text-slate-500">--</span>
+            <span class="text-sm text-slate-400">File uploads, downloads & transforms</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-600 font-mono hidden sm:inline">18 methods</span>
+            <svg class="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </a>
+        <!-- Row 4 -->
+        <a href="#" class="flex items-center justify-between px-6 py-4 hover:bg-slate-800/40 transition-colors group">
+          <div class="flex items-center gap-4">
+            <code class="text-sm text-amber-400 font-mono font-medium">nexus.webhooks</code>
+            <span class="text-sm text-slate-500">--</span>
+            <span class="text-sm text-slate-400">Event subscriptions & delivery</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-600 font-mono hidden sm:inline">12 methods</span>
+            <svg class="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </a>
+        <!-- Row 5 -->
+        <a href="#" class="flex items-center justify-between px-6 py-4 hover:bg-slate-800/40 transition-colors group">
+          <div class="flex items-center gap-4">
+            <code class="text-sm text-rose-400 font-mono font-medium">nexus.edge</code>
+            <span class="text-sm text-slate-500">--</span>
+            <span class="text-sm text-slate-400">Edge functions & middleware</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-600 font-mono hidden sm:inline">9 methods</span>
+            <svg class="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </a>
+        <!-- Row 6 -->
+        <a href="#" class="flex items-center justify-between px-6 py-4 hover:bg-slate-800/40 transition-colors group">
+          <div class="flex items-center gap-4">
+            <code class="text-sm text-cyan-400 font-mono font-medium">nexus.realtime</code>
+            <span class="text-sm text-slate-500">--</span>
+            <span class="text-sm text-slate-400">Channels, presence & broadcast</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-600 font-mono hidden sm:inline">15 methods</span>
+            <svg class="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guides -->
+  <section id="guides" class="py-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Popular Guides</h2>
+        <p class="text-slate-400 text-lg max-w-xl mx-auto">Step-by-step tutorials to get the most out of Nexus.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="#" class="group bg-slate-900/40 border border-slate-800 rounded-xl p-5 card-hover block">
+          <span class="text-xs font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">Quickstart</span>
+          <h3 class="text-[15px] font-semibold text-white mt-3 mb-1.5 group-hover:text-blue-400 transition-colors">Set up Nexus in 5 minutes</h3>
+          <p class="text-sm text-slate-500">Install the SDK, configure your project, and make your first API call.</p>
+        </a>
+        <a href="#" class="group bg-slate-900/40 border border-slate-800 rounded-xl p-5 card-hover block">
+          <span class="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">Auth</span>
+          <h3 class="text-[15px] font-semibold text-white mt-3 mb-1.5 group-hover:text-emerald-400 transition-colors">Social login with Google & GitHub</h3>
+          <p class="text-sm text-slate-500">Add OAuth providers and handle the complete authentication flow.</p>
+        </a>
+        <a href="#" class="group bg-slate-900/40 border border-slate-800 rounded-xl p-5 card-hover block">
+          <span class="text-xs font-medium text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md">Database</span>
+          <h3 class="text-[15px] font-semibold text-white mt-3 mb-1.5 group-hover:text-violet-400 transition-colors">Type-safe queries with TypeScript</h3>
+          <p class="text-sm text-slate-500">Generate types from your schema and write fully typed database queries.</p>
+        </a>
+        <a href="#" class="group bg-slate-900/40 border border-slate-800 rounded-xl p-5 card-hover block">
+          <span class="text-xs font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md">Storage</span>
+          <h3 class="text-[15px] font-semibold text-white mt-3 mb-1.5 group-hover:text-amber-400 transition-colors">Upload files with presigned URLs</h3>
+          <p class="text-sm text-slate-500">Securely upload files directly from the browser to your storage bucket.</p>
+        </a>
+        <a href="#" class="group bg-slate-900/40 border border-slate-800 rounded-xl p-5 card-hover block">
+          <span class="text-xs font-medium text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md">Edge</span>
+          <h3 class="text-[15px] font-semibold text-white mt-3 mb-1.5 group-hover:text-rose-400 transition-colors">Deploy edge functions globally</h3>
+          <p class="text-sm text-slate-500">Write serverless functions that run in 30+ regions with sub-50ms cold starts.</p>
+        </a>
+        <a href="#" class="group bg-slate-900/40 border border-slate-800 rounded-xl p-5 card-hover block">
+          <span class="text-xs font-medium text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md">Realtime</span>
+          <h3 class="text-[15px] font-semibold text-white mt-3 mb-1.5 group-hover:text-cyan-400 transition-colors">Build a real-time chat app</h3>
+          <p class="text-sm text-slate-500">Use channels and presence to build collaborative features with WebSockets.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/60 py-14 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-12">
+        <div>
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Product</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Authentication</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Database</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Storage</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Edge Functions</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Realtime</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Developers</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Documentation</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">API Reference</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Guides</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Changelog</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Status</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Company</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">About</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Blog</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Careers</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Legal</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">Terms of Service</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">SLA</a></li>
+            <li><a href="#" class="text-sm text-slate-500 hover:text-slate-300 transition-colors">DPA</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-slate-800/60">
+        <div class="flex items-center gap-2.5 mb-4 sm:mb-0">
+          <div class="w-6 h-6 rounded-md gradient-border flex items-center justify-center">
+            <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>
+          </div>
+          <span class="text-sm text-slate-500">&copy; 2026 Nexus Labs, Inc. All rights reserved.</span>
+        </div>
+        <div class="flex items-center gap-5">
+          <a href="#" class="text-slate-600 hover:text-slate-400 transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          </a>
+          <a href="#" class="text-slate-600 hover:text-slate-400 transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" class="text-slate-600 hover:text-slate-400 transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

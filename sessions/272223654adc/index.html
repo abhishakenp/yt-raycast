@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Image Genesis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f1722;
+      margin: 0;
+      padding: 0;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    * + * {
+      margin: 0 0 20px 0;
+    }
+    .gradient-btn {
+      background: linear-gradient(90deg, #1e293b, #06b6d4);
+      border: none;
+      border-radius: 10px;
+      padding: 15px 40px;
+      color: #f1f5f9;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+    .gradient-btn:hover {
+      background: linear-gradient(90deg, #06b6d4, #1e293b);
+    }
+    .gradient-btn:active {
+      background: linear-gradient(90deg, #1e293b, #06b6d4);
+    }
+    .gradient-btn:focus {
+      box-shadow: 0 0 5px #06b6d4;
+    }
+    .btn-outline {
+      border: 2px solid #06b6d4;
+      border-radius: 10px;
+      padding: 15px 40px;
+      color: #f1f5f9;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+    }
+    .btn-outline:hover {
+      background: #06b6d4;
+      color: #f1f5f9;
+    }
+    .btn-outline:active {
+      background: #1e293b;
+    }
+    .btn-outline:focus {
+      box-shadow: 0 0 5px #06b6d4;
+    }
+    /* Typography */
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #94a3b8;
+    }
+    h1 {
+      font-size: 36px;
+      color: #f1f5f9;
+    }
+    h2 {
+      font-size: 24px;
+      color: #f1f5f9;
+    }
+    p {
+      font-size: 16px;
+      color: #94a3b8;
+    }
+    /* Cards */
+    .card {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: none;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .card__icon {
+      background: #1e293b;
+      width: 40px;
+      height: 40px;
+      display: inline-block;
+      margin: 0 10px 0 0;
+    }
+    /* Pricing Table */
+    .pricing-table {
+      background: #1e293b;
+      border: none;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .featured {
+      background: #06b6d4;
+      border: none;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+  </style>
+  <style type="text/css">
+    /* Add some color to the design system */
+    .design-system {
+      background: #1e293b;
+      color: #f1f5f9;
+      padding: 20px;
+    }
+    .design-system__feature {
+      background: #06b6d4;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .design-system__feature-name {
+      font-size: 18px;
+      color: #f1f5f9;
+      font-weight: bold;
+    }
+    .design-system__feature-description {
+      font-size: 16px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1>Image Genesis</h1>
+    <h2>A revolutionary AI-powered image generation studio</h2>
+    <div class="gradient-btn">
+      <a href="index.html">Get Started</a>
+    </div>
+  </div>
+  <div class="main">
+    <div class="container">
+      <div class="cards">
+        <div class="card">
+          <div class="card__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+              <rect fill="#000" x="0" y="0" width="40" height="40" rx="5" ry="5" />
+            </svg>
+          </div>
+          <div class="card__content">
+            <h2>Transform Your Imagination</h2>
+            <p>Unlock the power of AI to generate stunning images that bring your imagination to life.</p>
+            <a href="features.html" class="btn-outline">Explore Features</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+              <rect fill="#000" x="0" y="0" width="40" height="40" rx="5" ry="5" />
+            </svg>
+          </div>
+          <div class="card__content">
+            <h2>Artistic Expression</h2>
+            <p>Create stunning images with our cutting-edge AI technology, perfect for any artistic project.</p>
+            <a href="learn-more.html" class="btn-outline">Learn More</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="design-system">
+      <h2>Design System</h2>
+      <div class="design-system__feature">
+        <h3 class="design-system__feature-name">Typography</h3>
+        <p class="design-system__feature-description">Inter font family used throughout the platform.</p>
+      </div>
+      <div class="design-system__feature">
+        <h3 class="design-system__feature-name">Components</h3>
+        <p class="design-system__feature-description">Customizable UI components for a seamless user experience.</p>
+      </div>
+      <div class="design-system__feature">
+        <h3 class="design-system__feature-name">Color System</h3>
+        <p class="design-system__feature-description">A carefully curated color palette for a cohesive look.</p>
+      </div>
+    </div>
+    <div class="pricing">
+      <h2>Pricing</h2>
+      <div class="pricing-table">
+        <div class="pricing-table__row">
+          <div class="pricing-table__column">
+            <h3>Basic</h3>
+            <p>$19.99/month</p>
+            <p>Perfect for personal projects.</p>
+          </div>
+          <div class="pricing-table__column">
+            <h3>Pro</h3>
+            <p>$49.99/month</p>
+            <p>For small businesses and teams.</p>
+          </div>
+          <div class="pricing-table__column">
+            <h3>Premier</h3>
+            <p>$99.99/month</p>
+            <p>For enterprises and large teams.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="footer">
+    <p>Copyright 2023 Image Genesis. All rights reserved.</p>
+  </footer>
+</body>
+</html>
+<|stats|>{"created_at":1771786423.2282887,"done":true,"done_reason":"stop","total_duration":0.2460322380065918,"logprobs":null,"topk":8,"ttft":0.09577178955078125,"reason":"termination token 128009/<|eot_id|> detected","status":0,"prefill_tokens":2167,"prefill_rate":22626.70469210547,"decode_tokens":1920,"decode_rate":14796.326909332103,"total_tokens":4087,"total_time":0.22554373741149902,"roundtrip_time":260}<|/stats|>

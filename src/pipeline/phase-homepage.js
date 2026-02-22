@@ -1,15 +1,43 @@
-import { groqHomepage } from '../llm/groq.js'
+import { loadTemplate } from '../llm/template-loader.js'
+import { groqCustomizeTemplate } from '../llm/groq.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { writeFile } from './workspace.js'
-import { homepagePrompt } from '../prompts/homepage.js'
 
 export async function generateHomepage(prompt, ctx, designBrief, workspace, log, sessionCtx) {
-  log('  homepage: generating')
+  const siteType = ctx?.site_type ?? 'saas'
 
-  const userPrompt = homepagePrompt(prompt, ctx, designBrief)
-  const result = await groqHomepage(userPrompt)
+  // Step 1: Load template from collection (randomly picks v1 or v2)
+  log('  homepage: loading template...')
+  let templateResult
+  try {
+    templateResult = await loadTemplate(siteType)
+    log(`  using ${templateResult.version} template (${siteType})`)
+  } catch (err) {
+    log(`  ❌ template failed: ${err?.message}`)
+    throw new Error(`Template loading failed: ${err?.message}`)
+  }
+  const template = templateResult.content
+
+  // Step 2: Customize template with project content
+  log('  homepage: customizing with content...')
+  const customizeResult = await groqCustomizeTemplate(template, prompt, ctx, designBrief)
+  if (customizeResult.error) {
+    log(`  ⚠️  customization failed, using template as-is: ${customizeResult.error}`)
+    var result = templateResult
+  } else {
+    var result = customizeResult
+  }
 
   let html = stripFences(result.content)
+
+  // Clean up invalid server-side code in generated HTML
+  html = html
+    // Remove require() statements (CommonJS in browser)
+    .replace(/const\s+\{[^}]*\}\s*=\s*require\([^)]*\);?\n?/g, '')
+    // Remove broken CSS file references
+    .replace(/<link[^>]*href="styles\.css"[^>]*>/g, '')
+    // Remove malformed script tags that reference non-existent modules
+    .replace(/<script[^>]*>\s*const\s+\{[^}]*\}\s*=\s*\{[^}]*\};\s*<\/script>\n?/g, '')
 
   // Inject Tailwind config if found in design brief
   const configMatch = designBrief.match(/```json\s*(\{[\s\S]*?\})\s*```/)
