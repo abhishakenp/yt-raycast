@@ -17,7 +17,28 @@ export function slug(title) {
 }
 
 export function parseJson(text) {
-  const m = text.match(/\{[\s\S]*\}/)
+  if (!text || typeof text !== 'string') return null
+
+  // Try to find and parse JSON object
+  // First, try to find the first { and parse from there
+  const startIdx = text.indexOf('{')
+  if (startIdx === -1) return null
+
+  // Try parsing from start position, expanding until we find valid JSON
+  for (let endIdx = startIdx + 1; endIdx <= text.length; endIdx++) {
+    const candidate = text.substring(startIdx, endIdx)
+    // Only try to parse if it looks complete (ends with })
+    if (candidate.endsWith('}')) {
+      try {
+        return JSON.parse(candidate)
+      } catch {
+        // Continue trying longer substrings
+      }
+    }
+  }
+
+  // Fallback: try the greedy approach as before
+  const m = text.match(/\{[\s\S]*?\}/)
   try {
     return m ? JSON.parse(m[0]) : null
   } catch {
