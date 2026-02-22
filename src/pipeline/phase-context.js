@@ -29,7 +29,11 @@ export async function generateContext(prompt, designBrief, siteType, workspace, 
   }
 
   if (!parsed) {
-    log(`  ⚠️  context: JSON parsing failed, using fallback. Content: ${cleanedContent.slice(0, 100)}...`)
+    log(`  ⚠️  context: JSON parsing failed, using fallback.`)
+    log(`  Raw content length: ${result.content.length}, cleaned: ${cleanedContent.length}`)
+    log(`  Cleaned content sample: ${cleanedContent.slice(0, 150)}`)
+  } else {
+    log(`  ✅ context: successfully parsed. Project: "${ctx.project_name}" | Features: ${ctx.features?.length || 0}`)
   }
 
   writeFile(workspace, 'project-context.json', JSON.stringify(ctx, null, 2))

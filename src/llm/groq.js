@@ -206,6 +206,11 @@ export async function groqCustomizeTemplate(template, prompt, ctx, designBrief) 
   // Extract key info from prompt (first sentence)
   const promptWords = prompt.split(/[.!?]/).filter(s => s.trim())[0]?.trim() || prompt
 
+  // DEBUG: Log what values are being used for customization
+  if (typeof process !== 'undefined' && process.env.DEBUG_CUSTOMIZE) {
+    console.log(`[groqCustomizeTemplate] projectName="${projectName}" features=${features.length} tagline="${tagline}"`)
+  }
+
   // Build replacement map with placeholder tokens
   const replacements = {
     BRAND_NAME: projectName,
