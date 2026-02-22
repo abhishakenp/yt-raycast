@@ -16,7 +16,7 @@ let _sessionsDir = null
 
 export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
-  await initSessionDir(sessionsDir)
+  initSessionDir(sessionsDir)
   const app = express()
   app.use(express.json())
 
@@ -56,7 +56,7 @@ export async function startServer(sessionsDir) {
 
   // ─── Dashboard (session-scoped) ───────────────────────────
   app.get('/session/:id', async (req, res) => {
-    const session = await getSession(req.params.id)
+    const session = getSession(req.params.id)
     if (!session) return res.status(404).send('Session not found')
     res.sendFile(join(publicDir, 'dashboard.html'))
   })
@@ -112,21 +112,21 @@ export async function startServer(sessionsDir) {
 
   // ─── API: Session info ───────────────────────────────────
   app.get('/api/sessions/:id', async (req, res) => {
-    const session = await getSession(req.params.id)
+    const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     res.json({ id: session.id, prompt: session.prompt, createdAt: session.createdAt, homepageReady: session.homepageReady, taskCount: session.tasks.length, done: session.tasks.filter((t) => t.status === 'DONE').length })
   })
 
   // ─── API: Session tasks ───────────────────────────────────
   app.get('/api/sessions/:id/tasks', async (req, res) => {
-    const session = await getSession(req.params.id)
+    const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     res.json(session.tasks)
   })
 
   // ─── API: Session status ──────────────────────────────────
   app.post('/api/sessions/:id/status', async (req, res) => {
-    const session = await getSession(req.params.id)
+    const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     const sessionCtx = makeSessionState(session)
     sessionCtx.broadcast({
@@ -139,7 +139,7 @@ export async function startServer(sessionsDir) {
 
   // ─── API: Generate alternative design (on-demand) ─────────
   app.post('/api/sessions/:id/generate-design', async (req, res) => {
-    const session = await getSession(req.params.id)
+    const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
     const sessionCtx = makeSessionState(session)
@@ -158,7 +158,7 @@ export async function startServer(sessionsDir) {
 
   // ─── Preview: per-session workspace static files ──────────
   app.use('/preview/:sessionId', async (req, res, next) => {
-    const session = await getSession(req.params.sessionId)
+    const session = getSession(req.params.sessionId)
     if (!session) return res.status(404).send('Session not found')
     express.static(session.workspace, { extensions: ['html'] })(req, res, next)
   })

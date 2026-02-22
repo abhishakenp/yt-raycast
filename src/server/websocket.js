@@ -6,10 +6,10 @@ let _wss = null
 export function setupWebSocket(httpServer) {
   _wss = new WebSocketServer({ server: httpServer })
 
-  _wss.on('connection', async (ws, req) => {
+  _wss.on('connection', (ws, req) => {
     const url = new URL(req.url, 'http://localhost')
     const sessionId = url.searchParams.get('session')
-    const session = sessionId ? await getSession(sessionId) : null
+    const session = sessionId ? getSession(sessionId) : null
 
     if (!session) {
       ws.close(4001, 'Invalid session')

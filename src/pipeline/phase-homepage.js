@@ -63,7 +63,7 @@ ${cssVars}
     </script>
   </head>`
       html = html.replace('</head>', themeScript)
-    } catch (e) {
+    } catch {
       log('  warning: failed to inject tailwind config')
     }
   }

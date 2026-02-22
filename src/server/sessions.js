@@ -1,20 +1,12 @@
 import { randomBytes } from 'node:crypto'
-import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
-let kv = null
 const sessions = new Map()
 let _sessionsDir = null
 
-export async function initSessionDir(dir) {
+export function initSessionDir(dir) {
   _sessionsDir = dir
-  // Try to import Vercel KV if available
-  try {
-    const { kv: kvClient } = await import('@vercel/kv')
-    kv = kvClient
-  } catch {
-    // KV not available, will use in-memory + filesystem
-  }
 }
 
 export function createSession(baseDir, prompt) {
@@ -49,7 +41,7 @@ export function createSession(baseDir, prompt) {
   return session
 }
 
-export async function getSession(id) {
+export function getSession(id) {
   // Return from memory if exists
   if (sessions.has(id)) return sessions.get(id)
 
@@ -58,7 +50,7 @@ export async function getSession(id) {
   const workspace = join(_sessionsDir, id)
   if (!existsSync(workspace)) return null
 
-  // Load alternativeDesign from file or KV
+  // Load alternativeDesign from file
   let alternativeDesign = null
   try {
     const designPath = join(workspace, '.design.json')
@@ -69,24 +61,23 @@ export async function getSession(id) {
     /* design file may not exist or be invalid */
   }
 
-  // Try to load from KV if not found in file
-  if (!alternativeDesign && kv) {
-    try {
-      const designJson = await kv.get(`design:${id}`)
-      if (designJson) {
-        alternativeDesign = JSON.parse(designJson)
-      }
-    } catch {
-      /* KV not available or design not found */
-    }
-  }
-
   // Load prompt from disk
   let prompt = ''
   try {
     const promptPath = join(workspace, 'prompt.txt')
     if (existsSync(promptPath)) prompt = readFileSync(promptPath, 'utf-8').trim()
   } catch { /* prompt file may not exist */ }
+
+  // Auto-delete session if prompt is empty
+  if (!prompt) {
+    try {
+      rmSync(workspace, { recursive: true, force: true })
+      sessions.delete(id)
+    } catch (err) {
+      console.error(`Failed to delete empty session ${id}:`, err?.message)
+    }
+    return null
+  }
 
   // Load tasks from disk
   let tasks = []
@@ -109,7 +100,6 @@ export async function getSession(id) {
     createdAt: Date.now(),
     tasks,
     homepageReady,
-    homepageReady: false,
     alternativeDesign,
     lastStatus: null,
     wsClients: new Set(),
@@ -120,13 +110,27 @@ export async function getSession(id) {
 }
 
 export function getAllSessions() {
-  return [...sessions.values()].map((s) => ({
-    id: s.id,
-    prompt: s.prompt,
-    createdAt: s.createdAt,
-    taskCount: s.tasks.length,
-    done: s.tasks.filter((t) => t.status === 'DONE').length,
-  }))
+  const validSessions = []
+  for (const s of sessions.values()) {
+    if (!s.prompt || s.prompt.trim() === '') {
+      // Delete empty session
+      try {
+        rmSync(s.workspace, { recursive: true, force: true })
+        sessions.delete(s.id)
+      } catch (err) {
+        console.error(`Failed to delete empty session ${s.id}:`, err?.message)
+      }
+    } else {
+      validSessions.push({
+        id: s.id,
+        prompt: s.prompt,
+        createdAt: s.createdAt,
+        taskCount: s.tasks.length,
+        done: s.tasks.filter((t) => t.status === 'DONE').length,
+      })
+    }
+  }
+  return validSessions
 }
 
 export function deleteSession(id) {
@@ -172,7 +176,7 @@ export function makeSessionState(session) {
 
   const setAlternativeDesign = (design) => {
     session.alternativeDesign = design
-    // Persist design to file (local) and KV (cloud)
+    // Persist design to file
     try {
       const designPath = join(session.workspace, '.design.json')
       writeFileSync(designPath, JSON.stringify(design, null, 2))
@@ -180,12 +184,6 @@ export function makeSessionState(session) {
       console.error('Failed to save alternative design to file:', err?.message)
     }
 
-    // Save to Vercel KV if available
-    if (kv) {
-      kv.set(`design:${session.id}`, JSON.stringify(design)).catch((err) => {
-        console.error('Failed to save design to KV:', err?.message)
-      })
-    }
     broadcast({ type: 'alternative_design_ready', design })
   }
 
