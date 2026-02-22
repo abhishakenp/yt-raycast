@@ -206,10 +206,9 @@ export async function groqCustomizeTemplate(template, prompt, ctx, designBrief) 
   // Extract key info from prompt (first sentence)
   const promptWords = prompt.split(/[.!?]/).filter(s => s.trim())[0]?.trim() || prompt
 
-  // DEBUG: Log what values are being used for customization
-  if (typeof process !== 'undefined' && process.env.DEBUG_CUSTOMIZE) {
-    console.log(`[groqCustomizeTemplate] projectName="${projectName}" features=${features.length} tagline="${tagline}"`)
-  }
+  // DEBUG: Always log customization start
+  console.log(`[groqCustomizeTemplate] START - projectName="${projectName.slice(0,30)}..." featureCount=${features.length}`)
+  console.log(`[groqCustomizeTemplate] HERO_SUBTITLE will be: "${(promptWords || tagline || 'Transform...').slice(0,50)}..."`)
 
   // Build replacement map with placeholder tokens
   const replacements = {
@@ -290,10 +289,21 @@ export async function groqCustomizeTemplate(template, prompt, ctx, designBrief) 
 
   // Apply replacements
   let customized = template
+  const replacementLog = []
   for (const [token, value] of Object.entries(replacements)) {
     if (value) {
+      const before = customized
       customized = customized.replace(new RegExp(token, 'g'), String(value))
+      if (before !== customized) {
+        replacementLog.push(`  ✓ ${token} → "${String(value).slice(0, 40)}..."`)
+      }
     }
+  }
+
+  // DEBUG: Log which tokens were replaced
+  if (replacementLog.length > 0 && typeof process !== 'undefined') {
+    console.log(`[TOKEN REPLACEMENTS]:`);
+    replacementLog.forEach(log => console.log(log))
   }
 
   // Optional: Update accent color from design brief if provided
