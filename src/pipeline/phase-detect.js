@@ -7,13 +7,21 @@ export async function detectSiteType(prompt, log) {
   const { system, user, temperature, maxTokens } = siteTypePrompt(prompt)
   const result = await groq(user, { system, temperature, maxTokens })
 
-  const raw = (result.content ?? '')
-    .trim()
+  // Debug: log raw Groq response
+  const groqResponse = (result.content ?? '').trim()
+
+  const raw = groqResponse
     .toLowerCase()
     .replace(/[^a-z]/g, '')
   const siteType = VALID_SITE_TYPES.includes(raw) ? raw : 'saas'
 
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
+
+  // Log detection details
+  if (groqResponse !== siteType) {
+    console.log(`[SITE TYPE] Groq returned: "${groqResponse}" → cleaned: "${raw}" → final: "${siteType}"`)
+  }
+
   log(`  site type: ${siteType}${tpsStr}`)
   return {
     siteType,
