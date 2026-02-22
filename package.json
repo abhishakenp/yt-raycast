@@ -7,6 +7,7 @@
     "ship-fast": "src/index.js"
   },
   "scripts": {
+    "dev": "bun --watch src/index.js",
     "start": "node src/index.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
@@ -14,7 +15,6 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "latest",
-    "@vercel/kv": "^3.0.0",
     "express": "^4.21.0",
     "open": "^10.1.0",
     "ws": "^8.18.0"
