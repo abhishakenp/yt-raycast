@@ -1,0 +1,27 @@
+{
+  "name": "ship-fast",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "ship-fast": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.js\""
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "latest",
+    "express": "^4.21.0",
+    "open": "^10.1.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.0.0"
+  }
+}

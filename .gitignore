@@ -1,4 +1,15 @@
-__pycache__/
-*.pyc
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
 .DS_Store
-.idea/
+dist/
+
+# Generated pipeline artifacts (workspace output)
+spec.md
+design.md
+tasks.json
+project-context.json
+prompt.txt
+ship.log
