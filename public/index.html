@@ -335,14 +335,20 @@
         transform-origin: top left;
         pointer-events: none;
       }
-      .session-badge {
+      .session-badges {
         position: absolute;
         top: 8px;
         right: 8px;
         display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        z-index: 2;
+      }
+      .session-badge {
+        display: flex;
         align-items: center;
         gap: 4px;
-        background: rgba(124, 58, 237, 0.85);
         backdrop-filter: blur(6px);
         color: #fff;
         font-family: 'JetBrains Mono', monospace;
@@ -350,8 +356,13 @@
         font-weight: 600;
         padding: 3px 8px;
         border-radius: 6px;
-        z-index: 2;
         letter-spacing: 0.3px;
+      }
+      .badge-time {
+        background: rgba(124, 58, 237, 0.85);
+      }
+      .badge-cost {
+        background: rgba(16, 185, 129, 0.85);
       }
       .session-placeholder {
         width: 100%;
@@ -583,7 +594,10 @@
                   ? `<iframe data-src="/preview/${s.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
                   : `<div class="session-placeholder">${placeholderSvg}</div>`
                 }
-                ${s.elapsed ? `<span class="session-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${s.elapsed}s</span>` : ''}
+                <div class="session-badges">
+                  ${s.elapsed ? `<span class="session-badge badge-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${s.elapsed}s</span>` : ''}
+                  ${s.cost != null ? `<span class="session-badge badge-cost session-cost" style="display:none">$${s.cost.toFixed(4)}</span>` : ''}
+                </div>
               </div>
               <div class="session-info">
                 <span class="session-prompt">${s.prompt.replace(/</g, '&lt;')}</span>
@@ -620,6 +634,10 @@
           } else {
             iframes.forEach((iframe) => { iframe.src = iframe.dataset.src })
           }
+          // Apply cost visibility from localStorage
+          if (localStorage.getItem('sf_show_cost') === '1') {
+            list.querySelectorAll('.session-cost').forEach((el) => { el.style.display = 'flex' })
+          }
         } catch {
           /* ignore */
         }
@@ -651,6 +669,17 @@
           if (remaining.length === 1) list.classList.add('single-col')
           else if (remaining.length === 2) list.classList.add('two-col')
         }
+      })
+
+      // Easter egg: press P to toggle cost display, persisted in localStorage
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'p') return
+        if (document.activeElement.tagName === 'TEXTAREA' || document.activeElement.tagName === 'INPUT') return
+        const visible = localStorage.getItem('sf_show_cost') === '1'
+        localStorage.setItem('sf_show_cost', visible ? '0' : '1')
+        document.querySelectorAll('.session-cost').forEach((el) => {
+          el.style.display = visible ? 'none' : 'flex'
+        })
       })
 
       // Easter egg: press D 5 times fast to delete all sessions

@@ -33,6 +33,7 @@ export function createSession(baseDir, prompt) {
     tasks: [],
     homepageReady: false,
     elapsed: null,
+    cost: null,
     alternativeDesign,
     lastStatus: null,
     wsClients: new Set(),
@@ -100,6 +101,13 @@ export function getSession(id) {
     if (existsSync(elapsedPath)) elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
   } catch { /* elapsed file may not exist */ }
 
+  // Load cost from disk
+  let cost = null
+  try {
+    const costPath = join(workspace, 'cost.txt')
+    if (existsSync(costPath)) cost = parseFloat(readFileSync(costPath, 'utf-8').trim())
+  } catch { /* cost file may not exist */ }
+
   // Reconstruct session from disk
   const session = {
     id,
@@ -109,6 +117,7 @@ export function getSession(id) {
     tasks,
     homepageReady,
     elapsed,
+    cost,
     alternativeDesign,
     lastStatus: null,
     wsClients: new Set(),
@@ -143,9 +152,14 @@ export function getAllSessions() {
       if (s.elapsed == null) {
         try {
           const elapsedPath = join(s.workspace, 'elapsed.txt')
-          if (existsSync(elapsedPath)) {
-            s.elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
-          }
+          if (existsSync(elapsedPath)) s.elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
+        } catch { /* ignore */ }
+      }
+      // Lazy-load cost from disk if not in memory
+      if (s.cost == null) {
+        try {
+          const costPath = join(s.workspace, 'cost.txt')
+          if (existsSync(costPath)) s.cost = parseFloat(readFileSync(costPath, 'utf-8').trim())
         } catch { /* ignore */ }
       }
       validSessions.push({
@@ -156,6 +170,7 @@ export function getAllSessions() {
         done: s.tasks.filter((t) => t.status === 'DONE').length,
         homepageReady: s.homepageReady ?? false,
         elapsed: s.elapsed ?? null,
+        cost: s.cost ?? null,
       })
     }
   }
@@ -214,6 +229,13 @@ export function makeSessionState(session) {
     } catch { /* ignore */ }
   }
 
+  const setCost = (dollars) => {
+    session.cost = dollars
+    try {
+      writeFileSync(join(session.workspace, 'cost.txt'), String(dollars))
+    } catch { /* ignore */ }
+  }
+
   const setAlternativeDesign = (design) => {
     session.alternativeDesign = design
     // Persist design to file
@@ -242,6 +264,7 @@ export function makeSessionState(session) {
     updateTask,
     signalHomepageReady,
     setElapsed,
+    setCost,
     setAlternativeDesign,
     getState,
   }
