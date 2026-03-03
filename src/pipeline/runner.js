@@ -208,6 +208,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   const done = tasks.filter((t) => t.status === 'DONE').length
   const total = tasks.length
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
+  sessionCtx.setElapsed(Number.parseFloat(elapsed))
 
   sessionCtx.broadcast({
     type: 'run_completed',

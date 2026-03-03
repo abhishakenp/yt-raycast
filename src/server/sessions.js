@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const sessions = new Map()
@@ -32,6 +32,7 @@ export function createSession(baseDir, prompt) {
     createdAt: Date.now(),
     tasks: [],
     homepageReady: false,
+    elapsed: null,
     alternativeDesign,
     lastStatus: null,
     wsClients: new Set(),
@@ -92,6 +93,13 @@ export function getSession(id) {
   // Check if homepage exists
   const homepageReady = existsSync(join(workspace, 'index.html'))
 
+  // Load elapsed time from disk
+  let elapsed = null
+  try {
+    const elapsedPath = join(workspace, 'elapsed.txt')
+    if (existsSync(elapsedPath)) elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
+  } catch { /* elapsed file may not exist */ }
+
   // Reconstruct session from disk
   const session = {
     id,
@@ -100,6 +108,7 @@ export function getSession(id) {
     createdAt: Date.now(),
     tasks,
     homepageReady,
+    elapsed,
     alternativeDesign,
     lastStatus: null,
     wsClients: new Set(),
@@ -110,6 +119,15 @@ export function getSession(id) {
 }
 
 export function getAllSessions() {
+  // Load any disk sessions not yet in memory
+  if (_sessionsDir && existsSync(_sessionsDir)) {
+    try {
+      for (const name of readdirSync(_sessionsDir)) {
+        if (!sessions.has(name)) getSession(name)
+      }
+    } catch { /* ignore */ }
+  }
+
   const validSessions = []
   for (const s of sessions.values()) {
     if (!s.prompt || s.prompt.trim() === '') {
@@ -121,12 +139,23 @@ export function getAllSessions() {
         console.error(`Failed to delete empty session ${s.id}:`, err?.message)
       }
     } else {
+      // Lazy-load elapsed from disk if not in memory
+      if (s.elapsed == null) {
+        try {
+          const elapsedPath = join(s.workspace, 'elapsed.txt')
+          if (existsSync(elapsedPath)) {
+            s.elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
+          }
+        } catch { /* ignore */ }
+      }
       validSessions.push({
         id: s.id,
         prompt: s.prompt,
         createdAt: s.createdAt,
         taskCount: s.tasks.length,
         done: s.tasks.filter((t) => t.status === 'DONE').length,
+        homepageReady: s.homepageReady ?? false,
+        elapsed: s.elapsed ?? null,
       })
     }
   }
@@ -134,6 +163,10 @@ export function getAllSessions() {
 }
 
 export function deleteSession(id) {
+  const session = sessions.get(id)
+  if (session?.workspace) {
+    try { rmSync(session.workspace, { recursive: true, force: true }) } catch { /* ignore */ }
+  }
   sessions.delete(id)
 }
 
@@ -174,6 +207,13 @@ export function makeSessionState(session) {
     broadcast({ type: 'homepage_ready' })
   }
 
+  const setElapsed = (seconds) => {
+    session.elapsed = seconds
+    try {
+      writeFileSync(join(session.workspace, 'elapsed.txt'), String(seconds))
+    } catch { /* ignore */ }
+  }
+
   const setAlternativeDesign = (design) => {
     session.alternativeDesign = design
     // Persist design to file
@@ -201,6 +241,7 @@ export function makeSessionState(session) {
     setTasks,
     updateTask,
     signalHomepageReady,
+    setElapsed,
     setAlternativeDesign,
     getState,
   }
