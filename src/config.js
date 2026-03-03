@@ -1,5 +1,10 @@
 export const DASHBOARD_PORT = 7420
 
+export const GROQ_API_KEY = process.env.GROQ_API_KEY
+export const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'
+export const GROQ_MODEL = process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b'
+export const HOMEPAGE_MODEL = 'moonshotai/kimi-k2-instruct-0905'
+
 // ─── LLM Configuration ──────────────────────────────────
 export const LLM_CONFIG = {
   default: {

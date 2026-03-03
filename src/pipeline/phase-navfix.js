@@ -7,9 +7,11 @@ import { sumTokens } from './phase-tasks.js'
 import { navfixPrompt } from '../prompts/navfix.js'
 
 export async function fixHomepageNav(navList, workspace, log) {
-  // Skip nav fixing for now - templates are already optimized
-  // TODO: Improve nav fix logic for Groq responses
-  return { count: 0, inputTokens: 0, outputTokens: 0, cost: 0 }
+  // Skip nav fixing for now unless explicitly enabled.
+  const NAV_FIX_ENABLED = false
+  if (!NAV_FIX_ENABLED) {
+    return { count: 0, inputTokens: 0, outputTokens: 0, cost: 0 }
+  }
 
   const fileContent = readFileSync(join(workspace, 'index.html'), 'utf-8')
   log('\n  \u2500\u2500 Fixing homepage nav links \u2500\u2500')

@@ -6,7 +6,7 @@ import { writeFile } from './workspace.js'
 import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
-import { generateHomepage } from './phase-homepage.js'
+import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
 import { formatRunAllReport, formatEditReport } from './report.js'
@@ -136,30 +136,35 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
 
   tick('t0')
 
+  // ── PARALLEL: spec+design AND homepage fire at the same time ──
   _status('Generating spec\u2026', 'spec')
-  const designStats = await generateDesignBrief(prompt, workspace, _log)
+
+  const specPromise = (async () => {
+    const designStats = await generateDesignBrief(prompt, workspace, _log)
+    tick('design_end')
+    const detectStats = await detectSiteType(prompt, _log)
+    tick('detect_end')
+    const ctxStats = await generateContext(prompt, designStats.brief, detectStats.siteType, workspace, _log)
+    tick('ctx_end')
+    return { designStats, detectStats, ctxStats }
+  })()
+
+  const homepagePromise = (async () => {
+    const stats = await generateHomepage(prompt, workspace, _log, sessionCtx)
+    tick('homepage_end')
+    return stats
+  })()
+
+  const [specResult, homepageStats] = await Promise.all([specPromise, homepagePromise])
+
+  const { designStats, detectStats, ctxStats } = specResult
   const designBrief = designStats.brief
-  tick('design_end')
-
-  const detectStats = await detectSiteType(prompt, _log)
-  const siteType = detectStats.siteType
-  tick('detect_end')
-
-  const ctxStats = await generateContext(prompt, designBrief, siteType, workspace, _log)
   ctx = ctxStats.ctx
-  tick('ctx_end')
+  homepage = homepageStats.html
 
-  let homepageStats = { inputTokens: 0, outputTokens: 0, cost: 0 }
-  const needHomepage = !homepage
-  if (needHomepage) {
-    _status('Generating tasks\u2026', 'generating')
-    homepageStats = await generateHomepage(prompt, ctx, designBrief, workspace, _log, sessionCtx)
-    homepage = homepageStats.html
-    tick('homepage_end')
-  } else {
-    _log(`  index.html: ${homepage.length} chars (cached)`)
-    sessionCtx.signalHomepageReady()
-    tick('homepage_end')
+  // Inject design system colors into the homepage now that both are ready
+  if (homepage && designBrief) {
+    homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
   }
   const ctxPages = ctx.pages?.length ?? 0
   const homepageChars = homepage?.length ?? 0

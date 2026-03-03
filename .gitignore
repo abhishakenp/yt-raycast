@@ -14,3 +14,4 @@ project-context.json
 prompt.txt
 ship.log
 .vercel
+sessions/

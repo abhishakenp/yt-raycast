@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "buildCommand": "bun install",
-  "env": {
-    "NODE_ENV": "production",
-    "DASHBOARD_PORT": "3000",
-    "SLACK_WEBHOOK_URL": "https://hooks.slack.com/services/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"
-  }
-}

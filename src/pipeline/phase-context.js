@@ -10,7 +10,7 @@ export async function generateContext(prompt, designBrief, siteType, workspace, 
   const result = await groq(user, { system, temperature, maxTokens })
 
   // Clean stats markers that might break JSON parsing
-  let cleanedContent = result.content
+  const cleanedContent = result.content
     .replace(/<\|stats\|>[\s\S]*?<\/\|stats\|>/g, '')
     .trim()
 

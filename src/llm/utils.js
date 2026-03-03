@@ -1,7 +1,5 @@
 export function stripFences(html) {
   let content = html
-  // Strip <|stats|> markers from chatjimmy.ai responses
-  content = content.replace(/<\|stats\|>[\s\S]*?<\/\|stats\|>/g, '').trim()
   const first = content.indexOf('<')
   if (first > 0) content = content.slice(first)
   return content.replace(/\n?```\s*$/, '').trim()
