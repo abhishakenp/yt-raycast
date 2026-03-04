@@ -62,9 +62,635 @@
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
       }
     </script>
-    <link rel="stylesheet" href="/styles/index.css" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #000;
+        font-family: 'Inter', system-ui, sans-serif;
+        color: #e2e0f0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+      }
+
+      /* ─── Ambient glow ─── */
+      .bg-glow {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .bg-glow::before {
+        content: '';
+        position: absolute;
+        top: 15%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: glowPulse 4s ease-in-out infinite;
+      }
+      @keyframes glowPulse {
+        0%,
+        100% {
+          opacity: 0.6;
+          transform: translateX(-50%) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: translateX(-50%) scale(1.15);
+        }
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: 640px;
+        width: 100%;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      body.has-sessions {
+        justify-content: flex-start;
+        overflow-y: auto;
+      }
+      body.has-sessions .container {
+        margin-top: 80px;
+      }
+
+      /* ─── Logo ─── */
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+      .logo-icon {
+        width: 64px;
+        height: 64px;
+      }
+      .logo-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+      .logo-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 56px;
+        font-weight: 700;
+        letter-spacing: 5px;
+        background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 40%, #c4b5fd 60%, #7c3aed 100%);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s ease infinite;
+        filter: drop-shadow(0 0 20px rgba(124, 58, 237, 0.3));
+      }
+      @keyframes gradientShift {
+        0%,
+        100% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+      }
+
+      .subtitle {
+        font-size: 18px;
+        color: #c4b5fd;
+        margin-bottom: 40px;
+        letter-spacing: 0.3px;
+        text-align: center;
+        line-height: 1.5;
+        max-width: 520px;
+        font-weight: 500;
+      }
+
+      /* ─── Input area ─── */
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        width: 100%;
+        margin-bottom: 0;
+      }
+      .prompt-input {
+        width: 100%;
+        min-height: 120px;
+        padding: 16px 18px;
+        background: #0f0d1a;
+        border: 1px solid #2d2a3e;
+        border-radius: 12px;
+        color: #e2e0f0;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        outline: none;
+        resize: vertical;
+        transition:
+          border-color 0.25s,
+          box-shadow 0.25s;
+      }
+      .prompt-input:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+      }
+      .prompt-input::placeholder {
+        color: #4a4660;
+      }
+
+      .submit-btn {
+        align-self: flex-end;
+        padding: 16px 28px;
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+          opacity 0.2s,
+          transform 0.15s,
+          box-shadow 0.25s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .submit-btn:hover {
+        opacity: 0.9;
+        box-shadow: 0 0 24px rgba(124, 58, 237, 0.3);
+      }
+      .submit-btn:active {
+        transform: scale(0.97);
+      }
+      .submit-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .submit-btn .zap-icon {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+      .gen-counter {
+        font-size: 12px;
+        color: #6b6880;
+        text-align: right;
+        margin-top: 8px;
+        font-family: 'JetBrains Mono', monospace;
+      }
+      .gen-counter.limit-reached {
+        color: #ef4444;
+      }
+
+      .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      .loading .spinner {
+        display: inline-block;
+      }
+      .loading .btn-label {
+        display: none;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ─── Sessions grid ─── */
+      .sessions {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 1200px;
+        margin-top: 48px;
+        border-top: 1px solid #2d2a3e;
+        padding: 20px 2rem 60px;
+      }
+      .sessions h2 {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: rgba(167, 139, 250, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 16px;
+      }
+      .session-list {
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .session-list.single-col {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+      }
+      .session-list.two-col {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      @media (max-width: 900px) {
+        .session-list {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 560px) {
+        .session-list,
+        .session-list.two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+      .session-item {
+        display: flex;
+        flex-direction: column;
+        background: #0f0d1a;
+        border: 1px solid #2d2a3e;
+        border-radius: 12px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          border-color 0.25s,
+          transform 0.15s;
+        overflow: hidden;
+      }
+      .session-item:hover {
+        background: #16132a;
+        border-color: #7c3aed;
+        transform: translateY(-2px);
+      }
+      .session-thumbnail {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        position: relative;
+        background: #0a0818;
+        border-radius: 11px 11px 0 0;
+      }
+      .session-thumbnail iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1280px;
+        height: 800px;
+        border: none;
+        transform-origin: top left;
+        pointer-events: none;
+      }
+      .session-badges {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        z-index: 2;
+      }
+      .session-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        backdrop-filter: blur(6px);
+        color: #fff;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.3px;
+      }
+      .badge-time {
+        background: rgba(124, 58, 237, 0.85);
+      }
+      .badge-cost {
+        background: rgba(16, 185, 129, 0.85);
+      }
+      .session-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2d2a3e;
+      }
+      .session-placeholder svg {
+        width: 40px;
+        height: 40px;
+        opacity: 0.5;
+      }
+      .session-info {
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-top: 1px solid #2d2a3e;
+      }
+      .session-prompt {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #e2e0f0;
+      }
+      .session-meta {
+        font-family: 'JetBrains Mono', monospace;
+        color: #8b86a8;
+        font-size: 11px;
+        white-space: nowrap;
+        align-self: flex-end;
+      }
+
+      .wappalyzer-banner {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #22c55e;
+        color: #000;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        padding: 6px 12px;
+        z-index: 100;
+      }
+
+      .social-links {
+        position: fixed;
+        bottom: 20px;
+        left: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 10;
+      }
+      .social-links a {
+        color: #4a4660;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+      }
+      .social-links a:hover {
+        color: #a78bfa;
+      }
+      .social-links a svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* ─── Auth overlay ─── */
+      #auth-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.92);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+      }
+      #auth-overlay.hidden {
+        display: none;
+      }
+      .auth-box {
+        background: #0f0d1a;
+        border: 1px solid #2d2a3e;
+        border-radius: 16px;
+        padding: 40px 36px;
+        width: 100%;
+        max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+      .auth-logo {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 50%, #c4b5fd 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .auth-title {
+        font-size: 14px;
+        color: #8b86a8;
+        text-align: center;
+        margin-top: -10px;
+      }
+      .auth-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #2d2a3e;
+        background: #16132a;
+        color: #e2e0f0;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+      }
+      .auth-btn:hover {
+        border-color: #7c3aed;
+        background: #1e1a32;
+      }
+      .auth-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .auth-divider {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #4a4660;
+        font-size: 12px;
+      }
+      .auth-divider::before,
+      .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #2d2a3e;
+      }
+      .auth-input {
+        width: 100%;
+        padding: 11px 14px;
+        background: #0a0818;
+        border: 1px solid #2d2a3e;
+        border-radius: 8px;
+        color: #e2e0f0;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .auth-input:focus {
+        border-color: #7c3aed;
+      }
+      .auth-input::placeholder {
+        color: #4a4660;
+      }
+      .auth-email-row {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+      }
+      .auth-email-row .auth-btn {
+        flex: 1;
+        padding: 11px 10px;
+        font-size: 13px;
+      }
+      .auth-error {
+        color: #f87171;
+        font-size: 12px;
+        text-align: center;
+        min-height: 16px;
+      }
+
+      /* ─── Sign-out button ─── */
+      #signout-btn {
+        position: fixed;
+        top: 16px;
+        right: 20px;
+        z-index: 100;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: transparent;
+        border: 1px solid #2d2a3e;
+        border-radius: 8px;
+        color: #8b86a8;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          color 0.2s;
+      }
+      #signout-btn:hover {
+        border-color: #7c3aed;
+        color: #a78bfa;
+      }
+    </style>
   </head>
   <body>
+    <!-- ─── Auth overlay ─── -->
+    <div id="auth-overlay">
+      <div class="auth-box">
+        <div class="auth-logo">SHIP FAST</div>
+        <p class="auth-title">Sign in to continue</p>
+        <button class="auth-btn" id="google-signin-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            />
+          </svg>
+          Sign in with Google
+        </button>
+        <button class="auth-btn" id="github-signin-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+            />
+          </svg>
+          Sign in with GitHub
+        </button>
+        <div class="auth-divider">or</div>
+        <input
+          class="auth-input"
+          type="email"
+          id="auth-email"
+          placeholder="Email"
+          autocomplete="email"
+        />
+        <input
+          class="auth-input"
+          type="password"
+          id="auth-password"
+          placeholder="Password"
+          autocomplete="current-password"
+        />
+        <div class="auth-email-row">
+          <button class="auth-btn" id="email-signin-btn">Sign in</button>
+          <button class="auth-btn" id="email-signup-btn">Create account</button>
+        </div>
+        <div class="auth-error" id="auth-error"></div>
+      </div>
+    </div>
+
+    <!-- ─── Sign-out button ─── -->
+    <button id="signout-btn">
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" y1="12" x2="9" y2="12" />
+      </svg>
+      Sign out
+    </button>
+
     <div class="wappalyzer-banner" id="wappalyzer-banner">
       Sorry, Wappalyzer won't help you this time 😎
     </div>
@@ -176,7 +802,115 @@
     </div>
 
     <script type="module">
-      // ─── Main app (no auth) ─────────────────────────────────────────
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js'
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signInWithPopup,
+        GoogleAuthProvider,
+        GithubAuthProvider,
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        signOut,
+      } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
+
+      // ─── Firebase init (config from server) ──────────────
+      let _auth = null
+      let _currentUser = null
+
+      async function initFirebase() {
+        const cfg = await fetch('/api/config').then((r) => r.json())
+        const app = initializeApp(cfg)
+        _auth = getAuth(app)
+        return new Promise((resolve) => {
+          onAuthStateChanged(_auth, (user) => {
+            _currentUser = user
+            if (user) {
+              showApp()
+            } else {
+              showOverlay()
+            }
+            resolve()
+          })
+        })
+      }
+
+      async function getToken() {
+        if (!_currentUser) return null
+        return _currentUser.getIdToken()
+      }
+
+      async function authFetch(url, options = {}) {
+        const token = await getToken()
+        const headers = { ...(options.headers || {}) }
+        if (token) headers['Authorization'] = `Bearer ${token}`
+        return fetch(url, { ...options, headers })
+      }
+
+      function showOverlay() {
+        document.getElementById('auth-overlay').classList.remove('hidden')
+        document.getElementById('signout-btn').style.display = 'none'
+        document.querySelector('.container').style.visibility = 'hidden'
+        document.getElementById('sessions-section').style.display = 'none'
+      }
+
+      function showApp() {
+        document.getElementById('auth-overlay').classList.add('hidden')
+        document.getElementById('signout-btn').style.display = 'flex'
+        document.querySelector('.container').style.visibility = 'visible'
+        loadSessions()
+      }
+
+      // ─── Auth button handlers ─────────────────────────────
+      function setAuthError(msg) {
+        document.getElementById('auth-error').textContent = msg
+      }
+
+      document.getElementById('google-signin-btn').addEventListener('click', async () => {
+        setAuthError('')
+        try {
+          await signInWithPopup(_auth, new GoogleAuthProvider())
+        } catch (err) {
+          setAuthError(err.message)
+        }
+      })
+
+      document.getElementById('github-signin-btn').addEventListener('click', async () => {
+        setAuthError('')
+        try {
+          await signInWithPopup(_auth, new GithubAuthProvider())
+        } catch (err) {
+          setAuthError(err.message)
+        }
+      })
+
+      document.getElementById('email-signin-btn').addEventListener('click', async () => {
+        setAuthError('')
+        const email = document.getElementById('auth-email').value.trim()
+        const password = document.getElementById('auth-password').value
+        if (!email || !password) return setAuthError('Email and password required')
+        try {
+          await signInWithEmailAndPassword(_auth, email, password)
+        } catch (err) {
+          setAuthError(err.message)
+        }
+      })
+
+      document.getElementById('email-signup-btn').addEventListener('click', async () => {
+        setAuthError('')
+        const email = document.getElementById('auth-email').value.trim()
+        const password = document.getElementById('auth-password').value
+        if (!email || !password) return setAuthError('Email and password required')
+        try {
+          await createUserWithEmailAndPassword(_auth, email, password)
+        } catch (err) {
+          setAuthError(err.message)
+        }
+      })
+
+      document.getElementById('signout-btn').addEventListener('click', () => signOut(_auth))
+
+      // ─── Main app ─────────────────────────────────────────
       const form = document.getElementById('prompt-form')
       const input = document.getElementById('prompt-input')
       if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
@@ -232,7 +966,7 @@
         btn.classList.add('loading')
 
         try {
-          const res = await fetch('/api/sessions', {
+          const res = await authFetch('/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt }),
@@ -255,7 +989,7 @@
 
       async function loadSessions() {
         try {
-          const res = await fetch('/api/sessions')
+          const res = await authFetch('/api/sessions')
           const sessions = await res.json()
           if (sessions.length === 0) return
 
@@ -352,7 +1086,7 @@
         const id = hoveredSessionId
         const card = document.querySelector(`.session-item[data-id="${id}"]`)
         if (card) card.style.opacity = '0.3'
-        await fetch(`/api/sessions/${id}`, { method: 'DELETE' })
+        await authFetch(`/api/sessions/${id}`, { method: 'DELETE' })
         if (card) card.remove()
         const remaining = document.querySelectorAll('.session-item')
         if (remaining.length === 0) {
@@ -381,31 +1115,29 @@
         })
       })
 
-      // Easter egg: press D 5 times fast to delete all sessions (dev only)
-      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-        let dPresses = []
-        document.addEventListener('keydown', async (e) => {
-          if (e.key !== 'd') return
-          if (
-            document.activeElement.tagName === 'TEXTAREA' ||
-            document.activeElement.tagName === 'INPUT'
-          )
-            return
-          const now = Date.now()
-          dPresses.push(now)
-          dPresses = dPresses.filter((t) => now - t < 1500)
-          if (dPresses.length >= 5) {
-            dPresses = []
-            document.querySelectorAll('.session-item').forEach((c) => {
-              c.style.opacity = '0.3'
-            })
-            await fetch('/api/sessions', { method: 'DELETE' })
-            document.getElementById('session-list').innerHTML = ''
-            document.getElementById('sessions-section').style.display = 'none'
-            document.body.classList.remove('has-sessions')
-          }
-        })
-      }
+      // Easter egg: press D 5 times fast to delete all sessions
+      let dPresses = []
+      document.addEventListener('keydown', async (e) => {
+        if (e.key !== 'd') return
+        if (
+          document.activeElement.tagName === 'TEXTAREA' ||
+          document.activeElement.tagName === 'INPUT'
+        )
+          return
+        const now = Date.now()
+        dPresses.push(now)
+        dPresses = dPresses.filter((t) => now - t < 1500)
+        if (dPresses.length >= 5) {
+          dPresses = []
+          document.querySelectorAll('.session-item').forEach((c) => {
+            c.style.opacity = '0.3'
+          })
+          await authFetch('/api/sessions', { method: 'DELETE' })
+          document.getElementById('session-list').innerHTML = ''
+          document.getElementById('sessions-section').style.display = 'none'
+          document.body.classList.remove('has-sessions')
+        }
+      })
 
       // Wappalyzer detection
       try {
@@ -417,8 +1149,7 @@
       } catch {}
 
       // ─── Bootstrap ───────────────────────────────────────
-      document.querySelector('.container').style.visibility = 'visible'
-      loadSessions()
+      initFirebase()
     </script>
   </body>
 </html>

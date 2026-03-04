@@ -1,5 +1,13 @@
 import { randomBytes } from 'node:crypto'
-import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync } from 'node:fs'
+import {
+  mkdirSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+  readdirSync,
+  statSync,
+} from 'node:fs'
 import { join } from 'node:path'
 
 const sessions = new Map()
@@ -53,7 +61,9 @@ export function createSession(baseDir, prompt, userId) {
   // Persist createdAt to disk for recovery after restarts
   try {
     writeFileSync(join(workspace, 'createdAt.txt'), String(createdAt))
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   sessions.set(id, session)
   return session
@@ -152,7 +162,9 @@ export function getSession(id) {
       const promptStat = statSync(join(workspace, 'prompt.txt'))
       createdAt = promptStat.mtimeMs
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // Reconstruct session from disk
   const session = {
