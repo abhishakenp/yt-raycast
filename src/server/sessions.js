@@ -9,10 +9,15 @@ export function initSessionDir(dir) {
   _sessionsDir = dir
 }
 
-export function createSession(baseDir, prompt) {
+export function createSession(baseDir, prompt, userId) {
   const id = randomBytes(6).toString('hex')
   const workspace = join(baseDir, id)
   if (!existsSync(workspace)) mkdirSync(workspace, { recursive: true })
+
+  // Persist userId to disk
+  if (userId) {
+    try { writeFileSync(join(workspace, 'user.txt'), userId) } catch { /* ignore */ }
+  }
 
   // Load alternativeDesign if it exists
   let alternativeDesign = null
@@ -29,6 +34,7 @@ export function createSession(baseDir, prompt) {
     id,
     workspace,
     prompt,
+    userId: userId ?? null,
     createdAt: Date.now(),
     tasks: [],
     homepageReady: false,
@@ -62,6 +68,13 @@ export function getSession(id) {
   } catch {
     /* design file may not exist or be invalid */
   }
+
+  // Load userId from disk
+  let userId = null
+  try {
+    const userPath = join(workspace, 'user.txt')
+    if (existsSync(userPath)) userId = readFileSync(userPath, 'utf-8').trim() || null
+  } catch { /* user file may not exist */ }
 
   // Load prompt from disk
   let prompt = ''
@@ -113,6 +126,7 @@ export function getSession(id) {
     id,
     workspace,
     prompt,
+    userId,
     createdAt: Date.now(),
     tasks,
     homepageReady,
@@ -127,7 +141,7 @@ export function getSession(id) {
   return session
 }
 
-export function getAllSessions() {
+export function getAllSessions(userId) {
   // Load any disk sessions not yet in memory
   if (_sessionsDir && existsSync(_sessionsDir)) {
     try {
@@ -162,6 +176,8 @@ export function getAllSessions() {
           if (existsSync(costPath)) s.cost = parseFloat(readFileSync(costPath, 'utf-8').trim())
         } catch { /* ignore */ }
       }
+      // Filter by userId if provided
+      if (userId && s.userId !== userId) continue
       validSessions.push({
         id: s.id,
         prompt: s.prompt,
@@ -175,6 +191,29 @@ export function getAllSessions() {
     }
   }
   return validSessions
+}
+
+export function findSessionByPrompt(userId, promptText) {
+  const needle = promptText.trim()
+
+  // Check in-memory sessions first
+  for (const s of sessions.values()) {
+    if (s.userId === userId && s.prompt?.trim() === needle) return s
+  }
+
+  // Check disk sessions not yet loaded
+  if (_sessionsDir && existsSync(_sessionsDir)) {
+    try {
+      for (const name of readdirSync(_sessionsDir)) {
+        if (!sessions.has(name)) {
+          const s = getSession(name)
+          if (s && s.userId === userId && s.prompt?.trim() === needle) return s
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  return null
 }
 
 export function deleteSession(id) {

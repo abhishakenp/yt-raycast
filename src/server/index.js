@@ -3,16 +3,53 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
 import { DASHBOARD_PORT } from '../config.js'
-import { createSession, getSession, getAllSessions, deleteSession, makeSessionState, initSessionDir } from './sessions.js'
+import { createSession, getSession, getAllSessions, deleteSession, makeSessionState, initSessionDir, findSessionByPrompt } from './sessions.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync } from 'node:fs'
-import { verifyIdToken } from '../auth/firebase-admin.js'
+
+// No Firebase import — free tier has no auth
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
 
 let _sessionsDir = null
+
+// ─── Rate Limiting (IP-based, no auth) ───────────────────
+const RATE_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
+const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
+const MAX_PER_IP_10MIN = 5 // per 10min window
+const MAX_DAILY_PER_IP = 10 // hard daily cap per IP
+
+const ipHits = new Map() // ip -> [timestamp, ...]
+const ipDailyHits = new Map() // ip -> [timestamp, ...]
+
+function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
+  const now = Date.now()
+  const hits = (hitsMap.get(key) || []).filter(t => now - t < windowMs)
+  if (hits.length >= max) {
+    hitsMap.set(key, hits)
+    return false
+  }
+  hits.push(now)
+  hitsMap.set(key, hits)
+  return true
+}
+
+function cleanupMap(map, windowMs) {
+  const now = Date.now()
+  for (const [key, hits] of map) {
+    const valid = hits.filter(t => now - t < windowMs)
+    if (valid.length === 0) map.delete(key)
+    else map.set(key, valid)
+  }
+}
+
+// Periodic cleanup every 5 minutes
+setInterval(() => {
+  cleanupMap(ipHits, RATE_WINDOW_MS)
+  cleanupMap(ipDailyHits, DAILY_WINDOW_MS)
+}, 5 * 60 * 1000)
 
 export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
@@ -45,29 +82,6 @@ export async function startServer(sessionsDir) {
     } catch { res.status(502).end() }
   })
 
-  // ─── Auth middleware ──────────────────────────────────────
-  async function requireAuth(req, res, next) {
-    const auth = req.headers.authorization
-    if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' })
-    try {
-      const decoded = await verifyIdToken(auth.slice(7))
-      req.user = { uid: decoded.uid, email: decoded.email }
-      next()
-    } catch {
-      res.status(401).json({ error: 'Unauthorized' })
-    }
-  }
-
-  // ─── Public: Firebase client config ──────────────────────
-  app.get('/api/config', (_req, res) => {
-    res.json({
-      apiKey: process.env.FIREBASE_API_KEY ?? '',
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
-      projectId: process.env.FIREBASE_PROJECT_ID ?? '',
-      appId: process.env.FIREBASE_APP_ID ?? '',
-    })
-  })
-
   // Serve public statically
   app.use(express.static(publicDir))
 
@@ -84,19 +98,61 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Create session + start generation ───────────────
-  app.post('/api/sessions', requireAuth, async (req, res) => {
+  app.post('/api/sessions', async (req, res) => {
     const { prompt } = req.body
     if (!prompt?.trim()) return res.status(400).json({ error: 'prompt is required' })
 
-    const session = createSession(_sessionsDir, prompt.trim(), req.user.uid)
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const daily = (ipDailyHits.get(clientIp) || []).filter(t => Date.now() - t < DAILY_WINDOW_MS).length
+    const ts = new Date().toISOString()
+
+    // Log every request for monitoring
+    console.log(`[${ts}] REQ ip=${clientIp} daily=${daily} prompt="${prompt.trim().slice(0, 80)}"`)
+
+    // Check for exact prompt match - return existing project
+    const existing = findSessionByPrompt(null, prompt.trim())
+    if (existing) {
+      console.log(`[${ts}] CACHE_HIT ip=${clientIp} session=${existing.id}`)
+      return res.json({ id: existing.id, workspace: existing.workspace, cached: true })
+    }
+
+    // Daily cap check
+    if (!checkRateLimit(clientIp, ipDailyHits, MAX_DAILY_PER_IP, DAILY_WINDOW_MS)) {
+      console.log(`[${ts}] DAILY_LIMIT ip=${clientIp} daily=${daily}`)
+      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+        fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_IP}/day):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\`` }),
+        }).catch(() => {})
+      }
+      return res.status(429).json({ error: `Daily limit: max ${MAX_DAILY_PER_IP} generations per day. Please come back tomorrow.` })
+    }
+
+    // 10-min rate limit per IP
+    if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP_10MIN)) {
+      console.log(`[${ts}] RATE_LIMIT ip=${clientIp} reason=ip_10min`)
+      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+        fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_10MIN}/10min):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily}` }),
+        }).catch(() => {})
+      }
+      return res.status(429).json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
+    }
+
+    const session = createSession(_sessionsDir, prompt.trim())
     const sessionCtx = makeSessionState(session)
+
+    console.log(`[${ts}] GENERATE ip=${clientIp} session=${session.id} daily=${daily + 1}`)
 
     // Slack notification in production
     if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
       fetch(process.env.SLACK_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: `🚀 New Ship Fast prompt:\n> ${prompt.trim().slice(0, 500)}` }),
+        body: JSON.stringify({ text: `\ud83d\ude80 New Ship Fast prompt (free):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily + 1}/${MAX_DAILY_PER_IP}` }),
       }).catch(() => {})
     }
 
@@ -128,47 +184,43 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: List sessions ───────────────────────────────────
-  app.get('/api/sessions', requireAuth, (req, res) => {
-    res.json(getAllSessions(req.user.uid))
+  app.get('/api/sessions', (_req, res) => {
+    res.json(getAllSessions())
   })
 
   // ─── API: Delete session ─────────────────────────────────
-  app.delete('/api/sessions/:id', requireAuth, async (req, res) => {
+  app.delete('/api/sessions/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
     deleteSession(req.params.id)
     res.json({ ok: true })
   })
 
   // ─── API: Delete all sessions ──────────────────────────
-  app.delete('/api/sessions', requireAuth, (req, res) => {
-    const all = getAllSessions(req.user.uid)
+  app.delete('/api/sessions', (_req, res) => {
+    const all = getAllSessions()
     for (const s of all) deleteSession(s.id)
     res.json({ ok: true, deleted: all.length })
   })
 
   // ─── API: Session info ───────────────────────────────────
-  app.get('/api/sessions/:id', requireAuth, async (req, res) => {
+  app.get('/api/sessions/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
     res.json({ id: session.id, prompt: session.prompt, createdAt: session.createdAt, homepageReady: session.homepageReady, taskCount: session.tasks.length, done: session.tasks.filter((t) => t.status === 'DONE').length })
   })
 
   // ─── API: Session tasks ───────────────────────────────────
-  app.get('/api/sessions/:id/tasks', requireAuth, async (req, res) => {
+  app.get('/api/sessions/:id/tasks', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
     res.json(session.tasks)
   })
 
   // ─── API: Session status ──────────────────────────────────
-  app.post('/api/sessions/:id/status', requireAuth, async (req, res) => {
+  app.post('/api/sessions/:id/status', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
     const sessionCtx = makeSessionState(session)
     sessionCtx.broadcast({
       type: 'status',
@@ -179,10 +231,9 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Generate alternative design (on-demand) ─────────
-  app.post('/api/sessions/:id/generate-design', requireAuth, async (req, res) => {
+  app.post('/api/sessions/:id/generate-design', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
 
     const sessionCtx = makeSessionState(session)
     const _log = (msg) => {
@@ -199,10 +250,9 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── Preview: per-session workspace static files ──────────
-  app.use('/preview/:sessionId', requireAuth, async (req, res, next) => {
+  app.use('/preview/:sessionId', async (req, res, next) => {
     const session = getSession(req.params.sessionId)
     if (!session) return res.status(404).send('Session not found')
-    if (session.userId !== req.user.uid) return res.status(403).send('Forbidden')
     express.static(session.workspace, { extensions: ['html'] })(req, res, next)
   })
 
