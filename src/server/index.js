@@ -16,21 +16,21 @@ import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync } from 'node:fs'
 
-// No Firebase import — free tier has no auth
-
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
 
 let _sessionsDir = null
 
-// ─── Rate Limiting (IP-based, no auth) ───────────────────
+// ─── Rate Limiting ────────────────────────────────────────
 const RATE_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
-const MAX_PER_IP_10MIN = 5 // per 10min window
-const MAX_DAILY_PER_IP = 10 // hard daily cap per IP
+const MAX_PER_USER = 5 // per 10min window
+const MAX_PER_IP = 10 // per 10min window
+const MAX_DAILY_PER_USER = 30 // hard daily cap per user
 
+const userHits = new Map() // uid -> [timestamp, ...]
 const ipHits = new Map() // ip -> [timestamp, ...]
-const ipDailyHits = new Map() // ip -> [timestamp, ...]
+const userDailyHits = new Map() // uid -> [timestamp, ...]
 
 function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
   const now = Date.now()
@@ -56,8 +56,9 @@ function cleanupMap(map, windowMs) {
 // Periodic cleanup every 5 minutes
 setInterval(
   () => {
+    cleanupMap(userHits, RATE_WINDOW_MS)
     cleanupMap(ipHits, RATE_WINDOW_MS)
-    cleanupMap(ipDailyHits, DAILY_WINDOW_MS)
+    cleanupMap(userDailyHits, DAILY_WINDOW_MS)
   },
   5 * 60 * 1000,
 )
@@ -118,49 +119,60 @@ export async function startServer(sessionsDir) {
     if (!prompt?.trim()) return res.status(400).json({ error: 'prompt is required' })
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
-    const daily = (ipDailyHits.get(clientIp) || []).filter(
+    const userDaily = (userDailyHits.get(req.user.uid) || []).filter(
       (t) => Date.now() - t < DAILY_WINDOW_MS,
     ).length
     const ts = new Date().toISOString()
 
     // Log every request for monitoring
-    console.log(`[${ts}] REQ ip=${clientIp} daily=${daily} prompt="${prompt.trim().slice(0, 80)}"`)
+    console.log(
+      `[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${prompt.trim().slice(0, 80)}"`,
+    )
 
     // Check for exact prompt match - return existing project
-    const existing = findSessionByPrompt(null, prompt.trim())
+    const existing = findSessionByPrompt(req.user.uid, prompt.trim())
     if (existing) {
-      console.log(`[${ts}] CACHE_HIT ip=${clientIp} session=${existing.id}`)
-      return res.json({ id: existing.id, workspace: existing.workspace, cached: true })
-    }
-
-    // Daily cap check
-    if (!checkRateLimit(clientIp, ipDailyHits, MAX_DAILY_PER_IP, DAILY_WINDOW_MS)) {
-      console.log(`[${ts}] DAILY_LIMIT ip=${clientIp} daily=${daily}`)
+      console.log(`[${ts}] CACHE_HIT user=${req.user.uid} session=${existing.id}`)
       if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_IP}/day):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\``,
+            text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
+          }),
+        }).catch(() => {})
+      }
+      return res.json({ id: existing.id, workspace: existing.workspace, cached: true })
+    }
+
+    // Daily cap check
+    if (!checkRateLimit(req.user.uid, userDailyHits, MAX_DAILY_PER_USER, DAILY_WINDOW_MS)) {
+      console.log(`[${ts}] DAILY_LIMIT user=${req.user.uid} ip=${clientIp} daily=${userDaily}`)
+      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+        fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
           }),
         }).catch(() => {})
       }
       return res
         .status(429)
         .json({
-          error: `Daily limit: max ${MAX_DAILY_PER_IP} generations per day. Please come back tomorrow.`,
+          error: `Daily limit: max ${MAX_DAILY_PER_USER} generations per day. Please come back tomorrow.`,
         })
     }
 
-    // 10-min rate limit per IP
-    if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP_10MIN)) {
-      console.log(`[${ts}] RATE_LIMIT ip=${clientIp} reason=ip_10min`)
+    // 10-min rate limit per user
+    if (!checkRateLimit(req.user.uid, userHits, MAX_PER_USER)) {
+      console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=user_10min`)
       if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_10MIN}/10min):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily}`,
+            text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
           }),
         }).catch(() => {})
       }
@@ -169,10 +181,29 @@ export async function startServer(sessionsDir) {
         .json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
     }
 
-    const session = createSession(_sessionsDir, prompt.trim())
+    // 10-min rate limit per IP
+    if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
+      console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=ip_10min`)
+      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+        fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
+          }),
+        }).catch(() => {})
+      }
+      return res
+        .status(429)
+        .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
+    }
+
+    const session = createSession(_sessionsDir, prompt.trim(), req.user.uid)
     const sessionCtx = makeSessionState(session)
 
-    console.log(`[${ts}] GENERATE ip=${clientIp} session=${session.id} daily=${daily + 1}`)
+    console.log(
+      `[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} daily=${userDaily + 1}`,
+    )
 
     // Slack notification in production
     if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
@@ -180,7 +211,7 @@ export async function startServer(sessionsDir) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: `\ud83d\ude80 New Ship Fast prompt (free):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily + 1}/${MAX_DAILY_PER_IP}`,
+          text: `\ud83d\ude80 New Ship Fast prompt:\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}`,
         }),
       }).catch(() => {})
     }
