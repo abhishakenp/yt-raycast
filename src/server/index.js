@@ -26,7 +26,7 @@ const RATE_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
 const MAX_PER_USER = 5 // per 10min window
 const MAX_PER_IP = 10 // per 10min window
-const MAX_DAILY_PER_USER = 30 // hard daily cap per user
+const MAX_DAILY_PER_USER = 10 // hard daily cap per user
 
 const userHits = new Map() // uid -> [timestamp, ...]
 const ipHits = new Map() // ip -> [timestamp, ...]
