@@ -12,15 +12,13 @@ export async function detectSiteType(prompt, log) {
 
   // Remove quotes, JSON artifacts, and extra whitespace
   groqResponse = groqResponse
-    .replace(/^["']/, '')  // Remove leading quote
-    .replace(/["']$/, '')  // Remove trailing quote
+    .replace(/^["']/, '') // Remove leading quote
+    .replace(/["']$/, '') // Remove trailing quote
     .replace(/[\n\r]/g, '') // Remove newlines
     .trim()
 
   // Clean to only letters
-  const raw = groqResponse
-    .toLowerCase()
-    .replace(/[^a-z]/g, '')
+  const raw = groqResponse.toLowerCase().replace(/[^a-z]/g, '')
 
   // Find best match
   let siteType = 'saas'

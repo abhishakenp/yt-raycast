@@ -77,6 +77,49 @@ Adapt the layout to the type of site:
 - Community: member stats, trending topics, activity feed.
 Shared: dark theme, centered max-w-5xl layout, rounded-xl cards, subtle borders, accent color used sparingly.
 
+── GAME ──
+Build a sophisticated, fully playable 3D game using THREE.js. NOT a landing page, demo, or 2D Canvas game.
+
+ARCHITECTURE:
+- Fullscreen canvas. NO UI outside the game viewport. Game fills entire screen.
+- MUST USE THREE.js (required): https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js
+- Initialize THREE.Scene, THREE.Camera (PerspectiveCamera), THREE.WebGLRenderer
+- SINGLE FILE: All game logic, 3D models (procedural THREE.js geometries), and state in ONE HTML file.
+
+SCENE & GRAPHICS:
+- Dynamic 3D scene: terrain/landscape (can be procedurally generated), objects, lighting.
+- Realistic camera movement (follow/orbit/FPS). Use THREE.js perspective camera.
+- Proper lighting: ambient light, directional light (sun), shadows where possible.
+- LOD or simple polygon models (use THREE.js geometry: BoxGeometry, SphereGeometry, etc.).
+- Particle effects for: explosions, impacts, environmental effects (dust, rain, sparks).
+
+PHYSICS & GAMEPLAY:
+- Real game loop with state machine: MENU → PLAYING → PAUSED → GAMEOVER.
+- 3D physics simulation: gravity, collisions between 3D objects, acceleration, momentum in 3D space.
+- Player controls: WASD (movement), Mouse (camera/aiming in 3D), Space/Enter (action), Q/E (abilities).
+- Realistic 3D vehicle/character/spaceship movement with proper camera follow and rotation mechanics.
+- Win/lose conditions: objectives, scoring system, progression through 3D environments.
+
+HUD & UI:
+- Professional game overlay: health/shield bars, ammo counter, radar/minimap, objective text.
+- Crosshair at center (targeting reticle).
+- FPS counter (optional).
+- Use HTML canvas text or simple HTML elements (absolute positioned) overlaid on canvas.
+- Font: monospace or bold sans-serif for that game feel.
+- Color: bright accent colors (cyan, green, orange) on dark semi-transparent background.
+
+INTERACTIVITY:
+- Smooth 60fps+ gameplay. Optimize renderer (pixelRatio, LOD, frustum culling).
+- Responsive controls: no lag, smooth acceleration curves.
+- Sound effects: placeholder audio (just console.log or simple Web Audio API tones—no external assets).
+- Menu: "Press to Start" screen with difficulty/options before gameplay starts.
+
+QUALITY:
+- Code must be clean, well-structured with clear game loop separation.
+- Performance: works smoothly on desktop and mobile browsers.
+- No errors in browser console.
+- Fully functional: all controls work, game is winnable/loseable, score tracks.
+
 ── SHARED ──
 - Tailwind CSS via CDN, Google Fonts (Inter default), Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use <i data-lucide="icon-name"></i> for icons. No inline SVGs, no emojis.
 - Dark theme: bg-gray-950 base, lighter surfaces, border-gray-800, one accent color.

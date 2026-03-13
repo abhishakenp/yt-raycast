@@ -3,7 +3,9 @@ import { SITE_TYPE_INSTRUCTIONS } from '../config.js'
 export function templatePrompt(siteType = 'landing', designSystem = null) {
   const typeInstructions = SITE_TYPE_INSTRUCTIONS[siteType] || SITE_TYPE_INSTRUCTIONS.landing
 
-  const designBlock = designSystem || `Dark mode. Inter font. Minimalist, typography-first.
+  const designBlock =
+    designSystem ||
+    `Dark mode. Inter font. Minimalist, typography-first.
 - Primary: 50-100 hue range (cyan/blue)
 - Surface: #0f172a (slate-950)
 - Border: #1e293b (slate-800)

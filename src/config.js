@@ -19,6 +19,10 @@ export const LLM_CONFIG = {
     temperature: 0.3,
     maxTokens: 8000,
   },
+  game: {
+    temperature: 0.5,
+    maxTokens: 24000,
+  },
 }
 
 export const VALID_SITE_TYPES = [
@@ -31,6 +35,7 @@ export const VALID_SITE_TYPES = [
   'dashboard',
   'marketplace',
   'community',
+  'game',
 ]
 
 export const HOME_LABELS = ['home', 'homepage', 'index', 'landing']
@@ -72,4 +77,12 @@ export const SITE_TYPE_INSTRUCTIONS = {
     'Landing page. Typography-first, no hero images. ' +
     'Hero: pill badge + oversized headline + subtitle + 1 gradient CTA (rounded-full). ' +
     'Then: features (2x2 cards) \u2192 social proof (stats + logo cloud as text) \u2192 pricing (2-col) \u2192 FAQ \u2192 final CTA \u2192 footer.',
+  game:
+    'Fully playable 3D or 2D game using THREE.js. Not a landing page or demo. ' +
+    'Fullscreen experience with realistic physics, smooth controls (WASD + mouse), professional HUD, and win/lose conditions. ' +
+    'Game loop: MENU state with "Press to Start", then PLAYING state with smooth 60fps gameplay. ' +
+    'Graphics: dynamic 3D scene with lighting, particles, camera follow. ' +
+    'Audio: sound effect logic (placeholder Web Audio). ' +
+    'ONE file only, no external assets except THREE.js CDN. ' +
+    'Must be functional and playable without errors.',
 }

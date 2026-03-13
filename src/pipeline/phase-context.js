@@ -10,9 +10,7 @@ export async function generateContext(prompt, designBrief, siteType, workspace, 
   const result = await groq(user, { system, temperature, maxTokens })
 
   // Clean stats markers that might break JSON parsing
-  const cleanedContent = result.content
-    .replace(/<\|stats\|>[\s\S]*?<\/\|stats\|>/g, '')
-    .trim()
+  const cleanedContent = result.content.replace(/<\|stats\|>[\s\S]*?<\/\|stats\|>/g, '').trim()
 
   const parsed = parseJson(cleanedContent)
 
@@ -33,7 +31,9 @@ export async function generateContext(prompt, designBrief, siteType, workspace, 
     log(`  Raw content length: ${result.content.length}, cleaned: ${cleanedContent.length}`)
     log(`  Cleaned content sample: ${cleanedContent.slice(0, 150)}`)
   } else {
-    log(`  ✅ context: successfully parsed. Project: "${ctx.project_name}" | Features: ${ctx.features?.length || 0}`)
+    log(
+      `  ✅ context: successfully parsed. Project: "${ctx.project_name}" | Features: ${ctx.features?.length || 0}`,
+    )
   }
 
   writeFile(workspace, 'project-context.json', JSON.stringify(ctx, null, 2))

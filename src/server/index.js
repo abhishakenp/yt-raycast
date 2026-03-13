@@ -3,7 +3,15 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
 import { DASHBOARD_PORT } from '../config.js'
-import { createSession, getSession, getAllSessions, deleteSession, makeSessionState, initSessionDir, findSessionByPrompt } from './sessions.js'
+import {
+  createSession,
+  getSession,
+  getAllSessions,
+  deleteSession,
+  makeSessionState,
+  initSessionDir,
+  findSessionByPrompt,
+} from './sessions.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync } from 'node:fs'
@@ -26,7 +34,7 @@ const ipDailyHits = new Map() // ip -> [timestamp, ...]
 
 function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
   const now = Date.now()
-  const hits = (hitsMap.get(key) || []).filter(t => now - t < windowMs)
+  const hits = (hitsMap.get(key) || []).filter((t) => now - t < windowMs)
   if (hits.length >= max) {
     hitsMap.set(key, hits)
     return false
@@ -39,17 +47,20 @@ function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
 function cleanupMap(map, windowMs) {
   const now = Date.now()
   for (const [key, hits] of map) {
-    const valid = hits.filter(t => now - t < windowMs)
+    const valid = hits.filter((t) => now - t < windowMs)
     if (valid.length === 0) map.delete(key)
     else map.set(key, valid)
   }
 }
 
 // Periodic cleanup every 5 minutes
-setInterval(() => {
-  cleanupMap(ipHits, RATE_WINDOW_MS)
-  cleanupMap(ipDailyHits, DAILY_WINDOW_MS)
-}, 5 * 60 * 1000)
+setInterval(
+  () => {
+    cleanupMap(ipHits, RATE_WINDOW_MS)
+    cleanupMap(ipDailyHits, DAILY_WINDOW_MS)
+  },
+  5 * 60 * 1000,
+)
 
 export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
@@ -65,7 +76,9 @@ export async function startServer(sessionsDir) {
       res.set('Content-Type', 'application/javascript')
       res.set('Cache-Control', 'public, max-age=86400')
       res.send(Buffer.from(await r.arrayBuffer()))
-    } catch { res.status(502).end() }
+    } catch {
+      res.status(502).end()
+    }
   })
   app.post('/api/event', express.text({ type: '*/*' }), async (req, res) => {
     try {
@@ -79,7 +92,9 @@ export async function startServer(sessionsDir) {
         body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
       })
       res.status(r.status).end()
-    } catch { res.status(502).end() }
+    } catch {
+      res.status(502).end()
+    }
   })
 
   // Serve public statically
@@ -103,7 +118,9 @@ export async function startServer(sessionsDir) {
     if (!prompt?.trim()) return res.status(400).json({ error: 'prompt is required' })
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
-    const daily = (ipDailyHits.get(clientIp) || []).filter(t => Date.now() - t < DAILY_WINDOW_MS).length
+    const daily = (ipDailyHits.get(clientIp) || []).filter(
+      (t) => Date.now() - t < DAILY_WINDOW_MS,
+    ).length
     const ts = new Date().toISOString()
 
     // Log every request for monitoring
@@ -123,10 +140,16 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_IP}/day):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\`` }),
+          body: JSON.stringify({
+            text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_IP}/day):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\``,
+          }),
         }).catch(() => {})
       }
-      return res.status(429).json({ error: `Daily limit: max ${MAX_DAILY_PER_IP} generations per day. Please come back tomorrow.` })
+      return res
+        .status(429)
+        .json({
+          error: `Daily limit: max ${MAX_DAILY_PER_IP} generations per day. Please come back tomorrow.`,
+        })
     }
 
     // 10-min rate limit per IP
@@ -136,10 +159,14 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_10MIN}/10min):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily}` }),
+          body: JSON.stringify({
+            text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_10MIN}/10min):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily}`,
+          }),
         }).catch(() => {})
       }
-      return res.status(429).json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
+      return res
+        .status(429)
+        .json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
     }
 
     const session = createSession(_sessionsDir, prompt.trim())
@@ -152,7 +179,9 @@ export async function startServer(sessionsDir) {
       fetch(process.env.SLACK_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: `\ud83d\ude80 New Ship Fast prompt (free):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily + 1}/${MAX_DAILY_PER_IP}` }),
+        body: JSON.stringify({
+          text: `\ud83d\ude80 New Ship Fast prompt (free):\n> ${prompt.trim().slice(0, 500)}\nIP: \`${clientIp}\` | Daily: ${daily + 1}/${MAX_DAILY_PER_IP}`,
+        }),
       }).catch(() => {})
     }
 
@@ -207,7 +236,14 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    res.json({ id: session.id, prompt: session.prompt, createdAt: session.createdAt, homepageReady: session.homepageReady, taskCount: session.tasks.length, done: session.tasks.filter((t) => t.status === 'DONE').length })
+    res.json({
+      id: session.id,
+      prompt: session.prompt,
+      createdAt: session.createdAt,
+      homepageReady: session.homepageReady,
+      taskCount: session.tasks.length,
+      done: session.tasks.filter((t) => t.status === 'DONE').length,
+    })
   })
 
   // ─── API: Session tasks ───────────────────────────────────

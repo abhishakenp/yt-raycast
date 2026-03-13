@@ -4,7 +4,7 @@ import { slug } from '../pipeline/workspace.js'
 export function homepagePrompt(prompt, ctx, designBrief) {
   const st = ctx?.site_type ?? 'saas'
   const otherPages = (ctx?.pages ?? []).filter((p) => !HOME_LABELS.includes(p.toLowerCase()))
-  const isOnePager = ['landing', 'portfolio'].includes(st) || otherPages.length === 0
+  const isOnePager = ['landing', 'portfolio', 'game'].includes(st) || otherPages.length === 0
 
   const navLinks = (ctx?.pages ?? [])
     .map((p) => {
@@ -14,7 +14,36 @@ export function homepagePrompt(prompt, ctx, designBrief) {
     })
     .join('\n')
 
-  const typeBlock = SITE_TYPE_INSTRUCTIONS[st] || SITE_TYPE_INSTRUCTIONS.landing
+  const typeBlock =
+    st === 'game'
+      ? `GAME BUILD RULES:
+BUILD A REAL, FULLY PLAYABLE GAME - NOT A DEMO OR LANDING PAGE.
+
+MUST HAVE:
+- Fullscreen 3D game using THREE.js (via CDN) - NOT a 2D Canvas game.
+- Create THREE.Scene, THREE.PerspectiveCamera, THREE.WebGLRenderer, and populate with 3D geometries.
+- Sophisticated game loop with proper state machine (MENU, PLAYING, PAUSED, GAMEOVER).
+- Realistic physics: gravity, momentum, collisions, 3D acceleration curves.
+- Professional HUD: health/ammo/score/radar overlaid on game (NOT Tailwind cards).
+- Responsive controls: WASD movement, mouse for aiming/camera, smooth input handling.
+- Win/lose conditions with proper progression.
+
+GAME MUST BE:
+- Fully functional and playable without errors. NO Canvas 2D games—only THREE.js 3D.
+- Smooth 60fps gameplay (optimize THREE.js renderer).
+- All code in ONE HTML file (no external assets except THREE.js CDN).
+- Menu screen: "Press SPACE to Start" before gameplay.
+- Score tracking and visual feedback for actions.
+- Realistic mechanics with 3D camera, lighting, and terrain/objects.
+
+DO NOT:
+- Use 2D Canvas games. MUST use THREE.js for 3D rendering.
+- Use placeholder mechanics or empty screens.
+- Include non-functional UI elements.
+- Create slow/laggy experiences.
+- Depend on external assets or image files.`
+      : SITE_TYPE_INSTRUCTIONS[st] || SITE_TYPE_INSTRUCTIONS.landing
+
   const pagesBlock = isOnePager
     ? 'ONE-PAGER. All content in this file. Anchor links (#features, #pricing) for nav.'
     : `MULTI-PAGE. This is ONLY the homepage. Other pages are separate files.\nNav hrefs:\n${navLinks}`

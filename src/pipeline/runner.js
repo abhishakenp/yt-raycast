@@ -144,7 +144,13 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
     tick('design_end')
     const detectStats = await detectSiteType(prompt, _log)
     tick('detect_end')
-    const ctxStats = await generateContext(prompt, designStats.brief, detectStats.siteType, workspace, _log)
+    const ctxStats = await generateContext(
+      prompt,
+      designStats.brief,
+      detectStats.siteType,
+      workspace,
+      _log,
+    )
     tick('ctx_end')
     return { designStats, detectStats, ctxStats }
   })()
@@ -296,7 +302,14 @@ Requirements:
       try {
         const config = JSON.parse(configMatch[1])
         // Validate required fields
-        if (config.primary && config.secondary && config.accent && config.background && config.surface && config.text) {
+        if (
+          config.primary &&
+          config.secondary &&
+          config.accent &&
+          config.background &&
+          config.surface &&
+          config.text
+        ) {
           sessionCtx.setAlternativeDesign(config)
           _log('  ✓ Alternative design generated successfully')
           return config
@@ -324,21 +337,56 @@ Requirements:
 function generateFallbackColors(prompt) {
   const palettes = [
     // Purple & Gold
-    { primary: '#8B5CF6', secondary: '#A78BFA', accent: '#FBBF24', background: '#1F1335', surface: '#2D1B47', text: '#F3E8FF' },
+    {
+      primary: '#8B5CF6',
+      secondary: '#A78BFA',
+      accent: '#FBBF24',
+      background: '#1F1335',
+      surface: '#2D1B47',
+      text: '#F3E8FF',
+    },
     // Teal & Coral
-    { primary: '#14B8A6', secondary: '#2DD4BF', accent: '#FB7185', background: '#0F2F2E', surface: '#134E4A', text: '#CCFBF1' },
+    {
+      primary: '#14B8A6',
+      secondary: '#2DD4BF',
+      accent: '#FB7185',
+      background: '#0F2F2E',
+      surface: '#134E4A',
+      text: '#CCFBF1',
+    },
     // Emerald & Orange
-    { primary: '#10B981', secondary: '#6EE7B7', accent: '#FB923C', background: '#051F1C', surface: '#065F46', text: '#D1FAE5' },
+    {
+      primary: '#10B981',
+      secondary: '#6EE7B7',
+      accent: '#FB923C',
+      background: '#051F1C',
+      surface: '#065F46',
+      text: '#D1FAE5',
+    },
     // Indigo & Pink
-    { primary: '#6366F1', secondary: '#818CF8', accent: '#EC4899', background: '#1E1B4B', surface: '#312E81', text: '#E0E7FF' },
+    {
+      primary: '#6366F1',
+      secondary: '#818CF8',
+      accent: '#EC4899',
+      background: '#1E1B4B',
+      surface: '#312E81',
+      text: '#E0E7FF',
+    },
     // Cyan & Rose
-    { primary: '#06B6D4', secondary: '#22D3EE', accent: '#F43F5E', background: '#082F4F', surface: '#0E3A47', text: '#CFFAFE' },
+    {
+      primary: '#06B6D4',
+      secondary: '#22D3EE',
+      accent: '#F43F5E',
+      background: '#082F4F',
+      surface: '#0E3A47',
+      text: '#CFFAFE',
+    },
   ]
 
   // Use hash to pick palette
   let hash = 0
   for (let i = 0; i < prompt.length; i++) {
-    hash = ((hash << 5) - hash) + prompt.charCodeAt(i)
+    hash = (hash << 5) - hash + prompt.charCodeAt(i)
     hash = hash & hash // Convert to 32-bit integer
   }
   const paletteIdx = Math.abs(hash) % palettes.length

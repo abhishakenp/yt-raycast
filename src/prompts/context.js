@@ -25,7 +25,7 @@ export function contextPrompt(prompt, designBrief, siteType) {
       `}\n\n` +
       `The site_type is "${siteType}". Use it to decide page count:\n` +
       `- saas/ecommerce/marketplace/docs/blog/dashboard/community \u2192 4-8 pages\n` +
-      `- landing/portfolio \u2192 just ["Home"]`,
+      `- game/landing/portfolio \u2192 just ["Home"]`,
     temperature: 0.2,
     maxTokens: 2000,
   }

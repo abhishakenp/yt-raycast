@@ -16,7 +16,11 @@ export function createSession(baseDir, prompt, userId) {
 
   // Persist userId to disk
   if (userId) {
-    try { writeFileSync(join(workspace, 'user.txt'), userId) } catch { /* ignore */ }
+    try {
+      writeFileSync(join(workspace, 'user.txt'), userId)
+    } catch {
+      /* ignore */
+    }
   }
 
   // Load alternativeDesign if it exists
@@ -74,14 +78,18 @@ export function getSession(id) {
   try {
     const userPath = join(workspace, 'user.txt')
     if (existsSync(userPath)) userId = readFileSync(userPath, 'utf-8').trim() || null
-  } catch { /* user file may not exist */ }
+  } catch {
+    /* user file may not exist */
+  }
 
   // Load prompt from disk
   let prompt = ''
   try {
     const promptPath = join(workspace, 'prompt.txt')
     if (existsSync(promptPath)) prompt = readFileSync(promptPath, 'utf-8').trim()
-  } catch { /* prompt file may not exist */ }
+  } catch {
+    /* prompt file may not exist */
+  }
 
   // Auto-delete session if prompt is empty
   if (!prompt) {
@@ -102,7 +110,9 @@ export function getSession(id) {
       const data = JSON.parse(readFileSync(tasksPath, 'utf-8'))
       tasks = data.tasks ?? []
     }
-  } catch { /* tasks file may not exist */ }
+  } catch {
+    /* tasks file may not exist */
+  }
 
   // Check if homepage exists
   const homepageReady = existsSync(join(workspace, 'index.html'))
@@ -112,14 +122,18 @@ export function getSession(id) {
   try {
     const elapsedPath = join(workspace, 'elapsed.txt')
     if (existsSync(elapsedPath)) elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
-  } catch { /* elapsed file may not exist */ }
+  } catch {
+    /* elapsed file may not exist */
+  }
 
   // Load cost from disk
   let cost = null
   try {
     const costPath = join(workspace, 'cost.txt')
     if (existsSync(costPath)) cost = parseFloat(readFileSync(costPath, 'utf-8').trim())
-  } catch { /* cost file may not exist */ }
+  } catch {
+    /* cost file may not exist */
+  }
 
   // Reconstruct session from disk
   const session = {
@@ -148,7 +162,9 @@ export function getAllSessions(userId) {
       for (const name of readdirSync(_sessionsDir)) {
         if (!sessions.has(name)) getSession(name)
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   const validSessions = []
@@ -166,15 +182,20 @@ export function getAllSessions(userId) {
       if (s.elapsed == null) {
         try {
           const elapsedPath = join(s.workspace, 'elapsed.txt')
-          if (existsSync(elapsedPath)) s.elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
-        } catch { /* ignore */ }
+          if (existsSync(elapsedPath))
+            s.elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
+        } catch {
+          /* ignore */
+        }
       }
       // Lazy-load cost from disk if not in memory
       if (s.cost == null) {
         try {
           const costPath = join(s.workspace, 'cost.txt')
           if (existsSync(costPath)) s.cost = parseFloat(readFileSync(costPath, 'utf-8').trim())
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
       // Filter by userId if provided
       if (userId && s.userId !== userId) continue
@@ -210,7 +231,9 @@ export function findSessionByPrompt(userId, promptText) {
           if (s && s.userId === userId && s.prompt?.trim() === needle) return s
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   return null
@@ -219,7 +242,11 @@ export function findSessionByPrompt(userId, promptText) {
 export function deleteSession(id) {
   const session = sessions.get(id)
   if (session?.workspace) {
-    try { rmSync(session.workspace, { recursive: true, force: true }) } catch { /* ignore */ }
+    try {
+      rmSync(session.workspace, { recursive: true, force: true })
+    } catch {
+      /* ignore */
+    }
   }
   sessions.delete(id)
 }
@@ -265,14 +292,18 @@ export function makeSessionState(session) {
     session.elapsed = seconds
     try {
       writeFileSync(join(session.workspace, 'elapsed.txt'), String(seconds))
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   const setCost = (dollars) => {
     session.cost = dollars
     try {
       writeFileSync(join(session.workspace, 'cost.txt'), String(dollars))
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   const setAlternativeDesign = (design) => {
