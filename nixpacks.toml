@@ -1,10 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_20"]
-cmds = ["curl -fsSL https://bun.sh/install | bash"]
-
-[variables]
-BUN_INSTALL = "/root/.bun"
-PATH = "/root/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+nixPkgs = ["nodejs_20", "bun"]
 
 [phases.install]
 cmds = ["bun install --no-save"]
