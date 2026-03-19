@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BRAND_NAME</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            accent: '#06b6d4',
+            'accent-light': '#22d3ee',
+            surface: '#1e293b',
+            base: '#0f172a',
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-base text-slate-100 antialiased">
+
+  <!-- ── NAV ── -->
+  <nav class="fixed top-0 w-full z-50 bg-base/80 backdrop-blur-md border-b border-slate-800/60">
+    <div class="max-w-4xl mx-auto flex items-center justify-between px-6 py-4">
+      <a href="/" class="text-lg font-bold tracking-tight">BRAND_NAME</a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#features" class="text-sm text-slate-400 hover:text-white transition">Features</a>
+        <a href="#pricing" class="text-sm text-slate-400 hover:text-white transition">Pricing</a>
+        <a href="#NAV_LINK_3_HREF" class="text-sm text-slate-400 hover:text-white transition">NAV_LINK_3_TEXT</a>
+      </div>
+      <a href="#pricing" class="rounded-full bg-gradient-to-r from-accent to-accent-light px-5 py-2 text-sm font-semibold text-base hover:opacity-90 transition">NAV_CTA_TEXT</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="pt-36 pb-20 md:pt-44 md:pb-28">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <div class="inline-flex items-center gap-2 rounded-full bg-slate-800/60 border border-slate-700/60 px-4 py-1.5 mb-8">
+        <span class="h-2 w-2 rounded-full bg-accent animate-pulse"></span>
+        <span class="text-xs font-medium text-slate-300">HERO_BADGE_TEXT</span>
+      </div>
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.08] mb-6">
+        HERO_HEADLINE
+      </h1>
+      <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10">
+        HERO_SUBTITLE
+      </p>
+      <a href="#pricing" class="inline-block rounded-full bg-gradient-to-r from-accent to-accent-light px-8 py-3 text-base font-semibold text-slate-950 hover:opacity-90 transition shadow-lg shadow-accent/20">
+        HERO_CTA_TEXT
+      </a>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section id="features" class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <p class="text-xs tracking-widest font-semibold text-accent uppercase mb-3">FEATURES_LABEL</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">FEATURES_HEADLINE</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">FEATURES_SUBTITLE</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Feature 1 -->
+        <div class="bg-surface/50 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">FEATURE_1_NAME</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">FEATURE_1_DESC</p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="bg-surface/50 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">FEATURE_2_NAME</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">FEATURE_2_DESC</p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="bg-surface/50 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">FEATURE_3_NAME</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">FEATURE_3_DESC</p>
+        </div>
+        <!-- Feature 4 -->
+        <div class="bg-surface/50 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition">
+          <div class="w-10 h-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">FEATURE_4_NAME</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">FEATURE_4_DESC</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ── -->
+  <section id="pricing" class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <p class="text-xs tracking-widest font-semibold text-accent uppercase mb-3">Pricing</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">PRICING_HEADLINE</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">PRICING_SUBTITLE</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+        <!-- Plan 1 -->
+        <div class="bg-surface/50 border border-slate-800 rounded-xl p-8">
+          <h3 class="font-bold text-lg mb-1">PLAN_1_NAME</h3>
+          <p class="text-slate-400 text-sm mb-6">PLAN_1_DESC</p>
+          <div class="mb-6">
+            <span class="text-4xl font-extrabold">PLAN_1_PRICE</span>
+            <span class="text-slate-400 text-sm">/PLAN_1_PERIOD</span>
+          </div>
+          <ul class="space-y-3 mb-8 text-sm text-slate-300">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              PLAN_1_FEATURE_1
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              PLAN_1_FEATURE_2
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              PLAN_1_FEATURE_3
+            </li>
+          </ul>
+          <a href="#" class="text-accent text-sm font-semibold hover:underline inline-flex items-center gap-1">
+            Get started <span>&rarr;</span>
+          </a>
+        </div>
+        <!-- Plan 2 (Featured) -->
+        <div class="relative bg-surface/50 border-2 border-accent/40 rounded-xl p-8">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="rounded-full bg-accent px-3 py-1 text-xs font-bold text-slate-950">Popular</span>
+          </div>
+          <h3 class="font-bold text-lg mb-1">PLAN_2_NAME</h3>
+          <p class="text-slate-400 text-sm mb-6">PLAN_2_DESC</p>
+          <div class="mb-6">
+            <span class="text-4xl font-extrabold">PLAN_2_PRICE</span>
+            <span class="text-slate-400 text-sm">/PLAN_2_PERIOD</span>
+          </div>
+          <ul class="space-y-3 mb-8 text-sm text-slate-300">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              PLAN_2_FEATURE_1
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              PLAN_2_FEATURE_2
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              PLAN_2_FEATURE_3
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              PLAN_2_FEATURE_4
+            </li>
+          </ul>
+          <a href="#" class="inline-block w-full text-center rounded-full bg-gradient-to-r from-accent to-accent-light px-6 py-3 text-sm font-semibold text-slate-950 hover:opacity-90 transition">
+            PLAN_2_CTA_TEXT
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HIGHLIGHT CARD ── -->
+  <section class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="rounded-2xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 p-10 md:p-14 text-center">
+        <div class="w-12 h-12 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center mx-auto mb-6">
+          <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        </div>
+        <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-3">HIGHLIGHT_HEADLINE</h3>
+        <p class="text-slate-400 max-w-xl mx-auto">HIGHLIGHT_DESC</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LOGO CLOUD ── -->
+  <section class="py-16">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <p class="text-xs tracking-widest font-semibold text-slate-500 uppercase mb-8">Trusted by teams at</p>
+      <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
+        <span class="text-slate-500 font-medium">LOGO_1</span>
+        <span class="text-slate-500 font-medium">LOGO_2</span>
+        <span class="text-slate-500 font-medium">LOGO_3</span>
+        <span class="text-slate-500 font-medium">LOGO_4</span>
+        <span class="text-slate-500 font-medium">LOGO_5</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FINAL CTA ── -->
+  <section class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">CTA_HEADLINE</h2>
+      <p class="text-slate-400 max-w-xl mx-auto mb-10">CTA_SUBTITLE</p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#pricing" class="rounded-full bg-gradient-to-r from-accent to-accent-light px-8 py-3 text-sm font-semibold text-slate-950 hover:opacity-90 transition shadow-lg shadow-accent/20">
+          CTA_PRIMARY_TEXT
+        </a>
+        <a href="#features" class="rounded-full border border-slate-700 px-8 py-3 text-sm font-semibold text-slate-300 hover:bg-slate-800/50 transition">
+          CTA_SECONDARY_TEXT
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="border-t border-slate-800/60 py-12">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <a href="/" class="text-lg font-bold tracking-tight">BRAND_NAME</a>
+        <div class="flex items-center gap-8">
+          <a href="#" class="text-sm text-slate-400 hover:text-white transition">FOOTER_LINK_1</a>
+          <a href="#" class="text-sm text-slate-400 hover:text-white transition">FOOTER_LINK_2</a>
+          <a href="#" class="text-sm text-slate-400 hover:text-white transition">FOOTER_LINK_3</a>
+          <a href="#" class="text-sm text-slate-400 hover:text-white transition">FOOTER_LINK_4</a>
+        </div>
+      </div>
+      <div class="mt-8 text-center text-xs text-slate-500">
+        FOOTER_COPYRIGHT
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

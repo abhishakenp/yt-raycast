@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /session/
+Disallow: /preview/
+
+Sitemap: https://ship-fast.devliv.io/sitemap.xml

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ship Fast — Pricing</title>
+    <meta name="description" content="Choose the right plan for your AI website generation needs. Free, Pro, and Enterprise tiers." />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles/pricing.css" />
+    <script defer data-domain="ship-fast.devliv.io" data-api="/api/event" src="/js/script.js"></script>
+  </head>
+  <body>
+    <div class="bg-glow"></div>
+
+    <nav class="nav">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-icon">
+          <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#gp1)" opacity="0.9" />
+            <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#gp2)" opacity="0.8" />
+            <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#gp2)" opacity="0.8" />
+            <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#gp1)" />
+            <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7" />
+            <circle cx="26" cy="16" r="2" fill="#c4b5fd" />
+            <defs>
+              <linearGradient id="gp1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#7c3aed" /><stop offset="1" stop-color="#a78bfa" />
+              </linearGradient>
+              <linearGradient id="gp2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6d28d9" /><stop offset="1" stop-color="#7c3aed" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span>SHIP FAST</span>
+      </a>
+    </nav>
+
+    <main class="pricing-page">
+      <div class="pricing-header">
+        <h1>Simple, transparent pricing</h1>
+        <p>Start free. Upgrade when you're ready to ship faster.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Free -->
+        <div class="plan-card">
+          <div class="plan-name">Free</div>
+          <div class="plan-price">
+            <span class="price-amount">$0</span>
+            <span class="price-period">/month</span>
+          </div>
+          <p class="plan-desc">Perfect for trying things out</p>
+          <ul class="plan-features">
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>5 generations per month</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Basic templates</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>HTML + Tailwind output</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Community support</li>
+          </ul>
+          <button class="plan-cta" onclick="location.href='/'">Get started</button>
+        </div>
+
+        <!-- Pro (highlighted) -->
+        <div class="plan-card featured">
+          <div class="plan-badge">Most popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">
+            <span class="price-amount">$19</span>
+            <span class="price-period">/month</span>
+          </div>
+          <p class="plan-desc">For builders who ship regularly</p>
+          <ul class="plan-features">
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>100 generations per month</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>All templates (dark + light)</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>React + TypeScript export</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Custom branding</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority support</li>
+          </ul>
+          <button class="plan-cta featured-cta" data-plan="pro" onclick="handleCheckout('pro')">Upgrade to Pro</button>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="plan-card">
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-price">
+            <span class="price-amount">$79</span>
+            <span class="price-period">/month</span>
+          </div>
+          <p class="plan-desc">For teams and agencies</p>
+          <ul class="plan-features">
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Unlimited generations</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>All Pro features</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Team seats (up to 10)</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>API access</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Dedicated support</li>
+            <li><svg class="check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>White-label option</li>
+          </ul>
+          <button class="plan-cta" data-plan="enterprise" onclick="handleCheckout('enterprise')">Upgrade to Enterprise</button>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      async function handleCheckout(plan) {
+        const btn = document.querySelector(`[data-plan="${plan}"]`)
+        if (!btn) return
+        btn.disabled = true
+        btn.textContent = 'Redirecting...'
+        try {
+          const res = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan }),
+          })
+          const data = await res.json()
+          if (data.url) {
+            window.location.href = data.url
+          } else {
+            alert(data.error || 'Failed to start checkout')
+            btn.disabled = false
+            btn.textContent = plan === 'pro' ? 'Upgrade to Pro' : 'Upgrade to Enterprise'
+          }
+        } catch (err) {
+          alert('Connection error: ' + err.message)
+          btn.disabled = false
+          btn.textContent = plan === 'pro' ? 'Upgrade to Pro' : 'Upgrade to Enterprise'
+        }
+      }
+    </script>
+  </body>
+</html>
