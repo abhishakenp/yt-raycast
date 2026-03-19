@@ -15,3 +15,5 @@ prompt.txt
 ship.log
 .vercel
 sessions/
+
+.storyrun/
