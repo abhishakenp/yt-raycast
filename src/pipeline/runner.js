@@ -140,9 +140,11 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   _status('Generating spec\u2026', 'spec')
 
   const specPromise = (async () => {
-    const designStats = await generateDesignBrief(prompt, workspace, _log)
+    const [designStats, detectStats] = await Promise.all([
+      generateDesignBrief(prompt, workspace, _log),
+      detectSiteType(prompt, _log)
+    ])
     tick('design_end')
-    const detectStats = await detectSiteType(prompt, _log)
     tick('detect_end')
     const ctxStats = await generateContext(
       prompt,
