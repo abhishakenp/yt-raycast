@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync, readdirSync } from 'node:fs'
+import { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 const sessions = new Map()
@@ -34,12 +34,13 @@ export function createSession(baseDir, prompt, userId) {
     /* design file may not exist or be invalid */
   }
 
+  const createdAt = Date.now()
   const session = {
     id,
     workspace,
     prompt,
     userId: userId ?? null,
-    createdAt: Date.now(),
+    createdAt,
     tasks: [],
     homepageReady: false,
     elapsed: null,
@@ -48,6 +49,11 @@ export function createSession(baseDir, prompt, userId) {
     lastStatus: null,
     wsClients: new Set(),
   }
+
+  // Persist createdAt to disk for recovery after restarts
+  try {
+    writeFileSync(join(workspace, 'createdAt.txt'), String(createdAt))
+  } catch { /* ignore */ }
 
   sessions.set(id, session)
   return session
@@ -135,13 +141,26 @@ export function getSession(id) {
     /* cost file may not exist */
   }
 
+  // Load createdAt from disk (fall back to prompt.txt mtime, then now)
+  let createdAt = Date.now()
+  try {
+    const createdAtPath = join(workspace, 'createdAt.txt')
+    if (existsSync(createdAtPath)) {
+      createdAt = parseInt(readFileSync(createdAtPath, 'utf-8').trim(), 10)
+    } else {
+      // Fall back to prompt.txt mtime for old sessions without createdAt
+      const promptStat = statSync(join(workspace, 'prompt.txt'))
+      createdAt = promptStat.mtimeMs
+    }
+  } catch { /* ignore */ }
+
   // Reconstruct session from disk
   const session = {
     id,
     workspace,
     prompt,
     userId,
-    createdAt: Date.now(),
+    createdAt,
     tasks,
     homepageReady,
     elapsed,
@@ -211,6 +230,8 @@ export function getAllSessions(userId) {
       })
     }
   }
+  // Sort newest first
+  validSessions.sort((a, b) => b.createdAt - a.createdAt)
   return validSessions
 }
 
