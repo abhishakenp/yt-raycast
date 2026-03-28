@@ -138,7 +138,38 @@
       </div>
     </div>
 
-    <div class="completion-banner" id="completion-banner">All tasks completed — app is live!</div>
+    <!-- ─── Completion Toast (bottom) ─── -->
+    <div class="completion-toast" id="completion-toast">
+      <div class="toast-content">
+        <button class="toast-back" onclick="location.href='/'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          Back
+        </button>
+        <span class="toast-check">&#10003;</span>
+        <span class="toast-text">Done in <strong id="toast-elapsed">0s</strong></span>
+        <button class="toast-cta" id="toast-cta">Generate another</button>
+      </div>
+    </div>
+
+    <!-- ─── New Prompt Overlay ─── -->
+    <div class="new-prompt-overlay" id="new-prompt-overlay">
+      <form class="new-prompt-form" id="new-prompt-form">
+        <textarea
+          class="new-prompt-input"
+          id="new-prompt-input"
+          placeholder="Describe your next website..."
+          rows="4"
+          autocomplete="off"
+        ></textarea>
+        <div class="new-prompt-actions">
+          <button type="button" class="new-prompt-cancel" id="new-prompt-cancel">Cancel</button>
+          <button type="submit" class="new-prompt-submit" id="new-prompt-submit">
+            <svg class="zap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Generate
+          </button>
+        </div>
+      </form>
+    </div>
 
     <canvas class="particles-canvas" id="particles-canvas"></canvas>
 
@@ -804,9 +835,13 @@
         if (allDone) return
         allDone = true
 
-        const banner = document.getElementById('completion-banner')
-        banner.classList.add('visible')
-        setTimeout(() => banner.classList.remove('visible'), 4000)
+        // Only show completion toast for live generations (not revisits)
+        if (hasSeenLiveUpdate) {
+          const elapsed = Math.round((Date.now() - genStartTime) / 1000)
+          document.getElementById('toast-elapsed').textContent = elapsed + 's'
+          const toast = document.getElementById('completion-toast')
+          toast.classList.add('visible')
+        }
 
         document.getElementById('preview-loading').classList.add('hidden')
 
@@ -1028,6 +1063,7 @@
 
             case 'run_completed':
               document.getElementById('phase-text').textContent = `Done in ${ev.elapsed}s`
+              document.getElementById('toast-elapsed').textContent = ev.elapsed + 's'
               const timingFinal = document.getElementById('gen-timing')
               if (timingFinal)
                 timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
@@ -1094,6 +1130,51 @@
           }
         })
         .catch(() => {})
+      // ─── New prompt overlay ─────────────────────────────────
+      document.getElementById('toast-cta').addEventListener('click', () => {
+        document.getElementById('completion-toast').classList.remove('visible')
+        const overlay = document.getElementById('new-prompt-overlay')
+        overlay.classList.add('visible')
+        setTimeout(() => document.getElementById('new-prompt-input').focus(), 400)
+      })
+
+      document.getElementById('new-prompt-cancel').addEventListener('click', () => {
+        document.getElementById('new-prompt-overlay').classList.remove('visible')
+        // Re-show toast
+        document.getElementById('completion-toast').classList.add('visible')
+      })
+
+      document.getElementById('new-prompt-form').addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const input = document.getElementById('new-prompt-input')
+        const prompt = input.value.trim()
+        if (!prompt) return
+
+        const btn = document.getElementById('new-prompt-submit')
+        btn.disabled = true
+        btn.textContent = 'Generating…'
+
+        try {
+          const res = await fetch('/api/sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt }),
+          })
+          const data = await res.json()
+          if (data.id) {
+            location.href = `/session/${data.id}`
+          } else {
+            alert(data.error || 'Failed to create session')
+            btn.disabled = false
+            btn.textContent = 'Generate'
+          }
+        } catch (err) {
+          alert('Connection error: ' + err.message)
+          btn.disabled = false
+          btn.textContent = 'Generate'
+        }
+      })
+
       startIntro()
       connectWS()
     </script>
