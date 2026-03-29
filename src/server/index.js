@@ -19,9 +19,22 @@ import {
   getSessionExportTargets,
   rerenderPreviewFromSiteSpec,
 } from './exports.js'
+<<<<<<< HEAD
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync } from 'node:fs'
+=======
+import {
+  createRazorpayCheckout,
+  decorateExportTargetsForRequest,
+  getDownloadAccessDecision,
+  getSessionPaymentDetails,
+  handleRazorpayWebhook,
+  initPaymentStore,
+  verifyRazorpayCheckout,
+} from './payments.js'
+import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
+>>>>>>> 2f2c95d (SEO Optimized)
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -38,6 +51,10 @@ const MAX_DAILY_PER_USER = 10 // hard daily cap per user
 const userHits = new Map() // uid -> [timestamp, ...]
 const ipHits = new Map() // ip -> [timestamp, ...]
 const userDailyHits = new Map() // uid -> [timestamp, ...]
+
+function setNoIndexHeaders(res) {
+  res.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
+}
 
 function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
   const now = Date.now()
@@ -73,7 +90,30 @@ setInterval(
 export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
   initSessionDir(sessionsDir)
+  initPaymentStore(sessionsDir)
   const app = express()
+  app.set('trust proxy', true)
+
+  app.use('/api', (_req, res, next) => {
+    setNoIndexHeaders(res)
+    next()
+  })
+
+  app.post('/api/payments/razorpay/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+    try {
+      const signature = Array.isArray(req.headers['x-razorpay-signature'])
+        ? req.headers['x-razorpay-signature'][0]
+        : req.headers['x-razorpay-signature']
+      const eventId = Array.isArray(req.headers['x-razorpay-event-id'])
+        ? req.headers['x-razorpay-event-id'][0]
+        : req.headers['x-razorpay-event-id']
+      handleRazorpayWebhook(req.body, signature, eventId)
+      res.json({ ok: true })
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  })
+
   app.use(express.json())
 
   // ─── Plausible Analytics Proxy ──────────────────────────
@@ -119,18 +159,46 @@ export async function startServer(sessionsDir) {
     }
   }
 
+<<<<<<< HEAD
   // Serve public statically
   app.use(express.static(publicDir))
+=======
+  // ─── Public: Firebase client config ──────────────────────
+  app.get('/api/config', (_req, res) => {
+    res.json({
+      apiKey: process.env.FIREBASE_API_KEY ?? '',
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
+      projectId: process.env.FIREBASE_PROJECT_ID ?? '',
+      appId: process.env.FIREBASE_APP_ID ?? '',
+    })
+  })
+
+  app.get('/robots.txt', (_req, res) => {
+    res.type('text/plain').send(renderRobotsTxt())
+  })
+
+  app.get('/sitemap.xml', (_req, res) => {
+    res.type('application/xml').send(renderSitemapXml())
+  })
+
+  app.get('/index.html', (_req, res) => {
+    res.redirect(301, '/')
+  })
+>>>>>>> 2f2c95d (SEO Optimized)
 
   // ─── Prompt page (landing) ────────────────────────────────
   app.get('/', (_req, res) => {
-    res.sendFile(join(publicDir, 'index.html'))
+    res.type('html').send(renderHomePage())
   })
+
+  // Serve public assets statically, but keep / routed through SSR.
+  app.use(express.static(publicDir, { index: false }))
 
   // ─── Dashboard (session-scoped) ───────────────────────────
   app.get('/session/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).send('Session not found')
+    setNoIndexHeaders(res)
     res.sendFile(join(publicDir, 'dashboard.html'))
   })
 
@@ -287,13 +355,16 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
+    const targets = decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
     res.json({
       id: session.id,
       prompt: session.prompt,
       createdAt: session.createdAt,
       homepageReady: session.homepageReady,
       siteSpecReady: session.siteSpecReady ?? false,
-      exportTargets: getSessionExportTargets(session),
+      exportTargets: targets,
+      payment: getSessionPaymentDetails(session, req, targets[0]?.target || 'html'),
+      themeOverride: session.themeOverride ?? null,
       taskCount: session.tasks.length,
       done: session.tasks.filter((t) => t.status === 'DONE').length,
     })
@@ -302,10 +373,12 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id/export-targets', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
+    const targets = decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
     res.json({
       sessionId: session.id,
       siteSpecReady: session.siteSpecReady ?? false,
-      targets: getSessionExportTargets(session),
+      payment: getSessionPaymentDetails(session, req, targets[0]?.target || 'html'),
+      targets,
     })
   })
 
@@ -323,11 +396,56 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  app.post('/api/sessions/:id/theme', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    try {
+      const sessionCtx = makeSessionState(session)
+      sessionCtx.setThemeOverride(req.body?.theme || null)
+      res.json({ ok: true, theme: session.themeOverride ?? null })
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  })
+
+  app.post('/api/sessions/:id/payments/checkout', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    try {
+      const result = await createRazorpayCheckout(session, req.body || {})
+      res.json(result)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  })
+
+  app.post('/api/sessions/:id/payments/verify', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    try {
+      const result = await verifyRazorpayCheckout(session, req.body || {}, req)
+      res.json(result)
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  })
+
   app.get('/api/sessions/:id/download/:target', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
     const target = String(req.params.target || '').toLowerCase()
+    const accessDecision = getDownloadAccessDecision(session, target, req)
+    if (!accessDecision.allowed) {
+      return res.status(402).json({
+        error: accessDecision.error,
+        payment: accessDecision.payment,
+      })
+    }
+
     const bundle = getSessionExportBundle(session, target)
     if (!bundle) return res.status(404).json({ error: 'Export bundle not found' })
 
@@ -389,11 +507,18 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── Preview: per-session workspace static files ──────────
-  app.use('/preview/:sessionId', async (req, res, next) => {
-    const session = getSession(req.params.sessionId)
-    if (!session) return res.status(404).send('Session not found')
-    express.static(session.workspace, { extensions: ['html'] })(req, res, next)
-  })
+  app.use(
+    '/preview/:sessionId',
+    (req, res, next) => {
+      setNoIndexHeaders(res)
+      next()
+    },
+    async (req, res, next) => {
+      const session = getSession(req.params.sessionId)
+      if (!session) return res.status(404).send('Session not found')
+      express.static(session.workspace, { extensions: ['html'] })(req, res, next)
+    },
+  )
 
   const httpServer = createHttpServer(app)
   setupWebSocket(httpServer)

@@ -194,6 +194,29 @@
       </form>
     </div>
 
+    <div class="payment-modal" id="payment-modal" aria-hidden="true">
+      <div class="payment-modal-backdrop" data-close-payment="1"></div>
+      <div class="payment-modal-card" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title">
+        <button class="payment-modal-close" id="payment-modal-close" type="button" aria-label="Close payment">
+          ×
+        </button>
+        <span class="payment-eyebrow">India Checkout</span>
+        <h2 id="payment-modal-title">Unlock ZIP export with UPI</h2>
+        <p class="payment-copy" id="payment-copy">
+          Choose a one-time UPI payment or start a UPI Autopay mandate for recurring exports.
+        </p>
+        <div class="payment-option-list" id="payment-option-list"></div>
+        <div class="payment-note" id="payment-note">
+          Razorpay Checkout will open with UPI-first payment methods for Indian users.
+        </div>
+        <div class="payment-error" id="payment-error"></div>
+        <div class="payment-actions">
+          <button class="secondary" id="payment-cancel-btn" type="button">Cancel</button>
+          <button class="primary" id="payment-confirm-btn" type="button">Continue with UPI</button>
+        </div>
+      </div>
+    </div>
+
     <canvas class="particles-canvas" id="particles-canvas"></canvas>
 
     <!-- ─── Debug Panel (visible only in debug mode: ?debug=1) ─── -->
@@ -212,6 +235,27 @@
       const PREVIEW_BASE = `${location.origin}/preview/${SESSION_ID}`
       const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}?session=${SESSION_ID}`
       const TYPING_SPEED_MS = 40
+      const PAYMENT_COUNTRY_HINT = detectCountryHint()
+
+      function detectCountryHint() {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+        if (timezone === 'Asia/Kolkata') return 'IN'
+
+        const languages = Array.isArray(navigator.languages) && navigator.languages.length
+          ? navigator.languages
+          : [navigator.language]
+        if (languages.some((entry) => /-IN\b/i.test(String(entry || '')))) return 'IN'
+
+        return ''
+      }
+
+      function apiFetch(url, options = {}) {
+        const headers = { ...(options.headers || {}) }
+        if (PAYMENT_COUNTRY_HINT === 'IN') {
+          headers['X-Ship-Fast-Country-Hint'] = PAYMENT_COUNTRY_HINT
+        }
+        return fetch(url, { ...options, headers })
+      }
 
       // ─── Audio unlock: ensure launch SFX can play ──────────────
       const launchSfx = document.getElementById('launch-sfx')
@@ -310,9 +354,15 @@
       let exportTargets = []
       let siteSpecReady = false
       let selectedExportTarget = 'html'
+      let activeThemeOverride = null
+      let paymentState = null
+      let paymentModalTarget = null
+      let selectedPaymentMode = 'one_time'
+      let paymentBusy = false
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
+      let razorpayScriptPromise = null
 
       function cleanupRealtime() {
         if (reconnectTimer) {
@@ -348,18 +398,284 @@
         cleanupRealtime()
       })
 
+      function normalizePaymentState(rawPayment) {
+        return {
+          gateway: rawPayment?.gateway || 'direct',
+          countryCode: rawPayment?.countryCode || 'GLOBAL',
+          isIndianUser: Boolean(rawPayment?.isIndianUser),
+          configured: Boolean(rawPayment?.configured),
+          oneTime: {
+            enabled: Boolean(rawPayment?.oneTime?.enabled),
+            amountInr: rawPayment?.oneTime?.amountInr || null,
+            label: rawPayment?.oneTime?.label || 'One-time ZIP unlock',
+            description: rawPayment?.oneTime?.description || '',
+          },
+          subscription: {
+            enabled: Boolean(rawPayment?.subscription?.enabled),
+            amountInr: rawPayment?.subscription?.amountInr || null,
+            label: rawPayment?.subscription?.label || 'UPI Autopay',
+            description: rawPayment?.subscription?.description || '',
+            cadenceLabel: rawPayment?.subscription?.cadenceLabel || 'month',
+            status: rawPayment?.subscription?.status || null,
+          },
+          access: {
+            targetUnlocked: Boolean(rawPayment?.access?.targetUnlocked),
+            subscriptionUnlocked: Boolean(rawPayment?.access?.subscriptionUnlocked),
+          },
+        }
+      }
+
+      function syncPreviewTheme() {
+        if (!activeThemeOverride) return
+        const iframe = document.getElementById('preview-iframe')
+        if (!iframe?.contentWindow) return
+        iframe.contentWindow.postMessage({ type: 'UPDATE_THEME', colors: activeThemeOverride }, '*')
+      }
+
+      function setActiveThemeOverride(theme) {
+        activeThemeOverride =
+          theme && typeof theme === 'object' && Object.keys(theme).length > 0 ? theme : null
+        syncPreviewTheme()
+      }
+
+      function getSelectedExportEntry() {
+        return (
+          exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0] || null
+        )
+      }
+
+      function setPaymentError(message = '') {
+        document.getElementById('payment-error').textContent = message
+      }
+
+      function setPaymentBusyState(isBusy) {
+        paymentBusy = isBusy
+        const confirmBtn = document.getElementById('payment-confirm-btn')
+        const cancelBtn = document.getElementById('payment-cancel-btn')
+        const hasPaymentOption =
+          Boolean(paymentState?.oneTime?.enabled) || Boolean(paymentState?.subscription?.enabled)
+        confirmBtn.disabled = isBusy || !hasPaymentOption
+        cancelBtn.disabled = isBusy
+        confirmBtn.textContent = isBusy ? 'Opening Checkout…' : 'Continue with UPI'
+      }
+
+      function renderPaymentOptions() {
+        const optionList = document.getElementById('payment-option-list')
+        const confirmBtn = document.getElementById('payment-confirm-btn')
+        const options = []
+
+        if (paymentState?.oneTime?.enabled) {
+          options.push({
+            mode: 'one_time',
+            title: paymentState.oneTime.label,
+            amount: paymentState.oneTime.amountInr ? `₹${paymentState.oneTime.amountInr}` : 'UPI',
+            body: paymentState.oneTime.description,
+          })
+        }
+
+        if (paymentState?.subscription?.enabled) {
+          options.push({
+            mode: 'subscription',
+            title: paymentState.subscription.label,
+            amount: paymentState.subscription.amountInr
+              ? `₹${paymentState.subscription.amountInr}/${paymentState.subscription.cadenceLabel}`
+              : 'Recurring',
+            body: paymentState.subscription.description,
+          })
+        }
+
+        if (!options.some((option) => option.mode === selectedPaymentMode)) {
+          selectedPaymentMode = options[0]?.mode || 'one_time'
+        }
+
+        optionList.innerHTML = options
+          .map((option) => {
+            const activeClass = option.mode === selectedPaymentMode ? ' is-active' : ''
+            return `<button type="button" class="payment-option${activeClass}" data-payment-mode="${option.mode}">
+              <span class="payment-option-head">
+                <strong>${escapeHtml(option.title)}</strong>
+                <span>${escapeHtml(option.amount)}</span>
+              </span>
+              <span class="payment-option-body">${escapeHtml(option.body)}</span>
+            </button>`
+          })
+          .join('')
+
+        confirmBtn.disabled = paymentBusy || options.length === 0
+        if (options.length === 0) {
+          setPaymentError('Razorpay is not configured for Indian checkout yet.')
+        }
+      }
+
+      function closePaymentModal() {
+        if (paymentBusy) return
+        paymentModalTarget = null
+        setPaymentError('')
+        document.getElementById('payment-modal').classList.remove('is-open')
+        document.getElementById('payment-modal').setAttribute('aria-hidden', 'true')
+      }
+
+      function openPaymentModal(targetEntry) {
+        paymentModalTarget = targetEntry
+        setPaymentBusyState(false)
+        setPaymentError('')
+        selectedPaymentMode = paymentState?.oneTime?.enabled ? 'one_time' : 'subscription'
+        renderPaymentOptions()
+
+        const selectedLabel = formatExportTargetLabel(targetEntry?.target || selectedExportTarget)
+        document.getElementById('payment-copy').textContent = paymentState?.subscription?.enabled
+          ? `Unlock ${selectedLabel} with a one-time UPI payment or start a UPI Autopay mandate for recurring exports.`
+          : `Unlock ${selectedLabel} with a one-time UPI payment through Razorpay Checkout.`
+
+        document.getElementById('payment-modal').classList.add('is-open')
+        document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
+      }
+
+      function buildRazorpayOptions(mode, checkout) {
+        const options = {
+          key: checkout.key,
+          name: checkout.name,
+          description: checkout.description,
+          notes: checkout.notes,
+          theme: checkout.theme,
+          method: {
+            upi: true,
+          },
+          config: {
+            display: {
+              blocks: {
+                upi: {
+                  name: 'Pay using UPI',
+                  instruments: [{ method: 'upi' }],
+                },
+              },
+              sequence: ['block.upi'],
+              preferences: {
+                show_default_blocks: false,
+              },
+            },
+          },
+        }
+
+        if (mode === 'subscription') {
+          options.subscription_id = checkout.subscriptionId
+        } else {
+          options.order_id = checkout.orderId
+          options.amount = checkout.amount
+          options.currency = checkout.currency
+        }
+
+        return options
+      }
+
+      function loadRazorpayCheckout() {
+        if (window.Razorpay) return Promise.resolve(window.Razorpay)
+        if (razorpayScriptPromise) return razorpayScriptPromise
+
+        razorpayScriptPromise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+          script.async = true
+          script.onload = () => resolve(window.Razorpay)
+          script.onerror = () => reject(new Error('Unable to load Razorpay Checkout'))
+          document.head.appendChild(script)
+        })
+
+        return razorpayScriptPromise
+      }
+
+      async function verifyPaymentAndDownload(mode, targetEntry, response) {
+        const verificationRes = await apiFetch(`/api/sessions/${SESSION_ID}/payments/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode,
+            target: targetEntry.target,
+            countryHint: PAYMENT_COUNTRY_HINT || 'IN',
+            ...response,
+          }),
+        })
+        const verification = await verificationRes.json()
+        if (!verificationRes.ok || !verification.ok) {
+          throw new Error(verification.error || 'Payment verification failed')
+        }
+
+        paymentState = normalizePaymentState(verification.payment)
+        closePaymentModal()
+        refreshExportTargets()
+        location.href = verification.downloadPath || targetEntry.downloadPath
+      }
+
+      async function startIndianPayment() {
+        if (!paymentModalTarget || paymentBusy) return
+        const targetEntry = paymentModalTarget
+        setPaymentBusyState(true)
+        setPaymentError('')
+
+        try {
+          const checkoutRes = await apiFetch(`/api/sessions/${SESSION_ID}/payments/checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              target: targetEntry.target,
+              mode: selectedPaymentMode,
+              countryHint: PAYMENT_COUNTRY_HINT || 'IN',
+            }),
+          })
+          const checkoutData = await checkoutRes.json()
+          if (!checkoutRes.ok || !checkoutData.ok) {
+            throw new Error(checkoutData.error || 'Unable to start checkout')
+          }
+
+          paymentState = normalizePaymentState(checkoutData.payment)
+          const Razorpay = await loadRazorpayCheckout()
+          const options = buildRazorpayOptions(selectedPaymentMode, checkoutData.checkout)
+          options.handler = (response) => {
+            setPaymentBusyState(false)
+            verifyPaymentAndDownload(selectedPaymentMode, targetEntry, response).catch((error) => {
+              setPaymentError(error.message)
+            })
+          }
+          options.modal = {
+            ondismiss: () => {
+              setPaymentBusyState(false)
+            },
+          }
+
+          const instance = new Razorpay(options)
+          instance.on('payment.failed', (event) => {
+            setPaymentError(
+              event?.error?.description || event?.error?.reason || 'Razorpay payment failed',
+            )
+            setPaymentBusyState(false)
+          })
+          instance.open()
+        } catch (error) {
+          setPaymentError(error.message || 'Unable to start UPI checkout')
+          setPaymentBusyState(false)
+          return
+        }
+      }
+
       // ─── Magic Theme Logic ─────────────────────────────────────
       function applyMagicTheme() {
         if (!alternativeDesign) return
-        const iframe = document.getElementById('preview-iframe')
-        if (iframe && iframe.contentWindow) {
-          iframe.contentWindow.postMessage({ type: 'UPDATE_THEME', colors: alternativeDesign }, '*')
+        setActiveThemeOverride(alternativeDesign)
 
-          // Visual feedback on button
-          const btn = document.getElementById('theme-magic-btn')
-          btn.style.transform = 'scale(1.1) rotate(5deg)'
-          setTimeout(() => (btn.style.transform = ''), 200)
-        }
+        apiFetch(`/api/sessions/${SESSION_ID}/theme`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme: alternativeDesign }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.ok) setActiveThemeOverride(data.theme)
+          })
+          .catch(() => {})
+
+        const btn = document.getElementById('theme-magic-btn')
+        btn.style.transform = 'scale(1.1) rotate(5deg)'
+        setTimeout(() => (btn.style.transform = ''), 200)
       }
 
       function generateAlternativeDesign() {
@@ -367,7 +683,7 @@
         btn.disabled = true
         btn.textContent = '⏳ GENERATING...'
 
-        fetch(`/api/sessions/${SESSION_ID}/generate-design`, { method: 'POST' })
+        apiFetch(`/api/sessions/${SESSION_ID}/generate-design`, { method: 'POST' })
           .then((res) => res.json())
           .then((data) => {
             btn.textContent = '🎨 GENERATE'
@@ -555,12 +871,21 @@
           .map((entry) => {
             const label = formatExportTargetLabel(entry.target)
             const activeClass = entry.target === selectedExportTarget ? ' is-active' : ''
-            const stateLabel = entry.ready ? 'Ready' : siteSpecReady ? 'Build' : 'Migrate + Build'
-            const detailLabel = entry.ready
-              ? 'Downloadable bundle'
-              : siteSpecReady
-                ? 'Build on demand'
-                : 'Legacy preview supported'
+            const requiresPayment = Boolean(entry.paymentRequired && !entry.downloadUnlocked)
+            const stateLabel = requiresPayment
+              ? 'UPI checkout'
+              : entry.ready
+                ? 'Ready'
+                : siteSpecReady
+                  ? 'Build'
+                  : 'Migrate + Build'
+            const detailLabel = requiresPayment
+              ? 'Razorpay UPI required'
+              : entry.ready
+                ? 'Downloadable bundle'
+                : siteSpecReady
+                  ? 'Build on demand'
+                  : 'Legacy preview supported'
 
             return `<button type="button" class="export-target${activeClass}" data-target="${escapeHtml(
               entry.target,
@@ -575,6 +900,7 @@
         const selected =
           exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0]
         const selectedLabel = selected ? formatExportTargetLabel(selected.target) : 'Export'
+        const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
 
         buildBtn.disabled = !selected
         buildBtn.textContent = `${selected?.ready ? 'Rebuild' : 'Build'} ${selectedLabel}`
@@ -587,19 +913,35 @@
           download.style.display = selected?.downloadPath ? 'inline-flex' : 'none'
           if (selected?.downloadPath) {
             download.href = selected.downloadPath
-            download.textContent = `Download ${selectedLabel}`
+            download.dataset.target = selected.target
+            download.dataset.requiresPayment = requiresPayment ? '1' : '0'
+            download.textContent = requiresPayment
+              ? `Unlock ${selectedLabel} via UPI`
+              : `Download ${selectedLabel}`
           }
           return
         }
 
-        statusEl.textContent = selected?.ready ? 'Ready To Download' : 'Spec Synced'
-        subtextEl.textContent = selected?.ready
-          ? `${selectedLabel} is up to date with the current generated UI.`
-          : `Export ${selectedLabel} from the stored canonical site spec at any time.`
+        statusEl.textContent = requiresPayment
+          ? 'UPI Checkout'
+          : selected?.ready
+            ? 'Ready To Download'
+            : 'Spec Synced'
+        subtextEl.textContent = requiresPayment
+          ? paymentState?.subscription?.enabled
+            ? `${selectedLabel} uses Razorpay UPI in India. Pay once for this ZIP or start a UPI Autopay mandate for recurring access.`
+            : `${selectedLabel} uses Razorpay UPI in India before ZIP download.`
+          : selected?.ready
+            ? `${selectedLabel} is up to date with the current generated UI.`
+            : `Export ${selectedLabel} from the stored canonical site spec at any time.`
 
         if (selected?.downloadPath) {
           download.href = selected.downloadPath
-          download.textContent = `Download ${selectedLabel}`
+          download.dataset.target = selected.target
+          download.dataset.requiresPayment = requiresPayment ? '1' : '0'
+          download.textContent = requiresPayment
+            ? `Unlock ${selectedLabel} via UPI`
+            : `Download ${selectedLabel}`
           download.style.display = 'inline-flex'
         } else {
           download.style.display = 'none'
@@ -607,11 +949,12 @@
       }
 
       function refreshExportTargets() {
-        fetch(`/api/sessions/${SESSION_ID}/export-targets`)
+        apiFetch(`/api/sessions/${SESSION_ID}/export-targets`)
           .then((r) => r.json())
           .then((data) => {
             siteSpecReady = Boolean(data.siteSpecReady)
             exportTargets = Array.isArray(data.targets) ? data.targets : []
+            paymentState = normalizePaymentState(data.payment)
             renderExportPanel()
           })
           .catch(() => {})
@@ -630,7 +973,7 @@
           ? `${formatExportTargetLabel(target)} is being generated from the canonical site spec.`
           : `${formatExportTargetLabel(target)} is creating a canonical site spec first, then generating an exact-clone export.`
 
-        fetch(`/api/sessions/${SESSION_ID}/export`, {
+        apiFetch(`/api/sessions/${SESSION_ID}/export`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ target }),
@@ -663,7 +1006,7 @@
         statusEl.textContent = 'Syncing Preview'
         subtextEl.textContent = 'Refreshing the preview from the stored canonical site spec.'
 
-        fetch(`/api/sessions/${SESSION_ID}/rerender-preview`, { method: 'POST' })
+        apiFetch(`/api/sessions/${SESSION_ID}/rerender-preview`, { method: 'POST' })
           .then((r) => r.json())
           .then((data) => {
             btn.disabled = false
@@ -1166,6 +1509,7 @@
           previewLoaded = true
           document.getElementById('url-text').textContent = new URL(PREVIEW_BASE).pathname
           document.getElementById('status-text').textContent = 'Live'
+          syncPreviewTheme()
         }
       }
 
@@ -1298,6 +1642,11 @@
               debugLog('magic_theme_ready', ev.design)
               break
 
+            case 'theme_override_loaded':
+            case 'theme_override_updated':
+              setActiveThemeOverride(ev.theme || null)
+              break
+
             case 'run_completed':
               document.getElementById('phase-text').textContent = `Done in ${ev.elapsed}s`
               document.getElementById('toast-elapsed').textContent = ev.elapsed + 's'
@@ -1369,10 +1718,31 @@
       document
         .getElementById('rerender-preview-btn')
         .addEventListener('click', rerenderPreviewFromSpec)
+      document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal)
+      document.getElementById('payment-cancel-btn').addEventListener('click', closePaymentModal)
+      document.getElementById('payment-confirm-btn').addEventListener('click', startIndianPayment)
+      document.getElementById('payment-modal').addEventListener('click', (event) => {
+        if (event.target.closest('[data-close-payment="1"]')) closePaymentModal()
+      })
+      document.getElementById('payment-option-list').addEventListener('click', (event) => {
+        const option = event.target.closest('[data-payment-mode]')
+        if (!option || paymentBusy) return
+        selectedPaymentMode = option.dataset.paymentMode || selectedPaymentMode
+        renderPaymentOptions()
+      })
+      document.getElementById('export-download-link').addEventListener('click', (event) => {
+        const selected = getSelectedExportEntry()
+        if (!selected || event.currentTarget.dataset.requiresPayment !== '1') return
+        event.preventDefault()
+        openPaymentModal(selected)
+      })
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closePaymentModal()
+      })
 
       // ─── Init ──────────────────────────────────────────────────
       // Fetch session info — load prompt and detect if already done
-      fetch(`/api/sessions/${SESSION_ID}`)
+      apiFetch(`/api/sessions/${SESSION_ID}`)
         .then((r) => r.json())
         .then((session) => {
           if (session.prompt && !introPromptText) {
@@ -1385,6 +1755,8 @@
           }
           siteSpecReady = Boolean(session.siteSpecReady)
           exportTargets = Array.isArray(session.exportTargets) ? session.exportTargets : []
+          paymentState = normalizePaymentState(session.payment)
+          setActiveThemeOverride(session.themeOverride || null)
           renderExportPanel()
         })
         .catch(() => {})

@@ -218,6 +218,47 @@ Otherwise users generate once and leave.
 | Pricing | Free → ₹199 early adopter → ₹399 Pro |
 | Generation cost | ~$0.05/site — margins are strong |
 | Acquisition | SEO + dev communities |
+
+---
+
+## Implementation Notes
+
+The dashboard now supports:
+
+- Persistent session theme overrides for preview reloads and exported ZIPs
+- Razorpay UPI checkout for Indian ZIP downloads
+- Razorpay subscription checkout for UPI Autopay mandates
+
+### Required Environment Variables
+
+```bash
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+RAZORPAY_ZIP_PRICE_INR=199
+RAZORPAY_UPI_AUTOPAY_PLAN_ID=
+RAZORPAY_UPI_AUTOPAY_PRICE_INR=199
+RAZORPAY_UPI_AUTOPAY_TOTAL_COUNT=12
+```
+
+### Razorpay Webhook
+
+Configure the Razorpay webhook to point at:
+
+```text
+/api/payments/razorpay/webhook
+```
+
+Recommended events:
+
+- `payment.authorized`
+- `payment.captured`
+- `payment.failed`
+- `subscription.activated`
+- `subscription.charged`
+- `subscription.pending`
+- `subscription.halted`
+- `subscription.cancelled`
 | Retention | Monthly drops + community + templates |
 
 ---

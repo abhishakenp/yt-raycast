@@ -5,6 +5,13 @@ import {
   routeToNextSegments,
   serializeModule,
 } from '../shared.js'
+import {
+  buildNextMetadata,
+  buildSitemapEntries,
+  buildStructuredData,
+  resolvePageSeo,
+  serializeStructuredData,
+} from '../seo.js'
 
 function renderNextPackageJson(projectName) {
   return JSON.stringify(
@@ -305,20 +312,39 @@ export default function SectionRenderer({ section }) {
 `
 }
 
-function renderNextPageModule(pageId, depth = 1) {
+function renderNextPageModule(siteSpec, page, depth = 0) {
   const prefix = '../'.repeat(depth + 1)
+  const metadata = buildNextMetadata(siteSpec, page)
+  const structuredData = buildStructuredData(siteSpec, page)
+
   return `import PageTemplate from '${prefix}components/PageTemplate'
 import siteSpec from '${prefix}lib/site-spec'
 
-const page = siteSpec.pages.find((entry) => entry.id === ${JSON.stringify(pageId)})
+const page = siteSpec.pages.find((entry) => entry.id === ${JSON.stringify(page.id)})
+const structuredData = ${structuredData.length ? JSON.stringify(serializeStructuredData(structuredData)) : 'null'}
+
+export const metadata = ${serializeModule(metadata)}
 
 export default function GeneratedPage() {
-  return <PageTemplate siteSpec={siteSpec} page={page} />
+  return (
+    <>
+      {structuredData ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} />
+      ) : null}
+      <PageTemplate siteSpec={siteSpec} page={page} />
+    </>
+  )
 }
 `
 }
 
 export function renderNextProject(siteSpec) {
+  const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
+  const siteSeo = resolvePageSeo(siteSpec, homePage)
+  const sitemapEntries = buildSitemapEntries(siteSpec)
+  const robotsConfig = siteSeo.siteUrl
+    ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
+    : { rules: [{ userAgent: '*', allow: '/' }] }
   const files = {
     'package.json': renderNextPackageJson(siteSpec.projectName),
     'next.config.mjs': `/** @type {import('next').NextConfig} */
@@ -331,26 +357,27 @@ export default nextConfig
 export const metadata = {
   title: ${JSON.stringify(siteSpec.seo?.title || siteSpec.projectName)},
   description: ${JSON.stringify(siteSpec.seo?.description || '')},
+  applicationName: ${JSON.stringify(siteSpec.seo?.siteName || siteSpec.projectName)},
+  themeColor: ${JSON.stringify(siteSeo.themeColor)},
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang=${JSON.stringify(siteSeo.htmlLang)} suppressHydrationWarning>
       <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
 `,
-    'app/page.jsx': `import PageTemplate from '../components/PageTemplate'
-import siteSpec from '../lib/site-spec'
-
-const page = siteSpec.pages.find((entry) => entry.route === '/')
-
-export default function HomePage() {
-  return <PageTemplate siteSpec={siteSpec} page={page} />
+    'app/globals.css': buildGlobalCss(siteSpec.theme),
+    'app/robots.js': `export default function robots() {
+  return ${serializeModule(robotsConfig)}
 }
 `,
-    'app/globals.css': buildGlobalCss(siteSpec.theme),
+    'app/sitemap.js': `export default function sitemap() {
+  return ${serializeModule(sitemapEntries)}
+}
+`,
     'lib/clone-runtime.js': renderCloneRuntimeModule(),
     'lib/site-spec.js': `const siteSpec = ${serializeModule(siteSpec)}
 
@@ -407,10 +434,9 @@ export default function SmartLink({ href = '#', children, ...props }) {
   }
 
   for (const page of siteSpec.pages || []) {
-    if (page.route === '/') continue
     const segments = routeToNextSegments(page.route)
-    const dir = ['app', ...segments].join('/')
-    files[`${dir}/page.jsx`] = renderNextPageModule(page.id, segments.length)
+    const dir = page.route === '/' ? 'app' : ['app', ...segments].join('/')
+    files[`${dir}/page.jsx`] = renderNextPageModule(siteSpec, page, segments.length)
   }
 
   return { files }

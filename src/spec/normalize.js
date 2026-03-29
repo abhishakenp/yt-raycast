@@ -117,11 +117,23 @@ function normalizePage(page, idx = 0) {
         ? {
             title: ensureString(page.seo.title, ensureString(page?.title, name)),
             description: ensureString(page.seo.description, ensureString(page?.description, '')),
+            keywords: ensureArray(page.seo.keywords).map((item) => ensureString(item)).filter(Boolean),
+            canonicalPath: ensureString(page.seo.canonicalPath, normalizedRoute),
+            canonicalUrl: ensureString(page.seo.canonicalUrl, ''),
+            ogImage: ensureString(page.seo.ogImage, ''),
+            ogImageAlt: ensureString(page.seo.ogImageAlt, `${ensureString(page?.title, name)} social preview`),
+            noIndex: page.seo.noIndex === true,
           }
         : {
             title: ensureString(page?.title, name),
             description: ensureString(page?.description, ''),
-    },
+            keywords: [],
+            canonicalPath: normalizedRoute,
+            canonicalUrl: '',
+            ogImage: '',
+            ogImageAlt: `${ensureString(page?.title, name)} social preview`,
+            noIndex: false,
+          },
     layoutType: ensureString(page?.layoutType, 'marketing'),
     sections: ensureArray(page?.sections).map(normalizeSection),
     renderBlueprint:
@@ -230,6 +242,14 @@ export function normalizeSiteSpec(input, context = {}) {
         ? {
             title: ensureString(raw.seo.title, fallback.seo.title),
             description: ensureString(raw.seo.description, fallback.seo.description),
+            siteName: ensureString(raw.seo.siteName, fallback.seo.siteName),
+            siteUrl: ensureString(raw.seo.siteUrl, fallback.seo.siteUrl),
+            keywords: ensureArray(raw.seo.keywords).map((item) => ensureString(item)).filter(Boolean),
+            ogImage: ensureString(raw.seo.ogImage, fallback.seo.ogImage),
+            ogImageAlt: ensureString(raw.seo.ogImageAlt, fallback.seo.ogImageAlt),
+            twitterCard: ensureString(raw.seo.twitterCard, fallback.seo.twitterCard),
+            locale: ensureString(raw.seo.locale, fallback.seo.locale),
+            robots: ensureString(raw.seo.robots, fallback.seo.robots),
           }
         : fallback.seo,
     backendFeatureHints: ensureArray(raw.backendFeatureHints).map((item) => ensureString(item)).filter(Boolean),

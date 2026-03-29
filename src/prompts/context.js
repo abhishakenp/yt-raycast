@@ -11,21 +11,24 @@ export function contextPrompt(prompt, designBrief, siteType) {
       `Project description:\n${prompt}\n${briefBlock}\nSite type (pre-detected): ${siteType}\n\n` +
       `Output ONLY a valid JSON object (no markdown fences, no explanation) with this exact schema:\n` +
       `{\n` +
-      `  "project_name": "string \u2014 short product name",\n` +
-      `  "slug": "string \u2014 url-safe slug",\n` +
-      `  "tagline": "string \u2014 one-line product tagline",\n` +
+      `  "project_name": "string — short product name",\n` +
+      `  "slug": "string — url-safe slug",\n` +
+      `  "tagline": "string — one-line product tagline",\n` +
+      `  "site_url": "string — absolute production URL if the prompt mentions a domain, else empty",\n` +
       `  "site_type": "${siteType}",\n` +
       `  "pages": ["Home", "..."],\n` +
       `  "entities": ["...data entities like User, Product, Order"],\n` +
       `  "features": ["...backend features like auth, payments, search"],\n` +
-      `  "mood": "string \u2014 from design brief if available, else derive from prompt",\n` +
-      `  "color_direction": "string \u2014 from design brief colors if available",\n` +
-      `  "typography": "string \u2014 font pairing from design brief if available (e.g. Inter + Open Sans)",\n` +
-      `  "style_keywords": "string \u2014 key CSS/design keywords from design brief"\n` +
+      `  "mood": "string — from design brief if available, else derive from prompt",\n` +
+      `  "color_direction": "string — from design brief colors if available",\n` +
+      `  "typography": "string — font pairing from design brief if available (e.g. Inter + Open Sans)",\n` +
+      `  "style_keywords": "string — key CSS/design keywords from design brief"\n` +
       `}\n\n` +
       `The site_type is "${siteType}". Use it to decide page count:\n` +
-      `- saas/ecommerce/marketplace/docs/blog/dashboard/community \u2192 4-8 pages\n` +
-      `- game/landing/portfolio \u2192 just ["Home"]`,
+      `- saas/ecommerce/marketplace/docs/blog/dashboard/community → 4-8 pages\n` +
+      `- game → just ["Home"]\n` +
+      `- landing/portfolio → 3-5 pages unless the user explicitly asks for a one-page site\n` +
+      `- For public marketing sites, prefer crawlable secondary pages such as Pricing, FAQ, About, Docs, Work, or Contact when they fit the prompt`,
     temperature: 0.2,
     maxTokens: 2000,
   }

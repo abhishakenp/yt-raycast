@@ -44,7 +44,7 @@ export function siteSpecPrompt({ prompt, ctx, designBrief, fallbackSpec, mode = 
       `      "route": "/string",\n` +
       `      "title": "string",\n` +
       `      "description": "string",\n` +
-      `      "seo": { "title": "string", "description": "string" },\n` +
+      `      "seo": { "title": "string", "description": "string", "keywords": ["string"], "canonicalPath": "/string", "canonicalUrl": "", "ogImage": "", "ogImageAlt": "", "noIndex": false },\n` +
       `      "layoutType": "marketing|app-shell|editorial",\n` +
       `      "sections": [\n` +
       `        {\n` +
@@ -71,7 +71,7 @@ export function siteSpecPrompt({ prompt, ctx, designBrief, fallbackSpec, mode = 
       `  "interactions": [],\n` +
       `  "forms": [],\n` +
       `  "assets": [],\n` +
-      `  "seo": { "title": "", "description": "" },\n` +
+      `  "seo": { "title": "", "description": "", "siteName": "", "siteUrl": "", "keywords": ["string"], "ogImage": "", "ogImageAlt": "", "twitterCard": "summary_large_image", "locale": "en_US", "robots": "index, follow" },\n` +
       `  "backendFeatureHints": []\n` +
       `}\n\n` +
       `Rules:\n` +
@@ -79,6 +79,13 @@ export function siteSpecPrompt({ prompt, ctx, designBrief, fallbackSpec, mode = 
       `- Prefer structured content and interaction descriptors over raw scripts.\n` +
       `- Include enough pages and sections to satisfy the prompt.\n` +
       `- Do not omit required project metadata.\n` +
+      `- If the prompt mentions a production domain, preserve it in seo.siteUrl and page canonicals.\n` +
+      `- Keep page seo.noIndex false for public pages unless the user explicitly asks for private routes.\n` +
+      `- For public marketing sites, prefer Home plus 2-4 meaningful secondary pages unless the user explicitly requests a single-page site.\n` +
+      `- Secondary pages should be internally linkable through navigation, footer links, or CTAs.\n` +
+      `- Homepage copy should support SEO with a clear product headline, descriptive supporting copy, and at least one FAQ section when relevant.\n` +
+      `- Use clean title patterns: homepage as "Project Name | Core benefit" and secondary pages as "Topic | Project Name" or "Project Name Topic | Benefit". Avoid keyword stuffing.\n` +
+      `- When you include FAQ content, write realistic buyer or user questions rather than placeholder copy.\n` +
       `- Use the fallback structure when uncertain rather than inventing a malformed schema.`,
     temperature: 0.2,
     maxTokens: 4000,

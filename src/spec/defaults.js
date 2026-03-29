@@ -77,14 +77,124 @@ function parseTypography(ctx, designBrief = '') {
   }
 }
 
-function defaultNavActions(projectName) {
+function normalizeSiteUrlInput(value = '') {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+
+  try {
+    const candidate = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+    const url = new URL(candidate)
+    if (!['http:', 'https:'].includes(url.protocol)) return ''
+    return url.toString().replace(/\/+$/, '')
+  } catch {
+    return ''
+  }
+}
+
+function defaultPageNamesForSiteType(siteType) {
+  switch (siteType) {
+    case 'portfolio':
+      return ['Home', 'Work', 'About', 'Contact']
+    case 'blog':
+      return ['Home', 'Blog', 'About', 'Contact']
+    case 'docs':
+      return ['Home', 'Docs', 'Pricing', 'FAQ', 'Contact']
+    case 'ecommerce':
+      return ['Home', 'Catalog', 'FAQ', 'Contact']
+    case 'marketplace':
+      return ['Home', 'Pricing', 'FAQ', 'Contact']
+    case 'community':
+      return ['Home', 'About', 'FAQ', 'Contact']
+    case 'dashboard':
+      return ['Home', 'Pricing', 'Docs', 'Contact']
+    case 'landing':
+    case 'saas':
+    default:
+      return ['Home', 'Pricing', 'FAQ', 'Contact']
+  }
+}
+
+function findPageRoute(pageNames = [], pattern, fallback = '#') {
+  const normalizedPattern = pattern instanceof RegExp ? pattern : new RegExp(String(pattern), 'i')
+  const matchIndex = pageNames.findIndex((pageName) => normalizedPattern.test(String(pageName || '')))
+  if (matchIndex === -1) return fallback
+  return toPageRoute(pageNames[matchIndex], matchIndex)
+}
+
+function inferHomeSeoTitle(projectName, tagline, siteType) {
+  const cleanTagline = String(tagline || '').trim()
+  if (cleanTagline && cleanTagline.toLowerCase() !== String(projectName || '').trim().toLowerCase()) {
+    return `${projectName} | ${cleanTagline}`
+  }
+
+  switch (siteType) {
+    case 'portfolio':
+      return `${projectName} | Portfolio and Selected Work`
+    case 'docs':
+      return `${projectName} | Documentation and Quickstart`
+    case 'blog':
+      return `${projectName} | Insights and Updates`
+    case 'ecommerce':
+      return `${projectName} | Products, Pricing and FAQs`
+    default:
+      return `${projectName} | Product Overview, Pricing and FAQs`
+  }
+}
+
+function inferPageTitle(pageName, projectName, siteType, tagline = '') {
+  const lower = String(pageName || '').toLowerCase()
+  if (lower === 'home') return inferHomeSeoTitle(projectName, tagline, siteType)
+  if (lower.includes('pricing')) return `${projectName} Pricing | Plans, Features and FAQs`
+  if (lower.includes('contact')) return `Contact ${projectName} | Sales and Support`
+  if (lower.includes('about')) return `About ${projectName} | Company Overview`
+  if (lower.includes('docs')) return `${projectName} Docs | Guides and Reference`
+  if (lower.includes('blog')) return `${projectName} Blog | Insights and Updates`
+  if (lower.includes('faq')) return `${projectName} FAQ | Common Questions and Answers`
+  if (lower.includes('work')) return `${projectName} Work | Projects and Case Studies`
+  if (lower.includes('catalog')) return `${projectName} Catalog | Products and Buying Guide`
+  return `${pageName} | ${projectName}`
+}
+
+function defaultFaqItems(projectName, siteType, ctx = {}) {
+  const featureHint = ctx?.features?.[0]
+  const audienceHint = ctx?.entities?.[0] || 'teams'
+  const implementationAnswer = featureHint
+    ? `${projectName} includes ${featureHint.toLowerCase()} in the product workflow and keeps the implementation structured across exported targets.`
+    : `${projectName} keeps implementation details structured so teams can launch faster without rebuilding the site architecture later.`
+
   return [
-    { id: 'cta-primary', label: 'Get Started', href: '#contact', style: 'primary' },
-    { id: 'cta-secondary', label: 'See Pricing', href: '#pricing', style: 'secondary' },
+    {
+      title: `What does ${projectName} help ${audienceHint.toLowerCase()} do?`,
+      body:
+        siteType === 'portfolio'
+          ? `${projectName} helps visitors understand the work, background, and contact path without digging through a single long page.`
+          : `${projectName} helps ${audienceHint.toLowerCase()} evaluate the product, compare options, and move toward signup or contact with less friction.`,
+    },
+    {
+      title: `How quickly can teams get started with ${projectName}?`,
+      body: `${projectName} is positioned for fast onboarding with clear pricing, implementation details, and a guided next step for qualified visitors.`,
+    },
+    {
+      title: `How does ${projectName} handle pricing, implementation, or migration questions?`,
+      body: implementationAnswer,
+    },
+    {
+      title: `Where can visitors compare plans, learn more, or contact the team?`,
+      body: `Use the internal navigation to move between the pricing, FAQ, and contact pages so buyers can keep exploring without returning to the homepage.`,
+    },
   ]
 }
 
-function defaultHero(projectName, tagline, siteType, features = []) {
+function defaultNavActions(projectName, pageNames = []) {
+  const pricingHref = findPageRoute(pageNames, /pricing/i, '#pricing')
+  const contactHref = findPageRoute(pageNames, /contact/i, '#contact')
+  return [
+    { id: 'cta-primary', label: 'Get Started', href: contactHref, style: 'primary' },
+    { id: 'cta-secondary', label: 'See Pricing', href: pricingHref, style: 'secondary' },
+  ]
+}
+
+function defaultHero(projectName, tagline, siteType, features = [], pageNames = []) {
   const body =
     siteType === 'dashboard'
       ? `Operate ${projectName} from one control surface with focused workflows and fast team collaboration.`
@@ -97,8 +207,8 @@ function defaultHero(projectName, tagline, siteType, features = []) {
     subheadline: tagline || 'Ship your next product faster.',
     body,
     actions: [
-      { label: 'Get Started', href: '#contact', style: 'primary' },
-      { label: 'View Features', href: '#features', style: 'secondary' },
+      { label: 'Get Started', href: findPageRoute(pageNames, /contact/i, '#contact'), style: 'primary' },
+      { label: 'View Pricing', href: findPageRoute(pageNames, /pricing|plans/i, '#pricing'), style: 'secondary' },
     ],
     items: features.slice(0, 3).map((feature) => ({ title: feature })),
     interactions: [{ type: 'heroCta', behavior: 'scroll', target: '#contact' }],
@@ -116,9 +226,9 @@ function defaultFeatureItems(ctx) {
   }))
 }
 
-function defaultSectionsForSiteType(ctx, siteType, projectName, tagline) {
+function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNames = []) {
   const sections = [
-    defaultHero(projectName, tagline, siteType, ctx?.features || []),
+    defaultHero(projectName, tagline, siteType, ctx?.features || [], pageNames),
     {
       id: 'stats',
       type: 'stats',
@@ -241,17 +351,9 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline) {
       id: 'faq',
       type: 'faq',
       variant: 'accordion',
-      headline: 'Common questions',
-      items: [
-        {
-          title: 'Can I choose the framework later?',
-          body: 'Yes. The site specification is stored once, and renderers export framework-specific projects on demand.',
-        },
-        {
-          title: 'Does the preview stay fast?',
-          body: 'Yes. Preview generation stays optimized while exports are driven from the canonical spec.',
-        },
-      ],
+      headline: `${projectName} FAQ`,
+      body: 'Answer common buyer questions directly on the homepage and link to deeper pages when visitors need more detail.',
+      items: defaultFaqItems(projectName, siteType, ctx),
       interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
     },
     {
@@ -282,24 +384,39 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline) {
       type: 'footer',
       variant: 'simple',
       headline: projectName,
-      links: [
-        { label: 'Home', href: '/' },
-        { label: 'Features', href: '#features' },
-        { label: 'Pricing', href: '#pricing' },
-        { label: 'Contact', href: '#contact' },
-      ],
+      links:
+        pageNames.length > 1
+          ? pageNames.slice(0, 5).map((pageName, pageIdx) => ({
+              label: pageName,
+              href: toPageRoute(pageName, pageIdx),
+            }))
+          : [
+              { label: 'Home', href: '/' },
+              { label: 'Features', href: '#features' },
+              { label: 'Pricing', href: '#pricing' },
+              { label: 'Contact', href: '#contact' },
+            ],
     },
   )
 
   return sections
 }
 
-function inferPageDescription(pageName, projectName) {
-  if (/pricing/i.test(pageName)) return `Pricing and plan details for ${projectName}.`
-  if (/contact/i.test(pageName)) return `Ways to contact the ${projectName} team.`
-  if (/about/i.test(pageName)) return `Background and positioning for ${projectName}.`
-  if (/docs/i.test(pageName)) return `Documentation and quickstart guides for ${projectName}.`
-  return `${pageName} page for ${projectName}.`
+function inferPageDescription(pageName, projectName, siteType, tagline = '') {
+  if (/pricing/i.test(pageName)) return `Compare ${projectName} pricing, included features, and plan details before you choose a rollout path.`
+  if (/contact/i.test(pageName)) return `Contact the ${projectName} team for sales, support, onboarding, or implementation questions.`
+  if (/about/i.test(pageName)) return `Learn what ${projectName} does, how it is positioned, and why teams choose it.`
+  if (/docs/i.test(pageName)) return `Browse ${projectName} documentation, setup steps, and implementation reference in one place.`
+  if (/blog/i.test(pageName)) return `Read ${projectName} insights, launch notes, and product updates.`
+  if (/faq/i.test(pageName)) return `Find answers to common ${projectName} questions about pricing, setup, and team adoption.`
+  if (/work/i.test(pageName)) return `Explore ${projectName} projects, case studies, and selected work.`
+  if (/catalog/i.test(pageName)) return `Browse ${projectName} products, key details, and buying guidance.`
+  if (/home/i.test(pageName)) {
+    return tagline
+      ? `${tagline} Explore pricing, FAQs, and next steps from the ${projectName} homepage.`
+      : `${projectName} overview, pricing, FAQs, and contact options for prospective buyers.`
+  }
+  return `${pageName} page for ${projectName} with clear next steps and internal links.`
 }
 
 function buildSecondaryPageSections(pageName, projectName, siteType) {
@@ -353,6 +470,31 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
           errorMessage: 'Please fill in the required fields.',
           action: { type: 'placeholder', target: 'contact_request' },
         },
+      },
+    ]
+  }
+
+  if (lower.includes('faq')) {
+    return [
+      {
+        id: 'faq-page',
+        type: 'faq',
+        variant: 'accordion',
+        headline: `${projectName} frequently asked questions`,
+        body: 'Answer buyer questions in one place and give visitors an easy path to pricing or contact.',
+        items: defaultFaqItems(projectName, siteType, {}),
+        interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
+      },
+      {
+        id: 'faq-cta',
+        type: 'cta',
+        variant: 'banner',
+        headline: 'Still comparing options?',
+        body: 'Review pricing or contact the team for a more specific rollout discussion.',
+        actions: [
+          { label: 'See Pricing', href: '/pricing', style: 'secondary' },
+          { label: 'Contact', href: '/contact', style: 'primary' },
+        ],
       },
     ]
   }
@@ -439,15 +581,25 @@ export function buildFallbackSiteSpec({
   const inferredSiteType = inferSiteType(ctx, siteType)
   const projectName = ctx.project_name || prompt.slice(0, 40) || 'Generated Project'
   const normalizedSlug = ctx.slug || slug(projectName)
-  const pages = (ctx.pages?.length ? ctx.pages : ['Home']).map((name, idx) => ({
+  const siteUrl = normalizeSiteUrlInput(ctx.site_url || '')
+  const pageNames = ctx.pages?.length ? ctx.pages : defaultPageNamesForSiteType(inferredSiteType)
+  const pages = pageNames.map((name, idx) => ({
     id: idx === 0 ? 'page-home' : `page-${slug(name || `page-${idx + 1}`)}`,
     name: name || `Page ${idx + 1}`,
     route: toPageRoute(name || `Page ${idx + 1}`, idx),
-    title: idx === 0 ? projectName : `${name} | ${projectName}`,
-    description: inferPageDescription(name || `Page ${idx + 1}`, projectName),
+    title: inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
+    description: inferPageDescription(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
     seo: {
-      title: idx === 0 ? projectName : `${name} | ${projectName}`,
-      description: inferPageDescription(name || `Page ${idx + 1}`, projectName),
+      title: inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
+      description: inferPageDescription(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
+      keywords:
+        idx === 0
+          ? [projectName, inferredSiteType, ctx.tagline || '', ...(ctx.features || []).slice(0, 3)].filter(Boolean)
+          : [String(name || ''), projectName, inferredSiteType].filter(Boolean),
+      canonicalPath: toPageRoute(name || `Page ${idx + 1}`, idx),
+      ogImage: '',
+      ogImageAlt: `${inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline)} social preview`,
+      noIndex: false,
     },
     layoutType: inferredSiteType === 'dashboard' ? 'app-shell' : 'marketing',
     sections:
@@ -458,15 +610,15 @@ export function buildFallbackSiteSpec({
               type: 'navbar',
               variant: 'default',
               headline: projectName,
-              links: (ctx.pages?.length ? ctx.pages : ['Home'])
+              links: pageNames
                 .map((pageName, pageIdx) => ({
                   label: pageName,
                   href: toPageRoute(pageName, pageIdx),
                 })),
-              actions: defaultNavActions(projectName),
+              actions: defaultNavActions(projectName, pageNames),
               interactions: [{ type: 'mobileMenu', target: 'main-nav', behavior: 'toggle' }],
             },
-            ...defaultSectionsForSiteType(ctx, inferredSiteType, projectName, ctx.tagline),
+            ...defaultSectionsForSiteType(ctx, inferredSiteType, projectName, ctx.tagline, pageNames),
           ]
         : buildSecondaryPageSections(name || `Page ${idx + 1}`, projectName, inferredSiteType),
   }))
@@ -513,7 +665,7 @@ export function buildFallbackSiteSpec({
     navigation: {
       global: pages.map((page) => ({ label: page.name, href: page.route })),
       footer: pages.map((page) => ({ label: page.name, href: page.route })),
-      ctas: defaultNavActions(projectName),
+      ctas: defaultNavActions(projectName, pageNames),
     },
     pages,
     components: [
@@ -544,6 +696,14 @@ export function buildFallbackSiteSpec({
     seo: {
       title: projectName,
       description: ctx.tagline || `${projectName} generated from a canonical site specification.`,
+      siteName: projectName,
+      siteUrl,
+      keywords: [projectName, inferredSiteType, ...(ctx.features || [])].filter(Boolean).slice(0, 12),
+      ogImage: '',
+      ogImageAlt: `${projectName} social preview`,
+      twitterCard: 'summary_large_image',
+      locale: 'en_US',
+      robots: 'index, follow',
     },
     backendFeatureHints: ctx.features || [],
   }

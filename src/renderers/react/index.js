@@ -1,10 +1,18 @@
 import {
   buildGlobalCss,
+  escapeHtml,
   pageComponentName,
   renderCloneRuntimeModule,
   renderExactClonePageComponent,
   serializeModule,
 } from '../shared.js'
+import {
+  buildStructuredData,
+  renderRobotsTxt,
+  renderSitemapXml,
+  resolvePageSeo,
+  serializeStructuredData,
+} from '../seo.js'
 
 function renderReactPackageJson(projectName) {
   return JSON.stringify(
@@ -387,14 +395,40 @@ export default function SectionRenderer({ section }) {
 }
 
 export function renderReactProject(siteSpec) {
+  const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
+  const homeSeo = resolvePageSeo(siteSpec, homePage)
+  const homeStructuredData = homePage ? buildStructuredData(siteSpec, homePage) : []
   const files = {
     'package.json': renderReactPackageJson(siteSpec.projectName),
     'index.html': `<!doctype html>
-<html lang="en">
+<html lang="${homeSeo.htmlLang}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${siteSpec.projectName}</title>
+    <title>${escapeHtml(homeSeo.title)}</title>
+    <meta name="description" content="${escapeHtml(homeSeo.description)}" />
+    <meta name="robots" content="${escapeHtml(homeSeo.robots)}" />
+    <meta name="theme-color" content="${escapeHtml(homeSeo.themeColor)}" />
+    ${homeSeo.keywords.length ? `<meta name="keywords" content="${escapeHtml(homeSeo.keywords.join(', '))}" />` : ''}
+    ${homeSeo.canonicalUrl ? `<link rel="canonical" href="${escapeHtml(homeSeo.canonicalUrl)}" />` : ''}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="${escapeHtml(homeSeo.title)}" />
+    <meta property="og:description" content="${escapeHtml(homeSeo.description)}" />
+    ${homeSeo.canonicalUrl ? `<meta property="og:url" content="${escapeHtml(homeSeo.canonicalUrl)}" />` : ''}
+    <meta property="og:site_name" content="${escapeHtml(homeSeo.siteName)}" />
+    <meta property="og:locale" content="${escapeHtml(homeSeo.locale)}" />
+    ${
+      homeSeo.ogImage
+        ? `<meta property="og:image" content="${escapeHtml(homeSeo.ogImage)}" />
+    <meta property="og:image:alt" content="${escapeHtml(homeSeo.ogImageAlt)}" />
+    <meta name="twitter:image" content="${escapeHtml(homeSeo.ogImage)}" />
+    <meta name="twitter:image:alt" content="${escapeHtml(homeSeo.ogImageAlt)}" />`
+        : ''
+    }
+    <meta name="twitter:card" content="${escapeHtml(homeSeo.ogImage ? homeSeo.twitterCard : 'summary')}" />
+    <meta name="twitter:title" content="${escapeHtml(homeSeo.title)}" />
+    <meta name="twitter:description" content="${escapeHtml(homeSeo.description)}" />
+    ${homeStructuredData.length ? `<script type="application/ld+json">${serializeStructuredData(homeStructuredData)}</script>` : ''}
   </head>
   <body>
     <div id="root"></div>
@@ -402,6 +436,7 @@ export function renderReactProject(siteSpec) {
   </body>
 </html>
 `,
+    'public/robots.txt': renderRobotsTxt(siteSpec),
     'vite.config.js': `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -427,6 +462,201 @@ export default siteSpec
 `,
     'src/styles.css': buildGlobalCss(siteSpec.theme),
     'src/lib/clone-runtime.js': renderCloneRuntimeModule(),
+    'src/components/SeoHead.jsx': `import { useEffect } from 'react'
+
+function normalizeSiteUrl(value = '') {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+  try {
+    const candidate = /^https?:\\/\\//i.test(raw) ? raw : \`https://\${raw}\`
+    return new URL(candidate).toString().replace(/\\/+$/, '')
+  } catch {
+    return ''
+  }
+}
+
+function normalizePath(value = '/') {
+  const raw = String(value || '').trim()
+  if (!raw || raw === '/') return '/'
+  return raw.startsWith('/') ? raw : \`/\${raw}\`
+}
+
+function joinUrl(baseUrl, path = '/') {
+  if (!baseUrl) return ''
+  try {
+    return new URL(normalizePath(path), \`\${baseUrl}/\`).toString()
+  } catch {
+    return ''
+  }
+}
+
+function resolveSiteUrl(siteSpec) {
+  const explicit = normalizeSiteUrl(siteSpec?.seo?.siteUrl || '')
+  if (explicit) return explicit
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return String(window.location.origin).replace(/\\/+$/, '')
+  }
+  return ''
+}
+
+function resolveAssetUrl(value = '', siteUrl = '') {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+  if (/^https?:\\/\\//i.test(raw)) return raw
+  if (!siteUrl) return raw.startsWith('/') ? raw : ''
+  return joinUrl(siteUrl, raw)
+}
+
+function upsertHeadTag(tagName, key, selector, attributes) {
+  let node = document.head.querySelector(selector)
+  if (!node) {
+    node = document.createElement(tagName)
+    node.setAttribute(\`data-sf-seo-\${key}\`, '1')
+    document.head.appendChild(node)
+  }
+  Object.entries(attributes).forEach(([name, value]) => {
+    if (value == null || value === '') node.removeAttribute(name)
+    else node.setAttribute(name, String(value))
+  })
+}
+
+function removeHeadTag(selector) {
+  document.head.querySelector(selector)?.remove()
+}
+
+function extractFaqItems(page) {
+  return (page?.sections || [])
+    .filter((section) => section.type === 'faq')
+    .flatMap((section) => section.items || [])
+    .map((item) => ({
+      question: String(item?.title || '').trim(),
+      answer: String(item?.body || '').trim(),
+    }))
+    .filter((item) => item.question && item.answer)
+}
+
+function buildStructuredData(siteSpec, page, seo) {
+  const entries = []
+
+  if ((page?.route || '/') === '/') {
+    entries.push({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: seo.siteName,
+      url: seo.siteUrl || seo.canonicalUrl || undefined,
+      description: seo.description,
+    })
+  }
+
+  entries.push({
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: seo.title,
+    description: seo.description,
+    url: seo.canonicalUrl || undefined,
+  })
+
+  const faqItems = extractFaqItems(page)
+  if (faqItems.length) {
+    entries.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqItems.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
+    })
+  }
+
+  return JSON.stringify(entries.length === 1 ? entries[0] : entries).replace(/</g, '\\\\u003c')
+}
+
+export default function SeoHead({ siteSpec, page }) {
+  useEffect(() => {
+    if (!page) return
+
+    const siteSeo = siteSpec?.seo || {}
+    const pageSeo = page?.seo || {}
+    const siteUrl = resolveSiteUrl(siteSpec)
+    const routePath = normalizePath(pageSeo.canonicalPath || page?.route || '/')
+    const canonicalUrl = pageSeo.canonicalUrl ? normalizeSiteUrl(pageSeo.canonicalUrl) : joinUrl(siteUrl, routePath)
+    const title = pageSeo.title || page?.title || siteSeo.title || siteSpec?.projectName || 'Website'
+    const description = pageSeo.description || page?.description || siteSeo.description || ''
+    const siteName = siteSeo.siteName || siteSpec?.projectName || title
+    const locale = siteSeo.locale || 'en_US'
+    const htmlLang = String(locale).replace('_', '-')
+    const keywords = [...new Set([...(siteSeo.keywords || []), ...(pageSeo.keywords || [])].map((entry) => String(entry || '').trim()).filter(Boolean))]
+    const ogImage = resolveAssetUrl(pageSeo.ogImage || siteSeo.ogImage || '', siteUrl)
+    const ogImageAlt = pageSeo.ogImageAlt || siteSeo.ogImageAlt || \`\${title} social preview\`
+    const robots = pageSeo.noIndex ? 'noindex, nofollow' : siteSeo.robots || 'index, follow'
+    const themeColor = siteSpec?.theme?.colors?.background || '#09090b'
+    const twitterCard = ogImage ? siteSeo.twitterCard || 'summary_large_image' : 'summary'
+
+    document.documentElement.lang = htmlLang
+    document.title = title
+
+    upsertHeadTag('meta', 'description', 'meta[data-sf-seo-description]', { name: 'description', content: description })
+    upsertHeadTag('meta', 'robots', 'meta[data-sf-seo-robots]', { name: 'robots', content: robots })
+    upsertHeadTag('meta', 'theme-color', 'meta[data-sf-seo-theme-color]', { name: 'theme-color', content: themeColor })
+
+    if (keywords.length) {
+      upsertHeadTag('meta', 'keywords', 'meta[data-sf-seo-keywords]', { name: 'keywords', content: keywords.join(', ') })
+    } else {
+      removeHeadTag('meta[data-sf-seo-keywords]')
+    }
+
+    if (canonicalUrl) {
+      upsertHeadTag('link', 'canonical', 'link[data-sf-seo-canonical]', { rel: 'canonical', href: canonicalUrl })
+      upsertHeadTag('meta', 'og-url', 'meta[data-sf-seo-og-url]', { property: 'og:url', content: canonicalUrl })
+    } else {
+      removeHeadTag('link[data-sf-seo-canonical]')
+      removeHeadTag('meta[data-sf-seo-og-url]')
+    }
+
+    upsertHeadTag('meta', 'og-type', 'meta[data-sf-seo-og-type]', { property: 'og:type', content: 'website' })
+    upsertHeadTag('meta', 'og-title', 'meta[data-sf-seo-og-title]', { property: 'og:title', content: title })
+    upsertHeadTag('meta', 'og-description', 'meta[data-sf-seo-og-description]', { property: 'og:description', content: description })
+    upsertHeadTag('meta', 'og-site-name', 'meta[data-sf-seo-og-site-name]', { property: 'og:site_name', content: siteName })
+    upsertHeadTag('meta', 'og-locale', 'meta[data-sf-seo-og-locale]', { property: 'og:locale', content: locale })
+    upsertHeadTag('meta', 'twitter-card', 'meta[data-sf-seo-twitter-card]', { name: 'twitter:card', content: twitterCard })
+    upsertHeadTag('meta', 'twitter-title', 'meta[data-sf-seo-twitter-title]', { name: 'twitter:title', content: title })
+    upsertHeadTag('meta', 'twitter-description', 'meta[data-sf-seo-twitter-description]', { name: 'twitter:description', content: description })
+
+    if (ogImage) {
+      upsertHeadTag('meta', 'og-image', 'meta[data-sf-seo-og-image]', { property: 'og:image', content: ogImage })
+      upsertHeadTag('meta', 'og-image-alt', 'meta[data-sf-seo-og-image-alt]', { property: 'og:image:alt', content: ogImageAlt })
+      upsertHeadTag('meta', 'twitter-image', 'meta[data-sf-seo-twitter-image]', { name: 'twitter:image', content: ogImage })
+      upsertHeadTag('meta', 'twitter-image-alt', 'meta[data-sf-seo-twitter-image-alt]', { name: 'twitter:image:alt', content: ogImageAlt })
+    } else {
+      removeHeadTag('meta[data-sf-seo-og-image]')
+      removeHeadTag('meta[data-sf-seo-og-image-alt]')
+      removeHeadTag('meta[data-sf-seo-twitter-image]')
+      removeHeadTag('meta[data-sf-seo-twitter-image-alt]')
+    }
+
+    let structuredDataNode = document.head.querySelector('script[data-sf-seo-structured-data]')
+    if (!structuredDataNode) {
+      structuredDataNode = document.createElement('script')
+      structuredDataNode.type = 'application/ld+json'
+      structuredDataNode.setAttribute('data-sf-seo-structured-data', '1')
+      document.head.appendChild(structuredDataNode)
+    }
+    structuredDataNode.textContent = buildStructuredData(siteSpec, page, {
+      title,
+      description,
+      canonicalUrl,
+      siteName,
+      siteUrl,
+    })
+  }, [siteSpec, page])
+
+  return null
+}
+`,
     'src/components/SmartLink.jsx': `import { Link } from 'react-router-dom'
 
 export default function SmartLink({ href = '#', children, ...props }) {
@@ -447,6 +677,7 @@ export default function SmartLink({ href = '#', children, ...props }) {
 `,
     'src/components/ExactClonePage.jsx': renderExactClonePageComponent({ mode: 'react' }),
     'src/components/PageTemplate.jsx': `import ExactClonePage from './ExactClonePage'
+import SeoHead from './SeoHead'
 import SectionRenderer from './SectionRenderer'
 
 export default function PageTemplate({ siteSpec, page }) {
@@ -462,20 +693,31 @@ export default function PageTemplate({ siteSpec, page }) {
   }
 
   if (page.renderBlueprint?.exactClone && page.renderBlueprint?.bodyHtml) {
-    return <ExactClonePage page={page} />
+    return (
+      <>
+        <SeoHead siteSpec={siteSpec} page={page} />
+        <ExactClonePage page={page} />
+      </>
+    )
   }
 
   return (
-    <div className="site-shell">
-      {page.sections.map((section) => (
-        <SectionRenderer key={section.id} section={section} siteSpec={siteSpec} />
-      ))}
-    </div>
+    <>
+      <SeoHead siteSpec={siteSpec} page={page} />
+      <div className="site-shell">
+        {page.sections.map((section) => (
+          <SectionRenderer key={section.id} section={section} siteSpec={siteSpec} />
+        ))}
+      </div>
+    </>
   )
 }
 `,
     'src/components/SectionRenderer.jsx': renderReactSectionRenderer(),
   }
+
+  const sitemapXml = renderSitemapXml(siteSpec)
+  if (sitemapXml) files['public/sitemap.xml'] = sitemapXml
 
   for (const page of siteSpec.pages || []) {
     files[`src/pages/${pageComponentName(page)}.jsx`] = renderReactPage(page, pageComponentName(page))

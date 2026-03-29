@@ -1,4 +1,7 @@
 export const DASHBOARD_PORT = 7420
+export const SITE_NAME = 'Ship Fast'
+export const SITE_URL = (process.env.SITE_URL ?? 'https://ship-fast.devliv.io').replace(/\/+$/, '')
+export const PLAUSIBLE_DOMAIN = process.env.PLAUSIBLE_DOMAIN ?? new URL(SITE_URL).hostname
 
 export const GROQ_API_KEY = process.env.GROQ_API_KEY
 export const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'

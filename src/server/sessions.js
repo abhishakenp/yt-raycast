@@ -9,6 +9,7 @@ import {
   statSync,
 } from 'node:fs'
 import { join } from 'node:path'
+import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
 
 const sessions = new Map()
 let _sessionsDir = null
@@ -55,6 +56,7 @@ export function createSession(baseDir, prompt, userId) {
     elapsed: null,
     cost: null,
     alternativeDesign,
+    themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
     wsClients: new Set(),
   }
@@ -181,6 +183,7 @@ export function getSession(id) {
     elapsed,
     cost,
     alternativeDesign,
+    themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
     wsClients: new Set(),
   }
@@ -361,11 +364,18 @@ export function makeSessionState(session) {
     broadcast({ type: 'alternative_design_ready', design })
   }
 
+  const setThemeOverride = (theme) => {
+    const normalizedTheme = persistSessionThemeOverride(session, theme)
+    session.themeOverride = normalizedTheme
+    broadcast({ type: 'theme_override_updated', theme: normalizedTheme })
+  }
+
   const getState = () => ({
     tasks: session.tasks,
     homepageReady: session.homepageReady,
     siteSpecReady: session.siteSpecReady,
     alternativeDesign: session.alternativeDesign,
+    themeOverride: session.themeOverride,
     prompt: session.prompt,
     lastStatus: session.lastStatus,
   })
@@ -380,6 +390,7 @@ export function makeSessionState(session) {
     setElapsed,
     setCost,
     setAlternativeDesign,
+    setThemeOverride,
     getState,
   }
 }

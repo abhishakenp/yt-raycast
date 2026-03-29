@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { ensureCompatibleSiteSpec, loadSiteSpec, SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from '../renderers/index.js'
 import { createZipBuffer } from './zip.js'
+import { applyThemeOverrideToSiteSpec } from './theme.js'
 
 const EXPORT_META_FILE = '.exports.json'
 
@@ -21,7 +22,7 @@ export function writeExportMetadata(workspace, metadata) {
 }
 
 export function getSessionExportTargets(session) {
-  const siteSpec = loadSiteSpec(session.workspace)
+  const siteSpec = applyThemeOverrideToSiteSpec(loadSiteSpec(session.workspace), session.themeOverride)
   const metadata = readExportMetadata(session.workspace)
   const supported = siteSpec?.exportableFrameworks?.length
     ? siteSpec.exportableFrameworks.filter((target) => SUPPORTED_EXPORT_TARGETS.includes(target))
@@ -40,7 +41,10 @@ export function getSessionExportTargets(session) {
 }
 
 export function generateSessionExport(session, target) {
-  const siteSpec = ensureCompatibleSiteSpec(session.workspace)
+  const siteSpec = applyThemeOverrideToSiteSpec(
+    ensureCompatibleSiteSpec(session.workspace),
+    session.themeOverride,
+  )
   session.siteSpecReady = Boolean(siteSpec)
   if (!siteSpec) throw new Error('Unable to build a canonical site spec for this session')
   if (!SUPPORTED_EXPORT_TARGETS.includes(target)) throw new Error(`Unsupported export target: ${target}`)
@@ -90,7 +94,10 @@ export function getSessionExportBundle(session, target) {
 }
 
 export function rerenderPreviewFromSiteSpec(session) {
-  const siteSpec = ensureCompatibleSiteSpec(session.workspace)
+  const siteSpec = applyThemeOverrideToSiteSpec(
+    ensureCompatibleSiteSpec(session.workspace),
+    session.themeOverride,
+  )
   session.siteSpecReady = Boolean(siteSpec)
   if (!siteSpec) throw new Error('Unable to build a canonical site spec for this session')
   return renderPreviewToWorkspace(siteSpec, session.workspace)
