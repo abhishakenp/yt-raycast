@@ -6,11 +6,14 @@ import { writeFile } from './workspace.js'
 import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
+import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
 import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
 import { formatRunAllReport, formatEditReport } from './report.js'
 import { editPrompt } from '../prompts/edit.js'
+import { enrichSiteSpecWithWorkspaceBlueprints, loadSiteSpec, saveSiteSpec, stripSiteSpecBlueprints } from '../spec/index.js'
+import { renderPreviewToWorkspace } from '../renderers/index.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -27,6 +30,59 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
   const t0 = Date.now()
 
   sessionCtx.setPrompt(prompt)
+
+  const existingSiteSpec = loadSiteSpec(workspace)
+  if (existingSiteSpec) {
+    _log(`\n  ── Edit mode: updating canonical site spec ──`)
+    status(sessionCtx)('Editing site spec…', 'editing')
+
+    const siteSpecStats = await updateSiteSpecFromPrompt({
+      prompt,
+      currentSpec: existingSiteSpec,
+      workspace,
+      log: _log,
+    })
+
+    const siteSpec = stripSiteSpecBlueprints(siteSpecStats.siteSpec)
+    sessionCtx.setSiteSpec?.(siteSpec)
+    renderPreviewToWorkspace(siteSpec, workspace)
+    const enrichedSiteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace)
+    saveSiteSpec(workspace, enrichedSiteSpec)
+    sessionCtx.setSiteSpec?.(enrichedSiteSpec)
+
+    const taskList = deriveTasks(enrichedSiteSpec).map((task) => {
+      if (String(task.id).startsWith('backend-')) return { ...task, status: 'DONE' }
+      return {
+        ...task,
+        status: 'DONE',
+        files: task.filename ? [task.filename] : [],
+      }
+    })
+
+    sessionCtx.setTasks(taskList)
+    writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
+    sessionCtx.signalHomepageReady()
+
+    const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
+    const renderedPageCount = taskList.filter((task) => task.filename).length
+    const report = formatEditReport(
+      renderedPageCount,
+      renderedPageCount,
+      elapsed,
+      siteSpecStats.inputTokens ?? 0,
+      siteSpecStats.outputTokens ?? 0,
+      siteSpecStats.cost ?? 0,
+    )
+    _log(report)
+    sessionCtx.broadcast({
+      type: 'run_completed',
+      elapsed: Number.parseFloat(elapsed),
+      completed: taskList.length,
+      total: taskList.length,
+      report,
+    })
+    return
+  }
 
   const tasksData = JSON.parse(readFileSync(join(workspace, 'tasks.json'), 'utf-8'))
   const tasks = tasksData.tasks ?? []
@@ -133,6 +189,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
 
   let ctx = null
   let homepage = null
+  let siteSpec = null
 
   tick('t0')
 
@@ -154,25 +211,46 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
       _log,
     )
     tick('ctx_end')
-    return { designStats, detectStats, ctxStats }
+    const siteSpecStats = await generateSiteSpec({
+      prompt,
+      ctx: ctxStats.ctx,
+      designBrief: designStats.brief,
+      siteType: detectStats.siteType,
+      workspace,
+      log: _log,
+    })
+    tick('site_spec_end')
+    return { designStats, detectStats, ctxStats, siteSpecStats }
   })()
 
   const homepagePromise = (async () => {
-    const stats = await generateHomepage(prompt, workspace, _log, sessionCtx)
-    tick('homepage_end')
-    return stats
+    try {
+      const stats = await generateHomepage(prompt, workspace, _log, sessionCtx)
+      tick('homepage_end')
+      return stats
+    } catch (error) {
+      tick('homepage_end')
+      _log(`  homepage: falling back to renderer path — ${error.message}`)
+      return { html: '', inputTokens: 0, outputTokens: 0, cost: 0, error: error.message }
+    }
   })()
 
   const [specResult, homepageStats] = await Promise.all([specPromise, homepagePromise])
 
-  const { designStats, detectStats, ctxStats } = specResult
+  const { designStats, detectStats, ctxStats, siteSpecStats } = specResult
   const designBrief = designStats.brief
   ctx = ctxStats.ctx
+  siteSpec = siteSpecStats.siteSpec
+  sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
 
   // Inject design system colors into the homepage now that both are ready
   if (homepage && designBrief) {
     homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
+  } else if (siteSpec) {
+    const preview = renderPreviewToWorkspace(siteSpec, workspace)
+    homepage = preview.files['index.html'] ?? ''
+    sessionCtx.signalHomepageReady()
   }
   const ctxPages = ctx.pages?.length ?? 0
   const homepageChars = homepage?.length ?? 0
@@ -183,7 +261,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   }
 
   tick('derive_start')
-  const tasks = deriveTasks(ctx)
+  const tasks = deriveTasks(siteSpec || ctx)
   sessionCtx.setTasks(tasks)
   writeFile(workspace, 'tasks.json', JSON.stringify({ tasks }, null, 2))
   _log(
@@ -213,6 +291,12 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   }
   tick('navfix_end')
 
+  if (siteSpec) {
+    siteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace)
+    saveSiteSpec(workspace, siteSpec)
+    sessionCtx.setSiteSpec?.(siteSpec)
+  }
+
   const done = tasks.filter((t) => t.status === 'DONE').length
   const total = tasks.length
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
@@ -220,6 +304,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
     (designStats?.cost ?? 0) +
     (detectStats?.cost ?? 0) +
     (ctxStats?.cost ?? 0) +
+    (siteSpecStats?.cost ?? 0) +
     (homepageStats?.cost ?? 0) +
     (genStats?.pages?.cost ?? 0) +
     (genStats?.backend?.cost ?? 0) +
@@ -244,6 +329,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
     designStats,
     detectStats,
     ctxStats,
+    siteSpecStats,
     homepageStats,
     genStats,
     navFixStats,

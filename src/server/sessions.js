@@ -51,6 +51,7 @@ export function createSession(baseDir, prompt, userId) {
     createdAt,
     tasks: [],
     homepageReady: false,
+    siteSpecReady: false,
     elapsed: null,
     cost: null,
     alternativeDesign,
@@ -132,6 +133,7 @@ export function getSession(id) {
 
   // Check if homepage exists
   const homepageReady = existsSync(join(workspace, 'index.html'))
+  const siteSpecReady = existsSync(join(workspace, 'site-spec.json'))
 
   // Load elapsed time from disk
   let elapsed = null
@@ -175,6 +177,7 @@ export function getSession(id) {
     createdAt,
     tasks,
     homepageReady,
+    siteSpecReady,
     elapsed,
     cost,
     alternativeDesign,
@@ -237,6 +240,7 @@ export function getAllSessions(userId) {
         taskCount: s.tasks.length,
         done: s.tasks.filter((t) => t.status === 'DONE').length,
         homepageReady: s.homepageReady ?? false,
+        siteSpecReady: s.siteSpecReady ?? false,
         elapsed: s.elapsed ?? null,
         cost: s.cost ?? null,
       })
@@ -306,6 +310,11 @@ export function makeSessionState(session) {
     broadcast({ type: 'tasks_loaded', tasks })
   }
 
+  const setSiteSpec = (siteSpec) => {
+    session.siteSpecReady = Boolean(siteSpec)
+    broadcast({ type: 'site_spec_ready', ready: session.siteSpecReady })
+  }
+
   const updateTask = (task) => {
     const idx = session.tasks.findIndex((t) => t.id === task.id)
     if (idx >= 0) session.tasks[idx] = { ...session.tasks[idx], ...task }
@@ -355,6 +364,7 @@ export function makeSessionState(session) {
   const getState = () => ({
     tasks: session.tasks,
     homepageReady: session.homepageReady,
+    siteSpecReady: session.siteSpecReady,
     alternativeDesign: session.alternativeDesign,
     prompt: session.prompt,
     lastStatus: session.lastStatus,
@@ -364,6 +374,7 @@ export function makeSessionState(session) {
     broadcast,
     setPrompt,
     setTasks,
+    setSiteSpec,
     updateTask,
     signalHomepageReady,
     setElapsed,

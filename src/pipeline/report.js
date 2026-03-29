@@ -9,6 +9,7 @@ export function formatRunAllReport(timings, stats) {
     designStats,
     detectStats,
     ctxStats,
+    siteSpecStats,
     homepageStats,
     genStats,
     navFixStats,
@@ -21,6 +22,7 @@ export function formatRunAllReport(timings, stats) {
     (designStats?.inputTokens ?? 0) +
     (detectStats?.inputTokens ?? 0) +
     (ctxStats?.inputTokens ?? 0) +
+    (siteSpecStats?.inputTokens ?? 0) +
     (homepageStats?.inputTokens ?? 0) +
     (genStats?.pages?.inputTokens ?? 0) +
     (genStats?.backend?.inputTokens ?? 0) +
@@ -30,6 +32,7 @@ export function formatRunAllReport(timings, stats) {
     (designStats?.outputTokens ?? 0) +
     (detectStats?.outputTokens ?? 0) +
     (ctxStats?.outputTokens ?? 0) +
+    (siteSpecStats?.outputTokens ?? 0) +
     (homepageStats?.outputTokens ?? 0) +
     (genStats?.pages?.outputTokens ?? 0) +
     (genStats?.backend?.outputTokens ?? 0) +
@@ -39,6 +42,7 @@ export function formatRunAllReport(timings, stats) {
     (designStats?.cost ?? 0) +
     (detectStats?.cost ?? 0) +
     (ctxStats?.cost ?? 0) +
+    (siteSpecStats?.cost ?? 0) +
     (homepageStats?.cost ?? 0) +
     (genStats?.pages?.cost ?? 0) +
     (genStats?.backend?.cost ?? 0) +
@@ -53,6 +57,7 @@ export function formatRunAllReport(timings, stats) {
   \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
   \u2502  Design Brief (Groq kimi-k2)    ${ms('t0', 'design_end').padStart(6)}s   design.md                  \u2502
   \u2502  Context JSON (Groq)           ${ms('design_end', 'ctx_end').padStart(6)}s   ${ctxPages} pages extracted         \u2502
+  \u2502  Site Spec JSON (Groq)         ${ms('ctx_end', 'site_spec_end').padStart(6)}s   site-spec.json              \u2502
   \u2502  Homepage (Groq kimi-k2)       ${ms('ctx_end', 'homepage_end').padStart(6)}s   ${homepageChars} chars               \u2502
   \u2502  Task Derivation               ${ms('derive_start', 'derive_end').padStart(6)}s   ${tasks.length} tasks (no LLM call)    \u2502
   \u2502  Page Generation (Groq)        ${ms('gen_start', 'gen_end').padStart(6)}s   ${pagesCount} pages, ${backendCount} backend        \u2502

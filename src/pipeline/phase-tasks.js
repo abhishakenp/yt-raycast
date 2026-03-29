@@ -3,6 +3,7 @@ import { stripFences, formatTps } from '../llm/utils.js'
 import { slug, writeFile } from './workspace.js'
 import { HOME_LABELS } from '../config.js'
 import { pagePrompt, backendPrompt } from '../prompts/page.js'
+import { routeToHtmlFile } from '../renderers/shared.js'
 
 export function sumTokens(results) {
   let inputTokens = 0
@@ -18,7 +19,7 @@ export function sumTokens(results) {
   return { inputTokens, outputTokens, cost }
 }
 
-export function deriveTasks(ctx) {
+export function deriveTasksFromSiteSpec(siteSpec) {
   const tasks = []
 
   tasks.push({
@@ -30,13 +31,14 @@ export function deriveTasks(ctx) {
   })
 
   let pageIdx = 2
-  for (const page of ctx.pages ?? []) {
-    if (HOME_LABELS.includes(page.toLowerCase())) continue
-    const filename = `${slug(page)}.html`
+  for (const page of siteSpec.pages ?? []) {
+    const pageName = page.name || page.title || 'Page'
+    if (HOME_LABELS.includes(pageName.toLowerCase()) || page.route === '/') continue
+    const filename = routeToHtmlFile(page.route)
     tasks.push({
       id: `task-${pageIdx}`,
-      title: page,
-      description: `${page} page for ${ctx.project_name ?? 'the project'}`,
+      title: pageName,
+      description: `${pageName} page for ${siteSpec.projectName ?? 'the project'}`,
       filename,
       status: 'PENDING',
       dependsOn: [],
@@ -45,7 +47,52 @@ export function deriveTasks(ctx) {
   }
 
   let backendIdx = 1
-  for (const feature of ctx.features ?? []) {
+  for (const feature of siteSpec.backendFeatureHints ?? []) {
+    tasks.push({
+      id: `backend-${backendIdx}`,
+      title: feature,
+      description: `Backend logic for: ${feature}`,
+      status: 'PENDING',
+      dependsOn: [],
+    })
+    backendIdx++
+  }
+
+  return tasks
+}
+
+export function deriveTasks(ctxOrSiteSpec) {
+  if (Array.isArray(ctxOrSiteSpec?.pages) && typeof ctxOrSiteSpec?.projectName === 'string') {
+    return deriveTasksFromSiteSpec(ctxOrSiteSpec)
+  }
+
+  const tasks = []
+
+  tasks.push({
+    id: 'task-1',
+    title: 'Homepage',
+    status: 'DONE',
+    filename: 'index.html',
+    dependsOn: [],
+  })
+
+  let pageIdx = 2
+  for (const page of ctxOrSiteSpec.pages ?? []) {
+    if (HOME_LABELS.includes(page.toLowerCase())) continue
+    const filename = `${slug(page)}.html`
+    tasks.push({
+      id: `task-${pageIdx}`,
+      title: page,
+      description: `${page} page for ${ctxOrSiteSpec.project_name ?? 'the project'}`,
+      filename,
+      status: 'PENDING',
+      dependsOn: [],
+    })
+    pageIdx++
+  }
+
+  let backendIdx = 1
+  for (const feature of ctxOrSiteSpec.features ?? []) {
     tasks.push({
       id: `backend-${backendIdx}`,
       title: feature,

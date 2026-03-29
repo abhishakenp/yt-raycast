@@ -126,6 +126,26 @@
               ⬛ 50/50
             </button>
           </div>
+          <div class="export-panel export-panel--preview" id="export-panel" style="display: none">
+            <div class="export-panel-top">
+              <div class="export-copy">
+                <span class="export-eyebrow">Framework Export</span>
+                <strong>Exact-clone packages from the canonical site spec</strong>
+                <p id="export-subtext">
+                  Pick a target and export the same generated UI as a clean project.
+                </p>
+              </div>
+              <span class="export-status-badge" id="export-status">Preparing site spec…</span>
+            </div>
+            <div class="export-target-list" id="export-target-list"></div>
+            <div class="export-panel-actions">
+              <button id="export-generate-btn" type="button" class="primary">Build Export</button>
+              <a id="export-download-link" class="export-download-link" href="#" style="display: none"
+                >Download ZIP</a
+              >
+              <button id="rerender-preview-btn" type="button" class="secondary">Sync Preview</button>
+            </div>
+          </div>
           <div class="browser-content">
             <iframe id="preview-iframe" src="about:blank"></iframe>
             <div class="preview-loading" id="preview-loading">
@@ -287,6 +307,9 @@
       let hasSeenLiveUpdate = false // only auto-collapse if we watched tasks complete live
       let isReconnect = false // true when refreshing a session that already has homepage
       let alternativeDesign = null // background-loaded alternative theme
+      let exportTargets = []
+      let siteSpecReady = false
+      let selectedExportTarget = 'html'
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
@@ -491,6 +514,175 @@
         } else {
           bp.classList.remove('visible')
         }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
+      }
+
+      function formatExportTargetLabel(target) {
+        if (target === 'nextjs') return 'Next.js'
+        if (target === 'react') return 'React'
+        if (target === 'html') return 'HTML'
+        return String(target || '')
+      }
+
+      function renderExportPanel() {
+        const panel = document.getElementById('export-panel')
+        const statusEl = document.getElementById('export-status')
+        const subtextEl = document.getElementById('export-subtext')
+        const targetList = document.getElementById('export-target-list')
+        const download = document.getElementById('export-download-link')
+        const buildBtn = document.getElementById('export-generate-btn')
+        const rerenderBtn = document.getElementById('rerender-preview-btn')
+
+        if (!siteSpecReady && exportTargets.length === 0) {
+          panel.style.display = 'none'
+          return
+        }
+
+        panel.style.display = 'block'
+        if (!exportTargets.some((entry) => entry.target === selectedExportTarget)) {
+          selectedExportTarget = exportTargets[0]?.target || 'html'
+        }
+
+        targetList.innerHTML = exportTargets
+          .map((entry) => {
+            const label = formatExportTargetLabel(entry.target)
+            const activeClass = entry.target === selectedExportTarget ? ' is-active' : ''
+            const stateLabel = entry.ready ? 'Ready' : siteSpecReady ? 'Build' : 'Migrate + Build'
+            const detailLabel = entry.ready
+              ? 'Downloadable bundle'
+              : siteSpecReady
+                ? 'Build on demand'
+                : 'Legacy preview supported'
+
+            return `<button type="button" class="export-target${activeClass}" data-target="${escapeHtml(
+              entry.target,
+            )}">
+              <span class="export-target-name">${escapeHtml(label)}</span>
+              <span class="export-target-meta">${escapeHtml(detailLabel)}</span>
+              <span class="export-target-state">${escapeHtml(stateLabel)}</span>
+            </button>`
+          })
+          .join('')
+
+        const selected =
+          exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0]
+        const selectedLabel = selected ? formatExportTargetLabel(selected.target) : 'Export'
+
+        buildBtn.disabled = !selected
+        buildBtn.textContent = `${selected?.ready ? 'Rebuild' : 'Build'} ${selectedLabel}`
+        rerenderBtn.disabled = !siteSpecReady
+
+        if (!siteSpecReady) {
+          statusEl.textContent = 'Legacy Session'
+          subtextEl.textContent =
+            'Build an export once and Ship Fast will create the canonical site spec plus an exact-clone package from this preview.'
+          download.style.display = selected?.downloadPath ? 'inline-flex' : 'none'
+          if (selected?.downloadPath) {
+            download.href = selected.downloadPath
+            download.textContent = `Download ${selectedLabel}`
+          }
+          return
+        }
+
+        statusEl.textContent = selected?.ready ? 'Ready To Download' : 'Spec Synced'
+        subtextEl.textContent = selected?.ready
+          ? `${selectedLabel} is up to date with the current generated UI.`
+          : `Export ${selectedLabel} from the stored canonical site spec at any time.`
+
+        if (selected?.downloadPath) {
+          download.href = selected.downloadPath
+          download.textContent = `Download ${selectedLabel}`
+          download.style.display = 'inline-flex'
+        } else {
+          download.style.display = 'none'
+        }
+      }
+
+      function refreshExportTargets() {
+        fetch(`/api/sessions/${SESSION_ID}/export-targets`)
+          .then((r) => r.json())
+          .then((data) => {
+            siteSpecReady = Boolean(data.siteSpecReady)
+            exportTargets = Array.isArray(data.targets) ? data.targets : []
+            renderExportPanel()
+          })
+          .catch(() => {})
+      }
+
+      function triggerExportBuild() {
+        const btn = document.getElementById('export-generate-btn')
+        const statusEl = document.getElementById('export-status')
+        const subtextEl = document.getElementById('export-subtext')
+        const target = selectedExportTarget
+        if (!target) return
+
+        btn.disabled = true
+        statusEl.textContent = 'Building Export'
+        subtextEl.textContent = siteSpecReady
+          ? `${formatExportTargetLabel(target)} is being generated from the canonical site spec.`
+          : `${formatExportTargetLabel(target)} is creating a canonical site spec first, then generating an exact-clone export.`
+
+        fetch(`/api/sessions/${SESSION_ID}/export`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            btn.disabled = false
+            if (!data.ok) {
+              statusEl.textContent = 'Export Failed'
+              subtextEl.textContent = data.error || 'Export failed'
+              return
+            }
+            siteSpecReady = Boolean(data.siteSpecReady ?? true)
+            statusEl.textContent = 'Export Ready'
+            subtextEl.textContent = `${formatExportTargetLabel(target)} is ready to download.`
+            refreshExportTargets()
+          })
+          .catch((err) => {
+            btn.disabled = false
+            statusEl.textContent = 'Export Failed'
+            subtextEl.textContent = err.message || 'Export failed'
+          })
+      }
+
+      function rerenderPreviewFromSpec() {
+        const btn = document.getElementById('rerender-preview-btn')
+        const statusEl = document.getElementById('export-status')
+        const subtextEl = document.getElementById('export-subtext')
+        btn.disabled = true
+        statusEl.textContent = 'Syncing Preview'
+        subtextEl.textContent = 'Refreshing the preview from the stored canonical site spec.'
+
+        fetch(`/api/sessions/${SESSION_ID}/rerender-preview`, { method: 'POST' })
+          .then((r) => r.json())
+          .then((data) => {
+            btn.disabled = false
+            if (!data.ok) {
+              statusEl.textContent = 'Sync Failed'
+              subtextEl.textContent = data.error || 'Preview re-render failed'
+              return
+            }
+            siteSpecReady = true
+            statusEl.textContent = 'Preview Synced'
+            subtextEl.textContent = 'The preview now matches the stored canonical site spec.'
+            refreshExportTargets()
+            if (drawerOpen) reloadPreview()
+          })
+          .catch((err) => {
+            btn.disabled = false
+            statusEl.textContent = 'Sync Failed'
+            subtextEl.textContent = err.message || 'Preview re-render failed'
+          })
       }
 
       // ─── Intro Animation ───────────────────────────────────────
@@ -1095,6 +1287,11 @@
               }
               break
 
+            case 'site_spec_ready':
+              siteSpecReady = Boolean(ev.ready)
+              refreshExportTargets()
+              break
+
             case 'alternative_design_ready':
               alternativeDesign = ev.design
               document.getElementById('theme-magic-btn').classList.add('ready')
@@ -1160,6 +1357,18 @@
       document.getElementById('log-toggle').addEventListener('click', () => {
         document.getElementById('log-section').classList.toggle('open')
       })
+      document.getElementById('export-generate-btn').addEventListener('click', triggerExportBuild)
+      document
+        .getElementById('export-target-list')
+        .addEventListener('click', (event) => {
+          const button = event.target.closest('[data-target]')
+          if (!button) return
+          selectedExportTarget = button.dataset.target || selectedExportTarget
+          renderExportPanel()
+        })
+      document
+        .getElementById('rerender-preview-btn')
+        .addEventListener('click', rerenderPreviewFromSpec)
 
       // ─── Init ──────────────────────────────────────────────────
       // Fetch session info — load prompt and detect if already done
@@ -1174,6 +1383,9 @@
             const sfx = document.getElementById('launch-sfx')
             if (sfx) sfx.remove()
           }
+          siteSpecReady = Boolean(session.siteSpecReady)
+          exportTargets = Array.isArray(session.exportTargets) ? session.exportTargets : []
+          renderExportPanel()
         })
         .catch(() => {})
       // ─── New prompt overlay ─────────────────────────────────

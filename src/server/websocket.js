@@ -20,16 +20,18 @@ export function setupWebSocket(httpServer) {
     session.wsClients.add(ws)
 
     // Send current state to newly connected client
-    const { prompt, lastStatus, tasks, homepageReady, alternativeDesign } = {
+    const { prompt, lastStatus, tasks, homepageReady, siteSpecReady, alternativeDesign } = {
       prompt: session.prompt,
       lastStatus: session.lastStatus,
       tasks: session.tasks,
       homepageReady: session.homepageReady,
+      siteSpecReady: session.siteSpecReady,
       alternativeDesign: session.alternativeDesign,
     }
     if (prompt) ws.send(JSON.stringify({ type: 'prompt', text: prompt }))
     if (lastStatus) ws.send(JSON.stringify(lastStatus))
     if (tasks.length > 0) ws.send(JSON.stringify({ type: 'tasks_loaded', tasks }))
+    if (siteSpecReady) ws.send(JSON.stringify({ type: 'site_spec_ready', ready: true }))
     if (homepageReady) ws.send(JSON.stringify({ type: 'homepage_ready' }))
     if (alternativeDesign)
       ws.send(JSON.stringify({ type: 'alternative_design_ready', design: alternativeDesign }))

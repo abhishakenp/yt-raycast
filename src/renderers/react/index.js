@@ -1,0 +1,485 @@
+import {
+  buildGlobalCss,
+  pageComponentName,
+  renderCloneRuntimeModule,
+  renderExactClonePageComponent,
+  serializeModule,
+} from '../shared.js'
+
+function renderReactPackageJson(projectName) {
+  return JSON.stringify(
+    {
+      name: projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      private: true,
+      version: '0.0.0',
+      type: 'module',
+      scripts: {
+        dev: 'vite',
+        build: 'vite build',
+        preview: 'vite preview',
+      },
+      dependencies: {
+        react: '^18.3.1',
+        'react-dom': '^18.3.1',
+        'react-router-dom': '^6.28.0',
+      },
+      devDependencies: {
+        '@vitejs/plugin-react': '^4.3.3',
+        vite: '^5.4.10',
+      },
+    },
+    null,
+    2,
+  )
+}
+
+function renderReactPage(page, componentName) {
+  return `import PageTemplate from '../components/PageTemplate'
+import siteSpec from '../site-spec'
+
+const page = siteSpec.pages.find((entry) => entry.id === ${JSON.stringify(page.id)})
+
+export default function ${componentName}() {
+  return <PageTemplate siteSpec={siteSpec} page={page} />
+}
+`
+}
+
+function renderReactApp(siteSpec) {
+  const imports = siteSpec.pages
+    .map((page) => `import ${pageComponentName(page)} from './pages/${pageComponentName(page)}'`)
+    .join('\n')
+  const routes = siteSpec.pages
+    .map((page) => {
+      const component = pageComponentName(page)
+      return `        <Route path=${JSON.stringify(page.route)} element={<${component} />} />`
+    })
+    .join('\n')
+
+  return `import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+${imports}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+${routes}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+`
+}
+
+function renderReactSectionRenderer() {
+  return `import { useMemo, useState } from 'react'
+import SmartLink from './SmartLink'
+
+function SectionIntro({ section }) {
+  return (
+    <>
+      {section.subheadline ? <p className="eyebrow">{section.subheadline}</p> : null}
+      {section.headline ? <h2>{section.headline}</h2> : null}
+      {section.body ? <p className="section-body">{section.body}</p> : null}
+    </>
+  )
+}
+
+function ActionRow({ actions = [] }) {
+  if (!actions.length) return null
+  return (
+    <div className="action-row">
+      {actions.map((action) => (
+        <SmartLink
+          key={action.id || action.label}
+          className={action.style === 'primary' ? 'button button--primary' : 'button'}
+          href={action.href || '#'}
+        >
+          {action.label || 'Learn More'}
+        </SmartLink>
+      ))}
+    </div>
+  )
+}
+
+function CardGrid({ items = [] }) {
+  return (
+    <div className="card-grid">
+      {items.map((item) => (
+        <article key={item.id || item.title} className="card">
+          <h3>{item.title || item.label || item.value}</h3>
+          <p>{item.body || item.quote || ''}</p>
+        </article>
+      ))}
+    </div>
+  )
+}
+
+function NavbarSection({ section }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <header className={open ? 'site-header is-open' : 'site-header'}>
+      <div className="container nav-shell">
+        <SmartLink className="brand" href="/">
+          {section.headline || 'Site'}
+        </SmartLink>
+        <button className="nav-toggle" type="button" onClick={() => setOpen((value) => !value)}>
+          Menu
+        </button>
+        <nav className="nav-links">
+          {(section.links || []).map((link) => (
+            <SmartLink key={link.id || link.label} href={link.href || '#'}>
+              {link.label || 'Link'}
+            </SmartLink>
+          ))}
+          <div className="nav-actions">
+            <ActionRow actions={section.actions} />
+          </div>
+        </nav>
+      </div>
+    </header>
+  )
+}
+
+function HeroSection({ section }) {
+  return (
+    <section className={\`section hero hero--\${section.variant || 'default'}\`} id={section.id}>
+      <div className="container hero-grid">
+        <div>
+          {section.subheadline ? <p className="eyebrow">{section.subheadline}</p> : null}
+          <h1>{section.headline}</h1>
+          {section.body ? <p className="section-body">{section.body}</p> : null}
+          <ActionRow actions={section.actions} />
+        </div>
+        <div className="hero-panel">
+          {(section.items || []).map((item) => (
+            <div key={item.id || item.title} className="hero-chip">
+              {item.title || item.label || item.value}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function StatsSection({ section }) {
+  return (
+    <section className="section stats" id={section.id}>
+      <div className="container">
+        <SectionIntro section={section} />
+        <div className="stat-grid">
+          {(section.items || []).map((item) => (
+            <div key={item.id || item.label} className="stat-card">
+              <strong>{item.value || item.title}</strong>
+              <span>{item.label || item.body}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function PricingSection({ section }) {
+  return (
+    <section className="section pricing" id={section.id}>
+      <div className="container">
+        <SectionIntro section={section} />
+        <div className="pricing-grid">
+          {(section.items || []).map((item) => (
+            <article key={item.id || item.title} className="pricing-card">
+              <h3>{item.title}</h3>
+              <div className="price">{item.price}</div>
+              <p>{item.body}</p>
+              <ul>
+                {(item.features || []).map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function TestimonialsSection({ section }) {
+  return (
+    <section className="section testimonials" id={section.id}>
+      <div className="container">
+        <SectionIntro section={section} />
+        <div className="card-grid">
+          {(section.items || []).map((item) => (
+            <blockquote key={item.id || item.author} className="card quote-card">
+              <p>“{item.quote || item.body}”</p>
+              <footer>{item.author || item.title}</footer>
+            </blockquote>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function LogoCloudSection({ section }) {
+  return (
+    <section className="section logo-cloud" id={section.id}>
+      <div className="container">
+        <SectionIntro section={section} />
+        <div className="logo-row">
+          {(section.items || []).map((item) => (
+            <span key={item.id || item.title} className="logo-pill">
+              {item.title || item.label}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function FaqSection({ section }) {
+  const behavior = section.interactions?.[0]?.behavior || 'single'
+  const [openIds, setOpenIds] = useState(() =>
+    behavior === 'multi' ? [section.items?.[0]?.id].filter(Boolean) : section.items?.[0]?.id || null,
+  )
+
+  const isOpen = (id) => (Array.isArray(openIds) ? openIds.includes(id) : openIds === id)
+
+  const toggle = (id) => {
+    if (behavior === 'multi') {
+      setOpenIds((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]))
+      return
+    }
+    setOpenIds((current) => (current === id ? null : id))
+  }
+
+  return (
+    <section className="section faq" id={section.id}>
+      <div className="container">
+        <SectionIntro section={section} />
+        <div className="faq-list">
+          {(section.items || []).map((item, idx) => {
+            const id = item.id || String(idx)
+            return (
+              <article key={id} className={isOpen(id) ? 'faq-item is-open' : 'faq-item'}>
+                <button type="button" className="faq-trigger" onClick={() => toggle(id)}>
+                  <span>{item.title}</span>
+                  <span>+</span>
+                </button>
+                {isOpen(id) ? (
+                  <div className="faq-content">
+                    <p>{item.body}</p>
+                  </div>
+                ) : null}
+              </article>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ContactFormSection({ section }) {
+  const successMessage = useMemo(() => section.form?.successMessage || 'Submitted successfully.', [section.form])
+  const [message, setMessage] = useState('')
+
+  return (
+    <section className="section contact" id={section.id}>
+      <div className="container contact-shell">
+        <div>
+          <SectionIntro section={section} />
+        </div>
+        <form
+          className="contact-form"
+          onSubmit={(event) => {
+            event.preventDefault()
+            setMessage(successMessage)
+          }}
+        >
+          {(section.fields || []).map((field) => (
+            <label key={field.name}>
+              <span>{field.label}</span>
+              {field.type === 'textarea' ? (
+                <textarea name={field.name} placeholder={field.placeholder} required={field.required} />
+              ) : (
+                <input type={field.type || 'text'} name={field.name} placeholder={field.placeholder} required={field.required} />
+              )}
+            </label>
+          ))}
+          <button className="button button--primary" type="submit">
+            Submit
+          </button>
+          <p className="form-message">{message}</p>
+        </form>
+      </div>
+    </section>
+  )
+}
+
+function FooterSection({ section }) {
+  return (
+    <footer className="site-footer" id={section.id}>
+      <div className="container footer-shell">
+        <div>
+          <strong>{section.headline}</strong>
+          {section.body ? <p>{section.body}</p> : null}
+        </div>
+        <nav className="footer-links">
+          {(section.links || []).map((link) => (
+            <SmartLink key={link.id || link.label} href={link.href || '#'}>
+              {link.label || 'Link'}
+            </SmartLink>
+          ))}
+        </nav>
+      </div>
+    </footer>
+  )
+}
+
+export default function SectionRenderer({ section }) {
+  switch (section.type) {
+    case 'navbar':
+      return <NavbarSection section={section} />
+    case 'hero':
+      return <HeroSection section={section} />
+    case 'stats':
+      return <StatsSection section={section} />
+    case 'pricing':
+      return <PricingSection section={section} />
+    case 'testimonials':
+      return <TestimonialsSection section={section} />
+    case 'logo-cloud':
+      return <LogoCloudSection section={section} />
+    case 'faq':
+      return <FaqSection section={section} />
+    case 'cta':
+      return (
+        <section className="section cta" id={section.id}>
+          <div className="container cta-shell">
+            <div>
+              <SectionIntro section={section} />
+            </div>
+            <ActionRow actions={section.actions} />
+          </div>
+        </section>
+      )
+    case 'contact-form':
+      return <ContactFormSection section={section} />
+    case 'footer':
+      return <FooterSection section={section} />
+    default:
+      return (
+        <section className="section" id={section.id}>
+          <div className="container">
+            <SectionIntro section={section} />
+            <CardGrid items={section.items} />
+          </div>
+        </section>
+      )
+  }
+}
+`
+}
+
+export function renderReactProject(siteSpec) {
+  const files = {
+    'package.json': renderReactPackageJson(siteSpec.projectName),
+    'index.html': `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${siteSpec.projectName}</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+`,
+    'vite.config.js': `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+`,
+    'src/main.jsx': `import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './styles.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+`,
+    'src/App.jsx': renderReactApp(siteSpec),
+    'src/site-spec.js': `const siteSpec = ${serializeModule(siteSpec)}
+
+export default siteSpec
+`,
+    'src/styles.css': buildGlobalCss(siteSpec.theme),
+    'src/lib/clone-runtime.js': renderCloneRuntimeModule(),
+    'src/components/SmartLink.jsx': `import { Link } from 'react-router-dom'
+
+export default function SmartLink({ href = '#', children, ...props }) {
+  const internal = href.startsWith('/')
+  if (!internal) {
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    )
+  }
+  return (
+    <Link to={href} {...props}>
+      {children}
+    </Link>
+  )
+}
+`,
+    'src/components/ExactClonePage.jsx': renderExactClonePageComponent({ mode: 'react' }),
+    'src/components/PageTemplate.jsx': `import ExactClonePage from './ExactClonePage'
+import SectionRenderer from './SectionRenderer'
+
+export default function PageTemplate({ siteSpec, page }) {
+  if (!page) {
+    return (
+      <main className="empty-state">
+        <div>
+          <h1>Page not found</h1>
+          <p>The site spec does not include this route.</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (page.renderBlueprint?.exactClone && page.renderBlueprint?.bodyHtml) {
+    return <ExactClonePage page={page} />
+  }
+
+  return (
+    <div className="site-shell">
+      {page.sections.map((section) => (
+        <SectionRenderer key={section.id} section={section} siteSpec={siteSpec} />
+      ))}
+    </div>
+  )
+}
+`,
+    'src/components/SectionRenderer.jsx': renderReactSectionRenderer(),
+  }
+
+  for (const page of siteSpec.pages || []) {
+    files[`src/pages/${pageComponentName(page)}.jsx`] = renderReactPage(page, pageComponentName(page))
+  }
+
+  return { files }
+}

@@ -13,6 +13,12 @@ import {
   findSessionByPrompt,
 } from './sessions.js'
 import { verifyIdToken } from '../auth/firebase-admin.js'
+import {
+  generateSessionExport,
+  getSessionExportBundle,
+  getSessionExportTargets,
+  rerenderPreviewFromSiteSpec,
+} from './exports.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync } from 'node:fs'
@@ -286,9 +292,61 @@ export async function startServer(sessionsDir) {
       prompt: session.prompt,
       createdAt: session.createdAt,
       homepageReady: session.homepageReady,
+      siteSpecReady: session.siteSpecReady ?? false,
+      exportTargets: getSessionExportTargets(session),
       taskCount: session.tasks.length,
       done: session.tasks.filter((t) => t.status === 'DONE').length,
     })
+  })
+
+  app.get('/api/sessions/:id/export-targets', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    res.json({
+      sessionId: session.id,
+      siteSpecReady: session.siteSpecReady ?? false,
+      targets: getSessionExportTargets(session),
+    })
+  })
+
+  app.post('/api/sessions/:id/export', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    try {
+      const target = String(req.body?.target || '').toLowerCase()
+      if (!target) return res.status(400).json({ error: 'target is required' })
+      const result = generateSessionExport(session, target)
+      res.json({ ok: true, ...result })
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  })
+
+  app.get('/api/sessions/:id/download/:target', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    const target = String(req.params.target || '').toLowerCase()
+    const bundle = getSessionExportBundle(session, target)
+    if (!bundle) return res.status(404).json({ error: 'Export bundle not found' })
+
+    const filename = `${session.id}-${target}.zip`
+    res.download(bundle.path, filename)
+  })
+
+  app.post('/api/sessions/:id/rerender-preview', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    try {
+      const preview = rerenderPreviewFromSiteSpec(session)
+      const sessionCtx = makeSessionState(session)
+      sessionCtx.signalHomepageReady()
+      res.json({ ok: true, files: Object.keys(preview.files) })
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
   })
 
   // ─── API: Session tasks ───────────────────────────────────
