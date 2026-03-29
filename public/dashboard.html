@@ -61,6 +61,9 @@
     <div class="dashboard-wrap" id="dashboard-wrap">
       <div class="left-panel" id="left-panel">
         <div class="panel-header">
+          <a href="/" class="back-btn" title="Back to dashboard" onclick="navigateHome(event)"
+            >&#8592; Back</a
+          >
           <h1>SHIP FAST</h1>
           <div class="subtitle" id="phase-text">Initializing...</div>
         </div>
@@ -99,7 +102,7 @@
         <div class="browser-chrome">
           <div class="browser-toolbar">
             <div class="browser-dots">
-              <span onclick="location.href = '/'"></span><span></span><span></span>
+              <span onclick="navigateHome(event)"></span><span></span><span></span>
             </div>
             <div class="browser-url">
               <span class="lock">&#9679;</span>
@@ -284,6 +287,43 @@
       let hasSeenLiveUpdate = false // only auto-collapse if we watched tasks complete live
       let isReconnect = false // true when refreshing a session that already has homepage
       let alternativeDesign = null // background-loaded alternative theme
+      let ws = null
+      let reconnectTimer = null
+      let leavingDashboard = false
+
+      function cleanupRealtime() {
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer)
+          reconnectTimer = null
+        }
+        if (ws) {
+          ws.onclose = null
+          ws.onerror = null
+          try {
+            ws.close(1000, 'navigate_home')
+          } catch {}
+          ws = null
+        }
+      }
+
+      function navigateHome(event) {
+        event?.preventDefault()
+        if (leavingDashboard) return
+        leavingDashboard = true
+        cleanupRealtime()
+        const canReturnHome =
+          sessionStorage.getItem('sf_return_home') === '1' && window.history.length > 1
+        if (canReturnHome) {
+          history.back()
+          return
+        }
+        location.replace('/')
+      }
+
+      window.addEventListener('pagehide', () => {
+        leavingDashboard = true
+        cleanupRealtime()
+      })
 
       // ─── Magic Theme Logic ─────────────────────────────────────
       function applyMagicTheme() {
@@ -953,7 +993,7 @@
 
       // ─── WebSocket: Connect to server ─────────────────────────
       function connectWS() {
-        const ws = new WebSocket(WS_URL)
+        ws = new WebSocket(WS_URL)
 
         ws.onopen = () => {
           wsConnected = true
@@ -1079,7 +1119,13 @@
         ws.onclose = () => {
           wsConnected = false
           debugLog('ws_disconnected', null)
-          setTimeout(connectWS, 1500)
+          ws = null
+          if (!leavingDashboard) {
+            reconnectTimer = setTimeout(() => {
+              reconnectTimer = null
+              connectWS()
+            }, 1500)
+          }
         }
 
         ws.onerror = () => {

@@ -12,6 +12,7 @@ import {
   initSessionDir,
   findSessionByPrompt,
 } from './sessions.js'
+import { verifyIdToken } from '../auth/firebase-admin.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync } from 'node:fs'
@@ -98,6 +99,20 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  // ─── Auth middleware ──────────────────────────────────────
+  async function requireAuth(req, res, next) {
+    const auth = req.headers.authorization
+    if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' })
+    try {
+      const decoded = await verifyIdToken(auth.slice(7))
+      req.user = { uid: decoded.uid, email: decoded.email }
+      next()
+    } catch (err) {
+      console.error('[auth] token verification failed:', err?.message ?? err)
+      res.status(401).json({ error: 'Unauthorized' })
+    }
+  }
+
   // Serve public statically
   app.use(express.static(publicDir))
 
@@ -114,7 +129,7 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Create session + start generation ───────────────
-  app.post('/api/sessions', async (req, res) => {
+  app.post('/api/sessions', requireAuth, async (req, res) => {
     const { prompt } = req.body
     if (!prompt?.trim()) return res.status(400).json({ error: 'prompt is required' })
 
@@ -157,11 +172,9 @@ export async function startServer(sessionsDir) {
           }),
         }).catch(() => {})
       }
-      return res
-        .status(429)
-        .json({
-          error: `Daily limit: max ${MAX_DAILY_PER_USER} generations per day. Please come back tomorrow.`,
-        })
+      return res.status(429).json({
+        error: `Daily limit: max ${MAX_DAILY_PER_USER} generations per day. Please come back tomorrow.`,
+      })
     }
 
     // 10-min rate limit per user
@@ -244,21 +257,22 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: List sessions ───────────────────────────────────
-  app.get('/api/sessions', (_req, res) => {
-    res.json(getAllSessions())
+  app.get('/api/sessions', requireAuth, (_req, res) => {
+    res.json(getAllSessions(_req.user.uid))
   })
 
   // ─── API: Delete session ─────────────────────────────────
-  app.delete('/api/sessions/:id', async (req, res) => {
+  app.delete('/api/sessions/:id', requireAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
     deleteSession(req.params.id)
     res.json({ ok: true })
   })
 
   // ─── API: Delete all sessions ──────────────────────────
-  app.delete('/api/sessions', (_req, res) => {
-    const all = getAllSessions()
+  app.delete('/api/sessions', requireAuth, (_req, res) => {
+    const all = getAllSessions(_req.user.uid)
     for (const s of all) deleteSession(s.id)
     res.json({ ok: true, deleted: all.length })
   })
