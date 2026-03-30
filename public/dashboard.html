@@ -220,19 +220,19 @@
         <button class="payment-modal-close" id="payment-modal-close" type="button" aria-label="Close payment">
           ×
         </button>
-        <span class="payment-eyebrow">India Checkout</span>
-        <h2 id="payment-modal-title">Unlock ZIP export with UPI</h2>
+        <span class="payment-eyebrow">Pro Subscription</span>
+        <h2 id="payment-modal-title">Subscribe to unlock downloads</h2>
         <p class="payment-copy" id="payment-copy">
-          Choose a one-time UPI payment or start a UPI Autopay mandate for recurring exports.
+          A Pro subscription is required to download ZIP exports. Subscribe to unlock unlimited downloads.
         </p>
         <div class="payment-option-list" id="payment-option-list"></div>
         <div class="payment-note" id="payment-note">
-          Razorpay Checkout will open with UPI-first payment methods for Indian users.
+          You will be redirected to Stripe Checkout to complete your subscription.
         </div>
         <div class="payment-error" id="payment-error"></div>
         <div class="payment-actions">
           <button class="secondary" id="payment-cancel-btn" type="button">Cancel</button>
-          <button class="primary" id="payment-confirm-btn" type="button">Continue with UPI</button>
+          <button class="primary" id="payment-confirm-btn" type="button">Subscribe Now</button>
         </div>
       </div>
     </div>
@@ -250,6 +250,58 @@
     </div>
 
     <script type="module" src="/scripts/dashboard-auth.js"></script>
+    <script type="module" id="stripe-checkout-module">
+      import { getFirestore, collection, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js'
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js'
+      import { getAuth } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
+
+      window._stripeCheckout = {
+        async createCheckoutSession(priceId, sessionId) {
+          const auth = getAuth()
+          const user = auth.currentUser
+          if (!user) throw new Error('Sign in required')
+
+          const db = getFirestore()
+          const docRef = await addDoc(
+            collection(db, 'customers', user.uid, 'checkout_sessions'),
+            {
+              price: priceId,
+              success_url: window.location.origin + '/session/' + sessionId,
+              cancel_url: window.location.origin + '/session/' + sessionId,
+              mode: 'subscription',
+            }
+          )
+
+          return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Checkout session timed out')), 30000)
+            onSnapshot(docRef, (snap) => {
+              const data = snap.data()
+              if (data?.error) {
+                clearTimeout(timeout)
+                reject(new Error(data.error.message))
+              }
+              if (data?.url) {
+                clearTimeout(timeout)
+                resolve(data.url)
+              }
+            })
+          })
+        },
+        async checkSubscriptionStatus() {
+          const auth = getAuth()
+          const user = auth.currentUser
+          if (!user) return false
+
+          const token = await user.getIdToken()
+          const res = await fetch('/api/subscription-status', {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (!res.ok) return false
+          const data = await res.json()
+          return data.active === true
+        },
+      }
+    </script>
     <script>
       // ─── Config ────────────────────────────────────────────────
       const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
@@ -381,7 +433,7 @@
       let activeThemeOverride = null
       let paymentState = null
       let paymentModalTarget = null
-      let selectedPaymentMode = 'one_time'
+      let selectedPaymentMode = 'subscription'
       let paymentBusy = false
       let githubPushBusy = false
       let githubMenuOpen = false
@@ -389,7 +441,7 @@
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
-      let razorpayScriptPromise = null
+      let stripeCheckoutReady = false
 
       function cleanupRealtime() {
         if (reconnectTimer) {
@@ -427,22 +479,12 @@
 
       function normalizePaymentState(rawPayment) {
         return {
-          gateway: rawPayment?.gateway || 'direct',
+          gateway: rawPayment?.gateway || 'stripe',
           countryCode: rawPayment?.countryCode || 'GLOBAL',
           isIndianUser: Boolean(rawPayment?.isIndianUser),
           configured: Boolean(rawPayment?.configured),
-          oneTime: {
-            enabled: Boolean(rawPayment?.oneTime?.enabled),
-            amountInr: rawPayment?.oneTime?.amountInr || null,
-            label: rawPayment?.oneTime?.label || 'One-time ZIP unlock',
-            description: rawPayment?.oneTime?.description || '',
-          },
           subscription: {
-            enabled: Boolean(rawPayment?.subscription?.enabled),
-            amountInr: rawPayment?.subscription?.amountInr || null,
-            label: rawPayment?.subscription?.label || 'UPI Autopay',
-            description: rawPayment?.subscription?.description || '',
-            cadenceLabel: rawPayment?.subscription?.cadenceLabel || 'month',
+            active: Boolean(rawPayment?.subscription?.active),
             status: rawPayment?.subscription?.status || null,
           },
           access: {
@@ -594,59 +636,25 @@
         paymentBusy = isBusy
         const confirmBtn = document.getElementById('payment-confirm-btn')
         const cancelBtn = document.getElementById('payment-cancel-btn')
-        const hasPaymentOption =
-          Boolean(paymentState?.oneTime?.enabled) || Boolean(paymentState?.subscription?.enabled)
-        confirmBtn.disabled = isBusy || !hasPaymentOption
+        confirmBtn.disabled = isBusy
         cancelBtn.disabled = isBusy
-        confirmBtn.textContent = isBusy ? 'Opening Checkout…' : 'Continue with UPI'
+        confirmBtn.textContent = isBusy ? 'Redirecting to Stripe…' : 'Subscribe Now'
       }
 
       function renderPaymentOptions() {
         const optionList = document.getElementById('payment-option-list')
-        const confirmBtn = document.getElementById('payment-confirm-btn')
-        const options = []
-
-        if (paymentState?.oneTime?.enabled) {
-          options.push({
-            mode: 'one_time',
-            title: paymentState.oneTime.label,
-            amount: paymentState.oneTime.amountInr ? `₹${paymentState.oneTime.amountInr}` : 'UPI',
-            body: paymentState.oneTime.description,
-          })
+        const priceId = window._shipFastPriceId || ''
+        if (!priceId) {
+          optionList.innerHTML = '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
+          return
         }
-
-        if (paymentState?.subscription?.enabled) {
-          options.push({
-            mode: 'subscription',
-            title: paymentState.subscription.label,
-            amount: paymentState.subscription.amountInr
-              ? `₹${paymentState.subscription.amountInr}/${paymentState.subscription.cadenceLabel}`
-              : 'Recurring',
-            body: paymentState.subscription.description,
-          })
-        }
-
-        if (!options.some((option) => option.mode === selectedPaymentMode)) {
-          selectedPaymentMode = options[0]?.mode || 'one_time'
-        }
-
-        optionList.innerHTML = options
-          .map((option) => {
-            const activeClass = option.mode === selectedPaymentMode ? ' is-active' : ''
-            return `<button type="button" class="payment-option${activeClass}" data-payment-mode="${option.mode}">
-              <span class="payment-option-head">
-                <strong>${escapeHtml(option.title)}</strong>
-                <span>${escapeHtml(option.amount)}</span>
-              </span>
-              <span class="payment-option-body">${escapeHtml(option.body)}</span>
-            </button>`
-          })
-          .join('')
-
-        confirmBtn.disabled = paymentBusy || options.length === 0
-        if (options.length === 0) {
-          setPaymentError('Razorpay is not configured for Indian checkout yet.')
-        }
+        optionList.innerHTML = `<button type="button" class="payment-option is-active" data-payment-mode="subscription">
+          <span class="payment-option-head">
+            <strong>Pro Plan</strong>
+            <span>Subscribe</span>
+          </span>
+          <span class="payment-option-body">Unlimited generation + downloads in all frameworks.</span>
+        </button>`
       }
 
       function closePaymentModal() {
@@ -661,141 +669,34 @@
         paymentModalTarget = targetEntry
         setPaymentBusyState(false)
         setPaymentError('')
-        selectedPaymentMode = paymentState?.oneTime?.enabled ? 'one_time' : 'subscription'
         renderPaymentOptions()
 
         const selectedLabel = formatExportTargetLabel(targetEntry?.target || selectedExportTarget)
-        document.getElementById('payment-copy').textContent = paymentState?.subscription?.enabled
-          ? `Unlock ${selectedLabel} with a one-time UPI payment or start a UPI Autopay mandate for recurring exports.`
-          : `Unlock ${selectedLabel} with a one-time UPI payment through Razorpay Checkout.`
+        document.getElementById('payment-copy').textContent =
+          `Subscribe to Pro to unlock ${selectedLabel} downloads. You will be redirected to Stripe Checkout.`
 
         document.getElementById('payment-modal').classList.add('is-open')
         document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
       }
 
-      function buildRazorpayOptions(mode, checkout) {
-        const options = {
-          key: checkout.key,
-          name: checkout.name,
-          description: checkout.description,
-          notes: checkout.notes,
-          theme: checkout.theme,
-          method: {
-            upi: true,
-          },
-          config: {
-            display: {
-              blocks: {
-                upi: {
-                  name: 'Pay using UPI',
-                  instruments: [{ method: 'upi' }],
-                },
-              },
-              sequence: ['block.upi'],
-              preferences: {
-                show_default_blocks: false,
-              },
-            },
-          },
-        }
-
-        if (mode === 'subscription') {
-          options.subscription_id = checkout.subscriptionId
-        } else {
-          options.order_id = checkout.orderId
-          options.amount = checkout.amount
-          options.currency = checkout.currency
-        }
-
-        return options
-      }
-
-      function loadRazorpayCheckout() {
-        if (window.Razorpay) return Promise.resolve(window.Razorpay)
-        if (razorpayScriptPromise) return razorpayScriptPromise
-
-        razorpayScriptPromise = new Promise((resolve, reject) => {
-          const script = document.createElement('script')
-          script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-          script.async = true
-          script.onload = () => resolve(window.Razorpay)
-          script.onerror = () => reject(new Error('Unable to load Razorpay Checkout'))
-          document.head.appendChild(script)
-        })
-
-        return razorpayScriptPromise
-      }
-
-      async function verifyPaymentAndDownload(mode, targetEntry, response) {
-        const verificationRes = await apiFetch(`/api/sessions/${SESSION_ID}/payments/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            mode,
-            target: targetEntry.target,
-            countryHint: PAYMENT_COUNTRY_HINT || 'IN',
-            ...response,
-          }),
-        })
-        const verification = await verificationRes.json()
-        if (!verificationRes.ok || !verification.ok) {
-          throw new Error(verification.error || 'Payment verification failed')
-        }
-
-        paymentState = normalizePaymentState(verification.payment)
-        closePaymentModal()
-        refreshExportTargets()
-        location.href = verification.downloadPath || targetEntry.downloadPath
-      }
-
       async function startIndianPayment() {
         if (!paymentModalTarget || paymentBusy) return
-        const targetEntry = paymentModalTarget
         setPaymentBusyState(true)
         setPaymentError('')
 
         try {
-          const checkoutRes = await apiFetch(`/api/sessions/${SESSION_ID}/payments/checkout`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              target: targetEntry.target,
-              mode: selectedPaymentMode,
-              countryHint: PAYMENT_COUNTRY_HINT || 'IN',
-            }),
-          })
-          const checkoutData = await checkoutRes.json()
-          if (!checkoutRes.ok || !checkoutData.ok) {
-            throw new Error(checkoutData.error || 'Unable to start checkout')
+          const priceId = window._shipFastPriceId
+          if (!priceId) throw new Error('Subscription plan is not configured yet.')
+
+          if (!window._stripeCheckout) {
+            throw new Error('Stripe checkout module not loaded. Please refresh the page.')
           }
 
-          paymentState = normalizePaymentState(checkoutData.payment)
-          const Razorpay = await loadRazorpayCheckout()
-          const options = buildRazorpayOptions(selectedPaymentMode, checkoutData.checkout)
-          options.handler = (response) => {
-            setPaymentBusyState(false)
-            verifyPaymentAndDownload(selectedPaymentMode, targetEntry, response).catch((error) => {
-              setPaymentError(error.message)
-            })
-          }
-          options.modal = {
-            ondismiss: () => {
-              setPaymentBusyState(false)
-            },
-          }
-
-          const instance = new Razorpay(options)
-          instance.on('payment.failed', (event) => {
-            setPaymentError(
-              event?.error?.description || event?.error?.reason || 'Razorpay payment failed',
-            )
-            setPaymentBusyState(false)
-          })
-          instance.open()
+          const url = await window._stripeCheckout.createCheckoutSession(priceId, SESSION_ID)
+          window.location.assign(url)
         } catch (error) {
-          setPaymentError(error.message || 'Unable to start UPI checkout')
+          setPaymentError(error.message || 'Unable to start checkout')
           setPaymentBusyState(false)
-          return
         }
       }
 
@@ -1058,7 +959,7 @@
         const selectedLabel = selected ? formatExportTargetLabel(selected.target) : 'Export'
         const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
         const triggerState = requiresPayment
-          ? 'Unlock'
+          ? 'Subscribe'
           : selected?.ready
             ? 'Ready'
             : !siteSpecReady
@@ -1079,7 +980,7 @@
             const activeClass = entry.target === selectedExportTarget ? ' is-active' : ''
             const entryRequiresPayment = Boolean(entry.paymentRequired && !entry.downloadUnlocked)
             const stateLabel = entryRequiresPayment
-              ? 'UPI unlock'
+              ? 'Pro only'
               : entry.ready
                 ? 'Ready'
                 : !siteSpecReady
@@ -1125,7 +1026,7 @@
             download.dataset.target = selected.target
             download.dataset.requiresPayment = requiresPayment ? '1' : '0'
             download.textContent = requiresPayment
-              ? `Unlock ${selectedLabel} via UPI`
+              ? `Subscribe to Download ${selectedLabel}`
               : `Download ${selectedLabel}`
           }
           setExportMenuOpen(exportMenuOpen)
@@ -1135,16 +1036,14 @@
         }
 
         statusEl.textContent = requiresPayment
-          ? 'UPI Checkout'
+          ? 'Pro Required'
           : selected?.ready
             ? 'Ready To Download'
             : selected?.buildReady
               ? 'Spec Synced'
               : 'Waiting For Exact Clone'
         subtextEl.textContent = requiresPayment
-          ? paymentState?.subscription?.enabled
-            ? `${selectedLabel} uses Razorpay UPI in India. Pay once for this ZIP or start a UPI Autopay mandate for recurring access.`
-            : `${selectedLabel} uses Razorpay UPI in India before ZIP download.`
+          ? `Subscribe to Pro to unlock ${selectedLabel} downloads.`
           : selected?.ready
             ? `${selectedLabel} is up to date with the current generated UI.`
             : selected?.buildReady

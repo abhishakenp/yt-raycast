@@ -34,13 +34,11 @@ import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.j
 import { existsSync, readFileSync } from 'node:fs'
 =======
 import {
-  createRazorpayCheckout,
   decorateExportTargetsForRequest,
   getDownloadAccessDecision,
   getSessionPaymentDetails,
-  handleRazorpayWebhook,
+  hasActiveSubscription,
   initPaymentStore,
-  verifyRazorpayCheckout,
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 <<<<<<< HEAD
@@ -111,21 +109,6 @@ export async function startServer(sessionsDir) {
   app.use('/api', (_req, res, next) => {
     setNoIndexHeaders(res)
     next()
-  })
-
-  app.post('/api/payments/razorpay/webhook', express.raw({ type: 'application/json' }), (req, res) => {
-    try {
-      const signature = Array.isArray(req.headers['x-razorpay-signature'])
-        ? req.headers['x-razorpay-signature'][0]
-        : req.headers['x-razorpay-signature']
-      const eventId = Array.isArray(req.headers['x-razorpay-event-id'])
-        ? req.headers['x-razorpay-event-id'][0]
-        : req.headers['x-razorpay-event-id']
-      handleRazorpayWebhook(req.body, signature, eventId)
-      res.json({ ok: true })
-    } catch (error) {
-      res.status(400).json({ error: error.message })
-    }
   })
 
   app.use(express.json())
@@ -401,7 +384,8 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    const targets = decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
+    const targets = await decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
+    const payment = await getSessionPaymentDetails(session, req, targets[0]?.target || 'html')
     res.json({
       id: session.id,
       prompt: session.prompt,
@@ -410,7 +394,7 @@ export async function startServer(sessionsDir) {
       siteSpecReady: session.siteSpecReady ?? false,
       preferredExportTarget: session.preferredExportTarget || 'html',
       exportTargets: targets,
-      payment: getSessionPaymentDetails(session, req, targets[0]?.target || 'html'),
+      payment,
       themeOverride: session.themeOverride ?? null,
       taskCount: session.tasks.length,
       done: session.tasks.filter((t) => t.status === 'DONE').length,
@@ -420,11 +404,12 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id/export-targets', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    const targets = decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
+    const targets = await decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
+    const payment = await getSessionPaymentDetails(session, req, targets[0]?.target || 'html')
     res.json({
       sessionId: session.id,
       siteSpecReady: session.siteSpecReady ?? false,
-      payment: getSessionPaymentDetails(session, req, targets[0]?.target || 'html'),
+      payment,
       targets,
     })
   })
@@ -456,27 +441,14 @@ export async function startServer(sessionsDir) {
     }
   })
 
-  app.post('/api/sessions/:id/payments/checkout', async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).json({ error: 'Session not found' })
-
+  // ─── API: Subscription status ─────────────────────────────
+  app.get('/api/subscription-status', requireAuth, async (req, res) => {
     try {
-      const result = await createRazorpayCheckout(session, req.body || {})
-      res.json(result)
+      const active = await hasActiveSubscription(req.user.uid)
+      res.json({ active })
     } catch (error) {
-      res.status(400).json({ error: error.message })
-    }
-  })
-
-  app.post('/api/sessions/:id/payments/verify', async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).json({ error: 'Session not found' })
-
-    try {
-      const result = await verifyRazorpayCheckout(session, req.body || {}, req)
-      res.json(result)
-    } catch (error) {
-      res.status(400).json({ error: error.message })
+      console.error('[subscription-status] error:', error?.message ?? error)
+      res.status(500).json({ error: 'Unable to check subscription status' })
     }
   })
 
@@ -485,7 +457,7 @@ export async function startServer(sessionsDir) {
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
     const target = String(req.params.target || '').toLowerCase()
-    const accessDecision = getDownloadAccessDecision(session, target, req)
+    const accessDecision = await getDownloadAccessDecision(session, target, req)
     if (!accessDecision.allowed) {
       return res.status(402).json({
         error: accessDecision.error,
