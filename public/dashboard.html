@@ -483,6 +483,11 @@
           countryCode: rawPayment?.countryCode || 'GLOBAL',
           isIndianUser: Boolean(rawPayment?.isIndianUser),
           configured: Boolean(rawPayment?.configured),
+          currency: rawPayment?.currency || 'inr',
+          pricing: rawPayment?.pricing || {
+            inr: { amount: 399, display: '\u20B9399/month' },
+            usd: { amount: 9, display: '$9/month' },
+          },
           subscription: {
             active: Boolean(rawPayment?.subscription?.active),
             status: rawPayment?.subscription?.status || null,
@@ -492,6 +497,13 @@
             subscriptionUnlocked: Boolean(rawPayment?.access?.subscriptionUnlocked),
           },
         }
+      }
+
+      function getDisplayPrice() {
+        if (!paymentState?.pricing) return '\u20B9399/month'
+        return paymentState.isIndianUser
+          ? paymentState.pricing.inr?.display || '\u20B9399/month'
+          : paymentState.pricing.usd?.display || '$9/month'
       }
 
       function syncPreviewTheme() {
@@ -644,6 +656,7 @@
       function renderPaymentOptions() {
         const optionList = document.getElementById('payment-option-list')
         const priceId = window._shipFastPriceId || ''
+        const price = getDisplayPrice()
         if (!priceId) {
           optionList.innerHTML = '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
           return
@@ -651,7 +664,7 @@
         optionList.innerHTML = `<button type="button" class="payment-option is-active" data-payment-mode="subscription">
           <span class="payment-option-head">
             <strong>Pro Plan</strong>
-            <span>Subscribe</span>
+            <span>${price}</span>
           </span>
           <span class="payment-option-body">Unlimited generation + downloads in all frameworks.</span>
         </button>`
@@ -672,8 +685,9 @@
         renderPaymentOptions()
 
         const selectedLabel = formatExportTargetLabel(targetEntry?.target || selectedExportTarget)
+        const price = getDisplayPrice()
         document.getElementById('payment-copy').textContent =
-          `Subscribe to Pro to unlock ${selectedLabel} downloads. You will be redirected to Stripe Checkout.`
+          `Subscribe to Pro (${price}) to unlock ${selectedLabel} downloads. You will be redirected to Stripe Checkout.`
 
         document.getElementById('payment-modal').classList.add('is-open')
         document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
@@ -1043,7 +1057,7 @@
               ? 'Spec Synced'
               : 'Waiting For Exact Clone'
         subtextEl.textContent = requiresPayment
-          ? `Subscribe to Pro to unlock ${selectedLabel} downloads.`
+          ? `Subscribe to Pro (${getDisplayPrice()}) to unlock ${selectedLabel} downloads.`
           : selected?.ready
             ? `${selectedLabel} is up to date with the current generated UI.`
             : selected?.buildReady

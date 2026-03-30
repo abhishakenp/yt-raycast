@@ -102,6 +102,11 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
     countryCode,
     isIndianUser,
     configured: true,
+    currency: 'inr',
+    pricing: {
+      inr: { amount: 399, display: '\u20B9399/month' },
+      usd: { amount: 9, display: '$9/month' },
+    },
     subscription: {
       active: isSubscribed,
       status: isSubscribed ? 'active' : null,
