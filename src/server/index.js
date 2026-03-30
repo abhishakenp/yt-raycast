@@ -176,6 +176,11 @@ export async function startServer(sessionsDir) {
     res.type('html').send(renderHomePage())
   })
 
+  // Pricing page
+  app.get('/pricing', (_req, res) => {
+    res.sendFile(join(publicDir, 'pricing.html'))
+  })
+
   // Serve public assets statically, but keep / routed through SSR.
   app.use(express.static(publicDir, { index: false }))
 
