@@ -54,7 +54,8 @@ textarea {
 }
 
 .top-action-link,
-#signout-btn {
+#signout-btn,
+#signin-btn {
   height: 36px;
   padding: 0 14px;
   border-radius: 999px;
@@ -81,7 +82,8 @@ textarea {
 }
 
 .top-action-link:hover,
-#signout-btn:hover {
+#signout-btn:hover,
+#signin-btn:hover {
   border-color: rgba(124, 58, 237, 0.95);
   color: #d4ccff;
   background: rgba(16, 12, 31, 0.84);
@@ -1006,7 +1008,8 @@ body.has-sessions {
   min-height: 16px;
 }
 
-#signout-btn {
+#signout-btn,
+#signin-btn {
   position: static;
   display: none;
   align-items: center;
@@ -1117,7 +1120,8 @@ body.has-sessions {
   }
 
   .top-action-link,
-  #signout-btn {
+  #signout-btn,
+  #signin-btn {
     height: 34px;
     padding: 0 12px;
     font-size: 10px;

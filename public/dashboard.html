@@ -428,6 +428,7 @@
       let exportTargets = []
       let siteSpecReady = false
       let preferredExportTarget = 'html'
+      let isAnonymousSession = false
       let selectedExportTarget = 'html'
       let exportMenuOpen = false
       let activeThemeOverride = null
@@ -538,6 +539,12 @@
       function renderGitHubPushButton() {
         const menu = document.getElementById('github-export-menu')
         const button = document.getElementById('github-push-btn')
+
+        if (isAnonymousSession) {
+          menu.style.display = 'none'
+          return
+        }
+
         const selected = getSelectedExportEntry()
         const canShow = homepageReady && (exportTargets.length > 0 || siteSpecReady)
         const pushedLabel = lastGithubPush?.target
@@ -1009,7 +1016,7 @@
           ? false
           : exportTargets.every((entry) => entry.buildReady !== false)
 
-        if (!homepageReady || (!siteSpecReady && exportTargets.length === 0)) {
+        if (isAnonymousSession || !homepageReady || (!siteSpecReady && exportTargets.length === 0)) {
           menu.style.display = 'none'
           setExportMenuOpen(false)
           renderGitHubPushButton()
@@ -2048,6 +2055,7 @@
           }
           homepageReady = Boolean(session.homepageReady)
           siteSpecReady = Boolean(session.siteSpecReady)
+          isAnonymousSession = Boolean(session.isAnonymous)
           preferredExportTarget = String(session.preferredExportTarget || 'html').toLowerCase()
           selectedExportTarget = preferredExportTarget
           exportTargets = Array.isArray(session.exportTargets) ? session.exportTargets : []

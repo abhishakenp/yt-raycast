@@ -33,7 +33,7 @@ async function initFirebase() {
     onAuthStateChanged(auth, (user) => {
       currentUser = user
       if (user) showApp()
-      else showOverlay()
+      else showAnonymousApp()
       resolve()
     })
   })
@@ -51,16 +51,20 @@ async function authFetch(url, options = {}) {
   return fetch(url, { ...options, headers })
 }
 
-function showOverlay() {
-  document.getElementById('auth-overlay').classList.remove('hidden')
+function showAnonymousApp() {
+  document.getElementById('auth-overlay').classList.add('hidden')
   document.getElementById('signout-btn').style.display = 'none'
-  document.getElementById('sessions-section').style.display = 'none'
+  const signinBtn = document.getElementById('signin-btn')
+  if (signinBtn) signinBtn.style.display = 'flex'
   sessionStorage.removeItem('sf_return_home')
   clearGithubAccessToken()
+  loadAnonymousSessions()
 }
 
 function showApp() {
   document.getElementById('auth-overlay').classList.add('hidden')
+  const signinBtn = document.getElementById('signin-btn')
+  if (signinBtn) signinBtn.style.display = 'none'
   document.getElementById('signout-btn').style.display = 'flex'
   loadSessions()
 }
@@ -117,6 +121,18 @@ document.getElementById('email-signup-btn').addEventListener('click', async () =
 document.getElementById('signout-btn').addEventListener('click', () => {
   clearGithubAccessToken()
   signOut(auth)
+})
+
+document.getElementById('signin-btn')?.addEventListener('click', () => {
+  document.getElementById('auth-overlay').classList.remove('hidden')
+})
+
+document.getElementById('auth-overlay').addEventListener('click', (event) => {
+  if (event.target === event.currentTarget && !currentUser) {
+    event.currentTarget.classList.add('hidden')
+    const signinBtn = document.getElementById('signin-btn')
+    if (signinBtn) signinBtn.style.display = 'flex'
+  }
 })
 
 const form = document.getElementById('prompt-form')
@@ -326,6 +342,7 @@ form.addEventListener('submit', async (event) => {
     const data = await response.json()
 
     if (data.id) {
+      if (!currentUser) saveAnonSession(data.id, prompt)
       localStorage.setItem('sf_generation_count', String(getGenerationCount() + 1))
       sessionStorage.setItem('sf_return_home', '1')
       window.location.href = `/session/${data.id}`
@@ -346,108 +363,160 @@ form.addEventListener('submit', async (event) => {
   syncSubmitButtonState()
 })
 
+const ANON_SESSIONS_KEY = 'sf_anon_sessions'
+
+function saveAnonSession(id, prompt) {
+  const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+  stored.unshift({ id, prompt })
+  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)))
+}
+
+function removeAnonSession(id) {
+  const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.filter((s) => s.id !== id)))
+}
+
+function clearAnonSessions() {
+  localStorage.removeItem(ANON_SESSIONS_KEY)
+}
+
+function renderSessions(sessions) {
+  const section = document.getElementById('sessions-section')
+  const list = document.getElementById('session-list')
+
+  if (sessions.length === 0) {
+    list.innerHTML = ''
+    section.style.display = 'none'
+    document.body.classList.remove('has-sessions')
+    list.classList.remove('single-col', 'two-col')
+    return
+  }
+
+  document.body.classList.add('has-sessions')
+  section.style.display = 'block'
+
+  list.classList.remove('single-col', 'two-col')
+  if (sessions.length === 1) list.classList.add('single-col')
+  else if (sessions.length === 2) list.classList.add('two-col')
+
+  const placeholderSvg =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>'
+
+  const eagerThumbnailCount = 6
+
+  list.innerHTML = sessions
+    .map(
+      (session, index) => `
+        <li class="session-item" data-id="${session.id}" onclick="sessionStorage.setItem('sf_return_home', '1'); location.href='/session/${session.id}'">
+          <div class="session-thumbnail">
+            ${
+              session.homepageReady
+                ? index < eagerThumbnailCount
+                  ? `<iframe src="/preview/${session.id}/" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                  : `<iframe data-src="/preview/${session.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                : `<div class="session-placeholder">${placeholderSvg}</div>`
+            }
+            <div class="session-badges">
+              ${
+                session.elapsed
+                  ? `<span class="session-badge badge-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${session.elapsed}s</span>`
+                  : ''
+              }
+              ${
+                session.cost != null
+                  ? `<span class="session-badge badge-cost session-cost" style="display:none">$${session.cost.toFixed(4)}</span>`
+                  : ''
+              }
+            </div>
+          </div>
+          <div class="session-info">
+            <span class="session-prompt">${session.prompt.replace(/</g, '&lt;')}</span>
+          </div>
+        </li>
+      `,
+    )
+    .join('')
+
+  const scaleIframes = () => {
+    list.querySelectorAll('.session-thumbnail iframe').forEach((iframe) => {
+      const containerWidth = iframe.parentElement.offsetWidth
+      const scale = containerWidth / 1280
+      iframe.style.transform = `scale(${scale})`
+    })
+  }
+
+  scaleIframes()
+  if (!hasSessionResizeListener) {
+    window.addEventListener('resize', scaleIframes)
+    hasSessionResizeListener = true
+  }
+
+  const iframes = list.querySelectorAll('iframe[data-src]')
+  if (iframes.length > 0 && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const iframe = entry.target
+            iframe.src = iframe.dataset.src
+            observer.unobserve(iframe)
+          }
+        })
+      },
+      { rootMargin: '200px' },
+    )
+    iframes.forEach((iframe) => observer.observe(iframe))
+  } else {
+    iframes.forEach((iframe) => {
+      iframe.src = iframe.dataset.src
+    })
+  }
+
+  if (localStorage.getItem('sf_show_cost') === '1') {
+    list.querySelectorAll('.session-cost').forEach((element) => {
+      element.style.display = 'flex'
+    })
+  }
+}
+
 async function loadSessions() {
   try {
     const response = await authFetch('/api/sessions')
     const sessions = await response.json()
-    const section = document.getElementById('sessions-section')
-    const list = document.getElementById('session-list')
-
-    if (sessions.length === 0) {
-      list.innerHTML = ''
-      section.style.display = 'none'
-      document.body.classList.remove('has-sessions')
-      list.classList.remove('single-col', 'two-col')
-      return
-    }
-
-    document.body.classList.add('has-sessions')
-    section.style.display = 'block'
-
-    list.classList.remove('single-col', 'two-col')
-    if (sessions.length === 1) list.classList.add('single-col')
-    else if (sessions.length === 2) list.classList.add('two-col')
-
-    const placeholderSvg =
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>'
-
-    const eagerThumbnailCount = 6
-
-    list.innerHTML = sessions
-      .map(
-        (session, index) => `
-          <li class="session-item" data-id="${session.id}" onclick="sessionStorage.setItem('sf_return_home', '1'); location.href='/session/${session.id}'">
-            <div class="session-thumbnail">
-              ${
-                session.homepageReady
-                  ? index < eagerThumbnailCount
-                    ? `<iframe src="/preview/${session.id}/" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                    : `<iframe data-src="/preview/${session.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                  : `<div class="session-placeholder">${placeholderSvg}</div>`
-              }
-              <div class="session-badges">
-                ${
-                  session.elapsed
-                    ? `<span class="session-badge badge-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${session.elapsed}s</span>`
-                    : ''
-                }
-                ${
-                  session.cost != null
-                    ? `<span class="session-badge badge-cost session-cost" style="display:none">$${session.cost.toFixed(4)}</span>`
-                    : ''
-                }
-              </div>
-            </div>
-            <div class="session-info">
-              <span class="session-prompt">${session.prompt.replace(/</g, '&lt;')}</span>
-            </div>
-          </li>
-        `,
-      )
-      .join('')
-
-    const scaleIframes = () => {
-      list.querySelectorAll('.session-thumbnail iframe').forEach((iframe) => {
-        const containerWidth = iframe.parentElement.offsetWidth
-        const scale = containerWidth / 1280
-        iframe.style.transform = `scale(${scale})`
-      })
-    }
-
-    scaleIframes()
-    if (!hasSessionResizeListener) {
-      window.addEventListener('resize', scaleIframes)
-      hasSessionResizeListener = true
-    }
-
-    const iframes = list.querySelectorAll('iframe[data-src]')
-    if (iframes.length > 0 && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const iframe = entry.target
-              iframe.src = iframe.dataset.src
-              observer.unobserve(iframe)
-            }
-          })
-        },
-        { rootMargin: '200px' },
-      )
-      iframes.forEach((iframe) => observer.observe(iframe))
-    } else {
-      iframes.forEach((iframe) => {
-        iframe.src = iframe.dataset.src
-      })
-    }
-
-    if (localStorage.getItem('sf_show_cost') === '1') {
-      list.querySelectorAll('.session-cost').forEach((element) => {
-        element.style.display = 'flex'
-      })
-    }
+    renderSessions(sessions)
   } catch {
     // Ignore fetch failures on the public page and keep the marketing content available.
+  }
+}
+
+async function loadAnonymousSessions() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+    if (stored.length === 0) return
+
+    const results = await Promise.all(
+      stored.map(async ({ id, prompt }) => {
+        try {
+          const r = await fetch(`/api/sessions/${id}`)
+          if (!r.ok) return null
+          const data = await r.json()
+          return { id: data.id, prompt: data.prompt || prompt, homepageReady: data.homepageReady, elapsed: data.elapsed, cost: data.cost }
+        } catch {
+          return { id, prompt, homepageReady: false, elapsed: null, cost: null }
+        }
+      })
+    )
+
+    const valid = results.filter(Boolean)
+    const validIds = new Set(valid.map((s) => s.id))
+    const pruned = stored.filter((s) => validIds.has(s.id))
+    if (pruned.length !== stored.length) {
+      localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(pruned))
+    }
+
+    renderSessions(valid)
+  } catch {
+    // Ignore failures silently.
   }
 }
 
@@ -469,7 +538,11 @@ document.addEventListener('keydown', async (event) => {
   const card = document.querySelector(`.session-item[data-id="${id}"]`)
   if (card) card.style.opacity = '0.3'
 
-  await authFetch(`/api/sessions/${id}`, { method: 'DELETE' })
+  if (currentUser) {
+    await authFetch(`/api/sessions/${id}`, { method: 'DELETE' })
+  } else {
+    removeAnonSession(id)
+  }
   if (card) card.remove()
 
   const remaining = document.querySelectorAll('.session-item')
@@ -508,7 +581,11 @@ document.addEventListener('keydown', async (event) => {
     card.style.opacity = '0.3'
   })
 
-  await authFetch('/api/sessions', { method: 'DELETE' })
+  if (currentUser) {
+    await authFetch('/api/sessions', { method: 'DELETE' })
+  } else {
+    clearAnonSessions()
+  }
   document.getElementById('session-list').innerHTML = ''
   document.getElementById('sessions-section').style.display = 'none'
   document.body.classList.remove('has-sessions')
@@ -525,7 +602,9 @@ try {
 }
 
 window.addEventListener('pageshow', (event) => {
-  if (event.persisted && currentUser) loadSessions()
+  if (!event.persisted) return
+  if (currentUser) loadSessions()
+  else loadAnonymousSessions()
 })
 
 initFirebase()
