@@ -108,42 +108,61 @@
               <span class="lock">&#9679;</span>
               <span class="url-text" id="url-text">localhost:3001</span>
             </div>
-            <div class="browser-status">
-              <span class="dot" id="status-dot"></span>
-              <span id="status-text">Preview</span>
-              <!-- generate/theme buttons hidden for now -->
-              <!--
-              <button id="generate-design-btn" onclick="generateAlternativeDesign()" title="Generate Alternative Theme">🎨 GENERATE</button>
-              <button id="theme-magic-btn" onclick="applyMagicTheme()" title="Magic: Switch Theme">✨ MAGIC THEME</button>
-              -->
-            </div>
-            <button
-              id="split-toggle-btn"
-              onclick="toggleSplit()"
-              title="Toggle 50/50 split"
-              style="display: none"
-            >
-              ⬛ 50/50
-            </button>
-          </div>
-          <div class="export-panel export-panel--preview" id="export-panel" style="display: none">
-            <div class="export-panel-top">
-              <div class="export-copy">
-                <span class="export-eyebrow">Framework Export</span>
-                <strong>Exact-clone packages from the canonical site spec</strong>
-                <p id="export-subtext">
-                  Pick a target and export the same generated UI as a clean project.
-                </p>
+            <div class="browser-toolbar-actions">
+              <div class="export-menu" id="export-menu" style="display: none">
+                <button
+                  id="export-trigger-btn"
+                  class="export-trigger-btn"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="export-panel"
+                >
+                  <span class="export-trigger-copy">
+                    <span class="export-trigger-label">Export</span>
+                    <span class="export-trigger-meta" id="export-trigger-meta">HTML / React / Next.js</span>
+                  </span>
+                  <span class="export-trigger-state" id="export-trigger-state">Build</span>
+                </button>
+                <div class="export-panel export-panel--popover" id="export-panel" style="display: none">
+                  <div class="export-panel-top">
+                    <div class="export-copy">
+                      <span class="export-eyebrow">Project Export</span>
+                      <strong>Ship this exact UI in the stack you need</strong>
+                      <p id="export-subtext">
+                        Pick a target and Ship Fast will package the current generated UI for it.
+                      </p>
+                    </div>
+                    <span class="export-status-badge" id="export-status">Preparing site spec…</span>
+                  </div>
+                  <div class="export-target-list" id="export-target-list"></div>
+                  <div class="export-panel-actions">
+                    <button id="export-generate-btn" type="button" class="primary">Build Export</button>
+                    <a id="export-download-link" class="export-download-link secondary" href="#" style="display: none"
+                      >Download ZIP</a
+                    >
+                  </div>
+                  <div class="export-panel-footer">
+                    <button id="rerender-preview-btn" type="button" class="export-utility-btn">Sync Preview</button>
+                  </div>
+                </div>
               </div>
-              <span class="export-status-badge" id="export-status">Preparing site spec…</span>
-            </div>
-            <div class="export-target-list" id="export-target-list"></div>
-            <div class="export-panel-actions">
-              <button id="export-generate-btn" type="button" class="primary">Build Export</button>
-              <a id="export-download-link" class="export-download-link" href="#" style="display: none"
-                >Download ZIP</a
+              <div class="browser-status">
+                <span class="dot" id="status-dot"></span>
+                <span id="status-text">Preview</span>
+                <!-- generate/theme buttons hidden for now -->
+                <!--
+                <button id="generate-design-btn" onclick="generateAlternativeDesign()" title="Generate Alternative Theme">🎨 GENERATE</button>
+                <button id="theme-magic-btn" onclick="applyMagicTheme()" title="Magic: Switch Theme">✨ MAGIC THEME</button>
+                -->
+              </div>
+              <button
+                id="split-toggle-btn"
+                onclick="toggleSplit()"
+                title="Toggle 50/50 split"
+                style="display: none"
               >
-              <button id="rerender-preview-btn" type="button" class="secondary">Sync Preview</button>
+                ⬛ 50/50
+              </button>
             </div>
           </div>
           <div class="browser-content">
@@ -354,6 +373,7 @@
       let exportTargets = []
       let siteSpecReady = false
       let selectedExportTarget = 'html'
+      let exportMenuOpen = false
       let activeThemeOverride = null
       let paymentState = null
       let paymentModalTarget = null
@@ -848,8 +868,46 @@
         return String(target || '')
       }
 
-      function renderExportPanel() {
+      function formatExportTargetSummary(target) {
+        if (target === 'nextjs') return 'App Router project'
+        if (target === 'react') return 'React app scaffold'
+        if (target === 'html') return 'Static site bundle'
+        return 'Project export'
+      }
+
+      function formatExportTargetGlyph(target) {
+        if (target === 'nextjs') return 'N'
+        if (target === 'react') return 'R'
+        if (target === 'html') return 'H'
+        return '•'
+      }
+
+      function setExportMenuOpen(nextOpen) {
+        const menu = document.getElementById('export-menu')
         const panel = document.getElementById('export-panel')
+        const trigger = document.getElementById('export-trigger-btn')
+        const canShow = Boolean(menu) && menu.style.display !== 'none'
+
+        exportMenuOpen = Boolean(nextOpen) && canShow
+        panel.style.display = exportMenuOpen ? 'grid' : 'none'
+        trigger.setAttribute('aria-expanded', exportMenuOpen ? 'true' : 'false')
+        trigger.classList.toggle('is-open', exportMenuOpen)
+      }
+
+      function closeExportMenu() {
+        setExportMenuOpen(false)
+      }
+
+      function toggleExportMenu() {
+        setExportMenuOpen(!exportMenuOpen)
+      }
+
+      function renderExportPanel() {
+        const menu = document.getElementById('export-menu')
+        const panel = document.getElementById('export-panel')
+        const trigger = document.getElementById('export-trigger-btn')
+        const triggerMetaEl = document.getElementById('export-trigger-meta')
+        const triggerStateEl = document.getElementById('export-trigger-state')
         const statusEl = document.getElementById('export-status')
         const subtextEl = document.getElementById('export-subtext')
         const targetList = document.getElementById('export-target-list')
@@ -861,67 +919,81 @@
           : exportTargets.every((entry) => entry.buildReady !== false)
 
         if (!siteSpecReady && exportTargets.length === 0) {
-          panel.style.display = 'none'
+          menu.style.display = 'none'
+          setExportMenuOpen(false)
           return
         }
 
-        panel.style.display = 'block'
+        menu.style.display = 'block'
         if (!exportTargets.some((entry) => entry.target === selectedExportTarget)) {
           selectedExportTarget = exportTargets[0]?.target || 'html'
         }
+
+        const selected = getSelectedExportEntry()
+        const selectedLabel = selected ? formatExportTargetLabel(selected.target) : 'Export'
+        const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
+        const triggerState = requiresPayment
+          ? 'Unlock'
+          : selected?.ready
+            ? 'Ready'
+            : !siteSpecReady
+              ? 'Legacy'
+              : selected?.buildReady
+                ? 'Build'
+                : 'Waiting'
+
+        triggerMetaEl.textContent = exportTargets
+          .map((entry) => formatExportTargetLabel(entry.target))
+          .join(' / ')
+        triggerStateEl.textContent = triggerState
+        trigger.dataset.state = triggerState.toLowerCase()
 
         targetList.innerHTML = exportTargets
           .map((entry) => {
             const label = formatExportTargetLabel(entry.target)
             const activeClass = entry.target === selectedExportTarget ? ' is-active' : ''
-            const requiresPayment = Boolean(entry.paymentRequired && !entry.downloadUnlocked)
-            const stateLabel = requiresPayment
-              ? 'UPI checkout'
+            const entryRequiresPayment = Boolean(entry.paymentRequired && !entry.downloadUnlocked)
+            const stateLabel = entryRequiresPayment
+              ? 'UPI unlock'
               : entry.ready
                 ? 'Ready'
                 : !siteSpecReady
-                  ? 'Migrate + Build'
+                  ? 'Create + build'
                   : entry.buildReady
-                  ? 'Build'
-                  : 'Waiting'
-            const detailLabel = requiresPayment
-              ? 'Razorpay UPI required'
-              : entry.ready
-                ? 'Downloadable bundle'
-                : !siteSpecReady
-                  ? 'Legacy preview supported'
-                  : entry.buildReady
-                    ? 'Build exact clone on demand'
-                    : entry.buildReason || 'Waiting for generated UI capture'
+                    ? 'Build'
+                    : 'Waiting'
 
             return `<button type="button" class="export-target${activeClass}" data-target="${escapeHtml(
               entry.target,
             )}">
-              <span class="export-target-name">${escapeHtml(label)}</span>
-              <span class="export-target-meta">${escapeHtml(detailLabel)}</span>
+              <span class="export-target-glyph" aria-hidden="true">${escapeHtml(
+                formatExportTargetGlyph(entry.target),
+              )}</span>
+              <span class="export-target-copy">
+                <span class="export-target-name">${escapeHtml(label)}</span>
+                <span class="export-target-meta">${escapeHtml(formatExportTargetSummary(entry.target))}</span>
+              </span>
               <span class="export-target-state">${escapeHtml(stateLabel)}</span>
             </button>`
           })
           .join('')
-
-        const selected =
-          exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0]
-        const selectedLabel = selected ? formatExportTargetLabel(selected.target) : 'Export'
-        const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
 
         buildBtn.disabled = !selected
         if (siteSpecReady && selected && selected.buildReady === false) {
           buildBtn.disabled = true
           buildBtn.textContent = `Waiting For ${selectedLabel}`
         } else {
-          buildBtn.textContent = `${selected?.ready ? 'Rebuild' : 'Build'} ${selectedLabel}`
+          buildBtn.textContent = `${selected?.ready ? 'Rebuild' : !siteSpecReady ? 'Create + Build' : 'Build'} ${selectedLabel}`
         }
+        buildBtn.className = selected?.downloadPath ? 'secondary' : 'primary'
         rerenderBtn.disabled = !siteSpecReady || !exactCloneReady
+        rerenderBtn.style.display = siteSpecReady ? 'inline-flex' : 'none'
+        download.className = `export-download-link${selected?.downloadPath ? ' primary' : ' secondary'}`
 
         if (!siteSpecReady) {
           statusEl.textContent = 'Legacy Session'
           subtextEl.textContent =
-            'Build an export once and Ship Fast will create the canonical site spec plus an exact-clone package from this preview.'
+            'Build once and Ship Fast will create the canonical site spec, then generate future exports from that exact UI.'
           download.style.display = selected?.downloadPath ? 'inline-flex' : 'none'
           if (selected?.downloadPath) {
             download.href = selected.downloadPath
@@ -931,6 +1003,7 @@
               ? `Unlock ${selectedLabel} via UPI`
               : `Download ${selectedLabel}`
           }
+          setExportMenuOpen(exportMenuOpen)
           return
         }
 
@@ -962,6 +1035,8 @@
         } else {
           download.style.display = 'none'
         }
+
+        setExportMenuOpen(exportMenuOpen)
       }
 
       function refreshExportTargets() {
@@ -1741,6 +1816,7 @@
       document.getElementById('log-toggle').addEventListener('click', () => {
         document.getElementById('log-section').classList.toggle('open')
       })
+      document.getElementById('export-trigger-btn').addEventListener('click', toggleExportMenu)
       document.getElementById('export-generate-btn').addEventListener('click', triggerExportBuild)
       document
         .getElementById('export-target-list')
@@ -1767,12 +1843,24 @@
       })
       document.getElementById('export-download-link').addEventListener('click', (event) => {
         const selected = getSelectedExportEntry()
-        if (!selected || event.currentTarget.dataset.requiresPayment !== '1') return
+        if (!selected) return
+        if (event.currentTarget.dataset.requiresPayment !== '1') {
+          closeExportMenu()
+          return
+        }
         event.preventDefault()
+        closeExportMenu()
         openPaymentModal(selected)
       })
+      document.addEventListener('click', (event) => {
+        if (event.target.closest('#export-menu')) return
+        closeExportMenu()
+      })
       document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') closePaymentModal()
+        if (event.key === 'Escape') {
+          closeExportMenu()
+          closePaymentModal()
+        }
       })
 
       // ─── Init ──────────────────────────────────────────────────
