@@ -79,7 +79,7 @@ function readmeTargetDetails(target) {
       return {
         label: 'React',
         description: 'Vite + React application',
-        commands: ['npm install', 'npm run dev', 'npm run build', 'npm run preview'],
+        commands: ['bun install', 'bun dev', 'bun run build', 'bun run preview'],
         notes: [
           'App entry: `src/main.jsx`',
           'Routes: `src/pages/`',
@@ -90,7 +90,7 @@ function readmeTargetDetails(target) {
       return {
         label: 'Next.js',
         description: 'Next.js App Router application',
-        commands: ['npm install', 'npm run dev', 'npm run build', 'npm run start'],
+        commands: ['bun install', 'bun dev', 'bun run build', 'bun run start'],
         notes: [
           'App routes: `app/`',
           'Shared components: `components/`',
