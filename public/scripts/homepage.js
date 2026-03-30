@@ -246,6 +246,17 @@ function validatePrompt(showError = false) {
   return true
 }
 
+function isGenerationLimitReached() {
+  return getGenerationCount() >= GENERATION_LIMIT
+}
+
+function syncSubmitButtonState() {
+  submitButton.disabled =
+    submitButton.classList.contains('loading') ||
+    isGenerationLimitReached() ||
+    input.value.trim().length < MIN_PROMPT_LENGTH
+}
+
 function getGenerationCount() {
   return parseInt(localStorage.getItem('sf_generation_count') || '0', 10)
 }
@@ -254,29 +265,33 @@ function updateGenerationCounter() {
   const count = getGenerationCount()
   if (count === 0) {
     generationCounter.style.display = 'none'
+    syncSubmitButtonState()
     return
   }
 
   generationCounter.style.display = 'block'
-  if (count >= GENERATION_LIMIT) {
+  if (isGenerationLimitReached()) {
     generationCounter.textContent =
       `Generation limit reached (${GENERATION_LIMIT}/${GENERATION_LIMIT}). Clear your browser storage to reset.`
     generationCounter.classList.add('limit-reached')
-    submitButton.disabled = true
   } else {
     generationCounter.textContent = `${count} / ${GENERATION_LIMIT} generations used`
     generationCounter.classList.remove('limit-reached')
   }
+
+  syncSubmitButtonState()
 }
 
 updateGenerationCounter()
 setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
 renderSamplePrompt()
 syncSamplePromptVisibility()
+syncSubmitButtonState()
 
 input.addEventListener('input', () => {
   validatePrompt(false)
   syncSamplePromptVisibility()
+  syncSubmitButtonState()
 })
 
 input.addEventListener('keydown', (event) => {
@@ -288,16 +303,19 @@ input.addEventListener('keydown', (event) => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
-  if (!validatePrompt(true)) return
+  if (!validatePrompt(true)) {
+    syncSubmitButtonState()
+    return
+  }
   const prompt = input.value.trim()
 
-  if (getGenerationCount() >= GENERATION_LIMIT) {
+  if (isGenerationLimitReached()) {
     updateGenerationCounter()
     return
   }
 
-  submitButton.disabled = true
   submitButton.classList.add('loading')
+  syncSubmitButtonState()
 
   try {
     const response = await authFetch('/api/sessions', {
@@ -324,8 +342,8 @@ form.addEventListener('submit', async (event) => {
     alert(`Connection error: ${error.message}`)
   }
 
-  submitButton.disabled = false
   submitButton.classList.remove('loading')
+  syncSubmitButtonState()
 })
 
 async function loadSessions() {

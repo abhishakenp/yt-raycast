@@ -192,7 +192,7 @@
           rows="4"
           aria-describedby="prompt-help"
         ></textarea>
-        <button type="submit" class="submit-btn" id="submit-btn">
+        <button type="submit" class="submit-btn" id="submit-btn" disabled>
           <svg
             class="zap-icon"
             viewBox="0 0 24 24"
@@ -208,13 +208,8 @@
           <div class="spinner"></div>
         </button>
       </form>
-<<<<<<< HEAD
-      <div class="gen-counter" id="gen-counter" style="display: none"></div>
-=======
       <p class="prompt-help" id="prompt-help" aria-live="polite">Minimum 70 characters.</p>
-      <div class="gen-counter" id="gen-counter" style="display:none"></div>
-
->>>>>>> 51fe244 (push to github enabled)
+      <div class="gen-counter" id="gen-counter" style="display: none"></div>
     </div>
 
     <div class="sessions" id="sessions-section" style="display: none">
@@ -396,11 +391,25 @@
           return false
         }
         if (promptLength < MIN_PROMPT_LENGTH) {
-          setPromptHelp(`Prompt must be at least ${MIN_PROMPT_LENGTH} characters (${promptLength}/${MIN_PROMPT_LENGTH}).`, showError)
+          setPromptHelp(
+            `Prompt must be at least ${MIN_PROMPT_LENGTH} characters (${promptLength}/${MIN_PROMPT_LENGTH}).`,
+            showError,
+          )
           return false
         }
         setPromptHelp(`${promptLength} characters.`, false)
         return true
+      }
+
+      function isGenLimitReached() {
+        return getGenCount() >= GEN_LIMIT
+      }
+
+      function syncButtonState() {
+        btn.disabled =
+          btn.classList.contains('loading') ||
+          isGenLimitReached() ||
+          input.value.trim().length < MIN_PROMPT_LENGTH
       }
 
       function getGenCount() {
@@ -411,24 +420,27 @@
         const count = getGenCount()
         if (count === 0) {
           genCounter.style.display = 'none'
+          syncButtonState()
           return
         }
         genCounter.style.display = 'block'
-        if (count >= GEN_LIMIT) {
-          genCounter.textContent = `Generation limit reached (${GEN_LIMIT}/${GEN_LIMIT}).`
+        if (isGenLimitReached()) {
+          genCounter.textContent = `Generation limit reached (${GEN_LIMIT}/${GEN_LIMIT}). Clear your browser storage to reset.`
           genCounter.classList.add('limit-reached')
-          btn.disabled = true
         } else {
           genCounter.textContent = `${count} / ${GEN_LIMIT} generations used`
           genCounter.classList.remove('limit-reached')
         }
+        syncButtonState()
       }
 
       updateGenCounter()
       setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
+      syncButtonState()
 
       input.addEventListener('input', () => {
         validatePrompt(false)
+        syncButtonState()
       })
 
       // Enter submits, Shift+Enter for newline
@@ -441,16 +453,19 @@
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault()
-        if (!validatePrompt(true)) return
+        if (!validatePrompt(true)) {
+          syncButtonState()
+          return
+        }
         const prompt = input.value.trim()
 
-        if (getGenCount() >= GEN_LIMIT) {
+        if (isGenLimitReached()) {
           updateGenCounter()
           return
         }
 
-        btn.disabled = true
         btn.classList.add('loading')
+        syncButtonState()
 
         try {
           const res = await authFetch('/api/sessions', {
@@ -470,13 +485,13 @@
             } else {
               alert(data.error || 'Failed to create session')
             }
-            btn.disabled = false
             btn.classList.remove('loading')
+            syncButtonState()
           }
         } catch (err) {
           alert('Connection error: ' + err.message)
-          btn.disabled = false
           btn.classList.remove('loading')
+          syncButtonState()
         }
       })
 

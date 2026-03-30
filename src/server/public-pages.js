@@ -174,7 +174,7 @@ export function renderHomePage() {
                 </span>
               </div>
             </div>
-            <button type="submit" class="submit-btn" id="submit-btn">
+            <button type="submit" class="submit-btn" id="submit-btn" disabled>
               <svg
                 class="zap-icon"
                 viewBox="0 0 24 24"
