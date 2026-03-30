@@ -3,17 +3,30 @@ import { dirname, join } from 'node:path'
 import { renderHtmlProject } from './html/index.js'
 import { renderReactProject } from './react/index.js'
 import { renderNextProject } from './nextjs/index.js'
+import { renderProjectReadme } from './shared.js'
 
 export function renderProject(siteSpec, target) {
+  let rendered
   switch (target) {
     case 'html':
-      return renderHtmlProject(siteSpec)
+      rendered = renderHtmlProject(siteSpec)
+      break
     case 'react':
-      return renderReactProject(siteSpec)
+      rendered = renderReactProject(siteSpec)
+      break
     case 'nextjs':
-      return renderNextProject(siteSpec)
+      rendered = renderNextProject(siteSpec)
+      break
     default:
       throw new Error(`Unsupported render target: ${target}`)
+  }
+
+  return {
+    ...rendered,
+    files: {
+      ...rendered.files,
+      'README.md': renderProjectReadme(siteSpec, target),
+    },
   }
 }
 

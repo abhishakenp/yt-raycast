@@ -333,9 +333,22 @@ function FooterSection({ section }) {
   return (
     <footer className="site-footer" id={section.id}>
       <div className="container footer-shell">
-        <div>
-          <strong>{section.headline}</strong>
-          {section.body ? <p>{section.body}</p> : null}
+        <div className="footer-meta">
+          <div>
+            <strong>{section.headline}</strong>
+            {section.body ? <p>{section.body}</p> : null}
+          </div>
+          <div className="footer-branding" aria-label="Built with ShipFast">
+            <span className="footer-branding__label">Built with</span>
+            <a
+              className="footer-branding__link"
+              href="https://shipfast.dev"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ShipFast
+            </a>
+          </div>
         </div>
         <nav className="footer-links">
           {(section.links || []).map((link) => (

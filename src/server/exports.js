@@ -1,7 +1,9 @@
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { ensureCompatibleSiteSpec, loadSiteSpec, SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from '../renderers/index.js'
+import { routeToHtmlFile } from '../renderers/shared.js'
 import { createZipBuffer } from './zip.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 
@@ -21,21 +23,84 @@ export function writeExportMetadata(workspace, metadata) {
   writeFileSync(join(workspace, EXPORT_META_FILE), JSON.stringify(metadata, null, 2))
 }
 
+function getExactCloneStatus(workspace, siteSpec) {
+  if (!siteSpec?.pages?.length) {
+    return {
+      ready: false,
+      reason: 'The exact-clone export is not ready because no pages were found in the canonical site spec.',
+    }
+  }
+
+  const missingHtmlFiles = []
+  const missingBlueprints = []
+
+  for (const page of siteSpec.pages || []) {
+    const filename = routeToHtmlFile(page.route)
+    const filePath = join(workspace, filename)
+    if (!existsSync(filePath)) {
+      missingHtmlFiles.push(filename)
+      continue
+    }
+
+    if (!page?.renderBlueprint?.bodyHtml || !page?.renderBlueprint?.originalHtmlDocument) {
+      missingBlueprints.push(filename)
+    }
+  }
+
+  if (missingHtmlFiles.length) {
+    return {
+      ready: false,
+      reason: `Exact-clone export is waiting for the generated UI to finish for: ${missingHtmlFiles.join(', ')}.`,
+    }
+  }
+
+  if (missingBlueprints.length) {
+    return {
+      ready: false,
+      reason: `Exact-clone export is waiting to capture the generated UI for: ${missingBlueprints.join(', ')}.`,
+    }
+  }
+
+  return {
+    ready: true,
+    reason: 'All generated UI pages are captured and ready for exact-clone export.',
+  }
+}
+
+function hashSiteSpec(siteSpec) {
+  return createHash('sha1').update(JSON.stringify(siteSpec)).digest('hex')
+}
+
 export function getSessionExportTargets(session) {
-  const siteSpec = applyThemeOverrideToSiteSpec(loadSiteSpec(session.workspace), session.themeOverride)
+  const rawSiteSpec = loadSiteSpec(session.workspace)
+  const siteSpec = rawSiteSpec
+    ? applyThemeOverrideToSiteSpec(ensureCompatibleSiteSpec(session.workspace), session.themeOverride)
+    : null
   const metadata = readExportMetadata(session.workspace)
+  const currentSourceHash = siteSpec ? hashSiteSpec(siteSpec) : null
+  const exactCloneStatus = siteSpec
+    ? getExactCloneStatus(session.workspace, siteSpec)
+    : {
+        ready: false,
+        reason: 'Build once to create the canonical site spec and exact-clone capture.',
+      }
   const supported = siteSpec?.exportableFrameworks?.length
     ? siteSpec.exportableFrameworks.filter((target) => SUPPORTED_EXPORT_TARGETS.includes(target))
     : [...SUPPORTED_EXPORT_TARGETS]
 
   return supported.map((target) => {
     const targetMeta = metadata.targets?.[target] || {}
+    const bundleExists = Boolean(targetMeta.bundlePath && existsSync(join(session.workspace, targetMeta.bundlePath)))
+    const sourceMatches = !siteSpec || (targetMeta.sourceHash && targetMeta.sourceHash === currentSourceHash)
+    const ready = bundleExists && sourceMatches && (!siteSpec || exactCloneStatus.ready)
     return {
       target,
-      ready: Boolean(targetMeta.bundlePath && existsSync(join(session.workspace, targetMeta.bundlePath))),
+      ready,
+      buildReady: siteSpec ? exactCloneStatus.ready : true,
+      buildReason: siteSpec ? exactCloneStatus.reason : null,
       generatedAt: targetMeta.generatedAt || null,
       fileCount: targetMeta.fileCount || 0,
-      downloadPath: targetMeta.bundlePath ? `/api/sessions/${session.id}/download/${target}` : null,
+      downloadPath: ready ? `/api/sessions/${session.id}/download/${target}` : null,
     }
   })
 }
@@ -48,6 +113,9 @@ export function generateSessionExport(session, target) {
   session.siteSpecReady = Boolean(siteSpec)
   if (!siteSpec) throw new Error('Unable to build a canonical site spec for this session')
   if (!SUPPORTED_EXPORT_TARGETS.includes(target)) throw new Error(`Unsupported export target: ${target}`)
+  const exactCloneStatus = getExactCloneStatus(session.workspace, siteSpec)
+  if (!exactCloneStatus.ready) throw new Error(exactCloneStatus.reason)
+  const sourceHash = hashSiteSpec(siteSpec)
 
   const { files } = renderProject(siteSpec, target)
   const exportsDir = join(session.workspace, 'exports')
@@ -67,6 +135,7 @@ export function generateSessionExport(session, target) {
     generatedAt: new Date().toISOString(),
     fileCount: Object.keys(files).length,
     size: bundleBuffer.length,
+    sourceHash,
   }
   writeExportMetadata(session.workspace, metadata)
 
@@ -85,6 +154,17 @@ export function getSessionExportBundle(session, target) {
   if (!targetMeta?.bundlePath) return null
   const bundlePath = join(session.workspace, targetMeta.bundlePath)
   if (!existsSync(bundlePath)) return null
+  const rawSiteSpec = loadSiteSpec(session.workspace)
+  if (rawSiteSpec) {
+    const siteSpec = applyThemeOverrideToSiteSpec(
+      ensureCompatibleSiteSpec(session.workspace),
+      session.themeOverride,
+    )
+    const exactCloneStatus = getExactCloneStatus(session.workspace, siteSpec)
+    if (!exactCloneStatus.ready) return null
+    const currentSourceHash = hashSiteSpec(siteSpec)
+    if (!targetMeta.sourceHash || targetMeta.sourceHash !== currentSourceHash) return null
+  }
 
   return {
     path: bundlePath,
@@ -100,5 +180,7 @@ export function rerenderPreviewFromSiteSpec(session) {
   )
   session.siteSpecReady = Boolean(siteSpec)
   if (!siteSpec) throw new Error('Unable to build a canonical site spec for this session')
+  const exactCloneStatus = getExactCloneStatus(session.workspace, siteSpec)
+  if (!exactCloneStatus.ready) throw new Error(exactCloneStatus.reason)
   return renderPreviewToWorkspace(siteSpec, session.workspace)
 }

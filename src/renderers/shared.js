@@ -1,5 +1,3 @@
-import { slug } from '../pipeline/workspace.js'
-
 export function escapeHtml(value = '') {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -44,6 +42,102 @@ export function serializeModule(value) {
 
 export function pageUsesExactClone(page) {
   return Boolean(page?.renderBlueprint?.exactClone && page?.renderBlueprint?.bodyHtml)
+}
+
+function readmeProjectName(siteSpec) {
+  const value = String(siteSpec?.projectName || '').trim()
+  return value || 'Generated Project'
+}
+
+function readmeRoutes(siteSpec) {
+  const routes = Array.from(
+    new Set(
+      (siteSpec?.pages || [])
+        .map((page) => String(page?.route || '').trim())
+        .filter(Boolean)
+        .map((route) => (route === '/' ? '/' : route.startsWith('/') ? route : `/${route}`)),
+    ),
+  )
+
+  return routes.length ? routes : ['/']
+}
+
+function readmeTargetDetails(target) {
+  switch (target) {
+    case 'html':
+      return {
+        label: 'HTML',
+        description: 'static HTML, CSS, and JavaScript site',
+        commands: ['python3 -m http.server 4173'],
+        notes: [
+          'Entry point: `index.html`',
+          'Shared assets: `site.css` and `site.js`',
+          'Open `http://localhost:4173` after starting the server.',
+        ],
+      }
+    case 'react':
+      return {
+        label: 'React',
+        description: 'Vite + React application',
+        commands: ['npm install', 'npm run dev', 'npm run build', 'npm run preview'],
+        notes: [
+          'App entry: `src/main.jsx`',
+          'Routes: `src/pages/`',
+          'Shared components and styling: `src/components/` and `src/styles.css`',
+        ],
+      }
+    case 'nextjs':
+      return {
+        label: 'Next.js',
+        description: 'Next.js App Router application',
+        commands: ['npm install', 'npm run dev', 'npm run build', 'npm run start'],
+        notes: [
+          'App routes: `app/`',
+          'Shared components: `components/`',
+          'Generated site data: `lib/site-spec.js`',
+        ],
+      }
+    default:
+      return {
+        label: 'Project',
+        description: 'web project',
+        commands: [],
+        notes: [],
+      }
+  }
+}
+
+export function renderProjectReadme(siteSpec, target) {
+  const projectName = readmeProjectName(siteSpec)
+  const targetDetails = readmeTargetDetails(target)
+  const routes = readmeRoutes(siteSpec)
+
+  return `# ${projectName}
+
+This project was generated with ShipFast as a ${targetDetails.description} export.
+
+## Run locally
+
+${
+  targetDetails.commands.length
+    ? `\`\`\`bash
+${targetDetails.commands.join('\n')}
+\`\`\``
+    : 'Use the tooling for this target to run the project locally.'
+}
+
+## Project notes
+
+${targetDetails.notes.map((note) => `- ${note}`).join('\n')}
+
+## Included routes
+
+${routes.map((route) => `- \`${route}\``).join('\n')}
+
+## Built with ShipFast
+
+Generate your own SaaS starter: shipfast.dev
+`
 }
 
 export function renderCloneRuntimeModule() {
@@ -276,6 +370,15 @@ function renderGenericCard(item = {}) {
   return `<article class="card"><h3>${escapeHtml(item.title || item.label || 'Item')}</h3><p>${escapeHtml(item.body || item.quote || '')}</p></article>`
 }
 
+function renderShipFastFooterBrandingHtml() {
+  return `
+    <div class="footer-branding" aria-label="Built with ShipFast">
+      <span class="footer-branding__label">Built with</span>
+      <a class="footer-branding__link" href="https://shipfast.dev" target="_blank" rel="noreferrer">ShipFast</a>
+    </div>
+  `
+}
+
 export function renderSectionHtml(section) {
   const headline = section.headline ? `<h2>${escapeHtml(section.headline)}</h2>` : ''
   const subheadline = section.subheadline ? `<p class="eyebrow">${escapeHtml(section.subheadline)}</p>` : ''
@@ -466,9 +569,12 @@ export function renderSectionHtml(section) {
       return `
         <footer class="site-footer" id="${escapeHtml(section.id)}">
           <div class="container footer-shell">
-            <div>
-              <strong>${escapeHtml(section.headline || '')}</strong>
-              ${body}
+            <div class="footer-meta">
+              <div>
+                <strong>${escapeHtml(section.headline || '')}</strong>
+                ${body}
+              </div>
+              ${renderShipFastFooterBrandingHtml()}
             </div>
             <nav class="footer-links">
               ${renderItemList(section.links || [], (link) => `<a href="${escapeHtml(link.href || '#')}">${escapeHtml(link.label || 'Link')}</a>`)}
@@ -670,6 +776,47 @@ button, input, textarea { font: inherit; }
   padding: 2rem 0 3rem;
   border-top: 1px solid rgba(255,255,255,0.05);
   color: var(--color-muted);
+}
+.footer-meta {
+  display: grid;
+  gap: 0.9rem;
+}
+.footer-meta strong {
+  color: var(--color-text);
+}
+.footer-branding {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: fit-content;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(124,58,237,0.14), rgba(167,139,250,0.08));
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+.footer-branding__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.footer-branding__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.footer-branding__link::after {
+  content: '↗';
+  font-size: 0.8em;
+  color: var(--color-secondary);
+}
+.footer-branding__link:hover {
+  opacity: 0.92;
 }
 .empty-state {
   min-height: 100vh;

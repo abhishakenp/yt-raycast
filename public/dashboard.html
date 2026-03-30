@@ -856,6 +856,9 @@
         const download = document.getElementById('export-download-link')
         const buildBtn = document.getElementById('export-generate-btn')
         const rerenderBtn = document.getElementById('rerender-preview-btn')
+        const exactCloneReady = !siteSpecReady
+          ? false
+          : exportTargets.every((entry) => entry.buildReady !== false)
 
         if (!siteSpecReady && exportTargets.length === 0) {
           panel.style.display = 'none'
@@ -876,16 +879,20 @@
               ? 'UPI checkout'
               : entry.ready
                 ? 'Ready'
-                : siteSpecReady
+                : !siteSpecReady
+                  ? 'Migrate + Build'
+                  : entry.buildReady
                   ? 'Build'
-                  : 'Migrate + Build'
+                  : 'Waiting'
             const detailLabel = requiresPayment
               ? 'Razorpay UPI required'
               : entry.ready
                 ? 'Downloadable bundle'
-                : siteSpecReady
-                  ? 'Build on demand'
-                  : 'Legacy preview supported'
+                : !siteSpecReady
+                  ? 'Legacy preview supported'
+                  : entry.buildReady
+                    ? 'Build exact clone on demand'
+                    : entry.buildReason || 'Waiting for generated UI capture'
 
             return `<button type="button" class="export-target${activeClass}" data-target="${escapeHtml(
               entry.target,
@@ -903,8 +910,13 @@
         const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
 
         buildBtn.disabled = !selected
-        buildBtn.textContent = `${selected?.ready ? 'Rebuild' : 'Build'} ${selectedLabel}`
-        rerenderBtn.disabled = !siteSpecReady
+        if (siteSpecReady && selected && selected.buildReady === false) {
+          buildBtn.disabled = true
+          buildBtn.textContent = `Waiting For ${selectedLabel}`
+        } else {
+          buildBtn.textContent = `${selected?.ready ? 'Rebuild' : 'Build'} ${selectedLabel}`
+        }
+        rerenderBtn.disabled = !siteSpecReady || !exactCloneReady
 
         if (!siteSpecReady) {
           statusEl.textContent = 'Legacy Session'
@@ -926,14 +938,18 @@
           ? 'UPI Checkout'
           : selected?.ready
             ? 'Ready To Download'
-            : 'Spec Synced'
+            : selected?.buildReady
+              ? 'Spec Synced'
+              : 'Waiting For Exact Clone'
         subtextEl.textContent = requiresPayment
           ? paymentState?.subscription?.enabled
             ? `${selectedLabel} uses Razorpay UPI in India. Pay once for this ZIP or start a UPI Autopay mandate for recurring access.`
             : `${selectedLabel} uses Razorpay UPI in India before ZIP download.`
           : selected?.ready
             ? `${selectedLabel} is up to date with the current generated UI.`
-            : `Export ${selectedLabel} from the stored canonical site spec at any time.`
+            : selected?.buildReady
+              ? `Export ${selectedLabel} as an exact clone of the generated UI at any time.`
+              : selected?.buildReason || `Waiting for the generated UI to finish before building ${selectedLabel}.`
 
         if (selected?.downloadPath) {
           download.href = selected.downloadPath
@@ -965,7 +981,15 @@
         const statusEl = document.getElementById('export-status')
         const subtextEl = document.getElementById('export-subtext')
         const target = selectedExportTarget
+        const selected =
+          exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0]
         if (!target) return
+        if (siteSpecReady && selected?.buildReady === false) {
+          statusEl.textContent = 'Waiting For Exact Clone'
+          subtextEl.textContent =
+            selected.buildReason || 'Wait for the generated UI to finish before exporting.'
+          return
+        }
 
         btn.disabled = true
         statusEl.textContent = 'Building Export'
@@ -1002,6 +1026,17 @@
         const btn = document.getElementById('rerender-preview-btn')
         const statusEl = document.getElementById('export-status')
         const subtextEl = document.getElementById('export-subtext')
+        const exactCloneReady = !siteSpecReady
+          ? false
+          : exportTargets.every((entry) => entry.buildReady !== false)
+        if (!exactCloneReady) {
+          const selected =
+            exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0]
+          statusEl.textContent = 'Waiting For Exact Clone'
+          subtextEl.textContent =
+            selected?.buildReason || 'Wait for the generated UI capture before syncing the preview.'
+          return
+        }
         btn.disabled = true
         statusEl.textContent = 'Syncing Preview'
         subtextEl.textContent = 'Refreshing the preview from the stored canonical site spec.'

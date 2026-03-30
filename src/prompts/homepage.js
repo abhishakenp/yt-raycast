@@ -80,7 +80,7 @@ DESIGN QUALITY \u2014 MUST FOLLOW:
 - Pricing: 2-col layout (NOT 3). Featured plan has "Popular" badge. CTA as text link with arrow.
 - Logo cloud: company names as plain text (font-medium, muted), NO images. Flex-wrap centered row.
 - Final CTA: bold headline + subtitle + 2 buttons (primary accent gradient + secondary outline).
-- Footer: centered, simple. Logo + links row + copyright.
+- Footer: centered, simple. Logo + links row + copyright, plus a subtle "Built with ShipFast" pill that feels integrated into the design.
 - Centered layout: max-w-4xl mx-auto. NOT wide 7xl.
 - Generous spacing: py-20 md:py-28 per section. space-y-6 within sections.
 - All interactive elements have hover/transition states.
