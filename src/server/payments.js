@@ -1,8 +1,55 @@
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { db } from '../auth/firebase-admin.js'
 
 let billingDir = null
+
+const EARLY_ADOPTER_MAX = parseInt(process.env.EARLY_ADOPTER_MAX_USERS || '500', 10)
+const EARLY_ADOPTER_PRICE_ID = process.env.STRIPE_EARLY_ADOPTER_PRICE_ID || ''
+
+function getEarlyAdopterCountFile() {
+  if (!billingDir) return null
+  return join(billingDir, '_early_adopter_count.json')
+}
+
+function readEarlyAdopterCount() {
+  const filePath = getEarlyAdopterCountFile()
+  if (!filePath || !existsSync(filePath)) return { count: 0, users: [] }
+  try {
+    return JSON.parse(readFileSync(filePath, 'utf-8'))
+  } catch {
+    return { count: 0, users: [] }
+  }
+}
+
+function writeEarlyAdopterCount(data) {
+  const filePath = getEarlyAdopterCountFile()
+  if (!filePath) return
+  writeFileSync(filePath, JSON.stringify(data, null, 2))
+}
+
+export function isEarlyAdopterSlotAvailable() {
+  const data = readEarlyAdopterCount()
+  return data.count < EARLY_ADOPTER_MAX
+}
+
+export function getEarlyAdopterStatus() {
+  const data = readEarlyAdopterCount()
+  return {
+    eligible: data.count < EARLY_ADOPTER_MAX && Boolean(EARLY_ADOPTER_PRICE_ID),
+    slotsRemaining: Math.max(0, EARLY_ADOPTER_MAX - data.count),
+    totalSlots: EARLY_ADOPTER_MAX,
+    priceId: EARLY_ADOPTER_PRICE_ID,
+  }
+}
+
+export function incrementEarlyAdopterCount(uid) {
+  const data = readEarlyAdopterCount()
+  if (data.users.includes(uid)) return // already counted
+  data.count += 1
+  data.users.push(uid)
+  writeEarlyAdopterCount(data)
+}
 
 const PRO_PLAN = {
   name: 'Pro',
@@ -112,6 +159,8 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
   const isIndianUser = countryCode === 'IN'
   const isSubscribed = await hasActiveSubscription(session?.userId)
 
+  const earlyAdopter = getEarlyAdopterStatus()
+
   return {
     gateway: 'stripe',
     countryCode,
@@ -124,6 +173,16 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
       features: PRO_PLAN.features,
     },
     pricing: PRO_PLAN.pricing,
+    earlyAdopter: {
+      eligible: earlyAdopter.eligible,
+      slotsRemaining: earlyAdopter.slotsRemaining,
+      totalSlots: earlyAdopter.totalSlots,
+      priceId: earlyAdopter.priceId,
+      pricing: {
+        inr: { amount: 199, display: '\u20B9199/month' },
+        usd: { amount: 5, display: '$5/month' },
+      },
+    },
     subscription: {
       active: isSubscribed,
       status: isSubscribed ? 'active' : null,

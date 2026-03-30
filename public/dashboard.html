@@ -485,6 +485,7 @@
           configured: Boolean(rawPayment?.configured),
           currency: rawPayment?.currency || 'inr',
           plan: rawPayment?.plan || null,
+          earlyAdopter: rawPayment?.earlyAdopter || null,
           pricing: rawPayment?.pricing || {
             inr: { amount: 399, display: '\u20B9399/month' },
             usd: { amount: 9, display: '$9/month' },
@@ -657,13 +658,14 @@
       function renderPaymentOptions() {
         const optionList = document.getElementById('payment-option-list')
         const plan = paymentState?.plan
+        const ea = paymentState?.earlyAdopter
         const priceId = plan?.priceId || window._shipFastPriceId || ''
         const price = getDisplayPrice()
 
         // Store the price ID globally for checkout
         if (priceId) window._shipFastPriceId = priceId
 
-        if (!priceId) {
+        if (!priceId && !ea?.priceId) {
           optionList.innerHTML = '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
           return
         }
@@ -676,7 +678,34 @@
         ]
         const featureHtml = features.map(f => `<li>${escapeHtml(f)}</li>`).join('')
 
-        optionList.innerHTML = `<button type="button" class="payment-option is-active" data-payment-mode="subscription">
+        let html = ''
+
+        // Early adopter option (shown first if eligible)
+        if (ea?.eligible && ea?.priceId) {
+          const eaPrice = paymentState?.isIndianUser
+            ? (ea.pricing?.inr?.display || '\u20B9199/month')
+            : (ea.pricing?.usd?.display || '$5/month')
+          const slotsText = `${ea.slotsRemaining} of ${ea.totalSlots} slots remaining`
+          const isSelected = selectedPaymentMode === 'early_adopter'
+          html += `<button type="button" class="payment-option${isSelected ? ' is-active' : ''}" data-payment-mode="early_adopter">
+            <span class="payment-option-head">
+              <strong>Early Adopter</strong>
+              <span><s style="opacity:0.5">${price}</s> ${eaPrice}</span>
+            </span>
+            <span class="payment-option-body" style="color:#34d399;">50% off forever! ${escapeHtml(slotsText)}</span>
+            <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.85em;color:#c4b5fd;">
+              ${featureHtml}
+            </ul>
+          </button>`
+          // Default to early adopter if available
+          if (!selectedPaymentMode || selectedPaymentMode === 'subscription') {
+            selectedPaymentMode = 'early_adopter'
+          }
+        }
+
+        // Regular Pro option
+        const isProSelected = selectedPaymentMode === 'subscription' || !ea?.eligible
+        html += `<button type="button" class="payment-option${isProSelected && !ea?.eligible ? ' is-active' : (selectedPaymentMode === 'subscription' ? ' is-active' : '')}" data-payment-mode="subscription">
           <span class="payment-option-head">
             <strong>${escapeHtml(plan?.name || 'Pro')} Plan</strong>
             <span>${price}</span>
@@ -685,6 +714,8 @@
             ${featureHtml}
           </ul>
         </button>`
+
+        optionList.innerHTML = html
       }
 
       function closePaymentModal() {
@@ -716,7 +747,12 @@
         setPaymentError('')
 
         try {
-          const priceId = window._shipFastPriceId
+          let priceId
+          if (selectedPaymentMode === 'early_adopter' && paymentState?.earlyAdopter?.priceId) {
+            priceId = paymentState.earlyAdopter.priceId
+          } else {
+            priceId = window._shipFastPriceId || paymentState?.plan?.priceId
+          }
           if (!priceId) throw new Error('Subscription plan is not configured yet.')
 
           if (!window._stripeCheckout) {

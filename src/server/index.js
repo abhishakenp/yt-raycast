@@ -36,6 +36,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import {
   decorateExportTargetsForRequest,
   getDownloadAccessDecision,
+  getEarlyAdopterStatus,
   getSessionPaymentDetails,
   hasActiveSubscription,
   initPaymentStore,
@@ -444,6 +445,11 @@ export async function startServer(sessionsDir) {
     } catch (error) {
       res.status(400).json({ error: error.message })
     }
+  })
+
+  // ─── API: Early adopter status (public) ────────────────────
+  app.get('/api/early-adopter-status', (_req, res) => {
+    res.json(getEarlyAdopterStatus())
   })
 
   // ─── API: Subscription status ─────────────────────────────
