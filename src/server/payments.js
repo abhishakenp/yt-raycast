@@ -4,6 +4,21 @@ import { db } from '../auth/firebase-admin.js'
 
 let billingDir = null
 
+const PRO_PLAN = {
+  name: 'Pro',
+  priceId: process.env.STRIPE_PRO_PRICE_ID || '',
+  features: [
+    'Unlimited website generation',
+    'Unlimited ZIP downloads',
+    'All frameworks (HTML, React, Next.js)',
+    'Priority support',
+  ],
+  pricing: {
+    inr: { amount: 399, display: '\u20B9399/month' },
+    usd: { amount: 9, display: '$9/month' },
+  },
+}
+
 const GEO_HEADERS = [
   'x-ship-fast-country-hint',
   'cf-ipcountry',
@@ -101,12 +116,14 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
     gateway: 'stripe',
     countryCode,
     isIndianUser,
-    configured: true,
+    configured: Boolean(PRO_PLAN.priceId),
     currency: 'inr',
-    pricing: {
-      inr: { amount: 399, display: '\u20B9399/month' },
-      usd: { amount: 9, display: '$9/month' },
+    plan: {
+      name: PRO_PLAN.name,
+      priceId: PRO_PLAN.priceId,
+      features: PRO_PLAN.features,
     },
+    pricing: PRO_PLAN.pricing,
     subscription: {
       active: isSubscribed,
       status: isSubscribed ? 'active' : null,

@@ -484,6 +484,7 @@
           isIndianUser: Boolean(rawPayment?.isIndianUser),
           configured: Boolean(rawPayment?.configured),
           currency: rawPayment?.currency || 'inr',
+          plan: rawPayment?.plan || null,
           pricing: rawPayment?.pricing || {
             inr: { amount: 399, display: '\u20B9399/month' },
             usd: { amount: 9, display: '$9/month' },
@@ -655,18 +656,34 @@
 
       function renderPaymentOptions() {
         const optionList = document.getElementById('payment-option-list')
-        const priceId = window._shipFastPriceId || ''
+        const plan = paymentState?.plan
+        const priceId = plan?.priceId || window._shipFastPriceId || ''
         const price = getDisplayPrice()
+
+        // Store the price ID globally for checkout
+        if (priceId) window._shipFastPriceId = priceId
+
         if (!priceId) {
           optionList.innerHTML = '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
           return
         }
+
+        const features = plan?.features || [
+          'Unlimited website generation',
+          'Unlimited ZIP downloads',
+          'All frameworks (HTML, React, Next.js)',
+          'Priority support',
+        ]
+        const featureHtml = features.map(f => `<li>${escapeHtml(f)}</li>`).join('')
+
         optionList.innerHTML = `<button type="button" class="payment-option is-active" data-payment-mode="subscription">
           <span class="payment-option-head">
-            <strong>Pro Plan</strong>
+            <strong>${escapeHtml(plan?.name || 'Pro')} Plan</strong>
             <span>${price}</span>
           </span>
-          <span class="payment-option-body">Unlimited generation + downloads in all frameworks.</span>
+          <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.85em;color:#c4b5fd;">
+            ${featureHtml}
+          </ul>
         </button>`
       }
 
