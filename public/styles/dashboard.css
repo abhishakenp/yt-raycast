@@ -1244,7 +1244,7 @@ body.dashboard-active {
 }
 
 .browser-toolbar {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
@@ -1252,6 +1252,10 @@ body.dashboard-active {
   border-bottom: 1px solid #2d2a3e;
   position: relative;
   overflow: visible;
+}
+
+.browser-chrome.is-preview-ready .browser-toolbar {
+  display: flex;
 }
 .browser-dots {
   display: flex;

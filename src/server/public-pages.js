@@ -12,8 +12,6 @@ const HOME_KEYWORDS = [
   'react website generator',
   'nextjs website generator',
 ].join(', ')
-const HOME_TAGLINE =
-  'Describe the website you want. Ship Fast keeps the generated UI fast, private, and ready for export.'
 const OG_IMAGE_URL = `${SITE_URL}/og-image.png`
 
 function renderStructuredData() {
@@ -90,6 +88,16 @@ function renderAuthOverlay() {
   </div>`
 }
 
+function renderTopActions() {
+  return `<nav class="top-actions" aria-label="Primary">
+    <a class="top-action-link" href="/#pricing">Pricing</a>
+    <button id="signout-btn" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </nav>`
+}
+
 export function renderHomePage() {
   return `<!doctype html>
 <html lang="en">
@@ -134,10 +142,7 @@ export function renderHomePage() {
   <body>
     ${renderAuthOverlay()}
 
-    <button id="signout-btn" type="button">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Sign out
-    </button>
+    ${renderTopActions()}
 
     <div class="wappalyzer-banner" id="wappalyzer-banner">Sorry, Wappalyzer won't help you this time</div>
     <div class="bg-glow"></div>
@@ -149,17 +154,26 @@ export function renderHomePage() {
           ${renderLogo()}
           <form id="prompt-form" class="input-group">
             <label class="sr-only" for="prompt-input">Describe the website you want to build</label>
-            <textarea
-              class="prompt-input"
-              id="prompt-input"
-              placeholder="A modern SaaS landing page for a time tracking app..."
-              autofocus
-              autocomplete="off"
-              minlength="70"
-              required
-              rows="5"
-              aria-describedby="prompt-help prompt-tagline"
-            ></textarea>
+            <div class="prompt-field">
+              <textarea
+                class="prompt-input"
+                id="prompt-input"
+                placeholder=""
+                autofocus
+                autocomplete="off"
+                minlength="70"
+                required
+                rows="5"
+                aria-describedby="prompt-help"
+              ></textarea>
+              <div class="prompt-placeholder" id="prompt-placeholder" aria-hidden="true">
+                <span class="prompt-placeholder-label">Try a prompt like</span>
+                <span class="prompt-placeholder-body">
+                  <span class="prompt-placeholder-text" id="prompt-placeholder-text"></span>
+                  <span class="prompt-placeholder-caret"></span>
+                </span>
+              </div>
+            </div>
             <button type="submit" class="submit-btn" id="submit-btn">
               <svg
                 class="zap-icon"
@@ -178,7 +192,6 @@ export function renderHomePage() {
             </button>
           </form>
           <p class="prompt-help" id="prompt-help" aria-live="polite">Minimum 70 characters.</p>
-          <p class="tagline" id="prompt-tagline">${escapeHtml(HOME_TAGLINE)}</p>
           <div class="gen-counter" id="gen-counter" style="display:none"></div>
         </section>
       </main>

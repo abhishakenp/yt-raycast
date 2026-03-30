@@ -395,6 +395,7 @@
       let allDone = false
       let drawerOpen = false
       let previewLoaded = false
+      let homepageReady = false
       let wsConnected = false
       let introActive = true
       let introPromptText = ''
@@ -489,6 +490,12 @@
         iframe.contentWindow.postMessage({ type: 'UPDATE_THEME', colors: activeThemeOverride }, '*')
       }
 
+      function syncPreviewChrome() {
+        const chrome = document.querySelector('.browser-chrome')
+        if (!chrome) return
+        chrome.classList.toggle('is-preview-ready', homepageReady)
+      }
+
       function setActiveThemeOverride(theme) {
         activeThemeOverride =
           theme && typeof theme === 'object' && Object.keys(theme).length > 0 ? theme : null
@@ -507,7 +514,7 @@
         const menu = document.getElementById('github-export-menu')
         const button = document.getElementById('github-push-btn')
         const selected = getSelectedExportEntry()
-        const canShow = exportTargets.length > 0 || siteSpecReady
+        const canShow = homepageReady && (exportTargets.length > 0 || siteSpecReady)
         const pushedLabel = lastGithubPush?.target
           ? formatExportTargetLabel(lastGithubPush.target)
           : selected
@@ -1065,7 +1072,7 @@
           ? false
           : exportTargets.every((entry) => entry.buildReady !== false)
 
-        if (!siteSpecReady && exportTargets.length === 0) {
+        if (!homepageReady || (!siteSpecReady && exportTargets.length === 0)) {
           menu.style.display = 'none'
           setExportMenuOpen(false)
           renderGitHubPushButton()
@@ -1940,6 +1947,8 @@
             }
 
             case 'homepage_ready':
+              homepageReady = true
+              syncPreviewChrome()
               preloadPreview()
               if (introActive && !hasSeenLiveUpdate) {
                 // Reconnect: skip intro, show preview full-width immediately
@@ -2107,12 +2116,14 @@
             const sfx = document.getElementById('launch-sfx')
             if (sfx) sfx.remove()
           }
+          homepageReady = Boolean(session.homepageReady)
           siteSpecReady = Boolean(session.siteSpecReady)
           preferredExportTarget = String(session.preferredExportTarget || 'html').toLowerCase()
           selectedExportTarget = preferredExportTarget
           exportTargets = Array.isArray(session.exportTargets) ? session.exportTargets : []
           paymentState = normalizePaymentState(session.payment)
           setActiveThemeOverride(session.themeOverride || null)
+          syncPreviewChrome()
           renderExportPanel()
         })
         .catch(() => {})

@@ -124,8 +124,100 @@ const input = document.getElementById('prompt-input')
 const submitButton = document.getElementById('submit-btn')
 const generationCounter = document.getElementById('gen-counter')
 const promptHelp = document.getElementById('prompt-help')
+const promptPlaceholder = document.getElementById('prompt-placeholder')
+const promptPlaceholderText = document.getElementById('prompt-placeholder-text')
 const GENERATION_LIMIT = 5
 const MIN_PROMPT_LENGTH = 70
+const SAMPLE_PROMPTS = [
+  'A cinematic travel landing page for curated weekend escapes with reviews and fast booking.',
+  'A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.',
+  'A premium architecture studio site with immersive case studies, awards, and inquiry scheduling.',
+  'A bold ecommerce homepage for handcrafted coffee gear with bundles and subscriptions.',
+  'A sleek fintech landing page for founders tracking runway, burn, and investor updates.',
+  'A modern fitness club website with class schedules, trainer profiles, and membership plans.',
+]
+
+let samplePromptIndex = 0
+let samplePromptLength = 0
+let samplePromptMode = 'typing'
+let samplePromptTimer = null
+
+function randomDelay(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function renderSamplePrompt() {
+  promptPlaceholderText.textContent = SAMPLE_PROMPTS[samplePromptIndex].slice(0, samplePromptLength)
+}
+
+function stopSamplePromptAnimation() {
+  if (samplePromptTimer !== null) {
+    window.clearTimeout(samplePromptTimer)
+    samplePromptTimer = null
+  }
+}
+
+function scheduleSamplePromptStep(delay) {
+  stopSamplePromptAnimation()
+  samplePromptTimer = window.setTimeout(stepSamplePromptAnimation, delay)
+}
+
+function syncSamplePromptVisibility() {
+  const hasValue = input.value.length > 0
+  promptPlaceholder.classList.toggle('is-hidden', hasValue)
+
+  if (hasValue) {
+    stopSamplePromptAnimation()
+    return
+  }
+
+  if (samplePromptTimer === null) {
+    scheduleSamplePromptStep(samplePromptLength === 0 ? 320 : 80)
+  }
+}
+
+function stepSamplePromptAnimation() {
+  samplePromptTimer = null
+
+  if (input.value.length > 0) {
+    syncSamplePromptVisibility()
+    return
+  }
+
+  const currentPrompt = SAMPLE_PROMPTS[samplePromptIndex]
+
+  if (samplePromptMode === 'typing') {
+    samplePromptLength += 1
+    renderSamplePrompt()
+
+    if (samplePromptLength < currentPrompt.length) {
+      scheduleSamplePromptStep(randomDelay(16, 30))
+      return
+    }
+
+    samplePromptMode = 'holding'
+    scheduleSamplePromptStep(1800)
+    return
+  }
+
+  if (samplePromptMode === 'holding') {
+    samplePromptMode = 'deleting'
+    scheduleSamplePromptStep(640)
+    return
+  }
+
+  samplePromptLength = Math.max(0, samplePromptLength - 1)
+  renderSamplePrompt()
+
+  if (samplePromptLength > 0) {
+    scheduleSamplePromptStep(randomDelay(10, 18))
+    return
+  }
+
+  samplePromptIndex = (samplePromptIndex + 1) % SAMPLE_PROMPTS.length
+  samplePromptMode = 'typing'
+  scheduleSamplePromptStep(260)
+}
 
 function setPromptHelp(message, isError = false) {
   promptHelp.textContent = message
@@ -179,9 +271,12 @@ function updateGenerationCounter() {
 
 updateGenerationCounter()
 setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
+renderSamplePrompt()
+syncSamplePromptVisibility()
 
 input.addEventListener('input', () => {
   validatePrompt(false)
+  syncSamplePromptVisibility()
 })
 
 input.addEventListener('keydown', (event) => {
