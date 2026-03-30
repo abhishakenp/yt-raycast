@@ -144,6 +144,76 @@ export function initPaymentStore(sessionsDir) {
   mkdirSync(billingDir, { recursive: true })
 }
 
+/**
+ * Start Firestore listeners for automatic payment fulfillment.
+ * 1. Watch new subscriptions — increment early adopter count when applicable
+ * 2. Watch completed checkout sessions — grant credits for one-time credit pack purchases
+ */
+export function startPaymentListeners() {
+  // ─── Subscription listener: track early adopters ──────────
+  db.collectionGroup('subscriptions').onSnapshot((snapshot) => {
+    for (const change of snapshot.docChanges()) {
+      if (change.type !== 'added' && change.type !== 'modified') continue
+      const sub = change.doc.data()
+      if (sub.status !== 'active' && sub.status !== 'trialing') continue
+
+      // Check if this subscription uses the early adopter price
+      const priceId = sub.price || sub.prices?.[0]?.id
+      if (priceId === EARLY_ADOPTER_PRICE_ID && EARLY_ADOPTER_PRICE_ID) {
+        const uid = change.doc.ref.parent.parent.id // customers/{uid}/subscriptions/{id}
+        incrementEarlyAdopterCount(uid)
+      }
+    }
+  }, (err) => {
+    console.error('[payment-listener] subscription listener error:', err?.message ?? err)
+  })
+
+  // ─── Checkout session listener: auto-fulfill credit packs ─
+  const creditPriceIds = new Set(
+    [process.env.STRIPE_3_CREDITS_PRICE_ID, process.env.STRIPE_10_CREDITS_PRICE_ID].filter(Boolean),
+  )
+
+  if (creditPriceIds.size > 0) {
+    db.collectionGroup('checkout_sessions').onSnapshot((snapshot) => {
+      for (const change of snapshot.docChanges()) {
+        if (change.type !== 'modified') continue
+        const data = change.doc.data()
+
+        // Only process completed one-time payments for credit packs
+        if (data.mode !== 'payment') continue
+        if (data.fulfilled) continue
+        if (!data.sessionId && !data.url) continue // not yet processed by extension
+
+        const priceId = data.price
+        if (!creditPriceIds.has(priceId)) continue
+
+        // Check if the Stripe session is complete (extension sets sessionId after completion)
+        if (!data.sessionId) continue
+
+        let creditAmount = 0
+        if (priceId === process.env.STRIPE_3_CREDITS_PRICE_ID) creditAmount = 3
+        else if (priceId === process.env.STRIPE_10_CREDITS_PRICE_ID) creditAmount = 10
+
+        if (creditAmount <= 0) continue
+
+        const uid = change.doc.ref.parent.parent.id
+        addUserCredits(uid, creditAmount)
+
+        // Mark fulfilled to prevent double-granting
+        change.doc.ref.update({ fulfilled: true }).catch((err) => {
+          console.error('[payment-listener] failed to mark fulfilled:', err?.message ?? err)
+        })
+
+        console.log(`[payment-listener] Auto-fulfilled ${creditAmount} credits for user ${uid}`)
+      }
+    }, (err) => {
+      console.error('[payment-listener] checkout_sessions listener error:', err?.message ?? err)
+    })
+  }
+
+  console.log('  Payment listeners started (subscriptions + credit fulfillment)')
+}
+
 export async function hasActiveSubscription(uid) {
   if (!uid) return false
   const subsRef = db.collection('customers').doc(uid).collection('subscriptions')

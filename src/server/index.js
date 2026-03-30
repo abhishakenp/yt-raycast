@@ -34,6 +34,7 @@ import {
   getSessionPaymentDetails,
   hasActiveSubscription,
   initPaymentStore,
+  startPaymentListeners,
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { pushSessionToGitHub } from './github.js'
@@ -94,6 +95,7 @@ export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
   initSessionDir(sessionsDir)
   initPaymentStore(sessionsDir)
+  startPaymentListeners()
   const app = express()
   app.set('trust proxy', true)
 
