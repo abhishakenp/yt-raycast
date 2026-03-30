@@ -11,42 +11,32 @@ import {
   makeSessionState,
   initSessionDir,
   findSessionByPrompt,
-<<<<<<< HEAD
-} from './sessions.js'
-=======
   normalizePreferredExportTarget,
   setSessionPreferredExportTarget,
 } from './sessions.js'
-import { setupWebSocket } from './websocket.js'
-import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
-import { existsSync, readFileSync } from 'node:fs'
->>>>>>> 51fe244 (push to github enabled)
-import { verifyIdToken } from '../auth/firebase-admin.js'
+import { verifyIdToken, db } from '../auth/firebase-admin.js'
 import {
   generateSessionExport,
   getSessionExportBundle,
   getSessionExportTargets,
   rerenderPreviewFromSiteSpec,
 } from './exports.js'
-<<<<<<< HEAD
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync } from 'node:fs'
-=======
 import {
+  addUserCredits,
+  consumeUserCredit,
   decorateExportTargetsForRequest,
   getDownloadAccessDecision,
   getEarlyAdopterStatus,
+  getUserCredits,
   getSessionPaymentDetails,
   hasActiveSubscription,
   initPaymentStore,
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
-<<<<<<< HEAD
->>>>>>> 2f2c95d (SEO Optimized)
-=======
 import { pushSessionToGitHub } from './github.js'
->>>>>>> 51fe244 (push to github enabled)
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -157,10 +147,6 @@ export async function startServer(sessionsDir) {
     }
   }
 
-<<<<<<< HEAD
-  // Serve public statically
-  app.use(express.static(publicDir))
-=======
   // ─── Public: Firebase client config ──────────────────────
   app.get('/api/config', (_req, res) => {
     res.json({
@@ -182,7 +168,6 @@ export async function startServer(sessionsDir) {
   app.get('/index.html', (_req, res) => {
     res.redirect(301, '/')
   })
->>>>>>> 2f2c95d (SEO Optimized)
 
   // ─── Prompt page (landing) ────────────────────────────────
   app.get('/', (_req, res) => {
@@ -209,7 +194,9 @@ export async function startServer(sessionsDir) {
     const trimmedPrompt = prompt?.trim()
     if (!trimmedPrompt) return res.status(400).json({ error: 'prompt is required' })
     if (trimmedPrompt.length < MIN_PROMPT_LENGTH) {
-      return res.status(400).json({ error: `Prompt must be at least ${MIN_PROMPT_LENGTH} characters.` })
+      return res
+        .status(400)
+        .json({ error: `Prompt must be at least ${MIN_PROMPT_LENGTH} characters.` })
     }
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
@@ -219,13 +206,9 @@ export async function startServer(sessionsDir) {
     const ts = new Date().toISOString()
 
     // Log every request for monitoring
-<<<<<<< HEAD
     console.log(
-      `[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${prompt.trim().slice(0, 80)}"`,
+      `[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${trimmedPrompt.slice(0, 80)}"`,
     )
-=======
-    console.log(`[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${trimmedPrompt.slice(0, 80)}"`)
->>>>>>> 51fe244 (push to github enabled)
 
     // Check for exact prompt match - return existing project
     const existing = findSessionByPrompt(req.user.uid, trimmedPrompt)
@@ -236,13 +219,9 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
           body: JSON.stringify({
-            text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
+            text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
           }),
-=======
-          body: JSON.stringify({ text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
->>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res.json({ id: existing.id, workspace: existing.workspace, cached: true })
@@ -255,13 +234,9 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
           body: JSON.stringify({
-            text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
+            text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
           }),
-=======
-          body: JSON.stringify({ text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\`` }),
->>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res.status(429).json({
@@ -276,13 +251,9 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
           body: JSON.stringify({
-            text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
+            text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
           }),
-=======
-          body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
->>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res
@@ -297,13 +268,9 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
           body: JSON.stringify({
-            text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
+            text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
           }),
-=======
-          body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
->>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res
@@ -328,13 +295,9 @@ export async function startServer(sessionsDir) {
       fetch(process.env.SLACK_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
         body: JSON.stringify({
-          text: `\ud83d\ude80 New Ship Fast prompt:\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}`,
+          text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}`,
         }),
-=======
-        body: JSON.stringify({ text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}` }),
->>>>>>> 51fe244 (push to github enabled)
       }).catch(() => {})
     }
 
@@ -390,7 +353,11 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    const targets = await decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
+    const targets = await decorateExportTargetsForRequest(
+      session,
+      getSessionExportTargets(session),
+      req,
+    )
     const payment = await getSessionPaymentDetails(session, req, targets[0]?.target || 'html')
     res.json({
       id: session.id,
@@ -410,7 +377,11 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id/export-targets', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    const targets = await decorateExportTargetsForRequest(session, getSessionExportTargets(session), req)
+    const targets = await decorateExportTargetsForRequest(
+      session,
+      getSessionExportTargets(session),
+      req,
+    )
     const payment = await getSessionPaymentDetails(session, req, targets[0]?.target || 'html')
     res.json({
       sessionId: session.id,
@@ -463,6 +434,58 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  // ─── API: Credits status + fulfillment ─────────────────────
+  app.get('/api/credits', requireAuth, async (req, res) => {
+    const credits = await getUserCredits(req.user.uid)
+    res.json({ credits })
+  })
+
+  app.post('/api/credits/fulfill', requireAuth, async (req, res) => {
+    // Called after a successful Stripe one-time payment for credit packs.
+    // The checkout_session in Firestore contains the price metadata with credit count.
+    const { checkoutSessionId } = req.body
+    if (!checkoutSessionId) return res.status(400).json({ error: 'checkoutSessionId required' })
+
+    try {
+      const sessionDoc = await db
+        .collection('customers')
+        .doc(req.user.uid)
+        .collection('checkout_sessions')
+        .doc(checkoutSessionId)
+        .get()
+
+      if (!sessionDoc.exists) return res.status(404).json({ error: 'Checkout session not found' })
+
+      const data = sessionDoc.data()
+      if (data.mode !== 'payment')
+        return res.status(400).json({ error: 'Not a one-time payment session' })
+      if (data.fulfilled)
+        return res.json({ ok: true, already: true, credits: await getUserCredits(req.user.uid) })
+
+      // Get credit count from the price metadata in Stripe (stored in Firestore products)
+      const priceId = data.price
+      let creditAmount = 0
+      if (priceId === process.env.STRIPE_3_CREDITS_PRICE_ID) creditAmount = 3
+      else if (priceId === process.env.STRIPE_10_CREDITS_PRICE_ID) creditAmount = 10
+
+      if (creditAmount <= 0) return res.status(400).json({ error: 'Unknown credit pack' })
+
+      addUserCredits(req.user.uid, creditAmount)
+
+      // Mark as fulfilled to prevent double-granting
+      await sessionDoc.ref.update({ fulfilled: true })
+
+      res.json({
+        ok: true,
+        creditsAdded: creditAmount,
+        credits: await getUserCredits(req.user.uid),
+      })
+    } catch (error) {
+      console.error('[credits/fulfill] error:', error?.message ?? error)
+      res.status(500).json({ error: 'Failed to fulfill credits' })
+    }
+  })
+
   app.get('/api/sessions/:id/download/:target', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
@@ -474,6 +497,11 @@ export async function startServer(sessionsDir) {
         error: accessDecision.error,
         payment: accessDecision.payment,
       })
+    }
+
+    // Consume a credit if using credit-based access (not subscription)
+    if (accessDecision.useCredit && session.userId) {
+      consumeUserCredit(session.userId)
     }
 
     const bundle = getSessionExportBundle(session, target)

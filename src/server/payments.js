@@ -66,6 +66,29 @@ const PRO_PLAN = {
   },
 }
 
+const CREDIT_PACKS = [
+  {
+    id: '3_credits',
+    name: '3 Downloads',
+    credits: 3,
+    priceId: process.env.STRIPE_3_CREDITS_PRICE_ID || '',
+    pricing: {
+      inr: { amount: 199, display: '\u20B9199' },
+      usd: { amount: 3, display: '$3' },
+    },
+  },
+  {
+    id: '10_credits',
+    name: '10 Downloads',
+    credits: 10,
+    priceId: process.env.STRIPE_10_CREDITS_PRICE_ID || '',
+    pricing: {
+      inr: { amount: 399, display: '\u20B9399' },
+      usd: { amount: 5, display: '$5' },
+    },
+  },
+]
+
 const GEO_HEADERS = [
   'x-ship-fast-country-hint',
   'cf-ipcountry',
@@ -128,29 +151,78 @@ export async function hasActiveSubscription(uid) {
   return !snapshot.empty
 }
 
+export async function getUserCredits(uid) {
+  if (!uid) return 0
+  const creditFile = billingDir ? join(billingDir, `credits_${uid}.json`) : null
+  if (!creditFile || !existsSync(creditFile)) return 0
+  try {
+    const data = JSON.parse(readFileSync(creditFile, 'utf-8'))
+    return data.remaining ?? 0
+  } catch {
+    return 0
+  }
+}
+
+export function addUserCredits(uid, amount) {
+  if (!uid || !billingDir) return
+  const creditFile = join(billingDir, `credits_${uid}.json`)
+  let data = { remaining: 0, history: [] }
+  if (existsSync(creditFile)) {
+    try { data = JSON.parse(readFileSync(creditFile, 'utf-8')) } catch { /* */ }
+  }
+  data.remaining = (data.remaining ?? 0) + amount
+  data.history.push({ type: 'purchase', amount, at: new Date().toISOString() })
+  writeFileSync(creditFile, JSON.stringify(data, null, 2))
+}
+
+export function consumeUserCredit(uid) {
+  if (!uid || !billingDir) return false
+  const creditFile = join(billingDir, `credits_${uid}.json`)
+  if (!existsSync(creditFile)) return false
+  try {
+    const data = JSON.parse(readFileSync(creditFile, 'utf-8'))
+    if ((data.remaining ?? 0) <= 0) return false
+    data.remaining -= 1
+    data.history.push({ type: 'consume', at: new Date().toISOString() })
+    writeFileSync(creditFile, JSON.stringify(data, null, 2))
+    return true
+  } catch {
+    return false
+  }
+}
+
 export async function getDownloadAccessDecision(session, target, req) {
   const uid = session?.userId
   const isSubscribed = await hasActiveSubscription(uid)
 
   if (isSubscribed) {
-    return { allowed: true, payment: { subscriptionActive: true } }
+    return { allowed: true, payment: { subscriptionActive: true, credits: null } }
+  }
+
+  const credits = await getUserCredits(uid)
+  if (credits > 0) {
+    return { allowed: true, useCredit: true, payment: { subscriptionActive: false, credits } }
   }
 
   return {
     allowed: false,
-    payment: { subscriptionActive: false },
-    error: 'An active Pro subscription is required to download ZIP exports. Subscribe to unlock downloads.',
+    payment: { subscriptionActive: false, credits: 0 },
+    error: 'Subscribe to Pro or purchase download credits to export ZIP files.',
   }
 }
 
 export async function decorateExportTargetsForRequest(session, targets, req) {
-  const isSubscribed = await hasActiveSubscription(session?.userId)
+  const uid = session?.userId
+  const isSubscribed = await hasActiveSubscription(uid)
+  const credits = await getUserCredits(uid)
+  const hasAccess = isSubscribed || credits > 0
 
   return targets.map((targetEntry) => ({
     ...targetEntry,
-    paymentRequired: !isSubscribed,
-    downloadUnlocked: isSubscribed,
+    paymentRequired: !hasAccess,
+    downloadUnlocked: hasAccess,
     subscriptionUnlocked: isSubscribed,
+    credits,
   }))
 }
 
@@ -160,6 +232,8 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
   const isSubscribed = await hasActiveSubscription(session?.userId)
 
   const earlyAdopter = getEarlyAdopterStatus()
+
+  const credits = await getUserCredits(session?.userId)
 
   return {
     gateway: 'stripe',
@@ -173,6 +247,13 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
       features: PRO_PLAN.features,
     },
     pricing: PRO_PLAN.pricing,
+    creditPacks: CREDIT_PACKS.filter((p) => p.priceId).map((p) => ({
+      id: p.id,
+      name: p.name,
+      credits: p.credits,
+      priceId: p.priceId,
+      pricing: p.pricing,
+    })),
     earlyAdopter: {
       eligible: earlyAdopter.eligible,
       slotsRemaining: earlyAdopter.slotsRemaining,
@@ -187,8 +268,11 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
       active: isSubscribed,
       status: isSubscribed ? 'active' : null,
     },
+    credits: {
+      remaining: credits,
+    },
     access: {
-      targetUnlocked: isSubscribed,
+      targetUnlocked: isSubscribed || credits > 0,
       subscriptionUnlocked: isSubscribed,
     },
   }
