@@ -316,6 +316,11 @@ body.has-sessions {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
+.prompt-input[aria-invalid='true'] {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
 .prompt-input::placeholder {
   color: #4a4660;
 }
@@ -365,10 +370,15 @@ body.has-sessions {
 }
 
 .prompt-help {
-  margin-top: 16px;
+  margin-top: 10px;
   color: #8b86a8;
   font-size: 14px;
   line-height: 1.6;
+  min-height: 22px;
+}
+
+.prompt-help.is-error {
+  color: #ef4444;
 }
 
 .gen-counter {

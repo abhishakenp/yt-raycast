@@ -13,7 +13,7 @@ const HOME_KEYWORDS = [
   'nextjs website generator',
 ].join(', ')
 const HOME_TAGLINE =
-  'Describe the website you want. Ship Fast server-renders the public page and keeps previews private.'
+  'Describe the website you want. Ship Fast keeps the generated UI fast, private, and ready for export.'
 const OG_IMAGE_URL = `${SITE_URL}/og-image.png`
 
 function renderStructuredData() {
@@ -155,8 +155,10 @@ export function renderHomePage() {
               placeholder="A modern SaaS landing page for a time tracking app..."
               autofocus
               autocomplete="off"
+              minlength="70"
+              required
               rows="5"
-              aria-describedby="prompt-tagline"
+              aria-describedby="prompt-help prompt-tagline"
             ></textarea>
             <button type="submit" class="submit-btn" id="submit-btn">
               <svg
@@ -175,6 +177,7 @@ export function renderHomePage() {
               <div class="spinner"></div>
             </button>
           </form>
+          <p class="prompt-help" id="prompt-help" aria-live="polite">Minimum 70 characters.</p>
           <p class="tagline" id="prompt-tagline">${escapeHtml(HOME_TAGLINE)}</p>
           <div class="gen-counter" id="gen-counter" style="display:none"></div>
         </section>

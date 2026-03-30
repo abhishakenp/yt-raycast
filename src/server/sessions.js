@@ -10,18 +10,55 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
+import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 
 const sessions = new Map()
 let _sessionsDir = null
+const SESSION_META_FILE = '.session.json'
+const DEFAULT_PREFERRED_EXPORT_TARGET = 'html'
+
+export function normalizePreferredExportTarget(value) {
+  const target = String(value || '')
+    .trim()
+    .toLowerCase()
+  return SUPPORTED_EXPORT_TARGETS.includes(target) ? target : DEFAULT_PREFERRED_EXPORT_TARGET
+}
+
+function readSessionMeta(workspace) {
+  const metaPath = join(workspace, SESSION_META_FILE)
+  if (!existsSync(metaPath)) {
+    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET }
+  }
+
+  try {
+    const data = JSON.parse(readFileSync(metaPath, 'utf-8'))
+    return {
+      preferredExportTarget: normalizePreferredExportTarget(data?.preferredExportTarget),
+    }
+  } catch {
+    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET }
+  }
+}
+
+function writeSessionMeta(workspace, meta = {}) {
+  const payload = {
+    preferredExportTarget: normalizePreferredExportTarget(meta.preferredExportTarget),
+  }
+  writeFileSync(join(workspace, SESSION_META_FILE), JSON.stringify(payload, null, 2))
+  return payload
+}
 
 export function initSessionDir(dir) {
   _sessionsDir = dir
 }
 
-export function createSession(baseDir, prompt, userId) {
+export function createSession(baseDir, prompt, userId, options = {}) {
   const id = randomBytes(6).toString('hex')
   const workspace = join(baseDir, id)
   if (!existsSync(workspace)) mkdirSync(workspace, { recursive: true })
+  const sessionMeta = writeSessionMeta(workspace, {
+    preferredExportTarget: options?.preferredExportTarget,
+  })
 
   // Persist userId to disk
   if (userId) {
@@ -56,6 +93,7 @@ export function createSession(baseDir, prompt, userId) {
     elapsed: null,
     cost: null,
     alternativeDesign,
+    preferredExportTarget: sessionMeta.preferredExportTarget,
     themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
     wsClients: new Set(),
@@ -170,6 +208,8 @@ export function getSession(id) {
     /* ignore */
   }
 
+  const sessionMeta = readSessionMeta(workspace)
+
   // Reconstruct session from disk
   const session = {
     id,
@@ -183,6 +223,7 @@ export function getSession(id) {
     elapsed,
     cost,
     alternativeDesign,
+    preferredExportTarget: sessionMeta.preferredExportTarget,
     themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
     wsClients: new Set(),
@@ -246,6 +287,7 @@ export function getAllSessions(userId) {
         siteSpecReady: s.siteSpecReady ?? false,
         elapsed: s.elapsed ?? null,
         cost: s.cost ?? null,
+        preferredExportTarget: s.preferredExportTarget ?? DEFAULT_PREFERRED_EXPORT_TARGET,
       })
     }
   }
@@ -289,6 +331,13 @@ export function deleteSession(id) {
     }
   }
   sessions.delete(id)
+}
+
+export function setSessionPreferredExportTarget(session, preferredExportTarget) {
+  if (!session?.workspace) return DEFAULT_PREFERRED_EXPORT_TARGET
+  const nextMeta = writeSessionMeta(session.workspace, { preferredExportTarget })
+  session.preferredExportTarget = nextMeta.preferredExportTarget
+  return session.preferredExportTarget
 }
 
 /** Broadcast a message to all WS clients in a session */

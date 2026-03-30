@@ -146,6 +146,38 @@
                   </div>
                 </div>
               </div>
+              <div class="github-export-menu" id="github-export-menu" style="display: none">
+                <button
+                  id="github-push-btn"
+                  class="github-push-btn"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="github-export-panel"
+                  aria-label="Choose GitHub export target"
+                  title="Choose GitHub export target"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path>
+                  </svg>
+                </button>
+                <div
+                  class="export-panel export-panel--popover github-export-panel"
+                  id="github-export-panel"
+                  style="display: none"
+                >
+                  <div class="export-panel-top github-export-panel-top">
+                    <div class="export-copy">
+                      <span class="export-eyebrow">GitHub Push</span>
+                      <strong>Choose the repo stack</strong>
+                      <p id="github-export-subtext">
+                        Pick HTML, React, or Next.js and Ship Fast will push that export to GitHub.
+                      </p>
+                    </div>
+                    <span class="export-status-badge" id="github-export-status">Choose target</span>
+                  </div>
+                  <div class="export-target-list" id="github-export-target-list"></div>
+                </div>
+              </div>
               <div class="browser-status">
                 <span class="dot" id="status-dot"></span>
                 <span id="status-text">Preview</span>
@@ -248,6 +280,7 @@
       <div class="debug-feed" id="debug-feed"></div>
     </div>
 
+    <script type="module" src="/scripts/dashboard-auth.js"></script>
     <script>
       // ─── Config ────────────────────────────────────────────────
       const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
@@ -372,6 +405,7 @@
       let alternativeDesign = null // background-loaded alternative theme
       let exportTargets = []
       let siteSpecReady = false
+      let preferredExportTarget = 'html'
       let selectedExportTarget = 'html'
       let exportMenuOpen = false
       let activeThemeOverride = null
@@ -379,6 +413,9 @@
       let paymentModalTarget = null
       let selectedPaymentMode = 'one_time'
       let paymentBusy = false
+      let githubPushBusy = false
+      let githubMenuOpen = false
+      let lastGithubPush = null
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
@@ -458,10 +495,119 @@
         syncPreviewTheme()
       }
 
+      function getExportEntry(target) {
+        return exportTargets.find((entry) => entry.target === target) || null
+      }
+
       function getSelectedExportEntry() {
-        return (
-          exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0] || null
+        return getExportEntry(selectedExportTarget) || exportTargets[0] || null
+      }
+
+      function renderGitHubPushButton() {
+        const menu = document.getElementById('github-export-menu')
+        const button = document.getElementById('github-push-btn')
+        const selected = getSelectedExportEntry()
+        const canShow = exportTargets.length > 0 || siteSpecReady
+        const pushedLabel = lastGithubPush?.target
+          ? formatExportTargetLabel(lastGithubPush.target)
+          : selected
+            ? formatExportTargetLabel(selected.target)
+            : 'an export'
+
+        menu.style.display = canShow ? 'inline-flex' : 'none'
+        button.disabled = githubPushBusy || !canShow
+        button.classList.toggle('is-loading', githubPushBusy)
+        button.classList.toggle('is-open', githubMenuOpen && canShow)
+        button.classList.toggle('is-success', Boolean(lastGithubPush?.repoFullName) && !githubPushBusy)
+        if (!canShow) setGitHubMenuOpen(false)
+
+        const title = githubPushBusy
+          ? `Pushing ${pushedLabel} to GitHub…`
+          : lastGithubPush?.repoFullName
+            ? `Choose another stack to push to ${lastGithubPush.repoFullName}`
+            : 'Choose GitHub export target'
+        button.title = title
+        button.setAttribute('aria-label', title)
+        button.setAttribute('aria-expanded', githubMenuOpen ? 'true' : 'false')
+      }
+
+      function getGitHubTargetEntries() {
+        return ['html', 'react', 'nextjs'].map(
+          (target) =>
+            getExportEntry(target) || {
+              target,
+              ready: false,
+              buildReady: true,
+              buildReason: null,
+            },
         )
+      }
+
+      function setGitHubMenuOpen(nextOpen) {
+        const menu = document.getElementById('github-export-menu')
+        const panel = document.getElementById('github-export-panel')
+        const button = document.getElementById('github-push-btn')
+        const canShow = Boolean(menu) && menu.style.display !== 'none'
+
+        githubMenuOpen = Boolean(nextOpen) && canShow
+        panel.style.display = githubMenuOpen ? 'grid' : 'none'
+        button.classList.toggle('is-open', githubMenuOpen)
+        button.setAttribute('aria-expanded', githubMenuOpen ? 'true' : 'false')
+      }
+
+      function closeGitHubMenu() {
+        setGitHubMenuOpen(false)
+      }
+
+      function toggleGitHubMenu() {
+        closeExportMenu()
+        renderGitHubExportPanel()
+        setGitHubMenuOpen(!githubMenuOpen)
+      }
+
+      function renderGitHubExportPanel() {
+        const statusEl = document.getElementById('github-export-status')
+        const subtextEl = document.getElementById('github-export-subtext')
+        const targetList = document.getElementById('github-export-target-list')
+        const targets = getGitHubTargetEntries()
+
+        if (!targets.length) {
+          closeGitHubMenu()
+          return
+        }
+
+        targetList.innerHTML = targets
+          .map((entry) => {
+            const label = formatExportTargetLabel(entry.target)
+            const activeClass = entry.target === selectedExportTarget ? ' is-active' : ''
+            const stateLabel = githubPushBusy
+              ? 'Working'
+              : entry.buildReady === false
+                ? 'Waiting'
+                : lastGithubPush?.target === entry.target
+                  ? 'Last push'
+                  : 'Push'
+            const disabledAttr = githubPushBusy || entry.buildReady === false ? ' disabled' : ''
+
+            return `<button type="button" class="export-target${activeClass}" data-github-target="${escapeHtml(
+              entry.target,
+            )}"${disabledAttr}>
+              <span class="export-target-glyph" aria-hidden="true">${escapeHtml(
+                formatExportTargetGlyph(entry.target),
+              )}</span>
+              <span class="export-target-copy">
+                <span class="export-target-name">${escapeHtml(label)}</span>
+                <span class="export-target-meta">${escapeHtml(formatExportTargetSummary(entry.target))}</span>
+              </span>
+              <span class="export-target-state">${escapeHtml(stateLabel)}</span>
+            </button>`
+          })
+          .join('')
+
+        statusEl.textContent = githubPushBusy ? 'GitHub Push' : 'Choose target'
+        subtextEl.textContent = githubPushBusy
+          ? 'Preparing the selected export for GitHub.'
+          : 'Pick HTML, React, or Next.js and Ship Fast will push that export to GitHub.'
       }
 
       function setPaymentError(message = '') {
@@ -899,6 +1045,7 @@
       }
 
       function toggleExportMenu() {
+        closeGitHubMenu()
         setExportMenuOpen(!exportMenuOpen)
       }
 
@@ -921,6 +1068,8 @@
         if (!siteSpecReady && exportTargets.length === 0) {
           menu.style.display = 'none'
           setExportMenuOpen(false)
+          renderGitHubPushButton()
+          renderGitHubExportPanel()
           return
         }
 
@@ -1004,6 +1153,8 @@
               : `Download ${selectedLabel}`
           }
           setExportMenuOpen(exportMenuOpen)
+          renderGitHubPushButton()
+          renderGitHubExportPanel()
           return
         }
 
@@ -1037,10 +1188,12 @@
         }
 
         setExportMenuOpen(exportMenuOpen)
+        renderGitHubPushButton()
+        renderGitHubExportPanel()
       }
 
       function refreshExportTargets() {
-        apiFetch(`/api/sessions/${SESSION_ID}/export-targets`)
+        return apiFetch(`/api/sessions/${SESSION_ID}/export-targets`)
           .then((r) => r.json())
           .then((data) => {
             siteSpecReady = Boolean(data.siteSpecReady)
@@ -1136,6 +1289,70 @@
             statusEl.textContent = 'Sync Failed'
             subtextEl.textContent = err.message || 'Preview re-render failed'
           })
+      }
+
+      async function pushSelectedExportToGitHub(targetOverride = selectedExportTarget) {
+        if (githubPushBusy) return
+
+        const selected = getExportEntry(targetOverride) || getGitHubTargetEntries().find((entry) => entry.target === targetOverride)
+        if (!selected) return
+
+        const statusEl = document.getElementById('export-status')
+        const subtextEl = document.getElementById('export-subtext')
+        const githubStatusEl = document.getElementById('github-export-status')
+        const githubSubtextEl = document.getElementById('github-export-subtext')
+        const targetLabel = formatExportTargetLabel(selected.target)
+
+        if (selected.buildReady === false) {
+          const message =
+            selected.buildReason || `Wait for the generated UI to finish before pushing ${targetLabel}.`
+          statusEl.textContent = 'Waiting For Exact Clone'
+          subtextEl.textContent = message
+          githubStatusEl.textContent = 'Waiting'
+          githubSubtextEl.textContent = message
+          return
+        }
+
+        selectedExportTarget = selected.target
+        githubPushBusy = true
+        setGitHubMenuOpen(true)
+        renderGitHubPushButton()
+        renderGitHubExportPanel()
+        statusEl.textContent = 'GitHub Push'
+        subtextEl.textContent = `Connecting GitHub and pushing the ${targetLabel} export.`
+        githubStatusEl.textContent = 'GitHub Push'
+        githubSubtextEl.textContent = `Connecting GitHub and pushing the ${targetLabel} export.`
+
+        try {
+          if (!window.shipFastDashboardGithub?.pushExportToGitHub) {
+            throw new Error('GitHub push is still loading. Retry in a moment.')
+          }
+
+          const result = await window.shipFastDashboardGithub.pushExportToGitHub(
+            SESSION_ID,
+            selected.target,
+          )
+
+          lastGithubPush = result
+          await refreshExportTargets()
+          statusEl.textContent = result.created ? 'Repo Created' : 'GitHub Updated'
+          subtextEl.textContent = `${targetLabel} pushed to ${result.repoFullName} on ${result.branch}.`
+          githubStatusEl.textContent = result.created ? 'Repo Created' : 'GitHub Updated'
+          githubSubtextEl.textContent = `${targetLabel} pushed to ${result.repoFullName} on ${result.branch}.`
+          closeGitHubMenu()
+          renderGitHubPushButton()
+          window.open(result.repoUrl, '_blank', 'noopener,noreferrer')
+        } catch (error) {
+          statusEl.textContent = 'GitHub Push Failed'
+          subtextEl.textContent = error.message || 'GitHub push failed.'
+          githubStatusEl.textContent = 'GitHub Push Failed'
+          githubSubtextEl.textContent = error.message || 'GitHub push failed.'
+          alert(error.message || 'GitHub push failed.')
+        } finally {
+          githubPushBusy = false
+          renderGitHubPushButton()
+          renderGitHubExportPanel()
+        }
       }
 
       // ─── Intro Animation ───────────────────────────────────────
@@ -1817,6 +2034,7 @@
         document.getElementById('log-section').classList.toggle('open')
       })
       document.getElementById('export-trigger-btn').addEventListener('click', toggleExportMenu)
+      document.getElementById('github-push-btn').addEventListener('click', toggleGitHubMenu)
       document.getElementById('export-generate-btn').addEventListener('click', triggerExportBuild)
       document
         .getElementById('export-target-list')
@@ -1825,6 +2043,16 @@
           if (!button) return
           selectedExportTarget = button.dataset.target || selectedExportTarget
           renderExportPanel()
+        })
+      document
+        .getElementById('github-export-target-list')
+        .addEventListener('click', (event) => {
+          const button = event.target.closest('[data-github-target]')
+          if (!button || githubPushBusy || button.disabled) return
+          selectedExportTarget = button.dataset.githubTarget || selectedExportTarget
+          renderExportPanel()
+          renderGitHubExportPanel()
+          pushSelectedExportToGitHub(selectedExportTarget)
         })
       document
         .getElementById('rerender-preview-btn')
@@ -1854,11 +2082,14 @@
       })
       document.addEventListener('click', (event) => {
         if (event.target.closest('#export-menu')) return
+        if (event.target.closest('#github-export-menu')) return
         closeExportMenu()
+        closeGitHubMenu()
       })
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           closeExportMenu()
+          closeGitHubMenu()
           closePaymentModal()
         }
       })
@@ -1877,6 +2108,8 @@
             if (sfx) sfx.remove()
           }
           siteSpecReady = Boolean(session.siteSpecReady)
+          preferredExportTarget = String(session.preferredExportTarget || 'html').toLowerCase()
+          selectedExportTarget = preferredExportTarget
           exportTargets = Array.isArray(session.exportTargets) ? session.exportTargets : []
           paymentState = normalizePaymentState(session.payment)
           setActiveThemeOverride(session.themeOverride || null)

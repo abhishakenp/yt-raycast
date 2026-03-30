@@ -187,7 +187,10 @@
           placeholder="A modern SaaS landing page for a time tracking app..."
           autofocus
           autocomplete="off"
+          minlength="70"
+          required
           rows="4"
+          aria-describedby="prompt-help"
         ></textarea>
         <button type="submit" class="submit-btn" id="submit-btn">
           <svg
@@ -205,7 +208,13 @@
           <div class="spinner"></div>
         </button>
       </form>
+<<<<<<< HEAD
       <div class="gen-counter" id="gen-counter" style="display: none"></div>
+=======
+      <p class="prompt-help" id="prompt-help" aria-live="polite">Minimum 70 characters.</p>
+      <div class="gen-counter" id="gen-counter" style="display:none"></div>
+
+>>>>>>> 51fe244 (push to github enabled)
     </div>
 
     <div class="sessions" id="sessions-section" style="display: none">
@@ -369,7 +378,30 @@
       }
       const btn = document.getElementById('submit-btn')
       const genCounter = document.getElementById('gen-counter')
+      const promptHelp = document.getElementById('prompt-help')
       const GEN_LIMIT = 5
+      const MIN_PROMPT_LENGTH = 70
+
+      function setPromptHelp(message, isError = false) {
+        promptHelp.textContent = message
+        promptHelp.classList.toggle('is-error', isError)
+        if (isError) input.setAttribute('aria-invalid', 'true')
+        else input.removeAttribute('aria-invalid')
+      }
+
+      function validatePrompt(showError = false) {
+        const promptLength = input.value.trim().length
+        if (promptLength === 0) {
+          setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`, false)
+          return false
+        }
+        if (promptLength < MIN_PROMPT_LENGTH) {
+          setPromptHelp(`Prompt must be at least ${MIN_PROMPT_LENGTH} characters (${promptLength}/${MIN_PROMPT_LENGTH}).`, showError)
+          return false
+        }
+        setPromptHelp(`${promptLength} characters.`, false)
+        return true
+      }
 
       function getGenCount() {
         return parseInt(localStorage.getItem('sf_generation_count') || '0', 10)
@@ -393,6 +425,11 @@
       }
 
       updateGenCounter()
+      setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
+
+      input.addEventListener('input', () => {
+        validatePrompt(false)
+      })
 
       // Enter submits, Shift+Enter for newline
       input.addEventListener('keydown', (e) => {
@@ -404,8 +441,8 @@
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault()
+        if (!validatePrompt(true)) return
         const prompt = input.value.trim()
-        if (!prompt) return
 
         if (getGenCount() >= GEN_LIMIT) {
           updateGenCounter()
@@ -427,7 +464,12 @@
             sessionStorage.setItem('sf_return_home', '1')
             location.href = `/session/${data.id}`
           } else {
-            alert(data.error || 'Failed to create session')
+            if (data.error?.includes(`${MIN_PROMPT_LENGTH} characters`)) {
+              setPromptHelp(data.error, true)
+              input.focus()
+            } else {
+              alert(data.error || 'Failed to create session')
+            }
             btn.disabled = false
             btn.classList.remove('loading')
           }

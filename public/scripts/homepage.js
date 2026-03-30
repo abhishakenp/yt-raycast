@@ -13,6 +13,16 @@ import {
 let auth = null
 let currentUser = null
 let hasSessionResizeListener = false
+const GITHUB_TOKEN_STORAGE_KEY = 'sf_github_access_token'
+
+function persistGithubAccessToken(result) {
+  const accessToken = GithubAuthProvider.credentialFromResult(result)?.accessToken
+  if (accessToken) sessionStorage.setItem(GITHUB_TOKEN_STORAGE_KEY, accessToken)
+}
+
+function clearGithubAccessToken() {
+  sessionStorage.removeItem(GITHUB_TOKEN_STORAGE_KEY)
+}
 
 async function initFirebase() {
   const cfg = await fetch('/api/config').then((response) => response.json())
@@ -46,6 +56,7 @@ function showOverlay() {
   document.getElementById('signout-btn').style.display = 'none'
   document.getElementById('sessions-section').style.display = 'none'
   sessionStorage.removeItem('sf_return_home')
+  clearGithubAccessToken()
 }
 
 function showApp() {
@@ -70,7 +81,10 @@ document.getElementById('google-signin-btn').addEventListener('click', async () 
 document.getElementById('github-signin-btn').addEventListener('click', async () => {
   setAuthError('')
   try {
-    await signInWithPopup(auth, new GithubAuthProvider())
+    const provider = new GithubAuthProvider()
+    provider.addScope('repo')
+    const result = await signInWithPopup(auth, provider)
+    persistGithubAccessToken(result)
   } catch (error) {
     setAuthError(error.message)
   }
@@ -100,13 +114,45 @@ document.getElementById('email-signup-btn').addEventListener('click', async () =
   }
 })
 
-document.getElementById('signout-btn').addEventListener('click', () => signOut(auth))
+document.getElementById('signout-btn').addEventListener('click', () => {
+  clearGithubAccessToken()
+  signOut(auth)
+})
 
 const form = document.getElementById('prompt-form')
 const input = document.getElementById('prompt-input')
 const submitButton = document.getElementById('submit-btn')
 const generationCounter = document.getElementById('gen-counter')
+const promptHelp = document.getElementById('prompt-help')
 const GENERATION_LIMIT = 5
+const MIN_PROMPT_LENGTH = 70
+
+function setPromptHelp(message, isError = false) {
+  promptHelp.textContent = message
+  promptHelp.classList.toggle('is-error', isError)
+  if (isError) input.setAttribute('aria-invalid', 'true')
+  else input.removeAttribute('aria-invalid')
+}
+
+function validatePrompt(showError = false) {
+  const promptLength = input.value.trim().length
+
+  if (promptLength === 0) {
+    setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`, false)
+    return false
+  }
+
+  if (promptLength < MIN_PROMPT_LENGTH) {
+    setPromptHelp(
+      `Prompt must be at least ${MIN_PROMPT_LENGTH} characters (${promptLength}/${MIN_PROMPT_LENGTH}).`,
+      showError,
+    )
+    return false
+  }
+
+  setPromptHelp(`${promptLength} characters.`, false)
+  return true
+}
 
 function getGenerationCount() {
   return parseInt(localStorage.getItem('sf_generation_count') || '0', 10)
@@ -132,6 +178,11 @@ function updateGenerationCounter() {
 }
 
 updateGenerationCounter()
+setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
+
+input.addEventListener('input', () => {
+  validatePrompt(false)
+})
 
 input.addEventListener('keydown', (event) => {
   if (event.key === 'Enter' && !event.shiftKey) {
@@ -142,8 +193,8 @@ input.addEventListener('keydown', (event) => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
+  if (!validatePrompt(true)) return
   const prompt = input.value.trim()
-  if (!prompt) return
 
   if (getGenerationCount() >= GENERATION_LIMIT) {
     updateGenerationCounter()
@@ -168,7 +219,12 @@ form.addEventListener('submit', async (event) => {
       return
     }
 
-    alert(data.error || 'Failed to create session')
+    if (data.error?.includes(`${MIN_PROMPT_LENGTH} characters`)) {
+      setPromptHelp(data.error, true)
+      input.focus()
+    } else {
+      alert(data.error || 'Failed to create session')
+    }
   } catch (error) {
     alert(`Connection error: ${error.message}`)
   }

@@ -11,7 +11,16 @@ import {
   makeSessionState,
   initSessionDir,
   findSessionByPrompt,
+<<<<<<< HEAD
 } from './sessions.js'
+=======
+  normalizePreferredExportTarget,
+  setSessionPreferredExportTarget,
+} from './sessions.js'
+import { setupWebSocket } from './websocket.js'
+import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
+import { existsSync, readFileSync } from 'node:fs'
+>>>>>>> 51fe244 (push to github enabled)
 import { verifyIdToken } from '../auth/firebase-admin.js'
 import {
   generateSessionExport,
@@ -34,7 +43,11 @@ import {
   verifyRazorpayCheckout,
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
+<<<<<<< HEAD
 >>>>>>> 2f2c95d (SEO Optimized)
+=======
+import { pushSessionToGitHub } from './github.js'
+>>>>>>> 51fe244 (push to github enabled)
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -47,6 +60,7 @@ const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
 const MAX_PER_USER = 5 // per 10min window
 const MAX_PER_IP = 10 // per 10min window
 const MAX_DAILY_PER_USER = 10 // hard daily cap per user
+const MIN_PROMPT_LENGTH = 70
 
 const userHits = new Map() // uid -> [timestamp, ...]
 const ipHits = new Map() // ip -> [timestamp, ...]
@@ -205,7 +219,14 @@ export async function startServer(sessionsDir) {
   // ─── API: Create session + start generation ───────────────
   app.post('/api/sessions', requireAuth, async (req, res) => {
     const { prompt } = req.body
-    if (!prompt?.trim()) return res.status(400).json({ error: 'prompt is required' })
+    const preferredExportTarget = normalizePreferredExportTarget(
+      req.body?.preferredExportTarget || req.body?.framework,
+    )
+    const trimmedPrompt = prompt?.trim()
+    if (!trimmedPrompt) return res.status(400).json({ error: 'prompt is required' })
+    if (trimmedPrompt.length < MIN_PROMPT_LENGTH) {
+      return res.status(400).json({ error: `Prompt must be at least ${MIN_PROMPT_LENGTH} characters.` })
+    }
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     const userDaily = (userDailyHits.get(req.user.uid) || []).filter(
@@ -214,21 +235,30 @@ export async function startServer(sessionsDir) {
     const ts = new Date().toISOString()
 
     // Log every request for monitoring
+<<<<<<< HEAD
     console.log(
       `[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${prompt.trim().slice(0, 80)}"`,
     )
+=======
+    console.log(`[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${trimmedPrompt.slice(0, 80)}"`)
+>>>>>>> 51fe244 (push to github enabled)
 
     // Check for exact prompt match - return existing project
-    const existing = findSessionByPrompt(req.user.uid, prompt.trim())
+    const existing = findSessionByPrompt(req.user.uid, trimmedPrompt)
     if (existing) {
+      setSessionPreferredExportTarget(existing, preferredExportTarget)
       console.log(`[${ts}] CACHE_HIT user=${req.user.uid} session=${existing.id}`)
       if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
           body: JSON.stringify({
             text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
           }),
+=======
+          body: JSON.stringify({ text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
+>>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res.json({ id: existing.id, workspace: existing.workspace, cached: true })
@@ -241,9 +271,13 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
           body: JSON.stringify({
             text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
           }),
+=======
+          body: JSON.stringify({ text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\`` }),
+>>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res.status(429).json({
@@ -258,9 +292,13 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
           body: JSON.stringify({
             text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
           }),
+=======
+          body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
+>>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res
@@ -275,9 +313,13 @@ export async function startServer(sessionsDir) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
           body: JSON.stringify({
             text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
           }),
+=======
+          body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
+>>>>>>> 51fe244 (push to github enabled)
         }).catch(() => {})
       }
       return res
@@ -285,7 +327,7 @@ export async function startServer(sessionsDir) {
         .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
     }
 
-    const session = createSession(_sessionsDir, prompt.trim(), req.user.uid)
+    const session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, { preferredExportTarget })
     const sessionCtx = makeSessionState(session)
 
     console.log(
@@ -297,9 +339,13 @@ export async function startServer(sessionsDir) {
       fetch(process.env.SLACK_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+<<<<<<< HEAD
         body: JSON.stringify({
           text: `\ud83d\ude80 New Ship Fast prompt:\n> ${prompt.trim().slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}`,
         }),
+=======
+        body: JSON.stringify({ text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}` }),
+>>>>>>> 51fe244 (push to github enabled)
       }).catch(() => {})
     }
 
@@ -362,6 +408,7 @@ export async function startServer(sessionsDir) {
       createdAt: session.createdAt,
       homepageReady: session.homepageReady,
       siteSpecReady: session.siteSpecReady ?? false,
+      preferredExportTarget: session.preferredExportTarget || 'html',
       exportTargets: targets,
       payment: getSessionPaymentDetails(session, req, targets[0]?.target || 'html'),
       themeOverride: session.themeOverride ?? null,
@@ -464,6 +511,23 @@ export async function startServer(sessionsDir) {
       res.json({ ok: true, files: Object.keys(preview.files) })
     } catch (error) {
       res.status(400).json({ error: error.message })
+    }
+  })
+
+  app.post('/api/sessions/:id/github/push', requireAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
+
+    try {
+      const result = await pushSessionToGitHub(session, {
+        target: req.body?.target,
+        githubAccessToken: req.body?.githubAccessToken,
+      })
+      res.json({ ok: true, ...result })
+    } catch (error) {
+      const statusCode = error?.status === 401 ? 401 : 400
+      res.status(statusCode).json({ error: error.message })
     }
   })
 

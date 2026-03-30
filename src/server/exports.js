@@ -84,9 +84,7 @@ export function getSessionExportTargets(session) {
         ready: false,
         reason: 'Build once to create the canonical site spec and exact-clone capture.',
       }
-  const supported = siteSpec?.exportableFrameworks?.length
-    ? siteSpec.exportableFrameworks.filter((target) => SUPPORTED_EXPORT_TARGETS.includes(target))
-    : [...SUPPORTED_EXPORT_TARGETS]
+  const supported = [...SUPPORTED_EXPORT_TARGETS]
 
   return supported.map((target) => {
     const targetMeta = metadata.targets?.[target] || {}
