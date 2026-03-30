@@ -27,22 +27,24 @@ export function normalizePreferredExportTarget(value) {
 function readSessionMeta(workspace) {
   const metaPath = join(workspace, SESSION_META_FILE)
   if (!existsSync(metaPath)) {
-    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET }
+    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET, isPrivate: false }
   }
 
   try {
     const data = JSON.parse(readFileSync(metaPath, 'utf-8'))
     return {
       preferredExportTarget: normalizePreferredExportTarget(data?.preferredExportTarget),
+      isPrivate: Boolean(data?.isPrivate),
     }
   } catch {
-    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET }
+    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET, isPrivate: false }
   }
 }
 
 function writeSessionMeta(workspace, meta = {}) {
   const payload = {
     preferredExportTarget: normalizePreferredExportTarget(meta.preferredExportTarget),
+    isPrivate: Boolean(meta.isPrivate),
   }
   writeFileSync(join(workspace, SESSION_META_FILE), JSON.stringify(payload, null, 2))
   return payload
@@ -58,6 +60,7 @@ export function createSession(baseDir, prompt, userId, options = {}) {
   if (!existsSync(workspace)) mkdirSync(workspace, { recursive: true })
   const sessionMeta = writeSessionMeta(workspace, {
     preferredExportTarget: options?.preferredExportTarget,
+    isPrivate: Boolean(options?.isPrivate),
   })
 
   // Persist userId to disk
@@ -94,6 +97,7 @@ export function createSession(baseDir, prompt, userId, options = {}) {
     cost: null,
     alternativeDesign,
     preferredExportTarget: sessionMeta.preferredExportTarget,
+    isPrivate: sessionMeta.isPrivate,
     themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
     wsClients: new Set(),
@@ -224,6 +228,7 @@ export function getSession(id) {
     cost,
     alternativeDesign,
     preferredExportTarget: sessionMeta.preferredExportTarget,
+    isPrivate: sessionMeta.isPrivate,
     themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
     wsClients: new Set(),
@@ -288,6 +293,7 @@ export function getAllSessions(userId) {
         elapsed: s.elapsed ?? null,
         cost: s.cost ?? null,
         preferredExportTarget: s.preferredExportTarget ?? DEFAULT_PREFERRED_EXPORT_TARGET,
+        isPrivate: s.isPrivate ?? false,
       })
     }
   }

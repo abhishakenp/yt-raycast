@@ -310,7 +310,12 @@ export async function startServer(sessionsDir) {
         .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
     }
 
-    const session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, { preferredExportTarget })
+    // Non-subscribers get private sessions by default
+    const isSubscriber = await hasActiveSubscription(req.user.uid)
+    const session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, {
+      preferredExportTarget,
+      isPrivate: !isSubscriber,
+    })
     const sessionCtx = makeSessionState(session)
 
     console.log(
