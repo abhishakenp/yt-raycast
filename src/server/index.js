@@ -401,6 +401,20 @@ export async function startServer(sessionsDir) {
       sessionCtx.broadcast({ type: 'error', message: err?.message ?? 'Generation failed' })
     })
 
+    // Auto-build React + Next.js exports for authenticated users after generation completes
+    if (req.user) {
+      generation.then(() => {
+        for (const target of ['react', 'nextjs']) {
+          try {
+            generateSessionExport(session, target)
+            sessionCtx.broadcast({ type: 'export_ready', target })
+          } catch (err) {
+            console.error(`[auto-build] ${target} failed: ${err.message}`)
+          }
+        }
+      }).catch(() => {})
+    }
+
     res.json({ id: session.id, workspace: session.workspace })
   })
 

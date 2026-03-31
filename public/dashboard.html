@@ -136,13 +136,10 @@
                   </div>
                   <div class="export-target-list" id="export-target-list"></div>
                   <div class="export-panel-actions">
-                    <button id="export-generate-btn" type="button" class="primary">Build Export</button>
+                    <span id="export-building-indicator" style="display: none; font-size: 13px; color: #a78bfa; align-items: center; gap: 6px;">Building downloads…</span>
                     <a id="export-download-link" class="export-download-link secondary" href="#" style="display: none"
                       >Download ZIP</a
                     >
-                  </div>
-                  <div class="export-panel-footer">
-                    <button id="rerender-preview-btn" type="button" class="export-utility-btn">Sync Preview</button>
                   </div>
                 </div>
               </div>
@@ -1010,8 +1007,7 @@
         const subtextEl = document.getElementById('export-subtext')
         const targetList = document.getElementById('export-target-list')
         const download = document.getElementById('export-download-link')
-        const buildBtn = document.getElementById('export-generate-btn')
-        const rerenderBtn = document.getElementById('rerender-preview-btn')
+        const buildingIndicator = document.getElementById('export-building-indicator')
         const exactCloneReady = !siteSpecReady
           ? false
           : exportTargets.every((entry) => entry.buildReady !== false)
@@ -1036,11 +1032,9 @@
           ? 'Subscribe'
           : selected?.ready
             ? 'Ready'
-            : !siteSpecReady
-              ? 'Legacy'
-              : selected?.buildReady
-                ? 'Build'
-                : 'Waiting'
+            : selected?.buildReady
+              ? 'Building'
+              : 'Waiting'
 
         triggerMetaEl.textContent = exportTargets
           .map((entry) => formatExportTargetLabel(entry.target))
@@ -1057,11 +1051,9 @@
               ? 'Pro only'
               : entry.ready
                 ? 'Ready'
-                : !siteSpecReady
-                  ? 'Create + build'
-                  : entry.buildReady
-                    ? 'Build'
-                    : 'Waiting'
+                : entry.buildReady
+                  ? 'Building'
+                  : 'Waiting'
 
             return `<button type="button" class="export-target${activeClass}" data-target="${escapeHtml(
               entry.target,
@@ -1078,16 +1070,8 @@
           })
           .join('')
 
-        buildBtn.disabled = !selected
-        if (siteSpecReady && selected && selected.buildReady === false) {
-          buildBtn.disabled = true
-          buildBtn.textContent = `Waiting For ${selectedLabel}`
-        } else {
-          buildBtn.textContent = `${selected?.ready ? 'Rebuild' : !siteSpecReady ? 'Create + Build' : 'Build'} ${selectedLabel}`
-        }
-        buildBtn.className = selected?.downloadPath ? 'secondary' : 'primary'
-        rerenderBtn.disabled = !siteSpecReady || !exactCloneReady
-        rerenderBtn.style.display = siteSpecReady ? 'inline-flex' : 'none'
+        const isBuilding = siteSpecReady && exactCloneReady && selected && !selected.ready
+        buildingIndicator.style.display = isBuilding ? 'inline-flex' : 'none'
         download.className = `export-download-link${selected?.downloadPath ? ' primary' : ' secondary'}`
 
         if (!siteSpecReady) {
@@ -1114,14 +1098,14 @@
           : selected?.ready
             ? 'Ready To Download'
             : selected?.buildReady
-              ? 'Spec Synced'
+              ? 'Building Downloads…'
               : 'Waiting For Exact Clone'
         subtextEl.textContent = requiresPayment
           ? `Subscribe to Pro (${getDisplayPrice()}) to unlock ${selectedLabel} downloads.`
           : selected?.ready
             ? `${selectedLabel} is up to date with the current generated UI.`
             : selected?.buildReady
-              ? `Export ${selectedLabel} as an exact clone of the generated UI at any time.`
+              ? `Packaging ${selectedLabel} — your download will appear here shortly.`
               : selected?.buildReason || `Waiting for the generated UI to finish before building ${selectedLabel}.`
 
         if (selected?.downloadPath) {
@@ -1151,93 +1135,6 @@
             renderExportPanel()
           })
           .catch(() => {})
-      }
-
-      function triggerExportBuild() {
-        const btn = document.getElementById('export-generate-btn')
-        const statusEl = document.getElementById('export-status')
-        const subtextEl = document.getElementById('export-subtext')
-        const target = selectedExportTarget
-        const selected =
-          exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0]
-        if (!target) return
-        if (siteSpecReady && selected?.buildReady === false) {
-          statusEl.textContent = 'Waiting For Exact Clone'
-          subtextEl.textContent =
-            selected.buildReason || 'Wait for the generated UI to finish before exporting.'
-          return
-        }
-
-        btn.disabled = true
-        statusEl.textContent = 'Building Export'
-        subtextEl.textContent = siteSpecReady
-          ? `${formatExportTargetLabel(target)} is being generated from the canonical site spec.`
-          : `${formatExportTargetLabel(target)} is creating a canonical site spec first, then generating an exact-clone export.`
-
-        apiFetch(`/api/sessions/${SESSION_ID}/export`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target }),
-        })
-          .then((r) => r.json())
-          .then((data) => {
-            btn.disabled = false
-            if (!data.ok) {
-              statusEl.textContent = 'Export Failed'
-              subtextEl.textContent = data.error || 'Export failed'
-              return
-            }
-            siteSpecReady = Boolean(data.siteSpecReady ?? true)
-            statusEl.textContent = 'Export Ready'
-            subtextEl.textContent = `${formatExportTargetLabel(target)} is ready to download.`
-            refreshExportTargets()
-          })
-          .catch((err) => {
-            btn.disabled = false
-            statusEl.textContent = 'Export Failed'
-            subtextEl.textContent = err.message || 'Export failed'
-          })
-      }
-
-      function rerenderPreviewFromSpec() {
-        const btn = document.getElementById('rerender-preview-btn')
-        const statusEl = document.getElementById('export-status')
-        const subtextEl = document.getElementById('export-subtext')
-        const exactCloneReady = !siteSpecReady
-          ? false
-          : exportTargets.every((entry) => entry.buildReady !== false)
-        if (!exactCloneReady) {
-          const selected =
-            exportTargets.find((entry) => entry.target === selectedExportTarget) || exportTargets[0]
-          statusEl.textContent = 'Waiting For Exact Clone'
-          subtextEl.textContent =
-            selected?.buildReason || 'Wait for the generated UI capture before syncing the preview.'
-          return
-        }
-        btn.disabled = true
-        statusEl.textContent = 'Syncing Preview'
-        subtextEl.textContent = 'Refreshing the preview from the stored canonical site spec.'
-
-        apiFetch(`/api/sessions/${SESSION_ID}/rerender-preview`, { method: 'POST' })
-          .then((r) => r.json())
-          .then((data) => {
-            btn.disabled = false
-            if (!data.ok) {
-              statusEl.textContent = 'Sync Failed'
-              subtextEl.textContent = data.error || 'Preview re-render failed'
-              return
-            }
-            siteSpecReady = true
-            statusEl.textContent = 'Preview Synced'
-            subtextEl.textContent = 'The preview now matches the stored canonical site spec.'
-            refreshExportTargets()
-            if (drawerOpen) reloadPreview()
-          })
-          .catch((err) => {
-            btn.disabled = false
-            statusEl.textContent = 'Sync Failed'
-            subtextEl.textContent = err.message || 'Preview re-render failed'
-          })
       }
 
       async function pushSelectedExportToGitHub(targetOverride = selectedExportTarget) {
@@ -1929,6 +1826,10 @@
               checkAllDone()
               break
 
+            case 'export_ready':
+              refreshExportTargets()
+              break
+
             case 'log':
               appendLog(ev.message || '')
               break
@@ -1981,7 +1882,6 @@
       })
       document.getElementById('export-trigger-btn').addEventListener('click', toggleExportMenu)
       document.getElementById('github-push-btn').addEventListener('click', toggleGitHubMenu)
-      document.getElementById('export-generate-btn').addEventListener('click', triggerExportBuild)
       document
         .getElementById('export-target-list')
         .addEventListener('click', (event) => {
@@ -2000,9 +1900,6 @@
           renderGitHubExportPanel()
           pushSelectedExportToGitHub(selectedExportTarget)
         })
-      document
-        .getElementById('rerender-preview-btn')
-        .addEventListener('click', rerenderPreviewFromSpec)
       document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal)
       document.getElementById('payment-cancel-btn').addEventListener('click', closePaymentModal)
       document.getElementById('payment-confirm-btn').addEventListener('click', startIndianPayment)
