@@ -47,16 +47,18 @@ let _sessionsDir = null
 // ─── Rate Limiting ────────────────────────────────────────
 const RATE_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
+const MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 const MAX_PER_USER = 5 // per 10min window
 const MAX_PER_IP = 10 // per 10min window
-const MAX_DAILY_PER_USER = 10 // hard daily cap per user
+const MAX_FREE_PER_MONTH = 10 // hard monthly cap for free (no subscription) users
+const MAX_PAID_PER_MONTH = 30 // hard monthly cap for paid (subscribed) users
 const MIN_PROMPT_LENGTH = 70
 
-const MAX_ANON_PER_IP = 5 // per day for anonymous (unauthenticated) users
+const MAX_ANON_PER_DAY = 2 // per day for anonymous (unauthenticated) users — then auth wall
 
 const userHits = new Map() // uid -> [timestamp, ...]
 const ipHits = new Map() // ip -> [timestamp, ...]
-const userDailyHits = new Map() // uid -> [timestamp, ...]
+const userMonthlyHits = new Map() // uid -> [timestamp, ...]
 const anonIpDailyHits = new Map() // ip -> [timestamp, ...] for anonymous users
 
 function setNoIndexHeaders(res) {
@@ -85,23 +87,15 @@ function cleanupMap(map, windowMs) {
 }
 
 // Periodic cleanup every 5 minutes
-<<<<<<< HEAD
 setInterval(
   () => {
     cleanupMap(userHits, RATE_WINDOW_MS)
     cleanupMap(ipHits, RATE_WINDOW_MS)
-    cleanupMap(userDailyHits, DAILY_WINDOW_MS)
+    cleanupMap(userMonthlyHits, MONTHLY_WINDOW_MS)
+    cleanupMap(anonIpDailyHits, DAILY_WINDOW_MS)
   },
   5 * 60 * 1000,
 )
-=======
-setInterval(() => {
-  cleanupMap(userHits, RATE_WINDOW_MS)
-  cleanupMap(ipHits, RATE_WINDOW_MS)
-  cleanupMap(userDailyHits, DAILY_WINDOW_MS)
-  cleanupMap(anonIpDailyHits, DAILY_WINDOW_MS)
-}, 5 * 60 * 1000)
->>>>>>> b77bbd2 (Allowed generating when signed out (limit per IP to 5 generation))
 
 export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
@@ -232,40 +226,19 @@ export async function startServer(sessionsDir) {
     }
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
-<<<<<<< HEAD
-    const userDaily = (userDailyHits.get(req.user.uid) || []).filter(
-      (t) => Date.now() - t < DAILY_WINDOW_MS,
-    ).length
-    const ts = new Date().toISOString()
-
-    // Log every request for monitoring
-    console.log(
-      `[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${trimmedPrompt.slice(0, 80)}"`,
-    )
-
-    // Check for exact prompt match - return existing project
-    const existing = findSessionByPrompt(req.user.uid, trimmedPrompt)
-    if (existing) {
-      setSessionPreferredExportTarget(existing, preferredExportTarget)
-      console.log(`[${ts}] CACHE_HIT user=${req.user.uid} session=${existing.id}`)
-      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-        fetch(process.env.SLACK_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
-          }),
-        }).catch(() => {})
-=======
     const ts = new Date().toISOString()
 
     let session
 
     if (req.user) {
       // ─── Authenticated flow ─────────────────────────────────
-      const userDaily = (userDailyHits.get(req.user.uid) || []).filter(t => Date.now() - t < DAILY_WINDOW_MS).length
+      const userMonthly = (userMonthlyHits.get(req.user.uid) || []).filter(
+        (t) => Date.now() - t < MONTHLY_WINDOW_MS,
+      ).length
 
-      console.log(`[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} daily=${userDaily} prompt="${trimmedPrompt.slice(0, 80)}"`)
+      console.log(
+        `[${ts}] REQ user=${req.user.uid} ip=${clientIp} email=${req.user.email ?? '?'} monthly=${userMonthly} prompt="${trimmedPrompt.slice(0, 80)}"`,
+      )
 
       // Check for exact prompt match - return existing project
       const existing = findSessionByPrompt(req.user.uid, trimmedPrompt)
@@ -276,44 +249,38 @@ export async function startServer(sessionsDir) {
           fetch(process.env.SLACK_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
+            body: JSON.stringify({
+              text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+            }),
           }).catch(() => {})
         }
         return res.json({ id: existing.id, workspace: existing.workspace, cached: true })
->>>>>>> b77bbd2 (Allowed generating when signed out (limit per IP to 5 generation))
       }
 
-<<<<<<< HEAD
-    // Daily cap check
-    if (!checkRateLimit(req.user.uid, userDailyHits, MAX_DAILY_PER_USER, DAILY_WINDOW_MS)) {
-      console.log(`[${ts}] DAILY_LIMIT user=${req.user.uid} ip=${clientIp} daily=${userDaily}`)
-      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-        fetch(process.env.SLACK_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
-          }),
-        }).catch(() => {})
-      }
-      return res.status(429).json({
-        error: `Daily limit: max ${MAX_DAILY_PER_USER} generations per day. Please come back tomorrow.`,
-      })
-    }
-=======
-      // Daily cap check
-      if (!checkRateLimit(req.user.uid, userDailyHits, MAX_DAILY_PER_USER, DAILY_WINDOW_MS)) {
-        console.log(`[${ts}] DAILY_LIMIT user=${req.user.uid} ip=${clientIp} daily=${userDaily}`)
+      // Determine subscription status and monthly limit
+      const isSubscriber = await hasActiveSubscription(req.user.uid)
+      const monthlyLimit = isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
+
+      // Monthly cap check
+      if (!checkRateLimit(req.user.uid, userMonthlyHits, monthlyLimit, MONTHLY_WINDOW_MS)) {
+        console.log(
+          `[${ts}] MONTHLY_LIMIT user=${req.user.uid} ip=${clientIp} monthly=${userMonthly} limit=${monthlyLimit}`,
+        )
         if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
           fetch(process.env.SLACK_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: `\ud83d\udeab *Daily limit reached* (${MAX_DAILY_PER_USER}/day):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\`` }),
+            body: JSON.stringify({
+              text: `\ud83d\udeab *Monthly limit reached* (${monthlyLimit}/month):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
+            }),
           }).catch(() => {})
         }
-        return res.status(429).json({ error: `Daily limit: max ${MAX_DAILY_PER_USER} generations per day. Please come back tomorrow.` })
+        return res
+          .status(429)
+          .json({
+            error: `Monthly limit reached: max ${monthlyLimit} generations per month. Need more? Contact us at https://x.com/LivioGama`,
+          })
       }
->>>>>>> b77bbd2 (Allowed generating when signed out (limit per IP to 5 generation))
 
       // 10-min rate limit per user
       if (!checkRateLimit(req.user.uid, userHits, MAX_PER_USER)) {
@@ -322,10 +289,14 @@ export async function startServer(sessionsDir) {
           fetch(process.env.SLACK_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
+            body: JSON.stringify({
+              text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+            }),
           }).catch(() => {})
         }
-        return res.status(429).json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
+        return res
+          .status(429)
+          .json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
       }
 
       // 10-min rate limit per IP
@@ -335,53 +306,55 @@ export async function startServer(sessionsDir) {
           fetch(process.env.SLACK_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}` }),
+            body: JSON.stringify({
+              text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+            }),
           }).catch(() => {})
         }
-        return res.status(429).json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
+        return res
+          .status(429)
+          .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
       }
 
       // Non-subscribers get private sessions by default
-      const isSubscriber = await hasActiveSubscription(req.user.uid)
       session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, {
         preferredExportTarget,
         isPrivate: !isSubscriber,
       })
 
-      console.log(`[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} daily=${userDaily + 1}`)
+      console.log(
+        `[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} monthly=${userMonthly + 1}`,
+      )
 
       if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
           body: JSON.stringify({
-            text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
+            text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly + 1}/${monthlyLimit}`,
           }),
-        }).catch(() => {})
-      }
-      return res
-        .status(429)
-        .json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
-    }
-=======
-          body: JSON.stringify({ text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}` }),
         }).catch(() => {})
       }
     } else {
       // ─── Anonymous flow ─────────────────────────────────────
       console.log(`[${ts}] REQ anon ip=${clientIp} prompt="${trimmedPrompt.slice(0, 80)}"`)
 
-      // Daily limit per IP for anonymous users (5/day)
-      if (!checkRateLimit(clientIp, anonIpDailyHits, MAX_ANON_PER_IP, DAILY_WINDOW_MS)) {
+      // Daily limit per IP for anonymous users — sign-in wall after 2
+      if (!checkRateLimit(clientIp, anonIpDailyHits, MAX_ANON_PER_DAY, DAILY_WINDOW_MS)) {
         console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp}`)
-        return res.status(429).json({ error: `Guest limit: max ${MAX_ANON_PER_IP} generations per day. Sign in for more.` })
+        return res
+          .status(429)
+          .json({
+            error: `Sign in to keep generating. Free accounts get ${MAX_FREE_PER_MONTH} generations per month.`,
+          })
       }
 
       // 10-min rate limit per IP
       if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
         console.log(`[${ts}] RATE_LIMIT anon ip=${clientIp} reason=ip_10min`)
-        return res.status(429).json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
+        return res
+          .status(429)
+          .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
       }
 
       session = createSession(_sessionsDir, trimmedPrompt, null, {
@@ -390,48 +363,20 @@ export async function startServer(sessionsDir) {
       })
 
       console.log(`[${ts}] GENERATE anon ip=${clientIp} session=${session.id}`)
->>>>>>> b77bbd2 (Allowed generating when signed out (limit per IP to 5 generation))
 
       if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
         fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-<<<<<<< HEAD
           body: JSON.stringify({
-            text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily}`,
+            text: `\ud83d\ude80 Anonymous Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nIP: \`${clientIp}\``,
           }),
         }).catch(() => {})
       }
-      return res
-        .status(429)
-        .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
-=======
-          body: JSON.stringify({ text: `\ud83d\ude80 Anonymous Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nIP: \`${clientIp}\`` }),
-        }).catch(() => {})
-      }
->>>>>>> b77bbd2 (Allowed generating when signed out (limit per IP to 5 generation))
     }
 
     const sessionCtx = makeSessionState(session)
 
-<<<<<<< HEAD
-    console.log(
-      `[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} daily=${userDaily + 1}`,
-    )
-
-    // Slack notification in production
-    if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-      fetch(process.env.SLACK_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Daily: ${userDaily + 1}/${MAX_DAILY_PER_USER}`,
-        }),
-      }).catch(() => {})
-    }
-
-=======
->>>>>>> b77bbd2 (Allowed generating when signed out (limit per IP to 5 generation))
     // Determine edit vs generate mode
     let editMode = false
     try {

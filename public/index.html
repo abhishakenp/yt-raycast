@@ -379,7 +379,7 @@
       const btn = document.getElementById('submit-btn')
       const genCounter = document.getElementById('gen-counter')
       const promptHelp = document.getElementById('prompt-help')
-      const GEN_LIMIT = 5
+      const GEN_LIMIT = 3
       const MIN_PROMPT_LENGTH = 70
 
       function setPromptHelp(message, isError = false) {
@@ -430,10 +430,10 @@
         }
         genCounter.style.display = 'block'
         if (isGenLimitReached()) {
-          genCounter.textContent = `Generation limit reached (${GEN_LIMIT}/${GEN_LIMIT}). Clear your browser storage to reset.`
+          genCounter.innerHTML = `Monthly limit reached (${GEN_LIMIT}/${GEN_LIMIT}/month). <a href="https://x.com/LivioGama" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">Need more? Contact us</a>`
           genCounter.classList.add('limit-reached')
         } else {
-          genCounter.textContent = `${count} / ${GEN_LIMIT} generations used`
+          genCounter.textContent = `${count} / ${GEN_LIMIT} free generations used this month`
           genCounter.classList.remove('limit-reached')
         }
         syncButtonState()

@@ -12,6 +12,7 @@ import {
 
 let auth = null
 let currentUser = null
+let authResolved = false
 let hasSessionResizeListener = false
 const GITHUB_TOKEN_STORAGE_KEY = 'sf_github_access_token'
 
@@ -32,6 +33,7 @@ async function initFirebase() {
   return new Promise((resolve) => {
     onAuthStateChanged(auth, (user) => {
       currentUser = user
+      authResolved = true
       if (user) showApp()
       else showAnonymousApp()
       resolve()
@@ -58,6 +60,8 @@ function showAnonymousApp() {
   if (signinBtn) signinBtn.style.display = 'flex'
   sessionStorage.removeItem('sf_return_home')
   clearGithubAccessToken()
+  updateGenerationCounter()
+  syncSubmitButtonState()
   loadAnonymousSessions()
 }
 
@@ -66,6 +70,8 @@ function showApp() {
   const signinBtn = document.getElementById('signin-btn')
   if (signinBtn) signinBtn.style.display = 'none'
   document.getElementById('signout-btn').style.display = 'flex'
+  updateGenerationCounter()
+  syncSubmitButtonState()
   loadSessions()
 }
 
@@ -142,7 +148,10 @@ const generationCounter = document.getElementById('gen-counter')
 const promptHelp = document.getElementById('prompt-help')
 const promptPlaceholder = document.getElementById('prompt-placeholder')
 const promptPlaceholderText = document.getElementById('prompt-placeholder-text')
-const GENERATION_LIMIT = 5
+const privateGenRow = document.getElementById('private-gen-row')
+const privateGenCheckbox = document.getElementById('private-gen-checkbox')
+const privateGenModal = document.getElementById('private-gen-modal')
+const GENERATION_LIMIT = 2
 const MIN_PROMPT_LENGTH = 70
 const SAMPLE_PROMPTS = [
   'A cinematic travel landing page for curated weekend escapes with reviews and fast booking.',
@@ -263,6 +272,8 @@ function validatePrompt(showError = false) {
 }
 
 function isGenerationLimitReached() {
+  if (authResolved && currentUser) return false // server enforces limit for signed-in users
+  if (!authResolved) return false // don't gate before auth resolves
   return getGenerationCount() >= GENERATION_LIMIT
 }
 
@@ -278,25 +289,62 @@ function getGenerationCount() {
 }
 
 function updateGenerationCounter() {
+  // Authenticated users — server enforces the limit, hide the client-side counter
+  if (authResolved && currentUser) {
+    generationCounter.style.display = 'none'
+    privateGenRow.style.display = 'none'
+    syncSubmitButtonState()
+    return
+  }
+
   const count = getGenerationCount()
   if (count === 0) {
     generationCounter.style.display = 'none'
+    privateGenRow.style.display = 'none'
     syncSubmitButtonState()
     return
   }
 
   generationCounter.style.display = 'block'
+  privateGenRow.style.display = 'none'
+
   if (isGenerationLimitReached()) {
-    generationCounter.textContent =
-      `Generation limit reached (${GENERATION_LIMIT}/${GENERATION_LIMIT}). Clear your browser storage to reset.`
+    generationCounter.innerHTML =
+      `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used — <a href="#" id="gen-signin-link" style="color:inherit;text-decoration:underline;">sign in for 10/month free</a>`
     generationCounter.classList.add('limit-reached')
+    document.getElementById('gen-signin-link')?.addEventListener('click', (e) => {
+      e.preventDefault()
+      document.getElementById('auth-overlay').classList.remove('hidden')
+    })
   } else {
-    generationCounter.textContent = `${count} / ${GENERATION_LIMIT} generations used`
+    generationCounter.textContent = `${count} / ${GENERATION_LIMIT} free previews used`
     generationCounter.classList.remove('limit-reached')
   }
 
   syncSubmitButtonState()
 }
+
+function openPrivateGenModal() {
+  privateGenCheckbox.checked = false
+  privateGenModal.classList.add('is-open')
+  privateGenModal.setAttribute('aria-hidden', 'false')
+}
+
+function closePrivateGenModal() {
+  privateGenModal.classList.remove('is-open')
+  privateGenModal.setAttribute('aria-hidden', 'true')
+}
+
+privateGenCheckbox.addEventListener('change', () => {
+  if (privateGenCheckbox.checked) openPrivateGenModal()
+})
+
+document.getElementById('private-gen-modal-close').addEventListener('click', closePrivateGenModal)
+document.getElementById('private-gen-modal-backdrop').addEventListener('click', closePrivateGenModal)
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && privateGenModal.classList.contains('is-open')) closePrivateGenModal()
+})
 
 updateGenerationCounter()
 setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
@@ -326,7 +374,7 @@ form.addEventListener('submit', async (event) => {
   const prompt = input.value.trim()
 
   if (isGenerationLimitReached()) {
-    updateGenerationCounter()
+    document.getElementById('auth-overlay').classList.remove('hidden')
     return
   }
 
@@ -352,6 +400,10 @@ form.addEventListener('submit', async (event) => {
     if (data.error?.includes(`${MIN_PROMPT_LENGTH} characters`)) {
       setPromptHelp(data.error, true)
       input.focus()
+    } else if (!currentUser && response.status === 429) {
+      // Server-side anon limit hit — prompt sign-in
+      updateGenerationCounter()
+      document.getElementById('auth-overlay').classList.remove('hidden')
     } else {
       alert(data.error || 'Failed to create session')
     }

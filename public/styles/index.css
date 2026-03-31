@@ -518,6 +518,119 @@ body.has-sessions {
   color: #ef4444;
 }
 
+/* ─── Private generation checkbox ─── */
+.private-gen-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+.private-gen-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8b86a8;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'JetBrains Mono', monospace;
+}
+.private-gen-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #7c3aed;
+  cursor: pointer;
+}
+.pro-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #a78bfa;
+  background: rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Private generation modal ─── */
+.private-gen-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+}
+.private-gen-modal.is-open {
+  display: flex;
+}
+.private-gen-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+.private-gen-modal-card {
+  position: relative;
+  z-index: 1;
+  background: #0f0d1a;
+  border: 1px solid #2d2a3e;
+  border-radius: 16px;
+  padding: 36px 32px 32px;
+  width: min(420px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.private-gen-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: #6b6480;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.private-gen-modal-close:hover { color: #e2e0f0; }
+.private-gen-modal-icon {
+  color: #a78bfa;
+  margin-bottom: 4px;
+}
+.private-gen-modal-card h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e2e0f0;
+  margin: 0;
+}
+.private-gen-modal-card p {
+  font-size: 14px;
+  color: #8b86a8;
+  line-height: 1.5;
+  margin: 0;
+}
+.private-gen-modal-card strong { color: #a78bfa; }
+.private-gen-modal-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 28px;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.private-gen-modal-btn:hover { opacity: 0.85; }
+
 .spinner {
   display: none;
   width: 16px;
