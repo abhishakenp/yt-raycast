@@ -1,3 +1,18 @@
+/**
+ * Returns a Google Fonts <link> tag for the Noto Sans script matching the
+ * India Mode language, plus a CSS snippet that applies it as the body font.
+ * Returns empty string when India Mode is not active.
+ */
+export function getIndianFontMarkup(indiaMode) {
+  if (!indiaMode?.isIndian) return ''
+  const fontFamily = indiaMode.language.fontFamily
+  const googleFontName = fontFamily.split(',')[0].trim().replace(/ /g, '+')
+  return `<link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=${googleFontName}:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body, * { font-family: ${fontFamily}; }</style>`
+}
+
 export function escapeHtml(value = '') {
   return String(value)
     .replace(/&/g, '&amp;')

@@ -13,7 +13,15 @@ export function formatRunAllReport(timings, stats) {
     homepageStats,
     genStats,
     navFixStats,
+    indiaMode,
   } = stats
+
+  const homepageLabel = indiaMode?.isIndian
+    ? `hex-1 (${indiaMode.language.name})  `
+    : 'Groq kimi-k2      '
+  const pageLabel = indiaMode?.isIndian
+    ? `hex-1 (${indiaMode.language.name})  `
+    : 'Groq              '
   const ms = (a, b) =>
     timings[b] && timings[a] ? ((timings[b] - timings[a]) / 1000).toFixed(1) : '\u2014'
   const tokFmt = (t) => (t > 0 ? t.toLocaleString() : '\u2014')
@@ -58,9 +66,9 @@ export function formatRunAllReport(timings, stats) {
   \u2502  Design Brief (Groq kimi-k2)    ${ms('t0', 'design_end').padStart(6)}s   design.md                  \u2502
   \u2502  Context JSON (Groq)           ${ms('design_end', 'ctx_end').padStart(6)}s   ${ctxPages} pages extracted         \u2502
   \u2502  Site Spec JSON (Groq)         ${ms('ctx_end', 'site_spec_end').padStart(6)}s   site-spec.json              \u2502
-  \u2502  Homepage (Groq kimi-k2)       ${ms('ctx_end', 'homepage_end').padStart(6)}s   ${homepageChars} chars               \u2502
+  \u2502  Homepage (${homepageLabel})${ms('ctx_end', 'homepage_end').padStart(6)}s   ${homepageChars} chars               \u2502
   \u2502  Task Derivation               ${ms('derive_start', 'derive_end').padStart(6)}s   ${tasks.length} tasks (no LLM call)    \u2502
-  \u2502  Page Generation (Groq)        ${ms('gen_start', 'gen_end').padStart(6)}s   ${pagesCount} pages, ${backendCount} backend        \u2502
+  \u2502  Page Generation (${pageLabel})${ms('gen_start', 'gen_end').padStart(6)}s   ${pagesCount} pages, ${backendCount} backend        \u2502
   \u2502  Homepage Nav Fix (Groq)       ${ms('navfix_start', 'navfix_end').padStart(6)}s   1 file                      \u2502
   \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
   \u2502  TOTAL                         ${String(elapsed).padStart(6)}s   ${done}/${total} tasks completed       \u2502

@@ -1,4 +1,21 @@
-export function designBriefPrompt(prompt) {
+import { INDIAN_DESIGN_TOKENS } from '../config.js'
+
+function indianDesignAppendix(indiaMode) {
+  if (!indiaMode?.isIndian) return ''
+  const { language } = indiaMode
+  const colors = INDIAN_DESIGN_TOKENS.colors
+  const patterns = INDIAN_DESIGN_TOKENS.patterns
+  return `
+
+### India Mode — Additional Requirements
+This is an Indian-language (${language.name}) website. Apply these constraints on top of the standard design system:
+- **Font**: Use "${language.fontFamily}" as the primary font for body text. Load it from Google Fonts. Pair with a complementary heading font if desired.
+- **Color palette**: Root the palette in Indian tradition — saffron (${colors.primary[1]}), gold (${colors.primary[2]}), deep red (${colors.decorative[0]}), peacock blue (${colors.secondary[0]}), India green (${colors.accent[0]}). Choose 1–2 as accent, keep the rest as supporting tones.
+- **Decorative motifs**: Incorporate subtle Indian geometric patterns: ${patterns.join(', ')}. These should accent section boundaries and card borders — tasteful, not overwhelming.
+- **Tailwind config**: Include the chosen Indian-inspired colors as semantic tokens (primary, accent, decorative, surface).`
+}
+
+export function designBriefPrompt(prompt, indiaMode = null) {
   return {
     system:
       'You are a world-class design system architect. You create minimalist, typography-first dark SaaS design systems. Output ONLY markdown. No preamble.',
@@ -54,7 +71,7 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 - Restraint: less is more, no clutter, no busy layouts
 - If images are truly needed (ecommerce/portfolio), use Lorem Picsum: https://picsum.photos/seed/{seed}/{w}/{h}
 
-Max 70 lines. Output ONLY markdown.`,
+Max 70 lines. Output ONLY markdown.${indianDesignAppendix(indiaMode)}`,
     model: 'moonshotai/kimi-k2-instruct-0905',
     temperature: 0.4,
     maxTokens: 3000,

@@ -1,4 +1,5 @@
 import { groqHomepage } from '../llm/groq.js'
+import { translateHtml } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { writeFile } from './workspace.js'
 
@@ -89,7 +90,7 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   return next
 }
 
-export async function generateHomepage(prompt, workspace, log, sessionCtx) {
+export async function generateHomepage(prompt, workspace, log, sessionCtx, indiaMode = null) {
   log('  homepage: generating from scratch (LLM)...')
 
   const result = await groqHomepage(prompt)
@@ -108,6 +109,21 @@ export async function generateHomepage(prompt, workspace, log, sessionCtx) {
     .replace(/<script[^>]*>\s*const\s+\{[^}]*\}\s*=\s*\{[^}]*\};\s*<\/script>\n?/g, '')
 
   html = injectShipFastFooterBranding(html, log)
+
+  if (indiaMode?.isIndian) {
+    log(`  homepage: translating to ${indiaMode.language.name} via Groq...`)
+    try {
+      const translated = await translateHtml(html, indiaMode)
+      if (translated?.content && !translated.error) {
+        html = translated.content
+        log(`  homepage: translation complete — ${translated.translatedCount} strings translated`)
+      } else {
+        log(`  homepage: translation failed — ${translated?.error ?? 'empty'}, keeping English`)
+      }
+    } catch (err) {
+      log(`  homepage: translation error — ${err.message}, keeping English`)
+    }
+  }
 
   writeFile(workspace, 'index.html', html)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''

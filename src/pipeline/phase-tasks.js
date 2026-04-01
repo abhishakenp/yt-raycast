@@ -1,4 +1,5 @@
 import { groqParallel } from '../llm/groq.js'
+import { translateHtmlSequential } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { slug, writeFile } from './workspace.js'
 import { HOME_LABELS } from '../config.js'
@@ -145,6 +146,7 @@ export async function generateAllTasks(
   log,
   status,
   taskCtx,
+  indiaMode = null,
 ) {
   const isFrontend = (t) => t.status !== 'DONE' && !String(t.id).startsWith('backend-')
   const isBackend = (t) => String(t.id).startsWith('backend-') && t.status !== 'DONE'
@@ -169,10 +171,21 @@ export async function generateAllTasks(
     return { pages: { count: 0 }, backend: { count: 0 }, navList }
   }
 
-  const allResults = await groqParallel(allCalls)
+  // Generate all pages with Groq (quality), translate with hex-1 if India mode
+  let pageResults = pageCalls.length > 0 ? await groqParallel(pageCalls) : []
 
-  const pageResults = allResults.slice(0, pageCalls.length)
-  const backendResults = allResults.slice(pageCalls.length)
+  if (indiaMode?.isIndian && pageResults.length > 0) {
+    log(`  translating ${pageResults.length} pages to ${indiaMode.language.name} via hex-1 (sequential)...`)
+    const englishHtmls = pageResults.map((r) => (r?.content ? stripFences(r.content) : ''))
+    const translatedHtmls = await translateHtmlSequential(englishHtmls, indiaMode)
+    translatedHtmls.forEach((html, i) => {
+      const changed = html !== englishHtmls[i]
+      log(`  page ${i + 1} translation: ${changed ? `✓ ${html.length} chars` : '✗ no changes — kept English'}`)
+    })
+    pageResults = pageResults.map((r, i) => ({ ...r, content: translatedHtmls[i] }))
+  }
+
+  const backendResults = backendCalls.length > 0 ? await groqParallel(backendCalls) : []
 
   if (pageTasks.length > 0) {
     processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log)

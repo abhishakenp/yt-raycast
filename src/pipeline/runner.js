@@ -12,8 +12,14 @@ import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
 import { formatRunAllReport, formatEditReport } from './report.js'
 import { editPrompt } from '../prompts/edit.js'
-import { enrichSiteSpecWithWorkspaceBlueprints, loadSiteSpec, saveSiteSpec, stripSiteSpecBlueprints } from '../spec/index.js'
+import {
+  enrichSiteSpecWithWorkspaceBlueprints,
+  loadSiteSpec,
+  saveSiteSpec,
+  stripSiteSpecBlueprints,
+} from '../spec/index.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
+import { detectIndiaMode } from './detect-india-mode.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -95,10 +101,8 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
   sessionCtx.setTasks(taskList)
   writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
 
-  _log(
-    `\n  \u2500\u2500 Edit mode: applying "${prompt.slice(0, 80)}" to ${htmlTasks.length} HTML files \u2500\u2500`,
-  )
-  status(sessionCtx)('Editing pages\u2026', 'editing')
+  _log(`\n  ── Edit mode: applying "${prompt.slice(0, 80)}" to ${htmlTasks.length} HTML files ──`)
+  status(sessionCtx)('Editing pages…', 'editing')
 
   const homepageHtml = existsSync(join(workspace, 'index.html'))
     ? readFileSync(join(workspace, 'index.html'), 'utf-8')
@@ -133,7 +137,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
     const task = taskList.find((x) => x.id === t.id)
 
     if (!r?.content || r.error) {
-      _log(`  ${t.filename}: FAILED \u2014 ${r?.error ?? 'empty response'}`)
+      _log(`  ${t.filename}: FAILED — ${r?.error ?? 'empty response'}`)
       if (task) task.status = 'FAILED'
       sessionCtx.updateTask({ id: t.id, status: 'FAILED' })
       writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
@@ -187,6 +191,11 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   writeFileSync(join(workspace, 'prompt.txt'), prompt)
   sessionCtx.setPrompt(prompt)
 
+  const indiaMode = detectIndiaMode(prompt)
+  if (indiaMode.isIndian) {
+    _log(`  India Mode detected: generating in ${indiaMode.language.name} via hex-1`)
+  }
+
   let ctx = null
   let homepage = null
   let siteSpec = null
@@ -194,12 +203,12 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   tick('t0')
 
   // ── PARALLEL: spec+design AND homepage fire at the same time ──
-  _status('Generating spec\u2026', 'spec')
+  _status('Generating spec…', 'spec')
 
   const specPromise = (async () => {
     const [designStats, detectStats] = await Promise.all([
-      generateDesignBrief(prompt, workspace, _log),
-      detectSiteType(prompt, _log)
+      generateDesignBrief(prompt, workspace, _log, indiaMode),
+      detectSiteType(prompt, _log),
     ])
     tick('design_end')
     tick('detect_end')
@@ -225,7 +234,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
 
   const homepagePromise = (async () => {
     try {
-      const stats = await generateHomepage(prompt, workspace, _log, sessionCtx)
+      const stats = await generateHomepage(prompt, workspace, _log, sessionCtx, indiaMode)
       tick('homepage_end')
       return stats
     } catch (error) {
@@ -241,6 +250,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   const designBrief = designStats.brief
   ctx = ctxStats.ctx
   siteSpec = siteSpecStats.siteSpec
+  if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
   sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
 
@@ -280,6 +290,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
     _log,
     _status,
     taskCtx,
+    indiaMode,
   )
   tick('gen_end')
 
@@ -333,6 +344,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
     homepageStats,
     genStats,
     navFixStats,
+    indiaMode,
   })
 
   _log(report)
