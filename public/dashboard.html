@@ -4,11 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ship Fast — Dashboard</title>
-    <meta name="description" content="Live generation dashboard — watch your website being built in real-time by AI." />
+    <meta
+      name="description"
+      content="Live generation dashboard — watch your website being built in real-time by AI."
+    />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <!-- Plausible Analytics (proxied) -->
-    <script defer data-domain="ship-fast.devliv.io" data-api="/api/event" src="/js/script.js"></script>
+    <script
+      defer
+      data-domain="ship-fast.devliv.io"
+      data-api="/api/event"
+      src="/js/script.js"
+    ></script>
     <link rel="stylesheet" href="/styles/dashboard.css" />
   </head>
   <body>
@@ -119,11 +127,17 @@
                 >
                   <span class="export-trigger-copy">
                     <span class="export-trigger-label">Export</span>
-                    <span class="export-trigger-meta" id="export-trigger-meta">HTML / React / Next.js</span>
+                    <span class="export-trigger-meta" id="export-trigger-meta"
+                      >HTML / React / Next.js</span
+                    >
                   </span>
                   <span class="export-trigger-state" id="export-trigger-state">Build</span>
                 </button>
-                <div class="export-panel export-panel--popover" id="export-panel" style="display: none">
+                <div
+                  class="export-panel export-panel--popover"
+                  id="export-panel"
+                  style="display: none"
+                >
                   <div class="export-panel-top">
                     <div class="export-copy">
                       <span class="export-eyebrow">Project Export</span>
@@ -136,8 +150,22 @@
                   </div>
                   <div class="export-target-list" id="export-target-list"></div>
                   <div class="export-panel-actions">
-                    <span id="export-building-indicator" style="display: none; font-size: 13px; color: #a78bfa; align-items: center; gap: 6px;">Building downloads…</span>
-                    <a id="export-download-link" class="export-download-link secondary" href="#" style="display: none"
+                    <span
+                      id="export-building-indicator"
+                      style="
+                        display: none;
+                        font-size: 13px;
+                        color: #a78bfa;
+                        align-items: center;
+                        gap: 6px;
+                      "
+                      >Building downloads…</span
+                    >
+                    <a
+                      id="export-download-link"
+                      class="export-download-link secondary"
+                      href="#"
+                      style="display: none"
                       >Download ZIP</a
                     >
                   </div>
@@ -154,7 +182,9 @@
                   title="Choose GitHub export target"
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path>
+                    <path
+                      d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+                    ></path>
                   </svg>
                 </button>
                 <div
@@ -209,18 +239,84 @@
       </div>
     </div>
 
-    <div class="completion-banner" id="completion-banner">All tasks completed — app is live!</div>
+    <!-- ─── Completion Toast (bottom) ─── -->
+    <div class="completion-toast" id="completion-toast">
+      <div class="toast-content">
+        <button class="toast-back" onclick="location.href = '/'">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            width="14"
+            height="14"
+          >
+            <path d="M19 12H5" />
+            <path d="m12 19-7-7 7-7" />
+          </svg>
+          Back
+        </button>
+        <span class="toast-check">&#10003;</span>
+        <span class="toast-text">Done in <strong id="toast-elapsed">0s</strong></span>
+        <button class="toast-cta" id="toast-cta">Generate another</button>
+      </div>
+    </div>
+
+    <!-- ─── New Prompt Overlay ─── -->
+    <div class="new-prompt-overlay" id="new-prompt-overlay">
+      <form class="new-prompt-form" id="new-prompt-form">
+        <textarea
+          class="new-prompt-input"
+          id="new-prompt-input"
+          placeholder="Describe your next website..."
+          rows="4"
+          autocomplete="off"
+        ></textarea>
+        <div class="new-prompt-actions">
+          <button type="button" class="new-prompt-cancel" id="new-prompt-cancel">Cancel</button>
+          <button type="submit" class="new-prompt-submit" id="new-prompt-submit">
+            <svg
+              class="zap-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              width="16"
+              height="16"
+            >
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+            Generate
+          </button>
+        </div>
+      </form>
+    </div>
 
     <div class="payment-modal" id="payment-modal" aria-hidden="true">
       <div class="payment-modal-backdrop" data-close-payment="1"></div>
-      <div class="payment-modal-card" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title">
-        <button class="payment-modal-close" id="payment-modal-close" type="button" aria-label="Close payment">
+      <div
+        class="payment-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="payment-modal-title"
+      >
+        <button
+          class="payment-modal-close"
+          id="payment-modal-close"
+          type="button"
+          aria-label="Close payment"
+        >
           ×
         </button>
         <span class="payment-eyebrow">Pro Subscription</span>
         <h2 id="payment-modal-title">Subscribe to unlock downloads</h2>
         <p class="payment-copy" id="payment-copy">
-          A Pro subscription is required to download ZIP exports. Subscribe to unlock unlimited downloads.
+          A Pro subscription is required to download ZIP exports. Subscribe to unlock unlimited
+          downloads.
         </p>
         <div class="payment-option-list" id="payment-option-list"></div>
         <div class="payment-note" id="payment-note">
@@ -248,7 +344,12 @@
 
     <script type="module" src="/scripts/dashboard-auth.js"></script>
     <script type="module" id="stripe-checkout-module">
-      import { getFirestore, collection, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js'
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        onSnapshot,
+      } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js'
       import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js'
       import { getAuth } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
 
@@ -259,15 +360,12 @@
           if (!user) throw new Error('Sign in required')
 
           const db = getFirestore()
-          const docRef = await addDoc(
-            collection(db, 'customers', user.uid, 'checkout_sessions'),
-            {
-              price: priceId,
-              success_url: window.location.origin + '/session/' + sessionId,
-              cancel_url: window.location.origin + '/session/' + sessionId,
-              mode: 'subscription',
-            }
-          )
+          const docRef = await addDoc(collection(db, 'customers', user.uid, 'checkout_sessions'), {
+            price: priceId,
+            success_url: window.location.origin + '/session/' + sessionId,
+            cancel_url: window.location.origin + '/session/' + sessionId,
+            mode: 'subscription',
+          })
 
           return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => reject(new Error('Checkout session timed out')), 30000)
@@ -311,9 +409,10 @@
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
         if (timezone === 'Asia/Kolkata') return 'IN'
 
-        const languages = Array.isArray(navigator.languages) && navigator.languages.length
-          ? navigator.languages
-          : [navigator.language]
+        const languages =
+          Array.isArray(navigator.languages) && navigator.languages.length
+            ? navigator.languages
+            : [navigator.language]
         if (languages.some((entry) => /-IN\b/i.test(String(entry || '')))) return 'IN'
 
         return ''
@@ -555,7 +654,10 @@
         button.disabled = githubPushBusy || !canShow
         button.classList.toggle('is-loading', githubPushBusy)
         button.classList.toggle('is-open', githubMenuOpen && canShow)
-        button.classList.toggle('is-success', Boolean(lastGithubPush?.repoFullName) && !githubPushBusy)
+        button.classList.toggle(
+          'is-success',
+          Boolean(lastGithubPush?.repoFullName) && !githubPushBusy,
+        )
         if (!canShow) setGitHubMenuOpen(false)
 
         const title = githubPushBusy
@@ -571,7 +673,9 @@
       function getGitHubTargetEntries() {
         // Inherit payment flags from the export targets so the GitHub panel
         // shows the same paywall state as the download panel.
-        const anyRequiresPayment = exportTargets.some((e) => e.paymentRequired && !e.downloadUnlocked)
+        const anyRequiresPayment = exportTargets.some(
+          (e) => e.paymentRequired && !e.downloadUnlocked,
+        )
         return ['html', 'react', 'nextjs'].map(
           (target) =>
             getExportEntry(target) || {
@@ -655,10 +759,15 @@
 
         // Mirror the static export panel's paywall copy
         if (eyebrowEl) eyebrowEl.textContent = githubRequiresPayment ? 'GitHub Push' : 'GitHub Push'
-        if (headingEl) headingEl.textContent = githubRequiresPayment
-          ? 'Ship this exact UI to GitHub'
-          : 'Choose the repo stack'
-        statusEl.textContent = githubPushBusy ? 'GitHub Push' : githubRequiresPayment ? 'Pro Required' : 'Choose target'
+        if (headingEl)
+          headingEl.textContent = githubRequiresPayment
+            ? 'Ship this exact UI to GitHub'
+            : 'Choose the repo stack'
+        statusEl.textContent = githubPushBusy
+          ? 'GitHub Push'
+          : githubRequiresPayment
+            ? 'Pro Required'
+            : 'Choose target'
         subtextEl.textContent = githubPushBusy
           ? 'Preparing the selected export for GitHub.'
           : githubRequiresPayment
@@ -690,7 +799,8 @@
         if (priceId) window._shipFastPriceId = priceId
 
         if (!priceId && !ea?.priceId) {
-          optionList.innerHTML = '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
+          optionList.innerHTML =
+            '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
           return
         }
 
@@ -702,19 +812,21 @@
           'Community access',
           'Monthly template drops',
         ]
-        const featureHtml = features.map(f => `<li>${escapeHtml(f)}</li>`).join('')
+        const featureHtml = features.map((f) => `<li>${escapeHtml(f)}</li>`).join('')
 
         let html = ''
 
         // Early adopter option (shown first if eligible)
         if (ea?.eligible && ea?.priceId) {
           const curr = paymentState?.currency || 'inr'
-          const eaPrice = curr === 'inr'
-            ? (ea.pricing?.inr?.display || '\u20B9199/month')
-            : (ea.pricing?.usd?.display || '$5/month')
-          const fullPrice = curr === 'inr'
-            ? (paymentState.pricing?.inr?.display || '\u20B9399/month')
-            : (paymentState.pricing?.usd?.display || '$9/month')
+          const eaPrice =
+            curr === 'inr'
+              ? ea.pricing?.inr?.display || '\u20B9199/month'
+              : ea.pricing?.usd?.display || '$5/month'
+          const fullPrice =
+            curr === 'inr'
+              ? paymentState.pricing?.inr?.display || '\u20B9399/month'
+              : paymentState.pricing?.usd?.display || '$9/month'
           const slotsText = `${ea.slotsRemaining} of ${ea.totalSlots} slots remaining`
           const isSelected = selectedPaymentMode === 'early_adopter'
           html += `<button type="button" class="payment-option${isSelected ? ' is-active' : ''}" data-payment-mode="early_adopter">
@@ -735,7 +847,7 @@
 
         // Regular Pro option
         const isProSelected = selectedPaymentMode === 'subscription' || !ea?.eligible
-        html += `<button type="button" class="payment-option${isProSelected && !ea?.eligible ? ' is-active' : (selectedPaymentMode === 'subscription' ? ' is-active' : '')}" data-payment-mode="subscription">
+        html += `<button type="button" class="payment-option${isProSelected && !ea?.eligible ? ' is-active' : selectedPaymentMode === 'subscription' ? ' is-active' : ''}" data-payment-mode="subscription">
           <span class="payment-option-head">
             <strong>${escapeHtml(plan?.name || 'Pro')} Plan</strong>
             <span>${price}</span>
@@ -1038,7 +1150,11 @@
           ? false
           : exportTargets.every((entry) => entry.buildReady !== false)
 
-        if (isAnonymousSession || !homepageReady || (!siteSpecReady && exportTargets.length === 0)) {
+        if (
+          isAnonymousSession ||
+          !homepageReady ||
+          (!siteSpecReady && exportTargets.length === 0)
+        ) {
           menu.style.display = 'none'
           setExportMenuOpen(false)
           renderGitHubPushButton()
@@ -1072,7 +1188,11 @@
           .map((entry) => {
             const label = formatExportTargetLabel(entry.target)
             const entryRequiresPayment = Boolean(entry.paymentRequired && !entry.downloadUnlocked)
-            const activeClass = entryRequiresPayment ? '' : entry.target === selectedExportTarget ? ' is-active' : ''
+            const activeClass = entryRequiresPayment
+              ? ''
+              : entry.target === selectedExportTarget
+                ? ' is-active'
+                : ''
             const stateLabel = entryRequiresPayment
               ? 'Pro only'
               : entry.ready
@@ -1132,7 +1252,8 @@
             ? `${selectedLabel} is up to date with the current generated UI.`
             : selected?.buildReady
               ? `Packaging ${selectedLabel} — your download will appear here shortly.`
-              : selected?.buildReason || `Waiting for the generated UI to finish before building ${selectedLabel}.`
+              : selected?.buildReason ||
+                `Waiting for the generated UI to finish before building ${selectedLabel}.`
 
         if (selected?.downloadPath && !requiresPayment) {
           download.href = selected.downloadPath
@@ -1164,7 +1285,9 @@
       async function pushSelectedExportToGitHub(targetOverride = selectedExportTarget) {
         if (githubPushBusy) return
 
-        const selected = getExportEntry(targetOverride) || getGitHubTargetEntries().find((entry) => entry.target === targetOverride)
+        const selected =
+          getExportEntry(targetOverride) ||
+          getGitHubTargetEntries().find((entry) => entry.target === targetOverride)
         if (!selected) return
 
         const statusEl = document.getElementById('export-status')
@@ -1180,7 +1303,8 @@
 
         if (selected.buildReady === false) {
           const message =
-            selected.buildReason || `Wait for the generated UI to finish before pushing ${targetLabel}.`
+            selected.buildReason ||
+            `Wait for the generated UI to finish before pushing ${targetLabel}.`
           statusEl.textContent = 'Waiting For Exact Clone'
           subtextEl.textContent = message
           githubStatusEl.textContent = 'Waiting'
@@ -1620,9 +1744,13 @@
         if (allDone) return
         allDone = true
 
-        const banner = document.getElementById('completion-banner')
-        banner.classList.add('visible')
-        setTimeout(() => banner.classList.remove('visible'), 4000)
+        // Only show completion toast for live generations (not revisits)
+        if (hasSeenLiveUpdate) {
+          const elapsed = Math.round((Date.now() - genStartTime) / 1000)
+          document.getElementById('toast-elapsed').textContent = elapsed + 's'
+          const toast = document.getElementById('completion-toast')
+          toast.classList.add('visible')
+        }
 
         document.getElementById('preview-loading').classList.add('hidden')
 
@@ -1857,6 +1985,7 @@
 
             case 'run_completed':
               document.getElementById('phase-text').textContent = `Done in ${ev.elapsed}s`
+              document.getElementById('toast-elapsed').textContent = ev.elapsed + 's'
               const timingFinal = document.getElementById('gen-timing')
               if (timingFinal)
                 timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
@@ -1919,34 +2048,32 @@
       })
       document.getElementById('export-trigger-btn').addEventListener('click', toggleExportMenu)
       document.getElementById('github-push-btn').addEventListener('click', toggleGitHubMenu)
-      document
-        .getElementById('export-target-list')
-        .addEventListener('click', (event) => {
-          const button = event.target.closest('[data-target]')
-          if (!button) return
-          selectedExportTarget = button.dataset.target || selectedExportTarget
-          const entry = getExportEntry(selectedExportTarget)
-          if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
-            openPaymentModal(entry)
-            return
-          }
-          renderExportPanel()
-        })
-      document
-        .getElementById('github-export-target-list')
-        .addEventListener('click', (event) => {
-          const button = event.target.closest('[data-github-target]')
-          if (!button || githubPushBusy || button.disabled) return
-          selectedExportTarget = button.dataset.githubTarget || selectedExportTarget
-          const entry = getExportEntry(selectedExportTarget) || getGitHubTargetEntries().find((e) => e.target === selectedExportTarget)
-          if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
-            openPaymentModal(entry)
-            return
-          }
-          renderExportPanel()
-          renderGitHubExportPanel()
-          pushSelectedExportToGitHub(selectedExportTarget)
-        })
+      document.getElementById('export-target-list').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-target]')
+        if (!button) return
+        selectedExportTarget = button.dataset.target || selectedExportTarget
+        const entry = getExportEntry(selectedExportTarget)
+        if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
+          openPaymentModal(entry)
+          return
+        }
+        renderExportPanel()
+      })
+      document.getElementById('github-export-target-list').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-github-target]')
+        if (!button || githubPushBusy || button.disabled) return
+        selectedExportTarget = button.dataset.githubTarget || selectedExportTarget
+        const entry =
+          getExportEntry(selectedExportTarget) ||
+          getGitHubTargetEntries().find((e) => e.target === selectedExportTarget)
+        if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
+          openPaymentModal(entry)
+          return
+        }
+        renderExportPanel()
+        renderGitHubExportPanel()
+        pushSelectedExportToGitHub(selectedExportTarget)
+      })
       document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal)
       document.getElementById('payment-cancel-btn').addEventListener('click', closePaymentModal)
       document.getElementById('payment-confirm-btn').addEventListener('click', startIndianPayment)
@@ -2009,6 +2136,52 @@
           renderExportPanel()
         })
         .catch(() => {})
+
+      // ─── New prompt overlay ─────────────────────────────────
+      document.getElementById('toast-cta').addEventListener('click', () => {
+        document.getElementById('completion-toast').classList.remove('visible')
+        const overlay = document.getElementById('new-prompt-overlay')
+        overlay.classList.add('visible')
+        setTimeout(() => document.getElementById('new-prompt-input').focus(), 400)
+      })
+
+      document.getElementById('new-prompt-cancel').addEventListener('click', () => {
+        document.getElementById('new-prompt-overlay').classList.remove('visible')
+        // Re-show toast
+        document.getElementById('completion-toast').classList.add('visible')
+      })
+
+      document.getElementById('new-prompt-form').addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const input = document.getElementById('new-prompt-input')
+        const prompt = input.value.trim()
+        if (!prompt) return
+
+        const btn = document.getElementById('new-prompt-submit')
+        btn.disabled = true
+        btn.textContent = 'Generating…'
+
+        try {
+          const res = await fetch('/api/sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt }),
+          })
+          const data = await res.json()
+          if (data.id) {
+            location.href = `/session/${data.id}`
+          } else {
+            alert(data.error || 'Failed to create session')
+            btn.disabled = false
+            btn.textContent = 'Generate'
+          }
+        } catch (err) {
+          alert('Connection error: ' + err.message)
+          btn.disabled = false
+          btn.textContent = 'Generate'
+        }
+      })
+
       startIntro()
       connectWS()
     </script>

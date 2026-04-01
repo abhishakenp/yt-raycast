@@ -134,9 +134,9 @@ function isGibberishPrompt(text) {
   if (consonantClusters.length >= 3) return true
 
   // Check if most 4+ letter words have no vowels at all
-  const longWords = words.filter(w => w.replace(/[^a-z]/g, '').length >= 4)
+  const longWords = words.filter((w) => w.replace(/[^a-z]/g, '').length >= 4)
   if (longWords.length >= 3) {
-    const noVowel = longWords.filter(w => !/[aeiou]/.test(w.replace(/[^a-z]/g, '')))
+    const noVowel = longWords.filter((w) => !/[aeiou]/.test(w.replace(/[^a-z]/g, '')))
     if (noVowel.length / longWords.length > 0.5) return true
   }
 
@@ -378,14 +378,12 @@ export async function startServer(sessionsDir) {
             }),
           }).catch(() => {})
         }
-<<<<<<< HEAD
-        return res.status(429).json({
-          error: `Monthly limit reached: max ${monthlyLimit} generations per month. Need more? Contact us at https://x.com/LivioGama`,
-          remaining: 0,
-        })
-=======
-        return res.status(429).json({ error: `Limit reached: max ${monthlyLimit} generations per rolling 30 days. Need more? Contact us at https://x.com/LivioGama`, remaining: 0 })
->>>>>>> 06b6629 (fix: auto-claim anonymous sessions on sign-in, clarify rolling window)
+        return res
+          .status(429)
+          .json({
+            error: `Limit reached: max ${monthlyLimit} generations per rolling 30 days. Need more? Contact us at https://x.com/LivioGama`,
+            remaining: 0,
+          })
       }
 
       // 10-min rate limit per user
