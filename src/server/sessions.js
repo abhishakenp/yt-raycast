@@ -346,6 +346,66 @@ export function setSessionPreferredExportTarget(session, preferredExportTarget) 
   return session.preferredExportTarget
 }
 
+export function claimSession(sessionId, newUserId) {
+  const session = getSession(sessionId)
+  if (!session) throw new Error('Session not found')
+  if (session.userId !== null && session.userId !== undefined) {
+    throw new Error('Session already has an owner')
+  }
+  // Write the new owner to user.txt
+  writeFileSync(join(session.workspace, 'user.txt'), newUserId)
+  // Update in-memory
+  session.userId = newUserId
+  return session
+}
+
+export function claimSessionsByIds(sessionIds, newUserId) {
+  const claimed = []
+  const failed = []
+  for (const id of sessionIds) {
+    try {
+      claimSession(id, newUserId)
+      claimed.push(id)
+    } catch {
+      failed.push(id)
+    }
+  }
+  return { claimed, failed }
+}
+
+export function setSessionStatus(sessionId, status) {
+  const session = getSession(sessionId)
+  if (!session) return
+  const metaFile = join(session.workspace, SESSION_META_FILE)
+  let meta = {}
+  try {
+    if (existsSync(metaFile)) meta = JSON.parse(readFileSync(metaFile, 'utf-8'))
+  } catch { /* */ }
+  meta.generationStatus = status
+  writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+}
+
+export function getInterruptedSessions() {
+  const interrupted = []
+  if (!_sessionsDir || !existsSync(_sessionsDir)) return interrupted
+  try {
+    for (const name of readdirSync(_sessionsDir)) {
+      const workspace = join(_sessionsDir, name)
+      const metaFile = join(workspace, SESSION_META_FILE)
+      try {
+        if (existsSync(metaFile)) {
+          const meta = JSON.parse(readFileSync(metaFile, 'utf-8'))
+          if (meta.generationStatus === 'generating') {
+            const session = getSession(name)
+            if (session) interrupted.push(session)
+          }
+        }
+      } catch { /* skip invalid */ }
+    }
+  } catch { /* ignore */ }
+  return interrupted
+}
+
 /** Broadcast a message to all WS clients in a session */
 export function sessionBroadcast(session, msg) {
   if (msg.type === 'status') session.lastStatus = msg

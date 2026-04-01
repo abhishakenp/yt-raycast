@@ -13,6 +13,9 @@ import {
   findSessionByPrompt,
   normalizePreferredExportTarget,
   setSessionPreferredExportTarget,
+  claimSessionsByIds,
+  setSessionStatus,
+  getInterruptedSessions,
 } from './sessions.js'
 import { verifyIdToken, db } from '../auth/firebase-admin.js'
 import {
@@ -103,6 +106,13 @@ export async function startServer(sessionsDir) {
   initSessionDir(sessionsDir)
   initPaymentStore(sessionsDir)
   startPaymentListeners()
+
+  const interrupted = getInterruptedSessions()
+  for (const s of interrupted) {
+    console.log(`[startup] Session ${s.id} was interrupted during generation. Resetting to failed.`)
+    setSessionStatus(s.id, 'failed')
+  }
+
   const app = express()
   app.set('trust proxy', true)
 
@@ -392,12 +402,17 @@ export async function startServer(sessionsDir) {
       /* tasks.json may not exist */
     }
 
+    setSessionStatus(session.id, 'generating')
+
     // Fire and forget the generation
     const generation = editMode
       ? runEdit({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
       : runAll({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
 
-    generation.catch((err) => {
+    generation.then(() => {
+      setSessionStatus(session.id, 'done')
+    }).catch((err) => {
+      setSessionStatus(session.id, 'failed')
       console.error(`  Session ${session.id} error:`, err?.message ?? err)
       sessionCtx.broadcast({ type: 'error', message: err?.message ?? 'Generation failed' })
     })
@@ -424,6 +439,19 @@ export async function startServer(sessionsDir) {
   // ─── API: List sessions ───────────────────────────────────
   app.get('/api/sessions', requireAuth, (_req, res) => {
     res.json(getAllSessions(_req.user.uid))
+  })
+
+  // ─── API: Claim anonymous sessions ─────────────────────────
+  app.post('/api/sessions/claim', requireAuth, (req, res) => {
+    const { sessionIds } = req.body
+    if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
+      return res.status(400).json({ error: 'sessionIds array is required' })
+    }
+    if (sessionIds.length > 20) {
+      return res.status(400).json({ error: 'Maximum 20 sessions can be claimed at once' })
+    }
+    const result = claimSessionsByIds(sessionIds, req.user.uid)
+    res.json(result)
   })
 
   // ─── API: Delete session ─────────────────────────────────
