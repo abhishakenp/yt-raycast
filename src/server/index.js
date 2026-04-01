@@ -299,11 +299,9 @@ export async function startServer(sessionsDir) {
         .json({ error: `Prompt must be at least ${MIN_PROMPT_LENGTH} characters.` })
     }
     if (isGibberishPrompt(trimmedPrompt)) {
-      return res
-        .status(400)
-        .json({
-          error: 'Please provide a meaningful description of the website you want to build.',
-        })
+      return res.status(400).json({
+        error: 'Please provide a meaningful description of the website you want to build.',
+      })
     }
     if (trimmedPrompt.length > MAX_PROMPT_LENGTH) {
       return res
@@ -361,12 +359,10 @@ export async function startServer(sessionsDir) {
             }),
           }).catch(() => {})
         }
-        return res
-          .status(429)
-          .json({
-            error: `Monthly limit reached: max ${monthlyLimit} generations per month. Need more? Contact us at https://x.com/LivioGama`,
-            remaining: 0,
-          })
+        return res.status(429).json({
+          error: `Monthly limit reached: max ${monthlyLimit} generations per month. Need more? Contact us at https://x.com/LivioGama`,
+          remaining: 0,
+        })
       }
 
       // 10-min rate limit per user
@@ -381,12 +377,10 @@ export async function startServer(sessionsDir) {
             }),
           }).catch(() => {})
         }
-        return res
-          .status(429)
-          .json({
-            error: 'Rate limit: max 5 generations per 10 minutes. Please wait.',
-            remaining: 0,
-          })
+        return res.status(429).json({
+          error: 'Rate limit: max 5 generations per 10 minutes. Please wait.',
+          remaining: 0,
+        })
       }
 
       // 10-min rate limit per IP
@@ -411,12 +405,18 @@ export async function startServer(sessionsDir) {
         !isSubscriber &&
         !checkRateLimit(clientIp, ipMonthlyHits, MAX_FREE_PER_IP_MONTHLY, MONTHLY_WINDOW_MS)
       ) {
-        return res
-          .status(429)
-          .json({
-            error: 'Too many generations from this network. Subscribe for higher limits.',
-            remaining: 0,
-          })
+        return res.status(429).json({
+          error: 'Too many generations from this network. Subscribe for higher limits.',
+          remaining: 0,
+        })
+      }
+
+      // Concurrent generation limit
+      if ((activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER) {
+        return res.status(429).json({
+          error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
+          remaining: 0,
+        })
       }
 
       // Non-subscribers get private sessions by default
@@ -445,12 +445,10 @@ export async function startServer(sessionsDir) {
       // Daily limit per IP for anonymous users — sign-in wall after 2
       if (!checkRateLimit(clientIp, anonIpDailyHits, MAX_ANON_PER_DAY, DAILY_WINDOW_MS)) {
         console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp}`)
-        return res
-          .status(429)
-          .json({
-            error: `Sign in to keep generating. Free accounts get ${MAX_FREE_PER_MONTH} generations per month.`,
-            remaining: 0,
-          })
+        return res.status(429).json({
+          error: `Sign in to keep generating. Free accounts get ${MAX_FREE_PER_MONTH} generations per month.`,
+          remaining: 0,
+        })
       }
 
       // 10-min rate limit per IP
@@ -459,6 +457,14 @@ export async function startServer(sessionsDir) {
         return res
           .status(429)
           .json({ error: 'Rate limit: too many requests from this IP. Please wait.', remaining: 0 })
+      }
+
+      // Concurrent generation limit
+      if ((activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER) {
+        return res.status(429).json({
+          error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
+          remaining: 0,
+        })
       }
 
       session = createSession(_sessionsDir, trimmedPrompt, null, {
@@ -502,14 +508,31 @@ export async function startServer(sessionsDir) {
       ? runEdit({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
       : runAll({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
 
+    const generationKey = req.user?.uid || clientIp
+    activeGenerations.set(generationKey, (activeGenerations.get(generationKey) || 0) + 1)
+
     generation
       .then(() => {
         setSessionStatus(session.id, 'done')
+        activeGenerations.set(
+          generationKey,
+          Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
+        )
       })
       .catch((err) => {
         setSessionStatus(session.id, 'failed')
         console.error(`  Session ${session.id} error:`, err?.message ?? err)
         sessionCtx.broadcast({ type: 'error', message: err?.message ?? 'Generation failed' })
+        activeGenerations.set(
+          generationKey,
+          Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
+        )
+        if (req.user) {
+          refundRateLimit(req.user.uid, userMonthlyHits)
+          console.log(
+            `  [REFUND] Monthly quota refunded for user ${req.user.uid} (session ${session.id} failed)`,
+          )
+        }
       })
 
     // Auto-build React + Next.js exports for authenticated users after generation completes
@@ -760,13 +783,11 @@ export async function startServer(sessionsDir) {
 
     const bundle = getSessionExportBundle(session, target)
     if (!bundle)
-      return res
-        .status(404)
-        .json({
-          error:
-            'Export is still building or has not been generated yet. Please wait a moment and try again.',
-          retryable: true,
-        })
+      return res.status(404).json({
+        error:
+          'Export is still building or has not been generated yet. Please wait a moment and try again.',
+        retryable: true,
+      })
 
     const filename = `${session.id}-${target}.zip`
     res.download(bundle.path, filename)
