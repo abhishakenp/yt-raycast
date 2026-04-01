@@ -63,6 +63,7 @@ const anonIpDailyHits = new Map() // ip -> [timestamp, ...] for anonymous users
 
 function setNoIndexHeaders(res) {
   res.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
+  res.set('Referrer-Policy', 'no-referrer')
 }
 
 function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
@@ -403,16 +404,18 @@ export async function startServer(sessionsDir) {
 
     // Auto-build React + Next.js exports for authenticated users after generation completes
     if (req.user) {
-      generation.then(() => {
-        for (const target of ['react', 'nextjs']) {
-          try {
-            generateSessionExport(session, target)
-            sessionCtx.broadcast({ type: 'export_ready', target })
-          } catch (err) {
-            console.error(`[auto-build] ${target} failed: ${err.message}`)
+      generation
+        .then(() => {
+          for (const target of ['react', 'nextjs']) {
+            try {
+              generateSessionExport(session, target)
+              sessionCtx.broadcast({ type: 'export_ready', target })
+            } catch (err) {
+              console.error(`[auto-build] ${target} failed: ${err.message}`)
+            }
           }
-        }
-      }).catch(() => {})
+        })
+        .catch(() => {})
     }
 
     res.json({ id: session.id, workspace: session.workspace })
@@ -440,9 +443,22 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Session info ───────────────────────────────────
-  app.get('/api/sessions/:id', async (req, res) => {
+  app.get('/api/sessions/:id', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    // Private sessions: only the owner sees full metadata
+    if (session.isPrivate === true) {
+      if (req.user?.uid !== session.userId) {
+        return res.json({
+          id: session.id,
+          createdAt: session.createdAt,
+          done: session.tasks.filter((t) => t.status === 'DONE').length,
+          isPrivate: true,
+        })
+      }
+    }
+
     const targets = await decorateExportTargetsForRequest(
       session,
       getSessionExportTargets(session),
@@ -510,8 +526,8 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Early adopter status (public) ────────────────────
-  app.get('/api/early-adopter-status', (_req, res) => {
-    res.json(getEarlyAdopterStatus())
+  app.get('/api/early-adopter-status', async (_req, res) => {
+    res.json(await getEarlyAdopterStatus())
   })
 
   // ─── API: Subscription status ─────────────────────────────

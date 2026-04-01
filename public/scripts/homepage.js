@@ -43,7 +43,7 @@ async function initFirebase() {
 
 async function getToken() {
   if (!currentUser) return null
-  return currentUser.getIdToken()
+  return currentUser.getIdToken(true)
 }
 
 async function authFetch(url, options = {}) {
