@@ -121,6 +121,25 @@ function isGibberishPrompt(text) {
       return true
   }
 
+  // Vowel ratio check: real language has ~30-50% vowels; keyboard mashing has very few
+  const alphaOnly = text.replace(/[^a-zA-Z]/g, '').toLowerCase()
+  if (alphaOnly.length >= 40) {
+    const vowels = alphaOnly.replace(/[^aeiou]/g, '').length
+    const vowelRatio = vowels / alphaOnly.length
+    if (vowelRatio < 0.15) return true
+  }
+
+  // Consonant cluster check: gibberish has long runs without vowels (e.g., "jfsdkljfsdjfds")
+  const consonantClusters = alphaOnly.match(/[^aeiou]{5,}/g) || []
+  if (consonantClusters.length >= 3) return true
+
+  // Check if most 4+ letter words have no vowels at all
+  const longWords = words.filter(w => w.replace(/[^a-z]/g, '').length >= 4)
+  if (longWords.length >= 3) {
+    const noVowel = longWords.filter(w => !/[aeiou]/.test(w.replace(/[^a-z]/g, '')))
+    if (noVowel.length / longWords.length > 0.5) return true
+  }
+
   return false
 }
 
