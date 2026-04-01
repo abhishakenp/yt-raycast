@@ -12,7 +12,8 @@ function getEarlyAdopterCountFile() {
   return join(billingDir, '_early_adopter_count.json')
 }
 
-function readEarlyAdopterCount() {
+// ─── File-based early adopter helpers (fallback) ────────────
+function readEarlyAdopterCountFromFile() {
   const filePath = getEarlyAdopterCountFile()
   if (!filePath || !existsSync(filePath)) return { count: 0, users: [] }
   try {
@@ -22,33 +23,79 @@ function readEarlyAdopterCount() {
   }
 }
 
-function writeEarlyAdopterCount(data) {
+function writeEarlyAdopterCountToFile(data) {
   const filePath = getEarlyAdopterCountFile()
   if (!filePath) return
   writeFileSync(filePath, JSON.stringify(data, null, 2))
 }
 
-export function isEarlyAdopterSlotAvailable() {
-  const data = readEarlyAdopterCount()
+function incrementEarlyAdopterCountFile(uid) {
+  const data = readEarlyAdopterCountFromFile()
+  if (data.users.includes(uid)) return
+  data.count += 1
+  data.users.push(uid)
+  writeEarlyAdopterCountToFile(data)
+}
+
+// ─── Firestore-backed early adopter helpers ─────────────────
+const earlyAdopterDocRef = db.collection('billing').doc('early_adopters')
+
+async function readEarlyAdopterCount() {
+  try {
+    const doc = await earlyAdopterDocRef.get()
+    if (!doc.exists) return { count: 0, users: [] }
+    const data = doc.data()
+    return { count: data.count ?? 0, users: data.users ?? [] }
+  } catch (err) {
+    console.warn('[early-adopter] Firestore read failed, falling back to file:', err?.message)
+    return readEarlyAdopterCountFromFile()
+  }
+}
+
+async function writeEarlyAdopterCount(data) {
+  try {
+    await earlyAdopterDocRef.set({ count: data.count ?? 0, users: data.users ?? [] }, { merge: true })
+  } catch (err) {
+    console.warn('[early-adopter] Firestore write failed, falling back to file:', err?.message)
+    writeEarlyAdopterCountToFile(data)
+  }
+}
+
+export async function incrementEarlyAdopterCount(uid) {
+  try {
+    await db.runTransaction(async (tx) => {
+      const doc = await tx.get(earlyAdopterDocRef)
+      const data = doc.exists ? doc.data() : { count: 0, users: [] }
+      const users = data.users ?? []
+      const count = data.count ?? 0
+
+      if (users.includes(uid)) return // already counted
+      if (count >= EARLY_ADOPTER_MAX) {
+        console.warn(`[early-adopter] Slot limit reached (${EARLY_ADOPTER_MAX}), rejecting uid=${uid}`)
+        return
+      }
+
+      tx.set(earlyAdopterDocRef, { count: count + 1, users: [...users, uid] })
+    })
+  } catch (err) {
+    console.warn('[early-adopter] Firestore transaction failed, falling back to file:', err?.message)
+    incrementEarlyAdopterCountFile(uid)
+  }
+}
+
+export async function isEarlyAdopterSlotAvailable() {
+  const data = await readEarlyAdopterCount()
   return data.count < EARLY_ADOPTER_MAX
 }
 
-export function getEarlyAdopterStatus() {
-  const data = readEarlyAdopterCount()
+export async function getEarlyAdopterStatus() {
+  const data = await readEarlyAdopterCount()
   return {
     eligible: data.count < EARLY_ADOPTER_MAX && Boolean(EARLY_ADOPTER_PRICE_ID),
     slotsRemaining: Math.max(0, EARLY_ADOPTER_MAX - data.count),
     totalSlots: EARLY_ADOPTER_MAX,
     priceId: EARLY_ADOPTER_PRICE_ID,
   }
-}
-
-export function incrementEarlyAdopterCount(uid) {
-  const data = readEarlyAdopterCount()
-  if (data.users.includes(uid)) return // already counted
-  data.count += 1
-  data.users.push(uid)
-  writeEarlyAdopterCount(data)
 }
 
 const PRO_PLAN = {
@@ -151,7 +198,7 @@ export function initPaymentStore(sessionsDir) {
  */
 export function startPaymentListeners() {
   // ─── Subscription listener: track early adopters ──────────
-  db.collectionGroup('subscriptions').onSnapshot((snapshot) => {
+  db.collectionGroup('subscriptions').onSnapshot(async (snapshot) => {
     for (const change of snapshot.docChanges()) {
       if (change.type !== 'added' && change.type !== 'modified') continue
       const sub = change.doc.data()
@@ -161,7 +208,7 @@ export function startPaymentListeners() {
       const priceId = sub.price || sub.prices?.[0]?.id
       if (priceId === EARLY_ADOPTER_PRICE_ID && EARLY_ADOPTER_PRICE_ID) {
         const uid = change.doc.ref.parent.parent.id // customers/{uid}/subscriptions/{id}
-        incrementEarlyAdopterCount(uid)
+        await incrementEarlyAdopterCount(uid)
       }
     }
   }, (err) => {
@@ -211,7 +258,32 @@ export function startPaymentListeners() {
     })
   }
 
-  console.log('  Payment listeners started (subscriptions + credit fulfillment)')
+  // ─── Refund listener: zero credits on refund ──────────────
+  db.collectionGroup('checkout_sessions').onSnapshot((snapshot) => {
+    for (const change of snapshot.docChanges()) {
+      if (change.type !== 'modified') continue
+      const data = change.doc.data()
+
+      // Detect refund: Firebase Stripe Extension sets payment_status or adds refund field
+      const isRefund = data.payment_status === 'refunded' || Boolean(data.refund)
+      if (!isRefund) continue
+      if (data.refundHandled) continue // already processed
+
+      const uid = change.doc.ref.parent.parent.id // customers/{uid}/checkout_sessions/{id}
+      zeroUserCredits(uid)
+
+      // Mark handled to prevent re-processing
+      change.doc.ref.update({ refundHandled: true }).catch((err) => {
+        console.error('[payment-listener] failed to mark refundHandled:', err?.message ?? err)
+      })
+
+      console.log(`[payment-listener] Refund detected for user ${uid}, credits zeroed`)
+    }
+  }, (err) => {
+    console.error('[payment-listener] refund listener error:', err?.message ?? err)
+  })
+
+  console.log('  Payment listeners started (subscriptions + credit fulfillment + refund detection)')
 }
 
 export async function hasActiveSubscription(uid) {
@@ -261,6 +333,18 @@ export function consumeUserCredit(uid) {
   }
 }
 
+export function zeroUserCredits(uid) {
+  if (!uid || !billingDir) return
+  const creditFile = join(billingDir, `credits_${uid}.json`)
+  let data = { remaining: 0, history: [] }
+  if (existsSync(creditFile)) {
+    try { data = JSON.parse(readFileSync(creditFile, 'utf-8')) } catch { /* */ }
+  }
+  data.remaining = 0
+  data.history.push({ type: 'refund', at: new Date().toISOString() })
+  writeFileSync(creditFile, JSON.stringify(data, null, 2))
+}
+
 export async function getDownloadAccessDecision(session, target, req) {
   const uid = session?.userId
   const isSubscribed = await hasActiveSubscription(uid)
@@ -301,7 +385,7 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
   const isIndianUser = countryCode === 'IN'
   const isSubscribed = await hasActiveSubscription(session?.userId)
 
-  const earlyAdopter = getEarlyAdopterStatus()
+  const earlyAdopter = await getEarlyAdopterStatus()
 
   const credits = await getUserCredits(session?.userId)
 
