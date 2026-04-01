@@ -359,10 +359,14 @@ export async function startServer(sessionsDir) {
             }),
           }).catch(() => {})
         }
+<<<<<<< HEAD
         return res.status(429).json({
           error: `Monthly limit reached: max ${monthlyLimit} generations per month. Need more? Contact us at https://x.com/LivioGama`,
           remaining: 0,
         })
+=======
+        return res.status(429).json({ error: `Limit reached: max ${monthlyLimit} generations per rolling 30 days. Need more? Contact us at https://x.com/LivioGama`, remaining: 0 })
+>>>>>>> 06b6629 (fix: auto-claim anonymous sessions on sign-in, clarify rolling window)
       }
 
       // 10-min rate limit per user

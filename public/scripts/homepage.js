@@ -65,14 +65,37 @@ function showAnonymousApp() {
   loadAnonymousSessions()
 }
 
-function showApp() {
+async function showApp() {
   document.getElementById('auth-overlay').classList.add('hidden')
   const signinBtn = document.getElementById('signin-btn')
   if (signinBtn) signinBtn.style.display = 'none'
   document.getElementById('signout-btn').style.display = 'flex'
   updateGenerationCounter()
   syncSubmitButtonState()
+  await claimAnonymousSessions()
   loadSessions()
+}
+
+async function claimAnonymousSessions() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+    if (stored.length === 0) return
+    const sessionIds = stored.map((s) => s.id)
+    const response = await authFetch('/api/sessions/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionIds }),
+    })
+    if (response.ok) {
+      const result = await response.json()
+      if (result.claimed?.length > 0) {
+        console.log(`[claim] Migrated ${result.claimed.length} anonymous session(s) to your account`)
+      }
+    }
+  } catch {
+    // Claim failure is non-critical — sessions remain anonymous but user can still generate new ones.
+  }
+  clearAnonSessions()
 }
 
 function setAuthError(message) {
