@@ -26,7 +26,7 @@ import {
 } from './exports.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import {
   addUserCredits,
   consumeUserCredit,
@@ -46,6 +46,7 @@ const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
 
 let _sessionsDir = null
+let rateLimitFile = null
 
 // ─── Rate Limiting ────────────────────────────────────────
 const RATE_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
@@ -56,6 +57,9 @@ const MAX_PER_IP = 10 // per 10min window
 const MAX_FREE_PER_MONTH = 10 // hard monthly cap for free (no subscription) users
 const MAX_PAID_PER_MONTH = 30 // hard monthly cap for paid (subscribed) users
 const MIN_PROMPT_LENGTH = 70
+const MAX_PROMPT_LENGTH = 5000
+const MAX_PER_IP_AUTHED = 30
+const MAX_FREE_PER_IP_MONTHLY = 15
 
 const MAX_ANON_PER_DAY = 2 // per day for anonymous (unauthenticated) users — then auth wall
 
@@ -64,6 +68,9 @@ const ipHits = new Map() // ip -> [timestamp, ...]
 const userMonthlyHits = new Map() // uid -> [timestamp, ...]
 const anonIpDailyHits = new Map() // ip -> [timestamp, ...] for anonymous users
 const exportHits = new Map() // uid -> [timestamp, ...] for export rate limiting
+const ipMonthlyHits = new Map() // ip -> [timestamp, ...] monthly cap for free users
+const activeGenerations = new Map() // uid/ip -> count of in-progress generations
+const MAX_CONCURRENT_PER_USER = 2
 
 function setNoIndexHeaders(res) {
   res.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
@@ -82,6 +89,11 @@ function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
   return true
 }
 
+function refundRateLimit(key, hitsMap) {
+  const hits = hitsMap.get(key)
+  if (hits?.length) hits.pop()
+}
+
 function cleanupMap(map, windowMs) {
   const now = Date.now()
   for (const [key, hits] of map) {
@@ -89,6 +101,27 @@ function cleanupMap(map, windowMs) {
     if (valid.length === 0) map.delete(key)
     else map.set(key, valid)
   }
+}
+
+function isGibberishPrompt(text) {
+  const uniqueChars = new Set(text.replace(/\s/g, '')).size
+  if (text.length >= 70 && uniqueChars < 10) return true
+
+  const words = text.toLowerCase().split(/\s+/).filter(Boolean)
+  if (words.length > 0) {
+    const freq = {}
+    for (const w of words) freq[w] = (freq[w] || 0) + 1
+    const maxFreq = Math.max(...Object.values(freq))
+    if (maxFreq / words.length > 0.6) return true
+  }
+
+  if (words.length >= 4) {
+    const first = words[0]
+    if (first.length <= 8 && words.filter((w) => w === first).length / words.length > 0.5)
+      return true
+  }
+
+  return false
 }
 
 // Periodic cleanup every 5 minutes
@@ -99,6 +132,19 @@ setInterval(
     cleanupMap(userMonthlyHits, MONTHLY_WINDOW_MS)
     cleanupMap(anonIpDailyHits, DAILY_WINDOW_MS)
     cleanupMap(exportHits, RATE_WINDOW_MS)
+    cleanupMap(ipMonthlyHits, MONTHLY_WINDOW_MS)
+    if (rateLimitFile) {
+      try {
+        const data = {
+          userMonthly: Object.fromEntries(userMonthlyHits),
+          anonDaily: Object.fromEntries(anonIpDailyHits),
+          ipMonthly: Object.fromEntries(ipMonthlyHits),
+        }
+        writeFileSync(rateLimitFile, JSON.stringify(data))
+      } catch {
+        /* ignore write errors */
+      }
+    }
   },
   5 * 60 * 1000,
 )
@@ -108,6 +154,21 @@ export async function startServer(sessionsDir) {
   initSessionDir(sessionsDir)
   initPaymentStore(sessionsDir)
   startPaymentListeners()
+
+  rateLimitFile = join(sessionsDir, '.rate_limits.json')
+  try {
+    if (existsSync(rateLimitFile)) {
+      const saved = JSON.parse(readFileSync(rateLimitFile, 'utf-8'))
+      if (saved.userMonthly)
+        for (const [k, v] of Object.entries(saved.userMonthly)) userMonthlyHits.set(k, v)
+      if (saved.anonDaily)
+        for (const [k, v] of Object.entries(saved.anonDaily)) anonIpDailyHits.set(k, v)
+      if (saved.ipMonthly)
+        for (const [k, v] of Object.entries(saved.ipMonthly)) ipMonthlyHits.set(k, v)
+    }
+  } catch {
+    /* ignore corrupt file */
+  }
 
   const interrupted = getInterruptedSessions()
   for (const s of interrupted) {
@@ -237,6 +298,18 @@ export async function startServer(sessionsDir) {
         .status(400)
         .json({ error: `Prompt must be at least ${MIN_PROMPT_LENGTH} characters.` })
     }
+    if (isGibberishPrompt(trimmedPrompt)) {
+      return res
+        .status(400)
+        .json({
+          error: 'Please provide a meaningful description of the website you want to build.',
+        })
+    }
+    if (trimmedPrompt.length > MAX_PROMPT_LENGTH) {
+      return res
+        .status(400)
+        .json({ error: `Prompt must be under ${MAX_PROMPT_LENGTH} characters.` })
+    }
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     const ts = new Date().toISOString()
@@ -317,20 +390,33 @@ export async function startServer(sessionsDir) {
       }
 
       // 10-min rate limit per IP
-      if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
+      if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP_AUTHED)) {
         console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=ip_10min`)
         if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
           fetch(process.env.SLACK_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+              text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_AUTHED}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
             }),
           }).catch(() => {})
         }
         return res
           .status(429)
           .json({ error: 'Rate limit: too many requests from this IP. Please wait.', remaining: 0 })
+      }
+
+      // IP-level monthly cap for free users (multi-account abuse prevention)
+      if (
+        !isSubscriber &&
+        !checkRateLimit(clientIp, ipMonthlyHits, MAX_FREE_PER_IP_MONTHLY, MONTHLY_WINDOW_MS)
+      ) {
+        return res
+          .status(429)
+          .json({
+            error: 'Too many generations from this network. Subscribe for higher limits.',
+            remaining: 0,
+          })
       }
 
       // Non-subscribers get private sessions by default
