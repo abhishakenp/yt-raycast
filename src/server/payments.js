@@ -1,8 +1,14 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { db } from '../auth/firebase-admin.js'
 
 let billingDir = null
+
+function atomicWriteJSON(filePath, data) {
+  const tmp = filePath + '.tmp'
+  writeFileSync(tmp, JSON.stringify(data, null, 2))
+  renameSync(tmp, filePath)
+}
 
 const EARLY_ADOPTER_MAX = parseInt(process.env.EARLY_ADOPTER_MAX_USERS || '500', 10)
 const EARLY_ADOPTER_PRICE_ID = process.env.STRIPE_EARLY_ADOPTER_PRICE_ID || ''
@@ -26,7 +32,7 @@ function readEarlyAdopterCountFromFile() {
 function writeEarlyAdopterCountToFile(data) {
   const filePath = getEarlyAdopterCountFile()
   if (!filePath) return
-  writeFileSync(filePath, JSON.stringify(data, null, 2))
+  atomicWriteJSON(filePath, data)
 }
 
 function incrementEarlyAdopterCountFile(uid) {
@@ -221,7 +227,7 @@ export function startPaymentListeners() {
   )
 
   if (creditPriceIds.size > 0) {
-    db.collectionGroup('checkout_sessions').onSnapshot((snapshot) => {
+    db.collectionGroup('checkout_sessions').onSnapshot(async (snapshot) => {
       for (const change of snapshot.docChanges()) {
         if (change.type !== 'modified') continue
         const data = change.doc.data()
@@ -244,14 +250,21 @@ export function startPaymentListeners() {
         if (creditAmount <= 0) continue
 
         const uid = change.doc.ref.parent.parent.id
-        addUserCredits(uid, creditAmount)
+        const docRef = change.doc.ref
+        try {
+          await db.runTransaction(async (transaction) => {
+            const freshDoc = await transaction.get(docRef)
+            const freshData = freshDoc.data()
+            if (freshData?.fulfilled) return // already done
 
-        // Mark fulfilled to prevent double-granting
-        change.doc.ref.update({ fulfilled: true }).catch((err) => {
-          console.error('[payment-listener] failed to mark fulfilled:', err?.message ?? err)
-        })
-
-        console.log(`[payment-listener] Auto-fulfilled ${creditAmount} credits for user ${uid}`)
+            transaction.update(docRef, { fulfilled: true })
+          })
+          // Only grant credits after transaction succeeds
+          addUserCredits(uid, creditAmount, data.sessionId)
+          console.log(`[payment-listener] Auto-fulfilled ${creditAmount} credits for user ${uid}`)
+        } catch (err) {
+          console.error('[payment-listener] fulfillment transaction failed:', err?.message ?? err)
+        }
       }
     }, (err) => {
       console.error('[payment-listener] checkout_sessions listener error:', err?.message ?? err)
@@ -284,6 +297,52 @@ export function startPaymentListeners() {
   })
 
   console.log('  Payment listeners started (subscriptions + credit fulfillment + refund detection)')
+
+  reconcileUnfulfilledCredits().catch(err => {
+    console.error('[reconcile] startup reconciliation failed:', err?.message ?? err)
+  })
+}
+
+export async function reconcileUnfulfilledCredits() {
+  const creditPriceIds = new Map()
+  if (process.env.STRIPE_3_CREDITS_PRICE_ID) creditPriceIds.set(process.env.STRIPE_3_CREDITS_PRICE_ID, 3)
+  if (process.env.STRIPE_10_CREDITS_PRICE_ID) creditPriceIds.set(process.env.STRIPE_10_CREDITS_PRICE_ID, 10)
+  if (creditPriceIds.size === 0) return
+
+  try {
+    const snapshot = await db.collectionGroup('checkout_sessions')
+      .where('mode', '==', 'payment')
+      .get()
+
+    let reconciled = 0
+    for (const doc of snapshot.docs) {
+      const data = doc.data()
+      if (data.fulfilled) continue
+      if (!data.sessionId) continue // not yet processed by Stripe extension
+
+      const creditAmount = creditPriceIds.get(data.price)
+      if (!creditAmount) continue
+
+      const uid = doc.ref.parent.parent.id
+
+      try {
+        await db.runTransaction(async (transaction) => {
+          const freshDoc = await transaction.get(doc.ref)
+          if (freshDoc.data()?.fulfilled) return
+          transaction.update(doc.ref, { fulfilled: true })
+        })
+        addUserCredits(uid, creditAmount, data.sessionId)
+        reconciled++
+        console.log(`[reconcile] Fulfilled ${creditAmount} credits for user ${uid}`)
+      } catch (err) {
+        console.error(`[reconcile] Failed for ${doc.id}:`, err?.message ?? err)
+      }
+    }
+
+    if (reconciled > 0) console.log(`[reconcile] Reconciled ${reconciled} unfulfilled credit purchases`)
+  } catch (err) {
+    console.error('[reconcile] Error querying checkout_sessions:', err?.message ?? err)
+  }
 }
 
 export async function hasActiveSubscription(uid) {
@@ -291,6 +350,41 @@ export async function hasActiveSubscription(uid) {
   const subsRef = db.collection('customers').doc(uid).collection('subscriptions')
   const snapshot = await subsRef.where('status', 'in', ['active', 'trialing']).limit(1).get()
   return !snapshot.empty
+}
+
+export async function hadActiveSubscriptionDuring(uid, timestamp) {
+  if (!uid || !timestamp) return false
+  try {
+    const subsRef = db.collection('customers').doc(uid).collection('subscriptions')
+    const snapshot = await subsRef.get()
+    if (snapshot.empty) return false
+
+    const sessionTime = new Date(timestamp).getTime()
+
+    for (const doc of snapshot.docs) {
+      const sub = doc.data()
+      // Skip subscriptions that were never active
+      if (!['active', 'trialing', 'canceled', 'past_due', 'unpaid'].includes(sub.status)) continue
+
+      const created = sub.created?.toMillis?.() || sub.created?.seconds * 1000 || new Date(sub.created).getTime()
+      if (!created || created > sessionTime) continue // subscription started after session
+
+      // If still active, user had coverage
+      if (sub.status === 'active' || sub.status === 'trialing') return true
+
+      // If canceled, check if cancelation was after the session was created
+      const canceledAt = sub.canceled_at?.toMillis?.() || sub.canceled_at?.seconds * 1000 ||
+                         sub.cancel_at?.toMillis?.() || sub.cancel_at?.seconds * 1000 ||
+                         (sub.canceled_at ? new Date(sub.canceled_at).getTime() : null) ||
+                         (sub.cancel_at ? new Date(sub.cancel_at).getTime() : null)
+
+      if (!canceledAt || canceledAt > sessionTime) return true
+    }
+    return false
+  } catch (err) {
+    console.error('[payments] hadActiveSubscriptionDuring error:', err?.message ?? err)
+    return false
+  }
 }
 
 export async function getUserCredits(uid) {
@@ -305,16 +399,18 @@ export async function getUserCredits(uid) {
   }
 }
 
-export function addUserCredits(uid, amount) {
+export function addUserCredits(uid, amount, stripeSessionId = null) {
   if (!uid || !billingDir) return
   const creditFile = join(billingDir, `credits_${uid}.json`)
   let data = { remaining: 0, history: [] }
   if (existsSync(creditFile)) {
     try { data = JSON.parse(readFileSync(creditFile, 'utf-8')) } catch { /* */ }
   }
+  // Before granting, check for duplicate
+  if (stripeSessionId && data.history.some(h => h.stripeSessionId === stripeSessionId)) return
   data.remaining = (data.remaining ?? 0) + amount
-  data.history.push({ type: 'purchase', amount, at: new Date().toISOString() })
-  writeFileSync(creditFile, JSON.stringify(data, null, 2))
+  data.history.push({ type: 'purchase', amount, stripeSessionId, at: new Date().toISOString() })
+  atomicWriteJSON(creditFile, data)
 }
 
 export function consumeUserCredit(uid) {
@@ -326,7 +422,7 @@ export function consumeUserCredit(uid) {
     if ((data.remaining ?? 0) <= 0) return false
     data.remaining -= 1
     data.history.push({ type: 'consume', at: new Date().toISOString() })
-    writeFileSync(creditFile, JSON.stringify(data, null, 2))
+    atomicWriteJSON(creditFile, data)
     return true
   } catch {
     return false
@@ -342,7 +438,7 @@ export function zeroUserCredits(uid) {
   }
   data.remaining = 0
   data.history.push({ type: 'refund', at: new Date().toISOString() })
-  writeFileSync(creditFile, JSON.stringify(data, null, 2))
+  atomicWriteJSON(creditFile, data)
 }
 
 export async function getDownloadAccessDecision(session, target, req) {
@@ -351,6 +447,12 @@ export async function getDownloadAccessDecision(session, target, req) {
 
   if (isSubscribed) {
     return { allowed: true, payment: { subscriptionActive: true, credits: null } }
+  }
+
+  // Check if user had an active subscription when this session was created
+  const hadAccess = await hadActiveSubscriptionDuring(uid, session?.createdAt)
+  if (hadAccess) {
+    return { allowed: true, payment: { subscriptionActive: false, historicalAccess: true, credits: null } }
   }
 
   const credits = await getUserCredits(uid)
