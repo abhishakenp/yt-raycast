@@ -101,6 +101,12 @@ async function pushExportToGitHub(sessionId, target) {
   })
 
   const data = await response.json().catch(() => ({}))
+  if (response.status === 402) {
+    const err = new Error(data?.error || 'Subscribe to Pro to push exports to GitHub.')
+    err.paymentRequired = true
+    err.payment = data?.payment
+    throw err
+  }
   if (!response.ok || !data?.ok) {
     throw new Error(data?.error || 'GitHub push failed.')
   }

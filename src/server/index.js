@@ -816,6 +816,20 @@ export async function startServer(sessionsDir) {
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
 
+    const target = String(req.body?.target || '').toLowerCase()
+    const accessDecision = await getDownloadAccessDecision(session, target, req)
+    if (!accessDecision.allowed) {
+      return res.status(402).json({
+        error: accessDecision.error,
+        payment: accessDecision.payment,
+      })
+    }
+
+    // Consume a credit if using credit-based access (not subscription)
+    if (accessDecision.useCredit && session.userId) {
+      consumeUserCredit(session.userId)
+    }
+
     try {
       const result = await pushSessionToGitHub(session, {
         target: req.body?.target,
