@@ -108,10 +108,12 @@ const PRO_PLAN = {
   name: 'Pro',
   priceId: process.env.STRIPE_PRO_PRICE_ID || '',
   features: [
-    'Unlimited website generation',
+    '30 generations/month',
     'Unlimited ZIP downloads',
-    'All frameworks (HTML, React, Next.js)',
-    'Priority support',
+    'Full template library',
+    'AI iteration & refinement',
+    'Community access',
+    'Monthly template drops',
   ],
   pricing: {
     inr: { amount: 399, display: '\u20B9399/month' },
