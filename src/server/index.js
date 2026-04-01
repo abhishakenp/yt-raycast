@@ -63,6 +63,7 @@ const userHits = new Map() // uid -> [timestamp, ...]
 const ipHits = new Map() // ip -> [timestamp, ...]
 const userMonthlyHits = new Map() // uid -> [timestamp, ...]
 const anonIpDailyHits = new Map() // ip -> [timestamp, ...] for anonymous users
+const exportHits = new Map() // uid -> [timestamp, ...] for export rate limiting
 
 function setNoIndexHeaders(res) {
   res.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
@@ -97,6 +98,7 @@ setInterval(
     cleanupMap(ipHits, RATE_WINDOW_MS)
     cleanupMap(userMonthlyHits, MONTHLY_WINDOW_MS)
     cleanupMap(anonIpDailyHits, DAILY_WINDOW_MS)
+    cleanupMap(exportHits, RATE_WINDOW_MS)
   },
   5 * 60 * 1000,
 )
@@ -290,6 +292,7 @@ export async function startServer(sessionsDir) {
           .status(429)
           .json({
             error: `Monthly limit reached: max ${monthlyLimit} generations per month. Need more? Contact us at https://x.com/LivioGama`,
+            remaining: 0,
           })
       }
 
@@ -307,7 +310,10 @@ export async function startServer(sessionsDir) {
         }
         return res
           .status(429)
-          .json({ error: 'Rate limit: max 5 generations per 10 minutes. Please wait.' })
+          .json({
+            error: 'Rate limit: max 5 generations per 10 minutes. Please wait.',
+            remaining: 0,
+          })
       }
 
       // 10-min rate limit per IP
@@ -324,7 +330,7 @@ export async function startServer(sessionsDir) {
         }
         return res
           .status(429)
-          .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
+          .json({ error: 'Rate limit: too many requests from this IP. Please wait.', remaining: 0 })
       }
 
       // Non-subscribers get private sessions by default
@@ -357,6 +363,7 @@ export async function startServer(sessionsDir) {
           .status(429)
           .json({
             error: `Sign in to keep generating. Free accounts get ${MAX_FREE_PER_MONTH} generations per month.`,
+            remaining: 0,
           })
       }
 
@@ -365,7 +372,7 @@ export async function startServer(sessionsDir) {
         console.log(`[${ts}] RATE_LIMIT anon ip=${clientIp} reason=ip_10min`)
         return res
           .status(429)
-          .json({ error: 'Rate limit: too many requests from this IP. Please wait.' })
+          .json({ error: 'Rate limit: too many requests from this IP. Please wait.', remaining: 0 })
       }
 
       session = createSession(_sessionsDir, trimmedPrompt, null, {
@@ -409,13 +416,15 @@ export async function startServer(sessionsDir) {
       ? runEdit({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
       : runAll({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
 
-    generation.then(() => {
-      setSessionStatus(session.id, 'done')
-    }).catch((err) => {
-      setSessionStatus(session.id, 'failed')
-      console.error(`  Session ${session.id} error:`, err?.message ?? err)
-      sessionCtx.broadcast({ type: 'error', message: err?.message ?? 'Generation failed' })
-    })
+    generation
+      .then(() => {
+        setSessionStatus(session.id, 'done')
+      })
+      .catch((err) => {
+        setSessionStatus(session.id, 'failed')
+        console.error(`  Session ${session.id} error:`, err?.message ?? err)
+        sessionCtx.broadcast({ type: 'error', message: err?.message ?? 'Generation failed' })
+      })
 
     // Auto-build React + Next.js exports for authenticated users after generation completes
     if (req.user) {
@@ -433,7 +442,20 @@ export async function startServer(sessionsDir) {
         .catch(() => {})
     }
 
-    res.json({ id: session.id, workspace: session.workspace })
+    if (req.user) {
+      const currentMonthly = (userMonthlyHits.get(req.user.uid) || []).filter(
+        (t) => Date.now() - t < MONTHLY_WINDOW_MS,
+      ).length
+      const isSubscriber = await hasActiveSubscription(req.user.uid)
+      const remaining = (isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH) - currentMonthly
+      res.json({ id: session.id, workspace: session.workspace, remaining })
+    } else {
+      const currentAnon = (anonIpDailyHits.get(clientIp) || []).filter(
+        (t) => Date.now() - t < DAILY_WINDOW_MS,
+      ).length
+      const remaining = MAX_ANON_PER_DAY - currentAnon
+      res.json({ id: session.id, workspace: session.workspace, remaining })
+    }
   })
 
   // ─── API: List sessions ───────────────────────────────────
@@ -526,9 +548,13 @@ export async function startServer(sessionsDir) {
     })
   })
 
-  app.post('/api/sessions/:id/export', async (req, res) => {
+  app.post('/api/sessions/:id/export', requireAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
+
+    if (!checkRateLimit(req.user.uid, exportHits, 5))
+      return res.status(429).json({ error: 'Export rate limit: max 5 per 10 minutes' })
 
     try {
       const target = String(req.body?.target || '').toLowerCase()
@@ -621,9 +647,16 @@ export async function startServer(sessionsDir) {
     }
   })
 
-  app.get('/api/sessions/:id/download/:target', async (req, res) => {
+  app.get('/api/sessions/:id/download/:target', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    if (!req.user) {
+      return res.status(401).json({ error: 'Sign in to download your projects' })
+    }
+    if (session.userId && session.userId !== req.user.uid) {
+      return res.status(403).json({ error: 'You do not own this session' })
+    }
 
     const target = String(req.params.target || '').toLowerCase()
     const accessDecision = await getDownloadAccessDecision(session, target, req)
@@ -640,7 +673,14 @@ export async function startServer(sessionsDir) {
     }
 
     const bundle = getSessionExportBundle(session, target)
-    if (!bundle) return res.status(404).json({ error: 'Export bundle not found' })
+    if (!bundle)
+      return res
+        .status(404)
+        .json({
+          error:
+            'Export is still building or has not been generated yet. Please wait a moment and try again.',
+          retryable: true,
+        })
 
     const filename = `${session.id}-${target}.zip`
     res.download(bundle.path, filename)
