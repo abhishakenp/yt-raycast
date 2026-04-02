@@ -52,6 +52,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
     const siteSpec = stripSiteSpecBlueprints(siteSpecStats.siteSpec)
     sessionCtx.setSiteSpec?.(siteSpec)
     renderPreviewToWorkspace(siteSpec, workspace)
+    sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
     const enrichedSiteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace)
     saveSiteSpec(workspace, enrichedSiteSpec)
     sessionCtx.setSiteSpec?.(enrichedSiteSpec)
@@ -259,6 +260,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
     homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace)
+    sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
     homepage = preview.files['index.html'] ?? ''
     sessionCtx.signalHomepageReady()
   }

@@ -2,6 +2,20 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { join } from 'node:path'
 import { db } from '../auth/firebase-admin.js'
 
+// Import quota constants - these should match the ones in index.js
+const MAX_FREE_PER_MONTH = 10 // hard monthly cap for free (no subscription) users
+const MAX_PAID_PER_MONTH = 30 // hard monthly cap for paid (subscribed) users
+const MAX_ANON_PER_DAY = 2 // per day for anonymous (unauthenticated) users
+const MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
+const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
+
+// These need to be shared from index.js - for now we'll create a simple getter
+let getUserQuotaInfo = null
+
+export function setQuotaInfoGetter(getter) {
+  getUserQuotaInfo = getter
+}
+
 let billingDir = null
 
 function atomicWriteJSON(filePath, data) {
@@ -64,6 +78,34 @@ async function writeEarlyAdopterCount(data) {
   } catch (err) {
     console.warn('[early-adopter] Firestore write failed, falling back to file:', err?.message)
     writeEarlyAdopterCountToFile(data)
+  }
+}
+
+export async function getUserGenerationQuota(userId, clientIp) {
+  if (getUserQuotaInfo) {
+    // Use the shared quota info function from index.js
+    return getUserQuotaInfo(userId, clientIp)
+  }
+
+  // Fallback implementation (though this won't have access to the live rate limiting maps)
+  if (userId) {
+    const isSubscribed = await hasActiveSubscription(userId)
+    return {
+      isSubscribed,
+      monthlyLimit: isSubscribed ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH,
+      monthlyUsed: 0, // Can't calculate without access to userMonthlyHits
+      monthlyRemaining: isSubscribed ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH,
+      isAnonymous: false,
+    }
+  } else {
+    // Anonymous user
+    return {
+      isSubscribed: false,
+      dailyLimit: MAX_ANON_PER_DAY,
+      dailyUsed: 0, // Can't calculate without access to anonIpDailyHits
+      dailyRemaining: MAX_ANON_PER_DAY,
+      isAnonymous: true,
+    }
   }
 }
 
@@ -493,6 +535,10 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
 
   const credits = await getUserCredits(session?.userId)
 
+  // Get generation quota info
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+  const quota = await getUserGenerationQuota(session?.userId, clientIp)
+
   return {
     gateway: 'stripe',
     countryCode,
@@ -529,6 +575,7 @@ export async function getSessionPaymentDetails(session, req, target = 'html') {
     credits: {
       remaining: credits,
     },
+    quota,
     access: {
       targetUnlocked: isSubscribed || credits > 0,
       subscriptionUnlocked: isSubscribed,

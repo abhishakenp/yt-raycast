@@ -1,3 +1,7 @@
+if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
+  history.scrollRestoration = 'manual'
+}
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js'
 import {
   getAuth,
@@ -62,7 +66,7 @@ function showAnonymousApp() {
   clearGithubAccessToken()
   updateGenerationCounter()
   syncSubmitButtonState()
-  loadAnonymousSessions()
+  loadRecentPublicSessions()
 }
 
 async function showApp() {
@@ -80,6 +84,7 @@ async function claimAnonymousSessions() {
   try {
     const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
     if (stored.length === 0) return
+    let claimed = 0
     const sessionIds = stored.map((s) => s.id)
     const response = await authFetch('/api/sessions/claim', {
       method: 'POST',
@@ -88,14 +93,15 @@ async function claimAnonymousSessions() {
     })
     if (response.ok) {
       const result = await response.json()
+      claimed = result?.claimed?.length ?? 0
       if (result.claimed?.length > 0) {
         console.log(`[claim] Migrated ${result.claimed.length} anonymous session(s) to your account`)
       }
     }
+    if (claimed > 0) clearAnonSessions()
   } catch {
     // Claim failure is non-critical — sessions remain anonymous but user can still generate new ones.
   }
-  clearAnonSessions()
 }
 
 function setAuthError(message) {
@@ -168,7 +174,6 @@ const form = document.getElementById('prompt-form')
 const input = document.getElementById('prompt-input')
 const submitButton = document.getElementById('submit-btn')
 const generationCounter = document.getElementById('gen-counter')
-const promptHelp = document.getElementById('prompt-help')
 const promptPlaceholder = document.getElementById('prompt-placeholder')
 const promptPlaceholderText = document.getElementById('prompt-placeholder-text')
 const privateGenRow = document.getElementById('private-gen-row')
@@ -176,6 +181,11 @@ const privateGenCheckbox = document.getElementById('private-gen-checkbox')
 const privateGenModal = document.getElementById('private-gen-modal')
 const GENERATION_LIMIT = 2
 const MIN_PROMPT_LENGTH = 70
+const isLocalDevHost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '::1')
 const SAMPLE_PROMPTS = [
   'A cinematic travel landing page for curated weekend escapes with reviews and fast booking.',
   'A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.',
@@ -267,36 +277,22 @@ function stepSamplePromptAnimation() {
   scheduleSamplePromptStep(260)
 }
 
-function setPromptHelp(message, isError = false) {
-  promptHelp.textContent = message
-  promptHelp.classList.toggle('is-error', isError)
-  if (isError) input.setAttribute('aria-invalid', 'true')
-  else input.removeAttribute('aria-invalid')
-}
-
 function validatePrompt(showError = false) {
   const promptLength = input.value.trim().length
 
-  if (promptLength === 0) {
-    setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`, false)
+  if (showError && promptLength < MIN_PROMPT_LENGTH) {
+    input.setAttribute('aria-invalid', 'true')
     return false
   }
 
-  if (promptLength < MIN_PROMPT_LENGTH) {
-    setPromptHelp(
-      `Prompt must be at least ${MIN_PROMPT_LENGTH} characters (${promptLength}/${MIN_PROMPT_LENGTH}).`,
-      showError,
-    )
-    return false
-  }
-
-  setPromptHelp(`${promptLength} characters.`, false)
-  return true
+  input.removeAttribute('aria-invalid')
+  return promptLength >= MIN_PROMPT_LENGTH
 }
 
 function isGenerationLimitReached() {
-  if (authResolved && currentUser) return false // server enforces limit for signed-in users
-  if (!authResolved) return false // don't gate before auth resolves
+  if (isLocalDevHost) return false
+  if (authResolved && currentUser) return false
+  if (!authResolved) return false
   return getGenerationCount() >= GENERATION_LIMIT
 }
 
@@ -312,8 +308,19 @@ function getGenerationCount() {
 }
 
 function updateGenerationCounter() {
-  // Authenticated users — server enforces the limit, hide the client-side counter
-  if (authResolved && currentUser) {
+  if (isLocalDevHost) {
+    generationCounter.style.display = 'none'
+    privateGenRow.style.display = 'none'
+    syncSubmitButtonState()
+    return
+  }
+  if (!authResolved) {
+    generationCounter.style.display = 'none'
+    privateGenRow.style.display = 'none'
+    syncSubmitButtonState()
+    return
+  }
+  if (currentUser) {
     generationCounter.style.display = 'none'
     privateGenRow.style.display = 'none'
     syncSubmitButtonState()
@@ -333,9 +340,9 @@ function updateGenerationCounter() {
 
   if (isGenerationLimitReached()) {
     generationCounter.innerHTML =
-      `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used — <a href="#" id="gen-signin-link" style="color:inherit;text-decoration:underline;">sign in for 10/month free</a>`
+      `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used — <a href="#" id="gen-signup-link" style="color:inherit;text-decoration:underline;">sign up instead</a>`
     generationCounter.classList.add('limit-reached')
-    document.getElementById('gen-signin-link')?.addEventListener('click', (e) => {
+    document.getElementById('gen-signup-link')?.addEventListener('click', (e) => {
       e.preventDefault()
       document.getElementById('auth-overlay').classList.remove('hidden')
     })
@@ -370,7 +377,6 @@ document.addEventListener('keydown', (e) => {
 })
 
 updateGenerationCounter()
-setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
 renderSamplePrompt()
 syncSamplePromptVisibility()
 syncSubmitButtonState()
@@ -420,10 +426,7 @@ form.addEventListener('submit', async (event) => {
       return
     }
 
-    if (data.error?.includes(`${MIN_PROMPT_LENGTH} characters`)) {
-      setPromptHelp(data.error, true)
-      input.focus()
-    } else if (!currentUser && response.status === 429) {
+    if (!currentUser && response.status === 429) {
       // Server-side anon limit hit — prompt sign-in
       updateGenerationCounter()
       document.getElementById('auth-overlay').classList.remove('hidden')
@@ -468,7 +471,6 @@ function renderSessions(sessions) {
   }
 
   document.body.classList.add('has-sessions')
-  section.style.display = 'block'
 
   list.classList.remove('single-col', 'two-col')
   if (sessions.length === 1) list.classList.add('single-col')
@@ -512,15 +514,22 @@ function renderSessions(sessions) {
     )
     .join('')
 
+  section.style.display = 'block'
+
   const scaleIframes = () => {
     list.querySelectorAll('.session-thumbnail iframe').forEach((iframe) => {
       const containerWidth = iframe.parentElement.offsetWidth
+      if (!containerWidth) return
       const scale = containerWidth / 1280
       iframe.style.transform = `scale(${scale})`
     })
   }
 
-  scaleIframes()
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      scaleIframes()
+    })
+  })
   if (!hasSessionResizeListener) {
     window.addEventListener('resize', scaleIframes)
     hasSessionResizeListener = true
@@ -534,7 +543,9 @@ function renderSessions(sessions) {
           if (entry.isIntersecting) {
             const iframe = entry.target
             iframe.src = iframe.dataset.src
+            iframe.addEventListener('load', scaleIframes, { once: true })
             observer.unobserve(iframe)
+            requestAnimationFrame(scaleIframes)
           }
         })
       },
@@ -544,8 +555,14 @@ function renderSessions(sessions) {
   } else {
     iframes.forEach((iframe) => {
       iframe.src = iframe.dataset.src
+      iframe.addEventListener('load', scaleIframes, { once: true })
     })
+    requestAnimationFrame(scaleIframes)
   }
+
+  list.querySelectorAll('.session-thumbnail iframe[src]:not([data-src])').forEach((iframe) => {
+    iframe.addEventListener('load', scaleIframes, { once: true })
+  })
 
   if (localStorage.getItem('sf_show_cost') === '1') {
     list.querySelectorAll('.session-cost').forEach((element) => {
@@ -554,14 +571,38 @@ function renderSessions(sessions) {
   }
 }
 
+async function loadRecentPublicSessions() {
+  try {
+    const r = await fetch('/api/sessions/recent')
+    if (!r.ok) {
+      renderSessions([])
+      return
+    }
+    const sessions = await r.json()
+    if (!Array.isArray(sessions) || sessions.length === 0) {
+      renderSessions([])
+      return
+    }
+    renderSessions(sessions)
+  } catch {
+    renderSessions([])
+  }
+}
+
 async function loadSessions() {
   try {
     const response = await authFetch('/api/sessions')
-    const sessions = await response.json()
-    renderSessions(sessions)
+    if (!response.ok) throw new Error('Failed to load sessions')
+    const raw = await response.json()
+    const sessions = Array.isArray(raw) ? raw : []
+    if (sessions.length > 0) {
+      renderSessions(sessions)
+      return
+    }
   } catch {
     // Ignore fetch failures on the public page and keep the marketing content available.
   }
+  await loadRecentPublicSessions()
 }
 
 async function loadAnonymousSessions() {
@@ -677,9 +718,18 @@ try {
 }
 
 window.addEventListener('pageshow', (event) => {
-  if (!event.persisted) return
-  if (currentUser) loadSessions()
-  else loadAnonymousSessions()
+  const nav = performance.getEntriesByType('navigation')[0]
+  const back =
+    event.persisted || (nav && nav.type === 'back_forward')
+  if (back) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.scrollTo(0, 0))
+    })
+  }
+  if (event.persisted) {
+    if (currentUser) loadSessions()
+    else loadAnonymousSessions()
+  }
 })
 
 initFirebase()

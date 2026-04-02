@@ -4,22 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ship Fast — Dashboard</title>
-    <meta
-      name="description"
-      content="Live generation dashboard — watch your website being built in real-time by AI."
-    />
+    <meta name="description" content="Live generation dashboard — watch your website being built in real-time by AI." />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <!-- Plausible Analytics (proxied) -->
-    <script
-      defer
-      data-domain="ship-fast.devliv.io"
-      data-api="/api/event"
-      src="/js/script.js"
-    ></script>
+    <script defer data-domain="ship-fast.devliv.io" data-api="/api/event" src="/js/script.js"></script>
     <link rel="stylesheet" href="/styles/dashboard.css" />
   </head>
   <body>
+    <iframe
+      id="home-underlayer"
+      class="home-underlayer"
+      title="Homepage"
+      tabindex="-1"
+      aria-hidden="true"
+    ></iframe>
     <!-- ─── Audio: Rocket launch SFX ─── -->
     <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
@@ -69,9 +68,6 @@
     <div class="dashboard-wrap" id="dashboard-wrap">
       <div class="left-panel" id="left-panel">
         <div class="panel-header">
-          <a href="/" class="back-btn" title="Back to dashboard" onclick="navigateHome(event)"
-            >&#8592; Back</a
-          >
           <h1>SHIP FAST</h1>
           <div class="subtitle" id="phase-text">Initializing...</div>
         </div>
@@ -116,113 +112,53 @@
               <span class="lock">&#9679;</span>
               <span class="url-text" id="url-text">localhost:3001</span>
             </div>
-            <div class="browser-toolbar-actions">
-              <div class="export-menu" id="export-menu" style="display: none">
-                <button
-                  id="export-trigger-btn"
-                  class="export-trigger-btn"
-                  type="button"
-                  aria-expanded="false"
-                  aria-controls="export-panel"
-                >
-                  <span class="export-trigger-copy">
-                    <span class="export-trigger-label">Export</span>
-                    <span class="export-trigger-meta" id="export-trigger-meta"
-                      >HTML / React / Next.js</span
-                    >
-                  </span>
-                  <span class="export-trigger-state" id="export-trigger-state">Build</span>
-                </button>
-                <div
-                  class="export-panel export-panel--popover"
-                  id="export-panel"
-                  style="display: none"
-                >
-                  <div class="export-panel-top">
-                    <div class="export-copy">
-                      <span class="export-eyebrow">Project Export</span>
-                      <strong>Ship this exact UI in the stack you need</strong>
-                      <p id="export-subtext">
-                        Pick a target and Ship Fast will package the current generated UI for it.
-                      </p>
-                    </div>
-                    <span class="export-status-badge" id="export-status">Preparing site spec…</span>
-                  </div>
-                  <div class="export-target-list" id="export-target-list"></div>
-                  <div class="export-panel-actions">
-                    <span
-                      id="export-building-indicator"
-                      style="
-                        display: none;
-                        font-size: 13px;
-                        color: #a78bfa;
-                        align-items: center;
-                        gap: 6px;
-                      "
-                      >Building downloads…</span
-                    >
-                    <a
-                      id="export-download-link"
-                      class="export-download-link secondary"
-                      href="#"
-                      style="display: none"
-                      >Download ZIP</a
-                    >
-                  </div>
-                </div>
-              </div>
-              <div class="github-export-menu" id="github-export-menu" style="display: none">
-                <button
-                  id="github-push-btn"
-                  class="github-push-btn"
-                  type="button"
-                  aria-expanded="false"
-                  aria-controls="github-export-panel"
-                  aria-label="Choose GitHub export target"
-                  title="Choose GitHub export target"
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path
-                      d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-                    ></path>
-                  </svg>
-                </button>
-                <div
-                  class="export-panel export-panel--popover github-export-panel"
-                  id="github-export-panel"
-                  style="display: none"
-                >
-                  <div class="export-panel-top github-export-panel-top">
-                    <div class="export-copy">
-                      <span class="export-eyebrow">GitHub Push</span>
-                      <strong>Choose the repo stack</strong>
-                      <p id="github-export-subtext">
-                        Pick HTML, React, or Next.js and Ship Fast will push that export to GitHub.
-                      </p>
-                    </div>
-                    <span class="export-status-badge" id="github-export-status">Choose target</span>
-                  </div>
-                  <div class="export-target-list" id="github-export-target-list"></div>
-                </div>
-              </div>
-              <div class="browser-status">
-                <span class="dot" id="status-dot"></span>
-                <span id="status-text">Preview</span>
-                <!-- generate/theme buttons hidden for now -->
-                <!--
-                <button id="generate-design-btn" onclick="generateAlternativeDesign()" title="Generate Alternative Theme">🎨 GENERATE</button>
-                <button id="theme-magic-btn" onclick="applyMagicTheme()" title="Magic: Switch Theme">✨ MAGIC THEME</button>
-                -->
-              </div>
-              <button
-                id="split-toggle-btn"
-                onclick="toggleSplit()"
-                title="Toggle 50/50 split"
-                style="display: none"
-              >
-                ⬛ 50/50
-              </button>
+            <div class="browser-status">
+              <span class="dot" id="status-dot"></span>
+              <span id="status-text">Preview</span>
             </div>
+            <div class="preview-toolbar-actions" id="preview-toolbar-actions">
+              <button type="button" class="preview-tb-btn" id="preview-share-btn">Share</button>
+              <div class="preview-tb-dropdown" id="preview-export-dropdown">
+                <button
+                  type="button"
+                  class="preview-tb-btn"
+                  id="preview-export-trigger"
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                >
+                  Export
+                </button>
+                <div class="preview-tb-menu" id="preview-export-menu" hidden>
+                  <button type="button" data-export-target="html">HTML ZIP</button>
+                  <button type="button" data-export-target="react">React ZIP</button>
+                  <button type="button" data-export-target="nextjs">Next.js ZIP</button>
+                </div>
+              </div>
+              <div class="preview-tb-dropdown" id="preview-deploy-dropdown">
+                <button
+                  type="button"
+                  class="preview-tb-btn"
+                  id="preview-deploy-trigger"
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                >
+                  Deploy
+                </button>
+                <div class="preview-tb-menu" id="preview-deploy-menu" hidden>
+                  <button type="button" data-deploy-target="html">Push HTML to GitHub</button>
+                  <button type="button" data-deploy-target="react">Push React to GitHub</button>
+                  <button type="button" data-deploy-target="nextjs">Push Next.js to GitHub</button>
+                </div>
+              </div>
+            </div>
+            <button
+              id="split-toggle-btn"
+              onclick="toggleSplit()"
+              title="Toggle 50/50 split"
+              style="display: none"
+            >
+              ⬛ 50/50
+            </button>
           </div>
           <div class="browser-content">
             <iframe id="preview-iframe" src="about:blank"></iframe>
@@ -242,24 +178,13 @@
     <!-- ─── Completion Toast (bottom) ─── -->
     <div class="completion-toast" id="completion-toast">
       <div class="toast-content">
-        <button class="toast-back" onclick="location.href = '/'">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            width="14"
-            height="14"
-          >
-            <path d="M19 12H5" />
-            <path d="m12 19-7-7 7-7" />
-          </svg>
+        <button class="toast-back" onclick="navigateHome(event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
           Back
         </button>
         <span class="toast-check">&#10003;</span>
         <span class="toast-text">Done in <strong id="toast-elapsed">0s</strong></span>
+        <span class="toast-joke" id="toast-joke"></span>
         <button class="toast-cta" id="toast-cta">Generate another</button>
       </div>
     </div>
@@ -277,57 +202,11 @@
         <div class="new-prompt-actions">
           <button type="button" class="new-prompt-cancel" id="new-prompt-cancel">Cancel</button>
           <button type="submit" class="new-prompt-submit" id="new-prompt-submit">
-            <svg
-              class="zap-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              width="16"
-              height="16"
-            >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
+            <svg class="zap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             Generate
           </button>
         </div>
       </form>
-    </div>
-
-    <div class="payment-modal" id="payment-modal" aria-hidden="true">
-      <div class="payment-modal-backdrop" data-close-payment="1"></div>
-      <div
-        class="payment-modal-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="payment-modal-title"
-      >
-        <button
-          class="payment-modal-close"
-          id="payment-modal-close"
-          type="button"
-          aria-label="Close payment"
-        >
-          ×
-        </button>
-        <span class="payment-eyebrow">Pro Subscription</span>
-        <h2 id="payment-modal-title">Subscribe to unlock downloads</h2>
-        <p class="payment-copy" id="payment-copy">
-          A Pro subscription is required to download ZIP exports. Subscribe to unlock unlimited
-          downloads.
-        </p>
-        <div class="payment-option-list" id="payment-option-list"></div>
-        <div class="payment-note" id="payment-note">
-          You will be redirected to Stripe Checkout to complete your subscription.
-        </div>
-        <div class="payment-error" id="payment-error"></div>
-        <div class="payment-actions">
-          <button class="secondary" id="payment-cancel-btn" type="button">Cancel</button>
-          <button class="primary" id="payment-confirm-btn" type="button">Subscribe Now</button>
-        </div>
-      </div>
     </div>
 
     <canvas class="particles-canvas" id="particles-canvas"></canvas>
@@ -342,89 +221,12 @@
       <div class="debug-feed" id="debug-feed"></div>
     </div>
 
-    <script type="module" src="/scripts/dashboard-auth.js"></script>
-    <script type="module" id="stripe-checkout-module">
-      import {
-        getFirestore,
-        collection,
-        addDoc,
-        onSnapshot,
-      } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js'
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js'
-      import { getAuth } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
-
-      window._stripeCheckout = {
-        async createCheckoutSession(priceId, sessionId) {
-          const auth = getAuth()
-          const user = auth.currentUser
-          if (!user) throw new Error('Sign in required')
-
-          const db = getFirestore()
-          const docRef = await addDoc(collection(db, 'customers', user.uid, 'checkout_sessions'), {
-            price: priceId,
-            success_url: window.location.origin + '/session/' + sessionId,
-            cancel_url: window.location.origin + '/session/' + sessionId,
-            mode: 'subscription',
-          })
-
-          return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Checkout session timed out')), 30000)
-            onSnapshot(docRef, (snap) => {
-              const data = snap.data()
-              if (data?.error) {
-                clearTimeout(timeout)
-                reject(new Error(data.error.message))
-              }
-              if (data?.url) {
-                clearTimeout(timeout)
-                resolve(data.url)
-              }
-            })
-          })
-        },
-        async checkSubscriptionStatus() {
-          const auth = getAuth()
-          const user = auth.currentUser
-          if (!user) return false
-
-          const token = await user.getIdToken()
-          const res = await fetch('/api/subscription-status', {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          if (!res.ok) return false
-          const data = await res.json()
-          return data.active === true
-        },
-      }
-    </script>
     <script>
       // ─── Config ────────────────────────────────────────────────
       const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
-      const PREVIEW_BASE = `${location.origin}/preview/${SESSION_ID}`
+      const PREVIEW_BASE = `${location.origin}/preview/${SESSION_ID}/`
       const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}?session=${SESSION_ID}`
       const TYPING_SPEED_MS = 40
-      const PAYMENT_COUNTRY_HINT = detectCountryHint()
-
-      function detectCountryHint() {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
-        if (timezone === 'Asia/Kolkata') return 'IN'
-
-        const languages =
-          Array.isArray(navigator.languages) && navigator.languages.length
-            ? navigator.languages
-            : [navigator.language]
-        if (languages.some((entry) => /-IN\b/i.test(String(entry || '')))) return 'IN'
-
-        return ''
-      }
-
-      function apiFetch(url, options = {}) {
-        const headers = { ...(options.headers || {}) }
-        if (PAYMENT_COUNTRY_HINT === 'IN') {
-          headers['X-Ship-Fast-Country-Hint'] = PAYMENT_COUNTRY_HINT
-        }
-        return fetch(url, { ...options, headers })
-      }
 
       // ─── Audio unlock: ensure launch SFX can play ──────────────
       const launchSfx = document.getElementById('launch-sfx')
@@ -505,6 +307,25 @@
         feed.scrollTop = feed.scrollHeight
       }
 
+      function loadHomeUnderlayer() {
+        const el = document.getElementById('home-underlayer')
+        if (!el || el.dataset.live === '1') return
+        el.src = '/'
+        el.dataset.live = '1'
+        el.classList.add('home-underlayer--live')
+      }
+
+      function navigateHome(e) {
+        e?.preventDefault()
+        loadHomeUnderlayer()
+        document.getElementById('dashboard-wrap').classList.add('sliding-out')
+        const canReturn = sessionStorage.getItem('sf_return_home') === '1' && window.history.length > 1
+        setTimeout(() => {
+          if (canReturn) history.back()
+          else location.replace('/')
+        }, 580)
+      }
+
       // ─── State ─────────────────────────────────────────────────
       let tasks = []
       let genStartTime = Date.now()
@@ -512,7 +333,6 @@
       let allDone = false
       let drawerOpen = false
       let previewLoaded = false
-      let homepageReady = false
       let wsConnected = false
       let introActive = true
       let introPromptText = ''
@@ -521,413 +341,19 @@
       let hasSeenLiveUpdate = false // only auto-collapse if we watched tasks complete live
       let isReconnect = false // true when refreshing a session that already has homepage
       let alternativeDesign = null // background-loaded alternative theme
-      let exportTargets = []
-      let siteSpecReady = false
-      let preferredExportTarget = 'html'
-      let isAnonymousSession = false
-      let selectedExportTarget = 'html'
-      let exportMenuOpen = false
-      let activeThemeOverride = null
-      let paymentState = null
-      let paymentModalTarget = null
-      let selectedPaymentMode = 'subscription'
-      let paymentBusy = false
-      let githubPushBusy = false
-      let githubMenuOpen = false
-      let lastGithubPush = null
-      let ws = null
-      let reconnectTimer = null
-      let leavingDashboard = false
-      let stripeCheckoutReady = false
-
-      function cleanupRealtime() {
-        if (reconnectTimer) {
-          clearTimeout(reconnectTimer)
-          reconnectTimer = null
-        }
-        if (ws) {
-          ws.onclose = null
-          ws.onerror = null
-          try {
-            ws.close(1000, 'navigate_home')
-          } catch {}
-          ws = null
-        }
-      }
-
-      function navigateHome(event) {
-        event?.preventDefault()
-        if (leavingDashboard) return
-        leavingDashboard = true
-        cleanupRealtime()
-        const canReturnHome =
-          sessionStorage.getItem('sf_return_home') === '1' && window.history.length > 1
-        if (canReturnHome) {
-          history.back()
-          return
-        }
-        location.replace('/')
-      }
-
-      window.addEventListener('pagehide', () => {
-        leavingDashboard = true
-        cleanupRealtime()
-      })
-
-      function normalizePaymentState(rawPayment) {
-        return {
-          gateway: rawPayment?.gateway || 'stripe',
-          countryCode: rawPayment?.countryCode || 'GLOBAL',
-          isIndianUser: Boolean(rawPayment?.isIndianUser),
-          configured: Boolean(rawPayment?.configured),
-          currency: rawPayment?.currency || 'inr',
-          plan: rawPayment?.plan || null,
-          earlyAdopter: rawPayment?.earlyAdopter || null,
-          pricing: rawPayment?.pricing || {
-            inr: { amount: 399, display: '\u20B9399/month' },
-            usd: { amount: 9, display: '$9/month' },
-          },
-          subscription: {
-            active: Boolean(rawPayment?.subscription?.active),
-            status: rawPayment?.subscription?.status || null,
-          },
-          access: {
-            targetUnlocked: Boolean(rawPayment?.access?.targetUnlocked),
-            subscriptionUnlocked: Boolean(rawPayment?.access?.subscriptionUnlocked),
-          },
-        }
-      }
-
-      function getDisplayPrice() {
-        if (!paymentState?.pricing) return '\u20B9399/month'
-        const curr = paymentState.currency || 'inr'
-        return curr === 'inr'
-          ? paymentState.pricing.inr?.display || '\u20B9399/month'
-          : paymentState.pricing.usd?.display || '$9/month'
-      }
-
-      function syncPreviewTheme() {
-        if (!activeThemeOverride) return
-        const iframe = document.getElementById('preview-iframe')
-        if (!iframe?.contentWindow) return
-        iframe.contentWindow.postMessage({ type: 'UPDATE_THEME', colors: activeThemeOverride }, '*')
-      }
-
-      function syncPreviewChrome() {
-        const chrome = document.querySelector('.browser-chrome')
-        if (!chrome) return
-        chrome.classList.toggle('is-preview-ready', homepageReady)
-      }
-
-      function setActiveThemeOverride(theme) {
-        activeThemeOverride =
-          theme && typeof theme === 'object' && Object.keys(theme).length > 0 ? theme : null
-        syncPreviewTheme()
-      }
-
-      function getExportEntry(target) {
-        return exportTargets.find((entry) => entry.target === target) || null
-      }
-
-      function getSelectedExportEntry() {
-        return getExportEntry(selectedExportTarget) || exportTargets[0] || null
-      }
-
-      function renderGitHubPushButton() {
-        const menu = document.getElementById('github-export-menu')
-        const button = document.getElementById('github-push-btn')
-
-        if (isAnonymousSession) {
-          menu.style.display = 'none'
-          return
-        }
-
-        const selected = getSelectedExportEntry()
-        const canShow = homepageReady && (exportTargets.length > 0 || siteSpecReady)
-        const pushedLabel = lastGithubPush?.target
-          ? formatExportTargetLabel(lastGithubPush.target)
-          : selected
-            ? formatExportTargetLabel(selected.target)
-            : 'an export'
-
-        menu.style.display = canShow ? 'inline-flex' : 'none'
-        button.disabled = githubPushBusy || !canShow
-        button.classList.toggle('is-loading', githubPushBusy)
-        button.classList.toggle('is-open', githubMenuOpen && canShow)
-        button.classList.toggle(
-          'is-success',
-          Boolean(lastGithubPush?.repoFullName) && !githubPushBusy,
-        )
-        if (!canShow) setGitHubMenuOpen(false)
-
-        const title = githubPushBusy
-          ? `Pushing ${pushedLabel} to GitHub…`
-          : lastGithubPush?.repoFullName
-            ? `Choose another stack to push to ${lastGithubPush.repoFullName}`
-            : 'Choose GitHub export target'
-        button.title = title
-        button.setAttribute('aria-label', title)
-        button.setAttribute('aria-expanded', githubMenuOpen ? 'true' : 'false')
-      }
-
-      function getGitHubTargetEntries() {
-        // Inherit payment flags from the export targets so the GitHub panel
-        // shows the same paywall state as the download panel.
-        const anyRequiresPayment = exportTargets.some(
-          (e) => e.paymentRequired && !e.downloadUnlocked,
-        )
-        return ['html', 'react', 'nextjs'].map(
-          (target) =>
-            getExportEntry(target) || {
-              target,
-              ready: false,
-              buildReady: true,
-              buildReason: null,
-              paymentRequired: anyRequiresPayment,
-              downloadUnlocked: false,
-            },
-        )
-      }
-
-      function setGitHubMenuOpen(nextOpen) {
-        const menu = document.getElementById('github-export-menu')
-        const panel = document.getElementById('github-export-panel')
-        const button = document.getElementById('github-push-btn')
-        const canShow = Boolean(menu) && menu.style.display !== 'none'
-
-        githubMenuOpen = Boolean(nextOpen) && canShow
-        panel.style.display = githubMenuOpen ? 'grid' : 'none'
-        button.classList.toggle('is-open', githubMenuOpen)
-        button.setAttribute('aria-expanded', githubMenuOpen ? 'true' : 'false')
-      }
-
-      function closeGitHubMenu() {
-        setGitHubMenuOpen(false)
-      }
-
-      function toggleGitHubMenu() {
-        closeExportMenu()
-        renderGitHubExportPanel()
-        setGitHubMenuOpen(!githubMenuOpen)
-      }
-
-      function renderGitHubExportPanel() {
-        const statusEl = document.getElementById('github-export-status')
-        const subtextEl = document.getElementById('github-export-subtext')
-        const eyebrowEl = document.querySelector('#github-export-panel .export-eyebrow')
-        const headingEl = document.querySelector('#github-export-panel .export-copy strong')
-        const targetList = document.getElementById('github-export-target-list')
-        const targets = getGitHubTargetEntries()
-
-        if (!targets.length) {
-          closeGitHubMenu()
-          return
-        }
-
-        const githubRequiresPayment = targets.some((e) => e.paymentRequired && !e.downloadUnlocked)
-
-        targetList.innerHTML = targets
-          .map((entry) => {
-            const label = formatExportTargetLabel(entry.target)
-            const activeClass = entry.target === selectedExportTarget ? ' is-active' : ''
-            const entryRequiresPayment = Boolean(entry.paymentRequired && !entry.downloadUnlocked)
-            const stateLabel = entryRequiresPayment
-              ? 'Pro only'
-              : githubPushBusy
-                ? 'Working'
-                : entry.buildReady === false
-                  ? 'Waiting'
-                  : lastGithubPush?.target === entry.target
-                    ? 'Last push'
-                    : 'Push'
-            const disabledAttr = githubPushBusy || entry.buildReady === false ? ' disabled' : ''
-
-            return `<button type="button" class="export-target${activeClass}" data-github-target="${escapeHtml(
-              entry.target,
-            )}"${disabledAttr}>
-              <span class="export-target-glyph" aria-hidden="true">${escapeHtml(
-                formatExportTargetGlyph(entry.target),
-              )}</span>
-              <span class="export-target-copy">
-                <span class="export-target-name">${escapeHtml(label)}</span>
-                <span class="export-target-meta">${escapeHtml(formatExportTargetSummary(entry.target))}</span>
-              </span>
-              <span class="export-target-state">${escapeHtml(stateLabel)}</span>
-            </button>`
-          })
-          .join('')
-
-        // Mirror the static export panel's paywall copy
-        if (eyebrowEl) eyebrowEl.textContent = githubRequiresPayment ? 'GitHub Push' : 'GitHub Push'
-        if (headingEl)
-          headingEl.textContent = githubRequiresPayment
-            ? 'Ship this exact UI to GitHub'
-            : 'Choose the repo stack'
-        statusEl.textContent = githubPushBusy
-          ? 'GitHub Push'
-          : githubRequiresPayment
-            ? 'Pro Required'
-            : 'Choose target'
-        subtextEl.textContent = githubPushBusy
-          ? 'Preparing the selected export for GitHub.'
-          : githubRequiresPayment
-            ? 'Subscribe to Pro or purchase download credits to push to GitHub.'
-            : 'Pick HTML, React, or Next.js and Ship Fast will push that export to GitHub.'
-      }
-
-      function setPaymentError(message = '') {
-        document.getElementById('payment-error').textContent = message
-      }
-
-      function setPaymentBusyState(isBusy) {
-        paymentBusy = isBusy
-        const confirmBtn = document.getElementById('payment-confirm-btn')
-        const cancelBtn = document.getElementById('payment-cancel-btn')
-        confirmBtn.disabled = isBusy
-        cancelBtn.disabled = isBusy
-        confirmBtn.textContent = isBusy ? 'Redirecting to Stripe…' : 'Subscribe Now'
-      }
-
-      function renderPaymentOptions() {
-        const optionList = document.getElementById('payment-option-list')
-        const plan = paymentState?.plan
-        const ea = paymentState?.earlyAdopter
-        const priceId = plan?.priceId || window._shipFastPriceId || ''
-        const price = getDisplayPrice()
-
-        // Store the price ID globally for checkout
-        if (priceId) window._shipFastPriceId = priceId
-
-        if (!priceId && !ea?.priceId) {
-          optionList.innerHTML =
-            '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
-          return
-        }
-
-        const features = plan?.features || [
-          '30 generations/month',
-          'Unlimited ZIP downloads',
-          'Full template library',
-          'AI iteration & refinement',
-          'Community access',
-          'Monthly template drops',
-        ]
-        const featureHtml = features.map((f) => `<li>${escapeHtml(f)}</li>`).join('')
-
-        let html = ''
-
-        // Early adopter option (shown first if eligible)
-        if (ea?.eligible && ea?.priceId) {
-          const curr = paymentState?.currency || 'inr'
-          const eaPrice =
-            curr === 'inr'
-              ? ea.pricing?.inr?.display || '\u20B9199/month'
-              : ea.pricing?.usd?.display || '$5/month'
-          const fullPrice =
-            curr === 'inr'
-              ? paymentState.pricing?.inr?.display || '\u20B9399/month'
-              : paymentState.pricing?.usd?.display || '$9/month'
-          const slotsText = `${ea.slotsRemaining} of ${ea.totalSlots} slots remaining`
-          const isSelected = selectedPaymentMode === 'early_adopter'
-          html += `<button type="button" class="payment-option${isSelected ? ' is-active' : ''}" data-payment-mode="early_adopter">
-            <span class="payment-option-head">
-              <strong>Early Adopter</strong>
-              <span><s style="opacity:0.5">${fullPrice}</s> ${eaPrice}</span>
-            </span>
-            <span class="payment-option-body" style="color:#34d399;">50% off — locked forever! ${escapeHtml(slotsText)}</span>
-            <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.85em;color:#c4b5fd;">
-              ${featureHtml}
-            </ul>
-          </button>`
-          // Default to early adopter if available
-          if (!selectedPaymentMode || selectedPaymentMode === 'subscription') {
-            selectedPaymentMode = 'early_adopter'
-          }
-        }
-
-        // Regular Pro option
-        const isProSelected = selectedPaymentMode === 'subscription' || !ea?.eligible
-        html += `<button type="button" class="payment-option${isProSelected && !ea?.eligible ? ' is-active' : selectedPaymentMode === 'subscription' ? ' is-active' : ''}" data-payment-mode="subscription">
-          <span class="payment-option-head">
-            <strong>${escapeHtml(plan?.name || 'Pro')} Plan</strong>
-            <span>${price}</span>
-          </span>
-          <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.85em;color:#c4b5fd;">
-            ${featureHtml}
-          </ul>
-        </button>`
-
-        optionList.innerHTML = html
-      }
-
-      function closePaymentModal() {
-        if (paymentBusy) return
-        paymentModalTarget = null
-        setPaymentError('')
-        document.getElementById('payment-modal').classList.remove('is-open')
-        document.getElementById('payment-modal').setAttribute('aria-hidden', 'true')
-      }
-
-      function openPaymentModal(targetEntry) {
-        paymentModalTarget = targetEntry
-        setPaymentBusyState(false)
-        setPaymentError('')
-        renderPaymentOptions()
-
-        const selectedLabel = formatExportTargetLabel(targetEntry?.target || selectedExportTarget)
-        const price = getDisplayPrice()
-        document.getElementById('payment-copy').textContent =
-          `Subscribe to Pro to unlock ${selectedLabel} downloads. Lock the early adopter rate before slots run out.`
-
-        document.getElementById('payment-modal').classList.add('is-open')
-        document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
-      }
-
-      async function startIndianPayment() {
-        if (!paymentModalTarget || paymentBusy) return
-        setPaymentBusyState(true)
-        setPaymentError('')
-
-        try {
-          let priceId
-          if (selectedPaymentMode === 'early_adopter' && paymentState?.earlyAdopter?.priceId) {
-            priceId = paymentState.earlyAdopter.priceId
-          } else {
-            priceId = window._shipFastPriceId || paymentState?.plan?.priceId
-          }
-          if (!priceId) throw new Error('Subscription plan is not configured yet.')
-
-          if (!window._stripeCheckout) {
-            throw new Error('Stripe checkout module not loaded. Please refresh the page.')
-          }
-
-          const url = await window._stripeCheckout.createCheckoutSession(priceId, SESSION_ID)
-          window.location.assign(url)
-        } catch (error) {
-          setPaymentError(error.message || 'Unable to start checkout')
-          setPaymentBusyState(false)
-        }
-      }
 
       // ─── Magic Theme Logic ─────────────────────────────────────
       function applyMagicTheme() {
         if (!alternativeDesign) return
-        setActiveThemeOverride(alternativeDesign)
+        const iframe = document.getElementById('preview-iframe')
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'UPDATE_THEME', colors: alternativeDesign }, '*')
 
-        apiFetch(`/api/sessions/${SESSION_ID}/theme`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ theme: alternativeDesign }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.ok) setActiveThemeOverride(data.theme)
-          })
-          .catch(() => {})
-
-        const btn = document.getElementById('theme-magic-btn')
-        btn.style.transform = 'scale(1.1) rotate(5deg)'
-        setTimeout(() => (btn.style.transform = ''), 200)
+          // Visual feedback on button
+          const btn = document.getElementById('theme-magic-btn')
+          btn.style.transform = 'scale(1.1) rotate(5deg)'
+          setTimeout(() => (btn.style.transform = ''), 200)
+        }
       }
 
       function generateAlternativeDesign() {
@@ -935,7 +361,7 @@
         btn.disabled = true
         btn.textContent = '⏳ GENERATING...'
 
-        apiFetch(`/api/sessions/${SESSION_ID}/generate-design`, { method: 'POST' })
+        fetch(`/api/sessions/${SESSION_ID}/generate-design`, { method: 'POST' })
           .then((res) => res.json())
           .then((data) => {
             btn.textContent = '🎨 GENERATE'
@@ -1084,284 +510,6 @@
         }
       }
 
-      function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;')
-      }
-
-      function formatExportTargetLabel(target) {
-        if (target === 'nextjs') return 'Next.js'
-        if (target === 'react') return 'React'
-        if (target === 'html') return 'HTML'
-        return String(target || '')
-      }
-
-      function formatExportTargetSummary(target) {
-        if (target === 'nextjs') return 'App Router project'
-        if (target === 'react') return 'React app scaffold'
-        if (target === 'html') return 'Static site bundle'
-        return 'Project export'
-      }
-
-      function formatExportTargetGlyph(target) {
-        if (target === 'nextjs') return 'N'
-        if (target === 'react') return 'R'
-        if (target === 'html') return 'H'
-        return '•'
-      }
-
-      function setExportMenuOpen(nextOpen) {
-        const menu = document.getElementById('export-menu')
-        const panel = document.getElementById('export-panel')
-        const trigger = document.getElementById('export-trigger-btn')
-        const canShow = Boolean(menu) && menu.style.display !== 'none'
-
-        exportMenuOpen = Boolean(nextOpen) && canShow
-        panel.style.display = exportMenuOpen ? 'grid' : 'none'
-        trigger.setAttribute('aria-expanded', exportMenuOpen ? 'true' : 'false')
-        trigger.classList.toggle('is-open', exportMenuOpen)
-      }
-
-      function closeExportMenu() {
-        setExportMenuOpen(false)
-      }
-
-      function toggleExportMenu() {
-        closeGitHubMenu()
-        setExportMenuOpen(!exportMenuOpen)
-      }
-
-      function renderExportPanel() {
-        const menu = document.getElementById('export-menu')
-        const panel = document.getElementById('export-panel')
-        const trigger = document.getElementById('export-trigger-btn')
-        const triggerMetaEl = document.getElementById('export-trigger-meta')
-        const triggerStateEl = document.getElementById('export-trigger-state')
-        const statusEl = document.getElementById('export-status')
-        const subtextEl = document.getElementById('export-subtext')
-        const targetList = document.getElementById('export-target-list')
-        const download = document.getElementById('export-download-link')
-        const buildingIndicator = document.getElementById('export-building-indicator')
-        const exactCloneReady = !siteSpecReady
-          ? false
-          : exportTargets.every((entry) => entry.buildReady !== false)
-
-        if (
-          isAnonymousSession ||
-          !homepageReady ||
-          (!siteSpecReady && exportTargets.length === 0)
-        ) {
-          menu.style.display = 'none'
-          setExportMenuOpen(false)
-          renderGitHubPushButton()
-          renderGitHubExportPanel()
-          return
-        }
-
-        menu.style.display = 'block'
-        if (!exportTargets.some((entry) => entry.target === selectedExportTarget)) {
-          selectedExportTarget = exportTargets[0]?.target || 'html'
-        }
-
-        const selected = getSelectedExportEntry()
-        const selectedLabel = selected ? formatExportTargetLabel(selected.target) : 'Export'
-        const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
-        const triggerState = requiresPayment
-          ? 'Subscribe'
-          : selected?.ready
-            ? 'Ready'
-            : selected?.buildReady
-              ? 'Building'
-              : 'Waiting'
-
-        triggerMetaEl.textContent = exportTargets
-          .map((entry) => formatExportTargetLabel(entry.target))
-          .join(' / ')
-        triggerStateEl.textContent = triggerState
-        trigger.dataset.state = triggerState.toLowerCase()
-
-        targetList.innerHTML = exportTargets
-          .map((entry) => {
-            const label = formatExportTargetLabel(entry.target)
-            const entryRequiresPayment = Boolean(entry.paymentRequired && !entry.downloadUnlocked)
-            const activeClass = entryRequiresPayment
-              ? ''
-              : entry.target === selectedExportTarget
-                ? ' is-active'
-                : ''
-            const stateLabel = entryRequiresPayment
-              ? 'Pro only'
-              : entry.ready
-                ? 'Ready'
-                : entry.buildReady
-                  ? 'Building'
-                  : 'Waiting'
-
-            return `<button type="button" class="export-target${activeClass}" data-target="${escapeHtml(
-              entry.target,
-            )}">
-              <span class="export-target-glyph" aria-hidden="true">${escapeHtml(
-                formatExportTargetGlyph(entry.target),
-              )}</span>
-              <span class="export-target-copy">
-                <span class="export-target-name">${escapeHtml(label)}</span>
-                <span class="export-target-meta">${escapeHtml(formatExportTargetSummary(entry.target))}</span>
-              </span>
-              <span class="export-target-state">${escapeHtml(stateLabel)}</span>
-            </button>`
-          })
-          .join('')
-
-        const isBuilding = siteSpecReady && exactCloneReady && selected && !selected.ready
-        buildingIndicator.style.display = isBuilding ? 'inline-flex' : 'none'
-        download.className = `export-download-link${selected?.downloadPath ? ' primary' : ' secondary'}`
-
-        if (!siteSpecReady) {
-          statusEl.textContent = 'Legacy Session'
-          subtextEl.textContent =
-            'Build once and Ship Fast will create the canonical site spec, then generate future exports from that exact UI.'
-          if (selected?.downloadPath && !requiresPayment) {
-            download.href = selected.downloadPath
-            download.dataset.target = selected.target
-            download.dataset.requiresPayment = '0'
-            download.textContent = `Download ${selectedLabel}`
-            download.style.display = 'inline-flex'
-          } else {
-            download.style.display = 'none'
-          }
-          setExportMenuOpen(exportMenuOpen)
-          renderGitHubPushButton()
-          renderGitHubExportPanel()
-          return
-        }
-
-        statusEl.textContent = requiresPayment
-          ? 'Pro Required'
-          : selected?.ready
-            ? 'Ready To Download'
-            : selected?.buildReady
-              ? 'Building Downloads…'
-              : 'Waiting For Exact Clone'
-        subtextEl.textContent = requiresPayment
-          ? 'Subscribe to Pro or purchase download credits to export your project.'
-          : selected?.ready
-            ? `${selectedLabel} is up to date with the current generated UI.`
-            : selected?.buildReady
-              ? `Packaging ${selectedLabel} — your download will appear here shortly.`
-              : selected?.buildReason ||
-                `Waiting for the generated UI to finish before building ${selectedLabel}.`
-
-        if (selected?.downloadPath && !requiresPayment) {
-          download.href = selected.downloadPath
-          download.dataset.target = selected.target
-          download.dataset.requiresPayment = '0'
-          download.textContent = `Download ${selectedLabel}`
-          download.style.display = 'inline-flex'
-        } else {
-          download.style.display = 'none'
-        }
-
-        setExportMenuOpen(exportMenuOpen)
-        renderGitHubPushButton()
-        renderGitHubExportPanel()
-      }
-
-      function refreshExportTargets() {
-        return apiFetch(`/api/sessions/${SESSION_ID}/export-targets`)
-          .then((r) => r.json())
-          .then((data) => {
-            siteSpecReady = Boolean(data.siteSpecReady)
-            exportTargets = Array.isArray(data.targets) ? data.targets : []
-            paymentState = normalizePaymentState(data.payment)
-            renderExportPanel()
-          })
-          .catch(() => {})
-      }
-
-      async function pushSelectedExportToGitHub(targetOverride = selectedExportTarget) {
-        if (githubPushBusy) return
-
-        const selected =
-          getExportEntry(targetOverride) ||
-          getGitHubTargetEntries().find((entry) => entry.target === targetOverride)
-        if (!selected) return
-
-        const statusEl = document.getElementById('export-status')
-        const subtextEl = document.getElementById('export-subtext')
-        const githubStatusEl = document.getElementById('github-export-status')
-        const githubSubtextEl = document.getElementById('github-export-subtext')
-        const targetLabel = formatExportTargetLabel(selected.target)
-
-        if (Boolean(selected.paymentRequired && !selected.downloadUnlocked)) {
-          openPaymentModal(selected)
-          return
-        }
-
-        if (selected.buildReady === false) {
-          const message =
-            selected.buildReason ||
-            `Wait for the generated UI to finish before pushing ${targetLabel}.`
-          statusEl.textContent = 'Waiting For Exact Clone'
-          subtextEl.textContent = message
-          githubStatusEl.textContent = 'Waiting'
-          githubSubtextEl.textContent = message
-          return
-        }
-
-        selectedExportTarget = selected.target
-        githubPushBusy = true
-        setGitHubMenuOpen(true)
-        renderGitHubPushButton()
-        renderGitHubExportPanel()
-        statusEl.textContent = 'GitHub Push'
-        subtextEl.textContent = `Connecting GitHub and pushing the ${targetLabel} export.`
-        githubStatusEl.textContent = 'GitHub Push'
-        githubSubtextEl.textContent = `Connecting GitHub and pushing the ${targetLabel} export.`
-
-        try {
-          if (!window.shipFastDashboardGithub?.pushExportToGitHub) {
-            throw new Error('GitHub push is still loading. Retry in a moment.')
-          }
-
-          const result = await window.shipFastDashboardGithub.pushExportToGitHub(
-            SESSION_ID,
-            selected.target,
-          )
-
-          lastGithubPush = result
-          await refreshExportTargets()
-          statusEl.textContent = result.created ? 'Repo Created' : 'GitHub Updated'
-          subtextEl.textContent = `${targetLabel} pushed to ${result.repoFullName} on ${result.branch}.`
-          githubStatusEl.textContent = result.created ? 'Repo Created' : 'GitHub Updated'
-          githubSubtextEl.textContent = `${targetLabel} pushed to ${result.repoFullName} on ${result.branch}.`
-          closeGitHubMenu()
-          renderGitHubPushButton()
-          window.open(result.repoUrl, '_blank', 'noopener,noreferrer')
-        } catch (error) {
-          if (error.paymentRequired) {
-            openPaymentModal(selected)
-            statusEl.textContent = 'Pro Required'
-            subtextEl.textContent = `Subscribe to Pro (${getDisplayPrice()}) to push exports to GitHub.`
-            githubStatusEl.textContent = 'Pro Required'
-            githubSubtextEl.textContent = `Subscribe to Pro to push exports to GitHub.`
-          } else {
-            statusEl.textContent = 'GitHub Push Failed'
-            subtextEl.textContent = error.message || 'GitHub push failed.'
-            githubStatusEl.textContent = 'GitHub Push Failed'
-            githubSubtextEl.textContent = error.message || 'GitHub push failed.'
-            openPaymentModal(selected)
-          }
-        } finally {
-          githubPushBusy = false
-          renderGitHubPushButton()
-          renderGitHubExportPanel()
-        }
-      }
-
       // ─── Intro Animation ───────────────────────────────────────
       function startIntro() {
         const logo = document.getElementById('intro-logo')
@@ -1486,6 +634,7 @@
         const wrap = document.getElementById('dashboard-wrap')
 
         document.body.classList.add('dashboard-active')
+        loadHomeUnderlayer()
         overlay.classList.add('exiting')
         wrap.classList.add('active')
         setTimeout(() => overlay.classList.add('hidden'), 1400)
@@ -1501,6 +650,7 @@
 
         // Instantly hide intro, show dashboard
         document.body.classList.add('dashboard-active')
+        loadHomeUnderlayer()
         overlay.classList.add('exiting', 'hidden')
         overlay.style.display = 'none'
         wrap.classList.add('active')
@@ -1740,6 +890,15 @@
         }
       }
 
+      function speedJoke(seconds) {
+        if (seconds < 10) return 'Faster than your espresso shot. ☕'
+        if (seconds < 20) return 'Did you even blink? ⚡'
+        if (seconds < 35) return 'Did you have time to finish your coffee?'
+        if (seconds < 60) return 'Just enough time for a sip. ☕'
+        if (seconds < 120) return 'Hope you enjoyed that coffee break.'
+        return 'Worth the wait — go touch some grass. 🌿'
+      }
+
       function triggerCompletion() {
         if (allDone) return
         allDone = true
@@ -1748,6 +907,7 @@
         if (hasSeenLiveUpdate) {
           const elapsed = Math.round((Date.now() - genStartTime) / 1000)
           document.getElementById('toast-elapsed').textContent = elapsed + 's'
+          document.getElementById('toast-joke').textContent = speedJoke(elapsed)
           const toast = document.getElementById('completion-toast')
           toast.classList.add('visible')
         }
@@ -1843,7 +1003,6 @@
           previewLoaded = true
           document.getElementById('url-text').textContent = new URL(PREVIEW_BASE).pathname
           document.getElementById('status-text').textContent = 'Live'
-          syncPreviewTheme()
         }
       }
 
@@ -1863,7 +1022,7 @@
 
       // ─── WebSocket: Connect to server ─────────────────────────
       function connectWS() {
-        ws = new WebSocket(WS_URL)
+        const ws = new WebSocket(WS_URL)
 
         ws.onopen = () => {
           wsConnected = true
@@ -1947,8 +1106,6 @@
             }
 
             case 'homepage_ready':
-              homepageReady = true
-              syncPreviewChrome()
               preloadPreview()
               if (introActive && !hasSeenLiveUpdate) {
                 // Reconnect: skip intro, show preview full-width immediately
@@ -1967,33 +1124,20 @@
               }
               break
 
-            case 'site_spec_ready':
-              siteSpecReady = Boolean(ev.ready)
-              refreshExportTargets()
-              break
-
             case 'alternative_design_ready':
               alternativeDesign = ev.design
               document.getElementById('theme-magic-btn').classList.add('ready')
               debugLog('magic_theme_ready', ev.design)
               break
 
-            case 'theme_override_loaded':
-            case 'theme_override_updated':
-              setActiveThemeOverride(ev.theme || null)
-              break
-
             case 'run_completed':
               document.getElementById('phase-text').textContent = `Done in ${ev.elapsed}s`
               document.getElementById('toast-elapsed').textContent = ev.elapsed + 's'
+              document.getElementById('toast-joke').textContent = speedJoke(Number(ev.elapsed))
               const timingFinal = document.getElementById('gen-timing')
               if (timingFinal)
                 timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
               checkAllDone()
-              break
-
-            case 'export_ready':
-              refreshExportTargets()
               break
 
             case 'log':
@@ -2005,13 +1149,7 @@
         ws.onclose = () => {
           wsConnected = false
           debugLog('ws_disconnected', null)
-          ws = null
-          if (!leavingDashboard) {
-            reconnectTimer = setTimeout(() => {
-              reconnectTimer = null
-              connectWS()
-            }, 1500)
-          }
+          setTimeout(connectWS, 1500)
         }
 
         ws.onerror = () => {
@@ -2046,74 +1184,10 @@
       document.getElementById('log-toggle').addEventListener('click', () => {
         document.getElementById('log-section').classList.toggle('open')
       })
-      document.getElementById('export-trigger-btn').addEventListener('click', toggleExportMenu)
-      document.getElementById('github-push-btn').addEventListener('click', toggleGitHubMenu)
-      document.getElementById('export-target-list').addEventListener('click', (event) => {
-        const button = event.target.closest('[data-target]')
-        if (!button) return
-        selectedExportTarget = button.dataset.target || selectedExportTarget
-        const entry = getExportEntry(selectedExportTarget)
-        if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
-          openPaymentModal(entry)
-          return
-        }
-        renderExportPanel()
-      })
-      document.getElementById('github-export-target-list').addEventListener('click', (event) => {
-        const button = event.target.closest('[data-github-target]')
-        if (!button || githubPushBusy || button.disabled) return
-        selectedExportTarget = button.dataset.githubTarget || selectedExportTarget
-        const entry =
-          getExportEntry(selectedExportTarget) ||
-          getGitHubTargetEntries().find((e) => e.target === selectedExportTarget)
-        if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
-          openPaymentModal(entry)
-          return
-        }
-        renderExportPanel()
-        renderGitHubExportPanel()
-        pushSelectedExportToGitHub(selectedExportTarget)
-      })
-      document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal)
-      document.getElementById('payment-cancel-btn').addEventListener('click', closePaymentModal)
-      document.getElementById('payment-confirm-btn').addEventListener('click', startIndianPayment)
-      document.getElementById('payment-modal').addEventListener('click', (event) => {
-        if (event.target.closest('[data-close-payment="1"]')) closePaymentModal()
-      })
-      document.getElementById('payment-option-list').addEventListener('click', (event) => {
-        const option = event.target.closest('[data-payment-mode]')
-        if (!option || paymentBusy) return
-        selectedPaymentMode = option.dataset.paymentMode || selectedPaymentMode
-        renderPaymentOptions()
-      })
-      document.getElementById('export-download-link').addEventListener('click', (event) => {
-        const selected = getSelectedExportEntry()
-        if (!selected) return
-        if (event.currentTarget.dataset.requiresPayment !== '1') {
-          closeExportMenu()
-          return
-        }
-        event.preventDefault()
-        closeExportMenu()
-        openPaymentModal(selected)
-      })
-      document.addEventListener('click', (event) => {
-        if (event.target.closest('#export-menu')) return
-        if (event.target.closest('#github-export-menu')) return
-        closeExportMenu()
-        closeGitHubMenu()
-      })
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-          closeExportMenu()
-          closeGitHubMenu()
-          closePaymentModal()
-        }
-      })
 
       // ─── Init ──────────────────────────────────────────────────
       // Fetch session info — load prompt and detect if already done
-      apiFetch(`/api/sessions/${SESSION_ID}`)
+      fetch(`/api/sessions/${SESSION_ID}`)
         .then((r) => r.json())
         .then((session) => {
           if (session.prompt && !introPromptText) {
@@ -2124,19 +1198,8 @@
             const sfx = document.getElementById('launch-sfx')
             if (sfx) sfx.remove()
           }
-          homepageReady = Boolean(session.homepageReady)
-          siteSpecReady = Boolean(session.siteSpecReady)
-          isAnonymousSession = Boolean(session.isAnonymous)
-          preferredExportTarget = String(session.preferredExportTarget || 'html').toLowerCase()
-          selectedExportTarget = preferredExportTarget
-          exportTargets = Array.isArray(session.exportTargets) ? session.exportTargets : []
-          paymentState = normalizePaymentState(session.payment)
-          setActiveThemeOverride(session.themeOverride || null)
-          syncPreviewChrome()
-          renderExportPanel()
         })
         .catch(() => {})
-
       // ─── New prompt overlay ─────────────────────────────────
       document.getElementById('toast-cta').addEventListener('click', () => {
         document.getElementById('completion-toast').classList.remove('visible')
@@ -2185,5 +1248,7 @@
       startIntro()
       connectWS()
     </script>
+    <script type="module" src="/scripts/dashboard-auth.js"></script>
+    <script type="module" src="/scripts/dashboard-preview-menu.js"></script>
   </body>
 </html>

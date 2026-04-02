@@ -1,5 +1,5 @@
 import { createServer as createHttpServer } from 'node:http'
-import { join } from 'node:path'
+import { extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
 import { DASHBOARD_PORT } from '../config.js'
@@ -16,6 +16,7 @@ import {
   claimSessionsByIds,
   setSessionStatus,
   getInterruptedSessions,
+  broadcastToAllSessions,
 } from './sessions.js'
 import { verifyIdToken, db } from '../auth/firebase-admin.js'
 import {
@@ -26,7 +27,7 @@ import {
 } from './exports.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync, watch } from 'node:fs'
 import {
   addUserCredits,
   consumeUserCredit,
@@ -38,6 +39,7 @@ import {
   hasActiveSubscription,
   initPaymentStore,
   startPaymentListeners,
+  setQuotaInfoGetter,
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { pushSessionToGitHub } from './github.js'
@@ -56,7 +58,6 @@ const MAX_PER_USER = 5 // per 10min window
 const MAX_PER_IP = 10 // per 10min window
 const MAX_FREE_PER_MONTH = 10 // hard monthly cap for free (no subscription) users
 const MAX_PAID_PER_MONTH = 30 // hard monthly cap for paid (subscribed) users
-const MIN_PROMPT_LENGTH = 70
 const MAX_PROMPT_LENGTH = 5000
 const MAX_PER_IP_AUTHED = 30
 const MAX_FREE_PER_IP_MONTHLY = 15
@@ -71,6 +72,22 @@ const exportHits = new Map() // uid -> [timestamp, ...] for export rate limiting
 const ipMonthlyHits = new Map() // ip -> [timestamp, ...] monthly cap for free users
 const activeGenerations = new Map() // uid/ip -> count of in-progress generations
 const MAX_CONCURRENT_PER_USER = 2
+
+function isLocalDevelopmentRequest(req, clientIp) {
+  if (process.env.NODE_ENV === 'production') return false
+
+  const host = req.headers.host || ''
+  if (host.includes('localhost') || host.includes('127.0.0.1')) return true
+
+  return (
+    clientIp === '127.0.0.1' ||
+    clientIp === '::1' ||
+    clientIp.startsWith('127.') ||
+    clientIp.startsWith('192.168.') ||
+    clientIp.startsWith('10.') ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(clientIp)
+  )
+}
 
 function setNoIndexHeaders(res) {
   res.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
@@ -92,6 +109,48 @@ function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
 function refundRateLimit(key, hitsMap) {
   const hits = hitsMap.get(key)
   if (hits?.length) hits.pop()
+}
+
+// Function to get user generation quota info
+async function getQuotaInfo(userId, clientIp) {
+  if (userId) {
+    // Authenticated user
+    const currentMonthly = (userMonthlyHits.get(userId) || []).filter(
+      (t) => Date.now() - t < MONTHLY_WINDOW_MS,
+    ).length
+    const isSubscribed = await hasActiveSubscription(userId)
+    const monthlyLimit = isSubscribed ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
+
+    return {
+      isSubscribed,
+      monthlyLimit,
+      monthlyUsed: currentMonthly,
+      monthlyRemaining: Math.max(0, monthlyLimit - currentMonthly),
+      isAnonymous: false,
+    }
+  } else if (clientIp) {
+    // Anonymous user
+    const currentDaily = (anonIpDailyHits.get(clientIp) || []).filter(
+      (t) => Date.now() - t < DAILY_WINDOW_MS,
+    ).length
+
+    return {
+      isSubscribed: false,
+      dailyLimit: MAX_ANON_PER_DAY,
+      dailyUsed: currentDaily,
+      dailyRemaining: Math.max(0, MAX_ANON_PER_DAY - currentDaily),
+      isAnonymous: true,
+    }
+  } else {
+    // No user or IP info
+    return {
+      isSubscribed: false,
+      monthlyLimit: MAX_FREE_PER_MONTH,
+      monthlyUsed: 0,
+      monthlyRemaining: MAX_FREE_PER_MONTH,
+      isAnonymous: true,
+    }
+  }
 }
 
 function cleanupMap(map, windowMs) {
@@ -130,8 +189,9 @@ function isGibberishPrompt(text) {
   }
 
   // Consonant cluster check: gibberish has long runs without vowels (e.g., "jfsdkljfsdjfds")
-  const consonantClusters = alphaOnly.match(/[^aeiou]{5,}/g) || []
-  if (consonantClusters.length >= 3) return true
+  const letterWords = text.toLowerCase().match(/[a-z]+/g) || []
+  const wordsWithConsonantRun = letterWords.filter((w) => /[^aeiou]{5,}/.test(w)).length
+  if (wordsWithConsonantRun >= 3) return true
 
   // Check if most 4+ letter words have no vowels at all
   const longWords = words.filter((w) => w.replace(/[^a-z]/g, '').length >= 4)
@@ -174,6 +234,9 @@ export async function startServer(sessionsDir) {
   initPaymentStore(sessionsDir)
   startPaymentListeners()
 
+  // Set up quota info getter for payments module
+  setQuotaInfoGetter(getQuotaInfo)
+
   rateLimitFile = join(sessionsDir, '.rate_limits.json')
   try {
     if (existsSync(rateLimitFile)) {
@@ -194,6 +257,46 @@ export async function startServer(sessionsDir) {
     console.log(`[startup] Session ${s.id} was interrupted during generation. Resetting to failed.`)
     setSessionStatus(s.id, 'failed')
   }
+
+  const startPublicWatch = () => {
+    if (process.env.NODE_ENV === 'production') return
+
+    let reloadTimer
+    const supportedReloadExts = new Set(['.html', '.css', '.js'])
+    const scheduleReload = () => {
+      if (reloadTimer) return
+      reloadTimer = setTimeout(() => {
+        reloadTimer = null
+        broadcastToAllSessions({ type: 'client_reload' })
+      }, 120)
+    }
+
+    const shouldReload = (filename) => {
+      const lower = String(filename).toLowerCase()
+      if (lower === 'dashboard.html' || lower === 'index.html') return true
+      const fileExt = extname(lower)
+      return supportedReloadExts.has(fileExt)
+    }
+
+    const watchTarget = (target) => {
+      try {
+        watch(
+          target,
+          { persistent: true },
+          (_eventType, filename) => {
+            if (filename && shouldReload(filename)) scheduleReload()
+          },
+        )
+      } catch {}
+    }
+
+    watchTarget(join(publicDir, 'dashboard.html'))
+    watchTarget(join(publicDir, 'styles'))
+    watchTarget(join(publicDir, 'scripts'))
+    watchTarget(join(publicDir, 'js'))
+  }
+
+  startPublicWatch()
 
   const app = express()
   app.set('trust proxy', true)
@@ -312,11 +415,6 @@ export async function startServer(sessionsDir) {
     )
     const trimmedPrompt = prompt?.trim()
     if (!trimmedPrompt) return res.status(400).json({ error: 'prompt is required' })
-    if (trimmedPrompt.length < MIN_PROMPT_LENGTH) {
-      return res
-        .status(400)
-        .json({ error: `Prompt must be at least ${MIN_PROMPT_LENGTH} characters.` })
-    }
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
         error: 'Please provide a meaningful description of the website you want to build.',
@@ -330,6 +428,7 @@ export async function startServer(sessionsDir) {
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     const ts = new Date().toISOString()
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp)
 
     let session
 
@@ -364,6 +463,7 @@ export async function startServer(sessionsDir) {
       const isSubscriber = await hasActiveSubscription(req.user.uid)
       const monthlyLimit = isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
 
+      if (!skipRateLimits) {
       // Monthly cap check
       if (!checkRateLimit(req.user.uid, userMonthlyHits, monthlyLimit, MONTHLY_WINDOW_MS)) {
         console.log(
@@ -439,6 +539,7 @@ export async function startServer(sessionsDir) {
           remaining: 0,
         })
       }
+      }
 
       // Non-subscribers get private sessions by default
       session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, {
@@ -463,12 +564,14 @@ export async function startServer(sessionsDir) {
       // ─── Anonymous flow ─────────────────────────────────────
       console.log(`[${ts}] REQ anon ip=${clientIp} prompt="${trimmedPrompt.slice(0, 80)}"`)
 
+      if (!skipRateLimits) {
       // Daily limit per IP for anonymous users — sign-in wall after 2
       if (!checkRateLimit(clientIp, anonIpDailyHits, MAX_ANON_PER_DAY, DAILY_WINDOW_MS)) {
         console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp}`)
         return res.status(429).json({
-          error: `Sign in to keep generating. Free accounts get ${MAX_FREE_PER_MONTH} generations per month.`,
+          error: `Sign in to keep generating. Free anonymous users get ${MAX_ANON_PER_DAY} generations per day.`,
           remaining: 0,
+          code: 'ANON_DAILY_LIMIT',
         })
       }
 
@@ -477,7 +580,11 @@ export async function startServer(sessionsDir) {
         console.log(`[${ts}] RATE_LIMIT anon ip=${clientIp} reason=ip_10min`)
         return res
           .status(429)
-          .json({ error: 'Rate limit: too many requests from this IP. Please wait.', remaining: 0 })
+          .json({
+            error: 'Rate limit: too many requests from this IP. Please wait.',
+            remaining: 0,
+            code: 'ANON_IP_RATE_LIMIT',
+          })
       }
 
       // Concurrent generation limit
@@ -485,7 +592,9 @@ export async function startServer(sessionsDir) {
         return res.status(429).json({
           error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
           remaining: 0,
+          code: 'ANON_CONCURRENT_LIMIT',
         })
+      }
       }
 
       session = createSession(_sessionsDir, trimmedPrompt, null, {
@@ -553,6 +662,9 @@ export async function startServer(sessionsDir) {
           console.log(
             `  [REFUND] Monthly quota refunded for user ${req.user.uid} (session ${session.id} failed)`,
           )
+        } else {
+          refundRateLimit(clientIp, anonIpDailyHits)
+          console.log(`  [REFUND] Anonymous daily quota refunded for ip ${clientIp} (session ${session.id} failed)`)
         }
       })
 
@@ -588,9 +700,16 @@ export async function startServer(sessionsDir) {
     }
   })
 
-  // ─── API: List sessions ───────────────────────────────────
+  // ─── API: List sessions (authenticated — own sessions) ───────
   app.get('/api/sessions', requireAuth, (_req, res) => {
     res.json(getAllSessions(_req.user.uid))
+  })
+
+  // ─── API: Recent public sessions gallery (no auth required) ──
+  app.get('/api/sessions/recent', (_req, res) => {
+    const all = getAllSessions()
+    const public_ = all.filter((s) => s.homepageReady && !s.isPrivate).slice(0, 30)
+    res.json(public_)
   })
 
   // ─── API: Claim anonymous sessions ─────────────────────────
@@ -682,8 +801,10 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp)
 
-    if (!checkRateLimit(req.user.uid, exportHits, 5))
+    if (!skipRateLimits && !checkRateLimit(req.user.uid, exportHits, 5))
       return res.status(429).json({ error: 'Export rate limit: max 5 per 10 minutes' })
 
     try {
@@ -822,6 +943,7 @@ export async function startServer(sessionsDir) {
       const preview = rerenderPreviewFromSiteSpec(session)
       const sessionCtx = makeSessionState(session)
       sessionCtx.signalHomepageReady()
+      sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
       res.json({ ok: true, files: Object.keys(preview.files) })
     } catch (error) {
       res.status(400).json({ error: error.message })

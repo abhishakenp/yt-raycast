@@ -65,6 +65,12 @@
     <link rel="stylesheet" href="/styles/index.css" />
   </head>
   <body>
+    <script>
+      try {
+        var __sfAnon = JSON.parse(localStorage.getItem('sf_anon_sessions') || '[]')
+        if (__sfAnon.length) document.body.classList.add('has-sessions')
+      } catch (e) {}
+    </script>
     <!-- ─── Auth overlay ─── -->
     <div id="auth-overlay" class="hidden">
       <div class="auth-box">
@@ -122,29 +128,29 @@
       </div>
     </div>
 
-    <!-- ─── Top actions ─── -->
     <div class="top-actions">
       <a href="/pricing" class="top-action-link">Pricing</a>
+      <div class="top-actions-auth-slot">
+        <button id="signin-btn" type="button">Sign in</button>
+        <button id="signout-btn" type="button">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Sign out
+        </button>
+      </div>
     </div>
-
-    <!-- ─── Sign-out button ─── -->
-    <button id="signout-btn">
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <polyline points="16 17 21 12 16 7" />
-        <line x1="21" y1="12" x2="9" y2="12" />
-      </svg>
-      Sign out
-    </button>
 
     <div class="wappalyzer-banner" id="wappalyzer-banner">
       Sorry, Wappalyzer won't help you this time 😎
@@ -192,7 +198,6 @@
           placeholder="A modern SaaS landing page for a time tracking app..."
           autofocus
           autocomplete="off"
-          minlength="70"
           required
           rows="4"
           aria-describedby="prompt-help"
@@ -213,7 +218,7 @@
           <div class="spinner"></div>
         </button>
       </form>
-      <p class="prompt-help" id="prompt-help" aria-live="polite">Minimum 70 characters.</p>
+      <p class="prompt-help is-hidden" id="prompt-help" aria-live="polite"></p>
       <div class="gen-counter" id="gen-counter" style="display: none"></div>
     </div>
 
@@ -380,29 +385,43 @@
       const genCounter = document.getElementById('gen-counter')
       const promptHelp = document.getElementById('prompt-help')
       const GEN_LIMIT = 3
-      const MIN_PROMPT_LENGTH = 70
+      const PROMPT_HELP_DELAY_MS = 420
+      let promptHelpTimer
 
       function setPromptHelp(message, isError = false) {
         promptHelp.textContent = message
         promptHelp.classList.toggle('is-error', isError)
+        promptHelp.classList.toggle('is-hidden', message === '')
         if (isError) input.setAttribute('aria-invalid', 'true')
         else input.removeAttribute('aria-invalid')
+      }
+
+      function schedulePromptHelp() {
+        if (promptHelpTimer) {
+          window.clearTimeout(promptHelpTimer)
+          promptHelpTimer = null
+        }
+
+        setPromptHelp('')
+
+        promptHelpTimer = window.setTimeout(() => {
+          const promptLength = input.value.trim().length
+          if (promptLength === 0) {
+            setPromptHelp('')
+            return
+          }
+          setPromptHelp(`${promptLength} characters.`)
+        }, PROMPT_HELP_DELAY_MS)
       }
 
       function validatePrompt(showError = false) {
         const promptLength = input.value.trim().length
         if (promptLength === 0) {
-          setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`, false)
+          if (showError) setPromptHelp('Please describe the website you want to build.', true)
+          else setPromptHelp('')
           return false
         }
-        if (promptLength < MIN_PROMPT_LENGTH) {
-          setPromptHelp(
-            `Prompt must be at least ${MIN_PROMPT_LENGTH} characters (${promptLength}/${MIN_PROMPT_LENGTH}).`,
-            showError,
-          )
-          return false
-        }
-        setPromptHelp(`${promptLength} characters.`, false)
+        setPromptHelp('')
         return true
       }
 
@@ -413,8 +432,7 @@
       function syncButtonState() {
         btn.disabled =
           btn.classList.contains('loading') ||
-          isGenLimitReached() ||
-          input.value.trim().length < MIN_PROMPT_LENGTH
+          input.value.trim().length === 0
       }
 
       function getGenCount() {
@@ -440,12 +458,16 @@
       }
 
       updateGenCounter()
-      setPromptHelp(`Minimum ${MIN_PROMPT_LENGTH} characters.`)
+      setPromptHelp('')
       syncButtonState()
 
       input.addEventListener('input', () => {
-        validatePrompt(false)
+        schedulePromptHelp()
         syncButtonState()
+      })
+
+      input.addEventListener('blur', () => {
+        schedulePromptHelp()
       })
 
       // Enter submits, Shift+Enter for newline
@@ -464,11 +486,6 @@
         }
         const prompt = input.value.trim()
 
-        if (isGenLimitReached()) {
-          updateGenCounter()
-          return
-        }
-
         btn.classList.add('loading')
         syncButtonState()
 
@@ -483,16 +500,17 @@
             localStorage.setItem('sf_generation_count', getGenCount() + 1)
             sessionStorage.setItem('sf_return_home', '1')
             location.href = `/session/${data.id}`
+          } else if (res.status === 429 && data.code === 'ANON_DAILY_LIMIT') {
+            updateGenerationCounter()
+            document.getElementById('auth-overlay').classList.remove('hidden')
+          } else if (data.error) {
+            setPromptHelp(data.error, true)
+            input.focus()
           } else {
-            if (data.error?.includes(`${MIN_PROMPT_LENGTH} characters`)) {
-              setPromptHelp(data.error, true)
-              input.focus()
-            } else {
-              alert(data.error || 'Failed to create session')
-            }
-            btn.classList.remove('loading')
-            syncButtonState()
+            alert(data.error || 'Failed to create session')
           }
+          btn.classList.remove('loading')
+          syncButtonState()
         } catch (err) {
           alert('Connection error: ' + err.message)
           btn.classList.remove('loading')
@@ -516,7 +534,6 @@
           }
 
           document.body.classList.add('has-sessions')
-          section.style.display = 'block'
 
           // Adapt grid columns to session count
           list.classList.remove('single-col', 'two-col')
@@ -552,21 +569,26 @@
             )
             .join('')
 
-          // Scale iframes to fit their container width
+          section.style.display = 'block'
+
           const scaleIframes = () => {
             list.querySelectorAll('.session-thumbnail iframe').forEach((iframe) => {
               const containerWidth = iframe.parentElement.offsetWidth
+              if (!containerWidth) return
               const scale = containerWidth / 1280
               iframe.style.transform = `scale(${scale})`
             })
           }
-          scaleIframes()
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              scaleIframes()
+            })
+          })
           if (!hasSessionResizeListener) {
             window.addEventListener('resize', scaleIframes)
             hasSessionResizeListener = true
           }
 
-          // Lazy-load iframes with IntersectionObserver
           const iframes = list.querySelectorAll('iframe[data-src]')
           if (iframes.length > 0 && 'IntersectionObserver' in window) {
             const observer = new IntersectionObserver(
@@ -575,7 +597,9 @@
                   if (entry.isIntersecting) {
                     const iframe = entry.target
                     iframe.src = iframe.dataset.src
+                    iframe.addEventListener('load', scaleIframes, { once: true })
                     observer.unobserve(iframe)
+                    requestAnimationFrame(scaleIframes)
                   }
                 })
               },
@@ -585,9 +609,15 @@
           } else {
             iframes.forEach((iframe) => {
               iframe.src = iframe.dataset.src
+              iframe.addEventListener('load', scaleIframes, { once: true })
             })
+            requestAnimationFrame(scaleIframes)
           }
-          // Apply cost visibility from localStorage
+
+          list.querySelectorAll('.session-thumbnail iframe[src]:not([data-src])').forEach((iframe) => {
+            iframe.addEventListener('load', scaleIframes, { once: true })
+          })
+
           if (localStorage.getItem('sf_show_cost') === '1') {
             list.querySelectorAll('.session-cost').forEach((el) => {
               el.style.display = 'flex'

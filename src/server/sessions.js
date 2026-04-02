@@ -415,6 +415,12 @@ export function sessionBroadcast(session, msg) {
   }
 }
 
+export function broadcastToAllSessions(msg) {
+  for (const session of sessions.values()) {
+    sessionBroadcast(session, msg)
+  }
+}
+
 /** Build session-scoped state helpers for the pipeline */
 export function makeSessionState(session) {
   const broadcast = (msg) => sessionBroadcast(session, msg)

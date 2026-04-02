@@ -91,11 +91,13 @@ function renderAuthOverlay() {
 function renderTopActions() {
   return `<nav class="top-actions" aria-label="Primary">
     <a class="top-action-link" href="/pricing">Pricing</a>
-    <button id="signin-btn" type="button" style="display: none">Sign in</button>
-    <button id="signout-btn" type="button">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Sign out
-    </button>
+    <div class="top-actions-auth-slot">
+      <button id="signin-btn" type="button">Sign in</button>
+      <button id="signout-btn" type="button">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </div>
   </nav>`
 }
 
@@ -141,6 +143,12 @@ export function renderHomePage() {
     <link rel="stylesheet" href="/styles/index.css" />
   </head>
   <body>
+    <script>
+      try {
+        var __sfAnon = JSON.parse(localStorage.getItem('sf_anon_sessions') || '[]')
+        if (__sfAnon.length) document.body.classList.add('has-sessions')
+      } catch (e) {}
+    </script>
     ${renderAuthOverlay()}
 
     <div class="private-gen-modal" id="private-gen-modal" aria-hidden="true">
@@ -164,67 +172,60 @@ export function renderHomePage() {
     <div class="wappalyzer-banner" id="wappalyzer-banner">Sorry, Wappalyzer won't help you this time</div>
     <div class="bg-glow"></div>
 
-    <div class="page-shell page-shell--compact">
-      <main class="marketing-main marketing-main--compact">
-        <section class="container hero-card hero-card--compact">
-          <h1 class="sr-only">${escapeHtml(SITE_NAME)} AI website generator</h1>
-          ${renderLogo()}
-          <form id="prompt-form" class="input-group">
-            <label class="sr-only" for="prompt-input">Describe the website you want to build</label>
-            <div class="prompt-field">
-              <textarea
-                class="prompt-input"
-                id="prompt-input"
-                placeholder=""
-                autofocus
-                autocomplete="off"
-                minlength="70"
-                required
-                rows="5"
-                aria-describedby="prompt-help"
-              ></textarea>
-              <div class="prompt-placeholder" id="prompt-placeholder" aria-hidden="true">
-                <span class="prompt-placeholder-label">Try a prompt like</span>
-                <span class="prompt-placeholder-body">
-                  <span class="prompt-placeholder-text" id="prompt-placeholder-text"></span>
-                  <span class="prompt-placeholder-caret"></span>
-                </span>
-              </div>
-            </div>
-            <button type="submit" class="submit-btn" id="submit-btn" disabled>
-              <svg
-                class="zap-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-              <span class="btn-label">Generate</span>
-              <div class="spinner"></div>
-            </button>
-          </form>
-          <p class="prompt-help" id="prompt-help" aria-live="polite">Minimum 70 characters.</p>
-          <div class="gen-counter" id="gen-counter" style="display:none"></div>
-          <div class="private-gen-row" id="private-gen-row" style="display:none">
-            <label class="private-gen-label" for="private-gen-checkbox">
-              <input type="checkbox" id="private-gen-checkbox" />
-              <span>Private generation</span>
-              <span class="pro-badge">PRO</span>
-            </label>
+    <div class="container">
+      <h1 class="sr-only">${escapeHtml(SITE_NAME)} AI website generator</h1>
+      ${renderLogo()}
+      <form id="prompt-form" class="input-group">
+        <label class="sr-only" for="prompt-input">Describe the website you want to build</label>
+        <div class="prompt-field">
+          <textarea
+            class="prompt-input"
+            id="prompt-input"
+            placeholder=""
+            autofocus
+            autocomplete="off"
+            required
+            rows="4"
+          ></textarea>
+          <div class="prompt-placeholder" id="prompt-placeholder" aria-hidden="true">
+            <span class="prompt-placeholder-label">Try a prompt like</span>
+            <span class="prompt-placeholder-body">
+              <span class="prompt-placeholder-text" id="prompt-placeholder-text"></span>
+              <span class="prompt-placeholder-caret"></span>
+            </span>
           </div>
-        </section>
-      </main>
-
-      <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
-        <h2>Recent Sessions</h2>
-        <ul class="session-list" id="session-list"></ul>
-      </section>
+        </div>
+        <button type="submit" class="submit-btn" id="submit-btn" disabled>
+          <svg
+            class="zap-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          <span class="btn-label">Generate</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+      <div class="gen-counter" id="gen-counter" style="display:none"></div>
+      <div class="private-gen-row" id="private-gen-row" style="display:none">
+        <label class="private-gen-label" for="private-gen-checkbox">
+          <input type="checkbox" id="private-gen-checkbox" />
+          <span>Private generation</span>
+          <span class="pro-badge">PRO</span>
+        </label>
+      </div>
     </div>
+
+    <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
+      <h2>Recent Sessions</h2>
+      <ul class="session-list" id="session-list"></ul>
+    </section>
 
     <div class="social-links">
       <a href="https://liviogama.com" target="_blank" rel="noopener" aria-label="Website">
