@@ -7,7 +7,7 @@
     "ship-fast": "src/index.js"
   },
   "scripts": {
-    "dev": "bun --watch src/index.js",
+    "dev": "NODE_ENV=development bun --watch src/index.js",
     "start": "node src/index.js",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
