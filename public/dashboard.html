@@ -308,24 +308,26 @@
           class="payment-modal-close"
           id="payment-modal-close"
           type="button"
-          aria-label="Close payment"
+          aria-label="Close"
         >
-          ×
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
-        <span class="payment-eyebrow">Pro Subscription</span>
-        <h2 id="payment-modal-title">Subscribe to unlock downloads</h2>
-        <p class="payment-copy" id="payment-copy">
-          A Pro subscription is required to download ZIP exports. Subscribe to unlock unlimited
-          downloads.
-        </p>
+        <div class="payment-modal-accent" aria-hidden="true"></div>
+        <div class="payment-modal-header">
+          <span class="payment-eyebrow">Ship Fast Pro</span>
+          <h2 id="payment-modal-title">Unlock ZIP exports</h2>
+          <p class="payment-copy" id="payment-copy">
+            Pro or credits unlock ZIP downloads. Choose how you want to continue.
+          </p>
+        </div>
         <div class="payment-option-list" id="payment-option-list"></div>
         <div class="payment-note" id="payment-note">
-          You will be redirected to Stripe Checkout to complete your subscription.
+          Secure checkout with Stripe — you will be redirected to complete payment.
         </div>
         <div class="payment-error" id="payment-error"></div>
         <div class="payment-actions">
-          <button class="secondary" id="payment-cancel-btn" type="button">Cancel</button>
-          <button class="primary" id="payment-confirm-btn" type="button">Subscribe Now</button>
+          <button class="secondary" id="payment-cancel-btn" type="button">Not now</button>
+          <button class="primary" id="payment-confirm-btn" type="button">Continue</button>
         </div>
       </div>
     </div>
@@ -785,7 +787,7 @@
         const cancelBtn = document.getElementById('payment-cancel-btn')
         confirmBtn.disabled = isBusy
         cancelBtn.disabled = isBusy
-        confirmBtn.textContent = isBusy ? 'Redirecting to Stripe…' : 'Subscribe Now'
+        confirmBtn.textContent = isBusy ? 'Redirecting…' : 'Continue'
       }
 
       function renderPaymentOptions() {
@@ -800,7 +802,7 @@
 
         if (!priceId && !ea?.priceId) {
           optionList.innerHTML =
-            '<p style="color:#a78bfa;text-align:center;">Subscription plans are being set up. Please check back soon.</p>'
+            '<p class="payment-modal-empty">Plans are not configured yet. Please try again later.</p>'
           return
         }
 
@@ -829,15 +831,14 @@
               : paymentState.pricing?.usd?.display || '$9/month'
           const slotsText = `${ea.slotsRemaining} of ${ea.totalSlots} slots remaining`
           const isSelected = selectedPaymentMode === 'early_adopter'
-          html += `<button type="button" class="payment-option${isSelected ? ' is-active' : ''}" data-payment-mode="early_adopter">
+          html += `<button type="button" class="payment-option payment-option--early${isSelected ? ' is-active' : ''}" data-payment-mode="early_adopter">
+            <span class="payment-option-badge">Best value</span>
             <span class="payment-option-head">
-              <strong>Early Adopter</strong>
-              <span><s style="opacity:0.5">${fullPrice}</s> ${eaPrice}</span>
+              <strong>Early adopter</strong>
+              <span class="payment-option-price"><s>${fullPrice}</s> ${eaPrice}</span>
             </span>
-            <span class="payment-option-body" style="color:#34d399;">50% off — locked forever! ${escapeHtml(slotsText)}</span>
-            <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.85em;color:#c4b5fd;">
-              ${featureHtml}
-            </ul>
+            <span class="payment-option-highlight">Half price forever · ${escapeHtml(slotsText)}</span>
+            <ul class="payment-option-features">${featureHtml}</ul>
           </button>`
           // Default to early adopter if available
           if (!selectedPaymentMode || selectedPaymentMode === 'subscription') {
@@ -849,12 +850,10 @@
         const isProSelected = selectedPaymentMode === 'subscription' || !ea?.eligible
         html += `<button type="button" class="payment-option${isProSelected && !ea?.eligible ? ' is-active' : selectedPaymentMode === 'subscription' ? ' is-active' : ''}" data-payment-mode="subscription">
           <span class="payment-option-head">
-            <strong>${escapeHtml(plan?.name || 'Pro')} Plan</strong>
-            <span>${price}</span>
+            <strong>${escapeHtml(plan?.name || 'Pro')}</strong>
+            <span class="payment-option-price">${price}</span>
           </span>
-          <ul style="list-style:none;padding:0;margin:8px 0 0;font-size:0.85em;color:#c4b5fd;">
-            ${featureHtml}
-          </ul>
+          <ul class="payment-option-features">${featureHtml}</ul>
         </button>`
 
         optionList.innerHTML = html
@@ -877,7 +876,7 @@
         const selectedLabel = formatExportTargetLabel(targetEntry?.target || selectedExportTarget)
         const price = getDisplayPrice()
         document.getElementById('payment-copy').textContent =
-          `Subscribe to Pro to unlock ${selectedLabel} downloads. Lock the early adopter rate before slots run out.`
+          `${selectedLabel} ZIP exports need Pro or credits. Early adopter pricing applies while slots remain.`
 
         document.getElementById('payment-modal').classList.add('is-open')
         document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
@@ -1274,7 +1273,7 @@
         return apiFetch(`/api/sessions/${SESSION_ID}/export-targets`)
           .then((r) => r.json())
           .then((data) => {
-            siteSpecReady = Boolean(data.siteSpecReady)
+            siteSpecReady = Boolean(data.siteSpecReady) || siteSpecReady
             exportTargets = Array.isArray(data.targets) ? data.targets : []
             paymentState = normalizePaymentState(data.payment)
             renderExportPanel()
@@ -2125,8 +2124,8 @@
             const sfx = document.getElementById('launch-sfx')
             if (sfx) sfx.remove()
           }
-          homepageReady = Boolean(session.homepageReady)
-          siteSpecReady = Boolean(session.siteSpecReady)
+          homepageReady = Boolean(session.homepageReady) || homepageReady
+          siteSpecReady = Boolean(session.siteSpecReady) || siteSpecReady
           isAnonymousSession = Boolean(session.isAnonymous)
           preferredExportTarget = String(session.preferredExportTarget || 'html').toLowerCase()
           selectedExportTarget = preferredExportTarget
@@ -2135,6 +2134,7 @@
           setActiveThemeOverride(session.themeOverride || null)
           syncPreviewChrome()
           renderExportPanel()
+          void refreshExportTargets()
         })
         .catch(() => {})
 

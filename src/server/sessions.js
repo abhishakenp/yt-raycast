@@ -114,9 +114,18 @@ export function createSession(baseDir, prompt, userId, options = {}) {
   return session
 }
 
+function syncSessionFlagsFromDisk(session) {
+  if (!session?.workspace) return
+  session.homepageReady = existsSync(join(session.workspace, 'index.html'))
+  session.siteSpecReady = existsSync(join(session.workspace, 'site-spec.json'))
+}
+
 export function getSession(id) {
-  // Return from memory if exists
-  if (sessions.has(id)) return sessions.get(id)
+  if (sessions.has(id)) {
+    const cached = sessions.get(id)
+    syncSessionFlagsFromDisk(cached)
+    return cached
+  }
 
   // Try to load from disk
   if (!_sessionsDir) return null
