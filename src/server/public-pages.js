@@ -1,4 +1,4 @@
-import { PLAUSIBLE_DOMAIN, SITE_NAME, SITE_URL } from '../config.js'
+import { PLAUSIBLE_DOMAIN, SITE_NAME, SITE_URL, SUPPORTED_INDIAN_LANGUAGES } from '../config.js'
 import { escapeHtml } from '../renderers/shared.js'
 
 const HOME_TITLE = `${SITE_NAME} - AI Website Generator`
@@ -61,6 +61,22 @@ function renderLogo() {
     </div>
     <span class="logo-text">SHIP FAST</span>
   </div>`
+}
+
+function renderLanguageOptions() {
+  const options = [
+    { code: 'en', name: 'English', nativeName: 'English' },
+    ...SUPPORTED_INDIAN_LANGUAGES,
+  ]
+
+  return options
+    .map(
+      ({ code, name, nativeName }) =>
+        `<option value="${escapeHtml(code)}">${escapeHtml(name)} (${escapeHtml(
+          nativeName,
+        )})</option>`,
+    )
+    .join('')
 }
 
 function renderAuthOverlay() {
@@ -193,6 +209,17 @@ export function renderHomePage() {
               <span class="prompt-placeholder-text" id="prompt-placeholder-text"></span>
               <span class="prompt-placeholder-caret"></span>
             </span>
+          </div>
+          <div class="prompt-language-row">
+            <label class="sr-only" for="prompt-language">Preferred generation language</label>
+            <select
+              class="prompt-language-select"
+              id="prompt-language"
+              name="prompt-language"
+              aria-label="Preferred generation language"
+            >
+              ${renderLanguageOptions()}
+            </select>
           </div>
         </div>
         <button type="submit" class="submit-btn" id="submit-btn" disabled>

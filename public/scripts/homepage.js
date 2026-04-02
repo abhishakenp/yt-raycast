@@ -95,7 +95,9 @@ async function claimAnonymousSessions() {
       const result = await response.json()
       claimed = result?.claimed?.length ?? 0
       if (result.claimed?.length > 0) {
-        console.log(`[claim] Migrated ${result.claimed.length} anonymous session(s) to your account`)
+        console.log(
+          `[claim] Migrated ${result.claimed.length} anonymous session(s) to your account`,
+        )
       }
     }
     if (claimed > 0) clearAnonSessions()
@@ -172,6 +174,7 @@ document.getElementById('auth-overlay').addEventListener('click', (event) => {
 
 const form = document.getElementById('prompt-form')
 const input = document.getElementById('prompt-input')
+const languageSelect = document.getElementById('prompt-language')
 const submitButton = document.getElementById('submit-btn')
 const generationCounter = document.getElementById('gen-counter')
 const promptPlaceholder = document.getElementById('prompt-placeholder')
@@ -181,6 +184,7 @@ const privateGenCheckbox = document.getElementById('private-gen-checkbox')
 const privateGenModal = document.getElementById('private-gen-modal')
 const GENERATION_LIMIT = 2
 const MIN_PROMPT_LENGTH = 70
+const PREFERRED_LANGUAGE_KEY = 'sf_preferred_language'
 const isLocalDevHost =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
@@ -194,6 +198,109 @@ const SAMPLE_PROMPTS = [
   'A sleek fintech landing page for founders tracking runway, burn, and investor updates.',
   'A modern fitness club website with class schedules, trainer profiles, and membership plans.',
 ]
+
+function normalizeLanguageCode(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .split(/[-_]/)[0]
+}
+
+function getBrowserLanguageCandidates() {
+  const navigatorLanguages = Array.isArray(navigator.languages) ? navigator.languages : []
+  const candidates =
+    navigatorLanguages.length > 0 ? navigatorLanguages : [navigator.language].filter(Boolean)
+  const normalized = candidates
+    .map((entry) => normalizeLanguageCode(entry))
+    .filter(Boolean)
+    .filter((value, index, self) => self.indexOf(value) === index)
+
+  return normalized
+}
+
+function getLanguageDisplayName(code) {
+  const normalized = normalizeLanguageCode(code)
+  if (!normalized) return 'Language'
+  if (typeof Intl === 'undefined' || typeof Intl.DisplayNames === 'undefined') {
+    return normalized
+  }
+  try {
+    const display = new Intl.DisplayNames(undefined, { type: 'language' })
+    return display.of(normalized) || normalized
+  } catch {
+    return normalized
+  }
+}
+
+function getSavedPreferredLanguage() {
+  if (!languageSelect) return null
+  const preferred = localStorage.getItem(PREFERRED_LANGUAGE_KEY)
+  const normalized = normalizeLanguageCode(preferred)
+  if (!normalized) return null
+  return Array.from(languageSelect.options).some((option) => option.value === normalized)
+    ? normalized
+    : null
+}
+
+function savePreferredLanguage(language) {
+  const normalized = normalizeLanguageCode(language)
+  if (!normalized) return
+  if (!languageSelect) return
+  if (!Array.from(languageSelect.options).some((option) => option.value === normalized)) return
+  localStorage.setItem(PREFERRED_LANGUAGE_KEY, normalized)
+}
+
+function detectBrowserLanguage() {
+  if (!languageSelect) return 'en'
+  const available = new Set(Array.from(languageSelect.options).map((option) => option.value))
+  const storedLanguage = getSavedPreferredLanguage()
+  if (storedLanguage && storedLanguage !== 'en') return storedLanguage
+  const normalizedCandidates = getBrowserLanguageCandidates()
+
+  const supportedNonEnglishMatch = normalizedCandidates.find(
+    (language) => language !== 'en' && available.has(language),
+  )
+  if (supportedNonEnglishMatch) return supportedNonEnglishMatch
+
+  const browserNonEnglish = normalizedCandidates.find((language) => language !== 'en')
+  if (browserNonEnglish) return browserNonEnglish
+
+  if (available.has('en')) return 'en'
+  if (Array.from(available).length > 0) return Array.from(available)[0]
+  return available.values().next().value || 'en'
+}
+
+function focusLanguageOptions(preferredLanguage) {
+  if (!languageSelect) return
+  const options = Array.from(languageSelect.options)
+  const englishOption = options.find((option) => option.value === 'en')
+  const preferredOption = options.find((option) => option.value === preferredLanguage)
+  if (!englishOption) return
+
+  const normalizedPreferred = normalizeLanguageCode(preferredLanguage)
+  const preferredToShow =
+    normalizedPreferred && preferredOption && normalizedPreferred !== 'en' ? preferredOption : null
+  const customPreferredToShow =
+    normalizedPreferred && normalizedPreferred !== 'en' && !preferredOption
+      ? new Option(
+          `${getLanguageDisplayName(normalizedPreferred)} (${normalizedPreferred})`,
+          normalizedPreferred,
+        )
+      : null
+
+  languageSelect.innerHTML = ''
+  languageSelect.appendChild(englishOption.cloneNode(true))
+  if (preferredToShow) languageSelect.appendChild(preferredToShow.cloneNode(true))
+  if (customPreferredToShow) languageSelect.appendChild(customPreferredToShow)
+
+  languageSelect.value = normalizedPreferred || 'en'
+}
+
+function applyBrowserPreferredLanguage() {
+  const nextLanguage = detectBrowserLanguage()
+  focusLanguageOptions(nextLanguage)
+  languageSelect.value = nextLanguage
+}
 
 let samplePromptIndex = 0
 let samplePromptLength = 0
@@ -339,8 +446,7 @@ function updateGenerationCounter() {
   privateGenRow.style.display = 'none'
 
   if (isGenerationLimitReached()) {
-    generationCounter.innerHTML =
-      `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used — <a href="#" id="gen-signup-link" style="color:inherit;text-decoration:underline;">sign up instead</a>`
+    generationCounter.innerHTML = `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used — <a href="#" id="gen-signup-link" style="color:inherit;text-decoration:underline;">sign up instead</a>`
     generationCounter.classList.add('limit-reached')
     document.getElementById('gen-signup-link')?.addEventListener('click', (e) => {
       e.preventDefault()
@@ -370,12 +476,15 @@ privateGenCheckbox.addEventListener('change', () => {
 })
 
 document.getElementById('private-gen-modal-close').addEventListener('click', closePrivateGenModal)
-document.getElementById('private-gen-modal-backdrop').addEventListener('click', closePrivateGenModal)
+document
+  .getElementById('private-gen-modal-backdrop')
+  .addEventListener('click', closePrivateGenModal)
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && privateGenModal.classList.contains('is-open')) closePrivateGenModal()
 })
 
+applyBrowserPreferredLanguage()
 updateGenerationCounter()
 renderSamplePrompt()
 syncSamplePromptVisibility()
@@ -385,6 +494,10 @@ input.addEventListener('input', () => {
   validatePrompt(false)
   syncSamplePromptVisibility()
   syncSubmitButtonState()
+})
+
+languageSelect?.addEventListener('change', () => {
+  if (languageSelect) savePreferredLanguage(languageSelect.value)
 })
 
 input.addEventListener('keydown', (event) => {
@@ -401,6 +514,8 @@ form.addEventListener('submit', async (event) => {
     return
   }
   const prompt = input.value.trim()
+  const preferredLanguage = languageSelect?.value || 'en'
+  savePreferredLanguage(preferredLanguage)
 
   if (isGenerationLimitReached()) {
     document.getElementById('auth-overlay').classList.remove('hidden')
@@ -414,7 +529,7 @@ form.addEventListener('submit', async (event) => {
     const response = await authFetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({ prompt, preferredLanguage }),
     })
     const data = await response.json()
 
@@ -616,11 +731,17 @@ async function loadAnonymousSessions() {
           const r = await fetch(`/api/sessions/${id}`)
           if (!r.ok) return null
           const data = await r.json()
-          return { id: data.id, prompt: data.prompt || prompt, homepageReady: data.homepageReady, elapsed: data.elapsed, cost: data.cost }
+          return {
+            id: data.id,
+            prompt: data.prompt || prompt,
+            homepageReady: data.homepageReady,
+            elapsed: data.elapsed,
+            cost: data.cost,
+          }
         } catch {
           return { id, prompt, homepageReady: false, elapsed: null, cost: null }
         }
-      })
+      }),
     )
 
     const valid = results.filter(Boolean)
@@ -719,8 +840,7 @@ try {
 
 window.addEventListener('pageshow', (event) => {
   const nav = performance.getEntriesByType('navigation')[0]
-  const back =
-    event.persisted || (nav && nav.type === 'back_forward')
+  const back = event.persisted || (nav && nav.type === 'back_forward')
   if (back) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => window.scrollTo(0, 0))
