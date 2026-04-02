@@ -117,6 +117,4 @@ async function pushExportToGitHub(sessionId, target) {
 window.shipFastDashboardGithub = {
   ready,
   pushExportToGitHub,
-  authFetch,
-  getCurrentUser: () => currentUser,
 }
