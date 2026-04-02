@@ -27,7 +27,7 @@ import {
 } from './exports.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
-import { existsSync, readFileSync, writeFileSync, watch } from 'node:fs'
+import { existsSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import {
   addUserCredits,
   consumeUserCredit,
@@ -251,6 +251,14 @@ export async function startServer(sessionsDir) {
   initPaymentStore(sessionsDir)
   startPaymentListeners()
 
+  const stalePublicIndex = join(publicDir, 'index.html')
+  try {
+    if (existsSync(stalePublicIndex)) {
+      unlinkSync(stalePublicIndex)
+      console.warn('[startup] deleted public/index.html (homepage is SSR only)')
+    }
+  } catch {}
+
   // Set up quota info getter for payments module
   setQuotaInfoGetter(getQuotaInfo)
 
@@ -444,7 +452,12 @@ export async function startServer(sessionsDir) {
 
   // ─── Prompt page (landing) ────────────────────────────────
   app.get('/', (_req, res) => {
-    res.type('html').set('X-SF-Home-Source', 'ssr').send(renderHomePage())
+    res
+      .type('html')
+      .set('X-SF-Home-Source', 'ssr')
+      .set('Cache-Control', 'private, no-store, max-age=0, must-revalidate')
+      .set('Pragma', 'no-cache')
+      .send(renderHomePage())
   })
 
   // Pricing page
