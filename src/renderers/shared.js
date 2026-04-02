@@ -6,6 +6,12 @@
 export function getIndianFontMarkup(indiaMode) {
   if (!indiaMode?.isIndian) return ''
   const fontFamily = indiaMode.language.fontFamily
+  if (indiaMode.language?.code === 'hinglish') {
+    return `<link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>body, * { font-family: ${fontFamily}; }</style>`
+  }
   const googleFontName = fontFamily.split(',')[0].trim().replace(/ /g, '+')
   return `<link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,22 +30,13 @@ export function escapeHtml(value = '') {
 
 export function routeToHtmlFile(route = '/') {
   if (route === '/' || route === '') return 'index.html'
-  const clean = route
-    .replace(/^\/+/, '')
-    .replace(/\/+$/, '')
-    .split('/')
-    .filter(Boolean)
-    .join('-')
+  const clean = route.replace(/^\/+/, '').replace(/\/+$/, '').split('/').filter(Boolean).join('-')
   return `${clean || 'index'}.html`
 }
 
 export function routeToNextSegments(route = '/') {
   if (route === '/' || route === '') return []
-  return route
-    .replace(/^\/+/, '')
-    .replace(/\/+$/, '')
-    .split('/')
-    .filter(Boolean)
+  return route.replace(/^\/+/, '').replace(/\/+$/, '').split('/').filter(Boolean)
 }
 
 export function pageComponentName(page) {
@@ -300,7 +297,8 @@ export function renderExactClonePageComponent({ mode }) {
     mode === 'react'
       ? `import { useNavigate } from 'react-router-dom'`
       : `import { useRouter } from 'next/navigation'`
-  const routerHook = mode === 'react' ? 'const navigate = useNavigate()' : 'const router = useRouter()'
+  const routerHook =
+    mode === 'react' ? 'const navigate = useNavigate()' : 'const router = useRouter()'
   const navigationCall =
     mode === 'react'
       ? `navigate(url.pathname + url.search + url.hash)`
@@ -396,7 +394,9 @@ function renderShipFastFooterBrandingHtml() {
 
 export function renderSectionHtml(section) {
   const headline = section.headline ? `<h2>${escapeHtml(section.headline)}</h2>` : ''
-  const subheadline = section.subheadline ? `<p class="eyebrow">${escapeHtml(section.subheadline)}</p>` : ''
+  const subheadline = section.subheadline
+    ? `<p class="eyebrow">${escapeHtml(section.subheadline)}</p>`
+    : ''
   const body = section.body ? `<p class="section-body">${escapeHtml(section.body)}</p>` : ''
 
   switch (section.type) {
@@ -496,7 +496,8 @@ export function renderSectionHtml(section) {
             <div class="card-grid">
               ${renderItemList(
                 section.items || [],
-                (item) => `<blockquote class="card quote-card"><p>“${escapeHtml(item.quote || item.body || '')}”</p><footer>${escapeHtml(item.author || item.title || '')}</footer></blockquote>`,
+                (item) =>
+                  `<blockquote class="card quote-card"><p>“${escapeHtml(item.quote || item.body || '')}”</p><footer>${escapeHtml(item.author || item.title || '')}</footer></blockquote>`,
               )}
             </div>
           </div>

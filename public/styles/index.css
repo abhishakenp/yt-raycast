@@ -355,18 +355,11 @@ textarea {
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: 8px;
   pointer-events: none;
 }
 
-.prompt-language-row::before {
-  content: 'Language';
-  color: #857db4;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  pointer-events: none;
+.prompt-language-row.is-hidden {
+  display: none;
 }
 
 .prompt-language-row > * {

@@ -51,10 +51,23 @@ export async function groq(prompt, opts = {}) {
   return groqFetch({ prompt, ...opts })
 }
 
-export async function groqHomepage(prompt) {
+function buildImagePrompt(imageHints = '') {
+  const trimmed = String(imageHints || '').trim()
+  if (!trimmed) return ''
+  return `\n${trimmed}\nUse these PEXELS images first, then only use fallback URLs if absolutely needed.`
+}
+
+const HINGLISH_HOMEPAGE_APPEND = `
+
+── HINGLISH (Hindi–English) COPY ──
+Visible UI text must mix Hindi and English the way Indian brands do: common English for product/UI terms where expected; Hindi for warmth (Devanagari or romanized, matching the user prompt). Never 100% Hindi-only or English-only. Nav, buttons, headings, and body stay in this mixed register.`
+
+export async function groqHomepage(prompt, imageHints = null, indiaMode = null) {
+  const hinglish = indiaMode?.language?.code === 'hinglish'
   return groqFetch({
     model: HOMEPAGE_MODEL,
     system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
+${hinglish ? HINGLISH_HOMEPAGE_APPEND : ''}
 
 CLASSIFY: If the prompt describes functionality (app, client, editor, dashboard, manager, tool), build an APPLICATION UI. If it describes a business/product/service, build a LANDING PAGE. Default to APP when unclear.
 
@@ -121,11 +134,11 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
-- Tailwind CSS via CDN, Google Fonts (Inter default), Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use <i data-lucide="icon-name"></i> for icons. No inline SVGs, no emojis.
+- Tailwind CSS via CDN, Google Fonts${hinglish ? ' (load Inter + Noto Sans Devanagari)' : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use <i data-lucide="icon-name"></i> for icons. No inline SVGs, no emojis.
 - Dark theme: bg-gray-950 base, lighter surfaces, border-gray-800, one accent color.
 - Vanilla JS only. No frameworks.
-- IMAGES: Use Pexels direct URLs: https://images.pexels.com/photos/{ID}/pexels-photo-{ID}.jpeg?auto=compress&cs=tinysrgb&w={w}&h={h}&fit=crop — pick real Pexels photo IDs you know that match the topic. Use DIFFERENT IDs for each image. If unsure of IDs, fall back to https://picsum.photos/seed/{keyword}/{w}/{h}.`,
-    prompt,
+- IMAGES: Use provided Pexels URLs first. Each line lists a scene description before the URL — assign the URL whose description best matches that card or section (breed, rescue, etc.). Never use a laptop, phone, or screen image for animals or nature posts. Use https://picsum.photos/seed/{keyword}/{w}/{h} only if no relevant Pexels image is available.`,
+    prompt: `${prompt}${buildImagePrompt(imageHints?.promptBlock)}`,
     temperature: LLM_CONFIG.homepage.temperature,
     maxTokens: LLM_CONFIG.homepage.maxTokens,
   })

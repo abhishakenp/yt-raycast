@@ -74,7 +74,10 @@ async function readEarlyAdopterCount() {
 
 async function writeEarlyAdopterCount(data) {
   try {
-    await earlyAdopterDocRef.set({ count: data.count ?? 0, users: data.users ?? [] }, { merge: true })
+    await earlyAdopterDocRef.set(
+      { count: data.count ?? 0, users: data.users ?? [] },
+      { merge: true },
+    )
   } catch (err) {
     console.warn('[early-adopter] Firestore write failed, falling back to file:', err?.message)
     writeEarlyAdopterCountToFile(data)
@@ -119,14 +122,19 @@ export async function incrementEarlyAdopterCount(uid) {
 
       if (users.includes(uid)) return // already counted
       if (count >= EARLY_ADOPTER_MAX) {
-        console.warn(`[early-adopter] Slot limit reached (${EARLY_ADOPTER_MAX}), rejecting uid=${uid}`)
+        console.warn(
+          `[early-adopter] Slot limit reached (${EARLY_ADOPTER_MAX}), rejecting uid=${uid}`,
+        )
         return
       }
 
       tx.set(earlyAdopterDocRef, { count: count + 1, users: [...users, uid] })
     })
   } catch (err) {
-    console.warn('[early-adopter] Firestore transaction failed, falling back to file:', err?.message)
+    console.warn(
+      '[early-adopter] Firestore transaction failed, falling back to file:',
+      err?.message,
+    )
     incrementEarlyAdopterCountFile(uid)
   }
 }
@@ -248,22 +256,25 @@ export function initPaymentStore(sessionsDir) {
  */
 export function startPaymentListeners() {
   // ─── Subscription listener: track early adopters ──────────
-  db.collectionGroup('subscriptions').onSnapshot(async (snapshot) => {
-    for (const change of snapshot.docChanges()) {
-      if (change.type !== 'added' && change.type !== 'modified') continue
-      const sub = change.doc.data()
-      if (sub.status !== 'active' && sub.status !== 'trialing') continue
+  db.collectionGroup('subscriptions').onSnapshot(
+    async (snapshot) => {
+      for (const change of snapshot.docChanges()) {
+        if (change.type !== 'added' && change.type !== 'modified') continue
+        const sub = change.doc.data()
+        if (sub.status !== 'active' && sub.status !== 'trialing') continue
 
-      // Check if this subscription uses the early adopter price
-      const priceId = sub.price || sub.prices?.[0]?.id
-      if (priceId === EARLY_ADOPTER_PRICE_ID && EARLY_ADOPTER_PRICE_ID) {
-        const uid = change.doc.ref.parent.parent.id // customers/{uid}/subscriptions/{id}
-        await incrementEarlyAdopterCount(uid)
+        // Check if this subscription uses the early adopter price
+        const priceId = sub.price || sub.prices?.[0]?.id
+        if (priceId === EARLY_ADOPTER_PRICE_ID && EARLY_ADOPTER_PRICE_ID) {
+          const uid = change.doc.ref.parent.parent.id // customers/{uid}/subscriptions/{id}
+          await incrementEarlyAdopterCount(uid)
+        }
       }
-    }
-  }, (err) => {
-    console.error('[payment-listener] subscription listener error:', err?.message ?? err)
-  })
+    },
+    (err) => {
+      console.error('[payment-listener] subscription listener error:', err?.message ?? err)
+    },
+  )
 
   // ─── Checkout session listener: auto-fulfill credit packs ─
   const creditPriceIds = new Set(
@@ -271,90 +282,99 @@ export function startPaymentListeners() {
   )
 
   if (creditPriceIds.size > 0) {
-    db.collectionGroup('checkout_sessions').onSnapshot(async (snapshot) => {
+    db.collectionGroup('checkout_sessions').onSnapshot(
+      async (snapshot) => {
+        for (const change of snapshot.docChanges()) {
+          if (change.type !== 'modified') continue
+          const data = change.doc.data()
+
+          // Only process completed one-time payments for credit packs
+          if (data.mode !== 'payment') continue
+          if (data.fulfilled) continue
+          if (!data.sessionId && !data.url) continue // not yet processed by extension
+
+          const priceId = data.price
+          if (!creditPriceIds.has(priceId)) continue
+
+          // Check if the Stripe session is complete (extension sets sessionId after completion)
+          if (!data.sessionId) continue
+
+          let creditAmount = 0
+          if (priceId === process.env.STRIPE_3_CREDITS_PRICE_ID) creditAmount = 3
+          else if (priceId === process.env.STRIPE_10_CREDITS_PRICE_ID) creditAmount = 10
+
+          if (creditAmount <= 0) continue
+
+          const uid = change.doc.ref.parent.parent.id
+          const docRef = change.doc.ref
+          try {
+            await db.runTransaction(async (transaction) => {
+              const freshDoc = await transaction.get(docRef)
+              const freshData = freshDoc.data()
+              if (freshData?.fulfilled) return // already done
+
+              transaction.update(docRef, { fulfilled: true })
+            })
+            // Only grant credits after transaction succeeds
+            addUserCredits(uid, creditAmount, data.sessionId)
+            console.log(`[payment-listener] Auto-fulfilled ${creditAmount} credits for user ${uid}`)
+          } catch (err) {
+            console.error('[payment-listener] fulfillment transaction failed:', err?.message ?? err)
+          }
+        }
+      },
+      (err) => {
+        console.error('[payment-listener] checkout_sessions listener error:', err?.message ?? err)
+      },
+    )
+  }
+
+  // ─── Refund listener: zero credits on refund ──────────────
+  db.collectionGroup('checkout_sessions').onSnapshot(
+    (snapshot) => {
       for (const change of snapshot.docChanges()) {
         if (change.type !== 'modified') continue
         const data = change.doc.data()
 
-        // Only process completed one-time payments for credit packs
-        if (data.mode !== 'payment') continue
-        if (data.fulfilled) continue
-        if (!data.sessionId && !data.url) continue // not yet processed by extension
+        // Detect refund: Firebase Stripe Extension sets payment_status or adds refund field
+        const isRefund = data.payment_status === 'refunded' || Boolean(data.refund)
+        if (!isRefund) continue
+        if (data.refundHandled) continue // already processed
 
-        const priceId = data.price
-        if (!creditPriceIds.has(priceId)) continue
+        const uid = change.doc.ref.parent.parent.id // customers/{uid}/checkout_sessions/{id}
+        zeroUserCredits(uid)
 
-        // Check if the Stripe session is complete (extension sets sessionId after completion)
-        if (!data.sessionId) continue
+        // Mark handled to prevent re-processing
+        change.doc.ref.update({ refundHandled: true }).catch((err) => {
+          console.error('[payment-listener] failed to mark refundHandled:', err?.message ?? err)
+        })
 
-        let creditAmount = 0
-        if (priceId === process.env.STRIPE_3_CREDITS_PRICE_ID) creditAmount = 3
-        else if (priceId === process.env.STRIPE_10_CREDITS_PRICE_ID) creditAmount = 10
-
-        if (creditAmount <= 0) continue
-
-        const uid = change.doc.ref.parent.parent.id
-        const docRef = change.doc.ref
-        try {
-          await db.runTransaction(async (transaction) => {
-            const freshDoc = await transaction.get(docRef)
-            const freshData = freshDoc.data()
-            if (freshData?.fulfilled) return // already done
-
-            transaction.update(docRef, { fulfilled: true })
-          })
-          // Only grant credits after transaction succeeds
-          addUserCredits(uid, creditAmount, data.sessionId)
-          console.log(`[payment-listener] Auto-fulfilled ${creditAmount} credits for user ${uid}`)
-        } catch (err) {
-          console.error('[payment-listener] fulfillment transaction failed:', err?.message ?? err)
-        }
+        console.log(`[payment-listener] Refund detected for user ${uid}, credits zeroed`)
       }
-    }, (err) => {
-      console.error('[payment-listener] checkout_sessions listener error:', err?.message ?? err)
-    })
-  }
-
-  // ─── Refund listener: zero credits on refund ──────────────
-  db.collectionGroup('checkout_sessions').onSnapshot((snapshot) => {
-    for (const change of snapshot.docChanges()) {
-      if (change.type !== 'modified') continue
-      const data = change.doc.data()
-
-      // Detect refund: Firebase Stripe Extension sets payment_status or adds refund field
-      const isRefund = data.payment_status === 'refunded' || Boolean(data.refund)
-      if (!isRefund) continue
-      if (data.refundHandled) continue // already processed
-
-      const uid = change.doc.ref.parent.parent.id // customers/{uid}/checkout_sessions/{id}
-      zeroUserCredits(uid)
-
-      // Mark handled to prevent re-processing
-      change.doc.ref.update({ refundHandled: true }).catch((err) => {
-        console.error('[payment-listener] failed to mark refundHandled:', err?.message ?? err)
-      })
-
-      console.log(`[payment-listener] Refund detected for user ${uid}, credits zeroed`)
-    }
-  }, (err) => {
-    console.error('[payment-listener] refund listener error:', err?.message ?? err)
-  })
+    },
+    (err) => {
+      console.error('[payment-listener] refund listener error:', err?.message ?? err)
+    },
+  )
 
   console.log('  Payment listeners started (subscriptions + credit fulfillment + refund detection)')
 
-  reconcileUnfulfilledCredits().catch(err => {
+  reconcileUnfulfilledCredits().catch((err) => {
     console.error('[reconcile] startup reconciliation failed:', err?.message ?? err)
   })
 }
 
 export async function reconcileUnfulfilledCredits() {
   const creditPriceIds = new Map()
-  if (process.env.STRIPE_3_CREDITS_PRICE_ID) creditPriceIds.set(process.env.STRIPE_3_CREDITS_PRICE_ID, 3)
-  if (process.env.STRIPE_10_CREDITS_PRICE_ID) creditPriceIds.set(process.env.STRIPE_10_CREDITS_PRICE_ID, 10)
+  if (process.env.STRIPE_3_CREDITS_PRICE_ID)
+    creditPriceIds.set(process.env.STRIPE_3_CREDITS_PRICE_ID, 3)
+  if (process.env.STRIPE_10_CREDITS_PRICE_ID)
+    creditPriceIds.set(process.env.STRIPE_10_CREDITS_PRICE_ID, 10)
   if (creditPriceIds.size === 0) return
 
   try {
-    const snapshot = await db.collectionGroup('checkout_sessions')
+    const snapshot = await db
+      .collectionGroup('checkout_sessions')
       .where('mode', '==', 'payment')
       .get()
 
@@ -383,7 +403,8 @@ export async function reconcileUnfulfilledCredits() {
       }
     }
 
-    if (reconciled > 0) console.log(`[reconcile] Reconciled ${reconciled} unfulfilled credit purchases`)
+    if (reconciled > 0)
+      console.log(`[reconcile] Reconciled ${reconciled} unfulfilled credit purchases`)
   } catch (err) {
     console.error('[reconcile] Error querying checkout_sessions:', err?.message ?? err)
   }
@@ -410,17 +431,21 @@ export async function hadActiveSubscriptionDuring(uid, timestamp) {
       // Skip subscriptions that were never active
       if (!['active', 'trialing', 'canceled', 'past_due', 'unpaid'].includes(sub.status)) continue
 
-      const created = sub.created?.toMillis?.() || sub.created?.seconds * 1000 || new Date(sub.created).getTime()
+      const created =
+        sub.created?.toMillis?.() || sub.created?.seconds * 1000 || new Date(sub.created).getTime()
       if (!created || created > sessionTime) continue // subscription started after session
 
       // If still active, user had coverage
       if (sub.status === 'active' || sub.status === 'trialing') return true
 
       // If canceled, check if cancelation was after the session was created
-      const canceledAt = sub.canceled_at?.toMillis?.() || sub.canceled_at?.seconds * 1000 ||
-                         sub.cancel_at?.toMillis?.() || sub.cancel_at?.seconds * 1000 ||
-                         (sub.canceled_at ? new Date(sub.canceled_at).getTime() : null) ||
-                         (sub.cancel_at ? new Date(sub.cancel_at).getTime() : null)
+      const canceledAt =
+        sub.canceled_at?.toMillis?.() ||
+        sub.canceled_at?.seconds * 1000 ||
+        sub.cancel_at?.toMillis?.() ||
+        sub.cancel_at?.seconds * 1000 ||
+        (sub.canceled_at ? new Date(sub.canceled_at).getTime() : null) ||
+        (sub.cancel_at ? new Date(sub.cancel_at).getTime() : null)
 
       if (!canceledAt || canceledAt > sessionTime) return true
     }
@@ -448,10 +473,14 @@ export function addUserCredits(uid, amount, stripeSessionId = null) {
   const creditFile = join(billingDir, `credits_${uid}.json`)
   let data = { remaining: 0, history: [] }
   if (existsSync(creditFile)) {
-    try { data = JSON.parse(readFileSync(creditFile, 'utf-8')) } catch { /* */ }
+    try {
+      data = JSON.parse(readFileSync(creditFile, 'utf-8'))
+    } catch {
+      /* */
+    }
   }
   // Before granting, check for duplicate
-  if (stripeSessionId && data.history.some(h => h.stripeSessionId === stripeSessionId)) return
+  if (stripeSessionId && data.history.some((h) => h.stripeSessionId === stripeSessionId)) return
   data.remaining = (data.remaining ?? 0) + amount
   data.history.push({ type: 'purchase', amount, stripeSessionId, at: new Date().toISOString() })
   atomicWriteJSON(creditFile, data)
@@ -478,7 +507,11 @@ export function zeroUserCredits(uid) {
   const creditFile = join(billingDir, `credits_${uid}.json`)
   let data = { remaining: 0, history: [] }
   if (existsSync(creditFile)) {
-    try { data = JSON.parse(readFileSync(creditFile, 'utf-8')) } catch { /* */ }
+    try {
+      data = JSON.parse(readFileSync(creditFile, 'utf-8'))
+    } catch {
+      /* */
+    }
   }
   data.remaining = 0
   data.history.push({ type: 'refund', at: new Date().toISOString() })
@@ -496,7 +529,10 @@ export async function getDownloadAccessDecision(session, target, req) {
   // Check if user had an active subscription when this session was created
   const hadAccess = await hadActiveSubscriptionDuring(uid, session?.createdAt)
   if (hadAccess) {
-    return { allowed: true, payment: { subscriptionActive: false, historicalAccess: true, credits: null } }
+    return {
+      allowed: true,
+      payment: { subscriptionActive: false, historicalAccess: true, credits: null },
+    }
   }
 
   const credits = await getUserCredits(uid)

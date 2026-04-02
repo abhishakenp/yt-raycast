@@ -131,3 +131,9 @@ rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
 
 Overall average: **60-90% token reduction** on common development operations.
 <!-- /rtk-instructions -->
+
+## Production (Ship Fast)
+
+- **Live site:** https://ship-fast.io/
+- **Hosting:** [Coolify](https://coolify.io) on `159.195.70.194`
+- **Operations:** Deployments and services are managed via the [Coolify CLI](https://coolify.io/docs/installation); configure the CLI against that Coolify instance per upstream docs.

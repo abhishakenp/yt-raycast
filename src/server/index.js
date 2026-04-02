@@ -1207,7 +1207,7 @@ export async function startCLISession(workspace, prompt) {
 
   const generation = editMode
     ? runEdit({ prompt, workspace, sessionCtx })
-    : runAll({ prompt, workspace, sessionCtx })
+    : runAll({ prompt, workspace, sessionCtx, preferredLanguage: session.preferredLanguage })
 
   return { session, generation }
 }

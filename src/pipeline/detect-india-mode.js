@@ -8,7 +8,18 @@ import { SUPPORTED_INDIAN_LANGUAGES } from '../config.js'
  * @param {string} prompt
  * @returns {{ isIndian: boolean, language: object | null }}
  */
-export function detectIndiaMode(prompt) {
+export function detectIndiaMode(prompt, preferredLanguage) {
+  if (!prompt) return { isIndian: false, language: null }
+
+  const requested = String(preferredLanguage || '')
+    .trim()
+    .toLowerCase()
+  if (requested && requested !== 'en') {
+    const language = SUPPORTED_INDIAN_LANGUAGES.find((entry) => entry.code === requested)
+    if (language) return { isIndian: true, language }
+    return { isIndian: false, language: null }
+  }
+
   const lower = prompt.toLowerCase()
 
   for (const lang of SUPPORTED_INDIAN_LANGUAGES) {

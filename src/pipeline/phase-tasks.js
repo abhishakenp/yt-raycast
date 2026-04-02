@@ -147,6 +147,7 @@ export async function generateAllTasks(
   status,
   taskCtx,
   indiaMode = null,
+  imageHints = null,
 ) {
   const isFrontend = (t) => t.status !== 'DONE' && !String(t.id).startsWith('backend-')
   const isBackend = (t) => String(t.id).startsWith('backend-') && t.status !== 'DONE'
@@ -162,7 +163,9 @@ export async function generateAllTasks(
     .map((t) => ({ title: t.title, filename: t.filename }))
   const navList = allPages.map((p) => `- ${p.title}: ${p.filename}`).join('\n')
 
-  const pageCalls = pageTasks.map((t) => pagePrompt(t, navList, homepageHtml))
+  const pageCalls = pageTasks.map((t) =>
+    pagePrompt(t, navList, homepageHtml, imageHints, indiaMode),
+  )
   const backendCalls = backendTasks.map((t) => backendPrompt(t, ctx))
 
   const allCalls = [...pageCalls, ...backendCalls]
@@ -174,13 +177,17 @@ export async function generateAllTasks(
   // Generate all pages with Groq (quality), translate with hex-1 if India mode
   let pageResults = pageCalls.length > 0 ? await groqParallel(pageCalls) : []
 
-  if (indiaMode?.isIndian && pageResults.length > 0) {
-    log(`  translating ${pageResults.length} pages to ${indiaMode.language.name} via hex-1 (sequential)...`)
+  if (indiaMode?.isIndian && !indiaMode.language?.skipFullTranslation && pageResults.length > 0) {
+    log(
+      `  translating ${pageResults.length} pages to ${indiaMode.language.name} via hex-1 (sequential)...`,
+    )
     const englishHtmls = pageResults.map((r) => (r?.content ? stripFences(r.content) : ''))
     const translatedHtmls = await translateHtmlSequential(englishHtmls, indiaMode)
     translatedHtmls.forEach((html, i) => {
       const changed = html !== englishHtmls[i]
-      log(`  page ${i + 1} translation: ${changed ? `✓ ${html.length} chars` : '✗ no changes — kept English'}`)
+      log(
+        `  page ${i + 1} translation: ${changed ? `✓ ${html.length} chars` : '✗ no changes — kept English'}`,
+      )
     })
     pageResults = pageResults.map((r, i) => ({ ...r, content: translatedHtmls[i] }))
   }

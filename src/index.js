@@ -50,9 +50,6 @@ if (promptArg) {
 
   const { session, generation } = await startCLISession(workspace, promptArg)
 
-  const { default: open } = await import('open')
-  open(`http://localhost:7420/session/${session.id}`)
-
   await generation
 } else {
   // ─── Server-only mode: prompt page, multi-session ──────────
@@ -60,9 +57,6 @@ if (promptArg) {
   console.log(`  sessions: ${sessionsDir}\n`)
 
   await startServer(sessionsDir)
-
-  const { default: open } = await import('open')
-  open('http://localhost:7420')
 
   console.log('  Waiting for prompts at http://localhost:7420\n')
 }

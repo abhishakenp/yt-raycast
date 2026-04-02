@@ -60,7 +60,9 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
     </style>
   `
 
-    next = /<\/head>/i.test(next) ? next.replace(/<\/head>/i, `${styleTag}\n</head>`) : `${styleTag}\n${next}`
+    next = /<\/head>/i.test(next)
+      ? next.replace(/<\/head>/i, `${styleTag}\n</head>`)
+      : `${styleTag}\n${next}`
   }
 
   if (hasBrandingMarkup(next)) return next
@@ -90,10 +92,17 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   return next
 }
 
-export async function generateHomepage(prompt, workspace, log, sessionCtx, indiaMode = null) {
+export async function generateHomepage(
+  prompt,
+  workspace,
+  log,
+  sessionCtx,
+  indiaMode = null,
+  imageHints = null,
+) {
   log('  homepage: generating from scratch (LLM)...')
 
-  const result = await groqHomepage(prompt)
+  const result = await groqHomepage(prompt, imageHints, indiaMode)
 
   if (!result?.content || result.error) {
     log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)
@@ -110,7 +119,7 @@ export async function generateHomepage(prompt, workspace, log, sessionCtx, india
 
   html = injectShipFastFooterBranding(html, log)
 
-  if (indiaMode?.isIndian) {
+  if (indiaMode?.isIndian && !indiaMode.language?.skipFullTranslation) {
     log(`  homepage: translating to ${indiaMode.language.name} via Groq...`)
     try {
       const translated = await translateHtml(html, indiaMode)

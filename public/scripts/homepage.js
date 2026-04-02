@@ -175,6 +175,7 @@ document.getElementById('auth-overlay').addEventListener('click', (event) => {
 const form = document.getElementById('prompt-form')
 const input = document.getElementById('prompt-input')
 const languageSelect = document.getElementById('prompt-language')
+const promptLanguageRow = document.getElementById('prompt-language-row')
 const submitButton = document.getElementById('submit-btn')
 const generationCounter = document.getElementById('gen-counter')
 const promptPlaceholder = document.getElementById('prompt-placeholder')
@@ -184,7 +185,145 @@ const privateGenCheckbox = document.getElementById('private-gen-checkbox')
 const privateGenModal = document.getElementById('private-gen-modal')
 const GENERATION_LIMIT = 2
 const MIN_PROMPT_LENGTH = 70
+const PROMPT_LANG_DETECT_MIN_CHARS = 65
+const PROMPT_LANG_DETECT_DEBOUNCE_MS = 400
+const PROMPT_LANG_DETECT_SNIPPET_MAX = 800
 const PREFERRED_LANGUAGE_KEY = 'sf_preferred_language'
+
+const FRANC_ISO639_3_TO_BCP47 = {
+  eng: 'en',
+  fra: 'fr',
+  ita: 'it',
+  spa: 'es',
+  deu: 'de',
+  nld: 'nl',
+  por: 'pt',
+  rus: 'ru',
+  pol: 'pl',
+  tur: 'tr',
+  hun: 'hu',
+  ces: 'cs',
+  slk: 'sk',
+  ron: 'ro',
+  ell: 'el',
+  swe: 'sv',
+  dan: 'da',
+  fin: 'fi',
+  nor: 'no',
+  nob: 'nb',
+  nno: 'nn',
+  ind: 'id',
+  jpn: 'ja',
+  kor: 'ko',
+  zho: 'zh',
+  arb: 'ar',
+  ara: 'ar',
+  pes: 'fa',
+  hin: 'hi',
+  tam: 'ta',
+  tel: 'te',
+  kan: 'kn',
+  mal: 'ml',
+  ben: 'bn',
+  mar: 'mr',
+  guj: 'gu',
+  pan: 'pa',
+  ori: 'or',
+  asm: 'as',
+  urd: 'ur',
+  mai: 'mai',
+  kok: 'kok',
+  mni: 'mni',
+  sat: 'sat',
+  kas: 'ks',
+  doi: 'doi',
+  brx: 'brx',
+  snd: 'sd',
+  san: 'sa',
+  nep: 'ne',
+}
+
+const PROMPT_DETECT_INDIAN_FRANC = new Set([
+  'hin',
+  'tam',
+  'tel',
+  'kan',
+  'mal',
+  'ben',
+  'mar',
+  'guj',
+  'pan',
+  'ori',
+  'asm',
+  'urd',
+  'mai',
+  'kok',
+  'mni',
+  'sat',
+  'kas',
+  'doi',
+  'brx',
+  'snd',
+  'san',
+  'nep',
+])
+
+const PROMPT_HINGLISH_LATIN = new Set(
+  `ke liye kaa ki ka ko se par pe aur ya phir bhi ho hai hain hoon hun main tum aap ham hum aapka aapki mere meri apna apni apne kuch sab koi kuchh kitna kab kahan kaise kyun kyo kyon bas fir tab jab banao banaye bana karo karein chahiye chahie milega milegi dekho dekhe suno samjho samajh wala wale wali accha achha achhi theek thik bahut zyada thoda kam sahi galat nahi nahin nhi haan haanji na mat jaldi jald jisse apne apni bas fir woh wo yeh ye koi kabhi kabhi sirf sirf bass reh reho rehi karenge karunga karungi hona honi hoga hogi`.split(
+    /\s+/,
+  ),
+)
+
+const PROMPT_ENGLISH_LEXICON = new Set(
+  `the and for with from into about over under this that these those your our their its was were been being have has had do does did will would could should may might can must shall need want like make made makes making take took give gave go went come came see saw know think say said get got use used work worked call called try tried help helped show showed look looked find found keep kept let put set run ran move add added open opened close closed save saved load loaded click tapped type types typed enter enter submit cancel delete edit update create created build built design designed ship fast page home landing site web website internet online digital product products service services customer customers user users client clients team teams member members account accounts login sign signup signin register password email phone contact contacts pricing price plan plans paid free pro premium trial subscribe feature features faq help support docs doc api blog news story stories video image photo photos gallery map maps list lists search filter sort menu nav header footer sidebar modal popover popup button link links form forms field fields input inputs select checkbox radio toggle slider range progress loading spinner toast alert badge pill tag tags label labels chart charts graph graphs stats stat analytics dashboard panel admin profile settings billing payment pay invoice cart checkout order orders shipping delivery pickup return refund coupon discount offer sale deal gift promo subscription monthly yearly gym fitness fit trainer trainers train class classes schedule schedules booking book session sessions ladies women men kids family kid friendly safe safely security secure private public modern clean minimal bold premium luxury brand brands mission vision value values trust trusted review reviews rating ratings hero banner card cards grid layout layouts responsive mobile tablet desktop animation scroll slide gallery tour faq question answer answers step steps guide guides tutorial resource resources download upload share shared invite join community forum chat message messages notify notification notifications push sms otp verify account`.split(
+    /\s+/,
+  ),
+)
+
+function promptLatinEnglishLean(text) {
+  const words = String(text || '')
+    .toLowerCase()
+    .match(/\b[a-z]{2,}\b/g)
+  if (!words || words.length === 0) return { lean: 0, en: 0, hi: 0, n: 0 }
+  let en = 0
+  let hi = 0
+  for (const word of words) {
+    if (PROMPT_HINGLISH_LATIN.has(word)) hi += 1
+    else if (PROMPT_ENGLISH_LEXICON.has(word)) en += 1
+  }
+  const rest = words.length - en - hi
+  const lean = (en + rest * 0.22) / words.length
+  return { lean, en, hi, n: words.length }
+}
+
+function resolveFrancCode3ForPrompt(snippet, code3) {
+  if (!code3 || code3 === 'und') return code3
+  if (code3 === 'eng' || PROMPT_DETECT_INDIAN_FRANC.has(code3)) return code3
+  const { lean, en, hi, n } = promptLatinEnglishLean(snippet)
+  if (n < 4) return code3
+  if (lean >= 0.36 && en > hi && en >= 4) return 'eng'
+  return code3
+}
+
+function resolveFrancCode3HinglishPreference(snippet, code3) {
+  if (!code3 || code3 === 'und') return code3
+  if (code3 === 'urd') return code3
+  if (PROMPT_DETECT_INDIAN_FRANC.has(code3) && code3 !== 'hin') return code3
+  const lower = String(snippet || '').toLowerCase()
+  const { hi, en, n } = promptLatinEnglishLean(snippet)
+  const hasKeLiye = /\bke\s+liye\b/.test(lower)
+  const hasBanao = /\bbanao\b/.test(lower)
+  const hinglishStrong =
+    hasKeLiye || hi >= 2 || (hi >= 1 && hasBanao) || (n >= 6 && hi >= 2 && hi >= en * 0.35)
+  if (hinglishStrong) return 'hinglish'
+  if (code3 === 'hin') return 'hin'
+  return code3
+}
+
+let francLoadPromise = null
+let promptLangDetectTimer = null
+let promptLangDetectToken = 0
+let promptLanguageRowUnlocked = false
 const isLocalDevHost =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
@@ -282,10 +421,7 @@ function focusLanguageOptions(preferredLanguage) {
     normalizedPreferred && preferredOption && normalizedPreferred !== 'en' ? preferredOption : null
   const customPreferredToShow =
     normalizedPreferred && normalizedPreferred !== 'en' && !preferredOption
-      ? new Option(
-          `${getLanguageDisplayName(normalizedPreferred)} (${normalizedPreferred})`,
-          normalizedPreferred,
-        )
+      ? new Option(getLanguageDisplayName(normalizedPreferred), normalizedPreferred)
       : null
 
   languageSelect.innerHTML = ''
@@ -296,10 +432,116 @@ function focusLanguageOptions(preferredLanguage) {
   languageSelect.value = normalizedPreferred || 'en'
 }
 
+function mergeLanguageOptionsSelect(selectedCode) {
+  if (!languageSelect) return
+  const normalized = normalizeLanguageCode(selectedCode) || 'en'
+  const existing = Array.from(languageSelect.options)
+  const englishOpt = existing.find((option) => option.value === 'en')
+  if (!englishOpt) return
+
+  const extras = []
+  const seen = new Set()
+  for (const option of existing) {
+    if (option.value === 'en') continue
+    if (seen.has(option.value)) continue
+    seen.add(option.value)
+    extras.push(option)
+  }
+  if (normalized !== 'en' && !seen.has(normalized)) {
+    seen.add(normalized)
+    extras.push(new Option(getLanguageDisplayName(normalized), normalized))
+  }
+
+  languageSelect.innerHTML = ''
+  languageSelect.appendChild(englishOpt.cloneNode(true))
+  for (const option of extras) {
+    languageSelect.appendChild(option.cloneNode(true))
+  }
+  languageSelect.value = normalized
+}
+
 function applyBrowserPreferredLanguage() {
   const nextLanguage = detectBrowserLanguage()
   focusLanguageOptions(nextLanguage)
   languageSelect.value = nextLanguage
+}
+
+function syncPromptLanguageRowVisibility() {
+  if (!promptLanguageRow || !languageSelect) return
+  const show = input.value.trim().length >= PROMPT_LANG_DETECT_MIN_CHARS
+  promptLanguageRow.classList.toggle('is-hidden', !show)
+  if (!show) {
+    if (promptLanguageRowUnlocked) {
+      focusLanguageOptions('en')
+      languageSelect.value = 'en'
+      savePreferredLanguage('en')
+    }
+    promptLanguageRowUnlocked = false
+    return
+  }
+  if (!promptLanguageRowUnlocked) {
+    applyBrowserPreferredLanguage()
+    promptLanguageRowUnlocked = true
+  }
+}
+
+function loadFranc() {
+  francLoadPromise =
+    francLoadPromise ||
+    import('https://esm.sh/franc-min@6.2.0').then((mod) => mod.franc ?? mod.default)
+  return francLoadPromise
+}
+
+function schedulePromptLanguageDetect() {
+  if (!languageSelect) return
+  const text = input.value.trim()
+  if (text.length < PROMPT_LANG_DETECT_MIN_CHARS) {
+    if (promptLangDetectTimer !== null) {
+      clearTimeout(promptLangDetectTimer)
+      promptLangDetectTimer = null
+    }
+    promptLangDetectToken += 1
+    return
+  }
+  if (promptLangDetectTimer !== null) {
+    clearTimeout(promptLangDetectTimer)
+    promptLangDetectTimer = null
+  }
+  const runToken = ++promptLangDetectToken
+  promptLangDetectTimer = setTimeout(() => {
+    promptLangDetectTimer = null
+    void (async () => {
+      if (runToken !== promptLangDetectToken) return
+      const currentText = input.value.trim()
+      if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
+      const snippet = currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
+      let franc
+      try {
+        franc = await loadFranc()
+      } catch {
+        return
+      }
+      if (typeof franc !== 'function' || runToken !== promptLangDetectToken) return
+      if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
+      let code3 = franc(snippet, { minLength: 10 }) || 'und'
+      if (code3 !== 'und') {
+        code3 = resolveFrancCode3ForPrompt(snippet, code3)
+        if (code3 === 'und') code3 = 'eng'
+      } else {
+        code3 = 'eng'
+      }
+      code3 = resolveFrancCode3HinglishPreference(snippet, code3)
+      if (!code3 || code3 === 'und') return
+      const detectBcp47 = (resolved) =>
+        resolved === 'hinglish' ? 'hinglish' : FRANC_ISO639_3_TO_BCP47[resolved]
+      const bcp47 = detectBcp47(code3)
+      if (!bcp47) return
+      const hasOption = Array.from(languageSelect.options).some((option) => option.value === bcp47)
+      if (languageSelect.value === bcp47 && hasOption) return
+      mergeLanguageOptionsSelect(bcp47)
+      savePreferredLanguage(bcp47)
+    })()
+  }, PROMPT_LANG_DETECT_DEBOUNCE_MS)
 }
 
 let samplePromptIndex = 0
@@ -484,7 +726,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && privateGenModal.classList.contains('is-open')) closePrivateGenModal()
 })
 
-applyBrowserPreferredLanguage()
+syncPromptLanguageRowVisibility()
 updateGenerationCounter()
 renderSamplePrompt()
 syncSamplePromptVisibility()
@@ -494,6 +736,8 @@ input.addEventListener('input', () => {
   validatePrompt(false)
   syncSamplePromptVisibility()
   syncSubmitButtonState()
+  syncPromptLanguageRowVisibility()
+  schedulePromptLanguageDetect()
 })
 
 languageSelect?.addEventListener('change', () => {

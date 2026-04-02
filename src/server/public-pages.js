@@ -64,18 +64,10 @@ function renderLogo() {
 }
 
 function renderLanguageOptions() {
-  const options = [
-    { code: 'en', name: 'English', nativeName: 'English' },
-    ...SUPPORTED_INDIAN_LANGUAGES,
-  ]
+  const options = [{ code: 'en', name: 'English' }, ...SUPPORTED_INDIAN_LANGUAGES]
 
   return options
-    .map(
-      ({ code, name, nativeName }) =>
-        `<option value="${escapeHtml(code)}">${escapeHtml(name)} (${escapeHtml(
-          nativeName,
-        )})</option>`,
-    )
+    .map(({ code, name }) => `<option value="${escapeHtml(code)}">${escapeHtml(name)}</option>`)
     .join('')
 }
 
@@ -210,7 +202,7 @@ export function renderHomePage() {
               <span class="prompt-placeholder-caret"></span>
             </span>
           </div>
-          <div class="prompt-language-row">
+          <div class="prompt-language-row is-hidden" id="prompt-language-row">
             <label class="sr-only" for="prompt-language">Preferred generation language</label>
             <select
               class="prompt-language-select"

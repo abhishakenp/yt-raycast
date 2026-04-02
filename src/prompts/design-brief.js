@@ -5,6 +5,16 @@ function indianDesignAppendix(indiaMode) {
   const { language } = indiaMode
   const colors = INDIAN_DESIGN_TOKENS.colors
   const patterns = INDIAN_DESIGN_TOKENS.patterns
+  if (language?.code === 'hinglish') {
+    return `
+
+### India Mode — Hinglish
+Hindi–English mixed copy for Indian audiences (natural Hinglish, not pure Hindi or pure English):
+- **Fonts**: Load Noto Sans Devanagari and Inter from Google Fonts. Devanagari for Hindi words, Inter for English.
+- **Color palette**: Root the palette in Indian tradition — saffron (${colors.primary[1]}), gold (${colors.primary[2]}), deep red (${colors.decorative[0]}), peacock blue (${colors.secondary[0]}), India green (${colors.accent[0]}). Choose 1–2 as accent.
+- **Decorative motifs**: Subtle Indian geometric patterns: ${patterns.join(', ')}.
+- **Tailwind config**: Indian-inspired semantic tokens (primary, accent, decorative, surface).`
+  }
   return `
 
 ### India Mode — Additional Requirements
@@ -69,7 +79,7 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 - 2-column grids, NEVER 3-column
 - Generous spacing: py-20 md:py-28 per section
 - Restraint: less is more, no clutter, no busy layouts
-- If images are truly needed (ecommerce/portfolio), use Lorem Picsum: https://picsum.photos/seed/{seed}/{w}/{h}
+- If images are truly needed (ecommerce/portfolio), use Pexels first. If no close match exists, fallback to https://picsum.photos/seed/{seed}/{w}/{h}
 
 Max 70 lines. Output ONLY markdown.${indianDesignAppendix(indiaMode)}`,
     model: 'moonshotai/kimi-k2-instruct-0905',

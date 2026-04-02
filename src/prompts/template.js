@@ -26,7 +26,7 @@ RULES:
 - Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
 - Load fonts from Google Fonts in <head>
 - Inline SVG for all icons (no emoji, no icon CDNs)
-- Images only if needed: use picsum.photos/seed/{seed}/{w}/{h}
+- Images only if needed: use Pexels images first, with fallback picsum.photos/seed/{seed}/{w}/{h}
 - NO screenshots, mockups, or hero images for SaaS/landing pages
 - Typography-first, minimal, premium aesthetic
 - 2-column grids (never 3)

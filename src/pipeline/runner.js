@@ -21,6 +21,8 @@ import {
 import { renderPreviewToWorkspace } from '../renderers/index.js'
 import { detectIndiaMode } from './detect-india-mode.js'
 import { resolvePexelsImageHints } from './image-hints.js'
+import { withLanguageEnforcementBlock } from './prompt-language.js'
+import { getWorkspacePreferredLanguage } from '../server/sessions.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 
 const log = (sessionCtx) => (msg) => {
@@ -39,13 +41,16 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
 
   sessionCtx.setPrompt(prompt)
 
+  const preferredLanguage = getWorkspacePreferredLanguage(workspace)
+  const pipelinePrompt = withLanguageEnforcementBlock(prompt, preferredLanguage)
+
   const existingSiteSpec = loadSiteSpec(workspace)
   if (existingSiteSpec) {
     _log(`\n  ── Edit mode: updating canonical site spec ──`)
     status(sessionCtx)('Editing site spec…', 'editing')
 
     const siteSpecStats = await updateSiteSpecFromPrompt({
-      prompt,
+      prompt: pipelinePrompt,
       currentSpec: existingSiteSpec,
       workspace,
       log: _log,
@@ -126,7 +131,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
     const filePath = join(workspace, t.filename)
     const html = existsSync(filePath) ? readFileSync(filePath, 'utf-8') : ''
     if (!html) return null
-    return editPrompt(prompt, t, html, homepageRef)
+    return editPrompt(pipelinePrompt, t, html, homepageRef)
   })
 
   const validIndices = calls.map((c, i) => (c ? i : -1)).filter((i) => i >= 0)
@@ -199,7 +204,8 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     timings[name] = Date.now()
   }
 
-  writeFileSync(join(workspace, 'prompt.txt'), prompt)
+  const pipelinePrompt = withLanguageEnforcementBlock(prompt, preferredLanguage)
+  writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
   sessionCtx.setPrompt(prompt)
 
   const indiaMode = detectIndiaMode(prompt, preferredLanguage)
@@ -218,13 +224,13 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   const specPromise = (async () => {
     const [designStats, detectStats] = await Promise.all([
-      generateDesignBrief(prompt, workspace, _log, indiaMode),
-      detectSiteType(prompt, _log),
+      generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
+      detectSiteType(pipelinePrompt, _log),
     ])
     tick('design_end')
     tick('detect_end')
     const ctxStats = await generateContext(
-      prompt,
+      pipelinePrompt,
       designStats.brief,
       detectStats.siteType,
       workspace,
@@ -232,7 +238,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     )
     tick('ctx_end')
     const siteSpecStats = await generateSiteSpec({
-      prompt,
+      prompt: pipelinePrompt,
       ctx: ctxStats.ctx,
       designBrief: designStats.brief,
       siteType: detectStats.siteType,
@@ -247,7 +253,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     const imageHints = await resolvePexelsImageHints({ prompt })
     try {
       const stats = await generateHomepage(
-        prompt,
+        pipelinePrompt,
         workspace,
         _log,
         sessionCtx,

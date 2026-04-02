@@ -9,15 +9,27 @@ import {
   statSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { BASE_DOMAIN } from '../config.js'
+import { BASE_DOMAIN, SUPPORTED_INDIAN_LANGUAGES } from '../config.js'
 import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
 import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deployments.js'
+import { normalizeSession, validateSession } from '../contracts/contracts.js'
 
 const sessions = new Map()
 let _sessionsDir = null
 const SESSION_META_FILE = '.session.json'
 const DEFAULT_PREFERRED_EXPORT_TARGET = 'html'
+const DEFAULT_PREFERRED_LANGUAGE = 'en'
+
+function normalizePreferredLanguage(value) {
+  const requested = String(value || '')
+    .trim()
+    .toLowerCase()
+  if (!requested || requested === 'en') return DEFAULT_PREFERRED_LANGUAGE
+  return SUPPORTED_INDIAN_LANGUAGES.some((language) => language.code === requested)
+    ? requested
+    : DEFAULT_PREFERRED_LANGUAGE
+}
 
 export function normalizePreferredExportTarget(value) {
   const target = String(value || '')
@@ -29,27 +41,42 @@ export function normalizePreferredExportTarget(value) {
 function readSessionMeta(workspace) {
   const metaPath = join(workspace, SESSION_META_FILE)
   if (!existsSync(metaPath)) {
-    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET, isPrivate: false }
+    return {
+      preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET,
+      preferredLanguage: DEFAULT_PREFERRED_LANGUAGE,
+      isPrivate: false,
+    }
   }
 
   try {
     const data = JSON.parse(readFileSync(metaPath, 'utf-8'))
     return {
       preferredExportTarget: normalizePreferredExportTarget(data?.preferredExportTarget),
+      preferredLanguage: normalizePreferredLanguage(data?.preferredLanguage),
       isPrivate: Boolean(data?.isPrivate),
     }
   } catch {
-    return { preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET, isPrivate: false }
+    return {
+      preferredExportTarget: DEFAULT_PREFERRED_EXPORT_TARGET,
+      preferredLanguage: DEFAULT_PREFERRED_LANGUAGE,
+      isPrivate: false,
+    }
   }
 }
 
 function writeSessionMeta(workspace, meta = {}) {
   const payload = {
     preferredExportTarget: normalizePreferredExportTarget(meta.preferredExportTarget),
+    preferredLanguage: normalizePreferredLanguage(meta.preferredLanguage),
     isPrivate: Boolean(meta.isPrivate),
   }
   writeFileSync(join(workspace, SESSION_META_FILE), JSON.stringify(payload, null, 2))
   return payload
+}
+
+export function getWorkspacePreferredLanguage(workspace) {
+  if (!workspace) return DEFAULT_PREFERRED_LANGUAGE
+  return readSessionMeta(workspace).preferredLanguage
 }
 
 function isSessionWorkspaceEntry(name) {
@@ -73,6 +100,7 @@ export function createSession(baseDir, prompt, userId, options = {}) {
   if (!existsSync(workspace)) mkdirSync(workspace, { recursive: true })
   const sessionMeta = writeSessionMeta(workspace, {
     preferredExportTarget: options?.preferredExportTarget,
+    preferredLanguage: options?.preferredLanguage,
     isPrivate: Boolean(options?.isPrivate),
   })
 
@@ -97,7 +125,7 @@ export function createSession(baseDir, prompt, userId, options = {}) {
   }
 
   const createdAt = Date.now()
-  const session = {
+  const baseSession = {
     id,
     workspace,
     prompt,
@@ -110,10 +138,15 @@ export function createSession(baseDir, prompt, userId, options = {}) {
     cost: null,
     alternativeDesign,
     preferredExportTarget: sessionMeta.preferredExportTarget,
+    preferredLanguage: sessionMeta.preferredLanguage,
     isPrivate: sessionMeta.isPrivate,
     themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
     wsClients: new Set(),
+  }
+  const session = normalizeSession(baseSession, { now: createdAt })
+  if (!validateSession(session).valid) {
+    throw new Error('Invalid session payload while creating session.')
   }
 
   // Persist createdAt to disk for recovery after restarts
@@ -242,7 +275,7 @@ export function getSession(id) {
   const sessionMeta = readSessionMeta(workspace)
 
   // Reconstruct session from disk
-  const session = {
+  const baseSession = {
     id,
     workspace,
     prompt,
@@ -255,11 +288,18 @@ export function getSession(id) {
     cost,
     alternativeDesign,
     preferredExportTarget: sessionMeta.preferredExportTarget,
+    preferredLanguage: sessionMeta.preferredLanguage,
     isPrivate: sessionMeta.isPrivate,
     themeOverride: readSessionThemeOverride(workspace),
     deployment: null,
     lastStatus: null,
     wsClients: new Set(),
+  }
+
+  const session = normalizeSession(baseSession, { now: Date.now() })
+  const normalized = validateSession(session)
+  if (!normalized.valid) {
+    return null
   }
 
   try {
@@ -347,6 +387,7 @@ export function getAllSessions(userId) {
         elapsed: s.elapsed ?? null,
         cost: s.cost ?? null,
         preferredExportTarget: s.preferredExportTarget ?? DEFAULT_PREFERRED_EXPORT_TARGET,
+        preferredLanguage: s.preferredLanguage ?? DEFAULT_PREFERRED_LANGUAGE,
         isPrivate: s.isPrivate ?? false,
       })
     }
@@ -356,12 +397,23 @@ export function getAllSessions(userId) {
   return validSessions
 }
 
-export function findSessionByPrompt(userId, promptText) {
+export function findSessionByPrompt(
+  userId,
+  promptText,
+  preferredLanguage = DEFAULT_PREFERRED_LANGUAGE,
+) {
   const needle = promptText.trim()
+  const normalizedPreferredLanguage = normalizePreferredLanguage(preferredLanguage)
 
   // Check in-memory sessions first
   for (const s of sessions.values()) {
-    if (s.userId === userId && s.prompt?.trim() === needle) return s
+    if (
+      s.userId === userId &&
+      s.prompt?.trim() === needle &&
+      normalizePreferredLanguage(s.preferredLanguage) === normalizedPreferredLanguage
+    ) {
+      return s
+    }
   }
 
   // Check disk sessions not yet loaded
@@ -370,7 +422,14 @@ export function findSessionByPrompt(userId, promptText) {
       for (const name of readdirSync(_sessionsDir)) {
         if (isSessionWorkspaceEntry(name) && !sessions.has(name)) {
           const s = getSession(name)
-          if (s && s.userId === userId && s.prompt?.trim() === needle) return s
+          if (
+            s &&
+            s.userId === userId &&
+            s.prompt?.trim() === needle &&
+            normalizePreferredLanguage(s.preferredLanguage) === normalizedPreferredLanguage
+          ) {
+            return s
+          }
         }
       }
     } catch {
@@ -399,6 +458,13 @@ export function setSessionPreferredExportTarget(session, preferredExportTarget) 
   const nextMeta = writeSessionMeta(session.workspace, { preferredExportTarget })
   session.preferredExportTarget = nextMeta.preferredExportTarget
   return session.preferredExportTarget
+}
+
+export function setSessionPreferredLanguage(session, preferredLanguage) {
+  if (!session?.workspace) return DEFAULT_PREFERRED_LANGUAGE
+  const nextMeta = writeSessionMeta(session.workspace, { preferredLanguage })
+  session.preferredLanguage = nextMeta.preferredLanguage
+  return session.preferredLanguage
 }
 
 export function claimSession(sessionId, newUserId) {
@@ -435,7 +501,9 @@ export function setSessionStatus(sessionId, status) {
   let meta = {}
   try {
     if (existsSync(metaFile)) meta = JSON.parse(readFileSync(metaFile, 'utf-8'))
-  } catch { /* */ }
+  } catch {
+    /* */
+  }
   meta.generationStatus = status
   writeFileSync(metaFile, JSON.stringify(meta, null, 2))
 }
@@ -456,9 +524,13 @@ export function getInterruptedSessions() {
             if (session) interrupted.push(session)
           }
         }
-      } catch { /* skip invalid */ }
+      } catch {
+        /* skip invalid */
+      }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return interrupted
 }
 

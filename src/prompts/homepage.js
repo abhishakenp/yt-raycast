@@ -70,7 +70,7 @@ BUILD RULES:
 - Load the fonts specified in the design system via Google Fonts <link> in <head>.
 - Inline SVG for all icons. NEVER emojis. NEVER icon CDNs.
 - NO hero images or screenshots for SaaS/landing pages. Typography and cards only.
-- If images are truly needed (ecommerce, portfolio), use Lorem Picsum: https://picsum.photos/seed/{seed}/{w}/{h}. NEVER placeholder.com or other services.
+- If images are needed (blog, ecommerce, portfolio), use provided Pexels lines (description before URL) and pick the URL whose description fits each card. Never put laptop or phone screen shots on animal or outdoor stories. If no good match exists, fallback to https://picsum.photos/seed/{seed}/{w}/{h}. NEVER placeholder.com or other services.
 
 DESIGN QUALITY \u2014 MUST FOLLOW:
 - Hero: NO images. Small pill badge (rounded-full, subtle dark bg + border) above headline. Massive headline (text-5xl md:text-7xl font-extrabold tracking-tight text-center). Subtitle in muted color, text-center, max-w-2xl mx-auto. ONE primary CTA (rounded-full, accent gradient bg, px-8 py-3).
