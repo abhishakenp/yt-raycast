@@ -663,7 +663,7 @@ export async function startServer(sessionsDir) {
       session = createSession(_sessionsDir, trimmedPrompt, null, {
         preferredExportTarget,
         preferredLanguage,
-        isPrivate: true,
+        isPrivate: false,
       })
 
       console.log(`[${ts}] GENERATE anon ip=${clientIp} session=${session.id}`)
