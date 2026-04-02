@@ -38,28 +38,31 @@ function renderStructuredData() {
 }
 
 function renderLogo() {
-  return `<div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#g1)" opacity="0.9" />
-        <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#g2)" opacity="0.8" />
-        <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#g2)" opacity="0.8" />
-        <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#g1)" />
-        <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7" />
-        <circle cx="26" cy="16" r="2" fill="#c4b5fd" />
-        <defs>
-          <linearGradient id="g1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#7c3aed" />
-            <stop offset="1" stop-color="#a78bfa" />
-          </linearGradient>
-          <linearGradient id="g2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#6d28d9" />
-            <stop offset="1" stop-color="#7c3aed" />
-          </linearGradient>
-        </defs>
-      </svg>
+  return `<div class="logo-block">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#g1)" opacity="0.9" />
+          <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#g2)" opacity="0.8" />
+          <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#g2)" opacity="0.8" />
+          <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#g1)" />
+          <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7" />
+          <circle cx="26" cy="16" r="2" fill="#c4b5fd" />
+          <defs>
+            <linearGradient id="g1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#7c3aed" />
+              <stop offset="1" stop-color="#a78bfa" />
+            </linearGradient>
+            <linearGradient id="g2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6d28d9" />
+              <stop offset="1" stop-color="#7c3aed" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="logo-text">SHIP FAST</span>
     </div>
-    <span class="logo-text">SHIP FAST</span>
+    <p class="logo-tagline" id="logo-tagline" aria-live="polite" aria-hidden="true"></p>
   </div>`
 }
 
@@ -242,7 +245,7 @@ export function renderHomePage() {
     </div>
 
     <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
-      <h2>Recent Sessions</h2>
+      <h2>See what other speedsters generated</h2>
       <ul class="session-list" id="session-list"></ul>
     </section>
 

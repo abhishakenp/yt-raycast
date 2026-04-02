@@ -223,7 +223,7 @@
     </div>
 
     <div class="sessions" id="sessions-section" style="display: none">
-      <h2>Recent Sessions</h2>
+      <h2>See what other speedsters generated</h2>
       <ul class="session-list" id="session-list"></ul>
     </div>
 
@@ -282,6 +282,60 @@
       let _auth = null
       let _currentUser = null
       let hasSessionResizeListener = false
+      let sessionItemPointerDown = null
+      let sessionListNavTimer = null
+      const sessionOpenDragThresholdSq = 64
+
+      const selectionSpansSessionItem = (item) => {
+        const sel = window.getSelection()
+        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false
+        if (!sel.toString().trim()) return false
+        return item.contains(sel.anchorNode) && item.contains(sel.focusNode)
+      }
+
+      const openSessionFromList = (id) => {
+        sessionStorage.setItem('sf_return_home', '1')
+        location.href = `/session/${id}`
+      }
+
+      document.getElementById('session-list')?.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return
+        const item = e.target.closest('.session-item')
+        sessionItemPointerDown = item
+          ? { id: item.dataset.id, x: e.clientX, y: e.clientY }
+          : null
+      })
+
+      document.getElementById('session-list')?.addEventListener('click', (e) => {
+        window.clearTimeout(sessionListNavTimer)
+        sessionListNavTimer = null
+        const item = e.target.closest('.session-item')
+        if (!item) return
+        const id = item.dataset.id
+        if (!id) return
+        if (e.target.closest('a[href]')) return
+        if (e.target.closest('button')) return
+        if (selectionSpansSessionItem(item)) return
+        if (
+          sessionItemPointerDown?.id === id &&
+          (e.clientX - sessionItemPointerDown.x) ** 2 +
+            (e.clientY - sessionItemPointerDown.y) ** 2 >
+            sessionOpenDragThresholdSq
+        ) {
+          return
+        }
+        if (e.target.closest('.session-info')) {
+          sessionListNavTimer = window.setTimeout(() => {
+            sessionListNavTimer = null
+            const live = document.querySelector(`.session-item[data-id="${id}"]`)
+            if (!live) return
+            if (selectionSpansSessionItem(live)) return
+            openSessionFromList(id)
+          }, 320)
+          return
+        }
+        openSessionFromList(id)
+      })
 
       async function initFirebase() {
         const cfg = await fetch('/api/config').then((r) => r.json())
@@ -547,7 +601,7 @@
           list.innerHTML = sessions
             .map(
               (s, idx) => `
-            <li class="session-item" data-id="${s.id}" onclick="sessionStorage.setItem('sf_return_home', '1'); location.href='/session/${s.id}'">
+            <li class="session-item" data-id="${s.id}">
               <div class="session-thumbnail">
                 ${
                   s.homepageReady

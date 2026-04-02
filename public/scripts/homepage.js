@@ -178,6 +178,7 @@ const languageSelect = document.getElementById('prompt-language')
 const promptLanguageRow = document.getElementById('prompt-language-row')
 const submitButton = document.getElementById('submit-btn')
 const submitButtonLabel = submitButton?.querySelector('.btn-label')
+const logoTagline = document.getElementById('logo-tagline')
 const SUBMIT_BTN_DEFAULT_LABEL = 'Generate'
 const generationCounter = document.getElementById('gen-counter')
 const promptPlaceholder = document.getElementById('prompt-placeholder')
@@ -321,6 +322,58 @@ const GENERATE_CTA_BY_LANG = {
   zh: '生成',
   ar: 'توليد',
   fa: 'تولید',
+}
+
+const SHIPFAST_TAGLINE_BY_LANG = {
+  hinglish: 'तेज़ शिप',
+  hi: 'तेज़ भेजें',
+  ta: 'விரைவாக அனுப்பு',
+  te: 'వేగంగా పంపు',
+  kn: 'ವೇಗವಾಗಿ ರವಾನಿಸಿ',
+  ml: 'വേഗത്തിൽ അയയ്ക്കുക',
+  bn: 'দ্রুত পাঠান',
+  mr: 'पटकन पाठवा',
+  gu: 'ઝડપથી મોકલો',
+  pa: 'ਤੇਜ਼ੀ ਨਾਲ ਭੇਜੋ',
+  or: 'ଶୀଘ୍ର ପଠାନ୍ତୁ',
+  as: 'দ্ৰুততেৰে পঠাওক',
+  ur: 'تیز بھیجیں',
+  mai: 'तेजी सँ पठाब',
+  kok: 'वेगान पाठयात',
+  mni: 'Ship Fast',
+  sat: 'ᱞᱚᱜᱚᱱ ᱯᱚᱛᱟᱹᱣ',
+  ks: 'ژٕ تٲزیٖ پٲٹٲیو',
+  doi: 'तेजी साँ पेजॊ',
+  brx: 'थांखो थांफाय',
+  sd: 'تڪي سان موڪليو',
+  sa: 'शीघ्रं प्रेषय',
+  ne: 'छिटो पठाउनुहोस्',
+  fr: 'Livraison rapide',
+  it: 'Spedizione veloce',
+  es: 'Envío veloz',
+  de: 'Schnell liefern',
+  nl: 'Snel verzenden',
+  pt: 'Envio rápido',
+  ru: 'Быстрая отправка',
+  pl: 'Szybka wysyłka',
+  tr: 'Hızlı gönder',
+  hu: 'Gyors szállítás',
+  cs: 'Rychlé odeslání',
+  sk: 'Rýchle odoslanie',
+  ro: 'Livrare rapidă',
+  el: 'Γρήγορη αποστολή',
+  sv: 'Snabb leverans',
+  da: 'Hurtig forsendelse',
+  fi: 'Nopea toimitus',
+  no: 'Rask forsendelse',
+  nb: 'Rask forsendelse',
+  nn: 'Rask forsendelse',
+  id: 'Kirim cepat',
+  ja: '迅速発送',
+  ko: '빠른 배송',
+  zh: '极速发货',
+  ar: 'شحن سريع',
+  fa: 'ارسال سریع',
 }
 
 const PROMPT_HINGLISH_LATIN = new Set(
@@ -527,6 +580,28 @@ function resetSubmitCtaLabel() {
   submitButton?.classList.remove('submit-btn--cta-shake')
 }
 
+function getLogoTaglineText(bcp47) {
+  const key = normalizeLanguageCode(bcp47)
+  if (!key || key === 'en') return ''
+  return SHIPFAST_TAGLINE_BY_LANG[key] || ''
+}
+
+function resetLogoTagline() {
+  if (!logoTagline) return
+  logoTagline.textContent = ''
+  logoTagline.setAttribute('aria-hidden', 'true')
+  logoTagline.classList.remove('logo-tagline--in', 'logo-tagline--settled')
+}
+
+function playLogoTaglineIn(text) {
+  if (!logoTagline) return
+  logoTagline.textContent = text
+  logoTagline.setAttribute('aria-hidden', 'false')
+  logoTagline.classList.remove('logo-tagline--settled', 'logo-tagline--in')
+  void logoTagline.offsetWidth
+  logoTagline.classList.add('logo-tagline--in')
+}
+
 function getGenerateCtaLabel(bcp47) {
   const key = normalizeLanguageCode(bcp47)
   if (!key) return SUBMIT_BTN_DEFAULT_LABEL
@@ -546,6 +621,7 @@ function syncPromptLanguageRowVisibility() {
   promptLanguageRow.classList.toggle('is-hidden', !show)
   if (!show) {
     resetSubmitCtaLabel()
+    resetLogoTagline()
     if (promptLanguageRowUnlocked) {
       focusLanguageOptions('en')
       languageSelect.value = 'en'
@@ -837,10 +913,20 @@ input.addEventListener('paste', (event) => {
       mergeLanguageOptionsSelect(bcp47)
       savePreferredLanguage(bcp47)
     }
-    if (!submitButtonLabel) return
-    submitButtonLabel.textContent = getGenerateCtaLabel(bcp47)
-    playSubmitCtaShake()
+    if (submitButtonLabel) {
+      submitButtonLabel.textContent = getGenerateCtaLabel(bcp47)
+      playSubmitCtaShake()
+    }
+    const tag = getLogoTaglineText(bcp47)
+    if (tag) playLogoTaglineIn(tag)
+    else resetLogoTagline()
   })()
+})
+
+logoTagline?.addEventListener('animationend', (event) => {
+  if (event.animationName !== 'logo-tagline-scale-in') return
+  logoTagline.classList.remove('logo-tagline--in')
+  logoTagline.classList.add('logo-tagline--settled')
 })
 
 submitButton?.addEventListener('animationend', (event) => {
@@ -925,6 +1011,59 @@ function clearAnonSessions() {
   localStorage.removeItem(ANON_SESSIONS_KEY)
 }
 
+let sessionItemPointerDown = null
+let sessionListNavTimer = null
+const SESSION_OPEN_DRAG_THRESHOLD_SQ = 64
+
+const selectionSpansSessionItem = (item) => {
+  const sel = window.getSelection()
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false
+  if (!sel.toString().trim()) return false
+  return item.contains(sel.anchorNode) && item.contains(sel.focusNode)
+}
+
+const openSessionFromList = (id) => {
+  sessionStorage.setItem('sf_return_home', '1')
+  location.href = `/session/${id}`
+}
+
+document.getElementById('session-list')?.addEventListener('pointerdown', (event) => {
+  if (event.button !== 0) return
+  const item = event.target.closest('.session-item')
+  sessionItemPointerDown = item ? { id: item.dataset.id, x: event.clientX, y: event.clientY } : null
+})
+
+document.getElementById('session-list')?.addEventListener('click', (event) => {
+  window.clearTimeout(sessionListNavTimer)
+  sessionListNavTimer = null
+  const item = event.target.closest('.session-item')
+  if (!item) return
+  const id = item.dataset.id
+  if (!id) return
+  if (event.target.closest('a[href]')) return
+  if (event.target.closest('button')) return
+  if (selectionSpansSessionItem(item)) return
+  if (
+    sessionItemPointerDown?.id === id &&
+    (event.clientX - sessionItemPointerDown.x) ** 2 +
+      (event.clientY - sessionItemPointerDown.y) ** 2 >
+      SESSION_OPEN_DRAG_THRESHOLD_SQ
+  ) {
+    return
+  }
+  if (event.target.closest('.session-info')) {
+    sessionListNavTimer = window.setTimeout(() => {
+      sessionListNavTimer = null
+      const live = document.querySelector(`.session-item[data-id="${id}"]`)
+      if (!live) return
+      if (selectionSpansSessionItem(live)) return
+      openSessionFromList(id)
+    }, 320)
+    return
+  }
+  openSessionFromList(id)
+})
+
 function renderSessions(sessions) {
   const section = document.getElementById('sessions-section')
   const list = document.getElementById('session-list')
@@ -951,7 +1090,7 @@ function renderSessions(sessions) {
   list.innerHTML = sessions
     .map(
       (session, index) => `
-        <li class="session-item" data-id="${session.id}" onclick="sessionStorage.setItem('sf_return_home', '1'); location.href='/session/${session.id}'">
+        <li class="session-item" data-id="${session.id}">
           <div class="session-thumbnail">
             ${
               session.homepageReady

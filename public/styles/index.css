@@ -183,6 +183,57 @@ textarea {
 }
 
 /* ─── Logo ─── */
+.logo-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  width: 100%;
+}
+.logo-block .logo {
+  margin-bottom: 0;
+}
+.logo-tagline {
+  display: block;
+  margin: 2px 0 0;
+  padding: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(167, 139, 250, 0.82);
+  text-align: center;
+  max-width: min(92vw, 540px);
+  line-height: 1.3;
+  min-height: 1.3em;
+  box-sizing: border-box;
+  transform-origin: center center;
+}
+.logo-tagline:empty {
+  visibility: hidden;
+}
+.logo-tagline:not(:empty):not(.logo-tagline--settled):not(.logo-tagline--in) {
+  opacity: 0;
+  transform: scale(0);
+}
+.logo-tagline.logo-tagline--settled {
+  opacity: 1;
+  transform: scale(1);
+}
+@keyframes logo-tagline-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.logo-tagline.logo-tagline--in {
+  animation: logo-tagline-scale-in 0.42s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+}
 .logo {
   display: flex;
   align-items: center;
@@ -458,6 +509,24 @@ textarea {
   }
 }
 
+@keyframes submit-btn-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 18px rgba(124, 58, 237, 0.38),
+      0 0 36px rgba(124, 58, 237, 0.14),
+      0 4px 20px rgba(109, 40, 217, 0.28);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 32px rgba(196, 181, 253, 0.65),
+      0 0 52px rgba(124, 58, 237, 0.28),
+      0 6px 28px rgba(109, 40, 217, 0.42);
+    filter: brightness(1.06);
+  }
+}
+
 .submit-btn {
   align-self: flex-end;
   padding: 16px 28px;
@@ -473,17 +542,21 @@ textarea {
   cursor: pointer;
   transition:
     opacity 0.2s,
-    transform 0.15s,
-    box-shadow 0.25s;
+    transform 0.15s;
   white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
-.submit-btn:hover {
-  opacity: 0.9;
-  box-shadow: 0 0 24px rgba(124, 58, 237, 0.3);
+
+.submit-btn:not(:disabled):not(.loading):not(.submit-btn--cta-shake) {
+  animation: submit-btn-glow 2.6s ease-in-out infinite;
+}
+
+.submit-btn:hover:not(:disabled):not(.loading):not(.submit-btn--cta-shake) {
+  opacity: 0.94;
+  animation-duration: 1.75s;
 }
 
 .submit-btn:active {
@@ -491,43 +564,43 @@ textarea {
 }
 
 @keyframes submit-cta-wiggle {
-  0% {
+  0%,
+  100% {
     transform: rotate(0deg);
   }
-  15% {
-    transform: rotate(-45deg);
+  18% {
+    transform: rotate(-9deg);
   }
-  30% {
-    transform: rotate(45deg);
+  36% {
+    transform: rotate(9deg);
   }
-  45% {
-    transform: rotate(-45deg);
+  52% {
+    transform: rotate(-5.5deg);
   }
-  60% {
-    transform: rotate(45deg);
+  68% {
+    transform: rotate(5.5deg);
   }
-  100% {
+  84% {
     transform: rotate(0deg);
   }
 }
 
 .submit-btn.submit-btn--cta-shake {
   transform-origin: center center;
-  animation: submit-cta-wiggle 0.55s ease-in-out;
-}
-
-.submit-btn.submit-btn--cta-shake:active {
-  animation: submit-cta-wiggle 0.55s ease-in-out;
+  animation: submit-cta-wiggle 0.3s cubic-bezier(0.22, 0.82, 0.3, 1.12) 0.11s 1 forwards;
 }
 
 .submit-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  animation: none;
+  box-shadow: none;
+  filter: none;
 }
 
 .submit-btn.submit-btn--cta-shake:disabled {
-  animation: submit-cta-wiggle 0.55s ease-in-out;
+  animation: submit-cta-wiggle 0.3s cubic-bezier(0.22, 0.82, 0.3, 1.12) 0.11s 1 forwards;
 }
 
 .submit-btn .zap-icon {
@@ -996,6 +1069,8 @@ textarea {
   flex-direction: column;
   gap: 6px;
   border-top: 1px solid #2d2a3e;
+  user-select: text;
+  cursor: text;
 }
 .session-prompt {
   overflow: hidden;
