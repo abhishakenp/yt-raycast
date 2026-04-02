@@ -290,7 +290,7 @@ export async function startServer(sessionsDir) {
 
     const shouldReload = (filename) => {
       const lower = String(filename).toLowerCase()
-      if (lower === 'dashboard.html' || lower === 'index.html') return true
+      if (lower === 'dashboard.html') return true
       const fileExt = extname(lower)
       return supportedReloadExts.has(fileExt)
     }
@@ -444,7 +444,7 @@ export async function startServer(sessionsDir) {
 
   // ─── Prompt page (landing) ────────────────────────────────
   app.get('/', (_req, res) => {
-    res.type('html').send(renderHomePage())
+    res.type('html').set('X-SF-Home-Source', 'ssr').send(renderHomePage())
   })
 
   // Pricing page
