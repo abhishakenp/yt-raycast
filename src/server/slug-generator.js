@@ -121,7 +121,7 @@ async function generateWithLLM(context) {
       temperature: 0.8,
       maxTokens: 30,
     })
-    const slug = parseSlugFromText(response)
+    const slug = parseSlugFromText(response?.content ?? '')
     if (!slug || (attempt === 0 && isSlugTaken(slug))) continue
     if (!isSlugTaken(slug)) return slug
   }
