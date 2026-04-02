@@ -260,7 +260,14 @@
         </button>
         <span class="toast-check">&#10003;</span>
         <span class="toast-text">Done in <strong id="toast-elapsed">0s</strong></span>
-        <button class="toast-cta" id="toast-cta">Generate another</button>
+        <div class="toast-actions">
+          <button class="toast-cta" id="toast-deploy-btn" type="button">Deploy</button>
+          <button class="toast-cta" id="toast-cta">Generate another</button>
+        </div>
+      </div>
+      <div class="toast-deploy-state" id="toast-deploy-state" hidden>
+        <a id="deployment-link" class="deployment-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+        <button class="toast-cta toast-cta-subtle" id="deployment-copy-btn" type="button">Copy URL</button>
       </div>
     </div>
 
@@ -406,6 +413,8 @@
       const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}?session=${SESSION_ID}`
       const TYPING_SPEED_MS = 40
       const PAYMENT_COUNTRY_HINT = detectCountryHint()
+      let deploymentState = null
+      let deployBusy = false
 
       function detectCountryHint() {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''
@@ -426,6 +435,57 @@
           headers['X-Ship-Fast-Country-Hint'] = PAYMENT_COUNTRY_HINT
         }
         return fetch(url, { ...options, headers })
+      }
+
+      function formatDeploymentUrl(url) {
+        return url ? String(url) : ''
+      }
+
+      function renderDeploymentState(deployment) {
+        const area = document.getElementById('toast-deploy-state')
+        const link = document.getElementById('deployment-link')
+        const btn = document.getElementById('toast-deploy-btn')
+        const cta = document.getElementById('toast-cta')
+        if (!area || !link || !btn || !cta) return
+
+        deploymentState = deployment || null
+
+        if (!deploymentState?.url) {
+          area.hidden = true
+          btn.hidden = false
+          btn.disabled = false
+          btn.textContent = 'Deploy'
+          return
+        }
+
+        const url = formatDeploymentUrl(deploymentState.url)
+        link.textContent = url
+        link.href = url.startsWith('http') ? url : `https://${url}`
+        area.hidden = false
+        btn.hidden = true
+        cta.hidden = false
+      }
+
+      async function deploySite() {
+        if (deployBusy) return
+        const btn = document.getElementById('toast-deploy-btn')
+        if (!btn || !SESSION_ID) return
+
+        deployBusy = true
+        btn.disabled = true
+        btn.textContent = 'Deploying...'
+        try {
+          const res = await apiFetch(`/api/sessions/${SESSION_ID}/deploy`, { method: 'POST' })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || 'Deployment failed')
+          renderDeploymentState({ slug: data.slug, url: data.url, deployedAt: data.deployedAt })
+        } catch (error) {
+          alert(error?.message || 'Unable to deploy')
+          btn.disabled = false
+          btn.textContent = 'Deploy'
+        } finally {
+          deployBusy = false
+        }
       }
 
       // ─── Audio unlock: ensure launch SFX can play ──────────────
@@ -458,6 +518,21 @@
             launchSfx.currentTime = 0
           })
           .catch(() => {})
+      }
+
+      function setNewPromptFromExample(text) {
+        const overlay = document.getElementById('new-prompt-overlay')
+        const input = document.getElementById('new-prompt-input')
+        if (!overlay || !input) return
+        overlay.classList.add('visible')
+        input.value = text || ''
+        input.focus()
+      }
+
+      function isTextInputTarget(target) {
+        if (!target) return false
+        const tag = target.tagName?.toLowerCase()
+        return tag === 'input' || tag === 'textarea' || target.isContentEditable
       }
 
       // ─── Debug mode (?debug=1) ─────────────────────────────────
@@ -541,6 +616,11 @@
       let reconnectTimer = null
       let leavingDashboard = false
       let stripeCheckoutReady = false
+      const DEV_PROMPT_EXAMPLES = [
+        'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
+        'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
+        'Generate an event landing page for a music festival with ticket tiers, schedule timeline, and hero CTA.'
+      ]
 
       function cleanupRealtime() {
         if (reconnectTimer) {
@@ -1983,6 +2063,10 @@
               setActiveThemeOverride(ev.theme || null)
               break
 
+            case 'deployed':
+              renderDeploymentState({ slug: ev.slug, url: ev.url, deployedAt: ev.deployedAt })
+              break
+
             case 'run_completed':
               document.getElementById('phase-text').textContent = `Done in ${ev.elapsed}s`
               document.getElementById('toast-elapsed').textContent = ev.elapsed + 's'
@@ -2108,6 +2192,28 @@
           closeExportMenu()
           closeGitHubMenu()
           closePaymentModal()
+          return
+        }
+
+        if (!isDev || isTextInputTarget(event.target)) return
+
+        if (!event.metaKey && !event.ctrlKey) return
+
+        if (event.key === '1' || event.code === 'Digit1') {
+          setNewPromptFromExample(DEV_PROMPT_EXAMPLES[0])
+          event.preventDefault()
+          return
+        }
+
+        if ((event.key === '2' || event.code === 'Digit2') && DEV_PROMPT_EXAMPLES[1]) {
+          setNewPromptFromExample(DEV_PROMPT_EXAMPLES[1])
+          event.preventDefault()
+          return
+        }
+
+        if ((event.key === '3' || event.code === 'Digit3') && DEV_PROMPT_EXAMPLES[2]) {
+          setNewPromptFromExample(DEV_PROMPT_EXAMPLES[2])
+          event.preventDefault()
         }
       })
 
@@ -2118,6 +2224,18 @@
         .then((session) => {
           if (session.prompt && !introPromptText) {
             introPromptText = session.prompt
+          }
+          if (session.deployment) {
+            renderDeploymentState(session.deployment)
+          } else {
+            void apiFetch(`/api/sessions/${SESSION_ID}/deploy`).then(async (r) => {
+              if (!r.ok) return null
+              return r.json()
+            }).then((res) => {
+              if (res?.deployed && res?.url) {
+                renderDeploymentState({ slug: res.slug, url: res.url, deployedAt: res.deployedAt })
+              }
+            })
           }
           const isDone = session.taskCount > 0 && session.done === session.taskCount
           if (isDone) {
@@ -2144,6 +2262,15 @@
         const overlay = document.getElementById('new-prompt-overlay')
         overlay.classList.add('visible')
         setTimeout(() => document.getElementById('new-prompt-input').focus(), 400)
+      })
+      document.getElementById('toast-deploy-btn').addEventListener('click', deploySite)
+      document.getElementById('deployment-copy-btn').addEventListener('click', async () => {
+        if (!deploymentState?.url) return
+        try {
+          await navigator.clipboard.writeText(deploymentState.url)
+        } catch {
+          alert('Failed to copy URL')
+        }
       })
 
       document.getElementById('new-prompt-cancel').addEventListener('click', () => {

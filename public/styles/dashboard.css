@@ -1605,6 +1605,7 @@ body.dashboard-active {
 .toast-content {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 14px 24px;
   background: rgba(15, 13, 26, 0.92);
@@ -1676,6 +1677,46 @@ body.dashboard-active {
 }
 .toast-cta:active {
   transform: scale(0.97);
+}
+.toast-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast-cta-subtle {
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(196, 181, 253, 0.35);
+  color: #ddd7f8;
+}
+.toast-cta-subtle:hover {
+  box-shadow: none;
+  opacity: 1;
+  background: rgba(124, 58, 237, 0.22);
+}
+.toast-deploy-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid #2d2a3e;
+  border-radius: 12px;
+  background: rgba(17, 14, 32, 0.7);
+}
+.deployment-link {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #c4b5fd;
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+.deployment-link:hover {
+  color: #ddd7f8;
+  text-decoration: underline;
 }
 
 /* ─── New prompt overlay ─── */

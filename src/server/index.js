@@ -2,7 +2,7 @@ import { createServer as createHttpServer } from 'node:http'
 import { extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
-import { DASHBOARD_PORT } from '../config.js'
+import { BASE_DOMAIN, DASHBOARD_PORT } from '../config.js'
 import {
   createSession,
   getSession,
@@ -43,6 +43,8 @@ import {
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { pushSessionToGitHub } from './github.js'
+import { getDeploymentBySlug, getDeploymentBySessionId, initDeployments, registerDeployment } from './deployments.js'
+import { generateSlug } from './slug-generator.js'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -231,6 +233,7 @@ setInterval(
 export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
   initSessionDir(sessionsDir)
+  initDeployments(sessionsDir)
   initPaymentStore(sessionsDir)
   startPaymentListeners()
 
@@ -300,6 +303,36 @@ export async function startServer(sessionsDir) {
 
   const app = express()
   app.set('trust proxy', true)
+
+  const getSessionSubdomain = (req) => {
+    const host = String(req.hostname || req.headers.host?.split(':')[0] || '').toLowerCase()
+    const bases = [BASE_DOMAIN, 'localhost', 'lvh.me']
+    for (const base of bases) {
+      if (!base) continue
+      if (host === base || host === `www.${base}`) continue
+      const suffix = `.${base}`
+      if (!host.endsWith(suffix)) continue
+      const subdomain = host.slice(0, -suffix.length)
+      if (!subdomain) continue
+      return subdomain
+    }
+    return ''
+  }
+
+  app.use((req, res, next) => {
+    const subdomain = getSessionSubdomain(req)
+    if (!subdomain) return next()
+
+    const deployment = getDeploymentBySlug(subdomain)
+    if (!deployment) return res.status(404).send('Site not found')
+
+    const session = getSession(deployment.sessionId)
+    if (!session) return res.status(404).send('Site not found')
+
+    express.static(session.workspace, { extensions: ['html'] })(req, res, () => {
+      res.status(404).send('Site not found')
+    })
+  })
 
   app.use('/api', (_req, res, next) => {
     setNoIndexHeaders(res)
@@ -768,6 +801,7 @@ export async function startServer(sessionsDir) {
       id: session.id,
       prompt: session.prompt,
       createdAt: session.createdAt,
+      deployment: session.deployment || null,
       homepageReady: session.homepageReady,
       siteSpecReady: session.siteSpecReady ?? false,
       preferredExportTarget: session.preferredExportTarget || 'html',
@@ -777,6 +811,81 @@ export async function startServer(sessionsDir) {
       taskCount: session.tasks.length,
       done: session.tasks.filter((t) => t.status === 'DONE').length,
       isAnonymous: !session.userId,
+    })
+  })
+
+  app.post('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    if (session.isPrivate && session.userId && req.user?.uid !== session.userId) {
+      return res.status(403).json({ error: 'Forbidden' })
+    }
+
+    let deployment = session.deployment || getDeploymentBySessionId(session.id)
+    if (!deployment) {
+      let projectContext = {}
+      try {
+        const contextPath = join(session.workspace, 'project-context.json')
+        if (existsSync(contextPath)) projectContext = JSON.parse(readFileSync(contextPath, 'utf-8'))
+      } catch {}
+      let slug
+      try {
+        slug = await generateSlug(projectContext)
+      } catch {
+        return res.status(500).json({ error: 'Failed to generate deployment slug' })
+      }
+      const created = registerDeployment(slug, session.id)
+      const url = `https://${created.slug}.${BASE_DOMAIN}`
+      deployment = {
+        slug: created.slug,
+        url,
+        deployedAt: created.deployedAt,
+      }
+      session.deployment = deployment
+      try {
+        writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(deployment, null, 2))
+      } catch {}
+      const state = makeSessionState(session)
+      state.broadcast({ type: 'deployed', slug: deployment.slug, url: deployment.url })
+    } else if (!deployment.url) {
+      deployment = { ...deployment, url: `https://${deployment.slug}.${BASE_DOMAIN}` }
+      session.deployment = deployment
+    }
+
+    res.json({
+      ok: true,
+      slug: deployment.slug,
+      url: deployment.url,
+      deployedAt: deployment.deployedAt,
+    })
+  })
+
+  app.get('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    if (session.isPrivate && session.userId && req.user?.uid !== session.userId) {
+      return res.status(403).json({ error: 'Forbidden' })
+    }
+
+    const deployment = session.deployment || getDeploymentBySessionId(session.id)
+    if (!deployment) return res.json({ deployed: false })
+    const response = deployment.url
+      ? deployment
+      : { ...deployment, url: `https://${deployment.slug}.${BASE_DOMAIN}` }
+    if (!deployment.url && response.url) {
+      session.deployment = response
+      try {
+        writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(response, null, 2))
+      } catch {}
+    }
+
+    res.json({
+      deployed: true,
+      slug: response.slug,
+      url: response.url,
+      deployedAt: response.deployedAt,
     })
   })
 

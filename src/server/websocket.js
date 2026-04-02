@@ -20,7 +20,7 @@ export function setupWebSocket(httpServer) {
     session.wsClients.add(ws)
 
     // Send current state to newly connected client
-    const { prompt, lastStatus, tasks, homepageReady, siteSpecReady, alternativeDesign, themeOverride } = {
+    const { prompt, lastStatus, tasks, homepageReady, siteSpecReady, alternativeDesign, themeOverride, deployment } = {
       prompt: session.prompt,
       lastStatus: session.lastStatus,
       tasks: session.tasks,
@@ -28,6 +28,7 @@ export function setupWebSocket(httpServer) {
       siteSpecReady: session.siteSpecReady,
       alternativeDesign: session.alternativeDesign,
       themeOverride: session.themeOverride,
+      deployment: session.deployment,
     }
     if (prompt) ws.send(JSON.stringify({ type: 'prompt', text: prompt }))
     if (lastStatus) ws.send(JSON.stringify(lastStatus))
@@ -37,6 +38,7 @@ export function setupWebSocket(httpServer) {
     if (alternativeDesign)
       ws.send(JSON.stringify({ type: 'alternative_design_ready', design: alternativeDesign }))
     if (themeOverride) ws.send(JSON.stringify({ type: 'theme_override_loaded', theme: themeOverride }))
+    if (deployment?.url) ws.send(JSON.stringify({ type: 'deployed', slug: deployment.slug, url: deployment.url }))
 
     ws.on('close', () => {
       session.wsClients.delete(ws)

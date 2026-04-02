@@ -11,6 +11,7 @@ import {
 import { join } from 'node:path'
 import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
 import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
+import { removeDeploymentBySessionId } from './deployments.js'
 
 const sessions = new Map()
 let _sessionsDir = null
@@ -239,9 +240,25 @@ export function getSession(id) {
     preferredExportTarget: sessionMeta.preferredExportTarget,
     isPrivate: sessionMeta.isPrivate,
     themeOverride: readSessionThemeOverride(workspace),
+    deployment: null,
     lastStatus: null,
     wsClients: new Set(),
   }
+
+  try {
+    const deploymentPath = join(workspace, 'deploy.json')
+    if (existsSync(deploymentPath)) {
+      const deployData = JSON.parse(readFileSync(deploymentPath, 'utf-8'))
+      const deployedAt = Number(deployData?.deployedAt)
+      if (deployData?.slug && deployData?.url && Number.isFinite(deployedAt)) {
+        session.deployment = {
+          slug: String(deployData.slug),
+          url: String(deployData.url),
+          deployedAt,
+        }
+      }
+    }
+  } catch {}
 
   sessions.set(id, session)
   return session
@@ -295,6 +312,7 @@ export function getAllSessions(userId) {
         id: s.id,
         prompt: s.prompt,
         createdAt: s.createdAt,
+        deployment: s.deployment || null,
         taskCount: s.tasks.length,
         done: s.tasks.filter((t) => t.status === 'DONE').length,
         homepageReady: s.homepageReady ?? false,
@@ -345,6 +363,7 @@ export function deleteSession(id) {
       /* ignore */
     }
   }
+  removeDeploymentBySessionId(id)
   sessions.delete(id)
 }
 
