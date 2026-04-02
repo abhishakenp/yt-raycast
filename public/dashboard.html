@@ -429,11 +429,15 @@
         return ''
       }
 
-      function apiFetch(url, options = {}) {
+      async function apiFetch(url, options = {}) {
         const headers = { ...(options.headers || {}) }
         if (PAYMENT_COUNTRY_HINT === 'IN') {
           headers['X-Ship-Fast-Country-Hint'] = PAYMENT_COUNTRY_HINT
         }
+        try {
+          const token = await window.shipFastDashboardAuth?.getCurrentIdToken?.()
+          if (token) headers.Authorization = `Bearer ${token}`
+        } catch {}
         return fetch(url, { ...options, headers })
       }
 
@@ -464,6 +468,7 @@
         area.hidden = false
         btn.hidden = true
         cta.hidden = false
+        syncPreviewChrome()
       }
 
       async function deploySite() {
@@ -699,6 +704,18 @@
         const chrome = document.querySelector('.browser-chrome')
         if (!chrome) return
         chrome.classList.toggle('is-preview-ready', homepageReady)
+        const urlText = document.getElementById('url-text')
+        const statusText = document.getElementById('status-text')
+        if (urlText) {
+          if (deploymentState?.url) urlText.textContent = deploymentState.url.replace(/^https?:\/\//, '')
+          else if (previewLoaded || homepageReady) urlText.textContent = new URL(PREVIEW_BASE).pathname
+          else urlText.textContent = window.location.host
+        }
+        if (statusText) {
+          if (deploymentState?.url) statusText.textContent = 'Deployed'
+          else if (previewLoaded) statusText.textContent = 'Live'
+          else statusText.textContent = 'Preview'
+        }
       }
 
       function setActiveThemeOverride(theme) {
@@ -1920,8 +1937,7 @@
         iframe.src = PREVIEW_BASE
         iframe.onload = () => {
           previewLoaded = true
-          document.getElementById('url-text').textContent = new URL(PREVIEW_BASE).pathname
-          document.getElementById('status-text').textContent = 'Live'
+          syncPreviewChrome()
           syncPreviewTheme()
         }
       }

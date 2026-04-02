@@ -92,6 +92,12 @@ async function authFetch(url, options = {}) {
   return fetch(url, { ...options, headers })
 }
 
+async function getCurrentIdToken() {
+  await ready
+  if (!currentUser) return ''
+  return currentUser.getIdToken()
+}
+
 async function pushExportToGitHub(sessionId, target) {
   const githubAccessToken = await ensureGithubRepoAccessToken()
   const response = await authFetch(`/api/sessions/${sessionId}/github/push`, {
@@ -117,4 +123,9 @@ async function pushExportToGitHub(sessionId, target) {
 window.shipFastDashboardGithub = {
   ready,
   pushExportToGitHub,
+}
+
+window.shipFastDashboardAuth = {
+  ready,
+  getCurrentIdToken,
 }

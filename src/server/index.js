@@ -397,6 +397,19 @@ export async function startServer(sessionsDir) {
     next()
   }
 
+  function ensureDeploymentAccess(req, res, session) {
+    if (!session?.userId) return true
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' })
+      return false
+    }
+    if (session.userId !== req.user.uid) {
+      res.status(403).json({ error: 'Forbidden' })
+      return false
+    }
+    return true
+  }
+
   // ─── Public: Firebase client config ──────────────────────
   app.get('/api/config', (_req, res) => {
     res.json({
@@ -817,10 +830,7 @@ export async function startServer(sessionsDir) {
   app.post('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-
-    if (session.isPrivate && session.userId && req.user?.uid !== session.userId) {
-      return res.status(403).json({ error: 'Forbidden' })
-    }
+    if (!ensureDeploymentAccess(req, res, session)) return
 
     let deployment = session.deployment || getDeploymentBySessionId(session.id)
     if (!deployment) {
@@ -864,10 +874,7 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-
-    if (session.isPrivate && session.userId && req.user?.uid !== session.userId) {
-      return res.status(403).json({ error: 'Forbidden' })
-    }
+    if (!ensureDeploymentAccess(req, res, session)) return
 
     const deployment = session.deployment || getDeploymentBySessionId(session.id)
     if (!deployment) return res.json({ deployed: false })

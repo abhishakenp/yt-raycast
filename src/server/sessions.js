@@ -9,9 +9,10 @@ import {
   statSync,
 } from 'node:fs'
 import { join } from 'node:path'
+import { BASE_DOMAIN } from '../config.js'
 import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
 import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
-import { removeDeploymentBySessionId } from './deployments.js'
+import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deployments.js'
 
 const sessions = new Map()
 let _sessionsDir = null
@@ -49,6 +50,17 @@ function writeSessionMeta(workspace, meta = {}) {
   }
   writeFileSync(join(workspace, SESSION_META_FILE), JSON.stringify(payload, null, 2))
   return payload
+}
+
+function isSessionWorkspaceEntry(name) {
+  const entry = String(name || '')
+  if (!entry || entry.startsWith('.') || entry.startsWith('_') || !_sessionsDir) return false
+
+  try {
+    return statSync(join(_sessionsDir, entry)).isDirectory()
+  } catch {
+    return false
+  }
 }
 
 export function initSessionDir(dir) {
@@ -132,6 +144,11 @@ export function getSession(id) {
   if (!_sessionsDir) return null
   const workspace = join(_sessionsDir, id)
   if (!existsSync(workspace)) return null
+  try {
+    if (!statSync(workspace).isDirectory()) return null
+  } catch {
+    return null
+  }
 
   // Load alternativeDesign from file
   let alternativeDesign = null
@@ -259,6 +276,16 @@ export function getSession(id) {
       }
     }
   } catch {}
+  if (!session.deployment) {
+    const mappedDeployment = getDeploymentBySessionId(id)
+    if (mappedDeployment) {
+      session.deployment = {
+        slug: mappedDeployment.slug,
+        url: `https://${mappedDeployment.slug}.${BASE_DOMAIN}`,
+        deployedAt: mappedDeployment.deployedAt,
+      }
+    }
+  }
 
   sessions.set(id, session)
   return session
@@ -269,7 +296,7 @@ export function getAllSessions(userId) {
   if (_sessionsDir && existsSync(_sessionsDir)) {
     try {
       for (const name of readdirSync(_sessionsDir)) {
-        if (!sessions.has(name)) getSession(name)
+        if (isSessionWorkspaceEntry(name) && !sessions.has(name)) getSession(name)
       }
     } catch {
       /* ignore */
@@ -341,7 +368,7 @@ export function findSessionByPrompt(userId, promptText) {
   if (_sessionsDir && existsSync(_sessionsDir)) {
     try {
       for (const name of readdirSync(_sessionsDir)) {
-        if (!sessions.has(name)) {
+        if (isSessionWorkspaceEntry(name) && !sessions.has(name)) {
           const s = getSession(name)
           if (s && s.userId === userId && s.prompt?.trim() === needle) return s
         }
@@ -418,6 +445,7 @@ export function getInterruptedSessions() {
   if (!_sessionsDir || !existsSync(_sessionsDir)) return interrupted
   try {
     for (const name of readdirSync(_sessionsDir)) {
+      if (!isSessionWorkspaceEntry(name)) continue
       const workspace = join(_sessionsDir, name)
       const metaFile = join(workspace, SESSION_META_FILE)
       try {
