@@ -43,7 +43,12 @@ import {
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { pushSessionToGitHub } from './github.js'
-import { getDeploymentBySlug, getDeploymentBySessionId, initDeployments, registerDeployment } from './deployments.js'
+import {
+  getDeploymentBySlug,
+  getDeploymentBySessionId,
+  initDeployments,
+  registerDeployment,
+} from './deployments.js'
 import { generateSlug } from './slug-generator.js'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
@@ -65,6 +70,14 @@ const MAX_PER_IP_AUTHED = 30
 const MAX_FREE_PER_IP_MONTHLY = 15
 
 const MAX_ANON_PER_DAY = 2 // per day for anonymous (unauthenticated) users — then auth wall
+
+// Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
+const WHITELISTED_IPS = new Set(
+  (process.env.WHITELIST_IPS || '31.165.224.115,49.37.65.246')
+    .split(',')
+    .map((ip) => ip.trim())
+    .filter(Boolean),
+)
 
 const userHits = new Map() // uid -> [timestamp, ...]
 const ipHits = new Map() // ip -> [timestamp, ...]
@@ -283,13 +296,9 @@ export async function startServer(sessionsDir) {
 
     const watchTarget = (target) => {
       try {
-        watch(
-          target,
-          { persistent: true },
-          (_eventType, filename) => {
-            if (filename && shouldReload(filename)) scheduleReload()
-          },
-        )
+        watch(target, { persistent: true }, (_eventType, filename) => {
+          if (filename && shouldReload(filename)) scheduleReload()
+        })
       } catch {}
     }
 
@@ -474,7 +483,7 @@ export async function startServer(sessionsDir) {
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     const ts = new Date().toISOString()
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp)
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     let session
 
@@ -510,81 +519,80 @@ export async function startServer(sessionsDir) {
       const monthlyLimit = isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
 
       if (!skipRateLimits) {
-      // Monthly cap check
-      if (!checkRateLimit(req.user.uid, userMonthlyHits, monthlyLimit, MONTHLY_WINDOW_MS)) {
-        console.log(
-          `[${ts}] MONTHLY_LIMIT user=${req.user.uid} ip=${clientIp} monthly=${userMonthly} limit=${monthlyLimit}`,
-        )
-        if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-          fetch(process.env.SLACK_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text: `\ud83d\udeab *Monthly limit reached* (${monthlyLimit}/month):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
-            }),
-          }).catch(() => {})
-        }
-        return res
-          .status(429)
-          .json({
+        // Monthly cap check
+        if (!checkRateLimit(req.user.uid, userMonthlyHits, monthlyLimit, MONTHLY_WINDOW_MS)) {
+          console.log(
+            `[${ts}] MONTHLY_LIMIT user=${req.user.uid} ip=${clientIp} monthly=${userMonthly} limit=${monthlyLimit}`,
+          )
+          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+            fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `\ud83d\udeab *Monthly limit reached* (${monthlyLimit}/month):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
+              }),
+            }).catch(() => {})
+          }
+          return res.status(429).json({
             error: `Limit reached: max ${monthlyLimit} generations per rolling 30 days. Need more? Contact us at https://x.com/LivioGama`,
             remaining: 0,
           })
-      }
-
-      // 10-min rate limit per user
-      if (!checkRateLimit(req.user.uid, userHits, MAX_PER_USER)) {
-        console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=user_10min`)
-        if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-          fetch(process.env.SLACK_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-            }),
-          }).catch(() => {})
         }
-        return res.status(429).json({
-          error: 'Rate limit: max 5 generations per 10 minutes. Please wait.',
-          remaining: 0,
-        })
-      }
 
-      // 10-min rate limit per IP
-      if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP_AUTHED)) {
-        console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=ip_10min`)
-        if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-          fetch(process.env.SLACK_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_AUTHED}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-            }),
-          }).catch(() => {})
+        // 10-min rate limit per user
+        if (!checkRateLimit(req.user.uid, userHits, MAX_PER_USER)) {
+          console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=user_10min`)
+          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+            fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+              }),
+            }).catch(() => {})
+          }
+          return res.status(429).json({
+            error: 'Rate limit: max 5 generations per 10 minutes. Please wait.',
+            remaining: 0,
+          })
         }
-        return res
-          .status(429)
-          .json({ error: 'Rate limit: too many requests from this IP. Please wait.', remaining: 0 })
-      }
 
-      // IP-level monthly cap for free users (multi-account abuse prevention)
-      if (
-        !isSubscriber &&
-        !checkRateLimit(clientIp, ipMonthlyHits, MAX_FREE_PER_IP_MONTHLY, MONTHLY_WINDOW_MS)
-      ) {
-        return res.status(429).json({
-          error: 'Too many generations from this network. Subscribe for higher limits.',
-          remaining: 0,
-        })
-      }
+        // 10-min rate limit per IP
+        if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP_AUTHED)) {
+          console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=ip_10min`)
+          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+            fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_AUTHED}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+              }),
+            }).catch(() => {})
+          }
+          return res.status(429).json({
+            error: 'Rate limit: too many requests from this IP. Please wait.',
+            remaining: 0,
+          })
+        }
 
-      // Concurrent generation limit
-      if ((activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER) {
-        return res.status(429).json({
-          error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
-          remaining: 0,
-        })
-      }
+        // IP-level monthly cap for free users (multi-account abuse prevention)
+        if (
+          !isSubscriber &&
+          !checkRateLimit(clientIp, ipMonthlyHits, MAX_FREE_PER_IP_MONTHLY, MONTHLY_WINDOW_MS)
+        ) {
+          return res.status(429).json({
+            error: 'Too many generations from this network. Subscribe for higher limits.',
+            remaining: 0,
+          })
+        }
+
+        // Concurrent generation limit
+        if ((activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER) {
+          return res.status(429).json({
+            error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
+            remaining: 0,
+          })
+        }
       }
 
       // Non-subscribers get private sessions by default
@@ -611,36 +619,34 @@ export async function startServer(sessionsDir) {
       console.log(`[${ts}] REQ anon ip=${clientIp} prompt="${trimmedPrompt.slice(0, 80)}"`)
 
       if (!skipRateLimits) {
-      // Daily limit per IP for anonymous users — sign-in wall after 2
-      if (!checkRateLimit(clientIp, anonIpDailyHits, MAX_ANON_PER_DAY, DAILY_WINDOW_MS)) {
-        console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp}`)
-        return res.status(429).json({
-          error: `Sign in to keep generating. Free anonymous users get ${MAX_ANON_PER_DAY} generations per day.`,
-          remaining: 0,
-          code: 'ANON_DAILY_LIMIT',
-        })
-      }
+        // Daily limit per IP for anonymous users — sign-in wall after 2
+        if (!checkRateLimit(clientIp, anonIpDailyHits, MAX_ANON_PER_DAY, DAILY_WINDOW_MS)) {
+          console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp}`)
+          return res.status(429).json({
+            error: `Sign in to keep generating. Free anonymous users get ${MAX_ANON_PER_DAY} generations per day.`,
+            remaining: 0,
+            code: 'ANON_DAILY_LIMIT',
+          })
+        }
 
-      // 10-min rate limit per IP
-      if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
-        console.log(`[${ts}] RATE_LIMIT anon ip=${clientIp} reason=ip_10min`)
-        return res
-          .status(429)
-          .json({
+        // 10-min rate limit per IP
+        if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
+          console.log(`[${ts}] RATE_LIMIT anon ip=${clientIp} reason=ip_10min`)
+          return res.status(429).json({
             error: 'Rate limit: too many requests from this IP. Please wait.',
             remaining: 0,
             code: 'ANON_IP_RATE_LIMIT',
           })
-      }
+        }
 
-      // Concurrent generation limit
-      if ((activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER) {
-        return res.status(429).json({
-          error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
-          remaining: 0,
-          code: 'ANON_CONCURRENT_LIMIT',
-        })
-      }
+        // Concurrent generation limit
+        if ((activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER) {
+          return res.status(429).json({
+            error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
+            remaining: 0,
+            code: 'ANON_CONCURRENT_LIMIT',
+          })
+        }
       }
 
       session = createSession(_sessionsDir, trimmedPrompt, null, {
@@ -710,7 +716,9 @@ export async function startServer(sessionsDir) {
           )
         } else {
           refundRateLimit(clientIp, anonIpDailyHits)
-          console.log(`  [REFUND] Anonymous daily quota refunded for ip ${clientIp} (session ${session.id} failed)`)
+          console.log(
+            `  [REFUND] Anonymous daily quota refunded for ip ${clientIp} (session ${session.id} failed)`,
+          )
         }
       })
 
@@ -918,7 +926,7 @@ export async function startServer(sessionsDir) {
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp)
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     if (!skipRateLimits && !checkRateLimit(req.user.uid, exportHits, 5))
       return res.status(429).json({ error: 'Export rate limit: max 5 per 10 minutes' })
