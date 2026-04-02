@@ -7,6 +7,8 @@
 - Target users include India
 - Payments: Stripe + UPI
 
+**Romanization (future, paid):** Transliteration to or from Latin for prompts and generated copy is planned for a later release and is expected to be a **paid** capability, not part of the initial free tier.
+
 ---
 
 ## 1. Payment Architecture
