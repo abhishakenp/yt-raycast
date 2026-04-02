@@ -50,8 +50,10 @@ textarea {
 
 .top-actions-auth-slot {
   position: relative;
-  flex: 0 0 154px;
-  width: 154px;
+  display: grid;
+  grid-template-columns: max-content;
+  align-items: center;
+  justify-items: end;
   min-height: 36px;
   flex-shrink: 0;
 }
@@ -488,10 +490,44 @@ textarea {
   transform: scale(0.97);
 }
 
+@keyframes submit-cta-wiggle {
+  0% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-45deg);
+  }
+  30% {
+    transform: rotate(45deg);
+  }
+  45% {
+    transform: rotate(-45deg);
+  }
+  60% {
+    transform: rotate(45deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.submit-btn.submit-btn--cta-shake {
+  transform-origin: center center;
+  animation: submit-cta-wiggle 0.55s ease-in-out;
+}
+
+.submit-btn.submit-btn--cta-shake:active {
+  animation: submit-cta-wiggle 0.55s ease-in-out;
+}
+
 .submit-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+}
+
+.submit-btn.submit-btn--cta-shake:disabled {
+  animation: submit-cta-wiggle 0.55s ease-in-out;
 }
 
 .submit-btn .zap-icon {
@@ -1123,9 +1159,7 @@ textarea {
 
 #signout-btn,
 #signin-btn {
-  position: absolute;
-  right: 0;
-  top: 0;
+  grid-area: 1 / 1;
   display: none;
   align-items: center;
   gap: 6px;
@@ -1236,8 +1270,6 @@ textarea {
   }
 
   .top-actions-auth-slot {
-    flex: 0 0 140px;
-    width: 140px;
     min-height: 34px;
   }
 

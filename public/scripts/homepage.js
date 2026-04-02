@@ -177,6 +177,8 @@ const input = document.getElementById('prompt-input')
 const languageSelect = document.getElementById('prompt-language')
 const promptLanguageRow = document.getElementById('prompt-language-row')
 const submitButton = document.getElementById('submit-btn')
+const submitButtonLabel = submitButton?.querySelector('.btn-label')
+const SUBMIT_BTN_DEFAULT_LABEL = 'Generate'
 const generationCounter = document.getElementById('gen-counter')
 const promptPlaceholder = document.getElementById('prompt-placeholder')
 const promptPlaceholderText = document.getElementById('prompt-placeholder-text')
@@ -267,6 +269,59 @@ const PROMPT_DETECT_INDIAN_FRANC = new Set([
   'san',
   'nep',
 ])
+
+const GENERATE_CTA_BY_LANG = {
+  en: 'Generate',
+  hinglish: 'बनाओ',
+  hi: 'बनाएं',
+  ta: 'உருவாக்கு',
+  te: 'సృష్టించు',
+  kn: 'ರಚಿಸಿ',
+  ml: 'സൃഷ്ടിക്കുക',
+  bn: 'তৈরি করুন',
+  mr: 'तयार करा',
+  gu: 'બનાવો',
+  pa: 'ਬਣਾਓ',
+  or: 'ତିଆରି କରନ୍ତୁ',
+  as: 'সৃষ্টি কৰক',
+  ur: 'پیدا کریں',
+  mai: 'बनाब',
+  kok: 'तयार करात',
+  mni: 'Generate',
+  sat: 'ᱛᱮᱭᱟᱨ ᱢᱮ',
+  ks: 'تیار کٔرِو',
+  doi: 'बनाओ',
+  brx: 'सोलोंथाइ',
+  sd: 'تيار ڪريو',
+  sa: 'जनयतु',
+  ne: 'सिर्जना गर्नुहोस्',
+  fr: 'Générer',
+  it: 'Genera',
+  es: 'Generar',
+  de: 'Generieren',
+  nl: 'Genereren',
+  pt: 'Gerar',
+  ru: 'Создать',
+  pl: 'Generuj',
+  tr: 'Oluştur',
+  hu: 'Generálás',
+  cs: 'Vygenerovat',
+  sk: 'Vygenerovať',
+  ro: 'Generează',
+  el: 'Δημιούργησε',
+  sv: 'Generera',
+  da: 'Generer',
+  fi: 'Luo',
+  no: 'Generer',
+  nb: 'Generer',
+  nn: 'Generer',
+  id: 'Hasilkan',
+  ja: '生成',
+  ko: '생성',
+  zh: '生成',
+  ar: 'توليد',
+  fa: 'تولید',
+}
 
 const PROMPT_HINGLISH_LATIN = new Set(
   `ke liye kaa ki ka ko se par pe aur ya phir bhi ho hai hain hoon hun main tum aap ham hum aapka aapki mere meri apna apni apne kuch sab koi kuchh kitna kab kahan kaise kyun kyo kyon bas fir tab jab banao banaye bana karo karein chahiye chahie milega milegi dekho dekhe suno samjho samajh wala wale wali accha achha achhi theek thik bahut zyada thoda kam sahi galat nahi nahin nhi haan haanji na mat jaldi jald jisse apne apni bas fir woh wo yeh ye koi kabhi kabhi sirf sirf bass reh reho rehi karenge karunga karungi hona honi hoga hogi`.split(
@@ -466,11 +521,31 @@ function applyBrowserPreferredLanguage() {
   languageSelect.value = nextLanguage
 }
 
+function resetSubmitCtaLabel() {
+  if (!submitButtonLabel) return
+  submitButtonLabel.textContent = SUBMIT_BTN_DEFAULT_LABEL
+  submitButton?.classList.remove('submit-btn--cta-shake')
+}
+
+function getGenerateCtaLabel(bcp47) {
+  const key = normalizeLanguageCode(bcp47)
+  if (!key) return SUBMIT_BTN_DEFAULT_LABEL
+  return GENERATE_CTA_BY_LANG[key] || SUBMIT_BTN_DEFAULT_LABEL
+}
+
+function playSubmitCtaShake() {
+  if (!submitButton) return
+  submitButton.classList.remove('submit-btn--cta-shake')
+  void submitButton.offsetWidth
+  submitButton.classList.add('submit-btn--cta-shake')
+}
+
 function syncPromptLanguageRowVisibility() {
   if (!promptLanguageRow || !languageSelect) return
   const show = input.value.trim().length >= PROMPT_LANG_DETECT_MIN_CHARS
   promptLanguageRow.classList.toggle('is-hidden', !show)
   if (!show) {
+    resetSubmitCtaLabel()
     if (promptLanguageRowUnlocked) {
       focusLanguageOptions('en')
       languageSelect.value = 'en'
@@ -490,6 +565,28 @@ function loadFranc() {
     francLoadPromise ||
     import('https://esm.sh/franc-min@6.2.0').then((mod) => mod.franc ?? mod.default)
   return francLoadPromise
+}
+
+async function detectSnippetLanguageBcp47(snippet) {
+  let franc
+  try {
+    franc = await loadFranc()
+  } catch {
+    return null
+  }
+  if (typeof franc !== 'function') return null
+  let code3 = franc(snippet, { minLength: 10 }) || 'und'
+  if (code3 !== 'und') {
+    code3 = resolveFrancCode3ForPrompt(snippet, code3)
+    if (code3 === 'und') code3 = 'eng'
+  } else {
+    code3 = 'eng'
+  }
+  code3 = resolveFrancCode3HinglishPreference(snippet, code3)
+  if (!code3 || code3 === 'und') return null
+  const toBcp47 = (resolved) =>
+    resolved === 'hinglish' ? 'hinglish' : FRANC_ISO639_3_TO_BCP47[resolved]
+  return toBcp47(code3) || null
 }
 
 function schedulePromptLanguageDetect() {
@@ -515,27 +612,12 @@ function schedulePromptLanguageDetect() {
       const currentText = input.value.trim()
       if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
       const snippet = currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
-      let franc
-      try {
-        franc = await loadFranc()
-      } catch {
-        return
-      }
-      if (typeof franc !== 'function' || runToken !== promptLangDetectToken) return
+      if (runToken !== promptLangDetectToken) return
       if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
-      let code3 = franc(snippet, { minLength: 10 }) || 'und'
-      if (code3 !== 'und') {
-        code3 = resolveFrancCode3ForPrompt(snippet, code3)
-        if (code3 === 'und') code3 = 'eng'
-      } else {
-        code3 = 'eng'
-      }
-      code3 = resolveFrancCode3HinglishPreference(snippet, code3)
-      if (!code3 || code3 === 'und') return
-      const detectBcp47 = (resolved) =>
-        resolved === 'hinglish' ? 'hinglish' : FRANC_ISO639_3_TO_BCP47[resolved]
-      const bcp47 = detectBcp47(code3)
+      const bcp47 = await detectSnippetLanguageBcp47(snippet)
       if (!bcp47) return
+      if (runToken !== promptLangDetectToken) return
+      if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
       const hasOption = Array.from(languageSelect.options).some((option) => option.value === bcp47)
       if (languageSelect.value === bcp47 && hasOption) return
       mergeLanguageOptionsSelect(bcp47)
@@ -738,6 +820,32 @@ input.addEventListener('input', () => {
   syncSubmitButtonState()
   syncPromptLanguageRowVisibility()
   schedulePromptLanguageDetect()
+})
+
+input.addEventListener('paste', (event) => {
+  const pasted = (event.clipboardData?.getData('text/plain') ?? '').trim()
+  if (pasted.length < PROMPT_LANG_DETECT_MIN_CHARS) return
+  void (async () => {
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+    const currentText = input.value.trim()
+    if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
+    const snippet = currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
+    const bcp47 = await detectSnippetLanguageBcp47(snippet)
+    if (!bcp47) return
+    if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
+    if (languageSelect) {
+      mergeLanguageOptionsSelect(bcp47)
+      savePreferredLanguage(bcp47)
+    }
+    if (!submitButtonLabel) return
+    submitButtonLabel.textContent = getGenerateCtaLabel(bcp47)
+    playSubmitCtaShake()
+  })()
+})
+
+submitButton?.addEventListener('animationend', (event) => {
+  if (event.animationName !== 'submit-cta-wiggle') return
+  submitButton.classList.remove('submit-btn--cta-shake')
 })
 
 languageSelect?.addEventListener('change', () => {
