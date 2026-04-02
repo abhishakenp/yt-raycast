@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { buildFallbackSiteSpec } from './defaults.js'
 import { enrichSiteSpecWithWorkspaceBlueprints } from './blueprints.js'
 import { normalizeSiteSpec } from './normalize.js'
+import { sanitizeSiteSpec } from '../contracts/contracts.js'
 
 const SITE_SPEC_FILE = 'site-spec.json'
 
@@ -59,9 +60,10 @@ function buildCompatibilityContext(workspace) {
   const prompt = readTextFileIfPresent(workspace, 'prompt.txt') || 'Generated Project'
   const designBrief = readTextFileIfPresent(workspace, 'design.md')
   const projectContext = readJsonFileIfPresent(workspace, 'project-context.json') || {}
-  const inferredPages = Array.isArray(projectContext.pages) && projectContext.pages.length
-    ? projectContext.pages
-    : inferPagesFromWorkspace(workspace)
+  const inferredPages =
+    Array.isArray(projectContext.pages) && projectContext.pages.length
+      ? projectContext.pages
+      : inferPagesFromWorkspace(workspace)
 
   const ctx = {
     ...projectContext,
@@ -96,9 +98,16 @@ function siteSpecNeedsBlueprints(siteSpec) {
 export function ensureCompatibleSiteSpec(workspace) {
   const context = buildCompatibilityContext(workspace)
   const existingSiteSpec = loadRawSiteSpec(workspace)
-  const baseSiteSpec = existingSiteSpec
-    ? normalizeSiteSpec(existingSiteSpec, context)
-    : normalizeSiteSpec(buildFallbackSiteSpec(context), context)
+  const fallback = sanitizeSiteSpec(buildFallbackSiteSpec(context), context, {
+    fallbackOnInvalid: false,
+  }).spec
+  const existingSanitized = existingSiteSpec
+    ? sanitizeSiteSpec(existingSiteSpec, context, {
+        fallbackOnInvalid: true,
+        fallback: fallback,
+      })
+    : null
+  const baseSiteSpec = existingSanitized?.spec || fallback
 
   const hydratedSiteSpec = siteSpecNeedsBlueprints(baseSiteSpec)
     ? enrichSiteSpecWithWorkspaceBlueprints(baseSiteSpec, workspace)

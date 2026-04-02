@@ -20,6 +20,8 @@ import {
 } from '../spec/index.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
 import { detectIndiaMode } from './detect-india-mode.js'
+import { resolvePexelsImageHints } from './image-hints.js'
+import { sanitizeSiteSpec } from '../contracts/contracts.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -49,7 +51,15 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
       log: _log,
     })
 
-    const siteSpec = stripSiteSpecBlueprints(siteSpecStats.siteSpec)
+    const siteSpec = sanitizeSiteSpec(
+      stripSiteSpecBlueprints(siteSpecStats.siteSpec),
+      { projectName: 'Project' },
+      {
+        fallbackOnInvalid: true,
+        fallback: existingSiteSpec,
+      },
+    ).spec
+    if (!siteSpec) throw new Error('Invalid site spec generated for edit flow.')
     sessionCtx.setSiteSpec?.(siteSpec)
     renderPreviewToWorkspace(siteSpec, workspace)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
@@ -180,7 +190,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
   })
 }
 
-export async function runAll({ prompt, workspace, sessionCtx }) {
+export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage }) {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()
@@ -192,7 +202,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   writeFileSync(join(workspace, 'prompt.txt'), prompt)
   sessionCtx.setPrompt(prompt)
 
-  const indiaMode = detectIndiaMode(prompt)
+  const indiaMode = detectIndiaMode(prompt, preferredLanguage)
   if (indiaMode.isIndian) {
     _log(`  India Mode detected: generating in ${indiaMode.language.name} via hex-1`)
   }
@@ -234,14 +244,29 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   })()
 
   const homepagePromise = (async () => {
+    const imageHints = await resolvePexelsImageHints({ prompt })
     try {
-      const stats = await generateHomepage(prompt, workspace, _log, sessionCtx, indiaMode)
+      const stats = await generateHomepage(
+        prompt,
+        workspace,
+        _log,
+        sessionCtx,
+        indiaMode,
+        imageHints,
+      )
       tick('homepage_end')
-      return stats
+      return { ...stats, imageHints }
     } catch (error) {
       tick('homepage_end')
       _log(`  homepage: falling back to renderer path — ${error.message}`)
-      return { html: '', inputTokens: 0, outputTokens: 0, cost: 0, error: error.message }
+      return {
+        html: '',
+        inputTokens: 0,
+        outputTokens: 0,
+        cost: 0,
+        error: error.message,
+        imageHints: null,
+      }
     }
   })()
 
@@ -251,6 +276,30 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
   const designBrief = designStats.brief
   ctx = ctxStats.ctx
   siteSpec = siteSpecStats.siteSpec
+  siteSpec = sanitizeSiteSpec(
+    siteSpec,
+    { projectName: 'Project' },
+    {
+      fallbackOnInvalid: true,
+      fallback: {
+        pages: [],
+        components: [],
+        metadata: { title: 'Generated Project' },
+        version: '1.0.0',
+        design: { theme: 'light' },
+        exportTargets: ['html'],
+      },
+    },
+  ).spec
+  if (!siteSpec)
+    siteSpec = {
+      pages: [],
+      components: [],
+      metadata: { title: 'Generated Project' },
+      version: '1.0.0',
+      design: { theme: 'light' },
+      exportTargets: ['html'],
+    }
   if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
   sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
@@ -293,6 +342,7 @@ export async function runAll({ prompt, workspace, sessionCtx }) {
     _status,
     taskCtx,
     indiaMode,
+    homepageStats.imageHints || null,
   )
   tick('gen_end')
 

@@ -11,12 +11,12 @@ import {
   makeSessionState,
   initSessionDir,
   findSessionByPrompt,
-  normalizePreferredExportTarget,
   setSessionPreferredExportTarget,
   claimSessionsByIds,
   setSessionStatus,
   getInterruptedSessions,
   broadcastToAllSessions,
+  setSessionPreferredLanguage,
 } from './sessions.js'
 import { verifyIdToken, db } from '../auth/firebase-admin.js'
 import {
@@ -66,6 +66,7 @@ const MAX_PER_IP = 10 // per 10min window
 const MAX_FREE_PER_MONTH = 10 // hard monthly cap for free (no subscription) users
 const MAX_PAID_PER_MONTH = 30 // hard monthly cap for paid (subscribed) users
 const MAX_PROMPT_LENGTH = 5000
+const httpContractsPromise = import('../contracts/http-contracts.js')
 const MAX_PER_IP_AUTHED = 30
 const MAX_FREE_PER_IP_MONTHLY = 15
 
@@ -464,21 +465,16 @@ export async function startServer(sessionsDir) {
 
   // ─── API: Create session + start generation ───────────────
   app.post('/api/sessions', optionalAuth, async (req, res) => {
-    const { prompt } = req.body
-    const preferredExportTarget = normalizePreferredExportTarget(
-      req.body?.preferredExportTarget || req.body?.framework,
-    )
+    const { parseCreateSessionRequest, sanitizeSessionCreateResponse, sanitizeErrorResponse } =
+      await httpContractsPromise
+    const parsed = parseCreateSessionRequest(req.body ?? {})
+    if (!parsed.ok) return res.status(400).json(sanitizeErrorResponse(parsed.errors.join(' | ')))
+    const { prompt, preferredLanguage, preferredExportTarget } = parsed.data
     const trimmedPrompt = prompt?.trim()
-    if (!trimmedPrompt) return res.status(400).json({ error: 'prompt is required' })
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
         error: 'Please provide a meaningful description of the website you want to build.',
       })
-    }
-    if (trimmedPrompt.length > MAX_PROMPT_LENGTH) {
-      return res
-        .status(400)
-        .json({ error: `Prompt must be under ${MAX_PROMPT_LENGTH} characters.` })
     }
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
@@ -498,9 +494,10 @@ export async function startServer(sessionsDir) {
       )
 
       // Check for exact prompt match - return existing project
-      const existing = findSessionByPrompt(req.user.uid, trimmedPrompt)
+      const existing = findSessionByPrompt(req.user.uid, trimmedPrompt, preferredLanguage)
       if (existing) {
         setSessionPreferredExportTarget(existing, preferredExportTarget)
+        setSessionPreferredLanguage(existing, preferredLanguage)
         console.log(`[${ts}] CACHE_HIT user=${req.user.uid} session=${existing.id}`)
         if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
           fetch(process.env.SLACK_WEBHOOK_URL, {
@@ -511,7 +508,7 @@ export async function startServer(sessionsDir) {
             }),
           }).catch(() => {})
         }
-        return res.json({ id: existing.id, workspace: existing.workspace, cached: true })
+        return res.json(sanitizeSessionCreateResponse(existing))
       }
 
       // Determine subscription status and monthly limit
@@ -598,6 +595,7 @@ export async function startServer(sessionsDir) {
       // Non-subscribers get private sessions by default
       session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, {
         preferredExportTarget,
+        preferredLanguage,
         isPrivate: !isSubscriber,
       })
 
@@ -651,6 +649,7 @@ export async function startServer(sessionsDir) {
 
       session = createSession(_sessionsDir, trimmedPrompt, null, {
         preferredExportTarget,
+        preferredLanguage,
         isPrivate: true,
       })
 
@@ -688,7 +687,12 @@ export async function startServer(sessionsDir) {
     // Fire and forget the generation
     const generation = editMode
       ? runEdit({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
-      : runAll({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
+      : runAll({
+          prompt: session.prompt,
+          workspace: session.workspace,
+          sessionCtx,
+          preferredLanguage: session.preferredLanguage,
+        })
 
     const generationKey = req.user?.uid || clientIp
     activeGenerations.set(generationKey, (activeGenerations.get(generationKey) || 0) + 1)
@@ -744,13 +748,13 @@ export async function startServer(sessionsDir) {
       ).length
       const isSubscriber = await hasActiveSubscription(req.user.uid)
       const remaining = (isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH) - currentMonthly
-      res.json({ id: session.id, workspace: session.workspace, remaining })
+      res.json(sanitizeSessionCreateResponse(session, { cached: false, remaining }))
     } else {
       const currentAnon = (anonIpDailyHits.get(clientIp) || []).filter(
         (t) => Date.now() - t < DAILY_WINDOW_MS,
       ).length
       const remaining = MAX_ANON_PER_DAY - currentAnon
-      res.json({ id: session.id, workspace: session.workspace, remaining })
+      res.json(sanitizeSessionCreateResponse(session, { cached: false, remaining }))
     }
   })
 
@@ -922,6 +926,10 @@ export async function startServer(sessionsDir) {
   })
 
   app.post('/api/sessions/:id/export', requireAuth, async (req, res) => {
+    const { parseTargetPayload, sanitizeErrorResponse } = await httpContractsPromise
+    const targetParse = parseTargetPayload(req.body ?? {})
+    if (!targetParse.ok)
+      return res.status(400).json(sanitizeErrorResponse(targetParse.errors.join(' | ')))
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
@@ -932,9 +940,7 @@ export async function startServer(sessionsDir) {
       return res.status(429).json({ error: 'Export rate limit: max 5 per 10 minutes' })
 
     try {
-      const target = String(req.body?.target || '').toLowerCase()
-      if (!target) return res.status(400).json({ error: 'target is required' })
-      const result = generateSessionExport(session, target)
+      const result = generateSessionExport(session, targetParse.data.target)
       res.json({ ok: true, ...result })
     } catch (error) {
       res.status(400).json({ error: error.message })
@@ -942,12 +948,15 @@ export async function startServer(sessionsDir) {
   })
 
   app.post('/api/sessions/:id/theme', async (req, res) => {
+    const { parseThemePayload, sanitizeErrorResponse } = await httpContractsPromise
+    const payload = parseThemePayload(req.body ?? {})
+    if (!payload.ok) return res.status(400).json(sanitizeErrorResponse(payload.errors.join(' | ')))
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
     try {
       const sessionCtx = makeSessionState(session)
-      sessionCtx.setThemeOverride(req.body?.theme || null)
+      sessionCtx.setThemeOverride(payload.data.theme)
       res.json({ ok: true, theme: session.themeOverride ?? null })
     } catch (error) {
       res.status(400).json({ error: error.message })
@@ -1075,11 +1084,16 @@ export async function startServer(sessionsDir) {
   })
 
   app.post('/api/sessions/:id/github/push', requireAuth, async (req, res) => {
+    const { parseGitHubPushPayload, sanitizeErrorResponse } = await httpContractsPromise
+    const payload = parseGitHubPushPayload(req.body ?? {})
+    if (!payload.ok) {
+      return res.status(400).json(sanitizeErrorResponse(payload.errors.join(' | ')))
+    }
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
 
-    const target = String(req.body?.target || '').toLowerCase()
+    const target = payload.data.target
     const accessDecision = await getDownloadAccessDecision(session, target, req)
     if (!accessDecision.allowed) {
       return res.status(402).json({
@@ -1095,8 +1109,8 @@ export async function startServer(sessionsDir) {
 
     try {
       const result = await pushSessionToGitHub(session, {
-        target: req.body?.target,
-        githubAccessToken: req.body?.githubAccessToken,
+        target,
+        githubAccessToken: payload.data.githubAccessToken,
       })
       res.json({ ok: true, ...result })
     } catch (error) {
@@ -1114,14 +1128,14 @@ export async function startServer(sessionsDir) {
 
   // ─── API: Session status ──────────────────────────────────
   app.post('/api/sessions/:id/status', async (req, res) => {
+    const { parseStatusPayload, sanitizeSessionStatusPayload } = await httpContractsPromise
+    const payload = parseStatusPayload(req.body ?? {})
+    if (!payload.ok) return res.status(400).json({ error: 'Invalid status payload.' })
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     const sessionCtx = makeSessionState(session)
-    sessionCtx.broadcast({
-      type: 'status',
-      message: req.body.status ?? '',
-      phase: req.body.phase ?? '',
-    })
+    const statusPayload = sanitizeSessionStatusPayload(payload.data.message, payload.data.phase)
+    sessionCtx.broadcast(statusPayload)
     res.json({ ok: true })
   })
 

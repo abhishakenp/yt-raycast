@@ -1,8 +1,14 @@
 import { groq } from '../llm/groq.js'
 import { formatTps } from '../llm/utils.js'
 import { parseJson } from './workspace.js'
-import { buildFallbackSiteSpec, normalizeSiteSpec, saveSiteSpec, validateSiteSpec } from '../spec/index.js'
+import {
+  buildFallbackSiteSpec,
+  normalizeSiteSpec,
+  saveSiteSpec,
+  validateSiteSpec,
+} from '../spec/index.js'
 import { siteSpecPrompt } from '../prompts/site-spec.js'
+import { sanitizeSiteSpec } from '../contracts/contracts.js'
 
 function cleanJsonContent(text = '') {
   return String(text)
@@ -49,9 +55,17 @@ export async function generateSiteSpec({ prompt, ctx, designBrief, siteType, wor
     logValidation(log, 'site-spec validation', validation.errors)
   }
 
-  const finalSpec = validation.valid
-    ? normalized
-    : normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType })
+  const finalSpec =
+    sanitizeSiteSpec(
+      validation.valid
+        ? normalized
+        : normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType }),
+      { projectName: 'Project', prompt },
+      {
+        fallbackOnInvalid: true,
+        fallback: normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType }),
+      },
+    ).spec || normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType })
 
   if (!validation.valid) {
     log('  site-spec: falling back to normalized default site spec')
@@ -79,12 +93,7 @@ export async function generateSiteSpec({ prompt, ctx, designBrief, siteType, wor
   }
 }
 
-export async function updateSiteSpecFromPrompt({
-  prompt,
-  currentSpec,
-  workspace,
-  log,
-}) {
+export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace, log }) {
   const baseSpec = currentSpec || buildFallbackSiteSpec({ prompt })
   const promptBlock = siteSpecPrompt({
     prompt: `Update the existing site spec using this edit request:\n${prompt}\n\nCurrent site spec:\n${JSON.stringify(baseSpec, null, 2)}`,
@@ -128,7 +137,16 @@ export async function updateSiteSpecFromPrompt({
     log(`  site-spec edit validation failed: ${validation.errors.join(' | ')}`)
   }
 
-  const finalSpec = validation.valid ? normalized : normalizeSiteSpec(baseSpec, { prompt })
+  const baseInputSpec = validation.valid ? normalized : normalizeSiteSpec(baseSpec, { prompt })
+  const finalSpec =
+    sanitizeSiteSpec(
+      baseInputSpec,
+      { projectName: 'Project', prompt },
+      {
+        fallbackOnInvalid: true,
+        fallback: baseSpec,
+      },
+    ).spec || normalizeSiteSpec(baseSpec, { prompt })
   saveSiteSpec(workspace, finalSpec)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
   log(`  site-spec edit: ${finalSpec.pages.length} pages restructured${tpsStr}`)
