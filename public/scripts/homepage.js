@@ -59,13 +59,23 @@ async function authFetch(url, options = {}) {
   return fetch(url, { ...options, headers })
 }
 
-function showAnonymousApp() {
+async function showAnonymousApp() {
   document.getElementById('auth-overlay').classList.add('hidden')
   document.getElementById('signout-btn').style.display = 'none'
   const signinBtn = document.getElementById('signin-btn')
   if (signinBtn) signinBtn.style.display = 'flex'
   sessionStorage.removeItem('sf_return_home')
   clearGithubAccessToken()
+  // Hydrate share bonus state from server when at base limit
+  if (getGenerationCount() >= GENERATION_LIMIT) {
+    try {
+      const resp = await fetch('/api/share-bonus')
+      if (resp.ok) {
+        const data = await resp.json()
+        if (data.claimed) shareBonusClaimed = true
+      }
+    } catch { /* ignore */ }
+  }
   updateGenerationCounter()
   syncSubmitButtonState()
   publicGalleryPage = 1
@@ -202,6 +212,7 @@ let userGalleryPage = 1
 let gallerySource = 'public'
 let galleryMeta = null
 const GENERATION_LIMIT = 2
+const GENERATION_LIMIT_WITH_BONUS = 3
 const MIN_PROMPT_LENGTH = 70
 const PROMPT_LANG_DETECT_MIN_CHARS = 65
 const PROMPT_LANG_DETECT_DEBOUNCE_MS = 400
@@ -831,11 +842,31 @@ function validatePrompt(showError = false) {
   return promptLength >= MIN_PROMPT_LENGTH
 }
 
+let shareBonusClaimed = false
+
+function hasShareBonus() {
+  return shareBonusClaimed
+}
+
+function getEffectiveLimit() {
+  return shareBonusClaimed ? GENERATION_LIMIT_WITH_BONUS : GENERATION_LIMIT
+}
+
+async function claimShareBonus() {
+  if (shareBonusClaimed) return
+  try {
+    const resp = await fetch('/api/share-bonus', { method: 'POST' })
+    if (resp.ok) shareBonusClaimed = true
+  } catch { /* ignore network errors */ }
+  updateGenerationCounter()
+  syncSubmitButtonState()
+}
+
 function isGenerationLimitReached() {
   if (isLocalDevHost) return false
   if (authResolved && currentUser) return false
   if (!authResolved) return false
-  return getGenerationCount() >= GENERATION_LIMIT
+  return getGenerationCount() >= getEffectiveLimit()
 }
 
 function syncSubmitButtonState() {
@@ -850,49 +881,115 @@ function getGenerationCount() {
 }
 
 function updateGenerationCounter() {
-  if (isLocalDevHost) {
+  const shareBonusPanel = document.getElementById('share-bonus-panel')
+  const hideAll = () => {
     generationCounter.style.display = 'none'
     privateGenRow.style.display = 'none'
-    syncSubmitButtonState()
-    return
+    if (shareBonusPanel) shareBonusPanel.style.display = 'none'
   }
-  if (!authResolved) {
-    generationCounter.style.display = 'none'
-    privateGenRow.style.display = 'none'
-    syncSubmitButtonState()
-    return
-  }
-  if (currentUser) {
-    generationCounter.style.display = 'none'
-    privateGenRow.style.display = 'none'
+  if (isLocalDevHost || !authResolved || currentUser) {
+    hideAll()
     syncSubmitButtonState()
     return
   }
 
   const count = getGenerationCount()
   if (count === 0) {
-    generationCounter.style.display = 'none'
-    privateGenRow.style.display = 'none'
+    hideAll()
     syncSubmitButtonState()
     return
   }
 
+  const limit = getEffectiveLimit()
   generationCounter.style.display = 'block'
   privateGenRow.style.display = 'none'
 
   if (isGenerationLimitReached()) {
-    generationCounter.innerHTML = `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used — <a href="#" id="gen-signup-link" style="color:inherit;text-decoration:underline;">sign up instead</a>`
-    generationCounter.classList.add('limit-reached')
-    document.getElementById('gen-signup-link')?.addEventListener('click', (e) => {
-      e.preventDefault()
-      document.getElementById('auth-overlay').classList.remove('hidden')
-    })
+    if (!hasShareBonus()) {
+      // Show share-for-credit option
+      generationCounter.innerHTML = `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used`
+      generationCounter.classList.add('limit-reached')
+      if (shareBonusPanel) {
+        shareBonusPanel.style.display = 'flex'
+        initShareBonusPanel()
+      }
+    } else {
+      // Bonus already used — only sign-up remains
+      generationCounter.innerHTML = `${limit}/${limit} free previews used — <a href="#" id="gen-signup-link" style="color:inherit;text-decoration:underline;">sign up instead</a>`
+      generationCounter.classList.add('limit-reached')
+      if (shareBonusPanel) shareBonusPanel.style.display = 'none'
+      document.getElementById('gen-signup-link')?.addEventListener('click', (e) => {
+        e.preventDefault()
+        document.getElementById('auth-overlay').classList.remove('hidden')
+      })
+    }
   } else {
-    generationCounter.textContent = `${count} / ${GENERATION_LIMIT} free previews used`
+    generationCounter.textContent = `${count} / ${limit} free previews used`
     generationCounter.classList.remove('limit-reached')
+    if (shareBonusPanel) shareBonusPanel.style.display = 'none'
   }
 
   syncSubmitButtonState()
+}
+
+let shareBonusPanelInitialized = false
+function initShareBonusPanel() {
+  if (shareBonusPanelInitialized) return
+  shareBonusPanelInitialized = true
+
+  const siteUrl = 'https://ship-fast.io'
+  const byLang = {
+    en: `I just built a site in minutes with Ship Fast — try it free: ${siteUrl}`,
+    hi: `मैंने Ship Fast से मिनटों में साइट बनाई — आप भी बनाएं: ${siteUrl}`,
+    ta: `Ship Fast மூலம் நிமிடங்களில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${siteUrl}`,
+    te: `Ship Fast తో నిమిషాల్లో సైట్ చేశాను — మీరూ ట్రై చేయండి: ${siteUrl}`,
+    bn: `Ship Fast দিয়ে মিনিটে সাইট বানিয়েছি — আপনিও চেষ্টা করুন: ${siteUrl}`,
+    mr: `Ship Fast ने मिनिटांत साइट बनवली — तुम्हीही बनवा: ${siteUrl}`,
+    kn: `Ship Fast ನಿಂದ ನಿಮಿಷಗಳಲ್ಲಿ ಸೈಟ್ ಮಾಡಿದೆ — ನೀವೂ ಮಾಡಿ: ${siteUrl}`,
+    ml: `Ship Fast ഉപയോഗിച്ച് മിനിറ്റുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${siteUrl}`,
+    pa: `Ship Fast ਨਾਲ ਮਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${siteUrl}`,
+    gu: `Ship Fast વડે મિનિટોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${siteUrl}`,
+  }
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language]
+  let locale = 'en'
+  for (const L of langs) {
+    const c = String(L || '').toLowerCase().split('-')[0]
+    if (c && c !== 'en' && byLang[c]) { locale = c; break }
+  }
+  const msg = byLang[locale] || byLang.en
+  const encUrl = encodeURIComponent(siteUrl)
+  const encMsg = encodeURIComponent(msg)
+
+  const targets = {
+    'bonus-share-wa': `https://api.whatsapp.com/send?text=${encMsg}`,
+    'bonus-share-fb': `https://www.facebook.com/sharer/sharer.php?u=${encUrl}`,
+    'bonus-share-tw': `https://twitter.com/intent/tweet?text=${encMsg}`,
+    'bonus-share-tg': `https://t.me/share/url?url=${encUrl}&text=${encMsg}`,
+    'bonus-share-li': `https://www.linkedin.com/sharing/share-offsite/?url=${encUrl}`,
+  }
+  for (const [id, href] of Object.entries(targets)) {
+    const el = document.getElementById(id)
+    if (!el) continue
+    el.href = href
+    el.addEventListener('click', () => claimShareBonus())
+  }
+
+  const nativeBtn = document.getElementById('bonus-share-native')
+  if (nativeBtn) {
+    nativeBtn.hidden = typeof navigator.share !== 'function'
+    nativeBtn.addEventListener('click', () => {
+      claimShareBonus()
+      navigator.share({ title: 'Ship Fast', text: msg, url: siteUrl }).catch(() => {})
+    })
+  }
+
+  const signupLink = document.getElementById('share-bonus-signup-link')
+  if (signupLink) {
+    signupLink.addEventListener('click', (e) => {
+      e.preventDefault()
+      document.getElementById('auth-overlay').classList.remove('hidden')
+    })
+  }
 }
 
 function openPrivateGenModal() {
@@ -1045,8 +1142,11 @@ form.addEventListener('submit', async (event) => {
     if (data.code === 'CONTENT_POLICY' || response.status === 422) {
       showPolicyViolation(data.error || CONTENT_POLICY_CLIENT_MESSAGE)
     } else if (!currentUser && response.status === 429) {
+      if (data.shareBonusClaimed !== undefined) shareBonusClaimed = data.shareBonusClaimed
       updateGenerationCounter()
-      document.getElementById('auth-overlay').classList.remove('hidden')
+      if (shareBonusClaimed) {
+        document.getElementById('auth-overlay').classList.remove('hidden')
+      }
     } else {
       alert(data.error || 'Failed to create session')
     }

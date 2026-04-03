@@ -627,6 +627,69 @@ textarea {
   color: #ef4444;
 }
 
+/* ─── Share-for-credit bonus panel ─── */
+.share-bonus-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.share-bonus-label {
+  font-size: 12px;
+  color: #a78bfa;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+}
+.share-bonus-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.share-bonus-or {
+  font-size: 12px;
+  color: #6b6880;
+  font-family: 'JetBrains Mono', monospace;
+}
+.share-bonus-or a {
+  color: inherit;
+  text-decoration: underline;
+}
+.share-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1px solid #3a3550;
+  cursor: pointer;
+  font-family: inherit;
+  background: #252233;
+  color: #e8e4ff;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+.share-icon:hover { transform: translateY(-1px); }
+.share-icon-svg { display: block; }
+.share-icon-svg-stroke { stroke: currentColor; }
+.share-icon-wa { color: #25d366; border-color: rgba(37,211,102,0.45); background: rgba(37,211,102,0.12); }
+.share-icon-wa:hover { background: rgba(37,211,102,0.22); border-color: rgba(37,211,102,0.65); }
+.share-icon-fb { color: #1877f2; border-color: rgba(24,119,242,0.45); background: rgba(24,119,242,0.12); }
+.share-icon-fb:hover { background: rgba(24,119,242,0.22); border-color: rgba(24,119,242,0.65); }
+.share-icon-x { color: #e7e9ea; border-color: rgba(231,233,234,0.25); background: rgba(255,255,255,0.06); }
+.share-icon-x:hover { background: rgba(255,255,255,0.12); border-color: rgba(231,233,234,0.4); }
+.share-icon-tg { color: #2aabee; border-color: rgba(42,171,238,0.45); background: rgba(42,171,238,0.12); }
+.share-icon-tg:hover { background: rgba(42,171,238,0.22); border-color: rgba(42,171,238,0.65); }
+.share-icon-li { color: #0a66c2; border-color: rgba(10,102,194,0.45); background: rgba(10,102,194,0.12); }
+.share-icon-li:hover { background: rgba(10,102,194,0.22); border-color: rgba(10,102,194,0.65); }
+.share-icon-native { color: #c4b5fd; border-color: rgba(196,181,253,0.35); background: rgba(167,139,250,0.1); }
+.share-icon-native:hover { background: rgba(167,139,250,0.2); border-color: rgba(196,181,253,0.55); }
+
 .prompt-policy-violation {
   display: none;
   margin-top: 14px;

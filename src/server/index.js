@@ -80,6 +80,7 @@ const MAX_PER_IP_AUTHED = 30
 const MAX_FREE_PER_IP_MONTHLY = 15
 
 const MAX_ANON_PER_DAY = 2 // per day for anonymous (unauthenticated) users — then auth wall
+const SHARE_BONUS_EXTRA = 1 // +1 daily generation granted when anon user shares on social
 
 // Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
 const WHITELISTED_IPS = new Set(
@@ -96,6 +97,7 @@ const anonIpDailyHits = new Map() // ip -> [timestamp, ...] for anonymous users
 const exportHits = new Map() // uid -> [timestamp, ...] for export rate limiting
 const ipMonthlyHits = new Map() // ip -> [timestamp, ...] monthly cap for free users
 const activeGenerations = new Map() // uid/ip -> count of in-progress generations
+const shareBonusIps = new Map() // ip -> ISO date string (YYYY-MM-DD) — share-for-credit bonus
 const MAX_CONCURRENT_PER_USER = 2
 
 function isLocalDevelopmentRequest(req, clientIp) {
@@ -136,6 +138,16 @@ function refundRateLimit(key, hitsMap) {
   if (hits?.length) hits.pop()
 }
 
+function hasIpShareBonus(ip) {
+  const stored = shareBonusIps.get(ip)
+  if (!stored) return false
+  return stored === new Date().toISOString().slice(0, 10)
+}
+
+function getAnonDailyLimit(ip) {
+  return MAX_ANON_PER_DAY + (hasIpShareBonus(ip) ? SHARE_BONUS_EXTRA : 0)
+}
+
 // Function to get user generation quota info
 async function getQuotaInfo(userId, clientIp) {
   if (userId) {
@@ -155,15 +167,17 @@ async function getQuotaInfo(userId, clientIp) {
     }
   } else if (clientIp) {
     // Anonymous user
+    const effectiveLimit = getAnonDailyLimit(clientIp)
     const currentDaily = (anonIpDailyHits.get(clientIp) || []).filter(
       (t) => Date.now() - t < DAILY_WINDOW_MS,
     ).length
 
     return {
       isSubscribed: false,
-      dailyLimit: MAX_ANON_PER_DAY,
+      dailyLimit: effectiveLimit,
       dailyUsed: currentDaily,
-      dailyRemaining: Math.max(0, MAX_ANON_PER_DAY - currentDaily),
+      dailyRemaining: Math.max(0, effectiveLimit - currentDaily),
+      shareBonusClaimed: hasIpShareBonus(clientIp),
       isAnonymous: true,
     }
   } else {
@@ -237,12 +251,18 @@ setInterval(
     cleanupMap(anonIpDailyHits, DAILY_WINDOW_MS)
     cleanupMap(exportHits, RATE_WINDOW_MS)
     cleanupMap(ipMonthlyHits, MONTHLY_WINDOW_MS)
+    // Prune expired share bonuses (not today)
+    const today = new Date().toISOString().slice(0, 10)
+    for (const [ip, date] of shareBonusIps) {
+      if (date !== today) shareBonusIps.delete(ip)
+    }
     if (rateLimitFile) {
       try {
         const data = {
           userMonthly: Object.fromEntries(userMonthlyHits),
           anonDaily: Object.fromEntries(anonIpDailyHits),
           ipMonthly: Object.fromEntries(ipMonthlyHits),
+          shareBonus: Object.fromEntries(shareBonusIps),
         }
         writeFileSync(rateLimitFile, JSON.stringify(data))
       } catch {
@@ -281,6 +301,11 @@ export async function startServer(sessionsDir) {
         for (const [k, v] of Object.entries(saved.anonDaily)) anonIpDailyHits.set(k, v)
       if (saved.ipMonthly)
         for (const [k, v] of Object.entries(saved.ipMonthly)) ipMonthlyHits.set(k, v)
+      if (saved.shareBonus) {
+        const today = new Date().toISOString().slice(0, 10)
+        for (const [k, v] of Object.entries(saved.shareBonus))
+          if (v === today) shareBonusIps.set(k, v)
+      }
     }
   } catch {
     /* ignore corrupt file */
@@ -495,6 +520,24 @@ export async function startServer(sessionsDir) {
       projectId: process.env.FIREBASE_PROJECT_ID ?? '',
       appId: process.env.FIREBASE_APP_ID ?? '',
     })
+  })
+
+  // ─── Share-for-credit: grant +1 anonymous generation ────
+  app.get('/api/share-bonus', (req, res) => {
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    res.json({ claimed: clientIp ? hasIpShareBonus(clientIp) : false })
+  })
+
+  app.post('/api/share-bonus', (req, res) => {
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    if (!clientIp) return res.status(400).json({ error: 'Unable to identify client' })
+    const today = new Date().toISOString().slice(0, 10)
+    if (shareBonusIps.get(clientIp) === today) {
+      return res.json({ ok: true, alreadyClaimed: true })
+    }
+    shareBonusIps.set(clientIp, today)
+    console.log(`[${new Date().toISOString()}] SHARE_BONUS ip=${clientIp}`)
+    res.json({ ok: true, alreadyClaimed: false })
   })
 
   app.get('/robots.txt', (_req, res) => {
@@ -717,13 +760,15 @@ export async function startServer(sessionsDir) {
       console.log(`[${ts}] REQ anon ip=${clientIp} prompt="${trimmedPrompt.slice(0, 80)}"`)
 
       if (!skipRateLimits) {
-        // Daily limit per IP for anonymous users — sign-in wall after 2
-        if (!checkRateLimit(clientIp, anonIpDailyHits, MAX_ANON_PER_DAY, DAILY_WINDOW_MS)) {
-          console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp}`)
+        // Daily limit per IP for anonymous users — sign-in wall after limit (2, or 3 with share bonus)
+        const anonLimit = getAnonDailyLimit(clientIp)
+        if (!checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)) {
+          console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp} bonus=${hasIpShareBonus(clientIp)}`)
           return res.status(429).json({
             error: `Sign in to keep generating. Free anonymous users get ${MAX_ANON_PER_DAY} generations per day.`,
             remaining: 0,
             code: 'ANON_DAILY_LIMIT',
+            shareBonusClaimed: hasIpShareBonus(clientIp),
           })
         }
 
@@ -858,7 +903,7 @@ export async function startServer(sessionsDir) {
       const currentAnon = (anonIpDailyHits.get(clientIp) || []).filter(
         (t) => Date.now() - t < DAILY_WINDOW_MS,
       ).length
-      const remaining = MAX_ANON_PER_DAY - currentAnon
+      const remaining = getAnonDailyLimit(clientIp) - currentAnon
       const anonOwnerSecret = readAnonOwnerSecret(session.workspace)
       res.json(
         sanitizeSessionCreateResponse(session, {
