@@ -437,6 +437,11 @@ const isLocalDevHost =
   (window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '::1')
+const LOCAL_DEV_PROMPT_SHORTCUTS = [
+  'Mere local gym ke liye ek powerful modern website banao with membership plans',
+  'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
+  'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
+]
 const SAMPLE_PROMPTS = [
   'A cinematic travel landing page for curated weekend escapes with reviews and fast booking.',
   'A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.',
@@ -889,6 +894,28 @@ updateGenerationCounter()
 renderSamplePrompt()
 syncSamplePromptVisibility()
 syncSubmitButtonState()
+
+if (isLocalDevHost) {
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (!event.metaKey && !event.ctrlKey) return
+      if (event.key !== '1' && event.key !== '2' && event.key !== '3') return
+      const text = LOCAL_DEV_PROMPT_SHORTCUTS[Number(event.key) - 1]
+      if (!text) return
+      event.preventDefault()
+      event.stopPropagation()
+      input.value = text
+      validatePrompt(false)
+      syncSamplePromptVisibility()
+      syncSubmitButtonState()
+      syncPromptLanguageRowVisibility()
+      schedulePromptLanguageDetect()
+      input.focus()
+    },
+    true,
+  )
+}
 
 input.addEventListener('input', () => {
   validatePrompt(false)
