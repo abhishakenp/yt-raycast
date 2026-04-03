@@ -1,6 +1,7 @@
 import { groqParallel } from '../llm/groq.js'
 import { translateHtmlSequential } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
+import { alignGeneratedImagesToContext } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { slug, writeFile } from './workspace.js'
 import { HOME_LABELS } from '../config.js'
@@ -108,7 +109,7 @@ export function deriveTasks(ctxOrSiteSpec) {
   return tasks
 }
 
-function processResults(taskCtx, filteredTasks, results, workspace, getFname, log) {
+function processResults(taskCtx, filteredTasks, results, workspace, getFname, log, imageHints = null) {
   const { taskList, updateTask } = taskCtx
   const saveTasks = () =>
     writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
@@ -124,7 +125,10 @@ function processResults(taskCtx, filteredTasks, results, workspace, getFname, lo
       saveTasks()
       continue
     }
-    const content = ensureLucideIconRuntime(stripFences(r.content), log)
+    const content = ensureLucideIconRuntime(
+      alignGeneratedImagesToContext(stripFences(r.content), imageHints),
+      log,
+    )
     const fname = getFname(t)
     writeFile(workspace, fname, content)
     if (task) {
@@ -197,7 +201,7 @@ export async function generateAllTasks(
   const backendResults = backendCalls.length > 0 ? await groqParallel(backendCalls) : []
 
   if (pageTasks.length > 0) {
-    processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log)
+    processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log, imageHints)
   }
   if (backendTasks.length > 0) {
     processResults(

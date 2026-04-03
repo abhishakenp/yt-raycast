@@ -3,17 +3,21 @@ import { brandProfilePromptBlock } from './brand-profile.js'
 function imageGuide(imageHints) {
   const photos = imageHints?.photos ?? []
   if (!photos.length) {
-    return 'No curated Pexels images are available. Do not insert unrelated stock photos. If a section still needs visual weight, use gradients, patterns, icons, framed typography, or reuse existing layout treatments instead of random images.'
+    return 'No curated verified images are available. Do not insert unrelated stock photos. If a section still needs visual weight, use gradients, patterns, icons, framed typography, or reuse existing layout treatments instead of random images.'
   }
 
   const lines = photos
     .slice(0, 8)
     .map((photo, index) => {
-      const hint = String(photo.alt || photo.query).slice(0, 120)
+      const hint = String(
+        photo.query && photo.alt && photo.alt !== photo.query
+          ? `[${photo.query}] ${photo.alt}`
+          : photo.alt || photo.query,
+      ).slice(0, 140)
       return `- ${index + 1}. ${hint}: ${photo.url}`
     })
     .join('\n')
-  return `Use these Pexels images first:\n${lines}\nReuse the closest matching Pexels URL if multiple cards need similar imagery. If no line is a good fit, avoid adding a random photo and use a non-photo visual treatment instead.`
+  return `Use these verified image URLs first:\n${lines}\nReuse the closest matching verified URL if multiple cards need similar imagery. If no line is a good fit, avoid adding a random photo and use a non-photo visual treatment instead.`
 }
 
 export function pagePrompt(
@@ -43,7 +47,7 @@ Realistic mock data.
 ${brandBlock}
 ${imageGuide(imageHints)}
 If you add icons, use Lucide with exact placeholders like <i data-lucide="heart"></i>. NEVER use class="lucide-heart" as the placeholder syntax.
-NEVER use placeholder.com, placehold.co, via.placeholder, or unsplash source URLs.
+NEVER use placeholder.com, placehold.co, via.placeholder, or random source endpoints like source.unsplash.com.
 If verified brand details are provided, keep them exact and do not invent missing contact fields.
 Design must feel vibrant and modern \u2014 match the homepage energy with bold colors and generous whitespace.
 Output ONLY the complete HTML file.`,

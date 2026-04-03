@@ -1,6 +1,7 @@
-import { PEXELS_API_KEY } from '../config.js'
+import { PEXELS_API_KEY, UNSPLASH_ACCESS_KEY } from '../config.js'
 
 const PEXELS_API_URL = 'https://api.pexels.com/v1/search'
+const UNSPLASH_API_URL = 'https://api.unsplash.com/search/photos'
 const MAX_REQUESTS = 6
 const FETCH_PAGE_SIZE = 18
 const KEEP_PER_QUERY = 3
@@ -30,6 +31,9 @@ const DAIRY_PROMPT_RE =
 const FOOD_PROMPT_RE =
   /\b(cafe|coffee|restaurant|bakery|pizza|burger|dessert|pastry|cake|food|kitchen|chef|recipe)\b/i
 
+const SNACK_PROMPT_RE =
+  /\b(snack|snacks|healthy snack|protein snack|millet snack|baked snack|kids snack|travel snack|trail mix|granola|chips|cookies|bars?|bites)\b/i
+
 const GENERIC_FEATURE_RE =
   /\b(user|auth|login|password|session|token|api|database|stripe|payment|checkout|cart|wishlist|order|tracking|returns?|shipping|delivery|search|filter|sort|dashboard|admin|responsive|mobile|navigation|footer|header|faq|newsletter|testimonial|review|support|contact|export|import|upload|parse|excel|spreadsheet|inventory|subscription|analytics|notification|account)\b/i
 
@@ -37,7 +41,22 @@ const NON_VISUAL_PHRASE_RE =
   /\b(responsive|mobile|desktop|navigation|footer|header|faq|testimonial|support|contact|newsletter|signup|login|checkout|cart|wishlist|order tracking|returns?|shipping|payment|search|filters?|hover|scroll|layout|copy|tone|goal|functional requirements|extra pages|page|pricing|account dashboard|user authentication)\b/i
 
 const VISUAL_PHRASE_RE =
-  /\b(dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweet|dessert|recipe|saree|silk|bridal|bride|lehenga|salwar|kurta|sherwani|ethnic wear|fashion|boutique|showroom|store|jewelry|perfume|makeup|skincare|watch|shoe|bag|furniture|interior|sofa|chair|lamp|living room|bedroom|hotel|resort|restaurant|bakery|coffee|spa|salon|fitness|gym|yoga|clinic|doctor|dental|pet|dog|cat|farm)\b/i
+  /\b(dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweet|dessert|recipe|snack|snacks|protein|millet|granola|chips|cookie|cookies|bar|bars|bites|trail mix|nuts|wellness|saree|silk|bridal|bride|lehenga|salwar|kurta|sherwani|ethnic wear|fashion|boutique|showroom|store|jewelry|perfume|makeup|skincare|watch|shoe|bag|furniture|interior|sofa|chair|lamp|living room|bedroom|hotel|resort|restaurant|bakery|coffee|spa|salon|fitness|gym|yoga|clinic|doctor|dental|pet|dog|cat|farm)\b/i
+
+const PRODUCT_LABEL_RE =
+  /\b(product|snack|snacks|protein|millet|granola|chips|cookie|cookies|bar|bars|bites|trail mix|nuts|pack|box|combo|flavor|flavour)\b/i
+
+const LIFESTYLE_LABEL_RE =
+  /\b(friend|friends|family|people|person|couple|team|founder|story|about|brand|lifestyle|community|testimonial|review)\b/i
+
+const PRODUCT_PHOTO_RE =
+  /\b(product|snack|granola|chips|cookie|bar|trail mix|pack|box|assortment|flat lay|close up)\b/i
+
+const LIFESTYLE_PHOTO_RE =
+  /\b(friend|friends|family|couple|person|people|holding|sharing|lifestyle|portrait|outdoor|smiling)\b/i
+
+const STOCK_IMAGE_URL_RE =
+  /(images\.pexels\.com|images\.unsplash\.com|source\.unsplash\.com|picsum\.photos)/i
 
 const STOP_WORDS = new Set([
   'a',
@@ -84,8 +103,89 @@ const STOP_WORDS = new Set([
   'blog',
 ])
 
+const LOW_SIGNAL_QUERY_WORDS = new Set([
+  'photo',
+  'photos',
+  'photography',
+  'portrait',
+  'editorial',
+  'product',
+  'products',
+  'lifestyle',
+  'woman',
+  'women',
+  'man',
+  'men',
+  'person',
+  'people',
+  'model',
+  'models',
+  'close',
+  'minimal',
+  'premium',
+  'luxury',
+  'fresh',
+  'happy',
+  'small',
+  'cute',
+  'indoor',
+  'outdoor',
+  'natural',
+  'light',
+  'cozy',
+  'white',
+  'background',
+  'table',
+  'detail',
+  'details',
+  'creative',
+  'traditional',
+  'indian',
+])
+
+const MATCH_ALIASES = {
+  bridal: ['bridal', 'bride', 'wedding'],
+  bride: ['bride', 'bridal', 'wedding'],
+  wedding: ['wedding', 'bridal', 'bride'],
+  saree: ['saree', 'sari'],
+  sari: ['sari', 'saree'],
+  jewelry: ['jewelry', 'jewellery', 'gold'],
+  jewellery: ['jewellery', 'jewelry', 'gold'],
+  dairy: ['dairy', 'milk', 'paneer', 'curd', 'yogurt', 'lassi', 'butter', 'cheese'],
+  milk: ['milk', 'dairy'],
+  butter: ['butter', 'dairy'],
+  cheese: ['cheese', 'dairy'],
+  dessert: ['dessert', 'desserts', 'sweet', 'sweets'],
+  sweets: ['sweets', 'sweet', 'dessert', 'desserts'],
+  snack: ['snack', 'snacks', 'munch', 'munchies'],
+  snacks: ['snacks', 'snack', 'munch', 'munchies'],
+  protein: ['protein', 'energy'],
+  millet: ['millet', 'grain'],
+  granola: ['granola', 'oats'],
+  chips: ['chips', 'crisps'],
+  cookies: ['cookies', 'cookie', 'biscuits', 'biscuit'],
+  cookie: ['cookie', 'cookies', 'biscuit', 'biscuits'],
+  bar: ['bar', 'bars', 'protein bar', 'energy bar'],
+  bars: ['bars', 'bar', 'protein bar', 'energy bar'],
+  bites: ['bites', 'bite', 'balls'],
+  nuts: ['nuts', 'trail mix', 'seeds'],
+  wellness: ['wellness', 'healthy', 'clean', 'organic'],
+  recipe: ['recipe', 'cooking', 'kitchen', 'chef'],
+  boutique: ['boutique', 'showroom', 'store'],
+  showroom: ['showroom', 'boutique', 'store'],
+  ethnic: ['ethnic', 'traditional', 'attire', 'outfit', 'wear'],
+  outfit: ['outfit', 'attire', 'wear', 'fashion'],
+  fashion: ['fashion', 'attire', 'outfit', 'wear'],
+  dog: ['dog', 'dogs', 'puppy', 'puppies', 'canine'],
+  cat: ['cat', 'cats', 'kitten', 'kittens', 'feline'],
+}
+
 function normalizeText(value = '') {
   return String(value).replace(/\s+/g, ' ').trim().toLowerCase()
+}
+
+function escapeRegex(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 function uniqueValues(values = []) {
@@ -103,6 +203,13 @@ function sanitizeId(value) {
 
 function formatImageUrl(id, width = 1400, height = 900) {
   return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${width}&h=${height}&fit=crop`
+}
+
+function formatUnsplashUrl(baseUrl, width = 1400, height = 900) {
+  const src = String(baseUrl || '').trim()
+  if (!src) return ''
+  const separator = src.includes('?') ? '&' : '?'
+  return `${src}${separator}auto=format&fit=crop&w=${width}&h=${height}&q=80`
 }
 
 function altMatchesSubject(alt, subject) {
@@ -131,7 +238,12 @@ function altMatchesSubject(alt, subject) {
 }
 
 function isUsablePhoto(photo, subjectKey) {
-  const alt = typeof photo?.alt === 'string' ? photo.alt : ''
+  const alt =
+    typeof photo?.matchText === 'string' && photo.matchText.trim()
+      ? photo.matchText
+      : typeof photo?.alt === 'string'
+        ? photo.alt
+        : ''
   const pet = subjectKey === 'dog' || subjectKey === 'cat'
   if (pet) {
     if (BAD_ALT_PET_RE.test(alt)) return false
@@ -140,6 +252,100 @@ function isUsablePhoto(photo, subjectKey) {
   }
   if (BAD_ALT_META_RE.test(alt)) return false
   return true
+}
+
+function tokenizeForMatch(value = '') {
+  return normalizeText(value)
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length > 1 && !STOP_WORDS.has(token))
+}
+
+function queryMatchTokens(query = '') {
+  const tokens = [...new Set(tokenizeForMatch(query))]
+  const core = tokens.filter((token) => !LOW_SIGNAL_QUERY_WORDS.has(token))
+  return {
+    tokens,
+    core: core.length ? core : tokens,
+  }
+}
+
+function descriptivePhotoHint(photo) {
+  const query = normalizeText(photo?.query || '')
+  const alt = normalizeText(photo?.alt || '')
+  if (query && alt && alt !== query) return `[${query}] ${alt}`
+  if (query) return `[${query}]`
+  return alt
+}
+
+function tokenMatchesText(token, text) {
+  const normalized = normalizeText(text)
+  if (!normalized || !token) return false
+
+  const variants = MATCH_ALIASES[token] || [token]
+  return variants.some((variant) => new RegExp(`\\b${escapeRegex(variant)}\\b`, 'i').test(normalized))
+}
+
+function overlapCount(tokens, text) {
+  let count = 0
+  for (const token of tokens) {
+    if (tokenMatchesText(token, text)) count++
+  }
+  return count
+}
+
+function hasRelevantQueryMatch(photo) {
+  const matchText = normalizeText(photo?.matchText || '')
+  const { tokens, core } = queryMatchTokens(photo?.query || '')
+
+  if (!tokens.length) return true
+  if (!matchText) return photo?.provider === 'pexels'
+
+  const coreOverlap = overlapCount(core, matchText)
+  const tokenOverlap = overlapCount(tokens, matchText)
+
+  if (core.length > 0) return coreOverlap > 0 || tokenOverlap > 0
+  return tokenOverlap > 0
+}
+
+function relevanceScore(photo) {
+  const matchText = normalizeText(photo?.matchText || '')
+  const { tokens, core } = queryMatchTokens(photo?.query || '')
+
+  const coreOverlap = overlapCount(core, matchText)
+  const tokenOverlap = overlapCount(tokens, matchText)
+  const providerBias = photo?.provider === 'pexels' ? 0.4 : 0.2
+  const rankBias = Math.max(0, 3 - (Number(photo?.sourceRank) || 0)) * 0.1
+  const metadataPenalty = matchText ? 0 : photo?.provider === 'unsplash' ? -3 : -1
+
+  return coreOverlap * 10 + tokenOverlap * 4 + providerBias + rankBias + metadataPenalty
+}
+
+function labelRelevanceScore(photo, label = '', usageCount = 0) {
+  const labelText = normalizeText(label)
+  if (!labelText) return -Infinity
+
+  const matchText = normalizeText(
+    [photo?.query || '', photo?.alt || '', photo?.matchText || ''].filter(Boolean).join(' '),
+  )
+  const { tokens, core } = queryMatchTokens(labelText)
+  const coreOverlap = overlapCount(core, matchText)
+  const tokenOverlap = overlapCount(tokens, matchText)
+  const productBoost =
+    PRODUCT_LABEL_RE.test(labelText) && PRODUCT_PHOTO_RE.test(matchText)
+      ? 3
+      : PRODUCT_LABEL_RE.test(labelText) && LIFESTYLE_PHOTO_RE.test(matchText)
+        ? -2
+        : 0
+  const lifestyleBoost =
+    LIFESTYLE_LABEL_RE.test(labelText) && LIFESTYLE_PHOTO_RE.test(matchText)
+      ? 2
+      : LIFESTYLE_LABEL_RE.test(labelText) && PRODUCT_PHOTO_RE.test(matchText)
+        ? -1
+        : 0
+  const reusePenalty = usageCount * 0.35
+
+  return coreOverlap * 10 + tokenOverlap * 4 + productBoost + lifestyleBoost - reusePenalty
 }
 
 function phraseFromPrompt(prompt, maxWords = 5) {
@@ -237,6 +443,39 @@ function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
   }
   if (/\b(recipe|kitchen|cooking|chef)\b/.test(p)) {
     return ['indian cooking dairy recipe', 'kitchen recipe preparation']
+  }
+  if (/\b(protein snacks?|protein)\b/.test(p)) {
+    return ['protein bar healthy snack product', 'healthy protein snack pack']
+  }
+  if (/\b(millet snacks?|millet)\b/.test(p)) {
+    return ['millet crackers healthy snack product', 'millet snack pack close up']
+  }
+  if (/\b(baked snacks?|chips)\b/.test(p)) {
+    return ['baked chips healthy snack product', 'veggie chips snack pack']
+  }
+  if (/\b(kids snacks?|kids)\b/.test(p)) {
+    return ['kids healthy snack pack', 'fruit snack product close up']
+  }
+  if (/\b(travel snacks?|trail mix)\b/.test(p)) {
+    return ['trail mix healthy snack pack', 'travel snack assortment']
+  }
+  if (/\b(bestsellers?|assortment)\b/.test(p)) {
+    return ['healthy snacks assortment flat lay', 'packaged snack assortment']
+  }
+  if (/\b(granola)\b/.test(p)) {
+    return ['granola snack product close up', 'oats granola healthy snack']
+  }
+  if (/\b(cookies?)\b/.test(p)) {
+    return ['healthy cookie snack product', 'biscuit snack close up']
+  }
+  if (/\b(bars?)\b/.test(p)) {
+    return ['protein bar snack product', 'energy bar healthy snack']
+  }
+  if (/\b(bites?)\b/.test(p)) {
+    return ['energy bites healthy snack product', 'snack bites close up']
+  }
+  if (/\b(snacks?|wellness)\b/.test(p)) {
+    return ['healthy packaged snack product', 'friends sharing healthy snacks']
   }
   if (/\b(store|showroom|boutique)\b/.test(p) && FASHION_PROMPT_RE.test(source)) {
     return ['indian fashion boutique interior', 'luxury boutique showroom']
@@ -350,6 +589,16 @@ function themedQueries(prompt) {
       'food plating editorial',
     ]).slice(0, MAX_REQUESTS)
   }
+  if (SNACK_PROMPT_RE.test(p)) {
+    return uniqueValues([
+      'healthy packaged snack product',
+      'protein bar healthy snack product',
+      'millet snack pack close up',
+      'trail mix healthy snack pack',
+      'friends sharing healthy snacks',
+      'granola snack product close up',
+    ]).slice(0, MAX_REQUESTS)
+  }
   return []
 }
 
@@ -392,7 +641,7 @@ function subjectKeyFromPrompt(prompt) {
   return null
 }
 
-async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
+async function fetchPexelsPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
   if (!query || !PEXELS_API_KEY) return []
   const url = new URL(PEXELS_API_URL)
   url.searchParams.set('query', query)
@@ -415,21 +664,25 @@ async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
     if (!res.ok) return []
     const payload = await res.json()
     const out = []
-    for (const photo of payload.photos || []) {
+    for (const [sourceRank, photo] of (payload.photos || []).entries()) {
       const id = sanitizeId(photo.id)
       if (!id) continue
       const alt = typeof photo.alt === 'string' ? photo.alt.trim() : ''
+      const matchText = alt
       const candidate = {
+        provider: 'pexels',
         query,
         id,
+        sourceRank,
         url: formatImageUrl(id),
         rawUrl:
           typeof photo?.src?.large2x === 'string'
             ? photo.src.large2x
             : formatImageUrl(id, 1400, 900),
         alt: alt || query,
+        matchText,
       }
-      if (!isUsablePhoto(candidate, subjectKey)) continue
+      if (!isUsablePhoto(candidate, subjectKey) || !hasRelevantQueryMatch(candidate)) continue
       out.push(candidate)
       if (out.length >= keep) break
     }
@@ -441,19 +694,173 @@ async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
   }
 }
 
+async function fetchUnsplashPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
+  if (!query || !UNSPLASH_ACCESS_KEY || keep <= 0) return []
+  const url = new URL(UNSPLASH_API_URL)
+  url.searchParams.set('query', query)
+  url.searchParams.set('per_page', String(Math.max(keep * 3, 10)))
+  url.searchParams.set('orientation', 'landscape')
+  url.searchParams.set('content_filter', 'high')
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => {
+    controller.abort()
+  }, REQUEST_TIMEOUT_MS)
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
+        'Accept-Version': 'v1',
+      },
+      signal: controller.signal,
+    })
+
+    if (!res.ok) return []
+    const payload = await res.json()
+    const out = []
+
+    for (const [sourceRank, photo] of (payload.results || []).entries()) {
+      const id = String(photo?.id || '').trim()
+      if (!id) continue
+
+      const alt = String(photo?.alt_description || photo?.description || '').trim()
+      const slug = String(photo?.slug || '').trim().replace(/-/g, ' ')
+      const matchText = [alt, slug].filter(Boolean).join(' ').trim()
+      const regularUrl = formatUnsplashUrl(photo?.urls?.regular || photo?.urls?.raw)
+      const rawUrl = formatUnsplashUrl(photo?.urls?.raw || photo?.urls?.regular)
+      if (!regularUrl) continue
+
+      const candidate = {
+        provider: 'unsplash',
+        query,
+        id,
+        sourceRank,
+        url: regularUrl,
+        rawUrl: rawUrl || regularUrl,
+        alt: alt || query,
+        matchText,
+      }
+
+      if (!isUsablePhoto(candidate, subjectKey) || !hasRelevantQueryMatch(candidate)) continue
+      out.push(candidate)
+      if (out.length >= keep) break
+    }
+
+    return out
+  } catch {
+    return []
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
+  if (!query || keep <= 0) return []
+
+  const [pexels, unsplash] = await Promise.all([
+    fetchPexelsPhotos(query, subjectKey, keep),
+    fetchUnsplashPhotos(query, subjectKey, keep),
+  ])
+
+  const merged = [...pexels, ...unsplash]
+  const seen = new Set()
+
+  return merged
+    .filter((photo) => {
+      if (!photo?.url || seen.has(photo.url)) return false
+      seen.add(photo.url)
+      return true
+    })
+    .sort((left, right) => relevanceScore(right) - relevanceScore(left))
+    .slice(0, keep)
+}
+
 function toPromptBlock(hits) {
   if (!Array.isArray(hits) || hits.length === 0) return ''
-  return `\nVERIFIED PEXELS IMAGES:\n${hits
+  return `\nVERIFIED CURATED IMAGES:\n${hits
     .slice(0, 8)
     .map((item, index) => {
-      const hint = String(item.alt || item.query).slice(0, 120)
+      const hint = descriptivePhotoHint(item).slice(0, 140)
       return `- ${index + 1}. ${hint}: ${item.url}`
     })
     .join('\n')}`
 }
 
+function chooseBestPhotoForLabel(label, photos, usage) {
+  if (!label || !Array.isArray(photos) || !photos.length) return null
+
+  let best = null
+  let bestScore = -Infinity
+  for (const photo of photos) {
+    const usageCount = usage.get(photo.url) || 0
+    const score = labelRelevanceScore(photo, label, usageCount)
+    if (score > bestScore) {
+      bestScore = score
+      best = photo
+    }
+  }
+
+  return bestScore > 0 ? best : null
+}
+
+function replaceAttributeValue(tag, attr, value) {
+  const pattern = new RegExp(`(${attr}\\s*=\\s*["'])[^"']*(["'])`, 'i')
+  return tag.replace(pattern, `$1${value}$2`)
+}
+
+function extractAttribute(tag, attr) {
+  const match = tag.match(new RegExp(`${attr}\\s*=\\s*["']([^"']*)["']`, 'i'))
+  return match ? match[1] : ''
+}
+
+function shouldReplaceStockUrl(url = '') {
+  return STOCK_IMAGE_URL_RE.test(String(url || ''))
+}
+
+function realignImgTags(html, photos, usage) {
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const src = extractAttribute(tag, 'src')
+    const alt = extractAttribute(tag, 'alt')
+    if (!src || !alt || !shouldReplaceStockUrl(src)) return tag
+
+    const best = chooseBestPhotoForLabel(alt, photos, usage)
+    if (!best || best.url === src) return tag
+
+    usage.set(best.url, (usage.get(best.url) || 0) + 1)
+    return replaceAttributeValue(tag, 'src', best.url)
+  })
+}
+
+function realignObjectImageUrls(html, photos, usage) {
+  const pattern =
+    /((?:"?(?:name|title)"?)\s*:\s*["'`])([^"'`]+)(["'`][\s\S]{0,240}?(?:"?image"?)\s*:\s*["'`])([^"'`]+)(["'`])/gi
+
+  let next = html
+  next = next.replace(pattern, (match, prefix, label, middle, currentUrl, suffix) => {
+    if (!shouldReplaceStockUrl(currentUrl)) return match
+    const best = chooseBestPhotoForLabel(label, photos, usage)
+    if (!best || best.url === currentUrl) return match
+
+    usage.set(best.url, (usage.get(best.url) || 0) + 1)
+    return `${prefix}${label}${middle}${best.url}${suffix}`
+  })
+
+  return next
+}
+
+export function alignGeneratedImagesToContext(html, imageHints = null) {
+  const photos = imageHints?.photos ?? []
+  if (!html || typeof html !== 'string' || !photos.length) return html
+
+  const usage = new Map()
+  let next = realignImgTags(html, photos, usage)
+  next = realignObjectImageUrls(next, photos, usage)
+  return next
+}
+
 export async function resolvePexelsImageHints(ctx = null) {
-  if (!PEXELS_API_KEY) return { photos: [], promptBlock: '' }
+  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return { photos: [], promptBlock: '' }
 
   const prompt = ctx?.prompt ?? ''
   const queries = buildQueries(ctx ?? { prompt })

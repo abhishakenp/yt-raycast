@@ -26,7 +26,7 @@ RULES:
 - Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
 - Load fonts from Google Fonts in <head>
 - Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>; call lucide.createIcons() after render and never use class="lucide-heart" placeholders
-- Images only if needed: use relevant Pexels images first. If no good photo exists, use gradients, patterns, icons, or strong typography instead of random stock images
+- Images only if needed: use relevant verified provider images first. If no good photo exists, use gradients, patterns, icons, or strong typography instead of random stock images
 - NO screenshots, mockups, or hero images for SaaS/landing pages
 - Typography-first, minimal, premium aesthetic
 - 2-column grids (never 3)

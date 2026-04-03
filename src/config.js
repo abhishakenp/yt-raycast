@@ -16,6 +16,7 @@ export const RUNPOD_API_URL = process.env.RUNPOD_API_URL ?? ''
 export const RUNPOD_API_KEY = process.env.RUNPOD_API_KEY ?? ''
 export const RUNPOD_MODEL = process.env.RUNPOD_MODEL ?? 'budecosystem/hex-1'
 export const PEXELS_API_KEY = process.env.PEXELS_API_KEY ?? ''
+export const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY ?? ''
 
 // ─── India Mode ──────────────────────────────────────────
 // All 22 constitutionally scheduled Indian languages

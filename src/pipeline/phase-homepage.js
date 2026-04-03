@@ -1,6 +1,7 @@
 import { groqHomepage } from '../llm/groq.js'
 import { translateHtml } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
+import { alignGeneratedImagesToContext } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { writeFile } from './workspace.js'
 
@@ -136,6 +137,7 @@ export async function generateHomepage(
     }
   }
 
+  html = alignGeneratedImagesToContext(html, imageHints)
   html = ensureLucideIconRuntime(html, log)
 
   writeFile(workspace, 'index.html', html)
