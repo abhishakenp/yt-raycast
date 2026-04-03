@@ -46,7 +46,7 @@ ${navList}
 Realistic mock data.
 ${brandBlock}
 ${imageGuide(imageHints)}
-If you add icons, use Lucide with exact placeholders like <i data-lucide="heart"></i>. NEVER use class="lucide-heart" as the placeholder syntax.
+If you add icons, use Lucide with exact placeholders like <i data-lucide="heart"></i>. For brand socials use x, instagram, and whatsapp. NEVER use class="lucide-heart" as the placeholder syntax.
 NEVER use placeholder.com, placehold.co, via.placeholder, or random source endpoints like source.unsplash.com.
 If verified brand details are provided, keep them exact and do not invent missing contact fields.
 Design must feel vibrant and modern \u2014 match the homepage energy with bold colors and generous whitespace.

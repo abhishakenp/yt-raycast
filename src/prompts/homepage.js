@@ -68,7 +68,7 @@ BUILD RULES:
 - Follow the design system colors and component patterns exactly. Do NOT invent your own palette.
 - Use the Tailwind config from the design system in a <script> block after the CDN script.
 - Load the fonts specified in the design system via Google Fonts <link> in <head>.
-- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>. Call lucide.createIcons() after render. NEVER use class="lucide-heart" placeholders. NEVER emojis.
+- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>. Call lucide.createIcons() after render. For brand socials use x, instagram, and whatsapp. NEVER use class="lucide-heart" placeholders. NEVER emojis.
 - NO hero images or screenshots for SaaS/landing pages. Typography and cards only.
 - If images are needed (blog, ecommerce, portfolio), use only the provided verified image lines (description before URL) and pick the URL whose description fits each card. Reuse the closest matching verified URL across multiple cards if needed. If no relevant photo exists, replace that image area with a gradient, pattern, icon, or typography treatment instead of inserting a random stock image.
 

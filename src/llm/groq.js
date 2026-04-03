@@ -136,7 +136,7 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
-- Tailwind CSS via CDN, Google Fonts${hinglish ? ' (load Inter + Noto Sans Devanagari)' : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
+- Tailwind CSS via CDN, Google Fonts${hinglish ? ' (load Inter + Noto Sans Devanagari)' : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
 - Dark theme: bg-gray-950 base, lighter surfaces, border-gray-800, one accent color.
 - Vanilla JS only. No frameworks.
 - IMAGES: Use provided verified image URLs first. Each line lists a scene description before the URL — assign the URL whose description best matches that card or section (breed, rescue, bridal, dairy, etc.). Reuse the closest matching provided URL when you need more image slots than unique photos. Never use a laptop, phone, or screen image for animals or nature posts. If no relevant photo exists, use a non-photo treatment such as a gradient panel, pattern, icon, or typography block instead of a random stock image.`,
