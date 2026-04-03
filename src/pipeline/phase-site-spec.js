@@ -21,7 +21,15 @@ function logValidation(log, label, errors) {
   log(`  ⚠️  ${label}: ${errors.join(' | ')}`)
 }
 
-export async function generateSiteSpec({ prompt, ctx, designBrief, siteType, workspace, log }) {
+export async function generateSiteSpec({
+  prompt,
+  ctx,
+  designBrief,
+  siteType,
+  workspace,
+  log,
+  brandProfile = null,
+}) {
   const fallback = buildFallbackSiteSpec({ prompt, ctx, designBrief, siteType })
   const attempts = []
   let parsed = null
@@ -34,6 +42,7 @@ export async function generateSiteSpec({ prompt, ctx, designBrief, siteType, wor
       ctx,
       designBrief,
       fallbackSpec: fallback,
+      brandProfile,
       mode: 'generate',
     })
     const result = await groq(promptBlock.user, {

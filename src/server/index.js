@@ -50,6 +50,8 @@ import {
   registerDeployment,
 } from './deployments.js'
 import { generateSlug } from './slug-generator.js'
+import { requirePromptText } from '../prompt.js'
+import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -508,7 +510,11 @@ export async function startServer(sessionsDir) {
 
       // Check for exact prompt match - return existing project
       const existing = findSessionByPrompt(req.user.uid, trimmedPrompt, preferredLanguage)
-      if (existing) {
+      const shouldBypassBrandCache =
+        existing &&
+        promptLooksBrandDriven(trimmedPrompt) &&
+        !existsSync(join(existing.workspace, 'brand-profile.json'))
+      if (existing && !shouldBypassBrandCache) {
         setSessionPreferredExportTarget(existing, preferredExportTarget)
         setSessionPreferredLanguage(existing, preferredLanguage)
         console.log(`[${ts}] CACHE_HIT user=${req.user.uid} session=${existing.id}`)
@@ -522,6 +528,9 @@ export async function startServer(sessionsDir) {
           }).catch(() => {})
         }
         return res.json(sanitizeSessionCreateResponse(existing))
+      }
+      if (shouldBypassBrandCache) {
+        console.log(`[${ts}] CACHE_BYPASS user=${req.user.uid} session=${existing.id} reason=brand_profile_missing`)
       }
 
       // Determine subscription status and monthly limit
@@ -1195,7 +1204,8 @@ export async function startServer(sessionsDir) {
 
 /** Start a session from CLI (backward compat) */
 export async function startCLISession(workspace, prompt) {
-  const session = createSession(_sessionsDir || workspace, prompt)
+  const normalizedPrompt = requirePromptText(prompt)
+  const session = createSession(_sessionsDir || workspace, normalizedPrompt)
   // Override workspace to the user-specified one
   session.workspace = workspace
   const sessionCtx = makeSessionState(session)
@@ -1219,8 +1229,13 @@ export async function startCLISession(workspace, prompt) {
   console.log(`  Session: ${session.id}\n`)
 
   const generation = editMode
-    ? runEdit({ prompt, workspace, sessionCtx })
-    : runAll({ prompt, workspace, sessionCtx, preferredLanguage: session.preferredLanguage })
+    ? runEdit({ prompt: normalizedPrompt, workspace, sessionCtx })
+    : runAll({
+        prompt: normalizedPrompt,
+        workspace,
+        sessionCtx,
+        preferredLanguage: session.preferredLanguage,
+      })
 
   return { session, generation }
 }

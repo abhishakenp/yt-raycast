@@ -1,10 +1,19 @@
 import { siteSpecSchema } from '../spec/schema.js'
+import { brandProfilePromptBlock } from './brand-profile.js'
 
-export function siteSpecPrompt({ prompt, ctx, designBrief, fallbackSpec, mode = 'generate' }) {
+export function siteSpecPrompt({
+  prompt,
+  ctx,
+  designBrief,
+  fallbackSpec,
+  brandProfile = null,
+  mode = 'generate',
+}) {
   const actionLine =
     mode === 'edit'
       ? 'Update the canonical site spec so the requested changes are reflected structurally.'
       : 'Generate a canonical site spec that can drive multiple renderers.'
+  const brandBlock = brandProfilePromptBlock(brandProfile)
 
   return {
     system:
@@ -14,6 +23,7 @@ export function siteSpecPrompt({ prompt, ctx, designBrief, fallbackSpec, mode = 
       `User prompt:\n${prompt}\n\n` +
       `Existing project context:\n${JSON.stringify(ctx, null, 2)}\n\n` +
       `Design brief:\n${designBrief}\n\n` +
+      `${brandBlock ? `${brandBlock}\n` : ''}` +
       `Required section types (use only when relevant):\n${siteSpecSchema.supportedSectionTypes.join(', ')}\n\n` +
       `Required export targets:\n${siteSpecSchema.supportedExportTargets.join(', ')}\n\n` +
       `Use this fallback structure as a shape reference and minimum completeness baseline:\n${JSON.stringify(fallbackSpec, null, 2)}\n\n` +
@@ -86,6 +96,7 @@ export function siteSpecPrompt({ prompt, ctx, designBrief, fallbackSpec, mode = 
       `- Homepage copy should support SEO with a clear product headline, descriptive supporting copy, and at least one FAQ section when relevant.\n` +
       `- Use clean title patterns: homepage as "Project Name | Core benefit" and secondary pages as "Topic | Project Name" or "Project Name Topic | Benefit". Avoid keyword stuffing.\n` +
       `- When you include FAQ content, write realistic buyer or user questions rather than placeholder copy.\n` +
+      `- When verified brand details are provided, use them for logo/contact/footer/social sections and keep those fields exact.\n` +
       `- Use the fallback structure when uncertain rather than inventing a malformed schema.`,
     temperature: 0.2,
     maxTokens: 4000,

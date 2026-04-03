@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { promptSnippet } from '../prompt.js'
 import { buildFallbackSiteSpec } from './defaults.js'
 import { enrichSiteSpecWithWorkspaceBlueprints } from './blueprints.js'
 import { normalizeSiteSpec } from './normalize.js'
@@ -67,7 +68,7 @@ function buildCompatibilityContext(workspace) {
 
   const ctx = {
     ...projectContext,
-    project_name: projectContext.project_name || prompt.slice(0, 40) || 'Generated Project',
+    project_name: projectContext.project_name || promptSnippet(prompt, 40, 'Generated Project'),
     pages: inferredPages,
   }
 

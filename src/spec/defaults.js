@@ -1,4 +1,5 @@
 import { slug } from '../pipeline/workspace.js'
+import { promptSnippet } from '../prompt.js'
 
 export const SITE_SPEC_VERSION = '1.0.0'
 export const SUPPORTED_EXPORT_TARGETS = ['html', 'react', 'nextjs']
@@ -579,7 +580,7 @@ export function buildFallbackSiteSpec({
   siteType,
 }) {
   const inferredSiteType = inferSiteType(ctx, siteType)
-  const projectName = ctx.project_name || prompt.slice(0, 40) || 'Generated Project'
+  const projectName = ctx.project_name || promptSnippet(prompt, 40, 'Generated Project')
   const normalizedSlug = ctx.slug || slug(projectName)
   const siteUrl = normalizeSiteUrlInput(ctx.site_url || '')
   const pageNames = ctx.pages?.length ? ctx.pages : defaultPageNamesForSiteType(inferredSiteType)

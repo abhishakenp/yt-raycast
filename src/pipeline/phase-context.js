@@ -1,22 +1,30 @@
 import { groq } from '../llm/groq.js'
 import { formatTps } from '../llm/utils.js'
+import { promptSnippet } from '../prompt.js'
 import { slug, parseJson, writeFile } from './workspace.js'
 import { contextPrompt } from '../prompts/context.js'
 
-export async function generateContext(prompt, designBrief, siteType, workspace, log) {
+export async function generateContext(prompt, designBrief, siteType, workspace, log, brandProfile = null) {
   log('  context: extracting from prompt via Groq')
 
-  const { system, user, temperature, maxTokens } = contextPrompt(prompt, designBrief, siteType)
+  const { system, user, temperature, maxTokens } = contextPrompt(
+    prompt,
+    designBrief,
+    siteType,
+    brandProfile,
+  )
   const result = await groq(user, { system, temperature, maxTokens })
 
   // Clean stats markers that might break JSON parsing
   const cleanedContent = result.content.replace(/<\|stats\|>[\s\S]*?<\/\|stats\|>/g, '').trim()
 
   const parsed = parseJson(cleanedContent)
+  const fallbackProjectName = promptSnippet(prompt, 40, 'Generated Project')
+  const fallbackSlugSource = promptSnippet(prompt, 30, 'generated-project')
 
   const ctx = parsed || {
-    project_name: prompt.slice(0, 40),
-    slug: slug(prompt.slice(0, 30)),
+    project_name: fallbackProjectName,
+    slug: slug(fallbackSlugSource),
     tagline: '',
     site_url: '',
     site_type: siteType,

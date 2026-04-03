@@ -80,7 +80,14 @@ export function resetWorkspace(workspace, variant = 'reset') {
   const keep =
     variant === 'reset-hard'
       ? new Set(['prompt.txt'])
-      : new Set(['prompt.txt', 'project-context.json', 'index.html', 'references', 'ship.log'])
+      : new Set([
+          'prompt.txt',
+          'project-context.json',
+          'brand-profile.json',
+          'index.html',
+          'references',
+          'ship.log',
+        ])
 
   try {
     const items = readdirSync(workspace)
