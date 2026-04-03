@@ -25,6 +25,7 @@
 
     <!-- ─── Intro Overlay ─── -->
     <div class="intro-overlay" id="intro-overlay">
+      <a href="/" class="intro-back-btn" title="Back to home">&#8592; Back</a>
       <canvas class="intro-warp-canvas" id="intro-warp-canvas" aria-hidden="true"></canvas>
       <div class="logo-glow"></div>
       <div class="intro-logo" id="intro-logo">
@@ -643,19 +644,46 @@
         }
       }
 
+      function referrerIsOurHomepage() {
+        const ref = document.referrer
+        if (!ref) return false
+        try {
+          const u = new URL(ref)
+          if (u.origin !== location.origin) return false
+          const p = u.pathname
+          return p === '/' || p === ''
+        } catch {
+          return false
+        }
+      }
+
       function navigateHome(event) {
+        if (leavingDashboard) {
+          event?.preventDefault()
+          location.replace('/')
+          return
+        }
         event?.preventDefault()
-        if (leavingDashboard) return
         leavingDashboard = true
         cleanupRealtime()
         const canReturnHome =
-          sessionStorage.getItem('sf_return_home') === '1' && window.history.length > 1
+          sessionStorage.getItem('sf_return_home') === '1' &&
+          window.history.length > 1 &&
+          referrerIsOurHomepage()
         if (canReturnHome) {
           history.back()
           return
         }
         location.replace('/')
       }
+
+      document.querySelector('.intro-back-btn')?.addEventListener('click', (event) => {
+        navigateHome(event)
+      })
+
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) leavingDashboard = false
+      })
 
       window.addEventListener('pagehide', () => {
         leavingDashboard = true
@@ -1599,9 +1627,9 @@
                 px = lerp(px, vpx, stretch)
                 py = lerp(py, vpy, stretch)
               }
-              let base = (8 + age * age * 22) * D + z * z * 10 * D
-              if (warp > 0) base += warp * age * age * (150 + z * 180) * D
-              const w = base * pass.s
+              let base = (8 + age * age * 28) * D + z * z * 12 * D
+              if (warp > 0) base += warp * age * age * (195 + z * 245) * D
+              const w = base * pass.s * (1 + warp * age * 0.14)
               if (k === 0) ctx.moveTo(px + n.nx * w, py + n.ny * w)
               else ctx.lineTo(px + n.nx * w, py + n.ny * w)
             }
@@ -1617,9 +1645,9 @@
                 px = lerp(px, vpx, stretch)
                 py = lerp(py, vpy, stretch)
               }
-              let base = (8 + age * age * 22) * D + z * z * 10 * D
-              if (warp > 0) base += warp * age * age * (150 + z * 180) * D
-              const w = base * pass.s
+              let base = (8 + age * age * 28) * D + z * z * 12 * D
+              if (warp > 0) base += warp * age * age * (195 + z * 245) * D
+              const w = base * pass.s * (1 + warp * age * 0.14)
               ctx.lineTo(px - n.nx * w, py - n.ny * w)
             }
             ctx.closePath()
@@ -1661,7 +1689,7 @@
               hy = lerp(hy, vpy, warp)
             }
             const hc = col(count / PTS)
-            const hsz = (16 + warp * 45 + z * 14) * D
+            const hsz = (18 + warp * 56 + z * 16) * D
             const g1 = ctx.createRadialGradient(hx, hy, 0, hx, hy, hsz * 4)
             g1.addColorStop(0, `rgba(255,250,255,${0.82 * fade})`)
             g1.addColorStop(0.08, `rgba(${hc[0]},${hc[1]},${hc[2]},${0.22 * fade})`)

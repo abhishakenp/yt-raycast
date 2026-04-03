@@ -12,7 +12,7 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write \"src/**/*.js\"",
-    "verify:site-spec": "node scripts/verify-site-spec.js"
+    "verify:site-spec": "node scripts/vemrify-site-spec.js"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "latest",

@@ -1,4 +1,5 @@
 import { groqHomepage } from '../llm/groq.js'
+import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
 import { translateHtml } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { alignGeneratedImagesToContext } from './image-hints.js'
@@ -17,47 +18,70 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   if (!next.includes(SHIPFAST_FOOTER_STYLE_ID)) {
     const styleTag = `
     <style id="${SHIPFAST_FOOTER_STYLE_ID}">
-      [${SHIPFAST_FOOTER_MARKER}] {
+      [${SHIPFAST_FOOTER_MARKER}].footer-branding {
         margin-top: 1rem;
         display: flex;
         justify-content: center;
+        width: 100%;
       }
-      [${SHIPFAST_FOOTER_MARKER}] a {
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__link {
         display: inline-flex;
         align-items: center;
-        gap: 0.65rem;
-        padding: 0.55rem 0.9rem;
+        gap: 0.75rem;
+        padding: 0.45rem 1rem 0.45rem 0.55rem;
         border-radius: 999px;
-        border: 1px solid rgba(148, 163, 184, 0.24);
-        background: rgba(15, 23, 42, 0.08);
-        color: inherit;
+        border: 1px solid rgba(124, 58, 237, 0.45);
+        background: linear-gradient(145deg, rgba(20, 12, 36, 0.92) 0%, rgba(46, 26, 78, 0.88) 50%, rgba(30, 18, 52, 0.94) 100%);
+        box-shadow: 0 10px 32px rgba(124, 58, 237, 0.18), 0 2px 12px rgba(0, 0, 0, 0.35);
+        color: #f4f4f5;
         text-decoration: none;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease,
-          background-color 180ms ease;
+        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
       }
-      [${SHIPFAST_FOOTER_MARKER}] a:hover {
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__link:hover {
         transform: translateY(-1px);
-        border-color: rgba(148, 163, 184, 0.34);
-        background: rgba(15, 23, 42, 0.12);
-        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
+        border-color: rgba(167, 139, 250, 0.65);
+        box-shadow: 0 14px 40px rgba(124, 58, 237, 0.28), 0 4px 14px rgba(0, 0, 0, 0.4);
       }
-      [${SHIPFAST_FOOTER_MARKER}] .sf-footer-branding__label {
-        font-size: 0.72rem;
-        letter-spacing: 0.16em;
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__logo {
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: drop-shadow(0 2px 6px rgba(124, 58, 237, 0.45));
+      }
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__logo svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.06rem;
+        line-height: 1.1;
+      }
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__label {
+        font-size: 0.62rem;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        opacity: 0.65;
+        color: rgba(196, 181, 253, 0.9);
       }
-      [${SHIPFAST_FOOTER_MARKER}] .sf-footer-branding__name {
-        font-size: 0.95rem;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        opacity: 0.96;
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #fafafa;
       }
-      [${SHIPFAST_FOOTER_MARKER}] .sf-footer-branding__arrow {
-        font-size: 0.8rem;
-        opacity: 0.72;
+      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__link::after {
+        content: '↗';
+        font-size: 0.85em;
+        color: #a78bfa;
+        align-self: center;
+        margin-left: 0.1rem;
       }
     </style>
   `
@@ -70,11 +94,13 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   if (hasBrandingMarkup(next)) return next
 
   const brandingHtml = `
-    <div ${SHIPFAST_FOOTER_MARKER} aria-label="Built with ShipFast">
-      <a href="https://shipfast.dev" target="_blank" rel="noreferrer">
-        <span class="sf-footer-branding__label">Built with</span>
-        <span class="sf-footer-branding__name">ShipFast</span>
-        <span class="sf-footer-branding__arrow" aria-hidden="true">&nearr;</span>
+    <div ${SHIPFAST_FOOTER_MARKER} class="footer-branding" aria-label="Built with Ship Fast">
+      <a class="footer-branding__link" href="${SHIP_FAST_SITE_URL}" target="_blank" rel="noreferrer">
+        ${shipFastFooterLogoMarkup('sfhp')}
+        <span class="footer-branding__text">
+          <span class="footer-branding__label">Built with</span>
+          <span class="footer-branding__name">Ship Fast</span>
+        </span>
       </a>
     </div>
   `

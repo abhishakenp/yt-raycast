@@ -1,3 +1,5 @@
+import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
+
 /**
  * Returns a Google Fonts <link> tag for the Noto Sans script matching the
  * India Mode language, plus a CSS snippet that applies it as the body font.
@@ -148,7 +150,7 @@ ${routes.map((route) => `- \`${route}\``).join('\n')}
 
 ## Built with ShipFast
 
-Generate your own SaaS starter: shipfast.dev
+Generate your own SaaS starter: https://ship-fast.io
 `
 }
 
@@ -385,9 +387,14 @@ function renderGenericCard(item = {}) {
 
 function renderShipFastFooterBrandingHtml() {
   return `
-    <div class="footer-branding" aria-label="Built with ShipFast">
-      <span class="footer-branding__label">Built with</span>
-      <a class="footer-branding__link" href="https://shipfast.dev" target="_blank" rel="noreferrer">ShipFast</a>
+    <div class="footer-branding" aria-label="Built with Ship Fast">
+      <a class="footer-branding__link" href="${SHIP_FAST_SITE_URL}" target="_blank" rel="noreferrer">
+        ${shipFastFooterLogoMarkup('ex')}
+        <span class="footer-branding__text">
+          <span class="footer-branding__label">Built with</span>
+          <span class="footer-branding__name">Ship Fast</span>
+        </span>
+      </a>
     </div>
   `
 }
@@ -802,37 +809,67 @@ button, input, textarea { font: inherit; }
 }
 .footer-branding {
   display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
   width: fit-content;
-  padding: 0.55rem 0.85rem;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(124,58,237,0.14), rgba(167,139,250,0.08));
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-}
-.footer-branding__label {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-muted);
 }
 .footer-branding__link {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.75rem;
+  padding: 0.45rem 1rem 0.45rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 58, 237, 0.45);
+  background: linear-gradient(145deg, rgba(20, 12, 36, 0.92) 0%, rgba(46, 26, 78, 0.88) 50%, rgba(30, 18, 52, 0.94) 100%);
+  box-shadow: 0 10px 32px rgba(124, 58, 237, 0.18), 0 2px 12px rgba(0, 0, 0, 0.35);
+  text-decoration: none;
+  color: #f4f4f5;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.footer-branding__link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(167, 139, 250, 0.65);
+  box-shadow: 0 14px 40px rgba(124, 58, 237, 0.28), 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.footer-branding__logo {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 6px rgba(124, 58, 237, 0.45));
+}
+.footer-branding__logo svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.footer-branding__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.06rem;
+  line-height: 1.1;
+}
+.footer-branding__label {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(196, 181, 253, 0.9);
+}
+.footer-branding__name {
   font-family: var(--font-heading);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fafafa;
 }
 .footer-branding__link::after {
   content: '↗';
-  font-size: 0.8em;
-  color: var(--color-secondary);
-}
-.footer-branding__link:hover {
-  opacity: 0.92;
+  font-size: 0.85em;
+  color: #a78bfa;
+  align-self: center;
+  margin-left: 0.1rem;
 }
 .empty-state {
   min-height: 100vh;
