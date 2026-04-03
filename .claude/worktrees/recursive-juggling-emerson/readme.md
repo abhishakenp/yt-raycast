@@ -242,7 +242,7 @@ The generator should output code containing:
 
 **README.md in generated projects:**
 > Built with ShipFast
-> Generate your own SaaS starter: shipfast.dev
+> Generate your own SaaS starter: https://ship-fast.io
 
 **Footer in generated apps:**
 > "Built with ShipFast"
@@ -258,7 +258,7 @@ Every template becomes a Google landing page.
 **Structure:**
 
 ```
-shipfast.dev/templates/
+https://ship-fast.io/templates/
   saas-dashboard
   ai-saas
   stripe-subscription
