@@ -100,15 +100,17 @@ export function parseGitHubPushPayload(body = {}) {
 }
 
 export function sanitizeSessionCreateResponse(
-  { id, workspace },
-  { cached = false, remaining = 0 } = {},
+  session,
+  { cached = false, remaining = 0, anonOwnerSecret = null } = {},
 ) {
-  return {
-    id: String(id || ''),
-    workspace: String(workspace || ''),
+  const payload = {
+    id: String(session?.id || ''),
+    workspace: String(session?.workspace || ''),
     cached: Boolean(cached),
     remaining: Number.isFinite(Number(remaining)) ? Number(remaining) : 0,
   }
+  if (anonOwnerSecret) payload.anonOwnerSecret = String(anonOwnerSecret)
+  return payload
 }
 
 export function sanitizeSessionStatusPayload(message = '', phase = '') {

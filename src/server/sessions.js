@@ -7,6 +7,7 @@ import {
   rmSync,
   readdirSync,
   statSync,
+  unlinkSync,
 } from 'node:fs'
 import { join } from 'node:path'
 import { BASE_DOMAIN, SUPPORTED_INDIAN_LANGUAGES } from '../config.js'
@@ -18,8 +19,20 @@ import { normalizeSession, validateSession } from '../contracts/contracts.js'
 const sessions = new Map()
 let _sessionsDir = null
 const SESSION_META_FILE = '.session.json'
+const ANON_OWNER_FILE = '.anon-owner'
 const DEFAULT_PREFERRED_EXPORT_TARGET = 'html'
 const DEFAULT_PREFERRED_LANGUAGE = 'en'
+
+export function readAnonOwnerSecret(workspace) {
+  if (!workspace) return ''
+  try {
+    const filePath = join(workspace, ANON_OWNER_FILE)
+    if (!existsSync(filePath)) return ''
+    return readFileSync(filePath, 'utf8').trim()
+  } catch {
+    return ''
+  }
+}
 
 function normalizePreferredLanguage(value) {
   const requested = String(value || '')
@@ -108,6 +121,12 @@ export function createSession(baseDir, prompt, userId, options = {}) {
   if (userId) {
     try {
       writeFileSync(join(workspace, 'user.txt'), userId)
+    } catch {
+      /* ignore */
+    }
+  } else {
+    try {
+      writeFileSync(join(workspace, ANON_OWNER_FILE), randomBytes(24).toString('base64url'), 'utf8')
     } catch {
       /* ignore */
     }
@@ -475,8 +494,13 @@ export function claimSession(sessionId, newUserId) {
   }
   // Write the new owner to user.txt
   writeFileSync(join(session.workspace, 'user.txt'), newUserId)
-  // Update in-memory
   session.userId = newUserId
+  try {
+    const p = join(session.workspace, ANON_OWNER_FILE)
+    if (existsSync(p)) unlinkSync(p)
+  } catch {
+    /* ignore */
+  }
   return session
 }
 

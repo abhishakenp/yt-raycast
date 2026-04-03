@@ -627,6 +627,44 @@ textarea {
   color: #ef4444;
 }
 
+.prompt-policy-violation {
+  display: none;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 2px solid #b91c1c;
+  background: linear-gradient(145deg, #450a0a 0%, #7f1d1d 50%, #450a0a 100%);
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.35),
+    0 12px 40px rgba(127, 29, 29, 0.55);
+  color: #fecaca;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: pre-line;
+  animation: policy-violation-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.prompt-policy-violation.is-visible {
+  display: block;
+}
+
+@keyframes policy-violation-pulse {
+  from {
+    box-shadow:
+      0 0 0 1px rgba(248, 113, 113, 0.35),
+      0 8px 28px rgba(127, 29, 29, 0.45);
+  }
+  to {
+    box-shadow:
+      0 0 0 2px rgba(239, 68, 68, 0.65),
+      0 16px 48px rgba(185, 28, 28, 0.65);
+  }
+}
+
 /* ─── Private generation checkbox ─── */
 .private-gen-row {
   margin-top: 6px;
@@ -962,6 +1000,71 @@ textarea {
   letter-spacing: 1.5px;
   margin-bottom: 16px;
 }
+
+.session-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.session-pagination-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  min-height: 36px;
+}
+
+
+.session-page-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 58, 237, 0.55);
+  background: rgba(124, 58, 237, 0.1);
+  color: #c4b5fd;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    opacity 0.2s;
+}
+
+.session-page-btn:hover:not(:disabled) {
+  background: rgba(124, 58, 237, 0.2);
+  border-color: rgba(167, 139, 250, 0.9);
+}
+
+.session-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.session-page-status {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d4ccff;
+  letter-spacing: 0.02em;
+  text-align: center;
+  width: 100%;
+  max-width: 36rem;
+  line-height: 1.45;
+}
+
+.session-page-btn[hidden] {
+  display: none !important;
+}
+
 .session-list {
   list-style: none;
   display: grid;
@@ -1105,25 +1208,60 @@ textarea {
   z-index: 100;
 }
 
-.social-links {
-  position: fixed;
-  bottom: 20px;
-  left: 24px;
+.homepage-footer {
+  position: relative;
+  z-index: 1;
+  width: min(1200px, calc(100% - 48px));
+  margin: 8px auto 0;
+  padding: 28px 0 48px;
+  border-top: 1px solid #2d2a3e;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.homepage-footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.homepage-footer-legal a {
+  color: #8b86a8;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.homepage-footer-legal a:hover {
+  color: #c4b5fd;
+}
+
+.homepage-footer-social {
   display: flex;
   align-items: center;
   gap: 16px;
-  z-index: 10;
 }
-.social-links a {
+
+.homepage-footer-social a {
   color: #4a4660;
   transition: color 0.2s;
   display: flex;
   align-items: center;
 }
-.social-links a:hover {
+
+.homepage-footer-social a:hover {
   color: #a78bfa;
 }
-.social-links a svg {
+
+.homepage-footer-social a svg {
   width: 18px;
   height: 18px;
 }
@@ -1326,16 +1464,16 @@ textarea {
   }
 
   .sessions,
-  .site-footer {
+  .homepage-footer {
+    width: min(100%, calc(100% - 32px));
     padding-left: 0;
     padding-right: 0;
   }
 
-  .social-links {
-    position: static;
-    width: min(100%, calc(100% - 32px));
-    margin: 0 auto 28px;
-    justify-content: flex-start;
+  .homepage-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 36px;
   }
 
   .top-actions {

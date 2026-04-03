@@ -14,6 +14,8 @@ import {
   signOut,
 } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
 
+import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from './content-policy.js'
+
 let auth = null
 let currentUser = null
 let authResolved = false
@@ -66,7 +68,9 @@ function showAnonymousApp() {
   clearGithubAccessToken()
   updateGenerationCounter()
   syncSubmitButtonState()
-  loadRecentPublicSessions()
+  publicGalleryPage = 1
+  userGalleryPage = 1
+  loadRecentPublicSessions(1)
 }
 
 async function showApp() {
@@ -186,6 +190,17 @@ const promptPlaceholderText = document.getElementById('prompt-placeholder-text')
 const privateGenRow = document.getElementById('private-gen-row')
 const privateGenCheckbox = document.getElementById('private-gen-checkbox')
 const privateGenModal = document.getElementById('private-gen-modal')
+const policyBlock = document.getElementById('prompt-policy-block')
+const sessionPagination = document.getElementById('session-pagination')
+const sessionPaginationActions = document.getElementById('session-pagination-actions')
+const sessionPagePrev = document.getElementById('session-page-prev')
+const sessionPageNext = document.getElementById('session-page-next')
+const sessionPageStatus = document.getElementById('session-page-status')
+const GALLERY_PAGE_SIZE = 12
+let publicGalleryPage = 1
+let userGalleryPage = 1
+let gallerySource = 'public'
+let galleryMeta = null
 const GENERATION_LIMIT = 2
 const MIN_PROMPT_LENGTH = 70
 const PROMPT_LANG_DETECT_MIN_CHARS = 65
@@ -789,6 +804,21 @@ function stepSamplePromptAnimation() {
   scheduleSamplePromptStep(260)
 }
 
+const showPolicyViolation = (message) => {
+  if (!policyBlock) return
+  policyBlock.textContent = message || CONTENT_POLICY_CLIENT_MESSAGE
+  policyBlock.hidden = false
+  policyBlock.classList.add('is-visible')
+  policyBlock.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+}
+
+const hidePolicyViolation = () => {
+  if (!policyBlock) return
+  policyBlock.textContent = ''
+  policyBlock.hidden = true
+  policyBlock.classList.remove('is-visible')
+}
+
 function validatePrompt(showError = false) {
   const promptLength = input.value.trim().length
 
@@ -918,6 +948,7 @@ if (isLocalDevHost) {
 }
 
 input.addEventListener('input', () => {
+  hidePolicyViolation()
   validatePrompt(false)
   syncSamplePromptVisibility()
   syncSubmitButtonState()
@@ -979,6 +1010,11 @@ form.addEventListener('submit', async (event) => {
     return
   }
   const prompt = input.value.trim()
+  if (!checkPromptContentPolicy(prompt).ok) {
+    showPolicyViolation(CONTENT_POLICY_CLIENT_MESSAGE)
+    syncSubmitButtonState()
+    return
+  }
   const preferredLanguage = languageSelect?.value || 'en'
   savePreferredLanguage(preferredLanguage)
 
@@ -996,18 +1032,19 @@ form.addEventListener('submit', async (event) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, preferredLanguage }),
     })
-    const data = await response.json()
+    const data = await response.json().catch(() => ({}))
 
     if (data.id) {
-      if (!currentUser) saveAnonSession(data.id, prompt)
+      if (!currentUser) saveAnonSession(data.id, prompt, data.anonOwnerSecret)
       localStorage.setItem('sf_generation_count', String(getGenerationCount() + 1))
       sessionStorage.setItem('sf_return_home', '1')
       window.location.href = `/session/${data.id}`
       return
     }
 
-    if (!currentUser && response.status === 429) {
-      // Server-side anon limit hit — prompt sign-in
+    if (data.code === 'CONTENT_POLICY' || response.status === 422) {
+      showPolicyViolation(data.error || CONTENT_POLICY_CLIENT_MESSAGE)
+    } else if (!currentUser && response.status === 429) {
       updateGenerationCounter()
       document.getElementById('auth-overlay').classList.remove('hidden')
     } else {
@@ -1023,9 +1060,11 @@ form.addEventListener('submit', async (event) => {
 
 const ANON_SESSIONS_KEY = 'sf_anon_sessions'
 
-function saveAnonSession(id, prompt) {
+function saveAnonSession(id, prompt, ownerSecret) {
   const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
-  stored.unshift({ id, prompt })
+  const entry = { id, prompt }
+  if (ownerSecret) entry.secret = String(ownerSecret)
+  stored.unshift(entry)
   localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)))
 }
 
@@ -1053,6 +1092,51 @@ const openSessionFromList = (id) => {
   sessionStorage.setItem('sf_return_home', '1')
   location.href = `/session/${id}`
 }
+
+const hideGalleryPagination = () => {
+  galleryMeta = null
+  if (sessionPagination) sessionPagination.hidden = true
+}
+
+const updateGalleryPagination = (meta) => {
+  if (!sessionPagination || !sessionPagePrev || !sessionPageNext || !sessionPageStatus) return
+  if (!meta || meta.total === 0) {
+    sessionPagination.hidden = true
+    return
+  }
+  sessionPagination.hidden = false
+  const from = (meta.page - 1) * meta.limit + 1
+  const to = Math.min(meta.page * meta.limit, meta.total)
+  sessionPageStatus.textContent = `Page ${meta.page} of ${meta.totalPages} \u00B7 ${from}\u2013${to} of ${meta.total}`
+
+  const showPrev = Boolean(meta.hasPrev)
+  const showNext = Boolean(meta.hasNext)
+  sessionPagePrev.hidden = !showPrev
+  sessionPageNext.hidden = !showNext
+  if (sessionPaginationActions) {
+    sessionPaginationActions.hidden = !showPrev && !showNext
+  }
+}
+
+sessionPagePrev?.addEventListener('click', async () => {
+  if (!galleryMeta?.hasPrev) return
+  const p = galleryMeta.page - 1
+  if (gallerySource === 'public') await loadRecentPublicSessions(p)
+  else if (gallerySource === 'user') {
+    userGalleryPage = p
+    await loadUserSessionsPage()
+  }
+})
+
+sessionPageNext?.addEventListener('click', async () => {
+  if (!galleryMeta?.hasNext) return
+  const p = galleryMeta.page + 1
+  if (gallerySource === 'public') await loadRecentPublicSessions(p)
+  else if (gallerySource === 'user') {
+    userGalleryPage = p
+    await loadUserSessionsPage()
+  }
+})
 
 document.getElementById('session-list')?.addEventListener('pointerdown', (event) => {
   if (event.button !== 0) return
@@ -1204,38 +1288,58 @@ function renderSessions(sessions) {
   }
 }
 
-async function loadRecentPublicSessions() {
+async function loadRecentPublicSessions(page = 1) {
+  gallerySource = 'public'
+  publicGalleryPage = page
   try {
-    const r = await fetch('/api/sessions/recent')
+    const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
     if (!r.ok) {
       renderSessions([])
+      hideGalleryPagination()
       return
     }
-    const sessions = await r.json()
-    if (!Array.isArray(sessions) || sessions.length === 0) {
+    const data = await r.json()
+    const items = Array.isArray(data.items) ? data.items : []
+    galleryMeta = data
+    if (items.length === 0) {
       renderSessions([])
+      hideGalleryPagination()
       return
     }
-    renderSessions(sessions)
+    renderSessions(items)
+    updateGalleryPagination(data)
   } catch {
     renderSessions([])
+    hideGalleryPagination()
+  }
+}
+
+async function loadUserSessionsPage() {
+  gallerySource = 'user'
+  try {
+    const response = await authFetch(
+      `/api/sessions?page=${userGalleryPage}&limit=${GALLERY_PAGE_SIZE}`,
+    )
+    if (!response.ok) return false
+    const raw = await response.json()
+    if (!raw.items || !Array.isArray(raw.items)) return false
+    galleryMeta = raw
+    renderSessions(raw.items)
+    updateGalleryPagination(raw)
+    return true
+  } catch {
+    return false
   }
 }
 
 async function loadSessions() {
-  try {
-    const response = await authFetch('/api/sessions')
-    if (!response.ok) throw new Error('Failed to load sessions')
-    const raw = await response.json()
-    const sessions = Array.isArray(raw) ? raw : []
-    if (sessions.length > 0) {
-      renderSessions(sessions)
-      return
-    }
-  } catch {
-    // Ignore fetch failures on the public page and keep the marketing content available.
-  }
-  await loadRecentPublicSessions()
+  userGalleryPage = 1
+  const ok = await loadUserSessionsPage()
+  if (ok && galleryMeta && galleryMeta.total > 0) return
+  gallerySource = 'public'
+  publicGalleryPage = 1
+  hideGalleryPagination()
+  await loadRecentPublicSessions(1)
 }
 
 async function loadAnonymousSessions() {
@@ -1270,6 +1374,7 @@ async function loadAnonymousSessions() {
     }
 
     renderSessions(valid)
+    hideGalleryPagination()
   } catch {
     // Ignore failures silently.
   }

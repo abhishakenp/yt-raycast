@@ -6,6 +6,16 @@ export const SITE_URL = (process.env.SITE_URL ?? 'https://ship-fast.devliv.io').
 export const BASE_DOMAIN = process.env.BASE_DOMAIN ?? 'ship-fast.io'
 export const PLAUSIBLE_DOMAIN = process.env.PLAUSIBLE_DOMAIN ?? new URL(SITE_URL).hostname
 
+export const LEGAL_CONTROLLER_NAME = (process.env.LEGAL_CONTROLLER_NAME ?? 'Livio Gamassia').trim()
+export const LEGAL_CONTROLLER_ADDRESS = (process.env.LEGAL_CONTROLLER_ADDRESS ?? '').trim()
+export const PRIVACY_CONTACT_EMAIL = (
+  process.env.PRIVACY_CONTACT_EMAIL ?? 'liviogama@gmail.com'
+).trim()
+export const PRIVACY_POLICY_JURISDICTION = (process.env.PRIVACY_POLICY_JURISDICTION ?? '').trim()
+export const PRIVACY_POLICY_EFFECTIVE_DATE = (
+  process.env.PRIVACY_POLICY_EFFECTIVE_DATE ?? '2026-04-03'
+).trim()
+
 export const GROQ_API_KEY = process.env.GROQ_API_KEY
 export const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'
 export const GROQ_MODEL = process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b'

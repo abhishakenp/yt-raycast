@@ -17,6 +17,7 @@ import {
   getInterruptedSessions,
   broadcastToAllSessions,
   setSessionPreferredLanguage,
+  readAnonOwnerSecret,
 } from './sessions.js'
 import { verifyIdToken, db } from '../auth/firebase-admin.js'
 import {
@@ -42,6 +43,8 @@ import {
   setQuotaInfoGetter,
 } from './payments.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
+import { renderPrivacyPage } from './privacy-page.js'
+import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
 import { pushSessionToGitHub } from './github.js'
 import {
   getDeploymentBySlug,
@@ -52,6 +55,10 @@ import {
 import { generateSlug } from './slug-generator.js'
 import { requirePromptText } from '../prompt.js'
 import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
+import {
+  checkPromptContentPolicy,
+  CONTENT_POLICY_CLIENT_MESSAGE,
+} from '../../public/scripts/content-policy.js'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -417,17 +424,67 @@ export async function startServer(sessionsDir) {
     next()
   }
 
-  function ensureDeploymentAccess(req, res, session) {
-    if (!session?.userId) return true
-    if (!req.user) {
-      res.status(401).json({ error: 'Unauthorized' })
-      return false
+  function ensureSessionArtifactAccess(req, res, session) {
+    if (session?.userId) {
+      if (!req.user) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return false
+      }
+      if (session.userId !== req.user.uid) {
+        res.status(403).json({ error: 'Forbidden' })
+        return false
+      }
+      return true
     }
-    if (session.userId !== req.user.uid) {
-      res.status(403).json({ error: 'Forbidden' })
-      return false
+    const secret = readAnonOwnerSecret(session.workspace)
+    if (!secret) return true
+    const header = String(req.headers['x-ship-fast-anon-owner'] || '').trim()
+    if (header === secret) return true
+    res.status(403).json({
+      error:
+        'This project was created in another browser or session. Open it from the device where you generated it, or sign in on the home page and claim your Ship Fast history.',
+    })
+    return false
+  }
+
+  async function provisionDeploymentIfNeeded(session) {
+    let deployment = session.deployment || getDeploymentBySessionId(session.id)
+    if (deployment) {
+      if (!deployment.url && deployment.slug) {
+        deployment = { ...deployment, url: `https://${deployment.slug}.${BASE_DOMAIN}` }
+        session.deployment = deployment
+        try {
+          writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(deployment, null, 2))
+        } catch {
+          void 0
+        }
+      }
+      return deployment
     }
-    return true
+    let projectContext = {}
+    try {
+      const contextPath = join(session.workspace, 'project-context.json')
+      if (existsSync(contextPath)) projectContext = JSON.parse(readFileSync(contextPath, 'utf-8'))
+    } catch {
+      void 0
+    }
+    const slug = await generateSlug(projectContext)
+    const created = registerDeployment(slug, session.id)
+    const url = `https://${created.slug}.${BASE_DOMAIN}`
+    deployment = {
+      slug: created.slug,
+      url,
+      deployedAt: created.deployedAt,
+    }
+    session.deployment = deployment
+    try {
+      writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(deployment, null, 2))
+    } catch {
+      void 0
+    }
+    const state = makeSessionState(session)
+    state.broadcast({ type: 'deployed', slug: deployment.slug, url: deployment.url })
+    return deployment
   }
 
   // ─── Public: Firebase client config ──────────────────────
@@ -467,6 +524,10 @@ export async function startServer(sessionsDir) {
     res.sendFile(join(publicDir, 'pricing.html'))
   })
 
+  app.get('/privacy', (_req, res) => {
+    res.type('html').send(renderPrivacyPage())
+  })
+
   // Serve public assets statically, but keep / routed through SSR.
   app.use(express.static(publicDir, { index: false }))
 
@@ -494,6 +555,14 @@ export async function startServer(sessionsDir) {
 
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     const ts = new Date().toISOString()
+
+    const policyResult = checkPromptContentPolicy(trimmedPrompt)
+    if (!policyResult.ok) {
+      console.warn(`[${ts}] CONTENT_POLICY_BLOCKED ip=${clientIp} user=${req.user?.uid ?? 'anon'}`)
+      return res
+        .status(422)
+        .json(sanitizeErrorResponse(CONTENT_POLICY_CLIENT_MESSAGE, { code: 'CONTENT_POLICY' }))
+    }
     const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     let session
@@ -527,10 +596,19 @@ export async function startServer(sessionsDir) {
             }),
           }).catch(() => {})
         }
-        return res.json(sanitizeSessionCreateResponse(existing))
+        const isSubscriberCached = await hasActiveSubscription(req.user.uid)
+        const monthlyLimitCached = isSubscriberCached ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
+        return res.json(
+          sanitizeSessionCreateResponse(existing, {
+            cached: true,
+            remaining: monthlyLimitCached - userMonthly,
+          }),
+        )
       }
       if (shouldBypassBrandCache) {
-        console.log(`[${ts}] CACHE_BYPASS user=${req.user.uid} session=${existing.id} reason=brand_profile_missing`)
+        console.log(
+          `[${ts}] CACHE_BYPASS user=${req.user.uid} session=${existing.id} reason=brand_profile_missing`,
+        )
       }
 
       // Determine subscription status and monthly limit
@@ -720,12 +798,17 @@ export async function startServer(sessionsDir) {
     activeGenerations.set(generationKey, (activeGenerations.get(generationKey) || 0) + 1)
 
     generation
-      .then(() => {
+      .then(async () => {
         setSessionStatus(session.id, 'done')
         activeGenerations.set(
           generationKey,
           Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
         )
+        try {
+          await provisionDeploymentIfNeeded(session)
+        } catch (err) {
+          console.error(`[auto-deploy] session ${session.id}:`, err?.message ?? err)
+        }
       })
       .catch((err) => {
         setSessionStatus(session.id, 'failed')
@@ -776,20 +859,37 @@ export async function startServer(sessionsDir) {
         (t) => Date.now() - t < DAILY_WINDOW_MS,
       ).length
       const remaining = MAX_ANON_PER_DAY - currentAnon
-      res.json(sanitizeSessionCreateResponse(session, { cached: false, remaining }))
+      const anonOwnerSecret = readAnonOwnerSecret(session.workspace)
+      res.json(
+        sanitizeSessionCreateResponse(session, {
+          cached: false,
+          remaining,
+          anonOwnerSecret: anonOwnerSecret || undefined,
+        }),
+      )
     }
   })
 
   // ─── API: List sessions (authenticated — own sessions) ───────
-  app.get('/api/sessions', requireAuth, (_req, res) => {
-    res.json(getAllSessions(_req.user.uid))
+  app.get('/api/sessions', requireAuth, (req, res) => {
+    const all = getAllSessions(req.user.uid)
+    const wantsPage =
+      req.query &&
+      (Object.prototype.hasOwnProperty.call(req.query, 'page') ||
+        Object.prototype.hasOwnProperty.call(req.query, 'limit'))
+    if (!wantsPage) {
+      res.json(all)
+      return
+    }
+    const { limit, page } = parseGalleryPagination(req.query)
+    res.json(paginateGalleryList(all, page, limit))
   })
 
   // ─── API: Recent public sessions gallery (no auth required) ──
-  app.get('/api/sessions/recent', (_req, res) => {
-    const all = getAllSessions()
-    const public_ = all.filter((s) => s.homepageReady && !s.isPrivate).slice(0, 30)
-    res.json(public_)
+  app.get('/api/sessions/recent', (req, res) => {
+    const all = getAllSessions().filter((s) => s.homepageReady && !s.isPrivate)
+    const { limit, page } = parseGalleryPagination(req.query)
+    res.json(paginateGalleryList(all, page, limit))
   })
 
   // ─── API: Claim anonymous sessions ─────────────────────────
@@ -852,6 +952,7 @@ export async function startServer(sessionsDir) {
       homepageReady: session.homepageReady,
       siteSpecReady: session.siteSpecReady ?? false,
       preferredExportTarget: session.preferredExportTarget || 'html',
+      preferredLanguage: session.preferredLanguage || 'en',
       exportTargets: targets,
       payment,
       themeOverride: session.themeOverride ?? null,
@@ -864,70 +965,47 @@ export async function startServer(sessionsDir) {
   app.post('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (!ensureDeploymentAccess(req, res, session)) return
-
-    let deployment = session.deployment || getDeploymentBySessionId(session.id)
-    if (!deployment) {
-      let projectContext = {}
-      try {
-        const contextPath = join(session.workspace, 'project-context.json')
-        if (existsSync(contextPath)) projectContext = JSON.parse(readFileSync(contextPath, 'utf-8'))
-      } catch {}
-      let slug
-      try {
-        slug = await generateSlug(projectContext)
-      } catch {
-        return res.status(500).json({ error: 'Failed to generate deployment slug' })
-      }
-      const created = registerDeployment(slug, session.id)
-      const url = `https://${created.slug}.${BASE_DOMAIN}`
-      deployment = {
-        slug: created.slug,
-        url,
-        deployedAt: created.deployedAt,
-      }
-      session.deployment = deployment
-      try {
-        writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(deployment, null, 2))
-      } catch {}
-      const state = makeSessionState(session)
-      state.broadcast({ type: 'deployed', slug: deployment.slug, url: deployment.url })
-    } else if (!deployment.url) {
-      deployment = { ...deployment, url: `https://${deployment.slug}.${BASE_DOMAIN}` }
-      session.deployment = deployment
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    try {
+      const deployment = await provisionDeploymentIfNeeded(session)
+      res.json({
+        ok: true,
+        slug: deployment.slug,
+        url: deployment.url,
+        deployedAt: deployment.deployedAt,
+      })
+    } catch {
+      res.status(500).json({ error: 'Deployment failed' })
     }
-
-    res.json({
-      ok: true,
-      slug: deployment.slug,
-      url: deployment.url,
-      deployedAt: deployment.deployedAt,
-    })
   })
 
   app.get('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (!ensureDeploymentAccess(req, res, session)) return
 
-    const deployment = session.deployment || getDeploymentBySessionId(session.id)
-    if (!deployment) return res.json({ deployed: false })
-    const response = deployment.url
-      ? deployment
-      : { ...deployment, url: `https://${deployment.slug}.${BASE_DOMAIN}` }
-    if (!deployment.url && response.url) {
-      session.deployment = response
-      try {
-        writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(response, null, 2))
-      } catch {}
+    const existing = session.deployment || getDeploymentBySessionId(session.id)
+    if (existing) {
+      const response = existing.url
+        ? existing
+        : { ...existing, url: `https://${existing.slug}.${BASE_DOMAIN}` }
+      if (!existing.url && response.url) {
+        session.deployment = response
+        try {
+          writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(response, null, 2))
+        } catch {
+          void 0
+        }
+      }
+      return res.json({
+        deployed: true,
+        slug: response.slug,
+        url: response.url,
+        deployedAt: response.deployedAt,
+      })
     }
 
-    res.json({
-      deployed: true,
-      slug: response.slug,
-      url: response.url,
-      deployedAt: response.deployedAt,
-    })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    res.json({ deployed: false })
   })
 
   app.get('/api/sessions/:id/export-targets', async (req, res) => {
@@ -1060,7 +1138,13 @@ export async function startServer(sessionsDir) {
     if (!req.user) {
       return res.status(401).json({ error: 'Sign in to download your projects' })
     }
-    if (session.userId && session.userId !== req.user.uid) {
+    if (!session.userId) {
+      return res.status(403).json({
+        error:
+          'Claim this project from the Ship Fast home page after signing in to download exports.',
+      })
+    }
+    if (session.userId !== req.user.uid) {
       return res.status(403).json({ error: 'You do not own this session' })
     }
 
@@ -1205,6 +1289,8 @@ export async function startServer(sessionsDir) {
 /** Start a session from CLI (backward compat) */
 export async function startCLISession(workspace, prompt) {
   const normalizedPrompt = requirePromptText(prompt)
+  const policyResult = checkPromptContentPolicy(normalizedPrompt)
+  if (!policyResult.ok) throw new Error(CONTENT_POLICY_CLIENT_MESSAGE)
   const session = createSession(_sessionsDir || workspace, normalizedPrompt)
   // Override workspace to the user-specified one
   session.workspace = workspace
