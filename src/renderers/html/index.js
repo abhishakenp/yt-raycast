@@ -2,7 +2,7 @@ import {
   buildGlobalCss,
   buildHtmlRuntimeScript,
   escapeHtml,
-  getIndianFontMarkup,
+  getLanguageFontMarkup,
   pageUsesExactClone,
   renderSectionHtml,
   routeToHtmlFile,
@@ -121,7 +121,7 @@ ${withLang}
 function renderPageDocument(siteSpec, page) {
   const sections = (page.sections || []).map((section) => renderSectionHtml(section)).join('\n')
   const { htmlLang, markup } = renderSeoHeadMarkup(siteSpec, page)
-  const indianFontMarkup = getIndianFontMarkup(siteSpec._indiaMode)
+  const indianFontMarkup = getLanguageFontMarkup(siteSpec._indiaMode)
 
   return `<!doctype html>
 <html lang="${escapeHtml(htmlLang)}">

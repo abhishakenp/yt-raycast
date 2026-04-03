@@ -63,13 +63,24 @@ const HINGLISH_HOMEPAGE_APPEND = `
 ── HINGLISH (Hindi–English) COPY ──
 Visible UI text must mix Hindi and English the way Indian brands do: common English for product/UI terms where expected; Hindi for warmth (Devanagari or romanized, matching the user prompt). Never 100% Hindi-only or English-only. Nav, buttons, headings, and body stay in this mixed register.`
 
+function nonEnglishLanguageAppend(indiaMode) {
+  if (!indiaMode?.code || indiaMode.code === 'en' || indiaMode.language?.code === 'hinglish') return ''
+  const fontName = indiaMode.fontFamily?.split(',')[0]?.trim() || ''
+  const fontNote = fontName && fontName !== 'Inter' ? ` Load "${fontName}" from Google Fonts.` : ''
+  const rtlNote = indiaMode.isRTL ? ' Use dir="rtl" on the <html> element.' : ''
+  return `
+
+── ${indiaMode.name.toUpperCase()} LANGUAGE ──
+All visible UI text must be in ${indiaMode.name} (${indiaMode.nativeName}). Nav, buttons, headings, and body — everything the user reads.${fontNote}${rtlNote}`
+}
+
 export async function groqHomepage(prompt, imageHints = null, indiaMode = null, brandProfile = null) {
   const hinglish = indiaMode?.language?.code === 'hinglish'
   const brandBlock = brandProfilePromptBlock(brandProfile)
   return groqFetch({
     model: HOMEPAGE_MODEL,
     system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
-${hinglish ? HINGLISH_HOMEPAGE_APPEND : ''}
+${hinglish ? HINGLISH_HOMEPAGE_APPEND : nonEnglishLanguageAppend(indiaMode)}
 
 CLASSIFY: If the prompt describes functionality (app, client, editor, dashboard, manager, tool), build an APPLICATION UI. If it describes a business/product/service, build a LANDING PAGE. Default to APP when unclear.
 

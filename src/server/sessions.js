@@ -10,7 +10,7 @@ import {
   unlinkSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { BASE_DOMAIN, SUPPORTED_INDIAN_LANGUAGES } from '../config.js'
+import { BASE_DOMAIN } from '../config.js'
 import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
 import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deployments.js'
@@ -39,9 +39,7 @@ function normalizePreferredLanguage(value) {
     .trim()
     .toLowerCase()
   if (!requested || requested === 'en') return DEFAULT_PREFERRED_LANGUAGE
-  return SUPPORTED_INDIAN_LANGUAGES.some((language) => language.code === requested)
-    ? requested
-    : DEFAULT_PREFERRED_LANGUAGE
+  return /^[a-z]{2,8}$/.test(requested) ? requested : DEFAULT_PREFERRED_LANGUAGE
 }
 
 export function normalizePreferredExportTarget(value) {

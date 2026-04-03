@@ -183,9 +183,9 @@ export async function generateAllTasks(
   // Generate all pages with Groq (quality), translate with hex-1 if India mode
   let pageResults = pageCalls.length > 0 ? await groqParallel(pageCalls) : []
 
-  if (indiaMode?.isIndian && !indiaMode.language?.skipFullTranslation && pageResults.length > 0) {
+  if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation && pageResults.length > 0) {
     log(
-      `  translating ${pageResults.length} pages to ${indiaMode.language.name} via hex-1 (sequential)...`,
+      `  translating ${pageResults.length} pages to ${indiaMode.name || indiaMode.language?.name} (sequential)...`,
     )
     const englishHtmls = pageResults.map((r) => (r?.content ? stripFences(r.content) : ''))
     const translatedHtmls = await translateHtmlSequential(englishHtmls, indiaMode)

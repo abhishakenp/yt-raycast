@@ -29,9 +29,11 @@ export function pagePrompt(
   brandProfile = null,
 ) {
   const hinglish = indiaMode?.language?.code === 'hinglish'
-  const hinglishNote = hinglish
+  const langNote = hinglish
     ? '\n\nLANGUAGE: Hinglish — match the homepage. All new visible text stays a natural Hindi–English mix, not pure Hindi or pure English.\n'
-    : ''
+    : indiaMode?.code && indiaMode.code !== 'en'
+      ? `\n\nLANGUAGE: ${indiaMode.name} — all visible text must be in ${indiaMode.name}. Match the homepage language.\n`
+      : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
   return {
     system:
@@ -40,7 +42,7 @@ export function pagePrompt(
     prompt: `Create the "${task.title}" page. Reuse the exact <head>, nav, and footer from the homepage.
 Write unique <main> content for: ${task.description ?? task.title}
 
-${hinglishNote}Nav links:
+${langNote}Nav links:
 ${navList}
 
 Realistic mock data.

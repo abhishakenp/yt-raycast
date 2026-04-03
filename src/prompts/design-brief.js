@@ -1,12 +1,14 @@
 import { INDIAN_DESIGN_TOKENS } from '../config.js'
 
-function indianDesignAppendix(indiaMode) {
-  if (!indiaMode?.isIndian) return ''
-  const { language } = indiaMode
-  const colors = INDIAN_DESIGN_TOKENS.colors
-  const patterns = INDIAN_DESIGN_TOKENS.patterns
-  if (language?.code === 'hinglish') {
-    return `
+function languageDesignAppendix(indiaMode) {
+  if (!indiaMode || indiaMode.code === 'en') return ''
+
+  if (indiaMode.isIndian) {
+    const { language } = indiaMode
+    const colors = INDIAN_DESIGN_TOKENS.colors
+    const patterns = INDIAN_DESIGN_TOKENS.patterns
+    if (language?.code === 'hinglish') {
+      return `
 
 ### India Mode — Hinglish
 Hindi–English mixed copy for Indian audiences (natural Hinglish, not pure Hindi or pure English):
@@ -14,8 +16,8 @@ Hindi–English mixed copy for Indian audiences (natural Hinglish, not pure Hind
 - **Color palette**: Root the palette in Indian tradition — saffron (${colors.primary[1]}), gold (${colors.primary[2]}), deep red (${colors.decorative[0]}), peacock blue (${colors.secondary[0]}), India green (${colors.accent[0]}). Choose 1–2 as accent.
 - **Decorative motifs**: Subtle Indian geometric patterns: ${patterns.join(', ')}.
 - **Tailwind config**: Indian-inspired semantic tokens (primary, accent, decorative, surface).`
-  }
-  return `
+    }
+    return `
 
 ### India Mode — Additional Requirements
 This is an Indian-language (${language.name}) website. Apply these constraints on top of the standard design system:
@@ -23,6 +25,15 @@ This is an Indian-language (${language.name}) website. Apply these constraints o
 - **Color palette**: Root the palette in Indian tradition — saffron (${colors.primary[1]}), gold (${colors.primary[2]}), deep red (${colors.decorative[0]}), peacock blue (${colors.secondary[0]}), India green (${colors.accent[0]}). Choose 1–2 as accent, keep the rest as supporting tones.
 - **Decorative motifs**: Incorporate subtle Indian geometric patterns: ${patterns.join(', ')}. These should accent section boundaries and card borders — tasteful, not overwhelming.
 - **Tailwind config**: Include the chosen Indian-inspired colors as semantic tokens (primary, accent, decorative, surface).`
+  }
+
+  // Non-English, non-Indian language
+  const fontName = indiaMode.fontFamily?.split(',')[0]?.trim() || 'Inter'
+  return `
+
+### Language — ${indiaMode.name}
+This website is in ${indiaMode.name} (${indiaMode.nativeName}). Apply these constraints:
+- **Font**: Use "${fontName}" as the primary font for body text. Load it from Google Fonts.${indiaMode.isRTL ? '\n- **Direction**: Use right-to-left (RTL) layout with dir="rtl" on the html element.' : ''}`
 }
 
 export function designBriefPrompt(prompt, indiaMode = null) {
@@ -81,7 +92,7 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 - Restraint: less is more, no clutter, no busy layouts
 - If images are truly needed (ecommerce/portfolio), use relevant verified provider photos first. If no close match exists, avoid random stock-photo fallbacks and use gradients, patterns, icons, or typography-driven panels instead
 
-Max 70 lines. Output ONLY markdown.${indianDesignAppendix(indiaMode)}`,
+Max 70 lines. Output ONLY markdown.${languageDesignAppendix(indiaMode)}`,
     model: 'moonshotai/kimi-k2-instruct-0905',
     temperature: 0.4,
     maxTokens: 3000,

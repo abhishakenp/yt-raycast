@@ -148,18 +148,18 @@ export async function generateHomepage(
 
   html = injectShipFastFooterBranding(html, log)
 
-  if (indiaMode?.isIndian && !indiaMode.language?.skipFullTranslation) {
-    log(`  homepage: translating to ${indiaMode.language.name} via Groq...`)
+  if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation) {
+    log(`  homepage: translating to ${indiaMode.name || indiaMode.language?.name} via Groq...`)
     try {
       const translated = await translateHtml(html, indiaMode)
       if (translated?.content && !translated.error) {
         html = translated.content
         log(`  homepage: translation complete — ${translated.translatedCount} strings translated`)
       } else {
-        log(`  homepage: translation failed — ${translated?.error ?? 'empty'}, keeping English`)
+        log(`  homepage: translation failed — ${translated?.error ?? 'empty'}, keeping original`)
       }
     } catch (err) {
-      log(`  homepage: translation error — ${err.message}, keeping English`)
+      log(`  homepage: translation error — ${err.message}, keeping original`)
     }
   }
 

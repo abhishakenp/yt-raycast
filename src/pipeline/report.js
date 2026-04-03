@@ -18,10 +18,14 @@ export function formatRunAllReport(timings, stats) {
 
   const homepageLabel = indiaMode?.isIndian
     ? `hex-1 (${indiaMode.language.name})  `
-    : 'Groq kimi-k2      '
+    : indiaMode?.code && indiaMode.code !== 'en'
+      ? `Groq (${indiaMode.name})   `
+      : 'Groq kimi-k2      '
   const pageLabel = indiaMode?.isIndian
     ? `hex-1 (${indiaMode.language.name})  `
-    : 'Groq              '
+    : indiaMode?.code && indiaMode.code !== 'en'
+      ? `Groq (${indiaMode.name})   `
+      : 'Groq              '
   const ms = (a, b) =>
     timings[b] && timings[a] ? ((timings[b] - timings[a]) / 1000).toFixed(1) : '\u2014'
   const tokFmt = (t) => (t > 0 ? t.toLocaleString() : '\u2014')

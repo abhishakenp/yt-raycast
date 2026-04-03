@@ -5,9 +5,11 @@ import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
  * India Mode language, plus a CSS snippet that applies it as the body font.
  * Returns empty string when India Mode is not active.
  */
-export function getIndianFontMarkup(indiaMode) {
-  if (!indiaMode?.isIndian) return ''
-  const fontFamily = indiaMode.language.fontFamily
+export function getLanguageFontMarkup(indiaMode) {
+  if (!indiaMode || indiaMode.code === 'en') return ''
+  const fontFamily = indiaMode.fontFamily || indiaMode.language?.fontFamily
+  if (!fontFamily) return ''
+
   if (indiaMode.language?.code === 'hinglish') {
     return `<link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,8 +20,9 @@ export function getIndianFontMarkup(indiaMode) {
   return `<link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=${googleFontName}:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <style>body, * { font-family: ${fontFamily}; }</style>`
+    <style>body, * { font-family: ${fontFamily}; }${indiaMode.isRTL ? ' html { direction: rtl; }' : ''}</style>`
 }
+export { getLanguageFontMarkup as getIndianFontMarkup }
 
 export function escapeHtml(value = '') {
   return String(value)

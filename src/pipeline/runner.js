@@ -19,7 +19,7 @@ import {
   stripSiteSpecBlueprints,
 } from '../spec/index.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
-import { detectIndiaMode } from './detect-india-mode.js'
+import { detectLanguage } from './detect-language.js'
 import { resolvePexelsImageHints } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { withLanguageEnforcementBlock } from './prompt-language.js'
@@ -211,13 +211,21 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     timings[name] = Date.now()
   }
 
-  const pipelinePrompt = withLanguageEnforcementBlock(normalizedPrompt, preferredLanguage)
-  writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
   sessionCtx.setPrompt(normalizedPrompt)
 
-  const indiaMode = detectIndiaMode(normalizedPrompt, preferredLanguage)
-  if (indiaMode.isIndian) {
-    _log(`  India Mode detected: generating in ${indiaMode.language.name} via hex-1`)
+  const [brandProfile, indiaMode] = await Promise.all([
+    enrichBrandProfile(normalizedPrompt, workspace, _log).catch((error) => {
+      _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
+      return null
+    }),
+    detectLanguage(normalizedPrompt, preferredLanguage),
+  ])
+
+  const pipelinePrompt = withLanguageEnforcementBlock(normalizedPrompt, indiaMode.code)
+  writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
+
+  if (indiaMode.code !== 'en') {
+    _log(`  Language detected: ${indiaMode.name} (${indiaMode.code})${indiaMode.isIndian ? ' — routing to hex-1' : ''}`)
   }
 
   let ctx = null
@@ -225,19 +233,14 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   let siteSpec = null
 
   tick('t0')
-  const brandProfilePromise = enrichBrandProfile(normalizedPrompt, workspace, _log).catch((error) => {
-    _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
-    return null
-  })
 
   // ── PARALLEL: spec+design AND homepage fire at the same time ──
   _status('Generating spec…', 'spec')
 
   const specPromise = (async () => {
-    const [designStats, detectStats, brandProfile] = await Promise.all([
+    const [designStats, detectStats] = await Promise.all([
       generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
       detectSiteType(pipelinePrompt, _log),
-      brandProfilePromise,
     ])
     tick('design_end')
     tick('detect_end')
@@ -260,14 +263,11 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       brandProfile,
     })
     tick('site_spec_end')
-    return { designStats, detectStats, ctxStats, siteSpecStats, brandProfile }
+    return { designStats, detectStats, ctxStats, siteSpecStats }
   })()
 
   const homepagePromise = (async () => {
-    const [imageHints, brandProfile] = await Promise.all([
-      resolvePexelsImageHints({ prompt: normalizedPrompt }),
-      brandProfilePromise,
-    ])
+    const imageHints = await resolvePexelsImageHints({ prompt: normalizedPrompt })
     try {
       const stats = await generateHomepage(
         pipelinePrompt,
@@ -296,7 +296,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   const [specResult, homepageStats] = await Promise.all([specPromise, homepagePromise])
 
-  const { designStats, detectStats, ctxStats, siteSpecStats, brandProfile } = specResult
+  const { designStats, detectStats, ctxStats, siteSpecStats } = specResult
   const designBrief = designStats.brief
   ctx = ctxStats.ctx
   siteSpec = siteSpecStats.siteSpec
