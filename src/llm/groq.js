@@ -1,4 +1,5 @@
 import { GROQ_API_KEY, GROQ_HOST, GROQ_MODEL, HOMEPAGE_MODEL, LLM_CONFIG } from '../config.js'
+import { brandProfilePromptBlock } from '../prompts/brand-profile.js'
 import { calculateCost } from './utils.js'
 
 async function groqFetch({
@@ -62,8 +63,9 @@ const HINGLISH_HOMEPAGE_APPEND = `
 ── HINGLISH (Hindi–English) COPY ──
 Visible UI text must mix Hindi and English the way Indian brands do: common English for product/UI terms where expected; Hindi for warmth (Devanagari or romanized, matching the user prompt). Never 100% Hindi-only or English-only. Nav, buttons, headings, and body stay in this mixed register.`
 
-export async function groqHomepage(prompt, imageHints = null, indiaMode = null) {
+export async function groqHomepage(prompt, imageHints = null, indiaMode = null, brandProfile = null) {
   const hinglish = indiaMode?.language?.code === 'hinglish'
+  const brandBlock = brandProfilePromptBlock(brandProfile)
   return groqFetch({
     model: HOMEPAGE_MODEL,
     system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
@@ -134,11 +136,15 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
-- Tailwind CSS via CDN, Google Fonts${hinglish ? ' (load Inter + Noto Sans Devanagari)' : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use <i data-lucide="icon-name"></i> for icons. No inline SVGs, no emojis.
+- Tailwind CSS via CDN, Google Fonts${hinglish ? ' (load Inter + Noto Sans Devanagari)' : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
 - Dark theme: bg-gray-950 base, lighter surfaces, border-gray-800, one accent color.
 - Vanilla JS only. No frameworks.
-- IMAGES: Use provided Pexels URLs first. Each line lists a scene description before the URL — assign the URL whose description best matches that card or section (breed, rescue, etc.). Never use a laptop, phone, or screen image for animals or nature posts. Use https://picsum.photos/seed/{keyword}/{w}/{h} only if no relevant Pexels image is available.`,
-    prompt: `${prompt}${buildImagePrompt(imageHints?.promptBlock)}`,
+- IMAGES: Use provided Pexels URLs first. Each line lists a scene description before the URL — assign the URL whose description best matches that card or section (breed, rescue, bridal, dairy, etc.). Reuse the closest matching provided URL when you need more image slots than unique photos. Never use a laptop, phone, or screen image for animals or nature posts. If no relevant photo exists, use a non-photo treatment such as a gradient panel, pattern, icon, or typography block instead of a random stock image.`,
+    prompt: `${prompt}${brandBlock}${buildImagePrompt(imageHints?.promptBlock)}\n${
+      brandProfile
+        ? 'Use the verified brand details above as exact source data. Do not invent missing logo, contact, or social fields.'
+        : ''
+    }`,
     temperature: LLM_CONFIG.homepage.temperature,
     maxTokens: LLM_CONFIG.homepage.maxTokens,
   })

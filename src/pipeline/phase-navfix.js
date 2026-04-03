@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { groqParallel } from '../llm/groq.js'
 import { stripFences, formatTps } from '../llm/utils.js'
+import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { writeFile } from './workspace.js'
 import { sumTokens } from './phase-tasks.js'
 import { navfixPrompt } from '../prompts/navfix.js'
@@ -20,7 +21,7 @@ export async function fixHomepageNav(navList, workspace, log) {
   const [result] = await groqParallel([{ system, prompt, temperature, maxTokens }])
 
   if (result?.content && !result.error) {
-    const cleaned = stripFences(result.content)
+    const cleaned = ensureLucideIconRuntime(stripFences(result.content), log)
     // Only write if it looks like HTML (starts with < or contains <!DOCTYPE)
     if (cleaned.startsWith('<') || cleaned.includes('<!DOCTYPE')) {
       writeFile(workspace, 'index.html', cleaned)

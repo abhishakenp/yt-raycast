@@ -1,6 +1,7 @@
 import { groqParallel } from '../llm/groq.js'
 import { translateHtmlSequential } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
+import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { slug, writeFile } from './workspace.js'
 import { HOME_LABELS } from '../config.js'
 import { pagePrompt, backendPrompt } from '../prompts/page.js'
@@ -123,7 +124,7 @@ function processResults(taskCtx, filteredTasks, results, workspace, getFname, lo
       saveTasks()
       continue
     }
-    const content = stripFences(r.content)
+    const content = ensureLucideIconRuntime(stripFences(r.content), log)
     const fname = getFname(t)
     writeFile(workspace, fname, content)
     if (task) {
@@ -148,6 +149,7 @@ export async function generateAllTasks(
   taskCtx,
   indiaMode = null,
   imageHints = null,
+  brandProfile = null,
 ) {
   const isFrontend = (t) => t.status !== 'DONE' && !String(t.id).startsWith('backend-')
   const isBackend = (t) => String(t.id).startsWith('backend-') && t.status !== 'DONE'
@@ -164,7 +166,7 @@ export async function generateAllTasks(
   const navList = allPages.map((p) => `- ${p.title}: ${p.filename}`).join('\n')
 
   const pageCalls = pageTasks.map((t) =>
-    pagePrompt(t, navList, homepageHtml, imageHints, indiaMode),
+    pagePrompt(t, navList, homepageHtml, imageHints, indiaMode, brandProfile),
   )
   const backendCalls = backendTasks.map((t) => backendPrompt(t, ctx))
 

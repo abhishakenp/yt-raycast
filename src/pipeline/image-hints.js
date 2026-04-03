@@ -3,7 +3,7 @@ import { PEXELS_API_KEY } from '../config.js'
 const PEXELS_API_URL = 'https://api.pexels.com/v1/search'
 const MAX_REQUESTS = 6
 const FETCH_PAGE_SIZE = 18
-const KEEP_PER_QUERY = 2
+const KEEP_PER_QUERY = 3
 const REQUEST_TIMEOUT_MS = 5000
 
 const BAD_ALT_PET_RE =
@@ -19,9 +19,25 @@ const DOG_PROMPT_RE =
   /\b(dog|dogs|puppy|puppies|pup|canine|retriever|collie|husky|poodle|beagle|spaniel|shepherd|terrier|bulldog|dachshund|mutt|kennel|dog\s+park|dog\s+blog|dog\s+lover)\b/i
 
 const CAT_PROMPT_RE = /\b(cat|cats|kitten|kittens|feline|kitty)\b/i
+const FASHION_PROMPT_RE =
+  /\b(fashion|ethnic wear|ethnic|saree|sari|lehenga|bridal|bride|wedding|boutique|couture|silk|embroidery|occasion wear|festive wear|designer wear)\b/i
+const SOUTH_INDIAN_FASHION_RE =
+  /\b(kerala|south indian|south india|kasavu|muhurtham|silks?)\b/i
+
+const DAIRY_PROMPT_RE =
+  /\b(amul|dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweets?|dessert|recipe)\b/i
+
+const FOOD_PROMPT_RE =
+  /\b(cafe|coffee|restaurant|bakery|pizza|burger|dessert|pastry|cake|food|kitchen|chef|recipe)\b/i
 
 const GENERIC_FEATURE_RE =
-  /\b(user|auth|login|password|session|token|api|database|stripe|payment|export|import|upload|parse|excel|spreadsheet)\b/i
+  /\b(user|auth|login|password|session|token|api|database|stripe|payment|checkout|cart|wishlist|order|tracking|returns?|shipping|delivery|search|filter|sort|dashboard|admin|responsive|mobile|navigation|footer|header|faq|newsletter|testimonial|review|support|contact|export|import|upload|parse|excel|spreadsheet|inventory|subscription|analytics|notification|account)\b/i
+
+const NON_VISUAL_PHRASE_RE =
+  /\b(responsive|mobile|desktop|navigation|footer|header|faq|testimonial|support|contact|newsletter|signup|login|checkout|cart|wishlist|order tracking|returns?|shipping|payment|search|filters?|hover|scroll|layout|copy|tone|goal|functional requirements|extra pages|page|pricing|account dashboard|user authentication)\b/i
+
+const VISUAL_PHRASE_RE =
+  /\b(dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweet|dessert|recipe|saree|silk|bridal|bride|lehenga|salwar|kurta|sherwani|ethnic wear|fashion|boutique|showroom|store|jewelry|perfume|makeup|skincare|watch|shoe|bag|furniture|interior|sofa|chair|lamp|living room|bedroom|hotel|resort|restaurant|bakery|coffee|spa|salon|fitness|gym|yoga|clinic|doctor|dental|pet|dog|cat|farm)\b/i
 
 const STOP_WORDS = new Set([
   'a',
@@ -42,6 +58,26 @@ const STOP_WORDS = new Set([
   'visual',
   'premium',
   'modern',
+  'build',
+  'create',
+  'website',
+  'site',
+  'brand',
+  'called',
+  'goal',
+  'style',
+  'mood',
+  'section',
+  'sections',
+  'include',
+  'includes',
+  'including',
+  'collection',
+  'collections',
+  'luxurious',
+  'elegant',
+  'timeless',
+  'sophisticated',
   'single',
   'page',
   'feel',
@@ -113,6 +149,127 @@ function phraseFromPrompt(prompt, maxWords = 5) {
   return parts.slice(0, maxWords).join(' ')
 }
 
+function cleanupPromptLine(line = '') {
+  return String(line)
+    .replace(/^[\s>*-]+/, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function stripLeadPhrase(phrase = '') {
+  return normalizeText(phrase)
+    .replace(
+      /^(product categories?(?: like)?|featured collections?|shop by category|shop by occasion|hero section|promotional banner(?: for)?|large hero banner(?: featuring)?|focus on|include(?: these sections)?|main features to include|craftsmanship section|boutique experience|new arrivals?(?: \/ signature pieces)?|store locator(?: or where to buy)?|instagram\/gallery section|product showcase cards?)\b[:\s-]*/i,
+      '',
+    )
+    .replace(/^(like|featuring|including|with)\s+/i, '')
+    .trim()
+}
+
+function isVisualPhrase(phrase = '') {
+  const p = normalizeText(phrase)
+  if (!p || p.length < 3 || p.length > 56) return false
+  if (GENERIC_FEATURE_RE.test(p) || NON_VISUAL_PHRASE_RE.test(p)) return false
+  return VISUAL_PHRASE_RE.test(p)
+}
+
+function extractVisualPhrases(prompt = '') {
+  const lines = String(prompt)
+    .split('\n')
+    .map(cleanupPromptLine)
+    .filter(Boolean)
+
+  const hits = []
+  for (const line of lines) {
+    const content = line.includes(':') ? line.split(':').slice(1).join(':') : line
+    const parts = content
+      .split(/,|\/|\band\b/gi)
+      .map(stripLeadPhrase)
+      .filter(Boolean)
+
+    for (const part of parts) {
+      if (isVisualPhrase(part)) hits.push(part)
+    }
+
+    if (isVisualPhrase(content)) hits.push(stripLeadPhrase(content))
+  }
+
+  return uniqueValues(hits)
+}
+
+function inferVisualSiteType(prompt = '', ctx = null, siteSpec = null) {
+  const explicit = String(ctx?.site_type || siteSpec?.siteType || '').toLowerCase()
+  if (explicit && explicit !== 'saas') return explicit
+
+  const p = normalizeText(prompt)
+  if (/\b(ecommerce|shop|store|boutique|catalog|collection|buy|products?)\b/.test(p))
+    return 'ecommerce'
+  if (/\b(portfolio|case study|selected work|gallery)\b/.test(p)) return 'portfolio'
+  if (/\b(blog|article|story|stories|editorial)\b/.test(p)) return 'blog'
+  return explicit || 'landing'
+}
+
+function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
+  const p = normalizeText(phrase)
+  const source = `${normalizeText(prompt)} ${p}`
+
+  if (/\b(ice cream|icecream)\b/.test(p)) {
+    return ['ice cream scoop dessert', 'ice cream product close up']
+  }
+  if (/\b(milk|dairy|paneer|curd|yogurt|lassi)\b/.test(p)) {
+    return ['fresh dairy products on table', 'milk bottle dairy product']
+  }
+  if (/\bbutter\b/.test(p)) {
+    return ['butter on toast close up', 'butter dairy product']
+  }
+  if (/\bcheese\b/.test(p)) {
+    return ['cheese platter close up', 'artisan cheese product']
+  }
+  if (/\b(chocolate|cocoa)\b/.test(p)) {
+    return ['chocolate bar close up', 'chocolate dessert product']
+  }
+  if (/\b(beverage|drink|juice)\b/.test(p)) {
+    return ['cold beverage bottle product', 'refreshing drink product photo']
+  }
+  if (/\b(sweets?|dessert|mithai)\b/.test(p)) {
+    return ['indian sweets platter', 'festive dessert close up']
+  }
+  if (/\b(recipe|kitchen|cooking|chef)\b/.test(p)) {
+    return ['indian cooking dairy recipe', 'kitchen recipe preparation']
+  }
+  if (/\b(store|showroom|boutique)\b/.test(p) && FASHION_PROMPT_RE.test(source)) {
+    return ['indian fashion boutique interior', 'luxury boutique showroom']
+  }
+  if (/\b(saree|silk)\b/.test(p)) {
+    return ['indian silk saree woman portrait', 'luxury saree editorial']
+  }
+  if (/\b(bridal|bride|wedding)\b/.test(p)) {
+    return ['indian bridal saree jewelry', 'south indian bridal fashion model']
+  }
+  if (/\b(lehenga)\b/.test(p)) {
+    return ['indian lehenga model portrait', 'bridal lehenga fashion editorial']
+  }
+  if (/\b(salwar|kurta|ethnic wear|traditional outfits?)\b/.test(p)) {
+    return ['indian ethnic wear fashion model', 'traditional outfit editorial portrait']
+  }
+  if (/\b(men.?s ethnic wear|sherwani)\b/.test(p)) {
+    return ['indian man sherwani portrait', 'mens ethnic wear fashion']
+  }
+  if (/\b(kids collection|kids wear)\b/.test(p)) {
+    return ['kids ethnic wear portrait', 'children traditional outfit']
+  }
+  if (/\b(jewelry|gold|necklace)\b/.test(p)) {
+    return ['bridal jewelry close up', 'gold jewelry editorial']
+  }
+  if (/\b(farm)\b/.test(p)) {
+    return ['dairy farm morning', 'green farm landscape']
+  }
+  if (typed === 'ecommerce') return [`${p.slice(0, 42)} product photo`]
+  if (typed === 'portfolio') return [`${p.slice(0, 42)} editorial photo`]
+  return [`${p.slice(0, 42)} photography`]
+}
+
 function themedQueries(prompt) {
   const p = normalizeText(prompt)
   if (DOG_PROMPT_RE.test(p)) {
@@ -145,41 +302,86 @@ function themedQueries(prompt) {
       'premium electronics store retail',
     ]
   }
-  return []
-}
+  if (FASHION_PROMPT_RE.test(p)) {
+    const queries = [
+      'luxury ethnic wear woman portrait',
+      'silk saree woman editorial',
+      'indian fashion boutique interior',
+      'embroidery textile detail close up',
+    ]
 
-function safeEntityQuery(entity) {
-  const e = normalizeText(entity)
-  if (!e || e.length < 2) return null
-  if (GENERIC_FEATURE_RE.test(e)) return null
-  if (e.length > 40) return null
-  return `${e} photography`
+    if (/\b(bridal|bride|wedding)\b/.test(p)) {
+      queries.unshift('indian bridal fashion model', 'south indian bridal saree jewelry')
+    }
+
+    if (/\b(saree|sari|silk)\b/.test(p)) {
+      queries.push('indian silk saree woman portrait')
+    }
+
+    if (SOUTH_INDIAN_FASHION_RE.test(p)) {
+      queries.push('kerala saree woman portrait')
+    }
+
+    return uniqueValues(queries).slice(0, MAX_REQUESTS)
+  }
+  if (DAIRY_PROMPT_RE.test(p)) {
+    const queries = [
+      'fresh dairy products on table',
+      'milk bottle dairy product',
+      'butter on toast close up',
+      'cheese platter close up',
+      'ice cream scoop dessert',
+      'indian sweets platter festive',
+    ]
+
+    if (/\b(recipe|kitchen|chef)\b/.test(p)) {
+      queries.push('indian cooking dairy recipe')
+    }
+
+    return uniqueValues(queries).slice(0, MAX_REQUESTS)
+  }
+  if (FOOD_PROMPT_RE.test(p)) {
+    return uniqueValues([
+      'chef preparing food in kitchen',
+      'restaurant dish close up',
+      'fresh dessert photography',
+      'coffee shop interior',
+      'bakery pastry display',
+      'food plating editorial',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  return []
 }
 
 function buildQueries({ prompt, ctx, siteSpec }) {
   const subjectFirst = themedQueries(prompt || '')
   const core = phraseFromPrompt(prompt || '', 6)
-  const typed = String(ctx?.site_type || siteSpec?.siteType || '').toLowerCase()
+  const typed = inferVisualSiteType(prompt || '', ctx, siteSpec)
+  const extracted = extractVisualPhrases(prompt || '')
+    .slice(0, 8)
+    .flatMap((phrase) => queriesForVisualPhrase(phrase, typed, prompt))
 
   const fromEntities = uniqueValues(ctx?.entities || [])
-    .slice(0, 3)
-    .map(safeEntityQuery)
-    .filter(Boolean)
+    .filter(isVisualPhrase)
+    .slice(0, 2)
+    .flatMap((entity) => queriesForVisualPhrase(entity, typed, prompt))
 
   const fromFeatures = uniqueValues(ctx?.features || [])
-    .filter((f) => f && !GENERIC_FEATURE_RE.test(normalizeText(f)))
+    .filter(isVisualPhrase)
     .slice(0, 2)
-    .map((feature) => `${normalizeText(feature).slice(0, 48)} lifestyle photo`)
+    .flatMap((feature) => queriesForVisualPhrase(feature, typed, prompt))
 
-  const extras = []
-  if (core.length > 3) extras.push(core)
+  const extras = isVisualPhrase(core) ? queriesForVisualPhrase(core, typed, prompt) : []
   if (typed === 'ecommerce') extras.push('product on white background minimal')
   if (typed === 'portfolio') extras.push('creative work detail close up')
 
-  return uniqueValues([...subjectFirst, ...extras, ...fromEntities, ...fromFeatures]).slice(
-    0,
-    MAX_REQUESTS,
-  )
+  return uniqueValues([
+    ...subjectFirst,
+    ...extracted,
+    ...extras,
+    ...fromEntities,
+    ...fromFeatures,
+  ]).slice(0, MAX_REQUESTS)
 }
 
 function subjectKeyFromPrompt(prompt) {

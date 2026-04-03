@@ -1,3 +1,5 @@
+import './env.js'
+
 export const DASHBOARD_PORT = 7420
 export const SITE_NAME = 'Ship Fast'
 export const SITE_URL = (process.env.SITE_URL ?? 'https://ship-fast.devliv.io').replace(/\/+$/, '')
@@ -251,16 +253,16 @@ export const SITE_TYPE_INSTRUCTIONS = {
     'Then: metrics cards (2x2 grid with KPI numbers) \u2192 features (2x2 cards) \u2192 integrations (logo cloud as text) \u2192 pricing (2-col) \u2192 CTA \u2192 footer.',
   ecommerce:
     'E-commerce storefront. Product images allowed here. ' +
-    'Hero: headline + subtitle + CTA + featured product image (picsum). ' +
-    'Then: category cards (2x2, picsum images) \u2192 featured products \u2192 deals banner \u2192 newsletter \u2192 footer.',
+    'Hero: headline + subtitle + CTA + featured product image. ' +
+    'Then: category cards (2x2, relevant product or lifestyle images) \u2192 featured products \u2192 deals banner \u2192 newsletter \u2192 footer.',
   marketplace:
     'Marketplace platform. ' +
     'Hero: search bar centered + category pills + headline. ' +
-    'Then: featured listings (2-col cards with picsum images) \u2192 how it works (3-step icons) \u2192 trust stats \u2192 CTA \u2192 footer.',
+    'Then: featured listings (2-col cards with relevant listing imagery or non-photo treatments) \u2192 how it works (3-step icons) \u2192 trust stats \u2192 CTA \u2192 footer.',
   blog:
     'Blog/publication. ' +
-    'Hero: featured article card with picsum image + title + excerpt. ' +
-    'Then: article grid (2-col, picsum images) \u2192 categories \u2192 newsletter signup \u2192 footer.',
+    'Hero: featured article card with relevant cover image + title + excerpt. ' +
+    'Then: article grid (2-col, relevant cover images) \u2192 categories \u2192 newsletter signup \u2192 footer.',
   docs:
     'Documentation site. Typography-first. ' +
     'Hero: search bar + quick start code block (dark surface bg, rounded-xl). ' +
@@ -272,7 +274,7 @@ export const SITE_TYPE_INSTRUCTIONS = {
   portfolio:
     'Portfolio. Images allowed for projects. ' +
     'Hero: bold name + role title + subtle tagline. ' +
-    'Then: selected works (2-col, picsum images) \u2192 about \u2192 skills/tech \u2192 contact form \u2192 footer.',
+    'Then: selected works (2-col, relevant project imagery or strong graphic panels) \u2192 about \u2192 skills/tech \u2192 contact form \u2192 footer.',
   landing:
     'Landing page. Typography-first, no hero images. ' +
     'Hero: pill badge + oversized headline + subtitle + 1 gradient CTA (rounded-full). ' +

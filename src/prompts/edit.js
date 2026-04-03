@@ -8,6 +8,7 @@ export function editPrompt(prompt, task, html, homepageRef) {
       `- The nav structure and footer\n` +
       `- The <head> (fonts, Tailwind, meta tags)\n` +
       `- All existing page content not mentioned in the edit instruction\n` +
+      `- The Lucide icon system: use <i data-lucide="icon-name"></i> placeholders only, never class="lucide-name"\n` +
       `Do NOT change the theme, colors, or branding unless explicitly asked. ` +
       `Match the homepage styling exactly for consistency across all pages. ` +
       `Output ONLY the complete modified HTML file. No markdown fences, no explanation.${

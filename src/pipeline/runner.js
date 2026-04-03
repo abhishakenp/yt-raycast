@@ -21,9 +21,12 @@ import {
 import { renderPreviewToWorkspace } from '../renderers/index.js'
 import { detectIndiaMode } from './detect-india-mode.js'
 import { resolvePexelsImageHints } from './image-hints.js'
+import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { withLanguageEnforcementBlock } from './prompt-language.js'
 import { getWorkspacePreferredLanguage } from '../server/sessions.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
+import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt.js'
+import { enrichBrandProfile } from './brand-profile.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -38,11 +41,12 @@ const status = (sessionCtx) => (message, phase) => {
 export async function runEdit({ prompt, workspace, sessionCtx }) {
   const _log = log(sessionCtx)
   const t0 = Date.now()
+  const normalizedPrompt = requirePromptText(prompt)
 
-  sessionCtx.setPrompt(prompt)
+  sessionCtx.setPrompt(normalizedPrompt)
 
   const preferredLanguage = getWorkspacePreferredLanguage(workspace)
-  const pipelinePrompt = withLanguageEnforcementBlock(prompt, preferredLanguage)
+  const pipelinePrompt = withLanguageEnforcementBlock(normalizedPrompt, preferredLanguage)
 
   const existingSiteSpec = loadSiteSpec(workspace)
   if (existingSiteSpec) {
@@ -117,7 +121,9 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
   sessionCtx.setTasks(taskList)
   writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
 
-  _log(`\n  ── Edit mode: applying "${prompt.slice(0, 80)}" to ${htmlTasks.length} HTML files ──`)
+  _log(
+    `\n  ── Edit mode: applying "${promptSnippet(normalizedPrompt, 80)}" to ${htmlTasks.length} HTML files ──`,
+  )
   status(sessionCtx)('Editing pages…', 'editing')
 
   const homepageHtml = existsSync(join(workspace, 'index.html'))
@@ -160,7 +166,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
       continue
     }
 
-    const content = stripFences(r.content)
+    const content = ensureLucideIconRuntime(stripFences(r.content), _log)
     writeFile(workspace, t.filename, content)
     if (task) task.status = 'DONE'
     sessionCtx.updateTask({ id: t.id, status: 'DONE' })
@@ -199,16 +205,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()
+  const normalizedPrompt = requirePromptText(prompt)
   const timings = {}
   const tick = (name) => {
     timings[name] = Date.now()
   }
 
-  const pipelinePrompt = withLanguageEnforcementBlock(prompt, preferredLanguage)
+  const pipelinePrompt = withLanguageEnforcementBlock(normalizedPrompt, preferredLanguage)
   writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
-  sessionCtx.setPrompt(prompt)
+  sessionCtx.setPrompt(normalizedPrompt)
 
-  const indiaMode = detectIndiaMode(prompt, preferredLanguage)
+  const indiaMode = detectIndiaMode(normalizedPrompt, preferredLanguage)
   if (indiaMode.isIndian) {
     _log(`  India Mode detected: generating in ${indiaMode.language.name} via hex-1`)
   }
@@ -218,14 +225,19 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   let siteSpec = null
 
   tick('t0')
+  const brandProfilePromise = enrichBrandProfile(normalizedPrompt, workspace, _log).catch((error) => {
+    _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
+    return null
+  })
 
   // ── PARALLEL: spec+design AND homepage fire at the same time ──
   _status('Generating spec…', 'spec')
 
   const specPromise = (async () => {
-    const [designStats, detectStats] = await Promise.all([
+    const [designStats, detectStats, brandProfile] = await Promise.all([
       generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
       detectSiteType(pipelinePrompt, _log),
+      brandProfilePromise,
     ])
     tick('design_end')
     tick('detect_end')
@@ -235,6 +247,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       detectStats.siteType,
       workspace,
       _log,
+      brandProfile,
     )
     tick('ctx_end')
     const siteSpecStats = await generateSiteSpec({
@@ -244,13 +257,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       siteType: detectStats.siteType,
       workspace,
       log: _log,
+      brandProfile,
     })
     tick('site_spec_end')
-    return { designStats, detectStats, ctxStats, siteSpecStats }
+    return { designStats, detectStats, ctxStats, siteSpecStats, brandProfile }
   })()
 
   const homepagePromise = (async () => {
-    const imageHints = await resolvePexelsImageHints({ prompt })
+    const [imageHints, brandProfile] = await Promise.all([
+      resolvePexelsImageHints({ prompt: normalizedPrompt }),
+      brandProfilePromise,
+    ])
     try {
       const stats = await generateHomepage(
         pipelinePrompt,
@@ -259,6 +276,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
         sessionCtx,
         indiaMode,
         imageHints,
+        brandProfile,
       )
       tick('homepage_end')
       return { ...stats, imageHints }
@@ -278,7 +296,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   const [specResult, homepageStats] = await Promise.all([specPromise, homepagePromise])
 
-  const { designStats, detectStats, ctxStats, siteSpecStats } = specResult
+  const { designStats, detectStats, ctxStats, siteSpecStats, brandProfile } = specResult
   const designBrief = designStats.brief
   ctx = ctxStats.ctx
   siteSpec = siteSpecStats.siteSpec
@@ -309,6 +327,10 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
   sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
+  const imageHints =
+    homepageStats.imageHints?.photos?.length > 0
+      ? homepageStats.imageHints
+      : await resolvePexelsImageHints({ prompt: normalizedPrompt, ctx, siteSpec })
 
   // Inject design system colors into the homepage now that both are ready
   if (homepage && designBrief) {
@@ -348,7 +370,8 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     _status,
     taskCtx,
     indiaMode,
-    homepageStats.imageHints || null,
+    imageHints,
+    brandProfile,
   )
   tick('gen_end')
 
@@ -416,13 +439,13 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   // Background: Generate alternative design for "Magic Theme"
   _log('  Generating alternative design context...')
-  generateAlternativeDesign(prompt, workspace, sessionCtx, _log)
+  generateAlternativeDesign(normalizedPrompt, workspace, sessionCtx, _log)
 
   try {
     const homeDir = process.env.HOME
     const logFile = join(homeDir, '.ship.log')
     const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19)
-    const logEntry = `\n--- /ship-fast completed at ${timestamp} ---\n  prompt: ${prompt.slice(0, 120)}\n  workspace: ${workspace}\n  result: ${done}/${total} tasks in ${elapsed}s\n${report}\n`
+    const logEntry = `\n--- /ship-fast completed at ${timestamp} ---\n  prompt: ${promptSnippet(normalizedPrompt, 120)}\n  workspace: ${workspace}\n  result: ${done}/${total} tasks in ${elapsed}s\n${report}\n`
     writeFileSync(logFile, readFileSync(logFile, 'utf-8') + logEntry)
   } catch {
     /* log writing is best-effort */
@@ -431,8 +454,10 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
 // Generate alternative design with fallback colors
 export async function generateAlternativeDesign(prompt, workspace, sessionCtx, _log) {
+  const normalizedPrompt = normalizePromptText(prompt) || 'Generated Project'
+
   try {
-    const designBriefPrompt = `Generate an alternative, high-contrast, sophisticated color scheme for: "${prompt}"
+    const designBriefPrompt = `Generate an alternative, high-contrast, sophisticated color scheme for: "${normalizedPrompt}"
 
 Return ONLY a JSON block in this format:
 \`\`\`json
@@ -485,7 +510,7 @@ Requirements:
   }
 
   // Fallback: Generate a sophisticated color palette
-  const fallbackColors = generateFallbackColors(prompt)
+  const fallbackColors = generateFallbackColors(normalizedPrompt)
   sessionCtx.setAlternativeDesign(fallbackColors)
   _log('  ✓ Alternative design generated from fallback palette')
   return fallbackColors

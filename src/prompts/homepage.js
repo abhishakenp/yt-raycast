@@ -68,9 +68,9 @@ BUILD RULES:
 - Follow the design system colors and component patterns exactly. Do NOT invent your own palette.
 - Use the Tailwind config from the design system in a <script> block after the CDN script.
 - Load the fonts specified in the design system via Google Fonts <link> in <head>.
-- Inline SVG for all icons. NEVER emojis. NEVER icon CDNs.
+- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>. Call lucide.createIcons() after render. NEVER use class="lucide-heart" placeholders. NEVER emojis.
 - NO hero images or screenshots for SaaS/landing pages. Typography and cards only.
-- If images are needed (blog, ecommerce, portfolio), use provided Pexels lines (description before URL) and pick the URL whose description fits each card. Never put laptop or phone screen shots on animal or outdoor stories. If no good match exists, fallback to https://picsum.photos/seed/{seed}/{w}/{h}. NEVER placeholder.com or other services.
+- If images are needed (blog, ecommerce, portfolio), use only the provided Pexels lines (description before URL) and pick the URL whose description fits each card. Reuse the closest matching Pexels URL across multiple cards if needed. If no relevant photo exists, replace that image area with a gradient, pattern, icon, or typography treatment instead of inserting a random stock image.
 
 DESIGN QUALITY \u2014 MUST FOLLOW:
 - Hero: NO images. Small pill badge (rounded-full, subtle dark bg + border) above headline. Massive headline (text-5xl md:text-7xl font-extrabold tracking-tight text-center). Subtitle in muted color, text-center, max-w-2xl mx-auto. ONE primary CTA (rounded-full, accent gradient bg, px-8 py-3).

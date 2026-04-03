@@ -80,7 +80,7 @@ DESIGN: Use a modern Indian-inspired design system:
 - Color palette rooted in Indian tradition: saffron (#FF9933), deep red (#9B2335), gold (#FFD700), India green (#138808), peacock blue (#003580). Choose 1–2 as primary accent.
 - Subtle decorative touches: thin mandala-inspired borders, paisley motif dividers, lotus icon accents — tasteful, not loud.
 - Dark theme: deep dark background, lighter surfaces, one vibrant accent.
-- Tailwind CSS via CDN. Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script>, call lucide.createIcons() after render, use <i data-lucide="icon-name"></i>). No inline SVGs, no emojis.
+- Tailwind CSS via CDN. Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script>, call lucide.createIcons() after render, use exact placeholders like <i data-lucide="heart"></i>, never class="lucide-heart"). No inline SVGs, no emojis.
 - Vanilla JS only. No frameworks.
 
 CLASSIFY: If the prompt describes functionality (app, tool, dashboard), build an APPLICATION UI. If it describes a business/product/service, build a LANDING PAGE.
@@ -214,4 +214,3 @@ export async function hex1TranslateParallel(htmlArray, indiaMode) {
   }
   return out
 }
-

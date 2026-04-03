@@ -79,7 +79,7 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 - 2-column grids, NEVER 3-column
 - Generous spacing: py-20 md:py-28 per section
 - Restraint: less is more, no clutter, no busy layouts
-- If images are truly needed (ecommerce/portfolio), use Pexels first. If no close match exists, fallback to https://picsum.photos/seed/{seed}/{w}/{h}
+- If images are truly needed (ecommerce/portfolio), use relevant Pexels photos first. If no close match exists, avoid random stock-photo fallbacks and use gradients, patterns, icons, or typography-driven panels instead
 
 Max 70 lines. Output ONLY markdown.${indianDesignAppendix(indiaMode)}`,
     model: 'moonshotai/kimi-k2-instruct-0905',

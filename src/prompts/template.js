@@ -25,8 +25,8 @@ RULES:
 - Output ONLY complete, self-contained HTML file. No markdown, no fences, no explanation.
 - Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
 - Load fonts from Google Fonts in <head>
-- Inline SVG for all icons (no emoji, no icon CDNs)
-- Images only if needed: use Pexels images first, with fallback picsum.photos/seed/{seed}/{w}/{h}
+- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>; call lucide.createIcons() after render and never use class="lucide-heart" placeholders
+- Images only if needed: use relevant Pexels images first. If no good photo exists, use gradients, patterns, icons, or strong typography instead of random stock images
 - NO screenshots, mockups, or hero images for SaaS/landing pages
 - Typography-first, minimal, premium aesthetic
 - 2-column grids (never 3)

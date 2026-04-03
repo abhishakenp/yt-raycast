@@ -1,6 +1,7 @@
 import { groqHomepage } from '../llm/groq.js'
 import { translateHtml } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
+import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { writeFile } from './workspace.js'
 
 const SHIPFAST_FOOTER_STYLE_ID = 'sf-footer-branding-style'
@@ -99,10 +100,11 @@ export async function generateHomepage(
   sessionCtx,
   indiaMode = null,
   imageHints = null,
+  brandProfile = null,
 ) {
   log('  homepage: generating from scratch (LLM)...')
 
-  const result = await groqHomepage(prompt, imageHints, indiaMode)
+  const result = await groqHomepage(prompt, imageHints, indiaMode, brandProfile)
 
   if (!result?.content || result.error) {
     log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)
@@ -133,6 +135,8 @@ export async function generateHomepage(
       log(`  homepage: translation error — ${err.message}, keeping English`)
     }
   }
+
+  html = ensureLucideIconRuntime(html, log)
 
   writeFile(workspace, 'index.html', html)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
@@ -204,6 +208,7 @@ ${cssVars}
     log('  warning: failed to inject tailwind config')
   }
 
+  html = ensureLucideIconRuntime(html, log)
   writeFile(workspace, 'index.html', html)
   return html
 }
