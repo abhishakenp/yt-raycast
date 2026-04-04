@@ -1,3 +1,32 @@
+export function trimInlineAiText(s) {
+  let t = String(s || '').trim()
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+    t = t.slice(1, -1).trim()
+  }
+  if (t.startsWith('```')) {
+    t = t.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
+  }
+  return t
+}
+
+export function trimInlineAiHtmlFragment(s) {
+  let t = String(s || '').trim()
+  if (t.startsWith('```')) {
+    t = t.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
+  }
+  const first = t.indexOf('<')
+  if (first > 0) t = t.slice(first)
+  t = t.replace(/\n?```\s*$/i, '').trim()
+  return t
+}
+
+export function compactStyleFragmentHtml(html) {
+  return String(html || '').replace(
+    /data:image\/[a-z0-9+.@-]+;base64,[A-Za-z0-9+/=\s]{800,}/gi,
+    'data:image/png;base64,[embedded image omitted]',
+  )
+}
+
 export function stripFences(html) {
   let content = html
   const first = content.indexOf('<')

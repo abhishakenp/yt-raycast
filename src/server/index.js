@@ -2,7 +2,18 @@ import { createServer as createHttpServer } from 'node:http'
 import { extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
-import { BASE_DOMAIN, DASHBOARD_PORT } from '../config.js'
+import {
+  BASE_DOMAIN,
+  DASHBOARD_PORT,
+  HOMEPAGE_MODEL,
+  LLM_CONFIG,
+  RUNPOD_API_KEY,
+  RUNPOD_API_URL,
+} from '../config.js'
+import { groq } from '../llm/groq.js'
+import { hex1 } from '../llm/hex1.js'
+import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
+import { compactStyleFragmentHtml, trimInlineAiHtmlFragment, trimInlineAiText } from '../llm/utils.js'
 import {
   createSession,
   getSession,
@@ -29,6 +40,11 @@ import {
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
+import {
+  filePathForPreviewRequest,
+  injectPreviewToolsHtml,
+  stripPreviewArtifactsFromHtml,
+} from './preview-tools-serve.js'
 import {
   addUserCredits,
   consumeUserCredit,
@@ -74,7 +90,6 @@ const MAX_PER_USER = 5 // per 10min window
 const MAX_PER_IP = 10 // per 10min window
 const MAX_FREE_PER_MONTH = 10 // hard monthly cap for free (no subscription) users
 const MAX_PAID_PER_MONTH = 30 // hard monthly cap for paid (subscribed) users
-const MAX_PROMPT_LENGTH = 5000
 const httpContractsPromise = import('../contracts/http-contracts.js')
 const MAX_PER_IP_AUTHED = 30
 const MAX_FREE_PER_IP_MONTHLY = 15
@@ -118,7 +133,9 @@ function isLocalDevelopmentRequest(req, clientIp) {
 
 function setNoIndexHeaders(res) {
   res.set('X-Robots-Tag', 'noindex, nofollow, noarchive')
-  res.set('Referrer-Policy', 'no-referrer')
+  // Keep preview URLs out of search while still allowing third-party image CDNs
+  // to receive an origin referrer and serve assets inside the preview iframe.
+  res.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 }
 
 function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
@@ -286,7 +303,9 @@ export async function startServer(sessionsDir) {
       unlinkSync(stalePublicIndex)
       console.warn('[startup] deleted public/index.html (homepage is SSR only)')
     }
-  } catch {}
+  } catch {
+    /* best-effort cleanup */
+  }
 
   // Set up quota info getter for payments module
   setQuotaInfoGetter(getQuotaInfo)
@@ -342,7 +361,9 @@ export async function startServer(sessionsDir) {
         watch(target, { persistent: true }, (_eventType, filename) => {
           if (filename && shouldReload(filename)) scheduleReload()
         })
-      } catch {}
+      } catch {
+        /* ignore watch errors in development */
+      }
     }
 
     watchTarget(join(publicDir, 'dashboard.html'))
@@ -391,7 +412,7 @@ export async function startServer(sessionsDir) {
     next()
   })
 
-  app.use(express.json())
+  app.use(express.json({ limit: '15mb' }))
 
   // ─── Plausible Analytics Proxy ──────────────────────────
   const plausibleHost = 'https://plausible.liviogama.com'
@@ -1092,6 +1113,131 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  app.post('/api/sessions/:id/preview-homepage-html', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const raw = req.body?.html
+    if (typeof raw !== 'string' || raw.length < 12)
+      return res.status(400).json({ error: 'Invalid html' })
+    if (raw.length > 14 * 1024 * 1024) return res.status(413).json({ error: 'Too large' })
+    try {
+      const cleaned = stripPreviewArtifactsFromHtml(raw)
+      writeFileSync(join(session.workspace, 'index.html'), cleaned, 'utf8')
+      session.homepageReady = true
+      makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
+      res.json({ ok: true })
+    } catch {
+      res.status(500).json({ error: 'Save failed' })
+    }
+  })
+
+  app.post('/api/sessions/:id/preview-inline-text', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const text = req.body?.text
+    const instruction = req.body?.instruction
+    const outputLanguage = req.body?.outputLanguage
+    if (typeof text !== 'string' || typeof instruction !== 'string') {
+      return res.status(400).json({ error: 'text and instruction required' })
+    }
+    if (text.length > 12000 || instruction.length > 4000) return res.status(400).json({ error: 'Too long' })
+    if (outputLanguage !== 'en' && outputLanguage !== 'indian') {
+      return res.status(400).json({ error: 'Invalid outputLanguage' })
+    }
+    const mode = resolveLanguageModeFromPreference(session.preferredLanguage)
+    if (outputLanguage === 'indian' && !mode.isIndian) {
+      return res
+        .status(400)
+        .json({ error: 'Indian-language output is only available for Indian-language projects' })
+    }
+    const userBlock = `Current UI text:\n${text}\n\nUser instruction:\n${instruction}`
+    const sysEn =
+      'You improve short website UI copy. Output ONLY the improved plain text. No quotation marks wrapping the whole answer, no markdown fences, no preamble or explanation.'
+    const maxTok = Math.min(2000, LLM_CONFIG.parallel.maxTokens)
+    try {
+      if (outputLanguage === 'en') {
+        const r = await groq(userBlock, {
+          model: HOMEPAGE_MODEL,
+          system: sysEn,
+          temperature: 0.35,
+          maxTokens: maxTok,
+        })
+        if (r.error) return res.status(502).json({ error: String(r.error) })
+        return res.json({ text: trimInlineAiText(r.content) })
+      }
+      const langName = mode.language?.name || mode.name
+      const native = mode.language?.nativeName || langName
+      const sysIn = `You improve short website UI copy. Output ONLY the improved plain text in ${langName} (${native}). Use the correct script. Do not use English unless the user explicitly asks for English. No quotation marks wrapping the whole answer, no markdown fences, no preamble.`
+      if (mode.isIndian && RUNPOD_API_URL && RUNPOD_API_KEY) {
+        try {
+          const r = await hex1(userBlock, {
+            system: sysIn,
+            temperature: 0.35,
+            maxTokens: maxTok,
+          })
+          if (r.content && !r.error) {
+            return res.json({ text: trimInlineAiText(r.content) })
+          }
+        } catch {
+          void 0
+        }
+      }
+      const r = await groq(userBlock, {
+        model: HOMEPAGE_MODEL,
+        system: sysIn,
+        temperature: 0.35,
+        maxTokens: maxTok,
+      })
+      if (r.error) return res.status(502).json({ error: String(r.error) })
+      return res.json({ text: trimInlineAiText(r.content) })
+    } catch (error) {
+      res.status(500).json({ error: error?.message || 'Failed' })
+    }
+  })
+
+  app.post('/api/sessions/:id/preview-inline-style', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const rawFragment = req.body?.fragmentHtml
+    const instruction = req.body?.instruction
+    if (typeof rawFragment !== 'string' || typeof instruction !== 'string') {
+      return res.status(400).json({ error: 'fragmentHtml and instruction required' })
+    }
+    const fragmentHtml = compactStyleFragmentHtml(rawFragment)
+    if (fragmentHtml.length > 120000 || instruction.length > 8000) return res.status(400).json({ error: 'Too long' })
+    if (!fragmentHtml.includes('<')) return res.status(400).json({ error: 'Invalid fragment' })
+    const hadLargeEmbeddedImage = /data:image\/[a-z0-9+.@-]+;base64,[A-Za-z0-9+/=\s]{800,}/i.test(
+      rawFragment,
+    )
+    const userBlock = `Current element HTML:\n${fragmentHtml}\n\nRequested visual changes:\n${instruction}${
+      hadLargeEmbeddedImage
+        ? '\n\nNote: A large data-URL image in src was omitted from the snippet. Keep the img tag; adjust classes, sizes, and alt text. To replace with a new generated photo, the UI has a separate image generation action.'
+        : ''
+    }`
+    const sys =
+      'You adjust a single HTML element for layout and styling. Output ONLY the replacement HTML for that one element: from its opening tag through its closing tag. Preserve inner text and child elements unless the user explicitly asks to change copy. Prefer Tailwind-style utility classes on the element and wrappers when the page likely uses Tailwind. Inline style attributes are allowed. Do not wrap the answer in markdown code fences. No commentary before or after the HTML.'
+    const maxTok = Math.min(8000, LLM_CONFIG.parallel.maxTokens)
+    try {
+      const r = await groq(userBlock, {
+        model: HOMEPAGE_MODEL,
+        system: sys,
+        temperature: 0.25,
+        maxTokens: maxTok,
+      })
+      if (r.error) return res.status(502).json({ error: String(r.error) })
+      const html = trimInlineAiHtmlFragment(r.content)
+      if (!html.includes('<') || html.length < 3) {
+        return res.status(502).json({ error: 'Model did not return valid HTML' })
+      }
+      return res.json({ html })
+    } catch (error) {
+      res.status(500).json({ error: error?.message || 'Failed' })
+    }
+  })
+
   app.post('/api/sessions/:id/theme', async (req, res) => {
     const { parseThemePayload, sanitizeErrorResponse } = await httpContractsPromise
     const payload = parseThemePayload(req.body ?? {})
@@ -1316,9 +1462,21 @@ export async function startServer(sessionsDir) {
       setNoIndexHeaders(res)
       next()
     },
-    async (req, res, next) => {
+    (req, res, next) => {
       const session = getSession(req.params.sessionId)
       if (!session) return res.status(404).send('Session not found')
+      const fp = filePathForPreviewRequest(session.workspace, req)
+      if (fp && extname(fp) === '.html') {
+        try {
+          const html = readFileSync(fp, 'utf8')
+          res
+            .type('html')
+            .send(injectPreviewToolsHtml(html, req.params.sessionId, session.preferredLanguage))
+        } catch {
+          express.static(session.workspace, { extensions: ['html'] })(req, res, next)
+        }
+        return
+      }
       express.static(session.workspace, { extensions: ['html'] })(req, res, next)
     },
   )

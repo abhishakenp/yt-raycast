@@ -51,21 +51,23 @@ function buildLanguageMode(code, name, nativeName, script, knownEntry) {
  * Returns a LanguageMode object that is backward-compatible with the old
  * indiaMode shape (isIndian, language properties preserved).
  */
-export async function detectLanguage(prompt, preferredLanguage) {
-  if (!prompt) return ENGLISH_MODE
-
-  // 1. Explicit preference wins
+export function resolveLanguageModeFromPreference(preferredLanguage) {
   const requested = String(preferredLanguage || '').trim().toLowerCase()
   if (requested && requested !== 'en') {
     const known = KNOWN_LANGUAGES.find((l) => l.code === requested)
     if (known) {
       return buildLanguageMode(known.code, known.name, known.nativeName, guessScript(known.fontFamily), known)
     }
-    // Unknown code but explicitly requested — construct minimal mode
     return buildLanguageMode(requested, requested, requested, 'Latin', null)
   }
+  return ENGLISH_MODE
+}
 
-  // 2. LLM-based detection
+export async function detectLanguage(prompt, preferredLanguage) {
+  const fromPref = resolveLanguageModeFromPreference(preferredLanguage)
+  if (fromPref.code !== 'en') return fromPref
+  if (!prompt) return ENGLISH_MODE
+
   if (!GROQ_API_KEY) return ENGLISH_MODE
 
   try {

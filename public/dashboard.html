@@ -127,6 +127,193 @@
               ></a>
               <span class="url-text" id="url-text">localhost:3001</span>
             </div>
+            <div class="preview-frame-tools" id="preview-frame-tools" aria-label="Preview controls">
+              <button
+                type="button"
+                class="preview-tool-btn"
+                id="preview-refresh-btn"
+                title="Reload preview"
+                aria-label="Reload preview"
+              >
+                <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16M21 21v-5h-5"
+                  />
+                </svg>
+              </button>
+              <div class="preview-device-group" role="group" aria-label="Viewport size">
+                <button
+                  type="button"
+                  class="preview-tool-btn preview-device-btn is-active"
+                  data-preview-device="desktop"
+                  title="Desktop width"
+                  aria-label="Desktop width"
+                  aria-pressed="true"
+                >
+                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 18h.01M7 21h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="preview-tool-btn preview-device-btn"
+                  data-preview-device="tablet"
+                  title="Tablet width (768px)"
+                  aria-label="Tablet width"
+                  aria-pressed="false"
+                >
+                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 18h.01M5 20h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="preview-tool-btn preview-device-btn"
+                  data-preview-device="mobile"
+                  title="Mobile width (375px)"
+                  aria-label="Mobile width"
+                  aria-pressed="false"
+                >
+                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM12 18h.01"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div class="preview-inspect-group" role="group" aria-label="Inspect">
+                <button
+                  type="button"
+                  class="preview-tool-btn"
+                  data-preview-tool="select"
+                  title="Select component"
+                  aria-label="Select component"
+                  aria-pressed="false"
+                >
+                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m4 4 7.07 17 2.51-7.39L21 11.07z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="preview-tool-btn"
+                  data-preview-tool="annotate"
+                  title="Annotate"
+                  aria-label="Annotate"
+                  aria-pressed="false"
+                >
+                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 19l7-7 3 3-7 7-3-3z"
+                    />
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"
+                    />
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2 2 9.586 9.586"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="preview-tool-btn"
+                  data-preview-tool="clear-annotate"
+                  title="Clear annotations"
+                  aria-label="Clear annotations"
+                >
+                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M20 11H4"
+                    />
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8 7v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V7"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <button
+                type="button"
+                class="preview-tool-btn"
+                id="preview-open-external-btn"
+                title="Open in new tab"
+                aria-label="Open preview in new tab"
+              >
+                <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                  />
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 3h6v6M10 14 21 3"
+                  />
+                </svg>
+              </button>
+            </div>
             <div class="browser-toolbar-actions">
               <div class="export-menu" id="export-menu" style="display: none">
                 <button
@@ -330,7 +517,11 @@
             </div>
           </div>
           <div class="browser-content">
-            <iframe id="preview-iframe" src="about:blank"></iframe>
+            <div class="preview-stage sf-device-desktop" id="preview-stage">
+              <div class="preview-device-shell" id="preview-device-shell">
+                <iframe id="preview-iframe" src="about:blank"></iframe>
+              </div>
+            </div>
             <div class="preview-loading" id="preview-loading">
               <div class="preview-progress">
                 <div class="preview-progress-fill" id="preview-progress-fill"></div>
@@ -368,6 +559,18 @@
         <div class="toast-actions">
           <button class="toast-cta" id="toast-cta">Generate another</button>
         </div>
+      </div>
+      <div class="toast-deploy-state" id="toast-deploy-state" hidden>
+        <a
+          id="deployment-link"
+          class="deployment-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        ></a>
+        <button class="toast-cta toast-cta-subtle" id="deployment-copy-btn" type="button">
+          Copy URL
+        </button>
       </div>
     </div>
 
@@ -424,7 +627,19 @@
           type="button"
           aria-label="Close"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
         </button>
         <div class="payment-modal-accent" aria-hidden="true"></div>
         <div class="payment-modal-header">
@@ -790,6 +1005,8 @@
       let githubPushBusy = false
       let githubMenuOpen = false
       let lastGithubPush = null
+      let previewSelectMode = false
+      let previewAnnotatorActive = false
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
@@ -797,7 +1014,7 @@
       const DEV_PROMPT_EXAMPLES = [
         'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
         'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
-        'Generate an event landing page for a music festival with ticket tiers, schedule timeline, and hero CTA.'
+        'Generate an event landing page for a music festival with ticket tiers, schedule timeline, and hero CTA.',
       ]
 
       function cleanupRealtime() {
@@ -900,10 +1117,44 @@
         iframe.contentWindow.postMessage({ type: 'UPDATE_THEME', colors: activeThemeOverride }, '*')
       }
 
+      function postPreviewToolsState() {
+        const iframe = document.getElementById('preview-iframe')
+        if (!iframe?.contentWindow) return
+        iframe.contentWindow.postMessage(
+          {
+            type: 'SF_PREVIEW_TOOLS',
+            selectMode: previewSelectMode,
+            annotateMode: previewAnnotatorActive,
+          },
+          '*',
+        )
+      }
+
+      function postAnnotatorClearToPreview() {
+        const iframe = document.getElementById('preview-iframe')
+        if (!iframe?.contentWindow) return
+        iframe.contentWindow.postMessage({ type: 'SF_PREVIEW_TOOLS_CLEAR_ANNOTATOR' }, '*')
+      }
+
+      function syncPreviewInspectTools() {
+        document.querySelectorAll('[data-preview-tool]').forEach((btn) => {
+          const m = btn.getAttribute('data-preview-tool')
+          if (m === 'select') {
+            btn.classList.toggle('is-active', previewSelectMode)
+            btn.setAttribute('aria-pressed', previewSelectMode ? 'true' : 'false')
+          }
+          if (m === 'annotate') {
+            btn.classList.toggle('is-active', previewAnnotatorActive)
+            btn.setAttribute('aria-pressed', previewAnnotatorActive ? 'true' : 'false')
+          }
+        })
+        postPreviewToolsState()
+      }
+
       function syncPreviewChrome() {
         const chrome = document.querySelector('.browser-chrome')
         if (!chrome) return
-        chrome.classList.toggle('is-preview-ready', homepageReady)
+        chrome.classList.toggle('is-preview-ready', homepageReady || previewLoaded)
         const urlText = document.getElementById('url-text')
         const urlLive = document.getElementById('browser-url-live')
         const statusText = document.getElementById('status-text')
@@ -1691,26 +1942,14 @@
         const col = (t) => {
           if (t < 0.34) {
             const u = t / 0.34
-            return [
-              lerp(20, 64, u) | 0,
-              lerp(12, 36, u) | 0,
-              lerp(48, 140, u) | 0,
-            ]
+            return [lerp(20, 64, u) | 0, lerp(12, 36, u) | 0, lerp(48, 140, u) | 0]
           }
           if (t < 0.67) {
             const u = (t - 0.34) / 0.33
-            return [
-              lerp(64, 130, u) | 0,
-              lerp(36, 72, u) | 0,
-              lerp(140, 237, u) | 0,
-            ]
+            return [lerp(64, 130, u) | 0, lerp(36, 72, u) | 0, lerp(140, 237, u) | 0]
           }
           const u = (t - 0.67) / 0.33
-          return [
-            lerp(130, 251, u) | 0,
-            lerp(72, 191, u) | 0,
-            lerp(237, 52, u) | 0,
-          ]
+          return [lerp(130, 251, u) | 0, lerp(72, 191, u) | 0, lerp(237, 52, u) | 0]
         }
         const bezierArc = (p0, p1, p2, p3) => {
           const pts = []
@@ -1733,8 +1972,18 @@
           }
           return { pts, norms: ns }
         }
-        const arcA = bezierArc({ x: -0.1, y: -0.05 }, { x: 0.18, y: 0.68 }, { x: 0.82, y: 0.48 }, { x: 1.15, y: 0.48 })
-        const arcB = bezierArc({ x: 1.12, y: 1.08 }, { x: 0.75, y: 0.45 }, { x: 0.28, y: 0.3 }, { x: -0.12, y: -0.05 })
+        const arcA = bezierArc(
+          { x: -0.1, y: -0.05 },
+          { x: 0.18, y: 0.68 },
+          { x: 0.82, y: 0.48 },
+          { x: 1.15, y: 0.48 },
+        )
+        const arcB = bezierArc(
+          { x: 1.12, y: 1.08 },
+          { x: 0.75, y: 0.45 },
+          { x: 0.28, y: 0.3 },
+          { x: -0.12, y: -0.05 },
+        )
         const arcs = [arcA, arcB]
         const vps = [
           { x: 1.5, y: 0.48 },
@@ -2406,6 +2655,7 @@
           previewLoaded = true
           syncPreviewChrome()
           syncPreviewTheme()
+          syncPreviewInspectTools()
         }
       }
 
@@ -2422,6 +2672,71 @@
         const iframe = document.getElementById('preview-iframe')
         iframe.src = PREVIEW_BASE
       }
+
+      const PREVIEW_DEVICE_KEY = 'sf_preview_device'
+
+      function getPreviewOpenUrl() {
+        if (deploymentState?.url) {
+          const raw = formatDeploymentUrl(deploymentState.url)
+          return raw.startsWith('http') ? raw : `https://${raw}`
+        }
+        return PREVIEW_BASE
+      }
+
+      function applyPreviewDeviceMode(mode) {
+        const stage = document.getElementById('preview-stage')
+        if (!stage) return
+        stage.classList.remove('sf-device-desktop', 'sf-device-tablet', 'sf-device-mobile')
+        const m = mode === 'tablet' || mode === 'mobile' ? mode : 'desktop'
+        stage.classList.add(`sf-device-${m}`)
+        try {
+          sessionStorage.setItem(PREVIEW_DEVICE_KEY, m)
+        } catch {
+          void 0
+        }
+        document.querySelectorAll('.preview-device-btn').forEach((btn) => {
+          const active = btn.getAttribute('data-preview-device') === m
+          btn.classList.toggle('is-active', active)
+          btn.setAttribute('aria-pressed', active ? 'true' : 'false')
+        })
+      }
+
+      function initPreviewFrameTools() {
+        document.getElementById('preview-refresh-btn')?.addEventListener('click', () => {
+          reloadPreview()
+        })
+        document.getElementById('preview-open-external-btn')?.addEventListener('click', () => {
+          window.open(getPreviewOpenUrl(), '_blank', 'noopener,noreferrer')
+        })
+        document.querySelectorAll('.preview-device-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            applyPreviewDeviceMode(btn.getAttribute('data-preview-device') || 'desktop')
+          })
+        })
+        let initial = 'desktop'
+        try {
+          const saved = sessionStorage.getItem(PREVIEW_DEVICE_KEY)
+          if (saved === 'tablet' || saved === 'mobile' || saved === 'desktop') initial = saved
+        } catch {
+          void 0
+        }
+        applyPreviewDeviceMode(initial)
+        document.querySelector('[data-preview-tool="select"]')?.addEventListener('click', () => {
+          if (previewAnnotatorActive) previewAnnotatorActive = false
+          previewSelectMode = !previewSelectMode
+          syncPreviewInspectTools()
+        })
+        document.querySelector('[data-preview-tool="annotate"]')?.addEventListener('click', () => {
+          if (previewSelectMode) previewSelectMode = false
+          previewAnnotatorActive = !previewAnnotatorActive
+          syncPreviewInspectTools()
+        })
+        document.querySelector('[data-preview-tool="clear-annotate"]')?.addEventListener('click', () => {
+          postAnnotatorClearToPreview()
+        })
+      }
+
+      initPreviewFrameTools()
 
       // ─── WebSocket: Connect to server ─────────────────────────
       function connectWS() {
@@ -2562,6 +2877,14 @@
               }, 4500)
               break
 
+            case 'preview_reload':
+              reloadPreview()
+              break
+
+            case 'client_reload':
+              location.reload()
+              break
+
             case 'export_ready':
               refreshExportTargets()
               break
@@ -2673,8 +2996,113 @@
         closeExportMenu()
         closeGitHubMenu()
       })
+      window.addEventListener('message', (event) => {
+        const data = event.data || {}
+        if (data.type === 'SF_SAVE_HOMEPAGE_HTML' && typeof data.html === 'string' && SESSION_ID) {
+          void (async () => {
+            const res = await apiFetch(`/api/sessions/${SESSION_ID}/preview-homepage-html`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ html: data.html }),
+            })
+            if (res.ok) reloadPreview()
+          })()
+          return
+        }
+        if (data.type === 'SF_PREVIEW_TEXT_AI_REQ' && data.id && SESSION_ID) {
+          void (async () => {
+            const iframe = document.getElementById('preview-iframe')
+            const reply = (payload) => {
+              iframe?.contentWindow?.postMessage(payload, '*')
+            }
+            try {
+              const res = await apiFetch(`/api/sessions/${SESSION_ID}/preview-inline-text`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  text: data.text,
+                  instruction: data.instruction,
+                  outputLanguage: data.outputLanguage,
+                }),
+              })
+              const j = await res.json().catch(() => ({}))
+              reply({
+                type: 'SF_PREVIEW_TEXT_AI_RES',
+                id: data.id,
+                text: j.text,
+                error: res.ok ? undefined : j.error || 'Request failed',
+              })
+            } catch (err) {
+              reply({
+                type: 'SF_PREVIEW_TEXT_AI_RES',
+                id: data.id,
+                error: err?.message || 'Failed',
+              })
+            }
+          })()
+          return
+        }
+        if (data.type === 'SF_PREVIEW_STYLE_AI_REQ' && data.id && SESSION_ID) {
+          void (async () => {
+            const iframe = document.getElementById('preview-iframe')
+            const reply = (payload) => {
+              iframe?.contentWindow?.postMessage(payload, '*')
+            }
+            try {
+              const res = await apiFetch(`/api/sessions/${SESSION_ID}/preview-inline-style`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  fragmentHtml: data.fragmentHtml,
+                  instruction: data.instruction,
+                }),
+              })
+              const j = await res.json().catch(() => ({}))
+              reply({
+                type: 'SF_PREVIEW_STYLE_AI_RES',
+                id: data.id,
+                html: j.html,
+                error: res.ok ? undefined : j.error || 'Request failed',
+              })
+            } catch (err) {
+              reply({
+                type: 'SF_PREVIEW_STYLE_AI_RES',
+                id: data.id,
+                error: err?.message || 'Failed',
+              })
+            }
+          })()
+          return
+        }
+        if (data.type === 'SF_INLINE_EDIT_BEGIN') {
+          previewSelectMode = false
+          syncPreviewInspectTools()
+          return
+        }
+        if (data.type === 'SF_INLINE_EDIT_END') {
+          syncPreviewInspectTools()
+          return
+        }
+        if (data.type === 'SF_PREVIEW_TOOLS_ESCAPE') {
+          previewAnnotatorActive = false
+          previewSelectMode = false
+          syncPreviewInspectTools()
+        }
+      })
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
+          if (previewAnnotatorActive) {
+            previewAnnotatorActive = false
+            syncPreviewInspectTools()
+            event.preventDefault()
+            return
+          }
+          if (previewSelectMode) {
+            previewSelectMode = false
+            syncPreviewInspectTools()
+            event.preventDefault()
+            return
+          }
           const paymentEl = document.getElementById('payment-modal')
           if (paymentEl?.classList.contains('is-open')) {
             closePaymentModal()
@@ -2746,14 +3174,20 @@
           if (session.deployment) {
             renderDeploymentState(session.deployment)
           } else {
-            void apiFetch(`/api/sessions/${SESSION_ID}/deploy`).then(async (r) => {
-              if (!r.ok) return null
-              return r.json()
-            }).then((res) => {
-              if (res?.deployed && res?.url) {
-                renderDeploymentState({ slug: res.slug, url: res.url, deployedAt: res.deployedAt })
-              }
-            })
+            void apiFetch(`/api/sessions/${SESSION_ID}/deploy`)
+              .then(async (r) => {
+                if (!r.ok) return null
+                return r.json()
+              })
+              .then((res) => {
+                if (res?.deployed && res?.url) {
+                  renderDeploymentState({
+                    slug: res.slug,
+                    url: res.url,
+                    deployedAt: res.deployedAt,
+                  })
+                }
+              })
           }
           const isDone = session.taskCount > 0 && session.done === session.taskCount
           if (isDone) {

@@ -2,6 +2,21 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { routeToHtmlFile } from '../renderers/shared.js'
 
+function stripEditorArtifacts(source = '') {
+  return String(source)
+    .replace(/<script>window\.__SF_PREVIEW_SESSION_ID__=[^<]*<\/script>\s*/gi, '')
+    .replace(/<script>window\.__SF_PREVIEW_AI__=[^<]*<\/script>\s*/gi, '')
+    .replace(/<script\b[^>]*data-sf-preview-tools="1"[^>]*><\/script>/gi, '')
+    .replace(/<script\b[^>]*data-sf-editor-runtime="1"[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/\sdata-editable="true"/gi, '')
+    .replace(/\sdata-editor-kind="[^"]*"/gi, '')
+    .replace(/\sdata-editor-file="[^"]*"/gi, '')
+    .replace(/\sdata-editor-hover="[^"]*"/gi, '')
+    .replace(/\sdata-editor-selected="[^"]*"/gi, '')
+    .replace(/\sdata-sf-edit-id="[^"]*"/gi, '')
+    .replace(/\sdata-sf-edit-stable-id="[^"]*"/gi, '')
+}
+
 function parseAttributes(fragment = '') {
   const attrs = {}
   const attrRegex = /([:@a-zA-Z0-9_-]+)(?:\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g
@@ -67,10 +82,12 @@ function stripTitleMeta(source = '') {
 }
 
 export function extractRenderBlueprintFromHtml(html = '', fallback = {}) {
-  const headInner = extractHeadInner(html)
-  const bodyInner = extractBodyInner(html)
+  const sanitizedHtml = stripEditorArtifacts(html)
+  const headInner = extractHeadInner(sanitizedHtml)
+  const bodyInner = extractBodyInner(sanitizedHtml)
 
-  const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || fallback.title || ''
+  const title =
+    sanitizedHtml.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || fallback.title || ''
   const meta = collectVoidTags(headInner, 'meta').map((entry) => entry.attrs)
   const links = collectVoidTags(headInner, 'link').map((entry) => entry.attrs)
   const styles = collectTags(headInner, 'style').map((entry) => entry.content)
@@ -95,9 +112,9 @@ export function extractRenderBlueprintFromHtml(html = '', fallback = {}) {
     headHtml: stripTitleMeta(stripScripts(headInner)),
     scripts: [...headScripts, ...bodyScripts],
     bodyHtml: stripScripts(bodyInner),
-    htmlAttributes: extractOpeningTagAttributes(html, 'html'),
-    bodyAttributes: extractOpeningTagAttributes(html, 'body'),
-    originalHtmlDocument: html,
+    htmlAttributes: extractOpeningTagAttributes(sanitizedHtml, 'html'),
+    bodyAttributes: extractOpeningTagAttributes(sanitizedHtml, 'body'),
+    originalHtmlDocument: sanitizedHtml,
   }
 }
 

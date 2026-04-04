@@ -332,7 +332,9 @@ export function getSession(id) {
         }
       }
     }
-  } catch {}
+  } catch {
+    void 0
+  }
   if (!session.deployment) {
     const mappedDeployment = getDeploymentBySessionId(id)
     if (mappedDeployment) {
@@ -593,9 +595,10 @@ export function makeSessionState(session) {
     const idx = session.tasks.findIndex((t) => t.id === task.id)
     if (idx >= 0) session.tasks[idx] = { ...session.tasks[idx], ...task }
     else session.tasks.push(task)
+    const updated = session.tasks[idx >= 0 ? idx : session.tasks.length - 1]
     broadcast({
       type: 'task_updated',
-      task: session.tasks[idx >= 0 ? idx : session.tasks.length - 1],
+      task: updated,
     })
   }
 
