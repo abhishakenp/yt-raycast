@@ -54,6 +54,11 @@ DO NOT:
   const entitiesBlock = ctx?.entities?.length ? `\nKey entities: ${ctx.entities.join(', ')}\n` : ''
   const taglineBlock = ctx?.tagline ? `\nTagline: "${ctx.tagline}"\n` : ''
 
+  const dynamicUiRule =
+    st === 'game'
+      ? '- For games: follow LAYOUT game rules; use the THREE.js loop and HUD instead of marketing carousels or pricing toggles.\n'
+      : '- Include dynamic client behavior for marketing pages: mobile nav toggle (data-mobile-nav / data-mobile-nav-toggle), at least one of FAQ accordion (data-accordion), tabbed content (data-tab-group / data-tab / data-tab-panel), carousel (data-carousel / data-carousel-track / prev-next), animated stat counters (data-counter / data-counter-target), or billing period toggle (data-pricing-billing / data-billing / data-show-monthly / data-show-yearly), implemented in one inline <script> before </body> with vanilla JS.\n'
+
   return `Build: index.html \u2014 ${st} homepage
 Project: ${ctx?.project_name ?? 'My App'}${taglineBlock}
 Description: ${prompt}
@@ -68,22 +73,23 @@ BUILD RULES:
 - Follow the design system colors and component patterns exactly. Do NOT invent your own palette.
 - Use the Tailwind config from the design system in a <script> block after the CDN script.
 - Load the fonts specified in the design system via Google Fonts <link> in <head>.
-- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>. Call lucide.createIcons() after render. For brand socials use x, instagram, and whatsapp. NEVER use class="lucide-heart" placeholders. NEVER emojis.
+${dynamicUiRule}- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>. Call lucide.createIcons() after render. For brand socials use x, instagram, and whatsapp. NEVER use class="lucide-heart" placeholders. NEVER emojis.
 - NO hero images or screenshots for SaaS/landing pages. Typography and cards only.
 - If images are needed (blog, ecommerce, portfolio), use only the provided verified image lines (description before URL) and pick the URL whose description fits each card. Reuse the closest matching verified URL across multiple cards if needed. If no relevant photo exists, replace that image area with a gradient, pattern, icon, or typography treatment instead of inserting a random stock image.
 
-DESIGN QUALITY \u2014 MUST FOLLOW:
-- Hero: NO images. Small pill badge (rounded-full, subtle dark bg + border) above headline. Massive headline (text-5xl md:text-7xl font-extrabold tracking-tight text-center). Subtitle in muted color, text-center, max-w-2xl mx-auto. ONE primary CTA (rounded-full, accent gradient bg, px-8 py-3).
-- Section pattern: uppercase label in accent color (text-xs tracking-widest font-semibold) + bold headline (text-3xl md:text-4xl font-extrabold) + subtitle in muted color. All centered.
-- Cards: dark surface bg, subtle border, rounded-xl p-6. Use 2-col grids (NOT 3). Hover states.
-- Highlight card: gradient bg using accent at low opacity, accent-tinted border, icon at top.
-- Pricing: 2-col layout (NOT 3). Featured plan has "Popular" badge. CTA as text link with arrow.
-- Logo cloud: company names as plain text (font-medium, muted), NO images. Flex-wrap centered row.
-- Final CTA: bold headline + subtitle + 2 buttons (primary accent gradient + secondary outline).
-- Footer: centered, simple. Logo + links row + copyright, plus a subtle "Built with ShipFast" pill that feels integrated into the design.
-- Centered layout: max-w-4xl mx-auto. NOT wide 7xl.
-- Generous spacing: py-20 md:py-28 per section. space-y-6 within sections.
-- All interactive elements have hover/transition states.
+DESIGN QUALITY \u2014 MUST FEEL PREMIUM, NOT GENERIC:
+- Hero: NO photos. Use the design system display font. Headline at text-5xl md:text-8xl if it fits — dramatic scale. Either centered OR a deliberate split (text block + gradient/blur panel). Optional subtle CSS gradient mesh or noise behind the hero. ONE primary CTA with glow or ring on hover.
+- Avoid template sameness: vary section rhythm — one band full-bleed with different bg, one section with asymmetric padding or offset column.
+- Section pattern: small caps label + big headline + subtitle; at least one section uses left-aligned or split layout instead of everything centered.
+- Cards: glass or elevated surfaces (backdrop-blur, ring, shadow-xl), not flat boxes only. 2-col or bento; hover lift or border brighten.
+- Highlight / featured: gradient border, inner glow, or animated gradient — must stand out from plain cards.
+- Pricing: 2-col; featured plan visually dominant (scale, border glow, "Popular").
+- Logo cloud: text-only names; tight letter-spacing or mono treatment for a refined look.
+- Final CTA: high contrast band; two buttons with clear hierarchy.
+- Footer: refined typography hierarchy; ShipFast pill integrated.
+- Width: default max-w-4xl\u2013max-w-5xl; one section may go max-w-6xl for impact. No cluttered 3-col feature grids.
+- Motion: CSS transitions on scroll reveals, buttons, cards; respect reduced-motion.
+- All interactive elements: hover, focus-visible, transition.
 
 Output ONLY the complete HTML file. No markdown fences. No explanation.`
 }

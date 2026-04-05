@@ -3,6 +3,7 @@ import { PEXELS_API_KEY, UNSPLASH_ACCESS_KEY } from '../config.js'
 const PEXELS_API_URL = 'https://api.pexels.com/v1/search'
 const UNSPLASH_API_URL = 'https://api.unsplash.com/search/photos'
 const MAX_REQUESTS = 6
+const MAX_REQUESTS_WITH_CTX = 8
 const FETCH_PAGE_SIZE = 18
 const KEEP_PER_QUERY = 3
 const REQUEST_TIMEOUT_MS = 5000
@@ -41,7 +42,7 @@ const NON_VISUAL_PHRASE_RE =
   /\b(responsive|mobile|desktop|navigation|footer|header|faq|testimonial|support|contact|newsletter|signup|login|checkout|cart|wishlist|order tracking|returns?|shipping|payment|search|filters?|hover|scroll|layout|copy|tone|goal|functional requirements|extra pages|page|pricing|account dashboard|user authentication)\b/i
 
 const VISUAL_PHRASE_RE =
-  /\b(dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweet|dessert|recipe|snack|snacks|protein|millet|granola|chips|cookie|cookies|bar|bars|bites|trail mix|nuts|wellness|saree|silk|bridal|bride|lehenga|salwar|kurta|sherwani|ethnic wear|fashion|boutique|showroom|store|jewelry|perfume|makeup|skincare|watch|shoe|bag|furniture|interior|sofa|chair|lamp|living room|bedroom|hotel|resort|restaurant|bakery|coffee|spa|salon|fitness|gym|yoga|clinic|doctor|dental|pet|dog|cat|farm)\b/i
+  /\b(dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweet|dessert|mithai|recipe|snack|snacks|protein|millet|granola|chips|cookie|cookies|bar|bars|bites|trail mix|nuts|wellness|saree|silk|bridal|bride|lehenga|salwar|kurta|sherwani|ethnic wear|fashion|boutique|showroom|store|jewelry|gold|perfume|makeup|skincare|watch|shoe|bag|furniture|interior|sofa|chair|lamp|living room|bedroom|hotel|resort|homestay|restaurant|bakery|coffee|spa|salon|fitness|gym|yoga|clinic|hospital|pharmacy|diagnostic|lab|doctor|dental|physiotherapy|pet|dog|cat|farm|agriculture|crop|mandi|solar|rooftop|ev|electric|vehicle|charging|logistics|warehouse|freight|shipping|container|construction|contractor|excavator|coaching|school|college|university|temple|ngo|charity|court|legal|law|real\s+estate|property|rera|chartered|gst|payroll|shipping|export|import|bharatanatyam|kathak|odissi|kuchipudi|kathakali|mohiniyattam|manipuri|sattriya|arangetram|classical dance|folk dance|garba|dandiya|bhangra|lavani|bihu|ghoomar|handloom|khadi|madhubani|warli|handicraft|weaving|loom|carnatic|hindustani|tabla|sitar|classical music|heritage walk|museum|cultural centre|cultural center|natya|nritya)\b/i
 
 const PRODUCT_LABEL_RE =
   /\b(product|snack|snacks|protein|millet|granola|chips|cookie|cookies|bar|bars|bites|trail mix|nuts|pack|box|combo|flavor|flavour)\b/i
@@ -101,6 +102,20 @@ const STOP_WORDS = new Set([
   'page',
   'feel',
   'blog',
+  'complete',
+  'powerful',
+  'polished',
+  'sleek',
+  'bold',
+  'clean',
+  'mixed',
+  'english',
+  'hindi',
+  'hinglish',
+  'describe',
+  'generate',
+  'banao',
+  'liye',
 ])
 
 const LOW_SIGNAL_QUERY_WORDS = new Set([
@@ -355,6 +370,52 @@ function phraseFromPrompt(prompt, maxWords = 5) {
   return parts.slice(0, maxWords).join(' ')
 }
 
+function extractSalientPhrases(prompt, max = 4) {
+  const raw = normalizeText(prompt)
+  const out = []
+  const stripTail = (s) =>
+    s
+      .replace(/\s+with\s+[\s\S]+$/i, '')
+      .replace(/\s+including\s+[\s\S]+$/i, '')
+      .replace(/\s+and\s+(appointment|booking|sections?|cta)[\s\S]+$/i, '')
+      .trim()
+
+  const mFor = raw.match(
+    /\b(?:for|about)\s+(?:a|an|the)\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i,
+  )
+  if (mFor?.[1]) {
+    const chunk = stripTail(mFor[1]).slice(0, 96)
+    if (chunk.length > 10) out.push(chunk)
+  }
+  const mBare = raw.match(/\bfor\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i)
+  if (!out.length && mBare?.[1]) {
+    const chunk = stripTail(mBare[1]).slice(0, 96)
+    if (chunk.length > 10 && !/^a\s+/i.test(chunk)) out.push(chunk)
+  }
+
+  const words = raw
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !STOP_WORDS.has(w) && !LOW_SIGNAL_QUERY_WORDS.has(w))
+  if (words.length >= 5) {
+    out.push(words.slice(0, 9).join(' '))
+  }
+
+  return uniqueValues(out).slice(0, max)
+}
+
+function salientSearchQueries(phrase, typed, prompt) {
+  const p = normalizeText(phrase)
+  if (!p || p.length < 8) return []
+  if (isVisualPhrase(p)) return queriesForVisualPhrase(p, typed, prompt)
+  const words = tokenizeForMatch(p).filter((w) => !STOP_WORDS.has(w))
+  const core = words.slice(0, 6).join(' ')
+  if (!core) return []
+  if (typed === 'ecommerce') return [`${core} product photography commercial`]
+  if (typed === 'portfolio') return [`${core} creative work photography`]
+  return [`${core} professional photography editorial`]
+}
+
 function cleanupPromptLine(line = '') {
   return String(line)
     .replace(/^[\s>*-]+/, '')
@@ -405,7 +466,9 @@ function extractVisualPhrases(prompt = '') {
 }
 
 function inferVisualSiteType(prompt = '', ctx = null, siteSpec = null) {
-  const explicit = String(ctx?.site_type || siteSpec?.siteType || '').toLowerCase()
+  const explicit = String(
+    ctx?.site_type || ctx?.siteType || siteSpec?.siteType || siteSpec?.metadata?.siteType || '',
+  ).toLowerCase()
   if (explicit && explicit !== 'saas') return explicit
 
   const p = normalizeText(prompt)
@@ -419,6 +482,68 @@ function inferVisualSiteType(prompt = '', ctx = null, siteSpec = null) {
 function queriesForVisualPhrase(phrase, typed = 'landing', prompt = '') {
   const p = normalizeText(phrase)
   const source = `${normalizeText(prompt)} ${p}`
+
+  if (/\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(p)) {
+    return ['modern hospital interior corridor healthcare', 'doctor patient consultation clinic']
+  }
+  if (/\b(pharmacy|medicine distributor|ethical pharma)\b/.test(p)) {
+    return ['pharmacy shelves medicine', 'pharmacist consultation counter']
+  }
+  if (/\b(solar|photovoltaic|rooftop\s+solar|epc\s+renewable)\b/.test(p)) {
+    return ['residential rooftop solar panels blue sky', 'solar panel installation technician roof']
+  }
+  if (/\b(logistics|warehouse|3pl|freight|cold\s+storage|cold\s+chain)\b/.test(p)) {
+    return ['warehouse pallets logistics interior', 'shipping container port logistics truck']
+  }
+  if (/\b(coaching|jee|neet|upsc|academy|tuition)\b/.test(p)) {
+    return ['students studying classroom exam preparation', 'library books study desk']
+  }
+  if (/\b(temple|trust|darshan|donation\s+portal)\b/.test(p)) {
+    return ['indian temple architecture exterior', 'temple lamp prayer ceremony']
+  }
+  if (/\b(nbfc|gold\s+loan|mutual\s+fund|insurance|fintech|upi)\b/.test(p)) {
+    return ['financial planning desk calculator', 'mobile banking smartphone secure']
+  }
+  if (
+    /\b(bharatanatyam|kathak|odissi|kuchipudi|kathakali|mohiniyattam|manipuri|sattriya|arangetram|classical dance|nritya|natya)\b/.test(
+      p,
+    )
+  ) {
+    return [
+      'indian classical dancer costume mudra',
+      'bharatanatyam dance performance stage',
+      'kathak dancer traditional costume',
+      'odissi dance pose temple sculpture aesthetic',
+    ]
+  }
+  if (/\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(p)) {
+    return [
+      'indian folk dance festival colorful attire',
+      'garba dancers traditional celebration',
+      'bhangra dance celebration punjab',
+    ]
+  }
+  if (/\b(handloom|khadi|madhubani|warli|handicraft|weaving|loom|block print)\b/.test(p)) {
+    return [
+      'handloom weaving textile india artisan',
+      'madhubani folk art painting india',
+      'indian handicraft artisan workshop',
+    ]
+  }
+  if (/\b(carnatic|hindustani|tabla|sitar|classical music|ragam)\b/.test(p)) {
+    return [
+      'indian classical music tabla sitar',
+      'carnatic music concert performance india',
+      'sitar musician traditional instrument',
+    ]
+  }
+  if (/\b(museum|heritage walk|cultural centre|cultural center|monument tour)\b/.test(p)) {
+    return [
+      'india museum heritage gallery exhibition',
+      'historical monument india tourism architecture',
+      'cultural festival india traditional',
+    ]
+  }
 
   if (/\b(ice cream|icecream)\b/.test(p)) {
     return ['ice cream scoop dessert', 'ice cream product close up']
@@ -599,26 +724,192 @@ function themedQueries(prompt) {
       'granola snack product close up',
     ]).slice(0, MAX_REQUESTS)
   }
+  if (/\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(p)) {
+    return uniqueValues([
+      'modern hospital building healthcare',
+      'doctor patient consultation clinic room',
+      'medical equipment hospital',
+      'diagnostics laboratory interior',
+      'healthcare nurses hospital corridor',
+      'ambulance hospital entrance',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(pharmacy|pharma|medicine distributor)\b/.test(p)) {
+    return uniqueValues([
+      'pharmacy interior medicine shelves',
+      'pharmacist customer consultation',
+      'medicine tablets packaging',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(solar|photovoltaic|rooftop|epc|renewable energy)\b/.test(p)) {
+    return uniqueValues([
+      'rooftop solar panels residential house',
+      'solar farm panels installation',
+      'solar technician roof work',
+      'industrial solar panel array field',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(logistics|warehouse|3pl|freight|fulfillment|cold storage)\b/.test(p)) {
+    return uniqueValues([
+      'warehouse interior pallets forklift',
+      'shipping container port crane',
+      'delivery truck loading dock',
+      'logistics hub distribution center',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(coaching|jee|neet|upsc|psc|academy|tuition|school|college)\b/.test(p)) {
+    return uniqueValues([
+      'students classroom studying india',
+      'library books exam preparation',
+      'teacher whiteboard coaching class',
+      'university campus building',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(legal|law firm|advocate|litigation|contracts)\b/.test(p)) {
+    return uniqueValues([
+      'law office books library',
+      'lawyer desk consultation',
+      'courthouse building columns',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(temple|charitable trust|darshan|prayer)\b/.test(p)) {
+    return uniqueValues([
+      'indian temple architecture',
+      'temple courtyard devotees',
+      'oil lamp temple ritual',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(ngo|csr|non-profit|nonprofit|volunteer)\b/.test(p)) {
+    return uniqueValues([
+      'community volunteer helping children',
+      'rural development india volunteer',
+      'tree planting volunteers team',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(ev|electric vehicle|charging station|dealership)\b/.test(p)) {
+    return uniqueValues([
+      'electric car charging station',
+      'ev showroom modern vehicle',
+      'electric scooter charging urban',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(real estate|rera|broker|co-living|pg|property)\b/.test(p)) {
+    return uniqueValues([
+      'modern apartment building city',
+      'real estate agent showing apartment',
+      'luxury living room interior design',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(nbfc|gold loan|lending|mutual fund|insurance|fintech|upi|wealth)\b/.test(p)) {
+    return uniqueValues([
+      'financial planning documents desk',
+      'mobile banking app smartphone hand',
+      'gold coins investment wealth',
+      'family insurance protection home',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(agriculture|farmer|fpo|mandi|crop|organic farm)\b/.test(p)) {
+    return uniqueValues([
+      'indian farmer field agriculture',
+      'vegetable harvest farm produce',
+      'tractor agriculture field india',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (
+    /\b(bharatanatyam|kathak|odissi|kuchipudi|kathakali|mohiniyattam|manipuri|sattriya|arangetram|classical dance|nritya|natya)\b/.test(
+      p,
+    )
+  ) {
+    return uniqueValues([
+      'indian classical dance performance costume',
+      'bharatanatyam dancer mudra hands',
+      'kathak dancer spinning lehenga',
+      'odissi dance silver jewelry costume',
+      'traditional indian dance stage lighting',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(p)) {
+    return uniqueValues([
+      'garba night traditional dress india',
+      'dandiya sticks dance festival',
+      'bhangra dancers colorful punjab',
+      'indian folk dance celebration outdoor',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(handloom|khadi|madhubani|warli|handicraft|weaving|loom)\b/.test(p)) {
+    return uniqueValues([
+      'handloom saree weaving india workshop',
+      'khadi fabric textile natural dye',
+      'madhubani painting art wall india',
+      'warli tribal art painting maharashtra',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(carnatic|hindustani|tabla|sitar|classical music|ragam)\b/.test(p)) {
+    return uniqueValues([
+      'tabla drums indian classical music',
+      'sitar veena carnatic concert',
+      'indian classical vocalist performance',
+    ]).slice(0, MAX_REQUESTS)
+  }
+  if (/\b(museum|heritage walk|cultural centre|cultural center|archaeology|fort palace tour)\b/.test(p)) {
+    return uniqueValues([
+      'india museum artifact gallery',
+      'heritage fort india architecture tourism',
+      'cultural heritage exhibition india',
+    ]).slice(0, MAX_REQUESTS)
+  }
   return []
 }
 
-function buildQueries({ prompt, ctx, siteSpec }) {
+function buildQueries({ prompt, ctx, siteSpec, maxQueries }) {
+  const cap = typeof maxQueries === 'number' ? maxQueries : MAX_REQUESTS
   const subjectFirst = themedQueries(prompt || '')
-  const core = phraseFromPrompt(prompt || '', 6)
   const typed = inferVisualSiteType(prompt || '', ctx, siteSpec)
+  const salientRaw = extractSalientPhrases(prompt || '', 3)
+  const salientQueries = salientRaw.flatMap((phrase) =>
+    salientSearchQueries(phrase, typed, prompt),
+  )
+
+  const core = phraseFromPrompt(prompt || '', 6)
   const extracted = extractVisualPhrases(prompt || '')
     .slice(0, 8)
     .flatMap((phrase) => queriesForVisualPhrase(phrase, typed, prompt))
 
   const fromEntities = uniqueValues(ctx?.entities || [])
     .filter(isVisualPhrase)
-    .slice(0, 2)
+    .slice(0, 3)
     .flatMap((entity) => queriesForVisualPhrase(entity, typed, prompt))
 
   const fromFeatures = uniqueValues(ctx?.features || [])
     .filter(isVisualPhrase)
-    .slice(0, 2)
+    .slice(0, 3)
     .flatMap((feature) => queriesForVisualPhrase(feature, typed, prompt))
+
+  const fromProject = []
+  const pn = ctx?.project_name
+  if (pn && String(pn).trim()) {
+    const n = normalizeText(pn)
+    if (isVisualPhrase(n)) fromProject.push(...queriesForVisualPhrase(n, typed, prompt))
+    else fromProject.push(`${n.slice(0, 48)} brand photography`)
+  }
+  if (ctx?.tagline) {
+    fromProject.push(
+      ...extractVisualPhrases(ctx.tagline)
+        .slice(0, 2)
+        .flatMap((ph) => queriesForVisualPhrase(ph, typed, prompt)),
+    )
+  }
+
+  const fromPages =
+    Array.isArray(siteSpec?.pages) && siteSpec.pages.length
+      ? siteSpec.pages
+          .slice(0, 4)
+          .map((page) => [page?.title, page?.name, page?.description].filter(Boolean).join(' '))
+          .filter(Boolean)
+          .flatMap((line) =>
+            extractVisualPhrases(line).flatMap((ph) => queriesForVisualPhrase(ph, typed, prompt)),
+          )
+      : []
 
   const extras = isVisualPhrase(core) ? queriesForVisualPhrase(core, typed, prompt) : []
   if (typed === 'ecommerce') extras.push('product on white background minimal')
@@ -626,11 +917,14 @@ function buildQueries({ prompt, ctx, siteSpec }) {
 
   return uniqueValues([
     ...subjectFirst,
+    ...salientQueries,
     ...extracted,
     ...extras,
     ...fromEntities,
     ...fromFeatures,
-  ]).slice(0, MAX_REQUESTS)
+    ...fromProject,
+    ...fromPages,
+  ]).slice(0, cap)
 }
 
 function subjectKeyFromPrompt(prompt) {
@@ -787,6 +1081,26 @@ function toPromptBlock(hits) {
     .join('\n')}`
 }
 
+export function mergeImageHintLists(primary, secondary) {
+  const a = primary?.photos ?? []
+  const b = secondary?.photos ?? []
+  if (!b.length) {
+    return a.length ? primary : { photos: [], promptBlock: '' }
+  }
+  if (!a.length) {
+    return { photos: b, promptBlock: toPromptBlock(b) }
+  }
+  const seen = new Set()
+  const merged = []
+  for (const photo of [...b, ...a]) {
+    if (!photo?.url || seen.has(photo.url)) continue
+    seen.add(photo.url)
+    merged.push(photo)
+    if (merged.length >= 18) break
+  }
+  return { photos: merged, promptBlock: toPromptBlock(merged) }
+}
+
 function chooseBestPhotoForLabel(label, photos, usage) {
   if (!label || !Array.isArray(photos) || !photos.length) return null
 
@@ -859,11 +1173,25 @@ export function alignGeneratedImagesToContext(html, imageHints = null) {
   return next
 }
 
-export async function resolvePexelsImageHints(ctx = null) {
+export async function resolvePexelsImageHints(hintsInput = null) {
   if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return { photos: [], promptBlock: '' }
 
-  const prompt = ctx?.prompt ?? ''
-  const queries = buildQueries(ctx ?? { prompt })
+  const prompt = hintsInput?.prompt ?? ''
+  const hasRichCtx =
+    (hintsInput?.ctx &&
+      (hintsInput.ctx.project_name ||
+        hintsInput.ctx.tagline ||
+        (hintsInput.ctx.entities && hintsInput.ctx.entities.length) ||
+        (hintsInput.ctx.features && hintsInput.ctx.features.length))) ||
+    (hintsInput?.siteSpec?.pages && hintsInput.siteSpec.pages.length > 0)
+
+  const maxQueries = hasRichCtx ? MAX_REQUESTS_WITH_CTX : MAX_REQUESTS
+  const queries = buildQueries({
+    prompt,
+    ctx: hintsInput?.ctx,
+    siteSpec: hintsInput?.siteSpec,
+    maxQueries,
+  })
   if (!queries.length) return { photos: [], promptBlock: '' }
 
   const subjectKey = subjectKeyFromPrompt(prompt)

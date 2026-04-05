@@ -76,10 +76,12 @@ LANGUAGE: Generate ALL visible text content in ${langName} (${nativeName}, BCP-4
 
 FONT: Load "${googleFont}" from Google Fonts. Apply it as the primary font-family across the entire page so ${langName} script renders correctly.
 
-DESIGN: Use a modern Indian-inspired design system:
-- Color palette rooted in Indian tradition: saffron (#FF9933), deep red (#9B2335), gold (#FFD700), India green (#138808), peacock blue (#003580). Choose 1–2 as primary accent.
+DESIGN: Use a modern Indian-inspired design system that feels premium and intentional, not a flat template:
+- Color palette rooted in Indian tradition: saffron (#FF9933), deep red (#9B2335), gold (#FFD700), India green (#138808), peacock blue (#003580). Choose 1–2 as primary accent with depth (gradients, layered surfaces).
+- Typography: pair a display font (e.g. Tiro Devanagari / Noto Serif / Fraunces for headings) with readable body — hierarchy must be dramatic.
 - Subtle decorative touches: thin mandala-inspired borders, paisley motif dividers, lotus icon accents — tasteful, not loud.
-- Dark theme: deep dark background, lighter surfaces, one vibrant accent.
+- Layout: allow asymmetry, bento-style blocks, or split hero; add CSS motion (transitions, subtle keyframes) for polish.
+- Dark theme: deep tinted background, glass/blur panels, one vibrant accent.
 - Tailwind CSS via CDN. Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script>, call lucide.createIcons() after render, use exact placeholders like <i data-lucide="heart"></i>, prefer x / instagram / whatsapp for brand socials, never class="lucide-heart"). No inline SVGs, no emojis.
 - Vanilla JS only. No frameworks.
 
@@ -92,6 +94,7 @@ Real interactive app (sidebar + main content). All UI driven by a single JS stat
 - Hero: pill badge + massive headline + subtitle + 1 CTA (all in ${langName})
 - Sections: features → pricing → testimonials → CTA → footer
 - Typography-first, centered max-w-4xl layout, 2-column grids, py-20 spacing
+- Dynamic elements: one inline <script> before </body> for mobile nav (data-mobile-nav), FAQ accordion (data-accordion), tabs (data-tab-group), testimonial carousel (data-carousel), stat counters (data-counter, data-counter-target), pricing period toggle (data-pricing-billing), using vanilla JS only. Call lucide.createIcons() after DOM updates.
 
 Output ONLY the complete HTML file.`,
     prompt,

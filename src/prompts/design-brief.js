@@ -45,7 +45,7 @@ This website is in ${indiaMode.name} (${indiaMode.nativeName}). Apply these cons
 export function designBriefPrompt(prompt, indiaMode = null) {
   return {
     system:
-      'You are a world-class design system architect. You create minimalist, typography-first dark SaaS design systems. Output ONLY markdown. No preamble.',
+      'You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. Output ONLY markdown. No preamble.',
     user: `Create a design system for this project:
 ${prompt}
 
@@ -62,9 +62,9 @@ Choose a color palette that fits the project's personality and mood. Provide:
 - Provide Tailwind class names AND hex values for each color.
 
 ### Typography
-- Pick a heading + body font pairing that fits the project (can be the same font). Must be available on Google Fonts.
+- Pick a distinctive heading font (display or editorial: e.g. Fraunces, Syne, Outfit, Cabinet Grotesk, Playfair, DM Serif) plus a readable body font — avoid Inter-only for both. Must be on Google Fonts.
 - Google Fonts import URL with required weights (at least 400, 500, 600, 700, 800)
-- Size scale: hero (very large, extrabold, tracking-tight), section headline (large, extrabold), section label (tiny, uppercase, tracking-widest, accent color), body (medium), small
+- Size scale: hero (very large, extrabold, dramatic tracking), section headline (large, extrabold), section label (tiny, uppercase, tracking-widest, accent color), body (medium), small
 
 ### Tailwind Config
 Valid JSON for tailwind.config.theme.extend with semantic color names (primary, accent, background, surface, border) mapped to the hex values above. Include font family if not Inter.
@@ -92,10 +92,11 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 
 ### Key Principles
 - Typography-first: NO hero images, NO screenshots, NO floating mockups
-- Centered narrow layout: max-w-4xl mx-auto, everything text-center
-- 2-column grids, NEVER 3-column
-- Generous spacing: py-20 md:py-28 per section
-- Restraint: less is more, no clutter, no busy layouts
+- Layout: default centered max-w-4xl, but allow ONE section to break the grid (asymmetric split, bento, or full-bleed band) if it increases wow factor
+- 2-column grids by default; bento-style unequal cells allowed for features when it improves hierarchy
+- Generous spacing: py-20 md:py-28 per section; use whitespace as a luxury
+- Anti-slop: do NOT default to violet/indigo accent + gray-950 without reason — anchor accent in the project domain and mood
+- Signature: specify one motion or depth token (e.g. card hover lift, gradient mesh hero bg, blur glass panel)
 - If images are truly needed (ecommerce/portfolio), use relevant verified provider photos first. If no close match exists, avoid random stock-photo fallbacks and use gradients, patterns, icons, or typography-driven panels instead
 
 Max 70 lines. Output ONLY markdown.${languageDesignAppendix(indiaMode)}`,

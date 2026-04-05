@@ -56,7 +56,7 @@ export async function groq(prompt, opts = {}) {
 function buildImagePrompt(imageHints = '') {
   const trimmed = String(imageHints || '').trim()
   if (!trimmed) return ''
-  return `\n${trimmed}\nUse these verified image URLs first, then only use non-photo treatments if absolutely needed.`
+  return `\n${trimmed}\nUse these verified image URLs first. Each line starts with a bracketed search intent — match that URL to the section, card, or hero whose copy is about that same topic (hero with travel copy gets travel-tagged URLs, not a random office). Set each img alt to a short literal description of the scene (repeat the subject: food, fashion, solar panels, clinic, logistics) so imagery and text stay aligned. Reuse the closest URL when you need more slots. If nothing fits a block, use a gradient, pattern, or icon block instead of an unrelated stock photo.`
 }
 
 const HINGLISH_HOMEPAGE_APPEND = `
@@ -123,7 +123,26 @@ Adapt the layout to the type of site:
 - Portfolio: project showcase with images, about section, skills, contact form.
 - Docs: search bar, quick start code block, topic cards grid.
 - Community: member stats, trending topics, activity feed.
-Shared: dark theme, centered max-w-5xl layout, rounded-xl cards, subtle borders, accent color used sparingly.
+Shared: dark theme with nuanced base (tinted deep slate or zinc, not flat generic gray), rounded-xl cards, subtle borders, one confident accent. Layout may break center-only symmetry when it improves impact.
+
+── DISTINCTIVE CRAFT (websites + marketing pages; skip for raw app UIs and games) ──
+The output must feel art-directed for this specific prompt, not like interchangeable AI SaaS. Banned vibes: default violet-on-gray template, wall-to-wall Inter, perfectly symmetric boring hero, feature cards that all look identical.
+- Type: use a real display / editorial heading font from Google Fonts for hero and section titles (e.g. Fraunces, Syne, Outfit, Cabinet Grotesk, Playfair Display, DM Serif Display) paired with a readable body font — not Inter-only.
+- Visual hook: include at least ONE memorable composition — bento grid with unequal cells, diagonal or angled section edge, split hero (text vs gradient panel), oversized numeral or word as background watermark, aurora/mesh gradient blob (CSS radial-gradient + blur), or editorial left-aligned column with a strong pull-quote.
+- Depth: layered surfaces — backdrop-blur on a panel, ring-1 ring-white/5 to ring-white/15, shadow-2xl, subtle inner glow on primary CTA — avoid flat rectangles only.
+- Motion: CSS-only polish — @keyframes or transition on hero (fade+rise), hover lift/scale on primary buttons and cards, optional slow gradient shift on a band; respect prefers-reduced-motion with @media (prefers-reduced-motion: reduce).
+- Micro-detail: one signature flourish (e.g. gradient border on featured pricing card, animated underline on nav hover, glowing pill badge).
+
+── DYNAMIC MARKETING UI (websites only, not full apps) ──
+Do not ship a static brochure unless the user asked for a single static page. For landing/blog/ecommerce/portfolio/docs/community pages, add a single inline <script> before </body> (vanilla JS, one IIFE) that wires real interactivity:
+- Mobile nav: header with data-mobile-nav, button data-mobile-nav-toggle (toggle class is-open on header); close when a nav link is clicked on small screens.
+- Tabs: wrap sections in data-tab-group; tab buttons [data-tab="x"]; panels [data-tab-panel="x"] with hidden on inactive panels.
+- Testimonials or logos: data-carousel on wrapper, [data-carousel-track] with slide children, [data-carousel-prev] and [data-carousel-next] buttons cycling slides (toggle hidden or translate).
+- Stats row: elements [data-counter] with data-counter-target="number" and optional data-counter-duration; animate count-up when scrolled into view (IntersectionObserver).
+- Pricing: [data-pricing-billing] with buttons [data-billing="month"|"year"] and paired prices in [data-show-monthly] / [data-show-yearly] (toggle hidden).
+- FAQ: [data-accordion] + [data-accordion-item] + button [data-accordion-trigger] + panel (already standard); ensure items open/close.
+- Reveal on scroll: optional [data-reveal] sections get class is-visible when intersecting (CSS transition opacity/transform you define).
+After any JS that injects or swaps nodes with Lucide placeholders, call lucide.createIcons() if window.lucide exists.
 
 ── GAME ──
 Build a sophisticated, fully playable 3D game using THREE.js. NOT a landing page, demo, or 2D Canvas game.
@@ -169,15 +188,15 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
-- Tailwind CSS via CDN, Google Fonts${mixedEnglish && scriptFontHint ? ` (load Inter + ${scriptFontHint})` : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
-- Dark theme: bg-gray-950 base, lighter surfaces, border-gray-800, one accent color.
+- Tailwind CSS via CDN, Google Fonts${mixedEnglish && scriptFontHint ? ` (load Inter + ${scriptFontHint} + a display font for headings)` : ' (load a body font + a display font for headings — not Inter-only)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
+- Dark theme: rich dark base (slate/zinc/neutral with subtle hue), not identical gray-950 everywhere; surfaces and borders should feel intentional.
 - Vanilla JS only. No frameworks.
 - IMAGES: Use provided verified image URLs first. Each line lists a scene description before the URL — assign the URL whose description best matches that card or section (breed, rescue, bridal, dairy, etc.). Reuse the closest matching provided URL when you need more image slots than unique photos. Never use a laptop, phone, or screen image for animals or nature posts. If no relevant photo exists, use a non-photo treatment such as a gradient panel, pattern, icon, or typography block instead of a random stock image.`,
     prompt: `${prompt}${brandBlock}${buildImagePrompt(imageHints?.promptBlock)}\n${
       brandProfile
         ? 'Use the verified brand details above as exact source data. Do not invent missing logo, contact, or social fields.'
         : ''
-    }`,
+    }\nShip something that looks deliberately designed: bold typography hierarchy, layered surfaces, tasteful motion, and at least one surprising layout choice — not interchangeable template output.`,
     temperature: LLM_CONFIG.homepage.temperature,
     maxTokens: LLM_CONFIG.homepage.maxTokens,
   })

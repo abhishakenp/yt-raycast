@@ -20,7 +20,11 @@ import {
 } from '../spec/index.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
 import { detectLanguage } from './detect-language.js'
-import { resolvePexelsImageHints } from './image-hints.js'
+import {
+  alignGeneratedImagesToContext,
+  mergeImageHintLists,
+  resolvePexelsImageHints,
+} from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { withLanguageEnforcementBlock } from './prompt-language.js'
 import { getWorkspacePreferredLanguage } from '../server/sessions.js'
@@ -327,10 +331,16 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
   sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
-  const imageHints =
-    homepageStats.imageHints?.photos?.length > 0
-      ? homepageStats.imageHints
-      : await resolvePexelsImageHints({ prompt: normalizedPrompt, ctx, siteSpec })
+  const richImageHints = await resolvePexelsImageHints({
+    prompt: normalizedPrompt,
+    ctx,
+    siteSpec,
+  })
+  const imageHints = mergeImageHintLists(homepageStats.imageHints, richImageHints)
+  if (homepage) {
+    homepage = alignGeneratedImagesToContext(homepage, imageHints)
+    writeFile(workspace, 'index.html', homepage)
+  }
 
   // Inject design system colors into the homepage now that both are ready
   if (homepage && designBrief) {

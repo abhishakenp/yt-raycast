@@ -68,9 +68,9 @@ export const HOME_LABELS = ['home', 'homepage', 'index', 'landing']
 
 export const SITE_TYPE_INSTRUCTIONS = {
   saas:
-    'SaaS product. Typography-first, no hero images. ' +
-    'Hero: pill badge + massive headline + subtitle + 1 gradient CTA (rounded-full). ' +
-    'Then: features (section label + headline + 2x2 card grid) \u2192 pricing (2-col, featured has Popular badge) \u2192 highlight card (gradient bg with icon) \u2192 logo cloud (company names as text) \u2192 final CTA (headline + 2 buttons) \u2192 footer.',
+    'SaaS product. Typography-first, no hero images. Premium editorial feel — display font headlines, layered surfaces, optional bento feature grid. ' +
+    'Hero: pill badge + massive headline + subtitle + 1 gradient CTA (rounded-full); consider split layout or gradient mesh behind type. ' +
+    'Then: features (section label + headline + strong 2-col or bento card grid) \u2192 pricing (2-col, featured has Popular badge + visual emphasis) \u2192 highlight card (gradient/glass with icon) \u2192 logo cloud (company names as text) \u2192 final CTA (headline + 2 buttons) \u2192 footer.',
   dashboard:
     'Dashboard/analytics tool. Typography-first. ' +
     'Hero: pill badge + headline about data insights + subtitle + CTA. ' +
@@ -100,9 +100,9 @@ export const SITE_TYPE_INSTRUCTIONS = {
     'Hero: bold name + role title + subtle tagline. ' +
     'Then: selected works (2-col, relevant project imagery or strong graphic panels) \u2192 about \u2192 skills/tech \u2192 contact form \u2192 footer.',
   landing:
-    'Landing page. Typography-first, no hero images. ' +
+    'Landing page. Typography-first, no hero images. High-impact layout — not a generic template: asymmetric hero or full-bleed accent band, display typography, motion-friendly sections. ' +
     'Hero: pill badge + oversized headline + subtitle + 1 gradient CTA (rounded-full). ' +
-    'Then: features (2x2 cards) \u2192 social proof (stats + logo cloud as text) \u2192 pricing (2-col) \u2192 FAQ \u2192 final CTA \u2192 footer.',
+    'Then: features (2x2 or bento cards) \u2192 social proof (stats + logo cloud as text) \u2192 pricing (2-col) \u2192 FAQ \u2192 final CTA \u2192 footer.',
   game:
     'Fully playable 3D or 2D game using THREE.js. Not a landing page or demo. ' +
     'Fullscreen experience with realistic physics, smooth controls (WASD + mouse), professional HUD, and win/lose conditions. ' +
