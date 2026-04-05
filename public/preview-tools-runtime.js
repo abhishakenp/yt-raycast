@@ -232,17 +232,31 @@
     last = null
   }
 
+  function isOverlayNode(el) {
+    if (!el || el.nodeType !== 1) return true
+    if (el === veil || el === highlight || (canvas && el === canvas)) return true
+    if (el.getAttribute('data-sf-pt-veil') != null) return true
+    if (el.getAttribute('data-sf-pt-hl') != null) return true
+    if (el.getAttribute('data-sf-pt-draw') != null) return true
+    if (el.getAttribute('data-sf-inline-toolbar') != null) return true
+    return false
+  }
+
   function pickTarget(ev) {
-    if (veil) veil.style.visibility = 'hidden'
-    let el = null
+    let list = []
     try {
-      el = document.elementFromPoint(ev.clientX, ev.clientY)
+      list = document.elementsFromPoint(ev.clientX, ev.clientY)
     } catch {
-      el = null
+      return null
     }
-    if (veil) veil.style.visibility = 'visible'
-    if (!el || el === veil || el === highlight) return null
-    return el
+    for (let i = 0; i < list.length; i++) {
+      const el = list[i]
+      if (isOverlayNode(el)) continue
+      const tag = el.tagName
+      if (tag === 'HTML' || tag === 'BODY') continue
+      return el
+    }
+    return null
   }
 
   function syncHighlight(el) {

@@ -1,4 +1,10 @@
-import { PLAUSIBLE_DOMAIN, SITE_NAME, SITE_URL, SUPPORTED_INDIAN_LANGUAGES } from '../config.js'
+import {
+  isSanityConfigured,
+  PLAUSIBLE_DOMAIN,
+  SITE_NAME,
+  SITE_URL,
+  SUPPORTED_INDIAN_LANGUAGES,
+} from '../config.js'
 import { escapeHtml } from '../renderers/shared.js'
 
 const HOME_TITLE = `${SITE_NAME} - AI Website Generator`
@@ -14,7 +20,8 @@ const HOME_KEYWORDS = [
 ].join(', ')
 const OG_IMAGE_URL = `${SITE_URL}/og-image.png`
 
-function renderStructuredData() {
+function renderStructuredData(descriptionOverride) {
+  const desc = descriptionOverride ?? HOME_DESCRIPTION
   return JSON.stringify([
     {
       '@context': 'https://schema.org',
@@ -23,7 +30,7 @@ function renderStructuredData() {
       url: SITE_URL,
       operatingSystem: 'Web',
       applicationCategory: 'DeveloperApplication',
-      description: HOME_DESCRIPTION,
+      description: desc,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       screenshot: OG_IMAGE_URL,
     },
@@ -32,7 +39,7 @@ function renderStructuredData() {
       '@type': 'WebSite',
       name: SITE_NAME,
       url: SITE_URL,
-      description: HOME_DESCRIPTION,
+      description: desc,
     },
   ])
 }
@@ -100,7 +107,11 @@ function renderAuthOverlay() {
 }
 
 function renderTopActions() {
+  const blogLink = isSanityConfigured()
+    ? '<a class="top-action-link" href="/blog">Blog</a>'
+    : ''
   return `<nav class="top-actions" aria-label="Primary">
+    ${blogLink}
     <a class="top-action-link" href="/pricing">Pricing</a>
     <div class="top-actions-auth-slot">
       <button id="signin-btn" type="button">Sign in</button>
@@ -112,15 +123,17 @@ function renderTopActions() {
   </nav>`
 }
 
-export function renderHomePage() {
+export function renderHomePage(siteSettings = null) {
+  const pageTitle = siteSettings?.homeTitle?.trim() || HOME_TITLE
+  const pageDescription = siteSettings?.homeDescription?.trim() || HOME_DESCRIPTION
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="sf-home" content="ssr" />
-    <title>${escapeHtml(HOME_TITLE)}</title>
-    <meta name="description" content="${escapeHtml(HOME_DESCRIPTION)}" />
+    <title>${escapeHtml(pageTitle)}</title>
+    <meta name="description" content="${escapeHtml(pageDescription)}" />
     <meta name="keywords" content="${escapeHtml(HOME_KEYWORDS)}" />
     <meta name="author" content="${escapeHtml(SITE_NAME)}" />
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
@@ -137,8 +150,8 @@ export function renderHomePage() {
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${escapeHtml(SITE_URL)}" />
-    <meta property="og:title" content="${escapeHtml(HOME_TITLE)}" />
-    <meta property="og:description" content="${escapeHtml(HOME_DESCRIPTION)}" />
+    <meta property="og:title" content="${escapeHtml(pageTitle)}" />
+    <meta property="og:description" content="${escapeHtml(pageDescription)}" />
     <meta property="og:image" content="${escapeHtml(OG_IMAGE_URL)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -146,12 +159,12 @@ export function renderHomePage() {
     <meta property="og:site_name" content="${escapeHtml(SITE_NAME)}" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${escapeHtml(HOME_TITLE)}" />
-    <meta name="twitter:description" content="${escapeHtml(HOME_DESCRIPTION)}" />
+    <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
+    <meta name="twitter:description" content="${escapeHtml(pageDescription)}" />
     <meta name="twitter:image" content="${escapeHtml(OG_IMAGE_URL)}" />
     <meta name="twitter:image:alt" content="Ship Fast homepage preview" />
     <script defer data-domain="${escapeHtml(PLAUSIBLE_DOMAIN)}" data-api="/api/event" src="/js/script.js"></script>
-    <script type="application/ld+json">${renderStructuredData()}</script>
+    <script type="application/ld+json">${renderStructuredData(pageDescription)}</script>
     <link rel="stylesheet" href="/styles/index.css" />
   </head>
   <body>
@@ -323,6 +336,16 @@ export function renderSitemapXml() {
     <loc>${escapeHtml(SITE_URL)}</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${escapeHtml(SITE_URL)}/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${escapeHtml(SITE_URL)}/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>${escapeHtml(SITE_URL)}/privacy</loc>

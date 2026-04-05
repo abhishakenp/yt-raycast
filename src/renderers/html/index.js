@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import {
   buildGlobalCss,
   buildHtmlRuntimeScript,
@@ -118,17 +119,31 @@ ${withLang}
 </html>`
 }
 
-function renderPageDocument(siteSpec, page) {
+function applySiteCssHrefToHtml(html, siteCssHref) {
+  const safe = escapeHtml(siteCssHref)
+  const hadSiteCssLink = /<link\b[^>]*\bhref=["'][^"']*site\.css[^"']*["'][^>]*>/i.test(html)
+  let next = html.replace(
+    /(<link\b[^>]*\bhref=["'])(\.\/)?site\.css(\?[^"'#]*)?(["'])/gi,
+    `$1${safe}$4`,
+  )
+  if (!hadSiteCssLink && /<\/head>/i.test(next)) {
+    next = next.replace(/<\/head>/i, `    <link rel="stylesheet" href="${safe}" />\n  </head>`)
+  }
+  return next
+}
+
+function renderPageDocument(siteSpec, page, siteCssHref) {
   const sections = (page.sections || []).map((section) => renderSectionHtml(section)).join('\n')
   const { htmlLang, markup } = renderSeoHeadMarkup(siteSpec, page)
   const indianFontMarkup = getLanguageFontMarkup(siteSpec._indiaMode)
+  const cssHref = escapeHtml(siteCssHref)
 
   return `<!doctype html>
 <html lang="${escapeHtml(htmlLang)}">
   <head>
     ${markup}
     ${indianFontMarkup}
-    <link rel="stylesheet" href="./site.css" />
+    <link rel="stylesheet" href="${cssHref}" />
   </head>
   <body>
     <div class="site-shell">
@@ -140,8 +155,12 @@ function renderPageDocument(siteSpec, page) {
 }
 
 export function renderHtmlProject(siteSpec) {
+  const cssContent = buildGlobalCss(siteSpec.theme)
+  const cssFingerprint = createHash('sha256').update(cssContent).digest('hex').slice(0, 12)
+  const siteCssHref = `./site.css?v=${cssFingerprint}`
+
   const files = {
-    'site.css': buildGlobalCss(siteSpec.theme),
+    'site.css': cssContent,
     'site.js': buildHtmlRuntimeScript(),
     'robots.txt': renderRobotsTxt(siteSpec),
   }
@@ -150,8 +169,11 @@ export function renderHtmlProject(siteSpec) {
 
   for (const page of siteSpec.pages || []) {
     files[routeToHtmlFile(page.route)] = pageUsesExactClone(page)
-      ? applySeoToExactCloneDocument(page.renderBlueprint.originalHtmlDocument, siteSpec, page)
-      : renderPageDocument(siteSpec, page)
+      ? applySiteCssHrefToHtml(
+          applySeoToExactCloneDocument(page.renderBlueprint.originalHtmlDocument, siteSpec, page),
+          siteCssHref,
+        )
+      : renderPageDocument(siteSpec, page, siteCssHref)
   }
 
   return { files }

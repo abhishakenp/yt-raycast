@@ -14,7 +14,7 @@ import {
 } from '../seo.js'
 import { SHIP_FAST_SITE_URL } from '../../marketing.js'
 
-function renderNextPackageJson(projectName) {
+function renderNextPackageJson(projectName, extraDependencies = {}) {
   return JSON.stringify(
     {
       name: projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -29,11 +29,98 @@ function renderNextPackageJson(projectName) {
         next: '^14.2.15',
         react: '^18.3.1',
         'react-dom': '^18.3.1',
+        ...extraDependencies,
       },
     },
     null,
     2,
   )
+}
+
+function renderSanityNextExportFiles() {
+  return {
+    '.env.example': `NEXT_PUBLIC_SANITY_PROJECT_ID=
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
+SANITY_READ_TOKEN=
+`,
+    'lib/sanity.client.js': `import { createClient } from 'next-sanity'
+
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
+const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-01-01'
+
+export const client = createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: true,
+  ...(process.env.SANITY_READ_TOKEN ? { token: process.env.SANITY_READ_TOKEN } : {}),
+})
+`,
+    'app/blog/page.jsx': `import Link from 'next/link'
+import { client } from '../../lib/sanity.client'
+
+const POSTS_QUERY = \`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+  "slug": slug.current,
+  title,
+  publishedAt,
+  excerpt
+}\`
+
+export default async function BlogIndexPage() {
+  const posts = await client.fetch(POSTS_QUERY)
+  return (
+    <main className="container" style={{ padding: 'var(--spacing-section) 0' }}>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>Blog</h1>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {(posts || []).map((post) => (
+          <li key={post.slug} style={{ marginBottom: '1rem' }}>
+            <Link href={'/blog/' + post.slug} style={{ color: 'var(--color-primary)' }}>
+              {post.title}
+            </Link>
+            {post.excerpt ? (
+              <p style={{ color: 'var(--color-muted)', margin: '0.5rem 0 0' }}>{post.excerpt}</p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
+}
+`,
+    'app/blog/[slug]/page.jsx': `import Link from 'next/link'
+import { PortableText } from '@portabletext/react'
+import { notFound } from 'next/navigation'
+import { client } from '../../../lib/sanity.client'
+
+const POST_QUERY = \`*[_type == "post" && slug.current == $slug][0]{
+  title,
+  publishedAt,
+  excerpt,
+  body,
+  "authorName": author->name,
+  "categories": categories[]->title
+}\`
+
+export default async function BlogPostPage({ params }) {
+  const post = await client.fetch(POST_QUERY, { slug: params.slug })
+  if (!post) notFound()
+  return (
+    <article className="container" style={{ padding: 'var(--spacing-section) 0', maxWidth: '48rem' }}>
+      <p>
+        <Link href="/blog" style={{ color: 'var(--color-primary)' }}>
+          ← Blog
+        </Link>
+      </p>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>{post.title}</h1>
+      {post.authorName ? <p style={{ color: 'var(--color-muted)' }}>{post.authorName}</p> : null}
+      {post.body ? <PortableText value={post.body} /> : null}
+    </article>
+  )
+}
+`,
+  }
 }
 
 function renderNextSectionRenderer() {
@@ -381,6 +468,14 @@ export default function GeneratedPage() {
 }
 
 export function renderNextProject(siteSpec) {
+  const cmsSanity = siteSpec.exportOptions?.cms === 'sanity'
+  const sanityDependencies = cmsSanity
+    ? {
+        'next-sanity': '^9.8.27',
+        '@sanity/client': '^7.20.0',
+        '@portabletext/react': '^3.2.0',
+      }
+    : {}
   const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
   const siteSeo = resolvePageSeo(siteSpec, homePage)
   const sitemapEntries = buildSitemapEntries(siteSpec)
@@ -388,7 +483,7 @@ export function renderNextProject(siteSpec) {
     ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
     : { rules: [{ userAgent: '*', allow: '/' }] }
   const files = {
-    'package.json': renderNextPackageJson(siteSpec.projectName),
+    'package.json': renderNextPackageJson(siteSpec.projectName, sanityDependencies),
     'next.config.mjs': `/** @type {import('next').NextConfig} */
 const nextConfig = {}
 
@@ -479,6 +574,10 @@ export default function SmartLink({ href = '#', children, ...props }) {
     const segments = routeToNextSegments(page.route)
     const dir = page.route === '/' ? 'app' : ['app', ...segments].join('/')
     files[`${dir}/page.jsx`] = renderNextPageModule(siteSpec, page, segments.length)
+  }
+
+  if (cmsSanity) {
+    Object.assign(files, renderSanityNextExportFiles())
   }
 
   return { files }

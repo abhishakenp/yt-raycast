@@ -1,3 +1,4 @@
+import { SITE_SPEC_MODEL } from '../config.js'
 import { groq } from '../llm/groq.js'
 import { formatTps } from '../llm/utils.js'
 import { parseJson } from './workspace.js'
@@ -9,6 +10,7 @@ import {
 } from '../spec/index.js'
 import { siteSpecPrompt } from '../prompts/site-spec.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
+import { repairThemeColors } from '../spec/theme-contrast.js'
 
 function cleanJsonContent(text = '') {
   return String(text)
@@ -49,6 +51,7 @@ export async function generateSiteSpec({
       system: promptBlock.system,
       temperature: promptBlock.temperature,
       maxTokens: promptBlock.maxTokens,
+      model: SITE_SPEC_MODEL,
     })
     attempts.push(result)
 
@@ -64,7 +67,7 @@ export async function generateSiteSpec({
     logValidation(log, 'site-spec validation', validation.errors)
   }
 
-  const finalSpec =
+  const finalSpecSanitized =
     sanitizeSiteSpec(
       validation.valid
         ? normalized
@@ -75,6 +78,14 @@ export async function generateSiteSpec({
         fallback: normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType }),
       },
     ).spec || normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType })
+
+  const finalSpec =
+    finalSpecSanitized?.theme
+      ? {
+          ...finalSpecSanitized,
+          theme: repairThemeColors({ ...finalSpecSanitized.theme }, fallback),
+        }
+      : finalSpecSanitized
 
   if (!validation.valid) {
     log('  site-spec: falling back to normalized default site spec')
@@ -124,6 +135,7 @@ export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace,
     system: promptBlock.system,
     temperature: promptBlock.temperature,
     maxTokens: promptBlock.maxTokens,
+    model: SITE_SPEC_MODEL,
   })
 
   const parsed = parseJson(cleanJsonContent(result.content))
@@ -147,7 +159,7 @@ export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace,
   }
 
   const baseInputSpec = validation.valid ? normalized : normalizeSiteSpec(baseSpec, { prompt })
-  const finalSpec =
+  const finalSpecSanitized =
     sanitizeSiteSpec(
       baseInputSpec,
       { projectName: 'Project', prompt },
@@ -156,6 +168,13 @@ export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace,
         fallback: baseSpec,
       },
     ).spec || normalizeSiteSpec(baseSpec, { prompt })
+  const finalSpec =
+    finalSpecSanitized?.theme
+      ? {
+          ...finalSpecSanitized,
+          theme: repairThemeColors({ ...finalSpecSanitized.theme }, baseSpec),
+        }
+      : finalSpecSanitized
   saveSiteSpec(workspace, finalSpec)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
   log(`  site-spec edit: ${finalSpec.pages.length} pages restructured${tpsStr}`)

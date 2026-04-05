@@ -16,8 +16,11 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "latest",
+    "@portabletext/to-html": "^5.0.2",
+    "@sanity/client": "^7.20.0",
     "express": "^4.21.0",
     "firebase-admin": "^13.7.0",
+    "multer": "^2.1.1",
     "open": "^10.1.0",
     "ws": "^8.18.0"
   },

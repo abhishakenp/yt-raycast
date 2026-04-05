@@ -78,10 +78,14 @@ function readmeRoutes(siteSpec) {
     ),
   )
 
+  if (siteSpec?.exportOptions?.cms === 'sanity' && !routes.includes('/blog')) {
+    routes.push('/blog')
+  }
+
   return routes.length ? routes : ['/']
 }
 
-function readmeTargetDetails(target) {
+function readmeTargetDetails(target, siteSpec = {}) {
   switch (target) {
     case 'html':
       return {
@@ -105,17 +109,24 @@ function readmeTargetDetails(target) {
           'Shared components and styling: `src/components/` and `src/styles.css`',
         ],
       }
-    case 'nextjs':
+    case 'nextjs': {
+      const notes = [
+        'App routes: `app/`',
+        'Shared components: `components/`',
+        'Generated site data: `lib/site-spec.js`',
+      ]
+      if (siteSpec.exportOptions?.cms === 'sanity') {
+        notes.push(
+          'Sanity: copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_SANITY_*` and optional `SANITY_READ_TOKEN`. Blog routes live under `app/blog/`.',
+        )
+      }
       return {
         label: 'Next.js',
         description: 'Next.js App Router application',
         commands: ['bun install', 'bun dev', 'bun run build', 'bun run start'],
-        notes: [
-          'App routes: `app/`',
-          'Shared components: `components/`',
-          'Generated site data: `lib/site-spec.js`',
-        ],
+        notes,
       }
+    }
     default:
       return {
         label: 'Project',
@@ -128,7 +139,7 @@ function readmeTargetDetails(target) {
 
 export function renderProjectReadme(siteSpec, target) {
   const projectName = readmeProjectName(siteSpec)
-  const targetDetails = readmeTargetDetails(target)
+  const targetDetails = readmeTargetDetails(target, siteSpec)
   const routes = readmeRoutes(siteSpec)
 
   return `# ${projectName}
@@ -387,7 +398,11 @@ function renderItemList(items = [], itemRenderer) {
 }
 
 function renderGenericCard(item = {}) {
-  return `<article class="card"><h3>${escapeHtml(item.title || item.label || 'Item')}</h3><p>${escapeHtml(item.body || item.quote || '')}</p></article>`
+  const src = item.imageUrl || item.image
+  const img = src
+    ? `<figure class="card-media"><img src="${escapeHtml(src)}" alt="${escapeHtml(item.alt || item.title || item.label || '')}" loading="lazy" decoding="async" /></figure>`
+    : ''
+  return `<article class="card">${img}<h3>${escapeHtml(item.title || item.label || 'Item')}</h3><p>${escapeHtml(item.body || item.quote || '')}</p></article>`
 }
 
 function renderShipFastFooterBrandingHtml() {
@@ -427,7 +442,11 @@ export function renderSectionHtml(section) {
           </div>
         </header>
       `
-    case 'hero':
+    case 'hero': {
+      const heroImg = section.heroImage || section.imageUrl || section.image
+      const heroFigure = heroImg
+        ? `<figure class="hero-figure"><img class="hero-image" src="${escapeHtml(heroImg)}" alt="${escapeHtml(section.imageAlt || '')}" loading="eager" decoding="async" /></figure>`
+        : ''
       return `
         <section class="section hero hero--${escapeHtml(section.variant || 'default')}" id="${escapeHtml(section.id)}">
           <div class="container hero-grid">
@@ -440,11 +459,13 @@ export function renderSectionHtml(section) {
               </div>
             </div>
             <div class="hero-panel">
+              ${heroFigure}
               ${renderItemList(section.items || [], (item) => `<div class="hero-chip">${escapeHtml(item.title || item.label || item.value || '')}</div>`)}
             </div>
           </div>
         </section>
       `
+    }
     case 'stats':
       return `
         <section class="section stats" id="${escapeHtml(section.id)}">
@@ -662,10 +683,10 @@ html { scroll-behavior: smooth; }
 body {
   margin: 0;
   font-family: var(--font-body);
-  background:
-    radial-gradient(circle at top, rgba(124, 58, 237, 0.18), transparent 35%),
-    linear-gradient(180deg, rgba(9,9,11,1) 0%, rgba(18,18,22,1) 100%);
   color: var(--color-text);
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-primary) 22%, transparent) 0%, transparent 46%),
+    linear-gradient(180deg, var(--color-background) 0%, var(--color-surface) 100%);
 }
 a { color: inherit; text-decoration: none; }
 button, input, textarea { font: inherit; }
@@ -684,10 +705,10 @@ button, input, textarea { font: inherit; }
   display: inline-flex;
   margin: 0 0 1rem;
   padding: 0.45rem 0.8rem;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
   border-radius: 999px;
   color: var(--color-secondary);
-  background: rgba(255,255,255,0.03);
+  background: color-mix(in srgb, var(--color-text) 5%, var(--color-background));
 }
 .section-body { max-width: 60ch; color: var(--color-muted); line-height: 1.7; }
 .site-header {
@@ -695,8 +716,8 @@ button, input, textarea { font: inherit; }
   top: 0;
   z-index: 20;
   backdrop-filter: blur(16px);
-  background: rgba(9,9,11,0.72);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
 }
 .nav-shell, .footer-shell, .cta-shell, .contact-shell, .hero-grid {
   display: grid;
@@ -717,7 +738,7 @@ button, input, textarea { font: inherit; }
 .nav-links { justify-content: flex-end; }
 .nav-toggle {
   display: none;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid color-mix(in srgb, var(--color-border) 95%, transparent);
   background: transparent;
   color: var(--color-text);
   border-radius: 999px;
@@ -729,8 +750,8 @@ button, input, textarea { font: inherit; }
   justify-content: center;
   padding: 0.9rem 1.2rem;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid color-mix(in srgb, var(--color-border) 95%, transparent);
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface));
   color: var(--color-text);
 }
 .button--primary {
@@ -742,9 +763,35 @@ button, input, textarea { font: inherit; }
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
 }
+.hero-figure {
+  margin: 0 0 0.75rem;
+}
+.hero-image {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  border-radius: var(--radius-md);
+  display: block;
+}
+.card-media {
+  margin: 0 0 0.75rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+.card-media img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  max-height: 240px;
+}
 .hero-panel, .card, .pricing-card, .stat-card, .faq-item, .contact-form, .cta-shell, .quote-card {
-  border: 1px solid rgba(255,255,255,0.08);
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-text) 5%, var(--color-surface)),
+    color-mix(in srgb, var(--color-text) 2%, var(--color-background))
+  );
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
@@ -755,7 +802,7 @@ button, input, textarea { font: inherit; }
   display: inline-flex;
   padding: 0.65rem 0.9rem;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
+  background: color-mix(in srgb, var(--color-text) 7%, var(--color-surface));
   margin: 0.35rem;
   color: var(--color-muted);
 }
@@ -792,9 +839,9 @@ button, input, textarea { font: inherit; }
 .contact-form label { display: grid; gap: 0.45rem; color: var(--color-muted); }
 .contact-form input, .contact-form textarea {
   width: 100%;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
   border-radius: var(--radius-md);
-  background: rgba(0,0,0,0.24);
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-background));
   color: var(--color-text);
   padding: 0.9rem 1rem;
 }
@@ -802,7 +849,7 @@ button, input, textarea { font: inherit; }
 .form-message { min-height: 1.5rem; color: var(--color-secondary); }
 .site-footer {
   padding: 2rem 0 3rem;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
   color: var(--color-muted);
 }
 .footer-meta {
@@ -897,6 +944,14 @@ button, input, textarea { font: inherit; }
     align-items: flex-start;
   }
   .site-header.is-open .nav-links { display: flex; }
+}
+.site-header .brand,
+.site-header .nav-links a:not(.button--primary) {
+  color: var(--color-text);
+  opacity: 1;
+}
+.site-header .nav-links a:not(.button--primary):hover {
+  color: var(--color-primary);
 }
 `
 }

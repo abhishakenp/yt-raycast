@@ -31,6 +31,7 @@ import { getWorkspacePreferredLanguage } from '../server/sessions.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt.js'
 import { enrichBrandProfile } from './brand-profile.js'
+import { syncSiteSettingsFromSiteSpec } from '../sanity/cms-sync.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -79,6 +80,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
     const enrichedSiteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace)
     saveSiteSpec(workspace, enrichedSiteSpec)
     sessionCtx.setSiteSpec?.(enrichedSiteSpec)
+    void syncSiteSettingsFromSiteSpec(enrichedSiteSpec)
 
     const taskList = deriveTasks(enrichedSiteSpec).map((task) => {
       if (String(task.id).startsWith('backend-')) return { ...task, status: 'DONE' }
@@ -397,6 +399,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     siteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace)
     saveSiteSpec(workspace, siteSpec)
     sessionCtx.setSiteSpec?.(siteSpec)
+    void syncSiteSettingsFromSiteSpec(siteSpec)
   }
 
   const done = tasks.filter((t) => t.status === 'DONE').length

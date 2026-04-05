@@ -15,6 +15,11 @@ export function siteSpecPrompt({
       : 'Generate a canonical site spec that can drive multiple renderers.'
   const brandBlock = brandProfilePromptBlock(brandProfile)
 
+  const editThemeRules =
+    mode === 'edit'
+      ? `\n- Edit mode — theme safety: Whenever you change theme.colors, mood, or palette, you MUST keep strong readable contrast. Body text must stay clearly visible on both background and surface (avoid near-identical luminance between text and background). Prefer coherent light OR dark schemes; do not produce dark gray text on black backgrounds or other low-contrast combinations.\n- Edit mode — navigation: If the user reports header, nav, or link text being hard to see, set theme.colors.text and theme.colors.mutedText so they contrast clearly with theme.colors.background and theme.colors.surface, and keep the home page’s first section as type navbar with non-empty link labels.\n`
+      : ''
+
   return {
     system:
       'You are a product architect who outputs only valid JSON. No markdown. No explanation. Keep the result strongly structured and renderer-friendly.',
@@ -97,7 +102,7 @@ export function siteSpecPrompt({
       `- Use clean title patterns: homepage as "Project Name | Core benefit" and secondary pages as "Topic | Project Name" or "Project Name Topic | Benefit". Avoid keyword stuffing.\n` +
       `- When you include FAQ content, write realistic buyer or user questions rather than placeholder copy.\n` +
       `- When verified brand details are provided, use them for logo/contact/footer/social sections and keep those fields exact.\n` +
-      `- Use the fallback structure when uncertain rather than inventing a malformed schema.`,
+      `- Use the fallback structure when uncertain rather than inventing a malformed schema.${editThemeRules}`,
     temperature: 0.2,
     maxTokens: 4000,
   }

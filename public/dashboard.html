@@ -527,6 +527,86 @@
                 <div class="preview-progress-fill" id="preview-progress-fill"></div>
               </div>
             </div>
+            <div class="preview-chat-dock" id="preview-chat-dock" hidden>
+              <div class="preview-chat-panel" id="preview-chat-panel" hidden>
+                <div class="preview-chat-head">
+                  <span class="preview-chat-head-title">Chat</span>
+                  <button type="button" class="preview-chat-close" id="preview-chat-close" aria-label="Close">
+                    &times;
+                  </button>
+                </div>
+                <div class="preview-chat-scroll" id="preview-chat-scroll">
+                  <div class="preview-chat-messages" id="preview-chat-messages"></div>
+                  <div class="preview-chat-typing" id="preview-chat-typing" hidden aria-live="polite">
+                    <div class="preview-chat-row preview-chat-row--assistant">
+                      <div class="preview-chat-bubble preview-chat-bubble--assistant preview-chat-bubble--typing">
+                        <span class="preview-chat-typing-dots" aria-hidden="true"
+                          ><span></span><span></span><span></span
+                        ></span>
+                        <span class="preview-chat-typing-label">Updating your site…</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="preview-chat-composer">
+                  <form class="preview-chat-form" id="preview-chat-form">
+                    <div
+                      class="preview-chat-attachments"
+                      id="preview-chat-attachments"
+                      hidden
+                    ></div>
+                    <input
+                      type="file"
+                      id="preview-chat-file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      multiple
+                      hidden
+                    />
+                    <div class="preview-chat-input-shell">
+                      <button
+                        type="button"
+                        class="preview-chat-attach"
+                        id="preview-chat-attach"
+                        aria-label="Attach images"
+                        title="Attach images"
+                      >
+                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                          <path
+                            fill="currentColor"
+                            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"
+                          />
+                        </svg>
+                      </button>
+                      <textarea
+                        id="preview-chat-input"
+                        rows="1"
+                        maxlength="8000"
+                        placeholder="Message…"
+                        autocomplete="off"
+                      ></textarea>
+                      <button type="submit" class="preview-chat-send" id="preview-chat-send" aria-label="Send">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                          <path
+                            fill="currentColor"
+                            d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </form>
+                  <p class="preview-chat-status" id="preview-chat-status" role="status"></p>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="preview-chat-fab"
+                id="preview-chat-fab"
+                aria-expanded="false"
+                aria-controls="preview-chat-panel"
+              >
+                Chat
+              </button>
+            </div>
           </div>
         </div>
         <div class="backend-progress" id="backend-progress">
@@ -1007,6 +1087,10 @@
       let lastGithubPush = null
       let previewSelectMode = false
       let previewAnnotatorActive = false
+      let chatEditable = false
+      let chatSending = false
+      let chatAwaitingEdit = false
+      let chatAttachmentPaths = []
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
@@ -2663,14 +2747,14 @@
         if (!preloadStarted) preloadPreview()
         else if (previewLoaded) {
           const iframe = document.getElementById('preview-iframe')
-          iframe.src = iframe.src
+          iframe.src = `${PREVIEW_BASE}?t=${Date.now()}`
         }
       }
 
       function reloadPreview() {
         if (!preloadStarted) return
         const iframe = document.getElementById('preview-iframe')
-        iframe.src = PREVIEW_BASE
+        iframe.src = `${PREVIEW_BASE}?t=${Date.now()}`
       }
 
       const PREVIEW_DEVICE_KEY = 'sf_preview_device'
@@ -2737,6 +2821,196 @@
       }
 
       initPreviewFrameTools()
+
+      function showPreviewChatDock() {
+        const dock = document.getElementById('preview-chat-dock')
+        if (dock && SESSION_ID) dock.removeAttribute('hidden')
+      }
+
+      function setChatBuilding(show) {
+        const typing = document.getElementById('preview-chat-typing')
+        const panel = document.getElementById('preview-chat-panel')
+        if (typing) typing.hidden = !show
+        if (panel) panel.classList.toggle('preview-chat-panel--building', Boolean(show))
+        const scroll = document.getElementById('preview-chat-scroll')
+        if (scroll && show) scroll.scrollTop = scroll.scrollHeight
+      }
+
+      function renderChatMessages(msgs) {
+        const el = document.getElementById('preview-chat-messages')
+        const scroll = document.getElementById('preview-chat-scroll')
+        if (!el) return
+        el.innerHTML = ''
+        ;(msgs || []).forEach((m) => {
+          const row = document.createElement('div')
+          row.className =
+            'preview-chat-row preview-chat-row--' + (m.role === 'assistant' ? 'assistant' : 'user')
+          const bubble = document.createElement('div')
+          bubble.className =
+            'preview-chat-bubble preview-chat-bubble--' + (m.role === 'assistant' ? 'assistant' : 'user')
+          bubble.textContent = m.content || ''
+          row.appendChild(bubble)
+          el.appendChild(row)
+        })
+        if (scroll) scroll.scrollTop = scroll.scrollHeight
+      }
+
+      function setChatFormDisabled(disabled) {
+        const input = document.getElementById('preview-chat-input')
+        const send = document.getElementById('preview-chat-send')
+        const attach = document.getElementById('preview-chat-attach')
+        const d = disabled || !chatEditable
+        if (input) input.disabled = d
+        if (send) send.disabled = d
+        if (attach) attach.disabled = d
+      }
+
+      async function refreshChatHistory() {
+        if (!SESSION_ID) return
+        try {
+          const r = await apiFetch(`/api/sessions/${SESSION_ID}/chat`)
+          if (!r.ok) return
+          const data = await r.json()
+          chatEditable = Boolean(data.editable)
+          renderChatMessages(data.messages)
+          setChatFormDisabled(chatSending)
+          const stat = document.getElementById('preview-chat-status')
+          if (stat) {
+            stat.textContent = chatEditable ? '' : 'Finish generating your site to edit from chat.'
+          }
+        } catch {
+          void 0
+        }
+      }
+
+      function initPreviewChat() {
+        const fab = document.getElementById('preview-chat-fab')
+        const panel = document.getElementById('preview-chat-panel')
+        const closeBtn = document.getElementById('preview-chat-close')
+        const form = document.getElementById('preview-chat-form')
+        const input = document.getElementById('preview-chat-input')
+        const fileInput = document.getElementById('preview-chat-file')
+        const attachBtn = document.getElementById('preview-chat-attach')
+        const attachWrap = document.getElementById('preview-chat-attachments')
+
+        const renderChatAttachments = () => {
+          if (!attachWrap) return
+          attachWrap.innerHTML = ''
+          chatAttachmentPaths.forEach((path) => {
+            const chip = document.createElement('span')
+            chip.className = 'preview-chat-atchip'
+            const label = document.createElement('span')
+            label.className = 'preview-chat-atchip-name'
+            label.textContent = path.replace(/^user-uploads\//, '')
+            const x = document.createElement('button')
+            x.type = 'button'
+            x.className = 'preview-chat-atchip-remove'
+            x.setAttribute('aria-label', 'Remove attachment')
+            x.textContent = '×'
+            x.addEventListener('click', () => {
+              chatAttachmentPaths = chatAttachmentPaths.filter((p) => p !== path)
+              renderChatAttachments()
+            })
+            chip.appendChild(label)
+            chip.appendChild(x)
+            attachWrap.appendChild(chip)
+          })
+          attachWrap.hidden = chatAttachmentPaths.length === 0
+        }
+
+        attachBtn?.addEventListener('click', () => fileInput?.click())
+        fileInput?.addEventListener('change', async () => {
+          const files = fileInput?.files
+          if (!files?.length || !SESSION_ID) return
+          const fd = new FormData()
+          for (let i = 0; i < files.length; i++) fd.append('files', files[i])
+          fileInput.value = ''
+          const stat = document.getElementById('preview-chat-status')
+          if (stat) stat.textContent = 'Uploading…'
+          try {
+            const res = await apiFetch(`/api/sessions/${SESSION_ID}/uploads`, { method: 'POST', body: fd })
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok) {
+              if (stat) stat.textContent = data.error || res.statusText || 'Upload failed'
+              return
+            }
+            const list = Array.isArray(data.files) ? data.files : []
+            for (const f of list) {
+              if (f?.path) chatAttachmentPaths.push(f.path)
+            }
+            renderChatAttachments()
+            if (stat) stat.textContent = ''
+          } catch (err) {
+            if (stat) stat.textContent = err?.message || 'Upload failed'
+          }
+        })
+
+        const setOpen = (open) => {
+          if (!panel || !fab) return
+          panel.hidden = !open
+          fab.setAttribute('aria-expanded', open ? 'true' : 'false')
+        }
+
+        fab?.addEventListener('click', () => {
+          if (panel.hidden) {
+            setOpen(true)
+            void refreshChatHistory()
+            setTimeout(() => input?.focus(), 100)
+          } else {
+            setOpen(false)
+          }
+        })
+        closeBtn?.addEventListener('click', () => setOpen(false))
+        const resizeChatInput = () => {
+          if (!input) return
+          input.style.height = 'auto'
+          input.style.height = Math.min(input.scrollHeight, 140) + 'px'
+        }
+        input?.addEventListener('input', resizeChatInput)
+        form?.addEventListener('submit', async (e) => {
+          e.preventDefault()
+          const raw = input?.value?.trim() || ''
+          if ((!raw && chatAttachmentPaths.length === 0) || !SESSION_ID || chatSending) return
+          const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } = await import(
+            '/scripts/content-policy.js'
+          )
+          if (raw && !checkPromptContentPolicy(raw).ok) {
+            const st = document.getElementById('preview-chat-status')
+            if (st) st.textContent = CONTENT_POLICY_CLIENT_MESSAGE
+            return
+          }
+          chatSending = true
+          setChatFormDisabled(true)
+          const stat = document.getElementById('preview-chat-status')
+          if (stat) stat.textContent = ''
+          try {
+            const res = await apiFetch(`/api/sessions/${SESSION_ID}/chat`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: raw, attachmentPaths: chatAttachmentPaths }),
+            })
+            const data = await res.json().catch(() => ({}))
+            if (res.status === 202) {
+              input.value = ''
+              resizeChatInput()
+              chatAttachmentPaths = []
+              renderChatAttachments()
+              chatAwaitingEdit = true
+              setChatBuilding(true)
+              void refreshChatHistory()
+            } else {
+              if (stat) stat.textContent = data.error || res.statusText || 'Request failed'
+            }
+          } catch (err) {
+            if (stat) stat.textContent = err?.message || 'Network error'
+          } finally {
+            chatSending = false
+            setChatFormDisabled(false)
+          }
+        })
+      }
+
+      initPreviewChat()
 
       // ─── WebSocket: Connect to server ─────────────────────────
       function connectWS() {
@@ -2828,6 +3102,8 @@
               syncPreviewChrome()
               preloadPreview()
               void refreshExportTargets()
+              showPreviewChatDock()
+              void refreshChatHistory()
               if (introActive && !hasSeenLiveUpdate) {
                 // Reconnect: skip intro, show preview full-width immediately
                 isReconnect = true
@@ -2872,6 +3148,11 @@
               if (timingFinal)
                 timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
               checkAllDone()
+              if (chatAwaitingEdit) {
+                chatAwaitingEdit = false
+                setChatBuilding(false)
+              }
+              void refreshChatHistory()
               window.setTimeout(() => {
                 if (!deploymentState?.url) void retryDeployOnce()
               }, 4500)
@@ -2879,7 +3160,23 @@
 
             case 'preview_reload':
               reloadPreview()
+              if (chatAwaitingEdit) {
+                chatAwaitingEdit = false
+                setChatBuilding(false)
+              }
+              void refreshChatHistory()
               break
+
+            case 'error': {
+              if (chatAwaitingEdit) {
+                chatAwaitingEdit = false
+                setChatBuilding(false)
+              }
+              const stEl = document.getElementById('preview-chat-status')
+              if (stEl && ev.message) stEl.textContent = String(ev.message)
+              void refreshChatHistory()
+              break
+            }
 
             case 'client_reload':
               location.reload()
@@ -2998,6 +3295,10 @@
       })
       window.addEventListener('message', (event) => {
         const data = event.data || {}
+        if (data.type === 'SF_PREVIEW_TOOLS_READY') {
+          syncPreviewInspectTools()
+          return
+        }
         if (data.type === 'SF_SAVE_HOMEPAGE_HTML' && typeof data.html === 'string' && SESSION_ID) {
           void (async () => {
             const res = await apiFetch(`/api/sessions/${SESSION_ID}/preview-homepage-html`, {
@@ -3091,6 +3392,13 @@
       })
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
+          const chatPanel = document.getElementById('preview-chat-panel')
+          if (chatPanel && !chatPanel.hidden) {
+            chatPanel.hidden = true
+            document.getElementById('preview-chat-fab')?.setAttribute('aria-expanded', 'false')
+            event.preventDefault()
+            return
+          }
           if (previewAnnotatorActive) {
             previewAnnotatorActive = false
             syncPreviewInspectTools()
@@ -3206,6 +3514,10 @@
           syncPreviewChrome()
           renderExportPanel()
           void refreshExportTargets()
+          if (homepageReady) {
+            showPreviewChatDock()
+            void refreshChatHistory()
+          }
         })
         .catch(() => {})
 

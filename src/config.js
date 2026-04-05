@@ -20,6 +20,7 @@ export const GROQ_API_KEY = process.env.GROQ_API_KEY
 export const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'
 export const GROQ_MODEL = process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b'
 export const HOMEPAGE_MODEL = 'moonshotai/kimi-k2-instruct-0905'
+export const SITE_SPEC_MODEL = (process.env.SITE_SPEC_MODEL ?? '').trim() || HOMEPAGE_MODEL
 
 // ─── RunPod / hex-1 Configuration ───────────────────────
 export const RUNPOD_API_URL = process.env.RUNPOD_API_URL ?? ''
@@ -27,6 +28,18 @@ export const RUNPOD_API_KEY = process.env.RUNPOD_API_KEY ?? ''
 export const RUNPOD_MODEL = process.env.RUNPOD_MODEL ?? 'budecosystem/hex-1'
 export const PEXELS_API_KEY = process.env.PEXELS_API_KEY ?? ''
 export const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY ?? ''
+
+export const SANITY_PROJECT_ID = (process.env.SANITY_PROJECT_ID ?? '').trim()
+export const SANITY_DATASET = (process.env.SANITY_DATASET ?? 'production').trim()
+export const SANITY_API_VERSION = (process.env.SANITY_API_VERSION ?? '2024-01-01').trim()
+export const SANITY_READ_TOKEN = (process.env.SANITY_READ_TOKEN ?? '').trim()
+export const SANITY_WRITE_TOKEN = (process.env.SANITY_WRITE_TOKEN ?? '').trim()
+
+export const isSanityConfigured = () =>
+  Boolean(SANITY_PROJECT_ID && SANITY_DATASET)
+
+export const isSanityChatWriteConfigured = () =>
+  Boolean(isSanityConfigured() && SANITY_WRITE_TOKEN)
 
 // ─── Language Configuration (re-exported from config/languages.js) ──
 export { KNOWN_LANGUAGES as SUPPORTED_INDIAN_LANGUAGES, INDIAN_DESIGN_TOKENS, INDIAN_LANGUAGE_CODES } from './config/languages.js'

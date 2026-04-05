@@ -6,6 +6,7 @@ import {
   BASE_DOMAIN,
   DASHBOARD_PORT,
   HOMEPAGE_MODEL,
+  isSanityConfigured,
   LLM_CONFIG,
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
@@ -40,6 +41,7 @@ import {
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
+import multer from 'multer'
 import {
   filePathForPreviewRequest,
   injectPreviewToolsHtml,
@@ -58,6 +60,8 @@ import {
   startPaymentListeners,
   setQuotaInfoGetter,
 } from './payments.js'
+import { fetchPostBySlug, fetchPosts, fetchSiteSettings } from '../sanity/client.js'
+import { applyPricingPageOverrides, renderBlogIndex, renderBlogPost } from './blog-pages.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { renderPrivacyPage } from './privacy-page.js'
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
@@ -69,7 +73,17 @@ import {
   registerDeployment,
 } from './deployments.js'
 import { generateSlug } from './slug-generator.js'
-import { requirePromptText } from '../prompt.js'
+import { normalizePromptText, requirePromptText } from '../prompt.js'
+import {
+  appendAssistantMessage,
+  appendUserMessage,
+  buildComposedEditPrompt,
+  canSessionRunEdit,
+  clearChatStore,
+  readChatStore,
+  readChatStoreAsync,
+} from './session-chat.js'
+import { MAX_UPLOAD_BYTES, saveSessionImageBuffers } from './session-uploads.js'
 import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
 import {
   checkPromptContentPolicy,
@@ -78,6 +92,28 @@ import {
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
+
+const chatImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_UPLOAD_BYTES, files: 16 },
+  fileFilter: (_req, file, cb) => {
+    if (/^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype)) cb(null, true)
+    else cb(new Error('Only JPEG, PNG, WebP, or GIF images are allowed.'))
+  },
+})
+
+const sanitizeChatAttachmentPaths = (workspace, paths) => {
+  if (!Array.isArray(paths)) return []
+  const safe = /^user-uploads\/[a-f0-9]{32}\.(jpg|png|webp|gif)$/i
+  const out = []
+  for (const p of paths) {
+    if (typeof p !== 'string') continue
+    const normalized = p.replace(/^\.\//, '').replace(/\\/g, '/').trim()
+    if (!safe.test(normalized)) continue
+    if (existsSync(join(workspace, normalized))) out.push(normalized)
+  }
+  return [...new Set(out)]
+}
 
 let _sessionsDir = null
 let rateLimitFile = null
@@ -574,18 +610,73 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── Prompt page (landing) ────────────────────────────────
-  app.get('/', (_req, res) => {
+  app.get('/', async (_req, res) => {
+    let siteSettings = null
+    if (isSanityConfigured()) {
+      try {
+        siteSettings = await fetchSiteSettings()
+      } catch {
+        siteSettings = null
+      }
+    }
     res
       .type('html')
       .set('X-SF-Home-Source', 'ssr')
       .set('Cache-Control', 'private, no-store, max-age=0, must-revalidate')
       .set('Pragma', 'no-cache')
-      .send(renderHomePage())
+      .send(renderHomePage(siteSettings))
   })
 
-  // Pricing page
-  app.get('/pricing', (_req, res) => {
+  app.get('/pricing', async (_req, res) => {
+    if (isSanityConfigured()) {
+      try {
+        const siteSettings = await fetchSiteSettings()
+        if (
+          siteSettings &&
+          (siteSettings.pricingPageTitle ||
+            siteSettings.pricingPageDescription ||
+            siteSettings.pricingHeroHeadline)
+        ) {
+          const raw = readFileSync(join(publicDir, 'pricing.html'), 'utf8')
+          return res.type('html').send(applyPricingPageOverrides(raw, siteSettings))
+        }
+      } catch {
+        /* fall through */
+      }
+    }
     res.sendFile(join(publicDir, 'pricing.html'))
+  })
+
+  app.get('/blog', async (_req, res) => {
+    if (!isSanityConfigured()) {
+      return res.status(503).type('html').send(`<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"/><title>Blog</title></head>
+<body style="font-family:system-ui;padding:2rem;background:#05030d;color:#e4e4e7">
+<p>Blog is not configured. Set SANITY_PROJECT_ID and SANITY_DATASET in the server environment.</p>
+<p><a href="/" style="color:#a78bfa">Home</a></p>
+</body></html>`)
+    }
+    try {
+      const posts = await fetchPosts()
+      res.type('html').send(renderBlogIndex(posts))
+    } catch {
+      res.status(500).type('html').send('<!doctype html><html><body>Error loading blog.</body></html>')
+    }
+  })
+
+  app.get('/blog/:slug', async (req, res) => {
+    if (!isSanityConfigured()) {
+      return res.status(503).type('html').send('Service unavailable')
+    }
+    const slug = String(req.params.slug || '').trim()
+    if (!slug) return res.status(404).type('html').send('Not found')
+    try {
+      const post = await fetchPostBySlug(slug)
+      if (!post) return res.status(404).type('html').send('<!doctype html><html><body>Post not found. <a href="/blog">Blog</a></body></html>')
+      res.type('html').send(renderBlogPost(post, slug))
+    } catch {
+      res.status(500).type('html').send('Error')
+    }
   })
 
   app.get('/privacy', (_req, res) => {
@@ -1026,6 +1117,157 @@ export async function startServer(sessionsDir) {
       done: session.tasks.filter((t) => t.status === 'DONE').length,
       isAnonymous: !session.userId,
     })
+  })
+
+  app.get('/api/sessions/:id/chat', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const store = await readChatStoreAsync(session.workspace, session.id)
+    res.json({
+      version: store.version,
+      updatedAt: store.updatedAt,
+      summary: store.summary,
+      messages: store.messages,
+      editable: canSessionRunEdit(session.workspace),
+    })
+  })
+
+  app.post(
+    '/api/sessions/:id/uploads',
+    optionalAuth,
+    (req, res, next) => {
+      chatImageUpload.array('files', 12)(req, res, (err) => {
+        if (err) return res.status(400).json({ error: err.message || 'Upload failed' })
+        next()
+      })
+    },
+    async (req, res) => {
+      const session = getSession(req.params.id)
+      if (!session) return res.status(404).json({ error: 'Session not found' })
+      if (!ensureSessionArtifactAccess(req, res, session)) return
+      if (!canSessionRunEdit(session.workspace)) {
+        return res.status(409).json({
+          error:
+            'Uploads are available after the initial site is generated. Finish generation first.',
+        })
+      }
+      const files = req.files
+      if (!files?.length) return res.status(400).json({ error: 'No image files' })
+      const saved = saveSessionImageBuffers(
+        session.workspace,
+        files.map((f) => ({
+          buffer: f.buffer,
+          mimetype: f.mimetype,
+          originalname: f.originalname,
+        })),
+      )
+      if (!saved.length) return res.status(400).json({ error: 'No valid images saved' })
+      res.json({ ok: true, files: saved })
+    },
+  )
+
+  app.post('/api/sessions/:id/chat', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+
+    let raw = req.body?.text ?? req.body?.message ?? ''
+    if (typeof raw !== 'string') raw = ''
+    const attachmentPaths = sanitizeChatAttachmentPaths(session.workspace, req.body?.attachmentPaths)
+    if (!normalizePromptText(raw) && attachmentPaths.length) {
+      raw =
+        'Apply the attached images across the site: use them for the hero, gallery, cards, logos, and other images as appropriate.'
+    }
+    let text
+    try {
+      text = requirePromptText(raw)
+    } catch (e) {
+      return res.status(400).json({ error: e.message || 'Invalid text' })
+    }
+
+    const policyResult = checkPromptContentPolicy(text)
+    if (!policyResult.ok) return res.status(400).json({ error: CONTENT_POLICY_CLIENT_MESSAGE })
+
+    if (!canSessionRunEdit(session.workspace)) {
+      return res.status(409).json({
+        error:
+          'Chat editing is available after the initial site is generated. Finish generation first.',
+      })
+    }
+
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
+
+    if (!skipRateLimits) {
+      if (req.user) {
+        if (!checkRateLimit(req.user.uid, userHits, MAX_PER_USER)) {
+          return res.status(429).json({ error: 'Rate limit: too many edit requests. Please wait.' })
+        }
+      } else if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
+        return res.status(429).json({ error: 'Rate limit: too many edit requests. Please wait.' })
+      }
+      const generationKey = req.user?.uid || clientIp
+      if ((activeGenerations.get(generationKey) || 0) >= MAX_CONCURRENT_PER_USER) {
+        return res.status(429).json({
+          error: `You already have ${MAX_CONCURRENT_PER_USER} operations in progress. Please wait.`,
+        })
+      }
+    }
+
+    const store = await readChatStoreAsync(session.workspace, session.id)
+    const composed = buildComposedEditPrompt(store.summary, store.messages, text, {
+      attachments: attachmentPaths,
+    })
+    const userLine =
+      attachmentPaths.length > 0
+        ? `${text}\n\nAttached: ${attachmentPaths.map((p) => p.replace(/^user-uploads\//, '')).join(', ')}`
+        : text
+    appendUserMessage(session.workspace, store, userLine, session.id)
+
+    const sessionCtx = makeSessionState(session)
+    setSessionStatus(session.id, 'generating')
+    const generationKey = req.user?.uid || clientIp
+    if (!skipRateLimits) {
+      activeGenerations.set(generationKey, (activeGenerations.get(generationKey) || 0) + 1)
+    }
+
+    const run = async () => {
+      try {
+        await runEdit({ prompt: composed, workspace: session.workspace, sessionCtx })
+        const st = readChatStore(session.workspace)
+        appendAssistantMessage(session.workspace, st, 'Edit applied. Preview updated.', session.id)
+        setSessionStatus(session.id, 'done')
+      } catch (err) {
+        if (!skipRateLimits) {
+          if (req.user) refundRateLimit(req.user.uid, userHits)
+          else refundRateLimit(clientIp, ipHits)
+        }
+        const msg = err?.message ? String(err.message).slice(0, 500) : 'Edit failed'
+        const st = readChatStore(session.workspace)
+        appendAssistantMessage(session.workspace, st, `Edit failed: ${msg}`, session.id)
+        setSessionStatus(session.id, 'failed')
+        sessionCtx.broadcast({ type: 'error', message: msg })
+      } finally {
+        if (!skipRateLimits) {
+          activeGenerations.set(
+            generationKey,
+            Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
+          )
+        }
+      }
+    }
+
+    void run()
+    res.status(202).json({ ok: true, accepted: true })
+  })
+
+  app.delete('/api/sessions/:id/chat', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    clearChatStore(session.workspace, session.id)
+    res.json({ ok: true })
   })
 
   app.post('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {

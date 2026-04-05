@@ -21,6 +21,13 @@ export function validateSiteSpec(spec) {
   }
 
   if (!spec.theme || typeof spec.theme !== 'object') errors.push('theme is required.')
+  if (spec.exportOptions != null) {
+    if (typeof spec.exportOptions !== 'object' || Array.isArray(spec.exportOptions)) {
+      errors.push('exportOptions must be an object.')
+    } else if (spec.exportOptions.cms != null && spec.exportOptions.cms !== 'sanity') {
+      errors.push(`Unsupported exportOptions.cms "${spec.exportOptions.cms}".`)
+    }
+  }
   if (!Array.isArray(spec.pages) || spec.pages.length === 0) errors.push('pages must contain at least one page.')
 
   const seenRoutes = new Set()
