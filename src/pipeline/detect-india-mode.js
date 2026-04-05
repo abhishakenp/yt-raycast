@@ -22,7 +22,12 @@ export function detectIndiaMode(prompt, preferredLanguage) {
 
   const lower = prompt.toLowerCase()
 
-  for (const lang of SUPPORTED_INDIAN_LANGUAGES) {
+  const sortedLangs = [...SUPPORTED_INDIAN_LANGUAGES].sort((a, b) => {
+    const longest = (lang) => Math.max(0, ...lang.keywords.map((k) => String(k).length))
+    return longest(b) - longest(a)
+  })
+
+  for (const lang of sortedLangs) {
     for (const keyword of lang.keywords) {
       if (lower.includes(keyword.toLowerCase())) {
         return { isIndian: true, language: lang }

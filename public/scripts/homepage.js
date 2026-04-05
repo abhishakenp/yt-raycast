@@ -15,6 +15,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
 
 import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from './content-policy.js'
+import { preferMixedEnglishBcp47FromSnippet } from './mixed-english-hints.js'
 
 let auth = null
 let currentUser = null
@@ -478,10 +479,13 @@ const SAMPLE_PROMPTS = [
 ]
 
 function normalizeLanguageCode(value) {
-  return String(value || '')
+  const v = String(value || '')
     .trim()
     .toLowerCase()
-    .split(/[-_]/)[0]
+  if (!v) return ''
+  if (v === 'hinglish') return 'hinglish'
+  if (/^[a-z]{2,8}-en$/.test(v)) return v
+  return v.split(/[-_]/)[0]
 }
 
 function getBrowserLanguageCandidates() {
@@ -614,7 +618,10 @@ function resetSubmitCtaLabel() {
 function getLogoTaglineText(bcp47) {
   const key = normalizeLanguageCode(bcp47)
   if (!key || key === 'en') return ''
-  return SHIPFAST_TAGLINE_BY_LANG[key] || ''
+  const direct = SHIPFAST_TAGLINE_BY_LANG[key]
+  if (direct) return direct
+  const base = /^([a-z]{2,8})-en$/.exec(key)?.[1]
+  return (base && SHIPFAST_TAGLINE_BY_LANG[base]) || ''
 }
 
 function resetLogoTagline() {
@@ -636,7 +643,10 @@ function playLogoTaglineIn(text) {
 function getGenerateCtaLabel(bcp47) {
   const key = normalizeLanguageCode(bcp47)
   if (!key) return SUBMIT_BTN_DEFAULT_LABEL
-  return GENERATE_CTA_BY_LANG[key] || SUBMIT_BTN_DEFAULT_LABEL
+  const direct = GENERATE_CTA_BY_LANG[key]
+  if (direct) return direct
+  const base = /^([a-z]{2,8})-en$/.exec(key)?.[1]
+  return (base && GENERATE_CTA_BY_LANG[base]) || SUBMIT_BTN_DEFAULT_LABEL
 }
 
 function playSubmitCtaShake() {
@@ -674,7 +684,10 @@ function loadFranc() {
   return francLoadPromise
 }
 
-async function detectSnippetLanguageBcp47(snippet) {
+async function detectSnippetLanguageBcp47(fullText) {
+  const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText)
+  if (fromMixedHint) return fromMixedHint
+  const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
   let franc
   try {
     franc = await loadFranc()
@@ -718,10 +731,9 @@ function schedulePromptLanguageDetect() {
       if (runToken !== promptLangDetectToken) return
       const currentText = input.value.trim()
       if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-      const snippet = currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
       if (runToken !== promptLangDetectToken) return
       if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
-      const bcp47 = await detectSnippetLanguageBcp47(snippet)
+      const bcp47 = await detectSnippetLanguageBcp47(currentText)
       if (!bcp47) return
       if (runToken !== promptLangDetectToken) return
       if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return

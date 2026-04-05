@@ -1,4 +1,5 @@
 import { GROQ_API_KEY, GROQ_HOST, GROQ_MODEL, HOMEPAGE_MODEL, LLM_CONFIG } from '../config.js'
+import { isMixedEnglishIndicCode, lookupKnownLanguage } from '../config/languages.js'
 import { brandProfilePromptBlock } from '../prompts/brand-profile.js'
 import { calculateCost } from './utils.js'
 
@@ -63,8 +64,23 @@ const HINGLISH_HOMEPAGE_APPEND = `
 ── HINGLISH (Hindi–English) COPY ──
 Visible UI text must mix Hindi and English the way Indian brands do: common English for product/UI terms where expected; Hindi for warmth (Devanagari or romanized, matching the user prompt). Never 100% Hindi-only or English-only. Nav, buttons, headings, and body stay in this mixed register.`
 
+function mixedEnglishHomepageAppend(indiaMode) {
+  const lang = indiaMode?.language
+  const code = lang?.code
+  if (!code || !isMixedEnglishIndicCode(code)) return ''
+  if (code === 'hinglish') return HINGLISH_HOMEPAGE_APPEND
+  const known = lookupKnownLanguage(code)
+  const label = known?.name || lang?.name || code
+  const native = known?.nativeName || lang?.nativeName || ''
+  return `
+
+── ${String(label).toUpperCase()} COPY ──
+Visible UI text must mix the local language and English the way Indian audiences expect: common English for product/UI terms where natural; ${native ? `${native} for local phrasing` : 'local language for warmth'} (matching the user prompt). Never 100% local-only or English-only across the whole UI. Nav, buttons, headings, and body stay in this mixed register.`
+}
+
 function nonEnglishLanguageAppend(indiaMode) {
-  if (!indiaMode?.code || indiaMode.code === 'en' || indiaMode.language?.code === 'hinglish') return ''
+  const lc = indiaMode?.language?.code
+  if (!indiaMode?.code || indiaMode.code === 'en' || isMixedEnglishIndicCode(lc || '')) return ''
   const fontName = indiaMode.fontFamily?.split(',')[0]?.trim() || ''
   const fontNote = fontName && fontName !== 'Inter' ? ` Load "${fontName}" from Google Fonts.` : ''
   const rtlNote = indiaMode.isRTL ? ' Use dir="rtl" on the <html> element.' : ''
@@ -75,12 +91,18 @@ All visible UI text must be in ${indiaMode.name} (${indiaMode.nativeName}). Nav,
 }
 
 export async function groqHomepage(prompt, imageHints = null, indiaMode = null, brandProfile = null) {
-  const hinglish = indiaMode?.language?.code === 'hinglish'
+  const mixedAppend = mixedEnglishHomepageAppend(indiaMode)
+  const mixedEnglish = Boolean(mixedAppend)
+  const scriptFontHint = mixedEnglish
+    ? (indiaMode?.fontFamily || indiaMode?.language?.fontFamily || '')
+        .split(',')[0]
+        .trim()
+    : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
   return groqFetch({
     model: HOMEPAGE_MODEL,
     system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
-${hinglish ? HINGLISH_HOMEPAGE_APPEND : nonEnglishLanguageAppend(indiaMode)}
+${mixedAppend || nonEnglishLanguageAppend(indiaMode)}
 
 CLASSIFY: If the prompt describes functionality (app, client, editor, dashboard, manager, tool), build an APPLICATION UI. If it describes a business/product/service, build a LANDING PAGE. Default to APP when unclear.
 
@@ -147,7 +169,7 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
-- Tailwind CSS via CDN, Google Fonts${hinglish ? ' (load Inter + Noto Sans Devanagari)' : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
+- Tailwind CSS via CDN, Google Fonts${mixedEnglish && scriptFontHint ? ` (load Inter + ${scriptFontHint})` : ' (Inter default)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
 - Dark theme: bg-gray-950 base, lighter surfaces, border-gray-800, one accent color.
 - Vanilla JS only. No frameworks.
 - IMAGES: Use provided verified image URLs first. Each line lists a scene description before the URL — assign the URL whose description best matches that card or section (breed, rescue, bridal, dairy, etc.). Reuse the closest matching provided URL when you need more image slots than unique photos. Never use a laptop, phone, or screen image for animals or nature posts. If no relevant photo exists, use a non-photo treatment such as a gradient panel, pattern, icon, or typography block instead of a random stock image.`,

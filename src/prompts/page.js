@@ -1,3 +1,4 @@
+import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
 
 function imageGuide(imageHints) {
@@ -28,9 +29,9 @@ export function pagePrompt(
   indiaMode = null,
   brandProfile = null,
 ) {
-  const hinglish = indiaMode?.language?.code === 'hinglish'
-  const langNote = hinglish
-    ? '\n\nLANGUAGE: Hinglish — match the homepage. All new visible text stays a natural Hindi–English mix, not pure Hindi or pure English.\n'
+  const mixedEn = isMixedEnglishIndicCode(indiaMode?.language?.code)
+  const langNote = mixedEn
+    ? `\n\nLANGUAGE: ${indiaMode.language?.name || 'Mixed'} — match the homepage. All new visible text stays a natural mix of the local language and English, not a single language throughout unless a short fragment requires it.\n`
     : indiaMode?.code && indiaMode.code !== 'en'
       ? `\n\nLANGUAGE: ${indiaMode.name} — all visible text must be in ${indiaMode.name}. Match the homepage language.\n`
       : ''

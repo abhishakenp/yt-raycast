@@ -1,40 +1,262 @@
-/**
- * Language configuration — known Indian languages, script-to-font mapping,
- * RTL scripts, design tokens, and lookup helpers.
- */
+export const HINGLISH_LANGUAGE = {
+  code: 'hinglish',
+  name: 'Hinglish',
+  nativeName: 'Hinglish (Hindi–English)',
+  fontFamily: 'Noto Sans Devanagari, Inter, system-ui, sans-serif',
+  skipFullTranslation: true,
+  keywords: [
+    'hinglish',
+    'hinglish website',
+    'hindi english mix',
+    'hindi-english',
+    'roman hindi',
+  ],
+}
 
-// ---------------------------------------------------------------------------
-// 1. KNOWN_LANGUAGES — 23 Indian languages (lookup table, NOT detection list)
-// ---------------------------------------------------------------------------
-export const KNOWN_LANGUAGES = [
-  { code: 'hinglish', name: 'Hinglish', nativeName: 'Hinglish (Hindi–English)', fontFamily: 'Noto Sans Devanagari, Inter, system-ui, sans-serif', skipFullTranslation: true, keywords: ['hinglish', 'hinglish website', 'hindi english mix', 'hindi-english', 'roman hindi'] },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिंदी', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['hindi', 'हिंदी', 'in hindi', 'hindi website', 'hindi language'] },
-  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', fontFamily: 'Noto Sans Tamil, sans-serif', keywords: ['tamil', 'தமிழ்', 'in tamil', 'tamil website', 'tamil language'] },
-  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', fontFamily: 'Noto Sans Telugu, sans-serif', keywords: ['telugu', 'తెలుగు', 'in telugu', 'telugu website', 'telugu language'] },
-  { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ', fontFamily: 'Noto Sans Kannada, sans-serif', keywords: ['kannada', 'ಕನ್ನಡ', 'in kannada', 'kannada website', 'kannada language'] },
-  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', fontFamily: 'Noto Sans Malayalam, sans-serif', keywords: ['malayalam', 'മലയാളം', 'in malayalam', 'malayalam website', 'malayalam language'] },
-  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', fontFamily: 'Noto Sans Bengali, sans-serif', keywords: ['bengali', 'bangla', 'বাংলা', 'in bengali', 'bengali website', 'bengali language'] },
-  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['marathi', 'मराठी', 'in marathi', 'marathi website', 'marathi language'] },
-  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', fontFamily: 'Noto Sans Gujarati, sans-serif', keywords: ['gujarati', 'ગુજરાતી', 'in gujarati', 'gujarati website', 'gujarati language'] },
-  { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', fontFamily: 'Noto Sans Gurmukhi, sans-serif', keywords: ['punjabi', 'ਪੰਜਾਬੀ', 'in punjabi', 'punjabi website', 'punjabi language'] },
-  { code: 'or', name: 'Odia', nativeName: 'ଓଡ଼ିଆ', fontFamily: 'Noto Sans Oriya, sans-serif', keywords: ['odia', 'oriya', 'ଓଡ଼ିଆ', 'in odia', 'odia website', 'odia language'] },
-  { code: 'as', name: 'Assamese', nativeName: 'অসমীয়া', fontFamily: 'Noto Sans Bengali, sans-serif', keywords: ['assamese', 'অসমীয়া', 'in assamese', 'assamese website', 'assamese language'] },
-  { code: 'ur', name: 'Urdu', nativeName: 'اردو', fontFamily: 'Noto Nastaliq Urdu, sans-serif', keywords: ['urdu', 'اردو', 'in urdu', 'urdu website', 'urdu language'] },
-  { code: 'mai', name: 'Maithili', nativeName: 'मैथिली', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['maithili', 'मैथिली', 'in maithili', 'maithili website', 'maithili language'] },
-  { code: 'kok', name: 'Konkani', nativeName: 'कोंकणी', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['konkani', 'कोंकणी', 'in konkani', 'konkani website', 'konkani language'] },
-  { code: 'mni', name: 'Manipuri', nativeName: 'ꯃꯤꯇꯩ ꯂꯣꯟ', fontFamily: 'Noto Sans Meetei Mayek, sans-serif', keywords: ['manipuri', 'meitei', 'ꯃꯤꯇꯩ', 'in manipuri', 'manipuri website', 'manipuri language'] },
-  { code: 'sat', name: 'Santali', nativeName: 'ᱥᱟᱱᱛᱟᱲᱤ', fontFamily: 'Noto Sans Ol Chiki, sans-serif', keywords: ['santali', 'ᱥᱟᱱᱛᱟᱲᱤ', 'in santali', 'santali website', 'santali language'] },
-  { code: 'ks', name: 'Kashmiri', nativeName: 'कॉशुर', fontFamily: 'Noto Nastaliq Urdu, sans-serif', keywords: ['kashmiri', 'कॉशुर', 'in kashmiri', 'kashmiri website', 'kashmiri language'] },
-  { code: 'doi', name: 'Dogri', nativeName: 'डोगरी', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['dogri', 'डोगरी', 'in dogri', 'dogri website', 'dogri language'] },
-  { code: 'brx', name: 'Bodo', nativeName: 'बड़ो', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['bodo', 'बड़ो', 'in bodo', 'bodo website', 'bodo language'] },
-  { code: 'sd', name: 'Sindhi', nativeName: 'سنڌي', fontFamily: 'Noto Nastaliq Urdu, sans-serif', keywords: ['sindhi', 'سنڌي', 'in sindhi', 'sindhi website', 'sindhi language'] },
-  { code: 'sa', name: 'Sanskrit', nativeName: 'संस्कृतम्', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['sanskrit', 'संस्कृतम्', 'in sanskrit', 'sanskrit website', 'sanskrit language'] },
-  { code: 'ne', name: 'Nepali', nativeName: 'नेपाली', fontFamily: 'Noto Sans Devanagari, sans-serif', keywords: ['nepali', 'नेपाली', 'in nepali', 'nepali website', 'nepali language'] },
+export const INDIC_PURE_LANGUAGES = [
+  {
+    code: 'hi',
+    name: 'Hindi',
+    nativeName: 'हिंदी',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['hindi', 'हिंदी', 'in hindi', 'hindi website', 'hindi language'],
+  },
+  {
+    code: 'ta',
+    name: 'Tamil',
+    nativeName: 'தமிழ்',
+    fontFamily: 'Noto Sans Tamil, sans-serif',
+    keywords: ['tamil', 'தமிழ்', 'in tamil', 'tamil website', 'tamil language'],
+  },
+  {
+    code: 'te',
+    name: 'Telugu',
+    nativeName: 'తెలుగు',
+    fontFamily: 'Noto Sans Telugu, sans-serif',
+    keywords: ['telugu', 'తెలుగు', 'in telugu', 'telugu website', 'telugu language'],
+  },
+  {
+    code: 'kn',
+    name: 'Kannada',
+    nativeName: 'ಕನ್ನಡ',
+    fontFamily: 'Noto Sans Kannada, sans-serif',
+    keywords: ['kannada', 'ಕನ್ನಡ', 'in kannada', 'kannada website', 'kannada language'],
+  },
+  {
+    code: 'ml',
+    name: 'Malayalam',
+    nativeName: 'മലയാളം',
+    fontFamily: 'Noto Sans Malayalam, sans-serif',
+    keywords: ['malayalam', 'മലയാളം', 'in malayalam', 'malayalam website', 'malayalam language'],
+  },
+  {
+    code: 'bn',
+    name: 'Bengali',
+    nativeName: 'বাংলা',
+    fontFamily: 'Noto Sans Bengali, sans-serif',
+    keywords: ['bengali', 'bangla', 'বাংলা', 'in bengali', 'bengali website', 'bengali language'],
+  },
+  {
+    code: 'mr',
+    name: 'Marathi',
+    nativeName: 'मराठी',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['marathi', 'मराठी', 'in marathi', 'marathi website', 'marathi language'],
+  },
+  {
+    code: 'gu',
+    name: 'Gujarati',
+    nativeName: 'ગુજરાતી',
+    fontFamily: 'Noto Sans Gujarati, sans-serif',
+    keywords: ['gujarati', 'ગુજરાતી', 'in gujarati', 'gujarati website', 'gujarati language'],
+  },
+  {
+    code: 'pa',
+    name: 'Punjabi',
+    nativeName: 'ਪੰਜਾਬੀ',
+    fontFamily: 'Noto Sans Gurmukhi, sans-serif',
+    keywords: ['punjabi', 'ਪੰਜਾਬੀ', 'in punjabi', 'punjabi website', 'punjabi language'],
+  },
+  {
+    code: 'or',
+    name: 'Odia',
+    nativeName: 'ଓଡ଼ିଆ',
+    fontFamily: 'Noto Sans Oriya, sans-serif',
+    keywords: ['odia', 'oriya', 'ଓଡ଼ିଆ', 'in odia', 'odia website', 'odia language'],
+  },
+  {
+    code: 'as',
+    name: 'Assamese',
+    nativeName: 'অসমীয়া',
+    fontFamily: 'Noto Sans Bengali, sans-serif',
+    keywords: ['assamese', 'অসমীয়া', 'in assamese', 'assamese website', 'assamese language'],
+  },
+  {
+    code: 'ur',
+    name: 'Urdu',
+    nativeName: 'اردو',
+    fontFamily: 'Noto Nastaliq Urdu, sans-serif',
+    keywords: ['urdu', 'اردو', 'in urdu', 'urdu website', 'urdu language'],
+  },
+  {
+    code: 'mai',
+    name: 'Maithili',
+    nativeName: 'मैथिली',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['maithili', 'मैथिली', 'in maithili', 'maithili website', 'maithili language'],
+  },
+  {
+    code: 'kok',
+    name: 'Konkani',
+    nativeName: 'कोंकणी',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['konkani', 'कोंकणी', 'in konkani', 'konkani website', 'konkani language'],
+  },
+  {
+    code: 'mni',
+    name: 'Manipuri',
+    nativeName: 'ꯃꯤꯇꯩ ꯂꯣꯟ',
+    fontFamily: 'Noto Sans Meetei Mayek, sans-serif',
+    keywords: ['manipuri', 'meitei', 'ꯃꯤꯇꯩ', 'in manipuri', 'manipuri website', 'manipuri language'],
+  },
+  {
+    code: 'sat',
+    name: 'Santali',
+    nativeName: 'ᱥᱟᱱᱛᱟᱲᱤ',
+    fontFamily: 'Noto Sans Ol Chiki, sans-serif',
+    keywords: ['santali', 'ᱥᱟᱱᱛᱟᱲᱤ', 'in santali', 'santali website', 'santali language'],
+  },
+  {
+    code: 'ks',
+    name: 'Kashmiri',
+    nativeName: 'कॉशुर',
+    fontFamily: 'Noto Nastaliq Urdu, sans-serif',
+    keywords: ['kashmiri', 'कॉशुर', 'in kashmiri', 'kashmiri website', 'kashmiri language'],
+  },
+  {
+    code: 'doi',
+    name: 'Dogri',
+    nativeName: 'डोगरी',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['dogri', 'डोगरी', 'in dogri', 'dogri website', 'dogri language'],
+  },
+  {
+    code: 'brx',
+    name: 'Bodo',
+    nativeName: 'बड़ो',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['bodo', 'बड़ो', 'in bodo', 'bodo website', 'bodo language'],
+  },
+  {
+    code: 'sd',
+    name: 'Sindhi',
+    nativeName: 'سنڌي',
+    fontFamily: 'Noto Nastaliq Urdu, sans-serif',
+    keywords: ['sindhi', 'سنڌي', 'in sindhi', 'sindhi website', 'sindhi language'],
+  },
+  {
+    code: 'sa',
+    name: 'Sanskrit',
+    nativeName: 'संस्कृतम्',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['sanskrit', 'संस्कृतम्', 'in sanskrit', 'sanskrit website', 'sanskrit language'],
+  },
+  {
+    code: 'ne',
+    name: 'Nepali',
+    nativeName: 'नेपाली',
+    fontFamily: 'Noto Sans Devanagari, sans-serif',
+    keywords: ['nepali', 'नेपाली', 'in nepali', 'nepali website', 'nepali language'],
+  },
 ]
 
-// ---------------------------------------------------------------------------
-// 2. SCRIPT_FONT_MAP — Unicode script name → Noto font family
-// ---------------------------------------------------------------------------
+const MIXED_ENGLISH_SUFFIX_LANGUAGES = INDIC_PURE_LANGUAGES.filter((l) => l.code !== 'hi')
+
+const MIXED_ENGLISH_SLANG_KEYWORDS = {
+  ta: ['tanglish', 'tanglish website', 'in tanglish'],
+  te: ['tenglish', 'teluglish', 'telugu english mix'],
+  kn: ['kanglish', 'kanglish website'],
+  ml: ['manglish', 'manglish website', 'in manglish'],
+  bn: ['benglish', 'banglish', 'bengali english mix'],
+  mr: ['marathi english mix'],
+  gu: ['gunglish', 'gujarati english mix'],
+  pa: ['punglish', 'punjabi english mix'],
+  or: ['odia english mix', 'oriya english mix'],
+  as: ['assamese english mix'],
+  ur: ['urdu english mix'],
+  mai: ['maithili english mix'],
+  kok: ['konkani english mix'],
+  mni: ['manipuri english mix'],
+  sat: ['santali english mix'],
+  ks: ['kashmiri english mix'],
+  doi: ['dogri english mix'],
+  brx: ['bodo english mix'],
+  sd: ['sindhi english mix'],
+  sa: ['sanskrit english mix'],
+  ne: ['nepali english mix'],
+}
+
+export const KNOWN_LANGUAGES = [
+  HINGLISH_LANGUAGE,
+  ...INDIC_PURE_LANGUAGES,
+  ...MIXED_ENGLISH_SUFFIX_LANGUAGES.map((l) => {
+    const scriptPrimary = l.fontFamily.split(',')[0].trim()
+    const slang = MIXED_ENGLISH_SLANG_KEYWORDS[l.code] || []
+    return {
+      code: `${l.code}-en`,
+      name: `${l.name}+English`,
+      nativeName: `${l.nativeName} + English`,
+      fontFamily: `${scriptPrimary}, Inter, system-ui, sans-serif`,
+      skipFullTranslation: true,
+      keywords: [
+        `${l.code}-en`,
+        `${l.name.toLowerCase()} + english`,
+        `${l.name.toLowerCase()} english mix`,
+        `${l.name.toLowerCase()} and english`,
+        `english mix ${l.name.toLowerCase()}`,
+        ...slang,
+      ],
+    }
+  }),
+]
+
+export const INDIAN_LANGUAGE_CODES = new Set(KNOWN_LANGUAGES.map((l) => l.code))
+
+export const preferMixedEnglishBcp47FromPrompt = (prompt, pureBcp47Code) => {
+  const pl = String(prompt || '').toLowerCase()
+  const words = MIXED_ENGLISH_SLANG_KEYWORDS[pureBcp47Code]
+  if (!words) return null
+  for (const w of words) {
+    if (pl.includes(w.toLowerCase())) return `${pureBcp47Code}-en`
+  }
+  return null
+}
+
+export const preferMixedEnglishBcp47FromSnippet = (snippet) => {
+  const pl = String(snippet || '').toLowerCase()
+  if (/\bhinglish\b/.test(pl)) return 'hinglish'
+  if (/\bmanglish\b/.test(pl)) return 'ml-en'
+  if (/\btanglish\b/.test(pl)) return 'ta-en'
+  if (/\b(tenglish|teluglish)\b/.test(pl)) return 'te-en'
+  if (/\bkanglish\b/.test(pl)) return 'kn-en'
+  if (/\b(benglish|banglish)\b/.test(pl)) return 'bn-en'
+  if (/\bgunglish\b/.test(pl)) return 'gu-en'
+  if (/\bpunglish\b/.test(pl)) return 'pa-en'
+  for (const [pureCode, words] of Object.entries(MIXED_ENGLISH_SLANG_KEYWORDS)) {
+    for (const w of words) {
+      if (pl.includes(w.toLowerCase())) return `${pureCode}-en`
+    }
+  }
+  return null
+}
+
+export const isMixedEnglishIndicCode = (code) => {
+  const c = String(code || '')
+    .trim()
+    .toLowerCase()
+  return c === 'hinglish' || /^[a-z]{2,8}-en$/.test(c)
+}
+
 export const SCRIPT_FONT_MAP = {
   Devanagari: 'Noto Sans Devanagari, sans-serif',
   Tamil: 'Noto Sans Tamil, sans-serif',
@@ -66,23 +288,8 @@ export const SCRIPT_FONT_MAP = {
   Latin: 'Inter, system-ui, sans-serif',
 }
 
-// ---------------------------------------------------------------------------
-// 3. RTL_SCRIPTS — right-to-left script names
-// ---------------------------------------------------------------------------
 export const RTL_SCRIPTS = new Set(['Arabic', 'Hebrew', 'Thaana', 'Syriac'])
 
-// ---------------------------------------------------------------------------
-// 4. INDIAN_LANGUAGE_CODES — BCP-47 codes for all supported Indian languages
-// ---------------------------------------------------------------------------
-export const INDIAN_LANGUAGE_CODES = new Set([
-  'hinglish', 'hi', 'ta', 'te', 'kn', 'ml', 'bn', 'mr', 'gu', 'pa',
-  'or', 'as', 'ur', 'mai', 'kok', 'mni', 'sat', 'ks', 'doi', 'brx',
-  'sd', 'sa', 'ne',
-])
-
-// ---------------------------------------------------------------------------
-// 5. INDIAN_DESIGN_TOKENS — colour palettes and decorative patterns
-// ---------------------------------------------------------------------------
 export const INDIAN_DESIGN_TOKENS = {
   colors: {
     primary: ['#FF6B35', '#FF9933', '#FFD700'],
@@ -98,16 +305,8 @@ export const INDIAN_DESIGN_TOKENS = {
   ],
 }
 
-// ---------------------------------------------------------------------------
-// 6. getDefaultFontForScript — look up font family by Unicode script name
-// ---------------------------------------------------------------------------
-export function getDefaultFontForScript(script) {
-  return SCRIPT_FONT_MAP[script] || 'Inter, system-ui, sans-serif'
-}
+export const getDefaultFontForScript = (script) =>
+  SCRIPT_FONT_MAP[script] || 'Inter, system-ui, sans-serif'
 
-// ---------------------------------------------------------------------------
-// 7. lookupKnownLanguage — find a language entry by BCP-47 code
-// ---------------------------------------------------------------------------
-export function lookupKnownLanguage(code) {
-  return KNOWN_LANGUAGES.find((l) => l.code === code) || null
-}
+export const lookupKnownLanguage = (code) =>
+  KNOWN_LANGUAGES.find((l) => l.code === code) || null

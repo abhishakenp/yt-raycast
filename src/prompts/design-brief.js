@@ -1,4 +1,5 @@
 import { INDIAN_DESIGN_TOKENS } from '../config.js'
+import { isMixedEnglishIndicCode } from '../config/languages.js'
 
 function languageDesignAppendix(indiaMode) {
   if (!indiaMode || indiaMode.code === 'en') return ''
@@ -7,12 +8,17 @@ function languageDesignAppendix(indiaMode) {
     const { language } = indiaMode
     const colors = INDIAN_DESIGN_TOKENS.colors
     const patterns = INDIAN_DESIGN_TOKENS.patterns
-    if (language?.code === 'hinglish') {
+    if (isMixedEnglishIndicCode(language?.code)) {
+      const scriptPrimary = (language.fontFamily || '').split(',')[0].trim()
+      const pairLabel =
+        language?.code === 'hinglish'
+          ? 'Hindi–English mixed copy (natural Hinglish, not pure Hindi or pure English)'
+          : `${language.name} mixed copy for Indian audiences (natural blend of the local language and English, not purely one language)`
       return `
 
-### India Mode — Hinglish
-Hindi–English mixed copy for Indian audiences (natural Hinglish, not pure Hindi or pure English):
-- **Fonts**: Load Noto Sans Devanagari and Inter from Google Fonts. Devanagari for Hindi words, Inter for English.
+### India Mode — ${language.name}
+${pairLabel}:
+- **Fonts**: Load ${scriptPrimary} and Inter from Google Fonts. Use the script font for local-language words and Inter for English.
 - **Color palette**: Root the palette in Indian tradition — saffron (${colors.primary[1]}), gold (${colors.primary[2]}), deep red (${colors.decorative[0]}), peacock blue (${colors.secondary[0]}), India green (${colors.accent[0]}). Choose 1–2 as accent.
 - **Decorative motifs**: Subtle Indian geometric patterns: ${patterns.join(', ')}.
 - **Tailwind config**: Indian-inspired semantic tokens (primary, accent, decorative, surface).`

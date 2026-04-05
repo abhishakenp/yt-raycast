@@ -1,3 +1,4 @@
+import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
 
 /**
@@ -10,10 +11,11 @@ export function getLanguageFontMarkup(indiaMode) {
   const fontFamily = indiaMode.fontFamily || indiaMode.language?.fontFamily
   if (!fontFamily) return ''
 
-  if (indiaMode.language?.code === 'hinglish') {
+  if (isMixedEnglishIndicCode(indiaMode.language?.code)) {
+    const scriptFont = fontFamily.split(',')[0].trim().replace(/ /g, '+')
     return `<link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=${scriptFont}:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>body, * { font-family: ${fontFamily}; }</style>`
   }
   const googleFontName = fontFamily.split(',')[0].trim().replace(/ /g, '+')

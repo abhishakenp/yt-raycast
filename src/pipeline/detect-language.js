@@ -1,5 +1,13 @@
 import { GROQ_API_KEY, GROQ_HOST } from '../config.js'
-import { KNOWN_LANGUAGES, INDIAN_LANGUAGE_CODES, INDIAN_DESIGN_TOKENS, getDefaultFontForScript, RTL_SCRIPTS } from '../config/languages.js'
+import {
+  KNOWN_LANGUAGES,
+  INDIAN_LANGUAGE_CODES,
+  INDIAN_DESIGN_TOKENS,
+  getDefaultFontForScript,
+  RTL_SCRIPTS,
+  lookupKnownLanguage,
+  preferMixedEnglishBcp47FromSnippet,
+} from '../config/languages.js'
 
 const DETECT_MODEL = 'llama-3.3-70b-versatile'
 
@@ -67,6 +75,14 @@ export async function detectLanguage(prompt, preferredLanguage) {
   const fromPref = resolveLanguageModeFromPreference(preferredLanguage)
   if (fromPref.code !== 'en') return fromPref
   if (!prompt) return ENGLISH_MODE
+
+  const mixHint = preferMixedEnglishBcp47FromSnippet(prompt)
+  if (mixHint) {
+    const m = lookupKnownLanguage(mixHint)
+    if (m) {
+      return buildLanguageMode(m.code, m.name, m.nativeName, guessScript(m.fontFamily), m)
+    }
+  }
 
   if (!GROQ_API_KEY) return ENGLISH_MODE
 

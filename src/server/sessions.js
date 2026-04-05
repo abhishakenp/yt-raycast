@@ -39,6 +39,8 @@ function normalizePreferredLanguage(value) {
     .trim()
     .toLowerCase()
   if (!requested || requested === 'en') return DEFAULT_PREFERRED_LANGUAGE
+  if (requested === 'hinglish') return 'hinglish'
+  if (/^[a-z]{2,8}-en$/.test(requested)) return requested
   return /^[a-z]{2,8}$/.test(requested) ? requested : DEFAULT_PREFERRED_LANGUAGE
 }
 
