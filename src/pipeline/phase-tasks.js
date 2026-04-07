@@ -154,8 +154,17 @@ function processResults(taskCtx, filteredTasks, results, workspace, getFname, lo
       alignGeneratedImagesToContext(stripFences(r.content), imageHints),
       log,
     )
+
+    // Ensure the HTML has proper document structure for blueprint extraction
+    let validatedContent = content
+    if (content.trim() && !/<body\b/i.test(content)) {
+      const titleMatch = content.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)
+      const title = titleMatch?.[1]?.trim() || t.title || 'Page'
+      validatedContent = `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>${title}</title>\n</head>\n<body>\n${content}\n</body>\n</html>`
+    }
+
     const fname = getFname(t)
-    writeFile(workspace, fname, content)
+    writeFile(workspace, fname, validatedContent)
     if (task) {
       task.status = 'DONE'
       task.files = [fname]
@@ -249,7 +258,7 @@ export async function generateAllTasks(
         }
       }
       if (!ok) {
-        const html = buildFallbackPageFromHomepage(homepageHtml, t)
+        const html = buildFallbackPageFromHomepage(homepageHtml, t, [])
         persistPageHtml(t, html, taskCtx, workspace)
         log(`  ${t.id} \u2192 ${t.filename}: ${html.length} chars (fallback)`)
       }

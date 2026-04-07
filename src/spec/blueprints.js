@@ -186,7 +186,7 @@ export function enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace) {
           const stub = buildFallbackPageFromHomepage(indexHtml, {
             title: page.title || page.name || 'Page',
             description: page.description || '',
-          })
+          }, page.sections || [])
           writeFileSync(filePath, stub, 'utf-8')
         } else {
           return { ...page, renderBlueprint: null }
@@ -201,7 +201,7 @@ export function enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace) {
         const stub = buildFallbackPageFromHomepage(indexHtml, {
           title: page.title || page.name || 'Page',
           description: page.description || '',
-        })
+        }, page.sections || [])
         writeFileSync(filePath, stub, 'utf-8')
         html = stub
         blueprint = extractRenderBlueprintFromHtml(html, {
