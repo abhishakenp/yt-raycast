@@ -1,12 +1,37 @@
-import { groqParallel } from '../llm/groq.js'
+import { groq, groqParallel } from '../llm/groq.js'
 import { translateHtmlSequential } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { alignGeneratedImagesToContext } from './image-hints.js'
+import { buildFallbackPageFromHomepage } from './fallback-page.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { slug, writeFile } from './workspace.js'
 import { HOME_LABELS } from '../config.js'
 import { pagePrompt, backendPrompt } from '../prompts/page.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
+
+const PAGE_RETRY_ATTEMPTS = 2
+
+const htmlFromGroqResponse = async (r, imageHints, log, indiaMode) => {
+  if (!r?.content || r.error) return null
+  let html = stripFences(r.content)
+  if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation) {
+    const tr = await translateHtmlSequential([html], indiaMode)
+    html = tr[0] ?? html
+  }
+  return ensureLucideIconRuntime(alignGeneratedImagesToContext(html, imageHints), log)
+}
+
+const persistPageHtml = (task, html, taskCtx, workspace) => {
+  const { taskList, updateTask } = taskCtx
+  writeFile(workspace, task.filename, html)
+  const taskEntry = taskList.find((x) => x.id === task.id)
+  if (taskEntry) {
+    taskEntry.status = 'DONE'
+    taskEntry.files = [task.filename]
+  }
+  updateTask({ id: task.id, status: 'DONE', files: [task.filename] })
+  writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
+}
 
 export function sumTokens(results) {
   let inputTokens = 0
@@ -202,6 +227,33 @@ export async function generateAllTasks(
 
   if (pageTasks.length > 0) {
     processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log, imageHints)
+    const failedAfterBatch = pageTasks.filter(
+      (t) => taskCtx.taskList.find((x) => x.id === t.id)?.status === 'FAILED',
+    )
+    for (const t of failedAfterBatch) {
+      const idx = pageTasks.indexOf(t)
+      const call = pageCalls[idx]
+      let ok = false
+      for (let attempt = 0; attempt < PAGE_RETRY_ATTEMPTS && !ok; attempt++) {
+        log(`  ${t.id}: retry ${attempt + 1}/${PAGE_RETRY_ATTEMPTS}`)
+        const last = await groq(call.prompt, {
+          system: call.system,
+          temperature: call.temperature,
+          maxTokens: call.maxTokens,
+        })
+        const html = await htmlFromGroqResponse(last, imageHints, log, indiaMode)
+        if (html) {
+          persistPageHtml(t, html, taskCtx, workspace)
+          log(`  ${t.id} \u2192 ${t.filename}: ${html.length} chars (retry)`)
+          ok = true
+        }
+      }
+      if (!ok) {
+        const html = buildFallbackPageFromHomepage(homepageHtml, t)
+        persistPageHtml(t, html, taskCtx, workspace)
+        log(`  ${t.id} \u2192 ${t.filename}: ${html.length} chars (fallback)`)
+      }
+    }
   }
   if (backendTasks.length > 0) {
     processResults(

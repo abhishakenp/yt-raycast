@@ -42,7 +42,7 @@ function getExactCloneStatus(workspace, siteSpec) {
       continue
     }
 
-    if (!page?.renderBlueprint?.bodyHtml || !page?.renderBlueprint?.originalHtmlDocument) {
+    if (!page?.renderBlueprint?.bodyHtml) {
       missingBlueprints.push(filename)
     }
   }

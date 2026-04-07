@@ -6,6 +6,41 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'ogImage',
+      title: 'Open Graph / social share image',
+      description:
+        'Choose which image to use for link previews (Facebook, X, Slack, etc.). Upload a new file or pick an existing asset, then use Replace to swap it.',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alt text',
+          description: 'Short description for accessibility and some social cards.',
+        }),
+      ],
+    }),
+    defineField({
+      name: 'homeHeroImage',
+      title: 'Homepage hero image',
+      description:
+        'Image shown in the hero area on the marketing homepage. Upload or select from the media library; use Replace on the preview to change this slot only.',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alt text',
+        }),
+      ],
+    }),
+    defineField({
       name: 'homeTitle',
       title: 'Homepage title override',
       type: 'string',
@@ -49,6 +84,19 @@ export default defineType({
       title: 'Last chat sync',
       type: 'datetime',
       readOnly: true,
+    }),
+    defineField({
+      name: 'ogImageUrl',
+      title: 'Open Graph image URL (API / legacy)',
+      type: 'url',
+      hidden: true,
+      description: 'Set automatically by the dashboard uploader or coexists with the image field above.',
+    }),
+    defineField({
+      name: 'homeHeroImageUrl',
+      title: 'Homepage hero image URL (API / legacy)',
+      type: 'url',
+      hidden: true,
     }),
   ],
 })

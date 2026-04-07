@@ -1581,7 +1581,15 @@ try {
   // Ignore extension probing failures outside Chromium.
 }
 
+const applyHomeTabTitle = () => {
+  const tabMeta = document.querySelector('meta[name="sf-home-tab-title"]')
+  const tabTitle = tabMeta?.getAttribute('content')
+  if (tabTitle) document.title = tabTitle
+}
+applyHomeTabTitle()
+
 window.addEventListener('pageshow', (event) => {
+  applyHomeTabTitle()
   const nav = performance.getEntriesByType('navigation')[0]
   const back = event.persisted || (nav && nav.type === 'back_forward')
   if (back) {

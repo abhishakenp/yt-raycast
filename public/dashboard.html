@@ -359,13 +359,14 @@
                       "
                       >Building downloads…</span
                     >
-                    <a
+                    <button
+                      type="button"
                       id="export-download-link"
                       class="export-download-link secondary"
-                      href="#"
                       style="display: none"
-                      >Download ZIP</a
                     >
+                      Download ZIP
+                    </button>
                   </div>
                 </div>
               </div>
@@ -530,11 +531,147 @@
             <div class="preview-chat-dock" id="preview-chat-dock" hidden>
               <div class="preview-chat-panel" id="preview-chat-panel" hidden>
                 <div class="preview-chat-head">
-                  <span class="preview-chat-head-title">Chat</span>
+                  <span class="preview-chat-head-title" id="preview-chat-head-title">Chat</span>
                   <button type="button" class="preview-chat-close" id="preview-chat-close" aria-label="Close">
                     &times;
                   </button>
                 </div>
+                <div id="preview-chat-cms-block" class="preview-chat-cms-block" hidden>
+                  <p class="preview-chat-cms-note">
+                    Values sync from each generation into site settings (one shared document). The preview iframe shows this
+                    session’s workspace files; refresh the panel after a run if fields look stale.
+                  </p>
+                  <form class="preview-chat-cms-form" id="preview-chat-cms-form">
+                    <label class="preview-chat-cms-label"
+                      >Homepage title override
+                      <input type="text" id="cms-homeTitle" name="homeTitle" autocomplete="off" />
+                    </label>
+                    <label class="preview-chat-cms-label"
+                      >Homepage meta description
+                      <textarea id="cms-homeDescription" name="homeDescription" rows="3"></textarea>
+                    </label>
+                    <label class="preview-chat-cms-label"
+                      >Pricing page title
+                      <input type="text" id="cms-pricingPageTitle" name="pricingPageTitle" autocomplete="off" />
+                    </label>
+                    <label class="preview-chat-cms-label"
+                      >Pricing page meta description
+                      <textarea id="cms-pricingPageDescription" name="pricingPageDescription" rows="2"></textarea>
+                    </label>
+                    <label class="preview-chat-cms-label"
+                      >Pricing hero headline
+                      <input type="text" id="cms-pricingHeroHeadline" name="pricingHeroHeadline" autocomplete="off" />
+                    </label>
+                    <label class="preview-chat-cms-label"
+                      >Chat-synced marketing headline
+                      <input type="text" id="cms-shipChatHeadline" name="shipChatHeadline" autocomplete="off" />
+                    </label>
+                    <label class="preview-chat-cms-label"
+                      >Chat-synced subheadline
+                      <textarea id="cms-shipChatSubheadline" name="shipChatSubheadline" rows="3"></textarea>
+                    </label>
+                    <p class="preview-chat-cms-images-hint">
+                      Use uploaded or library assets (with optional alt text), or paste a legacy image URL. Hotspot/crop
+                      is available in the separate content admin.
+                    </p>
+                    <input type="hidden" id="cms-ogImageAssetId" name="ogImageAssetId" value="" />
+                    <input type="hidden" id="cms-homeHeroImageAssetId" name="homeHeroImageAssetId" value="" />
+                    <div class="preview-chat-cms-image-block">
+                      <span class="preview-chat-cms-image-block-title">Open Graph / social image</span>
+                      <div class="preview-chat-cms-image-preview-wrap">
+                        <img
+                          class="preview-chat-cms-image-preview"
+                          id="cms-ogImage-preview"
+                          alt=""
+                          width="120"
+                          height="63"
+                          hidden
+                        />
+                      </div>
+                      <label class="preview-chat-cms-label preview-chat-cms-label--tight"
+                        >Alt text
+                        <input type="text" id="cms-ogImageAlt" name="ogImageAlt" autocomplete="off" />
+                      </label>
+                      <label class="preview-chat-cms-label"
+                        >Image URL (or use upload / library for a managed asset)
+                        <span class="preview-chat-cms-url-row">
+                          <input type="url" id="cms-ogImageUrl" name="ogImageUrl" placeholder="https://…" />
+                          <button type="button" class="preview-chat-cms-upload" data-cms-upload-slot="og">
+                            Upload
+                          </button>
+                          <button type="button" class="preview-chat-cms-secondary" data-cms-library-slot="og">
+                            Library
+                          </button>
+                          <button type="button" class="preview-chat-cms-secondary" data-cms-clear-slot="og">
+                            Clear asset
+                          </button>
+                        </span>
+                      </label>
+                    </div>
+                    <div class="preview-chat-cms-image-block">
+                      <span class="preview-chat-cms-image-block-title">Homepage hero image</span>
+                      <div class="preview-chat-cms-image-preview-wrap">
+                        <img
+                          class="preview-chat-cms-image-preview"
+                          id="cms-homeHeroImage-preview"
+                          alt=""
+                          width="120"
+                          height="80"
+                          hidden
+                        />
+                      </div>
+                      <label class="preview-chat-cms-label preview-chat-cms-label--tight"
+                        >Alt text
+                        <input type="text" id="cms-homeHeroImageAlt" name="homeHeroImageAlt" autocomplete="off" />
+                      </label>
+                      <label class="preview-chat-cms-label"
+                        >Image URL
+                        <span class="preview-chat-cms-url-row">
+                          <input type="url" id="cms-homeHeroImageUrl" name="homeHeroImageUrl" placeholder="https://…" />
+                          <button type="button" class="preview-chat-cms-upload" data-cms-upload-slot="hero">
+                            Upload
+                          </button>
+                          <button type="button" class="preview-chat-cms-secondary" data-cms-library-slot="hero">
+                            Library
+                          </button>
+                          <button type="button" class="preview-chat-cms-secondary" data-cms-clear-slot="hero">
+                            Clear asset
+                          </button>
+                        </span>
+                      </label>
+                    </div>
+                    <div
+                      class="preview-chat-cms-modal"
+                      id="cms-media-modal"
+                      hidden
+                      aria-hidden="true"
+                    >
+                      <div class="preview-chat-cms-modal-backdrop" id="cms-media-modal-backdrop"></div>
+                      <div
+                        class="preview-chat-cms-modal-card"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="cms-media-modal-title"
+                      >
+                        <div class="preview-chat-cms-modal-head">
+                          <span id="cms-media-modal-title">Media library</span>
+                          <button type="button" class="preview-chat-cms-modal-close" id="cms-media-modal-close" aria-label="Close">
+                            ×
+                          </button>
+                        </div>
+                        <div class="preview-chat-cms-media-grid" id="cms-media-grid"></div>
+                      </div>
+                    </div>
+                    <p class="preview-chat-cms-synced" id="preview-chat-cms-synced">
+                      Last chat sync (read-only): <span id="cms-shipChatSyncedAt">—</span>
+                    </p>
+                    <button type="submit" class="preview-chat-cms-save" id="preview-chat-cms-save">
+                      Save site content
+                    </button>
+                  </form>
+                  <p class="preview-chat-status" id="preview-chat-cms-status" role="status"></p>
+                </div>
+                <div class="preview-chat-llm-wrap" id="preview-chat-llm-wrap">
                 <div class="preview-chat-scroll" id="preview-chat-scroll">
                   <div class="preview-chat-messages" id="preview-chat-messages"></div>
                   <div class="preview-chat-typing" id="preview-chat-typing" hidden aria-live="polite">
@@ -595,6 +732,7 @@
                     </div>
                   </form>
                   <p class="preview-chat-status" id="preview-chat-status" role="status"></p>
+                </div>
                 </div>
               </div>
               <button
@@ -1072,6 +1210,7 @@
       let isReconnect = false // true when refreshing a session that already has homepage
       let alternativeDesign = null // background-loaded alternative theme
       let exportTargets = []
+      let exportTargetsPollTimer = null
       let siteSpecReady = false
       let preferredExportTarget = 'html'
       let isAnonymousSession = false
@@ -1091,6 +1230,65 @@
       let chatSending = false
       let chatAwaitingEdit = false
       let chatAttachmentPaths = []
+      let chatPanelMode = 'llm'
+
+      function applyChatPanelMode(mode) {
+        chatPanelMode = mode === 'cms' ? 'cms' : 'llm'
+        const cms = document.getElementById('preview-chat-cms-block')
+        const llm = document.getElementById('preview-chat-llm-wrap')
+        const title = document.getElementById('preview-chat-head-title')
+        const fab = document.getElementById('preview-chat-fab')
+        const showCms = chatPanelMode === 'cms'
+        if (cms) cms.hidden = !showCms
+        if (llm) llm.hidden = showCms
+        if (title) title.textContent = showCms ? 'Site content' : 'Chat'
+        if (fab) fab.textContent = showCms ? 'Site content' : 'Chat'
+      }
+
+      function populateCmsForm(siteSettings) {
+        const s = siteSettings || {}
+        const set = (id, val) => {
+          const el = document.getElementById(id)
+          if (el) el.value = val ?? ''
+        }
+        set('cms-homeTitle', s.homeTitle)
+        set('cms-homeDescription', s.homeDescription)
+        set('cms-pricingPageTitle', s.pricingPageTitle)
+        set('cms-pricingPageDescription', s.pricingPageDescription)
+        set('cms-pricingHeroHeadline', s.pricingHeroHeadline)
+        set('cms-shipChatHeadline', s.shipChatHeadline)
+        set('cms-shipChatSubheadline', s.shipChatSubheadline)
+        set('cms-ogImageUrl', s.ogImageUrl)
+        set('cms-homeHeroImageUrl', s.homeHeroImageUrl)
+        set('cms-ogImageAssetId', s.ogImageAssetId)
+        set('cms-homeHeroImageAssetId', s.homeHeroImageAssetId)
+        set('cms-ogImageAlt', s.ogImageAlt)
+        set('cms-homeHeroImageAlt', s.homeHeroImageAlt)
+        const ogPrev = s.ogImageUrl ? String(s.ogImageUrl).trim() : ''
+        const heroPrev = s.homeHeroImageUrl ? String(s.homeHeroImageUrl).trim() : ''
+        const ogImg = document.getElementById('cms-ogImage-preview')
+        if (ogImg) {
+          if (ogPrev) {
+            ogImg.src = ogPrev
+            ogImg.hidden = false
+          } else {
+            ogImg.removeAttribute('src')
+            ogImg.hidden = true
+          }
+        }
+        const heroImg = document.getElementById('cms-homeHeroImage-preview')
+        if (heroImg) {
+          if (heroPrev) {
+            heroImg.src = heroPrev
+            heroImg.hidden = false
+          } else {
+            heroImg.removeAttribute('src')
+            heroImg.hidden = true
+          }
+        }
+        const sync = document.getElementById('cms-shipChatSyncedAt')
+        if (sync) sync.textContent = s.shipChatSyncedAt ? String(s.shipChatSyncedAt) : '—'
+      }
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
@@ -1804,6 +2002,7 @@
           setExportMenuOpen(false)
           renderGitHubPushButton()
           renderGitHubExportPanel()
+          ensureExportTargetsPolling()
           return
         }
 
@@ -1870,17 +2069,19 @@
           subtextEl.textContent =
             'Build once and Ship Fast will create the canonical site spec, then generate future exports from that exact UI.'
           if (selected?.downloadPath && !requiresPayment) {
-            download.href = selected.downloadPath
+            download.dataset.downloadUrl = selected.downloadPath
             download.dataset.target = selected.target
             download.dataset.requiresPayment = '0'
             download.textContent = `Download ${selectedLabel}`
             download.style.display = 'inline-flex'
           } else {
+            delete download.dataset.downloadUrl
             download.style.display = 'none'
           }
           setExportMenuOpen(exportMenuOpen)
           renderGitHubPushButton()
           renderGitHubExportPanel()
+          ensureExportTargetsPolling()
           return
         }
 
@@ -1901,18 +2102,48 @@
                 `Waiting for the generated UI to finish before building ${selectedLabel}.`
 
         if (selected?.downloadPath && !requiresPayment) {
-          download.href = selected.downloadPath
+          download.dataset.downloadUrl = selected.downloadPath
           download.dataset.target = selected.target
           download.dataset.requiresPayment = '0'
           download.textContent = `Download ${selectedLabel}`
           download.style.display = 'inline-flex'
         } else {
+          delete download.dataset.downloadUrl
           download.style.display = 'none'
         }
 
         setExportMenuOpen(exportMenuOpen)
         renderGitHubPushButton()
         renderGitHubExportPanel()
+        ensureExportTargetsPolling()
+      }
+
+      function ensureExportTargetsPolling() {
+        const selected = getSelectedExportEntry()
+        const shouldPoll =
+          !isAnonymousSession &&
+          siteSpecReady &&
+          selected &&
+          selected.buildReady === true &&
+          selected.ready === false
+        if (!shouldPoll) {
+          if (exportTargetsPollTimer) {
+            clearInterval(exportTargetsPollTimer)
+            exportTargetsPollTimer = null
+          }
+          return
+        }
+        if (exportTargetsPollTimer) return
+        let ticks = 0
+        exportTargetsPollTimer = setInterval(() => {
+          ticks += 1
+          if (ticks > 30) {
+            clearInterval(exportTargetsPollTimer)
+            exportTargetsPollTimer = null
+            return
+          }
+          void refreshExportTargets()
+        }, 4000)
       }
 
       function refreshExportTargets() {
@@ -1923,6 +2154,7 @@
             exportTargets = Array.isArray(data.targets) ? data.targets : []
             paymentState = normalizePaymentState(data.payment)
             renderExportPanel()
+            ensureExportTargetsPolling()
           })
           .catch(() => {})
       }
@@ -2869,8 +3101,24 @@
         if (!SESSION_ID) return
         try {
           const r = await apiFetch(`/api/sessions/${SESSION_ID}/chat`)
-          if (!r.ok) return
-          const data = await r.json()
+          const data = await r.json().catch(() => ({}))
+          if (!r.ok) {
+            const stat = document.getElementById('preview-chat-status')
+            const cmsStat = document.getElementById('preview-chat-cms-status')
+            const err =
+              data.error || (r.status === 404 ? 'Session not found.' : `Chat unavailable (${r.status}).`)
+            if (stat) stat.textContent = err
+            if (cmsStat) cmsStat.textContent = err
+            return
+          }
+          const mode = data.mode === 'cms' ? 'cms' : 'llm'
+          applyChatPanelMode(mode)
+          if (mode === 'cms') {
+            populateCmsForm(data.siteSettings)
+            const cmsStat = document.getElementById('preview-chat-cms-status')
+            if (cmsStat) cmsStat.textContent = ''
+            return
+          }
           chatEditable = Boolean(data.editable)
           renderChatMessages(data.messages)
           setChatFormDisabled(chatSending)
@@ -2951,11 +3199,206 @@
           fab.setAttribute('aria-expanded', open ? 'true' : 'false')
         }
 
-        fab?.addEventListener('click', () => {
+        const cmsForm = document.getElementById('preview-chat-cms-form')
+        let cmsLibraryTargetSlot = null
+        const cmsSlotIds = {
+          og: {
+            url: 'cms-ogImageUrl',
+            asset: 'cms-ogImageAssetId',
+            preview: 'cms-ogImage-preview',
+          },
+          hero: {
+            url: 'cms-homeHeroImageUrl',
+            asset: 'cms-homeHeroImageAssetId',
+            preview: 'cms-homeHeroImage-preview',
+          },
+        }
+        const applyCmsSlotUrl = (slot, url, assetId) => {
+          const ids = cmsSlotIds[slot]
+          if (!ids) return
+          const urlEl = document.getElementById(ids.url)
+          const assetEl = document.getElementById(ids.asset)
+          const prev = document.getElementById(ids.preview)
+          if (urlEl && url !== undefined) urlEl.value = url
+          if (assetEl && assetId !== undefined) assetEl.value = assetId || ''
+          if (prev) {
+            if (url && String(url).trim()) {
+              prev.src = url
+              prev.hidden = false
+            } else {
+              prev.removeAttribute('src')
+              prev.hidden = true
+            }
+          }
+        }
+        const clearCmsSlotAsset = (slot) => {
+          const ids = cmsSlotIds[slot]
+          if (!ids) return
+          const assetEl = document.getElementById(ids.asset)
+          const prev = document.getElementById(ids.preview)
+          if (assetEl) assetEl.value = ''
+          if (prev) {
+            prev.removeAttribute('src')
+            prev.hidden = true
+          }
+        }
+        const openCmsMediaModal = (slot) => {
+          cmsLibraryTargetSlot = slot
+          const modal = document.getElementById('cms-media-modal')
+          const grid = document.getElementById('cms-media-grid')
+          if (!modal || !grid || !SESSION_ID) return
+          modal.hidden = false
+          modal.setAttribute('aria-hidden', 'false')
+          grid.innerHTML = ''
+          const loading = document.createElement('p')
+          loading.className = 'preview-chat-cms-media-loading'
+          loading.textContent = 'Loading…'
+          grid.appendChild(loading)
+          apiFetch(`/api/sessions/${SESSION_ID}/cms/media?limit=36`)
+            .then((res) => res.json())
+            .then((data) => {
+              grid.innerHTML = ''
+              const assets = Array.isArray(data.assets) ? data.assets : []
+              if (!assets.length) {
+                grid.innerHTML =
+                  '<p class="preview-chat-cms-media-empty">No assets yet. Use Upload above or add files in the content admin.</p>'
+                return
+              }
+              assets.forEach((a) => {
+                if (!a?._id || !a?.url) return
+                const b = document.createElement('button')
+                b.type = 'button'
+                b.className = 'preview-chat-cms-media-tile'
+                b.setAttribute('data-asset-id', a._id)
+                b.setAttribute('data-asset-url', a.url)
+                const im = document.createElement('img')
+                im.src = a.url
+                im.alt = ''
+                im.loading = 'lazy'
+                b.appendChild(im)
+                grid.appendChild(b)
+              })
+            })
+            .catch(() => {
+              grid.innerHTML = '<p class="preview-chat-cms-media-empty">Could not load library.</p>'
+            })
+        }
+        const closeCmsMediaModal = () => {
+          const modal = document.getElementById('cms-media-modal')
+          if (modal) {
+            modal.hidden = true
+            modal.setAttribute('aria-hidden', 'true')
+          }
+          cmsLibraryTargetSlot = null
+        }
+        document.getElementById('cms-media-modal-close')?.addEventListener('click', closeCmsMediaModal)
+        document.getElementById('cms-media-modal-backdrop')?.addEventListener('click', closeCmsMediaModal)
+        document.getElementById('cms-media-grid')?.addEventListener('click', (ev) => {
+          const tile = ev.target.closest('.preview-chat-cms-media-tile')
+          if (!tile || !cmsLibraryTargetSlot) return
+          const aid = tile.getAttribute('data-asset-id')
+          const u = tile.getAttribute('data-asset-url')
+          if (aid && u) applyCmsSlotUrl(cmsLibraryTargetSlot, u, aid)
+          closeCmsMediaModal()
+        })
+        document.getElementById('preview-chat-cms-block')?.addEventListener('click', (ev) => {
+          const up = ev.target.closest('[data-cms-upload-slot]')
+          if (up && SESSION_ID) {
+            const slot = up.getAttribute('data-cms-upload-slot')
+            if (!slot) return
+            const fileInput = document.createElement('input')
+            fileInput.type = 'file'
+            fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif'
+            fileInput.onchange = async () => {
+              const file = fileInput.files?.[0]
+              if (!file) return
+              const fd = new FormData()
+              fd.append('file', file)
+              const cmsStat = document.getElementById('preview-chat-cms-status')
+              if (cmsStat) cmsStat.textContent = 'Uploading image…'
+              try {
+                const res = await apiFetch(`/api/sessions/${SESSION_ID}/cms/upload-image`, {
+                  method: 'POST',
+                  body: fd,
+                })
+                const j = await res.json().catch(() => ({}))
+                if (!res.ok) {
+                  if (cmsStat) cmsStat.textContent = j.error || 'Upload failed'
+                  return
+                }
+                const aid = j.assetId ? String(j.assetId) : ''
+                if (j.url) applyCmsSlotUrl(slot, j.url, aid)
+                if (cmsStat) cmsStat.textContent = ''
+              } catch (err) {
+                if (cmsStat) cmsStat.textContent = err?.message || 'Upload failed'
+              }
+            }
+            fileInput.click()
+            return
+          }
+          const lib = ev.target.closest('[data-cms-library-slot]')
+          if (lib && SESSION_ID) {
+            const slot = lib.getAttribute('data-cms-library-slot')
+            if (slot) openCmsMediaModal(slot)
+            return
+          }
+          const clr = ev.target.closest('[data-cms-clear-slot]')
+          if (clr) {
+            const slot = clr.getAttribute('data-cms-clear-slot')
+            if (slot) clearCmsSlotAsset(slot)
+          }
+        })
+
+        cmsForm?.addEventListener('submit', async (e) => {
+          e.preventDefault()
+          if (!SESSION_ID || chatSending) return
+          const cmsStat = document.getElementById('preview-chat-cms-status')
+          const payload = {
+            homeTitle: document.getElementById('cms-homeTitle')?.value ?? '',
+            homeDescription: document.getElementById('cms-homeDescription')?.value ?? '',
+            pricingPageTitle: document.getElementById('cms-pricingPageTitle')?.value ?? '',
+            pricingPageDescription: document.getElementById('cms-pricingPageDescription')?.value ?? '',
+            pricingHeroHeadline: document.getElementById('cms-pricingHeroHeadline')?.value ?? '',
+            shipChatHeadline: document.getElementById('cms-shipChatHeadline')?.value ?? '',
+            shipChatSubheadline: document.getElementById('cms-shipChatSubheadline')?.value ?? '',
+            ogImageUrl: document.getElementById('cms-ogImageUrl')?.value ?? '',
+            homeHeroImageUrl: document.getElementById('cms-homeHeroImageUrl')?.value ?? '',
+            ogImageAssetId: document.getElementById('cms-ogImageAssetId')?.value ?? '',
+            homeHeroImageAssetId: document.getElementById('cms-homeHeroImageAssetId')?.value ?? '',
+            ogImageAlt: document.getElementById('cms-ogImageAlt')?.value ?? '',
+            homeHeroImageAlt: document.getElementById('cms-homeHeroImageAlt')?.value ?? '',
+          }
+          chatSending = true
+          if (cmsStat) cmsStat.textContent = 'Saving…'
+          try {
+            const res = await apiFetch(`/api/sessions/${SESSION_ID}/cms/site-settings`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            })
+            const j = await res.json().catch(() => ({}))
+            if (!res.ok) {
+              if (cmsStat) cmsStat.textContent = j.error || res.statusText || 'Save failed'
+              return
+            }
+            populateCmsForm(j.siteSettings)
+            if (cmsStat) cmsStat.textContent = 'Saved.'
+          } catch (err) {
+            if (cmsStat) cmsStat.textContent = err?.message || 'Save failed'
+          } finally {
+            chatSending = false
+          }
+        })
+
+        fab?.addEventListener('click', async () => {
           if (panel.hidden) {
             setOpen(true)
-            void refreshChatHistory()
-            setTimeout(() => input?.focus(), 100)
+            await refreshChatHistory()
+            if (chatPanelMode === 'cms') {
+              document.getElementById('cms-homeTitle')?.focus()
+            } else {
+              setTimeout(() => input?.focus(), 100)
+            }
           } else {
             setOpen(false)
           }
@@ -3276,16 +3719,51 @@
         selectedPaymentMode = option.dataset.paymentMode || selectedPaymentMode
         renderPaymentOptions()
       })
-      document.getElementById('export-download-link').addEventListener('click', (event) => {
+      document.getElementById('export-download-link').addEventListener('click', async (event) => {
         const selected = getSelectedExportEntry()
         if (!selected) return
-        if (event.currentTarget.dataset.requiresPayment !== '1') {
+        if (event.currentTarget.dataset.requiresPayment === '1') {
+          closeExportMenu()
+          openPaymentModal(selected)
+          return
+        }
+        const href = event.currentTarget.dataset.downloadUrl
+        if (!href) {
           closeExportMenu()
           return
         }
-        event.preventDefault()
         closeExportMenu()
-        openPaymentModal(selected)
+        try {
+          const res = await apiFetch(href, { method: 'GET' })
+          if (!res.ok) {
+            const text = await res.text()
+            let msg = 'Download failed'
+            try {
+              const j = JSON.parse(text)
+              msg = j.error || msg
+            } catch {
+              if (text) msg = text.slice(0, 200)
+            }
+            window.alert?.(msg)
+            return
+          }
+          const blob = await res.blob()
+          const cd = res.headers.get('Content-Disposition')
+          let filename = `${SESSION_ID}-${selected.target}.zip`
+          const m = cd && /filename[^;=\n]*=(['"]?)([^;\n'"]+)\1/i.exec(cd)
+          if (m && m[2]) filename = m[2].trim()
+          const objUrl = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = objUrl
+          a.download = filename
+          a.rel = 'noopener'
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+          URL.revokeObjectURL(objUrl)
+        } catch (e) {
+          window.alert?.(String(e?.message || e || 'Download failed'))
+        }
       })
       document.addEventListener('click', (event) => {
         if (event.target.closest('#export-menu')) return

@@ -59,6 +59,19 @@ export function serializeModule(value) {
   return JSON.stringify(value, null, 2)
 }
 
+export function slimSiteSpecForBundle(siteSpec) {
+  if (!siteSpec?.pages?.length) return siteSpec
+  return {
+    ...siteSpec,
+    pages: siteSpec.pages.map((page) => {
+      if (!page?.renderBlueprint) return page
+      const rb = { ...page.renderBlueprint }
+      delete rb.originalHtmlDocument
+      return { ...page, renderBlueprint: rb }
+    }),
+  }
+}
+
 export function pageUsesExactClone(page) {
   return Boolean(page?.renderBlueprint?.exactClone && page?.renderBlueprint?.bodyHtml)
 }
@@ -104,6 +117,7 @@ function readmeTargetDetails(target, siteSpec = {}) {
         description: 'Vite + React application',
         commands: ['bun install', 'bun dev', 'bun run build', 'bun run preview'],
         notes: [
+          'Uses Bun (`packageManager` in `package.json`). `bun install` writes `bun.lock` — commit it for faster installs.',
           'App entry: `src/main.jsx`',
           'Routes: `src/pages/`',
           'Shared components and styling: `src/components/` and `src/styles.css`',
@@ -111,6 +125,7 @@ function readmeTargetDetails(target, siteSpec = {}) {
       }
     case 'nextjs': {
       const notes = [
+        'Uses Bun (`packageManager` in `package.json`). `bun install` writes `bun.lock` — commit it for faster installs.',
         'App routes: `app/`',
         'Shared components: `components/`',
         'Generated site data: `lib/site-spec.js`',
@@ -306,6 +321,68 @@ export function installExactCloneBlueprint(blueprint) {
     restoreBody()
     restoreHtml()
   }
+}
+`
+}
+
+export function renderNextExactClonePageComponent() {
+  return `'use client'
+
+import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { installExactCloneBlueprint } from '../lib/clone-runtime'
+
+export default function ExactClonePage({ page }) {
+  const rootRef = useRef(null)
+  const router = useRouter()
+  const blueprint = page?.renderBlueprint
+
+  useEffect(() => {
+    if (!blueprint) return undefined
+    const cleanupClone = installExactCloneBlueprint(blueprint)
+    const root = rootRef.current
+    if (!root) {
+      return () => {
+        cleanupClone()
+      }
+    }
+
+    const onClick = (event) => {
+      const clickTarget = event.target instanceof Element ? event.target : event.target?.parentElement
+      if (!clickTarget || !root.contains(clickTarget)) return
+      const link = clickTarget?.closest('a[href]')
+      if (!link) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      if (link.target && link.target !== '_self') return
+
+      const href = link.getAttribute('href')
+      if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return
+
+      const url = new URL(href, window.location.origin)
+      if (url.origin !== window.location.origin) return
+
+      event.preventDefault()
+      router.push(url.pathname + url.search + url.hash)
+    }
+
+    root.addEventListener('click', onClick)
+
+    return () => {
+      root.removeEventListener('click', onClick)
+      cleanupClone()
+    }
+  }, [blueprint, router])
+
+  if (!blueprint?.bodyHtml) return null
+
+  return (
+    <div
+      ref={rootRef}
+      className="sf-exact-clone-root"
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: blueprint.bodyHtml }}
+    />
+  )
 }
 `
 }

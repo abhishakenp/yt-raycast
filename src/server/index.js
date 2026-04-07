@@ -7,6 +7,7 @@ import {
   DASHBOARD_PORT,
   HOMEPAGE_MODEL,
   isSanityConfigured,
+  isSanityChatWriteConfigured,
   LLM_CONFIG,
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
@@ -60,7 +61,14 @@ import {
   startPaymentListeners,
   setQuotaInfoGetter,
 } from './payments.js'
-import { fetchPostBySlug, fetchPosts, fetchSiteSettings } from '../sanity/client.js'
+import { applySiteSettingsPatch } from '../sanity/cms-sync.js'
+import { getSanityWriteClient } from '../sanity/chat-sync.js'
+import {
+  fetchPostBySlug,
+  fetchPosts,
+  fetchSanityImageAssets,
+  fetchSiteSettings,
+} from '../sanity/client.js'
 import { applyPricingPageOverrides, renderBlogIndex, renderBlogPost } from './blog-pages.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { renderPrivacyPage } from './privacy-page.js'
@@ -995,11 +1003,10 @@ export async function startServer(sessionsDir) {
         }
       })
 
-    // Auto-build React + Next.js exports for authenticated users after generation completes
     if (req.user) {
       generation
         .then(() => {
-          for (const target of ['react', 'nextjs']) {
+          for (const target of ['html', 'react', 'nextjs']) {
             try {
               generateSessionExport(session, target)
               sessionCtx.broadcast({ type: 'export_ready', target })
@@ -1143,13 +1150,86 @@ export async function startServer(sessionsDir) {
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (!ensureSessionArtifactAccess(req, res, session)) return
     const store = await readChatStoreAsync(session.workspace, session.id)
+    const editable = canSessionRunEdit(session.workspace)
+    const cmsMode = isSanityChatWriteConfigured()
+    let siteSettings = null
+    if (cmsMode) {
+      try {
+        siteSettings = await fetchSiteSettings()
+      } catch {
+        siteSettings = null
+      }
+    }
     res.json({
       version: store.version,
       updatedAt: store.updatedAt,
       summary: store.summary,
       messages: store.messages,
-      editable: canSessionRunEdit(session.workspace),
+      editable,
+      mode: cmsMode ? 'cms' : 'llm',
+      ...(cmsMode ? { siteSettings } : {}),
     })
+  })
+
+  app.patch('/api/sessions/:id/cms/site-settings', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    if (!isSanityChatWriteConfigured()) {
+      return res.status(503).json({ error: 'Sanity CMS write is not configured on the server.' })
+    }
+    const result = await applySiteSettingsPatch(req.body)
+    if (!result.ok) {
+      return res.status(400).json({ error: result.error || 'Update failed' })
+    }
+    res.json({ ok: true, siteSettings: result.siteSettings })
+  })
+
+  app.post(
+    '/api/sessions/:id/cms/upload-image',
+    optionalAuth,
+    (req, res, next) => {
+      chatImageUpload.single('file')(req, res, (err) => {
+        if (err) return res.status(400).json({ error: err.message || 'Upload failed' })
+        next()
+      })
+    },
+    async (req, res) => {
+      const session = getSession(req.params.id)
+      if (!session) return res.status(404).json({ error: 'Session not found' })
+      if (!ensureSessionArtifactAccess(req, res, session)) return
+      if (!isSanityChatWriteConfigured()) {
+        return res.status(503).json({ error: 'Sanity CMS write is not configured on the server.' })
+      }
+      const file = req.file
+      if (!file?.buffer) return res.status(400).json({ error: 'No image file' })
+      const client = getSanityWriteClient()
+      if (!client) return res.status(503).json({ error: 'Sanity write client unavailable.' })
+      try {
+        const asset = await client.assets.upload('image', file.buffer, {
+          filename: file.originalname || 'image.jpg',
+        })
+        const doc = asset?.document || asset
+        const url = doc?.url || asset?.url
+        if (!url) return res.status(500).json({ error: 'Upload did not return a URL' })
+        const assetId = doc?._id || asset?._id || ''
+        res.json({ ok: true, url, ...(assetId ? { assetId } : {}) })
+      } catch (e) {
+        res.status(500).json({ error: e?.message ? String(e.message) : 'Upload failed' })
+      }
+    },
+  )
+
+  app.get('/api/sessions/:id/cms/media', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    if (!isSanityConfigured()) {
+      return res.status(503).json({ error: 'Sanity is not configured on the server.' })
+    }
+    const limit = Math.min(60, Math.max(1, parseInt(String(req.query.limit || '24'), 10) || 24))
+    const assets = await fetchSanityImageAssets(limit)
+    res.json({ assets })
   })
 
   app.post(
@@ -1190,6 +1270,12 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (!ensureSessionArtifactAccess(req, res, session)) return
+    if (isSanityChatWriteConfigured()) {
+      return res.status(409).json({
+        error:
+          'LLM chat is disabled while CMS editing is enabled. Use Site content to edit Sanity, or remove SANITY_WRITE_TOKEN to use chat edits.',
+      })
+    }
 
     let raw = req.body?.text ?? req.body?.message ?? ''
     if (typeof raw !== 'string') raw = ''
@@ -1751,6 +1837,13 @@ export async function startServer(sessionsDir) {
       express.static(session.workspace, { extensions: ['html'] })(req, res, next)
     },
   )
+
+  app.use((err, req, res, next) => {
+    if (err?.type === 'entity.parse.failed') {
+      return res.status(400).json({ error: 'Invalid JSON' })
+    }
+    return next(err)
+  })
 
   const httpServer = createHttpServer(app)
   setupWebSocket(httpServer)

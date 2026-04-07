@@ -5,6 +5,7 @@ import {
   renderCloneRuntimeModule,
   renderExactClonePageComponent,
   serializeModule,
+  slimSiteSpecForBundle,
 } from '../shared.js'
 import {
   buildStructuredData,
@@ -22,6 +23,7 @@ function renderReactPackageJson(projectName) {
       private: true,
       version: '0.0.0',
       type: 'module',
+      packageManager: 'bun@1.2.5',
       scripts: {
         dev: 'vite',
         build: 'vite build',
@@ -55,8 +57,11 @@ export default function ${componentName}() {
 }
 
 function renderReactApp(siteSpec) {
-  const imports = siteSpec.pages
-    .map((page) => `import ${pageComponentName(page)} from './pages/${pageComponentName(page)}'`)
+  const lazyPages = siteSpec.pages
+    .map((page) => {
+      const component = pageComponentName(page)
+      return `const ${component} = lazy(() => import('./pages/${component}.jsx'))`
+    })
     .join('\n')
   const routes = siteSpec.pages
     .map((page) => {
@@ -65,16 +70,19 @@ function renderReactApp(siteSpec) {
     })
     .join('\n')
 
-  return `import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-${imports}
+  return `import { lazy, Suspense } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+${lazyPages}
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={null}>
+        <Routes>
 ${routes}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }
@@ -498,7 +506,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 )
 `,
     'src/App.jsx': renderReactApp(siteSpec),
-    'src/site-spec.js': `const siteSpec = ${serializeModule(siteSpec)}
+    'src/site-spec.js': `const siteSpec = ${serializeModule(slimSiteSpecForBundle(siteSpec))}
 
 export default siteSpec
 `,

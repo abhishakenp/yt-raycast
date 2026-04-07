@@ -1,5 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { buildFallbackPageFromHomepage } from '../pipeline/fallback-page.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
 
 function stripEditorArtifacts(source = '') {
@@ -60,12 +61,35 @@ function collectVoidTags(source = '', tagName) {
   return items
 }
 
+function extractFragmentBody(html = '') {
+  const t = String(html || '').trim()
+  if (!t) return ''
+  if (/^<!DOCTYPE/i.test(t) || /<html\b/i.test(t)) return ''
+  return t
+}
+
 function extractHeadInner(html = '') {
-  return html.match(/<head[^>]*>([\s\S]*?)<\/head>/i)?.[1] || ''
+  const src = String(html)
+  const openMatch = src.match(/<head\b[^>]*>/i)
+  if (!openMatch) return ''
+  const start = openMatch.index + openMatch[0].length
+  const lower = src.toLowerCase()
+  const closeIdx = lower.lastIndexOf('</head>')
+  if (closeIdx === -1 || closeIdx < start) return ''
+  return src.slice(start, closeIdx)
 }
 
 function extractBodyInner(html = '') {
-  return html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] || ''
+  const src = String(html)
+  const openMatch = src.match(/<body\b[^>]*>/i)
+  if (!openMatch) {
+    return extractFragmentBody(src)
+  }
+  const start = openMatch.index + openMatch[0].length
+  const lower = src.toLowerCase()
+  const closeIdx = lower.lastIndexOf('</body>')
+  if (closeIdx === -1 || closeIdx < start) return ''
+  return src.slice(start, closeIdx)
 }
 
 function stripScripts(source = '') {
@@ -81,10 +105,31 @@ function stripTitleMeta(source = '') {
     .trim()
 }
 
+function fallbackBodyHtmlFromDocument(sanitizedHtml = '') {
+  let s = String(sanitizedHtml || '')
+  s = s.replace(/<!DOCTYPE[^>]*>/gi, '')
+  s = s.replace(/<head\b[^>]*>[\s\S]*?<\/head>/gi, '')
+  s = s.replace(/<\/?html\b[^>]*>/gi, '')
+  const lower = s.toLowerCase()
+  const bOpen = s.match(/<body\b[^>]*>/i)
+  if (bOpen) {
+    const start = bOpen.index + bOpen[0].length
+    const close = lower.lastIndexOf('</body>')
+    if (close > start) s = s.slice(start, close)
+    else s = s.slice(start)
+  }
+  return stripScripts(s).trim()
+}
+
 export function extractRenderBlueprintFromHtml(html = '', fallback = {}) {
   const sanitizedHtml = stripEditorArtifacts(html)
   const headInner = extractHeadInner(sanitizedHtml)
   const bodyInner = extractBodyInner(sanitizedHtml)
+
+  let bodyHtml = stripScripts(bodyInner)
+  if (!bodyHtml.trim() && sanitizedHtml.trim()) {
+    bodyHtml = fallbackBodyHtmlFromDocument(sanitizedHtml)
+  }
 
   const title =
     sanitizedHtml.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() || fallback.title || ''
@@ -111,7 +156,7 @@ export function extractRenderBlueprintFromHtml(html = '', fallback = {}) {
     styles,
     headHtml: stripTitleMeta(stripScripts(headInner)),
     scripts: [...headScripts, ...bodyScripts],
-    bodyHtml: stripScripts(bodyInner),
+    bodyHtml,
     htmlAttributes: extractOpeningTagAttributes(sanitizedHtml, 'html'),
     bodyAttributes: extractOpeningTagAttributes(sanitizedHtml, 'body'),
     originalHtmlDocument: sanitizedHtml,
@@ -121,21 +166,51 @@ export function extractRenderBlueprintFromHtml(html = '', fallback = {}) {
 export function enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace) {
   if (!siteSpec?.pages?.length) return siteSpec
 
+  let indexHtml = ''
+  const indexPath = join(workspace, 'index.html')
+  if (existsSync(indexPath)) {
+    try {
+      indexHtml = readFileSync(indexPath, 'utf-8')
+    } catch {
+      indexHtml = ''
+    }
+  }
+
   return {
     ...siteSpec,
     pages: siteSpec.pages.map((page) => {
       const filename = routeToHtmlFile(page.route)
       const filePath = join(workspace, filename)
       if (!existsSync(filePath)) {
-        return { ...page, renderBlueprint: null }
+        if (filename !== 'index.html' && indexHtml) {
+          const stub = buildFallbackPageFromHomepage(indexHtml, {
+            title: page.title || page.name || 'Page',
+            description: page.description || '',
+          })
+          writeFileSync(filePath, stub, 'utf-8')
+        } else {
+          return { ...page, renderBlueprint: null }
+        }
       }
 
-      const html = readFileSync(filePath, 'utf-8')
+      let html = readFileSync(filePath, 'utf-8')
+      let blueprint = extractRenderBlueprintFromHtml(html, {
+        title: page.seo?.title || page.title,
+      })
+      if (!blueprint.bodyHtml?.trim() && filename !== 'index.html' && indexHtml) {
+        const stub = buildFallbackPageFromHomepage(indexHtml, {
+          title: page.title || page.name || 'Page',
+          description: page.description || '',
+        })
+        writeFileSync(filePath, stub, 'utf-8')
+        html = stub
+        blueprint = extractRenderBlueprintFromHtml(html, {
+          title: page.seo?.title || page.title,
+        })
+      }
       return {
         ...page,
-        renderBlueprint: extractRenderBlueprintFromHtml(html, {
-          title: page.seo?.title || page.title,
-        }),
+        renderBlueprint: blueprint,
       }
     }),
   }

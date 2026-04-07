@@ -1,9 +1,10 @@
 import {
   buildGlobalCss,
   renderCloneRuntimeModule,
-  renderExactClonePageComponent,
+  renderNextExactClonePageComponent,
   routeToNextSegments,
   serializeModule,
+  slimSiteSpecForBundle,
 } from '../shared.js'
 import {
   buildNextMetadata,
@@ -14,12 +15,47 @@ import {
 } from '../seo.js'
 import { SHIP_FAST_SITE_URL } from '../../marketing.js'
 
+function collectThemeGoogleFontFamilies(theme = {}) {
+  const typo = theme.typography || {}
+  const raw = [typo.heading, typo.body, typo.mono]
+  const seen = new Set()
+  const out = []
+  for (const f of raw) {
+    if (typeof f !== 'string') continue
+    const first = f.split(',')[0].trim().replace(/^["']|["']$/g, '').trim()
+    if (!first) continue
+    if (/^(system-ui|sans-serif|serif|monospace|ui-sans-serif|ui-monospace|apple-system)/i.test(first)) continue
+    const k = first.toLowerCase()
+    if (seen.has(k)) continue
+    seen.add(k)
+    out.push(first)
+  }
+  return out
+}
+
+function buildNextLayoutFontLinkLines(siteSpec) {
+  const families = collectThemeGoogleFontFamilies(siteSpec.theme)
+  if (!families.length) return ''
+  const lines = [
+    '        <link rel="preconnect" href="https://fonts.googleapis.com" />',
+    '        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />',
+  ]
+  for (const name of families) {
+    const q = name.replace(/ /g, '+')
+    lines.push(
+      `        <link href="https://fonts.googleapis.com/css2?family=${q}:wght@400;500;600;700&display=swap" rel="stylesheet" />`,
+    )
+  }
+  return `\n${lines.join('\n')}\n`
+}
+
 function renderNextPackageJson(projectName, extraDependencies = {}) {
   return JSON.stringify(
     {
       name: projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       private: true,
       version: '0.0.0',
+      packageManager: 'bun@1.2.5',
       scripts: {
         dev: 'next dev',
         build: 'NODE_ENV=production next build',
@@ -614,6 +650,10 @@ export function renderNextProject(siteSpec) {
   const robotsConfig = siteSeo.siteUrl
     ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
     : { rules: [{ userAgent: '*', allow: '/' }] }
+  const fontLines = buildNextLayoutFontLinkLines(siteSpec)
+  const layoutHeadBlock = fontLines.trim()
+    ? `      <head>${fontLines}      </head>\n`
+    : ''
   const files = {
     'package.json': renderNextPackageJson(siteSpec.projectName, cmsDependencies),
     'next.config.mjs': `/** @type {import('next').NextConfig} */
@@ -621,34 +661,28 @@ const nextConfig = {}
 
 export default nextConfig
 `,
-    'app/layout.jsx': (() => {
-      const typo = siteSpec.theme?.typography || {}
-      const fontFamilies = [typo.headingFont, typo.bodyFont].filter(Boolean)
-      const uniqueFonts = [...new Set(fontFamilies)]
-      const googleFontsLink = uniqueFonts.length > 0
-        ? `\n      <head>\n        <link rel="preconnect" href="https://fonts.googleapis.com" />\n        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />\n${uniqueFonts.map(f => {
-            const family = f.replace(/\s+/g, '+')
-            return `        <link href="https://fonts.googleapis.com/css2?family=${family}:wght@300;400;500;600;700&display=swap" rel="stylesheet" />`
-          }).join('\n')}\n      </head>`
-        : ''
-      return `import './globals.css'
+    'app/layout.jsx': `import './globals.css'
 
 export const metadata = {
   title: ${JSON.stringify(siteSpec.seo?.title || siteSpec.projectName)},
   description: ${JSON.stringify(siteSpec.seo?.description || '')},
   applicationName: ${JSON.stringify(siteSpec.seo?.siteName || siteSpec.projectName)},
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: ${JSON.stringify(siteSeo.themeColor)},
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang=${JSON.stringify(siteSeo.htmlLang)} suppressHydrationWarning>${googleFontsLink}
-      <body suppressHydrationWarning>{children}</body>
+    <html lang=${JSON.stringify(siteSeo.htmlLang)} suppressHydrationWarning>
+${layoutHeadBlock}      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
-`
-    })(),
+`,
     'app/globals.css': buildGlobalCss(siteSpec.theme),
     'app/robots.js': `export default function robots() {
   return ${serializeModule(robotsConfig)}
@@ -659,11 +693,11 @@ export default function RootLayout({ children }) {
 }
 `,
     'lib/clone-runtime.js': renderCloneRuntimeModule(),
-    'lib/site-spec.js': `const siteSpec = ${serializeModule(siteSpec)}
+    'lib/site-spec.js': `const siteSpec = ${serializeModule(slimSiteSpecForBundle(siteSpec))}
 
 export default siteSpec
 `,
-    'components/ExactClonePage.jsx': renderExactClonePageComponent({ mode: 'nextjs' }),
+    'components/ExactClonePage.jsx': renderNextExactClonePageComponent(),
     'components/PageTemplate.jsx': `import ExactClonePage from './ExactClonePage'
 import SectionRenderer from './SectionRenderer'
 

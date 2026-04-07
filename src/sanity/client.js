@@ -34,12 +34,33 @@ export async function fetchSiteSettings() {
     pricingHeroHeadline,
     shipChatHeadline,
     shipChatSubheadline,
-    shipChatSyncedAt
+    shipChatSyncedAt,
+    "ogImageAssetId": ogImage.asset._ref,
+    "ogImageAlt": ogImage.alt,
+    "homeHeroImageAssetId": homeHeroImage.asset._ref,
+    "homeHeroImageAlt": homeHeroImage.alt,
+    "ogImageUrl": coalesce(ogImage.asset->url, ogImageUrl),
+    "homeHeroImageUrl": coalesce(homeHeroImage.asset->url, homeHeroImageUrl)
   }`
   try {
-    return await client.fetch(query)
+    const fresh = client.withConfig({ useCdn: false })
+    return await fresh.fetch(query)
   } catch {
     return null
+  }
+}
+
+export async function fetchSanityImageAssets(limit = 24) {
+  const client = getSanityClient()
+  if (!client) return []
+  const n = Math.min(60, Math.max(1, Number(limit) || 24))
+  const query = `*[_type == "sanity.imageAsset"] | order(_createdAt desc) [0...${n}] { _id, url }`
+  try {
+    const fresh = client.withConfig({ useCdn: false })
+    const rows = await fresh.fetch(query)
+    return Array.isArray(rows) ? rows : []
+  } catch {
+    return []
   }
 }
 

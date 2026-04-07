@@ -89,9 +89,7 @@ function loadRawSiteSpec(workspace) {
 }
 
 function siteSpecNeedsBlueprints(siteSpec) {
-  return (siteSpec?.pages || []).some(
-    (page) => !page?.renderBlueprint?.bodyHtml || !page?.renderBlueprint?.originalHtmlDocument,
-  )
+  return (siteSpec?.pages || []).some((page) => !page?.renderBlueprint?.bodyHtml)
 }
 
 // Compatibility path for sessions that were generated before site-spec.json existed.

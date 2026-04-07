@@ -62,9 +62,6 @@ export function validateSiteSpec(spec) {
       if (!page.renderBlueprint.bodyHtml) {
         errors.push(`Page "${page.id}" renderBlueprint is missing bodyHtml.`)
       }
-      if (!page.renderBlueprint.originalHtmlDocument) {
-        errors.push(`Page "${page.id}" renderBlueprint is missing originalHtmlDocument.`)
-      }
     }
   }
 
