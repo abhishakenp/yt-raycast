@@ -226,6 +226,7 @@ export function renderHomePage(siteSettings = null) {
             autocomplete="off"
             required
             rows="4"
+            maxlength="5000"
           ></textarea>
           <div class="prompt-placeholder" id="prompt-placeholder" aria-hidden="true">
             <span class="prompt-placeholder-label">Try a prompt like</span>
