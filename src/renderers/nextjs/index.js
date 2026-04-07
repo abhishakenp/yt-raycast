@@ -4,6 +4,7 @@ import {
   renderExactClonePageComponent,
   routeToNextSegments,
   serializeModule,
+  slimSiteSpecForBundle,
 } from '../shared.js'
 import {
   buildNextMetadata,
@@ -516,7 +517,7 @@ export default function RootLayout({ children }) {
 }
 `,
     'lib/clone-runtime.js': renderCloneRuntimeModule(),
-    'lib/site-spec.js': `const siteSpec = ${serializeModule(siteSpec)}
+    'lib/site-spec.js': `const siteSpec = ${serializeModule(slimSiteSpecForBundle(siteSpec))}
 
 export default siteSpec
 `,

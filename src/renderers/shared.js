@@ -59,6 +59,19 @@ export function serializeModule(value) {
   return JSON.stringify(value, null, 2)
 }
 
+export function slimSiteSpecForBundle(siteSpec) {
+  if (!siteSpec?.pages?.length) return siteSpec
+  return {
+    ...siteSpec,
+    pages: siteSpec.pages.map((page) => {
+      if (!page?.renderBlueprint) return page
+      const rb = { ...page.renderBlueprint }
+      delete rb.originalHtmlDocument
+      return { ...page, renderBlueprint: rb }
+    }),
+  }
+}
+
 export function pageUsesExactClone(page) {
   return Boolean(page?.renderBlueprint?.exactClone && page?.renderBlueprint?.bodyHtml)
 }
