@@ -997,11 +997,10 @@ export async function startServer(sessionsDir) {
         }
       })
 
-    // Auto-build React + Next.js exports for authenticated users after generation completes
     if (req.user) {
       generation
         .then(() => {
-          for (const target of ['react', 'nextjs']) {
+          for (const target of ['html', 'react', 'nextjs']) {
             try {
               generateSessionExport(session, target)
               sessionCtx.broadcast({ type: 'export_ready', target })

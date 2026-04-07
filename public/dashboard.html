@@ -359,13 +359,14 @@
                       "
                       >Building downloads…</span
                     >
-                    <a
+                    <button
+                      type="button"
                       id="export-download-link"
                       class="export-download-link secondary"
-                      href="#"
                       style="display: none"
-                      >Download ZIP</a
                     >
+                      Download ZIP
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1209,6 +1210,7 @@
       let isReconnect = false // true when refreshing a session that already has homepage
       let alternativeDesign = null // background-loaded alternative theme
       let exportTargets = []
+      let exportTargetsPollTimer = null
       let siteSpecReady = false
       let preferredExportTarget = 'html'
       let isAnonymousSession = false
@@ -2000,6 +2002,7 @@
           setExportMenuOpen(false)
           renderGitHubPushButton()
           renderGitHubExportPanel()
+          ensureExportTargetsPolling()
           return
         }
 
@@ -2066,17 +2069,19 @@
           subtextEl.textContent =
             'Build once and Ship Fast will create the canonical site spec, then generate future exports from that exact UI.'
           if (selected?.downloadPath && !requiresPayment) {
-            download.href = selected.downloadPath
+            download.dataset.downloadUrl = selected.downloadPath
             download.dataset.target = selected.target
             download.dataset.requiresPayment = '0'
             download.textContent = `Download ${selectedLabel}`
             download.style.display = 'inline-flex'
           } else {
+            delete download.dataset.downloadUrl
             download.style.display = 'none'
           }
           setExportMenuOpen(exportMenuOpen)
           renderGitHubPushButton()
           renderGitHubExportPanel()
+          ensureExportTargetsPolling()
           return
         }
 
@@ -2097,18 +2102,48 @@
                 `Waiting for the generated UI to finish before building ${selectedLabel}.`
 
         if (selected?.downloadPath && !requiresPayment) {
-          download.href = selected.downloadPath
+          download.dataset.downloadUrl = selected.downloadPath
           download.dataset.target = selected.target
           download.dataset.requiresPayment = '0'
           download.textContent = `Download ${selectedLabel}`
           download.style.display = 'inline-flex'
         } else {
+          delete download.dataset.downloadUrl
           download.style.display = 'none'
         }
 
         setExportMenuOpen(exportMenuOpen)
         renderGitHubPushButton()
         renderGitHubExportPanel()
+        ensureExportTargetsPolling()
+      }
+
+      function ensureExportTargetsPolling() {
+        const selected = getSelectedExportEntry()
+        const shouldPoll =
+          !isAnonymousSession &&
+          siteSpecReady &&
+          selected &&
+          selected.buildReady === true &&
+          selected.ready === false
+        if (!shouldPoll) {
+          if (exportTargetsPollTimer) {
+            clearInterval(exportTargetsPollTimer)
+            exportTargetsPollTimer = null
+          }
+          return
+        }
+        if (exportTargetsPollTimer) return
+        let ticks = 0
+        exportTargetsPollTimer = setInterval(() => {
+          ticks += 1
+          if (ticks > 30) {
+            clearInterval(exportTargetsPollTimer)
+            exportTargetsPollTimer = null
+            return
+          }
+          void refreshExportTargets()
+        }, 4000)
       }
 
       function refreshExportTargets() {
@@ -2119,6 +2154,7 @@
             exportTargets = Array.isArray(data.targets) ? data.targets : []
             paymentState = normalizePaymentState(data.payment)
             renderExportPanel()
+            ensureExportTargetsPolling()
           })
           .catch(() => {})
       }
@@ -3683,16 +3719,51 @@
         selectedPaymentMode = option.dataset.paymentMode || selectedPaymentMode
         renderPaymentOptions()
       })
-      document.getElementById('export-download-link').addEventListener('click', (event) => {
+      document.getElementById('export-download-link').addEventListener('click', async (event) => {
         const selected = getSelectedExportEntry()
         if (!selected) return
-        if (event.currentTarget.dataset.requiresPayment !== '1') {
+        if (event.currentTarget.dataset.requiresPayment === '1') {
+          closeExportMenu()
+          openPaymentModal(selected)
+          return
+        }
+        const href = event.currentTarget.dataset.downloadUrl
+        if (!href) {
           closeExportMenu()
           return
         }
-        event.preventDefault()
         closeExportMenu()
-        openPaymentModal(selected)
+        try {
+          const res = await apiFetch(href, { method: 'GET' })
+          if (!res.ok) {
+            const text = await res.text()
+            let msg = 'Download failed'
+            try {
+              const j = JSON.parse(text)
+              msg = j.error || msg
+            } catch {
+              if (text) msg = text.slice(0, 200)
+            }
+            window.alert?.(msg)
+            return
+          }
+          const blob = await res.blob()
+          const cd = res.headers.get('Content-Disposition')
+          let filename = `${SESSION_ID}-${selected.target}.zip`
+          const m = cd && /filename[^;=\n]*=(['"]?)([^;\n'"]+)\1/i.exec(cd)
+          if (m && m[2]) filename = m[2].trim()
+          const objUrl = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = objUrl
+          a.download = filename
+          a.rel = 'noopener'
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+          URL.revokeObjectURL(objUrl)
+        } catch (e) {
+          window.alert?.(String(e?.message || e || 'Download failed'))
+        }
       })
       document.addEventListener('click', (event) => {
         if (event.target.closest('#export-menu')) return

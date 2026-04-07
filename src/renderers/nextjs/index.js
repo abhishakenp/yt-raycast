@@ -55,6 +55,7 @@ function renderNextPackageJson(projectName, extraDependencies = {}) {
       name: projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       private: true,
       version: '0.0.0',
+      packageManager: 'bun@1.2.5',
       scripts: {
         dev: 'next dev',
         build: 'NODE_ENV=production next build',

@@ -753,6 +753,9 @@ a.intro-back-btn:hover {
 }
 .export-download-link {
   text-decoration: none;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
 }
 .export-panel-footer {
   display: flex;

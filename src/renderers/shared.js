@@ -117,6 +117,7 @@ function readmeTargetDetails(target, siteSpec = {}) {
         description: 'Vite + React application',
         commands: ['bun install', 'bun dev', 'bun run build', 'bun run preview'],
         notes: [
+          'Uses Bun (`packageManager` in `package.json`). `bun install` writes `bun.lock` — commit it for faster installs.',
           'App entry: `src/main.jsx`',
           'Routes: `src/pages/`',
           'Shared components and styling: `src/components/` and `src/styles.css`',
@@ -124,6 +125,7 @@ function readmeTargetDetails(target, siteSpec = {}) {
       }
     case 'nextjs': {
       const notes = [
+        'Uses Bun (`packageManager` in `package.json`). `bun install` writes `bun.lock` — commit it for faster installs.',
         'App routes: `app/`',
         'Shared components: `components/`',
         'Generated site data: `lib/site-spec.js`',

@@ -23,6 +23,7 @@ function renderReactPackageJson(projectName) {
       private: true,
       version: '0.0.0',
       type: 'module',
+      packageManager: 'bun@1.2.5',
       scripts: {
         dev: 'vite',
         build: 'vite build',
