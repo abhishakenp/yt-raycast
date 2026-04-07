@@ -34,6 +34,7 @@ export const SANITY_DATASET = (process.env.SANITY_DATASET ?? 'production').trim(
 export const SANITY_API_VERSION = (process.env.SANITY_API_VERSION ?? '2024-01-01').trim()
 export const SANITY_READ_TOKEN = (process.env.SANITY_READ_TOKEN ?? '').trim()
 export const SANITY_WRITE_TOKEN = (process.env.SANITY_WRITE_TOKEN ?? '').trim()
+export const SANITY_MANAGEMENT_TOKEN = (process.env.SANITY_MANAGEMENT_TOKEN ?? '').trim()
 
 export const isSanityConfigured = () =>
   Boolean(SANITY_PROJECT_ID && SANITY_DATASET)

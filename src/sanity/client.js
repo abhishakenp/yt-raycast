@@ -40,7 +40,9 @@ export async function fetchSiteSettings() {
     "homeHeroImageAssetId": homeHeroImage.asset._ref,
     "homeHeroImageAlt": homeHeroImage.alt,
     "ogImageUrl": coalesce(ogImage.asset->url, ogImageUrl),
-    "homeHeroImageUrl": coalesce(homeHeroImage.asset->url, homeHeroImageUrl)
+    "homeHeroImageUrl": coalesce(homeHeroImage.asset->url, homeHeroImageUrl),
+    "seoTitle": seo.metaTitle,
+    "seoDescription": seo.metaDescription
   }`
   try {
     const fresh = client.withConfig({ useCdn: false })
@@ -73,7 +75,9 @@ export async function fetchPosts() {
     publishedAt,
     excerpt,
     "authorName": author->name,
-    "categories": categories[]->title
+    "categories": categories[]->title,
+    "seoTitle": seo.metaTitle,
+    "seoDescription": seo.metaDescription
   }`
   try {
     const rows = await client.fetch(query)
@@ -92,7 +96,18 @@ export async function fetchPostBySlug(slug) {
     excerpt,
     body,
     "authorName": author->name,
-    "categories": categories[]->title
+    "categories": categories[]->title,
+    seo {
+      metaTitle,
+      metaDescription,
+      nofollowAttributes,
+      seoKeywords,
+      openGraph {
+        title,
+        description,
+        url
+      }
+    }
   }`
   try {
     return await client.fetch(query, { slug })

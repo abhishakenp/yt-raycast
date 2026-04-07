@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { ensureCompatibleSiteSpec, loadSiteSpec, SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
+import { isSanityConfigured } from '../config.js'
+import { fetchSiteSettings } from '../sanity/client.js'
+import { mergeSanitySiteSettingsIntoSiteSpec } from '../sanity/cms-sync.js'
+import { ensureCompatibleSiteSpec, loadSiteSpec, saveSiteSpec, SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from '../renderers/index.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
 import { createZipBuffer } from './zip.js'
@@ -197,4 +200,20 @@ export function rerenderPreviewFromSiteSpec(session) {
   const exactCloneStatus = getExactCloneStatus(session.workspace, siteSpec)
   if (!exactCloneStatus.ready) throw new Error(exactCloneStatus.reason)
   return renderPreviewToWorkspace(siteSpec, session.workspace)
+}
+
+export async function syncSessionPreviewFromSanity(session) {
+  if (!session?.workspace) throw new Error('Invalid session')
+  if (!isSanityConfigured()) throw new Error('Sanity is not configured (SANITY_PROJECT_ID / dataset)')
+  const siteSettings = await fetchSiteSettings()
+  if (!siteSettings) throw new Error('Could not load site settings from Sanity')
+  const siteSpec = applyThemeOverrideToSiteSpec(
+    ensureCompatibleSiteSpec(session.workspace),
+    session.themeOverride,
+  )
+  if (!siteSpec) throw new Error('No site spec for this session')
+  const merged = mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings)
+  saveSiteSpec(session.workspace, merged)
+  session.siteSpecReady = true
+  return renderPreviewToWorkspace(merged, session.workspace)
 }

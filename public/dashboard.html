@@ -537,9 +537,93 @@
                   </button>
                 </div>
                 <div id="preview-chat-cms-block" class="preview-chat-cms-block" hidden>
+                  <div class="preview-chat-cms-tabs" role="tablist" aria-label="Site content mode">
+                    <button
+                      type="button"
+                      class="preview-chat-cms-tab is-active"
+                      id="preview-chat-cms-tab-studio"
+                      data-cms-tab="studio"
+                      role="tab"
+                      aria-selected="true"
+                      aria-controls="preview-chat-cms-studio-panel"
+                    >
+                      Sanity Studio
+                    </button>
+                    <button
+                      type="button"
+                      class="preview-chat-cms-tab"
+                      id="preview-chat-cms-tab-quick"
+                      data-cms-tab="quick"
+                      role="tab"
+                      aria-selected="false"
+                      aria-controls="preview-chat-cms-quick-panel"
+                    >
+                      Quick fields
+                    </button>
+                  </div>
+                  <div
+                    class="preview-chat-cms-studio-panel"
+                    id="preview-chat-cms-studio-panel"
+                    role="tabpanel"
+                    aria-labelledby="preview-chat-cms-tab-studio"
+                  >
+                    <div
+                      class="preview-chat-cms-studio-unbuilt"
+                      id="preview-chat-cms-studio-unbuilt"
+                      hidden
+                    >
+                      <p class="preview-chat-cms-studio-unbuilt-title">Embedded Sanity Studio is not available</p>
+                      <p class="preview-chat-cms-studio-unbuilt-body">
+                        Build it once from the Ship Fast repo root:
+                        <code class="preview-chat-cms-studio-unbuilt-code">bun run studio:build</code>
+                        (Sanity CLI needs <strong>Node ≥ 20.19</strong>). Restart the server after it succeeds. Until
+                        then, use <strong>Quick fields</strong> for site settings.
+                      </p>
+                    </div>
+                    <div class="preview-chat-cms-studio-toolbar" id="preview-chat-cms-studio-toolbar" hidden>
+                      <a
+                        class="preview-chat-cms-studio-open-link"
+                        id="preview-chat-cms-studio-open-link"
+                        href="/studio/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Open Sanity Studio in new tab</a>
+                      <button type="button" class="preview-chat-cms-studio-sync-btn" data-cms-sanity-sync>
+                        Apply Sanity to this preview
+                      </button>
+                      <span class="preview-chat-cms-studio-toolbar-hint"
+                        >If Studio was built with a write API token in env, you stay signed in here. Otherwise use
+                        <strong>Open in new tab</strong> for Sanity login. After publishing, use Apply to refresh this
+                        session’s generated pages.</span>
+                    </div>
+                    <iframe
+                      class="preview-chat-cms-studio-frame"
+                      id="preview-chat-cms-studio-frame"
+                      title="Sanity Studio"
+                      src="about:blank"
+                    ></iframe>
+                    <p class="preview-chat-cms-note preview-chat-cms-note--studio" id="preview-chat-cms-studio-footnote">
+                      Same project as your content lake. Token-based Studio skips OAuth; rebuild Studio after changing
+                      tokens. Then Apply to update this session’s preview HTML.
+                    </p>
+                  </div>
+                  <div
+                    class="preview-chat-cms-quick-panel"
+                    id="preview-chat-cms-quick-panel"
+                    role="tabpanel"
+                    aria-labelledby="preview-chat-cms-tab-quick"
+                    hidden
+                  >
                   <p class="preview-chat-cms-note">
                     Values sync from each generation into site settings (one shared document). The preview iframe shows this
                     session’s workspace files; refresh the panel after a run if fields look stale.
+                  </p>
+                  <p class="preview-chat-cms-quick-sanity-row">
+                    <button type="button" class="preview-chat-cms-quick-sanity-sync-btn" data-cms-sanity-sync>
+                      Apply Sanity to this preview
+                    </button>
+                    <span class="preview-chat-cms-quick-sanity-hint">Pulls latest site settings from Sanity into this
+                      session and re-renders the preview.</span>
                   </p>
                   <form class="preview-chat-cms-form" id="preview-chat-cms-form">
                     <label class="preview-chat-cms-label"
@@ -670,6 +754,7 @@
                     </button>
                   </form>
                   <p class="preview-chat-status" id="preview-chat-cms-status" role="status"></p>
+                  </div>
                 </div>
                 <div class="preview-chat-llm-wrap" id="preview-chat-llm-wrap">
                 <div class="preview-chat-scroll" id="preview-chat-scroll">
@@ -1238,11 +1323,13 @@
         const llm = document.getElementById('preview-chat-llm-wrap')
         const title = document.getElementById('preview-chat-head-title')
         const fab = document.getElementById('preview-chat-fab')
+        const chatPanelEl = document.getElementById('preview-chat-panel')
         const showCms = chatPanelMode === 'cms'
         if (cms) cms.hidden = !showCms
         if (llm) llm.hidden = showCms
         if (title) title.textContent = showCms ? 'Site content' : 'Chat'
         if (fab) fab.textContent = showCms ? 'Site content' : 'Chat'
+        if (chatPanelEl) chatPanelEl.classList.toggle('preview-chat-panel--cms', showCms)
       }
 
       function populateCmsForm(siteSettings) {
@@ -3117,6 +3204,7 @@
             populateCmsForm(data.siteSettings)
             const cmsStat = document.getElementById('preview-chat-cms-status')
             if (cmsStat) cmsStat.textContent = ''
+            void initStudioEmbedForCmsPanel()
             return
           }
           chatEditable = Boolean(data.editable)
@@ -3200,6 +3288,93 @@
         }
 
         const cmsForm = document.getElementById('preview-chat-cms-form')
+        const cmsStudioPanel = document.getElementById('preview-chat-cms-studio-panel')
+        const cmsQuickPanel = document.getElementById('preview-chat-cms-quick-panel')
+        const fetchStudioEmbedReady = async () => {
+          try {
+            const r = await fetch('/api/studio-embed-ready')
+            const j = await r.json().catch(() => ({}))
+            return Boolean(j.built)
+          } catch {
+            return false
+          }
+        }
+        const applyStudioEmbedAssets = (built) => {
+          const frame = document.getElementById('preview-chat-cms-studio-frame')
+          const unbuilt = document.getElementById('preview-chat-cms-studio-unbuilt')
+          const foot = document.getElementById('preview-chat-cms-studio-footnote')
+          const toolbar = document.getElementById('preview-chat-cms-studio-toolbar')
+          if (built) {
+            if (unbuilt) unbuilt.hidden = true
+            if (foot) foot.hidden = false
+            if (toolbar) toolbar.hidden = false
+            if (frame) {
+              frame.hidden = false
+              frame.src = '/studio/'
+            }
+          } else {
+            if (unbuilt) unbuilt.hidden = false
+            if (foot) foot.hidden = true
+            if (toolbar) toolbar.hidden = true
+            if (frame) {
+              frame.src = 'about:blank'
+              frame.hidden = true
+            }
+          }
+        }
+        const initStudioEmbedForCmsPanel = async () => {
+          const built = await fetchStudioEmbedReady()
+          applyStudioEmbedAssets(built)
+          if (built) return
+          const tabStudio = document.getElementById('preview-chat-cms-tab-studio')
+          const tabQuick = document.getElementById('preview-chat-cms-tab-quick')
+          if (tabStudio) {
+            tabStudio.classList.remove('is-active')
+            tabStudio.setAttribute('aria-selected', 'false')
+          }
+          if (tabQuick) {
+            tabQuick.classList.add('is-active')
+            tabQuick.setAttribute('aria-selected', 'true')
+          }
+          if (cmsStudioPanel) cmsStudioPanel.hidden = true
+          if (cmsQuickPanel) cmsQuickPanel.hidden = false
+        }
+        document.querySelectorAll('[data-cms-tab]').forEach((tabBtn) => {
+          tabBtn.addEventListener('click', async () => {
+            const t = tabBtn.getAttribute('data-cms-tab')
+            document.querySelectorAll('[data-cms-tab]').forEach((b) => {
+              const active = b.getAttribute('data-cms-tab') === t
+              b.classList.toggle('is-active', active)
+              b.setAttribute('aria-selected', active ? 'true' : 'false')
+            })
+            if (cmsStudioPanel) cmsStudioPanel.hidden = t !== 'studio'
+            if (cmsQuickPanel) cmsQuickPanel.hidden = t !== 'quick'
+            if (t === 'studio') {
+              const built = await fetchStudioEmbedReady()
+              applyStudioEmbedAssets(built)
+            }
+          })
+        })
+        document.querySelectorAll('[data-cms-sanity-sync]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            if (!SESSION_ID) return
+            const syncBtns = document.querySelectorAll('[data-cms-sanity-sync]')
+            syncBtns.forEach((b) => {
+              b.disabled = true
+            })
+            try {
+              const res = await apiFetch(`/api/sessions/${SESSION_ID}/sync-sanity-preview`, { method: 'POST' })
+              const j = await res.json().catch(() => ({}))
+              if (!res.ok) throw new Error(j.error || `Request failed (${res.status})`)
+            } catch (err) {
+              alert(err?.message || 'Could not apply Sanity to preview')
+            } finally {
+              syncBtns.forEach((b) => {
+                b.disabled = false
+              })
+            }
+          })
+        })
         let cmsLibraryTargetSlot = null
         const cmsSlotIds = {
           og: {
@@ -3395,7 +3570,8 @@
             setOpen(true)
             await refreshChatHistory()
             if (chatPanelMode === 'cms') {
-              document.getElementById('cms-homeTitle')?.focus()
+              const quick = document.getElementById('preview-chat-cms-quick-panel')
+              if (quick && !quick.hidden) document.getElementById('cms-homeTitle')?.focus()
             } else {
               setTimeout(() => input?.focus(), 100)
             }

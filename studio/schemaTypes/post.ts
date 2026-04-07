@@ -46,11 +46,23 @@ export default defineType({
       title: 'Body',
       type: 'blockContent',
     }),
+    defineField({
+      name: 'seo',
+      title: 'SEO',
+      type: 'seoMetaFields',
+    }),
   ],
   preview: {
-    select: { title: 'title', publishedAt: 'publishedAt' },
-    prepare({ title, publishedAt }) {
-      return { title, subtitle: publishedAt ? String(publishedAt) : undefined }
+    select: {
+      title: 'title',
+      publishedAt: 'publishedAt',
+      metaTitle: 'seo.metaTitle',
+    },
+    prepare({ title, publishedAt, metaTitle }) {
+      return {
+        title: metaTitle || title,
+        subtitle: publishedAt ? String(publishedAt) : undefined,
+      }
     },
   },
 })

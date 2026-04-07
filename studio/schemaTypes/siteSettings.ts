@@ -98,5 +98,10 @@ export default defineType({
       type: 'url',
       hidden: true,
     }),
+    defineField({
+      name: 'seo',
+      title: 'SEO',
+      type: 'seoMetaFields',
+    }),
   ],
 })

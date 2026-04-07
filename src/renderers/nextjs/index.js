@@ -10,9 +10,11 @@ import {
   buildNextMetadata,
   buildSitemapEntries,
   buildStructuredData,
+  normalizeSiteUrl,
   resolvePageSeo,
   serializeStructuredData,
 } from '../seo.js'
+import { collectShipFastStudioFiles } from '../studio-export.js'
 import { SHIP_FAST_SITE_URL } from '../../marketing.js'
 
 function collectThemeGoogleFontFamilies(theme = {}) {
@@ -49,7 +51,7 @@ function buildNextLayoutFontLinkLines(siteSpec) {
   return `\n${lines.join('\n')}\n`
 }
 
-function renderNextPackageJson(projectName, extraDependencies = {}) {
+function renderNextPackageJson(projectName, extraDependencies = {}, extraScripts = {}) {
   return JSON.stringify(
     {
       name: projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -60,6 +62,7 @@ function renderNextPackageJson(projectName, extraDependencies = {}) {
         dev: 'next dev',
         build: 'NODE_ENV=production next build',
         start: 'next start',
+        ...extraScripts,
       },
       dependencies: {
         next: '^14.2.15',
@@ -264,6 +267,11 @@ export async function setCartAddress(cartId, address) {
 `,
   }
 }
+function renderSanityNextExportFiles(siteSpec) {
+  const siteUrl = normalizeSiteUrl(siteSpec?.seo?.siteUrl || '')
+  const staticSitemapEntries = buildSitemapEntries(siteSpec)
+  const embeddedSiteUrl = JSON.stringify(siteUrl)
+  const embeddedStaticSitemap = JSON.stringify(staticSitemapEntries)
 
 function renderEcommerceComponents() {
   return {
@@ -477,12 +485,13 @@ export default function AddToCart({ variantId, disabled }) {
   }
 }
 
-function renderSanityNextExportFiles() {
   return {
     '.env.example': `NEXT_PUBLIC_SANITY_PROJECT_ID=
 NEXT_PUBLIC_SANITY_DATASET=production
 NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
 SANITY_READ_TOKEN=
+SANITY_STUDIO_PROJECT_ID=
+SANITY_STUDIO_DATASET=production
 `,
     'lib/sanity.client.js': `import { createClient } from 'next-sanity'
 
@@ -498,6 +507,347 @@ export const client = createClient({
   ...(process.env.SANITY_READ_TOKEN ? { token: process.env.SANITY_READ_TOKEN } : {}),
 })
 `,
+    'lib/sanity.image.js': `import createImageUrlBuilder from '@sanity/image-url'
+
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
+
+const builder = createImageUrlBuilder({ projectId, dataset })
+
+export const urlFor = (source) => {
+  if (!source) return null
+  return builder.image(source)
+}
+`,
+    'components/BlogPortableText.jsx': `import { PortableText } from '@portabletext/react'
+import { urlFor } from '../lib/sanity.image'
+
+const components = {
+  types: {
+    image: ({ value }) => {
+      if (!value?.asset) return null
+      const img = urlFor(value)
+      if (!img) return null
+      const src = img.width(1200).fit('max').auto('format').url()
+      return (
+        <figure style={{ margin: '1.5rem 0' }}>
+          <img src={src} alt={value.alt || ''} style={{ maxWidth: '100%', height: 'auto' }} loading="lazy" />
+        </figure>
+      )
+    },
+  },
+}
+
+export default function BlogPortableText({ value }) {
+  if (!value?.length) return null
+  return <PortableText value={value} components={components} />
+}
+`,
+    'app/blog/page.jsx': `import Link from 'next/link'
+import { client } from '../../lib/sanity.client'
+import siteSpec from '../../lib/site-spec'
+
+const POSTS_QUERY = \`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+  "slug": slug.current,
+  title,
+  publishedAt,
+  excerpt,
+  "seoTitle": seo.metaTitle
+}\`
+
+export async function generateMetadata() {
+  const base = siteSpec.seo?.siteUrl ? String(siteSpec.seo.siteUrl).replace(/\\/+$/, '') : ''
+  const name = siteSpec.seo?.siteName || siteSpec.seo?.title || siteSpec.projectName || 'Blog'
+  const title = \`\${name} — Blog\`
+  const description = siteSpec.seo?.description || ''
+  const canonical = base ? \`\${base}/blog\` : undefined
+  return {
+    title,
+    description,
+    alternates: canonical ? { canonical } : undefined,
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: 'website',
+    },
+  }
+}
+
+export default async function BlogIndexPage() {
+  const posts = await client.fetch(POSTS_QUERY)
+  return (
+    <main className="container" style={{ padding: 'var(--spacing-section) 0' }}>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>Blog</h1>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {(posts || []).map((post) => (
+          <li key={post.slug} style={{ marginBottom: '1rem' }}>
+            <Link href={'/blog/' + post.slug} style={{ color: 'var(--color-primary)' }}>
+              {post.title}
+            </Link>
+            {post.excerpt ? (
+              <p style={{ color: 'var(--color-muted)', margin: '0.5rem 0 0' }}>{post.excerpt}</p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
+}
+`,
+    'app/blog/[slug]/page.jsx': `import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { client } from '../../../lib/sanity.client'
+import { urlFor } from '../../../lib/sanity.image'
+import siteSpec from '../../../lib/site-spec'
+import BlogPortableText from '../../../components/BlogPortableText'
+
+const POST_QUERY = \`*[_type == "post" && slug.current == $slug][0]{
+  title,
+  publishedAt,
+  excerpt,
+  body,
+  "authorName": author->name,
+  "categories": categories[]->title,
+  seo {
+    metaTitle,
+    metaDescription,
+    nofollowAttributes,
+    seoKeywords,
+    metaImage,
+    openGraph {
+      title,
+      description,
+      siteName,
+      url,
+      image {
+        asset->{ _id, url, metadata { dimensions { width, height } } },
+        crop,
+        hotspot
+      }
+    },
+    twitter {
+      cardType,
+      site,
+      creator
+    }
+  }
+}\`
+
+function pickOgImage(post) {
+  const og = post?.seo?.openGraph?.image
+  if (og?.asset) {
+    const u = urlFor(og)
+    return u ? u.width(1200).height(630).fit('crop').auto('format').url() : ''
+  }
+  const m = post?.seo?.metaImage
+  if (m?.asset) {
+    const u = urlFor(m)
+    return u ? u.width(1200).height(630).fit('crop').auto('format').url() : ''
+  }
+  return ''
+}
+
+function blogJsonLd(post, canonical) {
+  const base = siteSpec.seo?.siteName || siteSpec.projectName || ''
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    datePublished: post.publishedAt || undefined,
+    author: post.authorName
+      ? { '@type': 'Person', name: post.authorName }
+      : undefined,
+    mainEntityOfPage: canonical ? { '@type': 'WebPage', '@id': canonical } : undefined,
+    publisher: base ? { '@type': 'Organization', name: base } : undefined,
+  }
+  const keys = Object.keys(data).filter((k) => data[k] != null)
+  const cleaned = {}
+  for (const k of keys) cleaned[k] = data[k]
+  return JSON.stringify(cleaned).replace(/</g, '\\\\u003c')
+}
+
+export async function generateMetadata({ params }) {
+  const post = await client.fetch(POST_QUERY, { slug: params.slug })
+  if (!post) return { title: 'Not found' }
+  const base = siteSpec.seo?.siteUrl ? String(siteSpec.seo.siteUrl).replace(/\\/+$/, '') : ''
+  const path = '/blog/' + params.slug
+  const canonical = base ? base + path : undefined
+  const seo = post.seo || {}
+  const title = seo.metaTitle || post.title
+  const description = seo.metaDescription || post.excerpt || ''
+  const keywords = Array.isArray(seo.seoKeywords) ? seo.seoKeywords.filter(Boolean) : []
+  const ogImage = pickOgImage(post)
+  const robots = seo.nofollowAttributes
+    ? { index: false, follow: false }
+    : { index: true, follow: true }
+  return {
+    title,
+    description,
+    keywords: keywords.length ? keywords : undefined,
+    robots,
+    alternates: canonical ? { canonical } : undefined,
+    openGraph: {
+      title: seo.openGraph?.title || title,
+      description: seo.openGraph?.description || description,
+      url: seo.openGraph?.url || canonical,
+      type: 'article',
+      images: ogImage ? [{ url: ogImage }] : undefined,
+    },
+    twitter: {
+      card: ogImage ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined,
+    },
+  }
+}
+
+export default async function BlogPostPage({ params }) {
+  const post = await client.fetch(POST_QUERY, { slug: params.slug })
+  if (!post) notFound()
+  const base = siteSpec.seo?.siteUrl ? String(siteSpec.seo.siteUrl).replace(/\\/+$/, '') : ''
+  const canonical = base ? base + '/blog/' + params.slug : ''
+  const jsonLd = blogJsonLd(post, canonical || undefined)
+  return (
+    <article className="container" style={{ padding: 'var(--spacing-section) 0', maxWidth: '48rem' }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
+      <p>
+        <Link href="/blog" style={{ color: 'var(--color-primary)' }}>
+          ← Blog
+        </Link>
+      </p>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>{post.title}</h1>
+      {post.authorName ? <p style={{ color: 'var(--color-muted)' }}>{post.authorName}</p> : null}
+      <BlogPortableText value={post.body} />
+    </article>
+  )
+}
+`,
+    'app/sitemap.js': `import { client } from '../lib/sanity.client'
+import siteSpec from '../lib/site-spec'
+
+const BLOG_SLUGS = \`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+  "slug": slug.current,
+  publishedAt
+}\`
+
+function joinUrl(base, path) {
+  const b = String(base || '').replace(/\\/+$/, '')
+  const p = path.startsWith('/') ? path : '/' + path
+  try {
+    return new URL(p, b + '/').toString()
+  } catch {
+    return ''
+  }
+}
+
+export default async function sitemap() {
+  const siteUrl = ${embeddedSiteUrl}
+  if (!siteUrl) return []
+  const staticEntries = ${embeddedStaticSitemap}
+  const blogIndexUrl = joinUrl(siteUrl, '/blog')
+  const hasBlogIndex = staticEntries.some((e) => e.url === blogIndexUrl)
+  const baseList = hasBlogIndex ? staticEntries : [
+    ...staticEntries,
+    {
+      url: blogIndexUrl,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'weekly',
+      priority: 0.75,
+    },
+  ]
+  let rows = []
+  try {
+    rows = await client.fetch(BLOG_SLUGS)
+  } catch {
+    rows = []
+  }
+  const blogEntries = (rows || []).map((row) => ({
+    url: joinUrl(siteUrl, '/blog/' + row.slug),
+    lastModified: row.publishedAt ? new Date(row.publishedAt).toISOString() : new Date().toISOString(),
+    changeFrequency: 'weekly',
+    priority: 0.65,
+  }))
+  return [...baseList, ...blogEntries]
+}
+`,
+  }
+}
+
+function renderCmsNextExportFiles(cmsType) {
+  const envFiles = {
+    contentful: `CONTENTFUL_SPACE_ID=
+CONTENTFUL_ACCESS_TOKEN=
+CONTENTFUL_ENVIRONMENT=master
+`,
+    strapi: `STRAPI_URL=http://localhost:1337
+STRAPI_API_TOKEN=
+`,
+  }
+
+  const clientFiles = {
+    contentful: `const SPACE = process.env.CONTENTFUL_SPACE_ID || ''
+const TOKEN = process.env.CONTENTFUL_ACCESS_TOKEN || ''
+const ENV = process.env.CONTENTFUL_ENVIRONMENT || 'master'
+const BASE = \`https://cdn.contentful.com/spaces/\${SPACE}/environments/\${ENV}\`
+
+async function cfFetch(path, params = {}) {
+  const qs = new URLSearchParams({ access_token: TOKEN, ...params })
+  const res = await fetch(\`\${BASE}\${path}?\${qs}\`, { next: { revalidate: 60 } })
+  if (!res.ok) return null
+  return res.json()
+}
+
+export async function fetchPosts() {
+  const data = await cfFetch('/entries', { content_type: 'blogPost', order: '-fields.publishedAt' })
+  return (data?.items || []).map((i) => ({
+    slug: i.fields.slug, title: i.fields.title,
+    publishedAt: i.fields.publishedAt, excerpt: i.fields.excerpt || '',
+  }))
+}
+
+export async function fetchPostBySlug(slug) {
+  const data = await cfFetch('/entries', { content_type: 'blogPost', 'fields.slug': slug, limit: '1' })
+  if (!data?.items?.length) return null
+  const f = data.items[0].fields
+  return { title: f.title, publishedAt: f.publishedAt, excerpt: f.excerpt || '', body: f.body || null, authorName: f.authorName || null, categories: f.categories || [] }
+}
+`,
+    strapi: `const BASE = process.env.STRAPI_URL || 'http://localhost:1337'
+const TOKEN = process.env.STRAPI_API_TOKEN || ''
+
+async function strapiFetch(path) {
+  const res = await fetch(\`\${BASE}\${path}\`, {
+    headers: { Authorization: \`Bearer \${TOKEN}\` },
+    next: { revalidate: 60 },
+  })
+  if (!res.ok) return null
+  return res.json()
+}
+
+export async function fetchPosts() {
+  const data = await strapiFetch('/api/posts?populate=*&sort=publishedAt:desc')
+  return (data?.data || []).map((i) => {
+    const a = i.attributes || i
+    return { slug: a.slug, title: a.title, publishedAt: a.publishedAt, excerpt: a.excerpt || '' }
+  })
+}
+
+export async function fetchPostBySlug(slug) {
+  const data = await strapiFetch(\`/api/posts?filters[slug][$eq]=\${encodeURIComponent(slug)}&populate=*\`)
+  if (!data?.data?.length) return null
+  const a = data.data[0].attributes || data.data[0]
+  return { title: a.title, publishedAt: a.publishedAt, excerpt: a.excerpt || '', body: a.body || null, authorName: a.authorName || null, categories: [] }
+}
+`,
+  }
+
+  const usesPortableText = false
+
+  return {
+    '.env.example': envFiles[cmsType],
+    'lib/cms-client.js': clientFiles[cmsType],
     'app/blog/page.jsx': `import Link from 'next/link'
 import { client } from '../../lib/sanity.client'
 
@@ -936,15 +1286,59 @@ export default function GeneratedPage() {
 }
 
 export function renderNextProject(siteSpec) {
+  const cmsType = (siteSpec.exportOptions?.cms || '').toLowerCase()
+  const cmsSanity = cmsType === 'sanity'
+  const embedSanityStudio = cmsSanity && siteSpec.exportOptions?.embedSanityStudio !== false
   const isEcommerce = siteSpec.siteType === 'ecommerce'
-  const cmsSanity = siteSpec.exportOptions?.cms === 'sanity'
-  const sanityDependencies = cmsSanity
-    ? {
-        'next-sanity': '^9.8.27',
-        '@sanity/client': '^7.20.0',
-        '@portabletext/react': '^3.2.0',
-      }
-    : {}
+  const cmsDependencies = {
+    ...(cmsSanity
+      ? {
+          'next-sanity': '^9.8.27',
+          '@sanity/client': '^7.20.0',
+          '@portabletext/react': '^3.2.0',
+          '@sanity/image-url': '^1.1.0',
+          ...(embedSanityStudio
+            ? {
+                sanity: '^5.20.0',
+                '@sanity/vision': '^5.20.0',
+                'sanity-plugin-media': '^4.1.1',
+                'sanity-plugin-seo': '^1.3.7',
+                'styled-components': '^6.1.13',
+                'react-is': '^18.3.1',
+              }
+            : {}),
+        }
+      : {}),
+    ...(isEcommerce ? { '@medusajs/js-sdk': '^2.13.5' } : {}),
+  }
+  const sanityScripts = embedSanityStudio ? { studio: 'bun run --cwd studio dev' } : {}
+  const nextConfigMjs = cmsSanity
+    ? embedSanityStudio
+      ? `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: [
+    'sanity',
+    'next-sanity',
+    '@sanity/vision',
+    'sanity-plugin-media',
+    'sanity-plugin-seo',
+  ],
+}
+
+export default nextConfig
+`
+      : `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ['next-sanity', '@portabletext/react'],
+}
+
+export default nextConfig
+`
+    : `/** @type {import('next').NextConfig} */
+const nextConfig = {}
+
+export default nextConfig
+`
   const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
   const siteSeo = resolvePageSeo(siteSpec, homePage)
   const sitemapEntries = buildSitemapEntries(siteSpec)
@@ -956,15 +1350,8 @@ export function renderNextProject(siteSpec) {
     ? `      <head>${fontLines}      </head>\n`
     : ''
   const files = {
-    'package.json': renderNextPackageJson(siteSpec.projectName, {
-      ...sanityDependencies,
-      ...(isEcommerce ? { '@medusajs/js-sdk': '^2.13.5' } : {}),
-    }),
-    'next.config.mjs': `/** @type {import('next').NextConfig} */
-const nextConfig = {}
-
-export default nextConfig
-`,
+    'package.json': renderNextPackageJson(siteSpec.projectName, cmsDependencies, sanityScripts),
+    'next.config.mjs': nextConfigMjs,
     'app/layout.jsx': `import './globals.css'
 
 export const metadata = {
@@ -1058,7 +1445,23 @@ export default function SmartLink({ href = '#', children, ...props }) {
   }
 
   if (cmsSanity) {
-    Object.assign(files, renderSanityNextExportFiles())
+    Object.assign(files, renderSanityNextExportFiles(siteSpec))
+    if (embedSanityStudio) {
+      Object.assign(files, collectShipFastStudioFiles())
+      files['app/studio/[[...tool]]/page.jsx'] = `import { NextStudio } from 'next-sanity/studio'
+import config from '../../../studio/sanity.config'
+
+export const dynamic = 'force-static'
+
+export { metadata, viewport } from 'next-sanity/studio'
+
+export default function StudioPage() {
+  return <NextStudio config={config} />
+}
+`
+    }
+  } else if (cmsType && ['contentful', 'strapi'].includes(cmsType)) {
+    Object.assign(files, renderCmsNextExportFiles(cmsType))
   }
 
   if (isEcommerce) {
