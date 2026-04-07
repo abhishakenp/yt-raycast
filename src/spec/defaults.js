@@ -20,6 +20,10 @@ export const SUPPORTED_SECTION_TYPES = [
   'team',
   'blog-list',
   'dashboard-shell',
+  'product-grid',
+  'product-detail',
+  'cart-summary',
+  'featured-products',
 ]
 
 function toPageRoute(name, idx = 0) {
@@ -101,7 +105,7 @@ function defaultPageNamesForSiteType(siteType) {
     case 'docs':
       return ['Home', 'Docs', 'Pricing', 'FAQ', 'Contact']
     case 'ecommerce':
-      return ['Home', 'Catalog', 'FAQ', 'Contact']
+      return ['Home', 'Shop', 'Cart', 'FAQ', 'Contact']
     case 'marketplace':
       return ['Home', 'Pricing', 'FAQ', 'Contact']
     case 'community':
@@ -136,7 +140,7 @@ function inferHomeSeoTitle(projectName, tagline, siteType) {
     case 'blog':
       return `${projectName} | Insights and Updates`
     case 'ecommerce':
-      return `${projectName} | Products, Pricing and FAQs`
+      return `${projectName} | Shop Premium Products`
     default:
       return `${projectName} | Product Overview, Pricing and FAQs`
   }
@@ -152,7 +156,7 @@ function inferPageTitle(pageName, projectName, siteType, tagline = '') {
   if (lower.includes('blog')) return `${projectName} Blog | Insights and Updates`
   if (lower.includes('faq')) return `${projectName} FAQ | Common Questions and Answers`
   if (lower.includes('work')) return `${projectName} Work | Projects and Case Studies`
-  if (lower.includes('catalog')) return `${projectName} Catalog | Products and Buying Guide`
+  if (lower.includes('shop') || lower.includes('catalog')) return `${projectName} Shop | Browse Our Collection`
   return `${pageName} | ${projectName}`
 }
 
@@ -307,6 +311,39 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
         { title: 'Activity', body: 'Review state changes and generated outputs as they happen.' },
       ],
     })
+  } else if (siteType === 'ecommerce') {
+    sections.push(
+      {
+        id: 'featured-products',
+        type: 'featured-products',
+        variant: 'carousel',
+        headline: 'Featured Products',
+        body: 'Hand-picked items from our collection.',
+        items: [
+          { title: 'Premium Product', price: '$49.99', body: 'Quality craftsmanship meets modern design.', image: '' },
+          { title: 'Best Seller', price: '$39.99', body: 'Our most popular item this season.', image: '' },
+          { title: 'New Arrival', price: '$59.99', body: 'Just landed — be the first to own it.', image: '' },
+          { title: 'Limited Edition', price: '$79.99', body: 'Exclusive release, limited stock available.', image: '' },
+        ],
+      },
+      {
+        id: 'product-grid',
+        type: 'product-grid',
+        variant: 'filterable',
+        headline: 'Shop All',
+        body: 'Browse our complete collection.',
+        items: [],
+        dataSource: { type: 'medusa', function: 'getProducts' },
+      },
+      {
+        id: 'cart-summary',
+        type: 'cart-summary',
+        variant: 'drawer',
+        headline: 'Your Cart',
+        body: 'Review your items before checkout.',
+        dataSource: { type: 'medusa', function: 'getCart' },
+      },
+    )
   } else {
     sections.push({
       id: 'testimonials',
@@ -707,5 +744,27 @@ export function buildFallbackSiteSpec({
       robots: 'index, follow',
     },
     backendFeatureHints: ctx.features || [],
+    ...(inferredSiteType === 'ecommerce'
+      ? {
+          ecommerce: {
+            provider: 'medusa',
+            settings: { currency: 'USD', storeName: projectName, provider: 'medusa' },
+            products: [
+              { id: 'prod-1', title: 'Signature Collection Item', handle: 'signature-collection', description: 'Our flagship product combining form and function.', price: 49.99, currency: 'USD', image: '', category: 'featured' },
+              { id: 'prod-2', title: 'Everyday Essential', handle: 'everyday-essential', description: 'Built for daily use with premium materials.', price: 29.99, currency: 'USD', image: '', category: 'essentials' },
+              { id: 'prod-3', title: 'Limited Edition Release', handle: 'limited-edition', description: 'Exclusive design available for a limited time.', price: 79.99, currency: 'USD', image: '', category: 'limited' },
+              { id: 'prod-4', title: 'Starter Pack', handle: 'starter-pack', description: 'Everything you need to get started.', price: 19.99, currency: 'USD', image: '', category: 'essentials' },
+              { id: 'prod-5', title: 'Premium Upgrade', handle: 'premium-upgrade', description: 'Elevate your experience with premium features.', price: 99.99, currency: 'USD', image: '', category: 'premium' },
+              { id: 'prod-6', title: 'Gift Bundle', handle: 'gift-bundle', description: 'The perfect gift set curated for any occasion.', price: 59.99, currency: 'USD', image: '', category: 'featured' },
+            ],
+            categories: [
+              { id: 'cat-1', name: 'Featured', handle: 'featured', description: 'Our top picks', image: '' },
+              { id: 'cat-2', name: 'Essentials', handle: 'essentials', description: 'Daily staples', image: '' },
+              { id: 'cat-3', name: 'Limited Edition', handle: 'limited', description: 'Exclusive releases', image: '' },
+              { id: 'cat-4', name: 'Premium', handle: 'premium', description: 'Luxury collection', image: '' },
+            ],
+          },
+        }
+      : {}),
   }
 }

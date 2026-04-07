@@ -28,6 +28,7 @@ export function pagePrompt(
   imageHints = null,
   indiaMode = null,
   brandProfile = null,
+  siteType = null,
 ) {
   const mixedEn = isMixedEnglishIndicCode(indiaMode?.language?.code)
   const langNote = mixedEn
@@ -36,13 +37,42 @@ export function pagePrompt(
       ? `\n\nLANGUAGE: ${indiaMode.name} — all visible text must be in ${indiaMode.name}. Match the homepage language.\n`
       : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
+  const taskLower = (task.title || '').toLowerCase()
+  const ecommercePageBlock = siteType === 'ecommerce'
+    ? taskLower.includes('shop') || taskLower.includes('catalog') || taskLower.includes('product')
+      ? `\nE-COMMERCE SHOP PAGE:
+This is a product listing page for an e-commerce store. Build it like a real online shop:
+- Category filter sidebar or top filter bar (by category, price range, sort)
+- Product grid (3-col or 4-col): each card has product image (use gradient placeholder if no image), product name, price (formatted with $ symbol, bold), "Add to Cart" button
+- Product cards must have hover effects: image slight zoom, card lift shadow
+- Pagination or "Load More" button at bottom
+- Breadcrumbs at top: Home > Shop
+- Use realistic mock product data (8-12 products with varied prices $19.99-$149.99)
+- Price display: font-semibold, slightly larger than body text
+- "Add to Cart" buttons: primary accent color, rounded, hover darker\n`
+      : taskLower.includes('cart')
+        ? `\nE-COMMERCE CART PAGE:
+This is a shopping cart page. Build it like a real checkout experience:
+- Cart items list: each row has product thumbnail (small square), product name, unit price, quantity selector (- / number / +), line total, remove button (X)
+- Order summary sidebar: subtotal, estimated shipping, estimated tax, order total (bold, larger)
+- "Proceed to Checkout" button: large, primary accent, full-width in sidebar
+- "Continue Shopping" link back to /shop
+- Empty cart state: "Your cart is empty" message with CTA to shop
+- Use realistic mock cart data (2-3 items)
+- Clean table/grid layout, clear visual hierarchy\n`
+        : `\nE-COMMERCE PAGE:
+This page is part of an e-commerce store. Maintain the store aesthetic:
+- Keep the cart icon in the nav
+- Use product-oriented language and imagery
+- Maintain trust signals (payment, shipping badges) if in footer\n`
+    : ''
   return {
     system:
       'You build pages that match an existing homepage exactly. Same head, nav, footer, fonts, colors. Output ONLY a complete HTML file.\n\n' +
       `HOMEPAGE (index.html) \u2014 match this exact style, head, nav, and footer:\n\n${homepageHtml}\n`,
     prompt: `Create the "${task.title}" page. Reuse the exact <head>, nav, and footer from the homepage.
 Write unique <main> content for: ${task.description ?? task.title}
-
+${ecommercePageBlock}
 ${langNote}Nav links:
 ${navList}
 

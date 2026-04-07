@@ -89,9 +89,14 @@ export const SITE_TYPE_INSTRUCTIONS = {
     'Hero: pill badge + headline about data insights + subtitle + CTA. ' +
     'Then: metrics cards (2x2 grid with KPI numbers) \u2192 features (2x2 cards) \u2192 integrations (logo cloud as text) \u2192 pricing (2-col) \u2192 CTA \u2192 footer.',
   ecommerce:
-    'E-commerce storefront. Product images allowed here. ' +
-    'Hero: headline + subtitle + CTA + featured product image. ' +
-    'Then: category cards (2x2, relevant product or lifestyle images) \u2192 featured products \u2192 deals banner \u2192 newsletter \u2192 footer.',
+    'Premium e-commerce storefront powered by Medusa.js SDK (lib/medusa.js). Product images allowed here. ' +
+    'Data functions: getProducts(), getProductByHandle(), getCategories(), createCart(), addLineItem(), getCart(). ' +
+    'Hero: bold headline + subtitle + primary CTA (Shop Now) + featured product hero image with overlay gradient. ' +
+    'Then: category grid (2x2 cards via getCategories, lifestyle imagery, hover lift) \u2192 ' +
+    'featured products section (getProducts grid \u2014 cards with hover-zoom image, product name, currency-formatted price, stock badge, quick-add-to-cart button) \u2192 ' +
+    'product detail pages (getProductByHandle \u2014 large gallery, variant selector, size/color pickers, Add to Cart CTA, breadcrumbs) \u2192 ' +
+    'cart page (getCart + addLineItem \u2014 line items, qty controls, subtotal, checkout CTA) \u2192 checkout flow \u2192 ' +
+    'trust & reviews section (star ratings, testimonial cards, trust badges) \u2192 newsletter signup \u2192 footer.',
   marketplace:
     'Marketplace platform. ' +
     'Hero: search bar centered + category pills + headline. ' +

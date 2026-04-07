@@ -203,8 +203,9 @@ export async function generateAllTasks(
     .map((t) => ({ title: t.title, filename: t.filename }))
   const navList = allPages.map((p) => `- ${p.title}: ${p.filename}`).join('\n')
 
+  const siteType = ctx?.site_type || null
   const pageCalls = pageTasks.map((t) =>
-    pagePrompt(t, navList, homepageHtml, imageHints, indiaMode, brandProfile),
+    pagePrompt(t, navList, homepageHtml, imageHints, indiaMode, brandProfile, siteType),
   )
   const backendCalls = backendTasks.map((t) => backendPrompt(t, ctx))
 

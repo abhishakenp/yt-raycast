@@ -663,6 +663,39 @@ export function renderSectionHtml(section) {
           </div>
         </section>
       `
+    case 'product-grid':
+    case 'featured-products':
+      return `
+        <section class="section ${escapeHtml(section.type)}" id="${escapeHtml(section.id)}">
+          <div class="container">
+            ${headline}
+            ${body}
+            <div class="product-grid">
+              ${renderItemList(
+                section.items || [],
+                (item) => `
+                  <article class="card product-card">
+                    <div class="product-image">${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title || '')}" />` : '<div class="product-placeholder"></div>'}</div>
+                    <h3>${escapeHtml(item.title || '')}</h3>
+                    ${item.price ? `<span class="product-price">${escapeHtml(String(item.price))}</span>` : ''}
+                    <p>${escapeHtml(item.body || '')}</p>
+                  </article>
+                `,
+              )}
+            </div>
+          </div>
+        </section>
+      `
+    case 'cart-summary':
+      return `
+        <section class="section cart-summary" id="${escapeHtml(section.id)}">
+          <div class="container">
+            ${headline}
+            ${body}
+            <p class="cart-empty-state">Shopping cart requires JavaScript. Export as React or Next.js for full cart functionality.</p>
+          </div>
+        </section>
+      `
     case 'cta':
       return `
         <section class="section cta" id="${escapeHtml(section.id)}">

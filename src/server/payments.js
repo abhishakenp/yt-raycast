@@ -24,6 +24,8 @@ function atomicWriteJSON(filePath, data) {
   renameSync(tmp, filePath)
 }
 
+const PAYWALL_DISABLED = process.env.DISABLE_PAYWALL === 'true'
+
 const EARLY_ADOPTER_MAX = parseInt(process.env.EARLY_ADOPTER_MAX_USERS || '500', 10)
 const EARLY_ADOPTER_PRICE_ID = process.env.STRIPE_EARLY_ADOPTER_PRICE_ID || ''
 
@@ -519,6 +521,10 @@ export function zeroUserCredits(uid) {
 }
 
 export async function getDownloadAccessDecision(session, target, req) {
+  if (PAYWALL_DISABLED) {
+    return { allowed: true, payment: { subscriptionActive: true, credits: null } }
+  }
+
   const uid = session?.userId
   const isSubscribed = await hasActiveSubscription(uid)
 
@@ -548,6 +554,16 @@ export async function getDownloadAccessDecision(session, target, req) {
 }
 
 export async function decorateExportTargetsForRequest(session, targets, req) {
+  if (PAYWALL_DISABLED) {
+    return targets.map((targetEntry) => ({
+      ...targetEntry,
+      paymentRequired: false,
+      downloadUnlocked: true,
+      subscriptionUnlocked: true,
+      credits: 999,
+    }))
+  }
+
   const uid = session?.userId
   const isSubscribed = await hasActiveSubscription(uid)
   const credits = await getUserCredits(uid)

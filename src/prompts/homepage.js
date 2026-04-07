@@ -54,6 +54,27 @@ DO NOT:
   const entitiesBlock = ctx?.entities?.length ? `\nKey entities: ${ctx.entities.join(', ')}\n` : ''
   const taglineBlock = ctx?.tagline ? `\nTagline: "${ctx.tagline}"\n` : ''
 
+  const ecommerceBlock = st === 'ecommerce'
+    ? `\nE-COMMERCE INTEGRATION:
+This site uses Medusa.js as the e-commerce backend. The generated Next.js export includes lib/medusa.js with these SDK functions:
+- getProducts(params) — fetch product listings for shop/catalog pages
+- getProductByHandle(handle) — fetch single product for detail pages
+- getCategories() — fetch product categories for navigation/filtering
+- createCart(regionId) — initialize a shopping cart
+- addLineItem(cartId, variantId, quantity) — add product to cart
+- getCart(cartId) — retrieve cart with items and totals
+- getRegions() — fetch available shipping regions
+
+Build the homepage to showcase products prominently:
+- Hero should feature a flagship product or seasonal collection with a bold CTA to shop
+- Include a featured products section with product cards (image, title, price, quick-add button)
+- Category navigation section with visual category cards linking to filtered views
+- Trust signals: shipping info, return policy, secure payment badges
+- The AI-generated product cards should use onClick handlers that call addLineItem()
+- Price display should use Intl.NumberFormat for currency formatting
+- Product cards need hover states: image zoom, quick-view overlay, add-to-cart button reveal\n`
+    : ''
+
   const dynamicUiRule =
     st === 'game'
       ? '- For games: follow LAYOUT game rules; use the THREE.js loop and HUD instead of marketing carousels or pricing toggles.\n'
@@ -62,7 +83,7 @@ DO NOT:
   return `Build: index.html \u2014 ${st} homepage
 Project: ${ctx?.project_name ?? 'My App'}${taglineBlock}
 Description: ${prompt}
-${featuresBlock}${entitiesBlock}
+${featuresBlock}${entitiesBlock}${ecommerceBlock}
 LAYOUT: ${typeBlock}
 ${pagesBlock}
 

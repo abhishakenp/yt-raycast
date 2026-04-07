@@ -167,6 +167,32 @@ export function renderHtmlProject(siteSpec) {
   const sitemapXml = renderSitemapXml(siteSpec)
   if (sitemapXml) files['sitemap.xml'] = sitemapXml
 
+  // Enrich ecommerce sections with seed data for static rendering
+  if (siteSpec.siteType === 'ecommerce' && siteSpec.ecommerce?.products) {
+    for (const page of siteSpec.pages || []) {
+      for (const section of page.sections || []) {
+        if (section.type === 'product-grid' && (!section.items || section.items.length === 0)) {
+          section.items = siteSpec.ecommerce.products.map((p) => ({
+            id: p.id,
+            title: p.title,
+            body: p.description,
+            price: typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
+            image: p.image || '',
+          }))
+        }
+        if (section.type === 'featured-products' && (!section.items || section.items.length === 0)) {
+          section.items = siteSpec.ecommerce.products.slice(0, 4).map((p) => ({
+            id: p.id,
+            title: p.title,
+            body: p.description,
+            price: typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
+            image: p.image || '',
+          }))
+        }
+      }
+    }
+  }
+
   for (const page of siteSpec.pages || []) {
     files[routeToHtmlFile(page.route)] = pageUsesExactClone(page)
       ? applySiteCssHrefToHtml(

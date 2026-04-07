@@ -430,6 +430,34 @@ export default function SectionRenderer({ section }) {
       return <ContactFormSection section={section} />
     case 'footer':
       return <FooterSection section={section} />
+    case 'product-grid':
+    case 'featured-products':
+      return (
+        <section className={\`section \${section.type}\`} id={section.id}>
+          <div className="container">
+            <SectionIntro section={section} />
+            <div className="product-grid">
+              {(section.items || []).map((item) => (
+                <article key={item.id || item.title} className="product-card">
+                  <div className="product-image">{item.image ? <img src={item.image} alt={item.title} /> : <div className="product-placeholder" />}</div>
+                  <h3>{item.title}</h3>
+                  {item.price ? <span className="product-price">{item.price}</span> : null}
+                  <p>{item.body || ''}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )
+    case 'cart-summary':
+      return (
+        <section className="section cart-summary" id={section.id}>
+          <div className="container">
+            <SectionIntro section={section} />
+            <p className="cart-empty-state">Your cart is empty. Start shopping to add items.</p>
+          </div>
+        </section>
+      )
     default:
       return (
         <section className="section" id={section.id}>
@@ -774,6 +802,112 @@ export default function PageTemplate({ siteSpec, page }) {
       page,
       pageComponentName(page),
     )
+  }
+
+  const isEcommerce = siteSpec.siteType === 'ecommerce'
+  if (isEcommerce) {
+    const pkg = JSON.parse(files['package.json'])
+    pkg.dependencies['@medusajs/js-sdk'] = '^2.13.5'
+    files['package.json'] = JSON.stringify(pkg, null, 2)
+
+    files['src/lib/medusa.js'] = `const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || 'http://localhost:9000'
+const publishableKey = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || ''
+
+let sdk = null
+
+export function getMedusaSdk() {
+  if (!publishableKey) return null
+  if (!sdk) {
+    import('@medusajs/js-sdk').then((mod) => {
+      sdk = new mod.default({ baseUrl: backendUrl, publishableKey })
+    })
+    return null
+  }
+  return sdk
+}
+
+export async function getProducts(params = {}) {
+  const client = getMedusaSdk()
+  if (!client) return []
+  try {
+    const { products } = await client.store.product.list(params)
+    return products || []
+  } catch {
+    return []
+  }
+}
+
+export async function getProductByHandle(handle) {
+  const client = getMedusaSdk()
+  if (!client || !handle) return null
+  try {
+    const { products } = await client.store.product.list({ handle })
+    return products?.[0] || null
+  } catch {
+    return null
+  }
+}
+
+export async function getCategories() {
+  const client = getMedusaSdk()
+  if (!client) return []
+  try {
+    const { product_categories } = await client.store.category.list()
+    return product_categories || []
+  } catch {
+    return []
+  }
+}
+
+export async function createCart(regionId) {
+  const client = getMedusaSdk()
+  if (!client) return null
+  try {
+    const { cart } = await client.store.cart.create({ region_id: regionId })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function getCart(cartId) {
+  const client = getMedusaSdk()
+  if (!client || !cartId) return null
+  try {
+    const { cart } = await client.store.cart.retrieve(cartId)
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function addLineItem(cartId, variantId, quantity = 1) {
+  const client = getMedusaSdk()
+  if (!client || !cartId || !variantId) return null
+  try {
+    const { cart } = await client.store.cart.createLineItem(cartId, { variant_id: variantId, quantity })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function getRegions() {
+  const client = getMedusaSdk()
+  if (!client) return []
+  try {
+    const { regions } = await client.store.region.list()
+    return regions || []
+  } catch {
+    return []
+  }
+}
+`
+
+    files['.env.example.medusa'] = `# Medusa.js E-Commerce — optional
+VITE_MEDUSA_BACKEND_URL=http://localhost:9000
+VITE_MEDUSA_PUBLISHABLE_KEY=
+`
   }
 
   return { files }

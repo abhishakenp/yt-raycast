@@ -77,7 +77,10 @@ function renderMedusaExportFiles() {
   return {
     '.env.example.medusa': `# Medusa.js E-Commerce — optional, works without these
 MEDUSA_BACKEND_URL=http://localhost:9000
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
+# Payment (Stripe — optional, configure in Medusa admin)
+# NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 `,
     'lib/medusa.js': `import Medusa from '@medusajs/js-sdk'
 
@@ -126,124 +129,387 @@ export async function getCategories() {
     return []
   }
 }
+
+export async function createCart(regionId) {
+  const client = getMedusaSdk()
+  if (!client) return null
+  try {
+    const { cart } = await client.store.cart.create({ region_id: regionId })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function getCart(cartId) {
+  const client = getMedusaSdk()
+  if (!client || !cartId) return null
+  try {
+    const { cart } = await client.store.cart.retrieve(cartId)
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function addLineItem(cartId, variantId, quantity = 1) {
+  const client = getMedusaSdk()
+  if (!client || !cartId || !variantId) return null
+  try {
+    const { cart } = await client.store.cart.createLineItem(cartId, { variant_id: variantId, quantity })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function updateLineItem(cartId, lineItemId, quantity) {
+  const client = getMedusaSdk()
+  if (!client || !cartId || !lineItemId) return null
+  try {
+    const { cart } = await client.store.cart.updateLineItem(cartId, lineItemId, { quantity })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function removeLineItem(cartId, lineItemId) {
+  const client = getMedusaSdk()
+  if (!client || !cartId || !lineItemId) return null
+  try {
+    const { cart } = await client.store.cart.deleteLineItem(cartId, lineItemId)
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function createPaymentSessions(cartId) {
+  const client = getMedusaSdk()
+  if (!client || !cartId) return null
+  try {
+    const { cart } = await client.store.payment.initiatePaymentSession(cartId, { provider_id: 'pp_system_default' })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function completeCart(cartId) {
+  const client = getMedusaSdk()
+  if (!client || !cartId) return null
+  try {
+    const result = await client.store.cart.complete(cartId)
+    return result || null
+  } catch {
+    return null
+  }
+}
+
+export async function getRegions() {
+  const client = getMedusaSdk()
+  if (!client) return []
+  try {
+    const { regions } = await client.store.region.list()
+    return regions || []
+  } catch {
+    return []
+  }
+}
+
+export async function listPaymentProviders(regionId) {
+  const client = getMedusaSdk()
+  if (!client || !regionId) return []
+  try {
+    const { payment_providers } = await client.store.payment.listPaymentProviders({ region_id: regionId })
+    return payment_providers || []
+  } catch {
+    return []
+  }
+}
+
+export async function setShippingMethod(cartId, optionId) {
+  const client = getMedusaSdk()
+  if (!client || !cartId || !optionId) return null
+  try {
+    const { cart } = await client.store.cart.addShippingMethod(cartId, { option_id: optionId })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function listShippingOptions(cartId) {
+  const client = getMedusaSdk()
+  if (!client || !cartId) return []
+  try {
+    const { shipping_options } = await client.store.fulfillment.listCartOptions({ cart_id: cartId })
+    return shipping_options || []
+  } catch {
+    return []
+  }
+}
+
+export async function setCartAddress(cartId, address) {
+  const client = getMedusaSdk()
+  if (!client || !cartId) return null
+  try {
+    const { cart } = await client.store.cart.update(cartId, address)
+    return cart || null
+  } catch {
+    return null
+  }
+}
 `,
   }
 }
 
-function renderCmsNextExportFiles(cmsType) {
-  const envFiles = {
-    sanity: `NEXT_PUBLIC_SANITY_PROJECT_ID=
+function renderEcommerceComponents() {
+  return {
+    'components/ecommerce/CartProvider.jsx': `'use client'
+
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createCart, getCart, addLineItem, updateLineItem, removeLineItem, getRegions } from '../../lib/medusa'
+
+const CartContext = createContext(null)
+
+export function CartProvider({ children }) {
+  const [cart, setCart] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function initCart() {
+      try {
+        const savedCartId = typeof window !== 'undefined' ? localStorage.getItem('medusa_cart_id') : null
+        if (savedCartId) {
+          const existing = await getCart(savedCartId)
+          if (existing && existing.completed_at === null) {
+            setCart(existing)
+            setLoading(false)
+            return
+          }
+        }
+        const regions = await getRegions()
+        const regionId = regions?.[0]?.id
+        if (regionId) {
+          const newCart = await createCart(regionId)
+          if (newCart?.id) {
+            localStorage.setItem('medusa_cart_id', newCart.id)
+            setCart(newCart)
+          }
+        }
+      } catch {}
+      setLoading(false)
+    }
+    initCart()
+  }, [])
+
+  const refreshCart = useCallback(async () => {
+    if (!cart?.id) return
+    const updated = await getCart(cart.id)
+    if (updated) setCart(updated)
+  }, [cart?.id])
+
+  const addItem = useCallback(async (variantId, quantity = 1) => {
+    if (!cart?.id) return
+    setLoading(true)
+    await addLineItem(cart.id, variantId, quantity)
+    await refreshCart()
+    setLoading(false)
+  }, [cart?.id, refreshCart])
+
+  const updateItem = useCallback(async (lineItemId, quantity) => {
+    if (!cart?.id) return
+    setLoading(true)
+    await updateLineItem(cart.id, lineItemId, quantity)
+    await refreshCart()
+    setLoading(false)
+  }, [cart?.id, refreshCart])
+
+  const removeItem = useCallback(async (lineItemId) => {
+    if (!cart?.id) return
+    setLoading(true)
+    await removeLineItem(cart.id, lineItemId)
+    await refreshCart()
+    setLoading(false)
+  }, [cart?.id, refreshCart])
+
+  const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
+
+  return (
+    <CartContext.Provider value={{ cart, loading, addItem, updateItem, removeItem, itemCount }}>
+      {children}
+    </CartContext.Provider>
+  )
+}
+
+export function useCart() {
+  const ctx = useContext(CartContext)
+  if (!ctx) throw new Error('useCart must be used within CartProvider')
+  return ctx
+}
+`,
+    'components/ecommerce/ProductCard.jsx': `'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { useCart } from './CartProvider'
+
+export default function ProductCard({ product }) {
+  const { addItem } = useCart()
+  const [adding, setAdding] = useState(false)
+  const variant = product.variants?.[0]
+  const price = variant?.calculated_price?.calculated_amount
+  const currency = variant?.calculated_price?.currency_code || 'USD'
+  const formatted = price != null
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(price / 100)
+    : ''
+
+  async function handleAdd() {
+    if (!variant?.id) return
+    setAdding(true)
+    await addItem(variant.id)
+    setAdding(false)
+  }
+
+  return (
+    <article className="product-card">
+      <Link href={'/product/' + (product.handle || product.id)}>
+        <div className="product-image">
+          {product.thumbnail ? (
+            <img src={product.thumbnail} alt={product.title} />
+          ) : (
+            <div className="product-placeholder" />
+          )}
+        </div>
+        <h3>{product.title}</h3>
+      </Link>
+      {formatted ? <span className="product-price">{formatted}</span> : null}
+      <button className="button button--primary" onClick={handleAdd} disabled={adding || !variant}>
+        {adding ? 'Adding...' : 'Add to Cart'}
+      </button>
+    </article>
+  )
+}
+`,
+    'components/ecommerce/CartDrawer.jsx': `'use client'
+
+import { useState } from 'react'
+import { useCart } from './CartProvider'
+
+export default function CartDrawer() {
+  const { cart, loading, updateItem, removeItem, itemCount } = useCart()
+  const [open, setOpen] = useState(false)
+
+  const subtotal = cart?.total != null
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: cart.region?.currency_code || 'USD' }).format(cart.total / 100)
+    : '$0.00'
+
+  return (
+    <>
+      <button className="cart-toggle" onClick={() => setOpen(true)} type="button">
+        Cart {itemCount > 0 ? '(' + itemCount + ')' : ''}
+      </button>
+      {open ? (
+        <div className="cart-overlay" onClick={() => setOpen(false)}>
+          <aside className="cart-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="cart-header">
+              <h2>Your Cart</h2>
+              <button onClick={() => setOpen(false)} type="button">&times;</button>
+            </div>
+            {loading ? <p>Loading...</p> : null}
+            {!loading && (!cart?.items?.length) ? <p>Your cart is empty.</p> : null}
+            <ul className="cart-items">
+              {(cart?.items || []).map((item) => (
+                <li key={item.id} className="cart-item">
+                  <div>
+                    <strong>{item.title}</strong>
+                    <div className="cart-item-controls">
+                      <button onClick={() => updateItem(item.id, Math.max(1, item.quantity - 1))} type="button">-</button>
+                      <span>{item.quantity}</span>
+                      <button onClick={() => updateItem(item.id, item.quantity + 1)} type="button">+</button>
+                      <button onClick={() => removeItem(item.id)} type="button">Remove</button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="cart-footer">
+              <strong>Subtotal: {subtotal}</strong>
+              <a href="/checkout" className="button button--primary">Checkout</a>
+            </div>
+          </aside>
+        </div>
+      ) : null}
+    </>
+  )
+}
+`,
+    'components/ecommerce/AddToCart.jsx': `'use client'
+
+import { useState } from 'react'
+import { useCart } from './CartProvider'
+
+export default function AddToCart({ variantId, disabled }) {
+  const { addItem } = useCart()
+  const [adding, setAdding] = useState(false)
+
+  async function handleClick() {
+    if (!variantId) return
+    setAdding(true)
+    await addItem(variantId)
+    setAdding(false)
+  }
+
+  return (
+    <button
+      className="button button--primary add-to-cart"
+      onClick={handleClick}
+      disabled={disabled || adding || !variantId}
+      type="button"
+    >
+      {adding ? 'Adding...' : 'Add to Cart'}
+    </button>
+  )
+}
+`,
+  }
+}
+
+function renderSanityNextExportFiles() {
+  return {
+    '.env.example': `NEXT_PUBLIC_SANITY_PROJECT_ID=
 NEXT_PUBLIC_SANITY_DATASET=production
 NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
 SANITY_READ_TOKEN=
 `,
-    contentful: `CONTENTFUL_SPACE_ID=
-CONTENTFUL_ACCESS_TOKEN=
-CONTENTFUL_ENVIRONMENT=master
-`,
-    strapi: `STRAPI_URL=http://localhost:1337
-STRAPI_API_TOKEN=
-`,
-  }
-
-  const clientFiles = {
-    sanity: `import { createClient } from 'next-sanity'
+    'lib/sanity.client.js': `import { createClient } from 'next-sanity'
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
 const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-01-01'
 
-const client = createClient({
+export const client = createClient({
   projectId,
   dataset,
   apiVersion,
   useCdn: true,
   ...(process.env.SANITY_READ_TOKEN ? { token: process.env.SANITY_READ_TOKEN } : {}),
 })
-
-export async function fetchPosts() {
-  return client.fetch(\`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
-    "slug": slug.current, title, publishedAt, excerpt
-  }\`)
-}
-
-export async function fetchPostBySlug(slug) {
-  return client.fetch(
-    \`*[_type == "post" && slug.current == $slug][0]{
-      title, publishedAt, excerpt, body,
-      "authorName": author->name,
-      "categories": categories[]->title
-    }\`,
-    { slug },
-  )
-}
 `,
-    contentful: `const SPACE = process.env.CONTENTFUL_SPACE_ID || ''
-const TOKEN = process.env.CONTENTFUL_ACCESS_TOKEN || ''
-const ENV = process.env.CONTENTFUL_ENVIRONMENT || 'master'
-const BASE = \`https://cdn.contentful.com/spaces/\${SPACE}/environments/\${ENV}\`
-
-async function cfFetch(path, params = {}) {
-  const qs = new URLSearchParams({ access_token: TOKEN, ...params })
-  const res = await fetch(\`\${BASE}\${path}?\${qs}\`, { next: { revalidate: 60 } })
-  if (!res.ok) return null
-  return res.json()
-}
-
-export async function fetchPosts() {
-  const data = await cfFetch('/entries', { content_type: 'blogPost', order: '-fields.publishedAt' })
-  return (data?.items || []).map((i) => ({
-    slug: i.fields.slug, title: i.fields.title,
-    publishedAt: i.fields.publishedAt, excerpt: i.fields.excerpt || '',
-  }))
-}
-
-export async function fetchPostBySlug(slug) {
-  const data = await cfFetch('/entries', { content_type: 'blogPost', 'fields.slug': slug, limit: '1' })
-  if (!data?.items?.length) return null
-  const f = data.items[0].fields
-  return { title: f.title, publishedAt: f.publishedAt, excerpt: f.excerpt || '', body: f.body || null, authorName: f.authorName || null, categories: f.categories || [] }
-}
-`,
-    strapi: `const BASE = process.env.STRAPI_URL || 'http://localhost:1337'
-const TOKEN = process.env.STRAPI_API_TOKEN || ''
-
-async function strapiFetch(path) {
-  const res = await fetch(\`\${BASE}\${path}\`, {
-    headers: { Authorization: \`Bearer \${TOKEN}\` },
-    next: { revalidate: 60 },
-  })
-  if (!res.ok) return null
-  return res.json()
-}
-
-export async function fetchPosts() {
-  const data = await strapiFetch('/api/posts?populate=*&sort=publishedAt:desc')
-  return (data?.data || []).map((i) => {
-    const a = i.attributes || i
-    return { slug: a.slug, title: a.title, publishedAt: a.publishedAt, excerpt: a.excerpt || '' }
-  })
-}
-
-export async function fetchPostBySlug(slug) {
-  const data = await strapiFetch(\`/api/posts?filters[slug][$eq]=\${encodeURIComponent(slug)}&populate=*\`)
-  if (!data?.data?.length) return null
-  const a = data.data[0].attributes || data.data[0]
-  return { title: a.title, publishedAt: a.publishedAt, excerpt: a.excerpt || '', body: a.body || null, authorName: a.authorName || null, categories: [] }
-}
-`,
-  }
-
-  const usesPortableText = cmsType === 'sanity'
-
-  return {
-    '.env.example': envFiles[cmsType] || envFiles.sanity,
-    'lib/cms-client.js': clientFiles[cmsType] || clientFiles.sanity,
     'app/blog/page.jsx': `import Link from 'next/link'
-import { fetchPosts } from '../../lib/cms-client'
+import { client } from '../../lib/sanity.client'
+
+const POSTS_QUERY = \`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+  "slug": slug.current,
+  title,
+  publishedAt,
+  excerpt
+}\`
 
 export default async function BlogIndexPage() {
-  const posts = await fetchPosts()
+  const posts = await client.fetch(POSTS_QUERY)
   return (
     <main className="container" style={{ padding: 'var(--spacing-section) 0' }}>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>Blog</h1>
@@ -264,11 +530,21 @@ export default async function BlogIndexPage() {
 }
 `,
     'app/blog/[slug]/page.jsx': `import Link from 'next/link'
-${usesPortableText ? "import { PortableText } from '@portabletext/react'\n" : ''}import { notFound } from 'next/navigation'
-import { fetchPostBySlug } from '../../../lib/cms-client'
+import { PortableText } from '@portabletext/react'
+import { notFound } from 'next/navigation'
+import { client } from '../../../lib/sanity.client'
+
+const POST_QUERY = \`*[_type == "post" && slug.current == $slug][0]{
+  title,
+  publishedAt,
+  excerpt,
+  body,
+  "authorName": author->name,
+  "categories": categories[]->title
+}\`
 
 export default async function BlogPostPage({ params }) {
-  const post = await fetchPostBySlug(params.slug)
+  const post = await client.fetch(POST_QUERY, { slug: params.slug })
   if (!post) notFound()
   return (
     <article className="container" style={{ padding: 'var(--spacing-section) 0', maxWidth: '48rem' }}>
@@ -279,7 +555,7 @@ export default async function BlogPostPage({ params }) {
       </p>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>{post.title}</h1>
       {post.authorName ? <p style={{ color: 'var(--color-muted)' }}>{post.authorName}</p> : null}
-      ${usesPortableText ? '{post.body ? <PortableText value={post.body} /> : null}' : '{post.body ? <div dangerouslySetInnerHTML={{ __html: post.body }} /> : null}'}
+      {post.body ? <PortableText value={post.body} /> : null}
     </article>
   )
 }
@@ -591,6 +867,34 @@ export default function SectionRenderer({ section }) {
           </div>
         </section>
       )
+    case 'product-grid':
+    case 'featured-products':
+      return (
+        <section className={\`section \${section.type}\`} id={section.id}>
+          <div className="container">
+            <SectionIntro section={section} />
+            <div className="product-grid">
+              {(section.items || []).map((item) => (
+                <article key={item.id || item.title} className="product-card">
+                  <div className="product-image">{item.image ? <img src={item.image} alt={item.title} /> : <div className="product-placeholder" />}</div>
+                  <h3>{item.title}</h3>
+                  {item.price ? <span className="product-price">{item.price}</span> : null}
+                  <p>{item.body || ''}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )
+    case 'cart-summary':
+      return (
+        <section className="section cart-summary" id={section.id}>
+          <div className="container">
+            <SectionIntro section={section} />
+            <p className="cart-empty-state">Your cart is empty. Start shopping to add items.</p>
+          </div>
+        </section>
+      )
     default:
       return (
         <section className="section" id={section.id}>
@@ -632,18 +936,15 @@ export default function GeneratedPage() {
 }
 
 export function renderNextProject(siteSpec) {
-  const cmsType = (siteSpec.exportOptions?.cms || '').toLowerCase()
   const isEcommerce = siteSpec.siteType === 'ecommerce'
-  const cmsDependencies = {
-    ...(cmsType === 'sanity'
-      ? {
-          'next-sanity': '^9.8.27',
-          '@sanity/client': '^7.20.0',
-          '@portabletext/react': '^3.2.0',
-        }
-      : {}),
-    ...(isEcommerce ? { '@medusajs/js-sdk': '^2.13.5' } : {}),
-  }
+  const cmsSanity = siteSpec.exportOptions?.cms === 'sanity'
+  const sanityDependencies = cmsSanity
+    ? {
+        'next-sanity': '^9.8.27',
+        '@sanity/client': '^7.20.0',
+        '@portabletext/react': '^3.2.0',
+      }
+    : {}
   const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
   const siteSeo = resolvePageSeo(siteSpec, homePage)
   const sitemapEntries = buildSitemapEntries(siteSpec)
@@ -655,7 +956,10 @@ export function renderNextProject(siteSpec) {
     ? `      <head>${fontLines}      </head>\n`
     : ''
   const files = {
-    'package.json': renderNextPackageJson(siteSpec.projectName, cmsDependencies),
+    'package.json': renderNextPackageJson(siteSpec.projectName, {
+      ...sanityDependencies,
+      ...(isEcommerce ? { '@medusajs/js-sdk': '^2.13.5' } : {}),
+    }),
     'next.config.mjs': `/** @type {import('next').NextConfig} */
 const nextConfig = {}
 
@@ -753,12 +1057,13 @@ export default function SmartLink({ href = '#', children, ...props }) {
     files[`${dir}/page.jsx`] = renderNextPageModule(siteSpec, page, segments.length)
   }
 
-  if (cmsType && ['sanity', 'contentful', 'strapi'].includes(cmsType)) {
-    Object.assign(files, renderCmsNextExportFiles(cmsType))
+  if (cmsSanity) {
+    Object.assign(files, renderSanityNextExportFiles())
   }
 
   if (isEcommerce) {
     Object.assign(files, renderMedusaExportFiles())
+    Object.assign(files, renderEcommerceComponents())
   }
 
   return { files }

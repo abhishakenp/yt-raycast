@@ -42,7 +42,17 @@ This website is in ${indiaMode.name} (${indiaMode.nativeName}). Apply these cons
 - **Font**: Use "${fontName}" as the primary font for body text. Load it from Google Fonts.${indiaMode.isRTL ? '\n- **Direction**: Use right-to-left (RTL) layout with dir="rtl" on the html element.' : ''}`
 }
 
-export function designBriefPrompt(prompt, indiaMode = null) {
+function inferSiteTypeHint(prompt) {
+  const lower = (prompt || '').toLowerCase()
+  if (/\b(e-?commerce|online\s*store|shop|product|cart|checkout|buy|retail|merch)\b/.test(lower)) return 'ecommerce'
+  if (/\b(portfolio|creative|artist|photographer|designer)\b/.test(lower)) return 'portfolio'
+  if (/\b(blog|journal|magazine|publication|article)\b/.test(lower)) return 'blog'
+  if (/\b(game|play|3d|arcade)\b/.test(lower)) return 'game'
+  return null
+}
+
+export function designBriefPrompt(prompt, indiaMode = null, siteType = null) {
+  const effectiveSiteType = siteType || inferSiteTypeHint(prompt)
   return {
     system:
       'You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. Output ONLY markdown. No preamble.',
@@ -79,8 +89,23 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 - Buttons secondary: outline with subtle border, rounded-full, hover: slightly lighter bg
 - CTA link: accent color, hover: lighter accent, text-sm, with \u2192 arrow
 - Footer: dark bg, subtle top border, centered
+${effectiveSiteType === 'ecommerce' ? `- Product card: surface bg, rounded-xl, overflow-hidden. Image top (aspect-ratio: 4/3, object-cover), hover: scale-105 transition. Title bold, price accent-colored font-semibold, "Add to Cart" button primary small
+- Category card: relative, rounded-xl, overflow-hidden. Background image with dark overlay gradient, title white text-lg font-bold centered
+- Price tag: font-semibold, text-lg for main price. Strike-through for original price if on sale
+- Cart badge: absolute top-right on cart icon, accent bg, white text, rounded-full, text-xs min-w-5
+- Trust badge row: flex gap-8 justify-center, each badge: icon + text, muted color, text-sm
+- Promo banner: accent gradient bg, white text, py-4, text-center, uppercase tracking-wide` : ''}
 
-### Sections (homepage order)
+${effectiveSiteType === 'ecommerce' ? `### Sections (homepage order)
+1. Nav (dark bg, logo + category links + search icon + cart icon with badge)
+2. Hero (full-width banner with bold headline + CTA "Shop Now" \u2014 can include a hero product image or lifestyle shot)
+3. Category Grid (2x3 or 2x2 cards with category images and hover overlay, linking to filtered shop views)
+4. Featured Products (4-col product card grid: product image, title, price with currency format, "Add to Cart" button, hover zoom effect)
+5. Deals/Promo Banner (accent gradient band with countdown or seasonal promo text + CTA)
+6. Trust Badges (shipping, returns, secure payment icons row \u2014 subtle, muted)
+7. Reviews/Testimonials (star ratings, customer quotes, minimal cards)
+8. Newsletter (email signup with promo incentive: "10% off your first order")
+9. Footer (logo + shop links + customer service links + payment method icons + copyright)` : `### Sections (homepage order)
 1. Nav
 2. Hero (pill badge + massive headline + subtitle + 1 CTA button \u2014 NO images)
 3. Features (section label + headline + 2x2 card grid with SVG icon + title + desc)
@@ -88,10 +113,14 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 5. Highlight/custom section (section label + headline + gradient featured card with icon)
 6. Logo cloud (headline + company names as plain text, muted color \u2014 NO images)
 7. Final CTA (bold headline + subtitle + 2 buttons)
-8. Footer (centered: logo + links row + copyright)
+8. Footer (centered: logo + links row + copyright)`}
 
 ### Key Principles
-- Typography-first: NO hero images, NO screenshots, NO floating mockups
+${effectiveSiteType === 'ecommerce' ? `- Product-first: hero CAN include a flagship product image or lifestyle shot. Category and product sections MUST have image placeholders.
+- Product cards: consistent aspect ratio (4:3 or 1:1), hover zoom on image, clear price typography, prominent "Add to Cart" button
+- Price styling: larger font weight (font-semibold or font-bold), accent color or high contrast. Use currency symbol before amount.
+- Cart icon in nav with badge count indicator
+- Trust signals: payment method icons, shipping/return policy badges in a subtle row` : `- Typography-first: NO hero images, NO screenshots, NO floating mockups`}
 - Layout: default centered max-w-4xl, but allow ONE section to break the grid (asymmetric split, bento, or full-bleed band) if it increases wow factor
 - 2-column grids by default; bento-style unequal cells allowed for features when it improves hierarchy
 - Generous spacing: py-20 md:py-28 per section; use whitespace as a luxury
