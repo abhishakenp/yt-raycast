@@ -13,7 +13,8 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write \"src/**/*.js\"",
-    "verify:site-spec": "node scripts/vemrify-site-spec.js"
+    "verify:site-spec": "node scripts/vemrify-site-spec.js",
+    "studio:build": "cd studio && bun --env-file=../.env.local --env-file=../.env run build"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "latest",

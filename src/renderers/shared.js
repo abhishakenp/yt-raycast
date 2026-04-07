@@ -95,6 +95,14 @@ function readmeRoutes(siteSpec) {
     routes.push('/blog')
   }
 
+  if (
+    siteSpec?.exportOptions?.cms === 'sanity' &&
+    siteSpec?.exportOptions?.embedSanityStudio !== false &&
+    !routes.includes('/studio')
+  ) {
+    routes.push('/studio')
+  }
+
   return routes.length ? routes : ['/']
 }
 
@@ -132,8 +140,13 @@ function readmeTargetDetails(target, siteSpec = {}) {
       ]
       if (siteSpec.exportOptions?.cms === 'sanity') {
         notes.push(
-          'Sanity: copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_SANITY_*` and optional `SANITY_READ_TOKEN`. Blog routes live under `app/blog/`.',
+          'Sanity: copy `.env.example` to `.env.local`, set `NEXT_PUBLIC_SANITY_*`, optional `SANITY_READ_TOKEN`, and for Studio also `SANITY_STUDIO_PROJECT_ID` / `SANITY_STUDIO_DATASET` (or reuse the same project id). Blog routes: `app/blog/`.',
         )
+        if (siteSpec.exportOptions?.embedSanityStudio !== false) {
+          notes.push(
+            'Embedded Sanity Studio is served at `/studio` after `bun install`. Use `bun run studio` to run the copied `studio/` package standalone.',
+          )
+        }
       }
       return {
         label: 'Next.js',

@@ -12,6 +12,7 @@ import {
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
 } from '../config.js'
+import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
 import { groq } from '../llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
@@ -38,6 +39,7 @@ import {
   getSessionExportBundle,
   getSessionExportTargets,
   rerenderPreviewFromSiteSpec,
+  syncSessionPreviewFromSanity,
 } from './exports.js'
 import { setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
@@ -71,6 +73,8 @@ import {
 } from '../sanity/client.js'
 import { applyPricingPageOverrides, renderBlogIndex, renderBlogPost } from './blog-pages.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
+import { ensureEmbeddedStudioBuilt } from './ensure-studio-build.js'
+import { mountEmbeddedSanityStudio } from './sanity-studio-static.js'
 import { renderPrivacyPage } from './privacy-page.js'
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
 import { pushSessionToGitHub } from './github.js'
@@ -418,6 +422,9 @@ export async function startServer(sessionsDir) {
 
   startPublicWatch()
 
+  const studioRoot = join(__dir, '..', 'studio')
+  ensureEmbeddedStudioBuilt(studioRoot)
+
   const app = express()
   app.disable('x-powered-by')
   app.set('trust proxy', true)
@@ -696,6 +703,12 @@ export async function startServer(sessionsDir) {
 
   app.get('/privacy', (_req, res) => {
     res.type('html').send(renderPrivacyPage())
+  })
+
+  mountEmbeddedSanityStudio(app, join(studioRoot, 'dist'))
+
+  app.get('/api/studio-embed-ready', (_req, res) => {
+    res.json({ built: existsSync(join(studioRoot, 'dist', 'index.html')) })
   })
 
   // Serve public assets statically, but keep / routed through SSR.
@@ -1727,6 +1740,21 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  app.post('/api/sessions/:id/sync-sanity-preview', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    try {
+      const preview = await syncSessionPreviewFromSanity(session)
+      const sessionCtx = makeSessionState(session)
+      sessionCtx.signalHomepageReady()
+      sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
+      res.json({ ok: true, files: Object.keys(preview.files) })
+    } catch (error) {
+      res.status(400).json({ error: error.message })
+    }
+  })
+
   app.post('/api/sessions/:id/github/push', requireAuth, async (req, res) => {
     const { parseGitHubPushPayload, sanitizeErrorResponse } = await httpContractsPromise
     const payload = parseGitHubPushPayload(req.body ?? {})
@@ -1851,6 +1879,7 @@ export async function startServer(sessionsDir) {
   await new Promise((resolve) => httpServer.listen(DASHBOARD_PORT, resolve))
   console.log(`  Server      → http://localhost:${DASHBOARD_PORT}`)
   console.log(`  Sessions dir: ${_sessionsDir}`)
+  void ensureSanityCorsOrigins().catch(() => {})
 }
 
 /** Start a session from CLI (backward compat) */

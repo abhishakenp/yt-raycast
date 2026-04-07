@@ -27,6 +27,12 @@ export function validateSiteSpec(spec) {
     } else if (spec.exportOptions.cms != null && spec.exportOptions.cms !== 'sanity') {
       errors.push(`Unsupported exportOptions.cms "${spec.exportOptions.cms}".`)
     }
+    if (
+      spec.exportOptions.embedSanityStudio != null &&
+      typeof spec.exportOptions.embedSanityStudio !== 'boolean'
+    ) {
+      errors.push('exportOptions.embedSanityStudio must be a boolean.')
+    }
   }
   if (!Array.isArray(spec.pages) || spec.pages.length === 0) errors.push('pages must contain at least one page.')
 

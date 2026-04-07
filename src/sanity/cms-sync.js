@@ -136,6 +136,54 @@ const findHomeHero = (siteSpec) => {
   }
 }
 
+export function mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings) {
+  if (!siteSpec || !siteSettings) return siteSpec
+  const spec = structuredClone(siteSpec)
+  const pages = spec.pages
+  if (!Array.isArray(pages)) return spec
+
+  const seoTitle = String(siteSettings.homeTitle ?? siteSettings.seoTitle ?? '').trim()
+  const seoDesc = String(siteSettings.homeDescription ?? siteSettings.seoDescription ?? '').trim()
+  const heroHeadline =
+    String(siteSettings.shipChatHeadline ?? '').trim() || seoTitle
+  const heroSub =
+    String(siteSettings.shipChatSubheadline ?? '').trim() || seoDesc
+  const home = pages.find((p) => p.route === '/' || p.route === '') || pages[0]
+  if (home && (seoTitle || seoDesc || heroHeadline || heroSub)) {
+    home.seo = { ...(home.seo || {}) }
+    if (seoTitle) home.seo.title = seoTitle
+    else if (heroHeadline) home.seo.title = heroHeadline
+    if (seoDesc) home.seo.description = seoDesc
+    else if (heroSub) home.seo.description = heroSub
+    const sections = home.sections || (home.sections = [])
+    const hi = sections.findIndex((s) => s.type === 'hero')
+    if (hi >= 0) {
+      if (heroHeadline) sections[hi].headline = heroHeadline
+      if (heroSub) {
+        sections[hi].subheadline = heroSub
+        sections[hi].body = heroSub
+      }
+    }
+  }
+
+  const pricingPage = pages.find((p) => p.route === '/pricing' || p.route === '/pricing/')
+  if (pricingPage) {
+    const pt = String(siteSettings.pricingPageTitle ?? '').trim()
+    const pd = String(siteSettings.pricingPageDescription ?? '').trim()
+    const ph = String(siteSettings.pricingHeroHeadline ?? '').trim()
+    if (pt || pd || ph) {
+      pricingPage.seo = { ...(pricingPage.seo || {}) }
+      if (pt) pricingPage.seo.title = pt
+      if (pd) pricingPage.seo.description = pd
+      const psections = pricingPage.sections || (pricingPage.sections = [])
+      const phi = psections.findIndex((s) => s.type === 'hero')
+      if (phi >= 0 && ph) psections[phi].headline = ph
+    }
+  }
+
+  return spec
+}
+
 export async function syncSiteSettingsFromSiteSpec(siteSpec) {
   const client = getSanityWriteClient()
   if (!client || !siteSpec) return
