@@ -419,6 +419,7 @@ export async function startServer(sessionsDir) {
   startPublicWatch()
 
   const app = express()
+  app.disable('x-powered-by')
   app.set('trust proxy', true)
 
   const getSessionSubdomain = (req) => {
@@ -1809,6 +1810,13 @@ export async function startServer(sessionsDir) {
       express.static(session.workspace, { extensions: ['html'] })(req, res, next)
     },
   )
+
+  app.use((err, req, res, next) => {
+    if (err?.type === 'entity.parse.failed') {
+      return res.status(400).json({ error: 'Invalid JSON' })
+    }
+    return next(err)
+  })
 
   const httpServer = createHttpServer(app)
   setupWebSocket(httpServer)

@@ -1,7 +1,7 @@
 import {
   buildGlobalCss,
   renderCloneRuntimeModule,
-  renderExactClonePageComponent,
+  renderNextExactClonePageComponent,
   routeToNextSegments,
   serializeModule,
   slimSiteSpecForBundle,
@@ -15,6 +15,40 @@ import {
 } from '../seo.js'
 import { SHIP_FAST_SITE_URL } from '../../marketing.js'
 
+function collectThemeGoogleFontFamilies(theme = {}) {
+  const typo = theme.typography || {}
+  const raw = [typo.heading, typo.body, typo.mono]
+  const seen = new Set()
+  const out = []
+  for (const f of raw) {
+    if (typeof f !== 'string') continue
+    const first = f.split(',')[0].trim().replace(/^["']|["']$/g, '').trim()
+    if (!first) continue
+    if (/^(system-ui|sans-serif|serif|monospace|ui-sans-serif|ui-monospace|apple-system)/i.test(first)) continue
+    const k = first.toLowerCase()
+    if (seen.has(k)) continue
+    seen.add(k)
+    out.push(first)
+  }
+  return out
+}
+
+function buildNextLayoutFontLinkLines(siteSpec) {
+  const families = collectThemeGoogleFontFamilies(siteSpec.theme)
+  if (!families.length) return ''
+  const lines = [
+    '        <link rel="preconnect" href="https://fonts.googleapis.com" />',
+    '        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />',
+  ]
+  for (const name of families) {
+    const q = name.replace(/ /g, '+')
+    lines.push(
+      `        <link href="https://fonts.googleapis.com/css2?family=${q}:wght@400;500;600;700&display=swap" rel="stylesheet" />`,
+    )
+  }
+  return `\n${lines.join('\n')}\n`
+}
+
 function renderNextPackageJson(projectName, extraDependencies = {}) {
   return JSON.stringify(
     {
@@ -23,7 +57,7 @@ function renderNextPackageJson(projectName, extraDependencies = {}) {
       version: '0.0.0',
       scripts: {
         dev: 'next dev',
-        build: 'next build',
+        build: 'NODE_ENV=production next build',
         start: 'next start',
       },
       dependencies: {
@@ -483,6 +517,10 @@ export function renderNextProject(siteSpec) {
   const robotsConfig = siteSeo.siteUrl
     ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
     : { rules: [{ userAgent: '*', allow: '/' }] }
+  const fontLines = buildNextLayoutFontLinkLines(siteSpec)
+  const layoutHeadBlock = fontLines.trim()
+    ? `      <head>${fontLines}      </head>\n`
+    : ''
   const files = {
     'package.json': renderNextPackageJson(siteSpec.projectName, sanityDependencies),
     'next.config.mjs': `/** @type {import('next').NextConfig} */
@@ -496,13 +534,18 @@ export const metadata = {
   title: ${JSON.stringify(siteSpec.seo?.title || siteSpec.projectName)},
   description: ${JSON.stringify(siteSpec.seo?.description || '')},
   applicationName: ${JSON.stringify(siteSpec.seo?.siteName || siteSpec.projectName)},
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: ${JSON.stringify(siteSeo.themeColor)},
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang=${JSON.stringify(siteSeo.htmlLang)} suppressHydrationWarning>
-      <body suppressHydrationWarning>{children}</body>
+${layoutHeadBlock}      <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
@@ -521,7 +564,7 @@ export default function RootLayout({ children }) {
 
 export default siteSpec
 `,
-    'components/ExactClonePage.jsx': renderExactClonePageComponent({ mode: 'nextjs' }),
+    'components/ExactClonePage.jsx': renderNextExactClonePageComponent(),
     'components/PageTemplate.jsx': `import ExactClonePage from './ExactClonePage'
 import SectionRenderer from './SectionRenderer'
 

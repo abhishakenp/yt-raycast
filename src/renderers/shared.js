@@ -323,6 +323,68 @@ export function installExactCloneBlueprint(blueprint) {
 `
 }
 
+export function renderNextExactClonePageComponent() {
+  return `'use client'
+
+import { useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { installExactCloneBlueprint } from '../lib/clone-runtime'
+
+export default function ExactClonePage({ page }) {
+  const rootRef = useRef(null)
+  const router = useRouter()
+  const blueprint = page?.renderBlueprint
+
+  useEffect(() => {
+    if (!blueprint) return undefined
+    const cleanupClone = installExactCloneBlueprint(blueprint)
+    const root = rootRef.current
+    if (!root) {
+      return () => {
+        cleanupClone()
+      }
+    }
+
+    const onClick = (event) => {
+      const clickTarget = event.target instanceof Element ? event.target : event.target?.parentElement
+      if (!clickTarget || !root.contains(clickTarget)) return
+      const link = clickTarget?.closest('a[href]')
+      if (!link) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      if (link.target && link.target !== '_self') return
+
+      const href = link.getAttribute('href')
+      if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return
+
+      const url = new URL(href, window.location.origin)
+      if (url.origin !== window.location.origin) return
+
+      event.preventDefault()
+      router.push(url.pathname + url.search + url.hash)
+    }
+
+    root.addEventListener('click', onClick)
+
+    return () => {
+      root.removeEventListener('click', onClick)
+      cleanupClone()
+    }
+  }, [blueprint, router])
+
+  if (!blueprint?.bodyHtml) return null
+
+  return (
+    <div
+      ref={rootRef}
+      className="sf-exact-clone-root"
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: blueprint.bodyHtml }}
+    />
+  )
+}
+`
+}
+
 export function renderExactClonePageComponent({ mode }) {
   const routerImport =
     mode === 'react'
