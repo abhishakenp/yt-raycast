@@ -5,10 +5,46 @@ const escapeHtml = (s) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
-export const buildFallbackPageFromHomepage = (homepageHtml, task) => {
+function renderFallbackSection(section) {
+  const headline = section.headline ? `<h2 class="text-2xl md:text-3xl font-bold mb-3">${escapeHtml(section.headline)}</h2>` : ''
+  const subheadline = section.subheadline ? `<p class="text-sm uppercase tracking-wider opacity-70 mb-2">${escapeHtml(section.subheadline)}</p>` : ''
+  const body = section.body ? `<p class="text-lg opacity-90 mb-6">${escapeHtml(section.body)}</p>` : ''
+
+  const items = (section.items || []).map(item => {
+    const itemTitle = item.title || item.label || ''
+    const itemBody = item.body || item.quote || item.description || ''
+    return `<div class="p-4 rounded-lg" style="background:rgba(255,255,255,0.05)">
+      ${itemTitle ? `<h3 class="font-semibold mb-1">${escapeHtml(itemTitle)}</h3>` : ''}
+      ${itemBody ? `<p class="opacity-80 text-sm">${escapeHtml(itemBody)}</p>` : ''}
+    </div>`
+  }).join('\n')
+
+  const itemsGrid = items ? `<div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">${items}</div>` : ''
+
+  return `<section class="max-w-5xl mx-auto px-4 py-12 md:py-16">
+    ${subheadline}${headline}${body}${itemsGrid}
+  </section>`
+}
+
+export const buildFallbackPageFromHomepage = (homepageHtml, task, sections = []) => {
   const title = escapeHtml(task.title ?? 'Page')
   const desc = escapeHtml(task.description ?? '')
-  const section = `<section class="page-fallback max-w-3xl mx-auto px-4 py-16 md:py-24"><h1 class="text-3xl md:text-4xl font-bold mb-4">${title}</h1><p class="text-lg opacity-90 mb-6">${desc}</p></section>`
+
+  // Build content from sections if available, otherwise use simple stub
+  let contentHtml
+  if (sections.length > 0) {
+    contentHtml = sections
+      .filter(s => s.type !== 'navbar' && s.type !== 'footer')
+      .map(renderFallbackSection)
+      .join('\n')
+    // Add title header if no hero section
+    if (!sections.some(s => s.type === 'hero')) {
+      contentHtml = `<section class="max-w-3xl mx-auto px-4 pt-16 pb-8"><h1 class="text-3xl md:text-4xl font-bold mb-4">${title}</h1>${desc ? `<p class="text-lg opacity-90">${desc}</p>` : ''}</section>\n` + contentHtml
+    }
+  } else {
+    contentHtml = `<section class="page-fallback max-w-3xl mx-auto px-4 py-16 md:py-24"><h1 class="text-3xl md:text-4xl font-bold mb-4">${title}</h1><p class="text-lg opacity-90 mb-6">${desc}</p></section>`
+  }
+
   const mainRe = /<main\b[^>]*>[\s\S]*?<\/main>/i
   const bodyRe = /<body\b[^>]*>/i
   let out = String(homepageHtml ?? '')
@@ -16,12 +52,12 @@ export const buildFallbackPageFromHomepage = (homepageHtml, task) => {
   if (mainRe.test(out)) {
     out = out.replace(mainRe, (full) => {
       const open = full.match(/^<main\b[^>]*>/i)?.[0] ?? '<main>'
-      return `${open}${section}</main>`
+      return `${open}${contentHtml}</main>`
     })
   } else if (bodyRe.test(out)) {
-    out = out.replace(bodyRe, (b) => `${b}\n${section}\n`)
+    out = out.replace(bodyRe, (b) => `${b}\n${contentHtml}\n`)
   } else {
-    return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${title}</title></head><body>${section}</body></html>`
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${title}</title></head><body>${contentHtml}</body></html>`
   }
 
   if (/<title>/i.test(out)) {

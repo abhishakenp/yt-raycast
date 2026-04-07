@@ -54,7 +54,8 @@ NEVER use placeholder.com, placehold.co, via.placeholder, or random source endpo
 If verified brand details are provided, keep them exact and do not invent missing contact fields.
 Design must match the homepage craft: same fonts, depth (blur, rings, shadows), and motion — not a flat appendix page.
 Reuse the same dynamic patterns as the homepage where relevant: data-mobile-nav, data-accordion, data-tab-group, data-carousel, data-counter, data-pricing-billing, with matching inline <script> behavior so buttons and toggles work.
-Output ONLY the complete HTML file.`,
+Output ONLY the complete HTML file.
+CRITICAL: Your output MUST be a complete HTML document starting with <!DOCTYPE html> and containing <html>, <head>, and <body> tags. Do NOT output just a fragment or partial HTML.`,
     temperature: 0.3,
     maxTokens: 8000,
   }

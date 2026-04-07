@@ -27,6 +27,7 @@ function getExactCloneStatus(workspace, siteSpec) {
   if (!siteSpec?.pages?.length) {
     return {
       ready: false,
+      degradedPages: [],
       reason: 'The exact-clone export is not ready because no pages were found in the canonical site spec.',
     }
   }
@@ -34,7 +35,7 @@ function getExactCloneStatus(workspace, siteSpec) {
   const missingHtmlFiles = []
   const missingBlueprints = []
 
-  for (const page of siteSpec.pages || []) {
+  for (const page of siteSpec.pages) {
     const filename = routeToHtmlFile(page.route)
     const filePath = join(workspace, filename)
     if (!existsSync(filePath)) {
@@ -42,27 +43,41 @@ function getExactCloneStatus(workspace, siteSpec) {
       continue
     }
 
-    if (!page?.renderBlueprint?.bodyHtml) {
+    if (!page?.renderBlueprint?.bodyHtml || !page?.renderBlueprint?.originalHtmlDocument) {
       missingBlueprints.push(filename)
     }
   }
 
-  if (missingHtmlFiles.length) {
+  // Homepage must be ready
+  const homeFilename = 'index.html'
+  const homeFileMissing = missingHtmlFiles.includes(homeFilename)
+  const homeBlueprintMissing = missingBlueprints.includes(homeFilename)
+
+  if (homeFileMissing || homeBlueprintMissing) {
     return {
       ready: false,
-      reason: `Exact-clone export is waiting for the generated UI to finish for: ${missingHtmlFiles.join(', ')}.`,
+      degradedPages: [],
+      reason: `Exact-clone export is waiting for the homepage to be generated.`,
     }
   }
 
-  if (missingBlueprints.length) {
+  // Other pages missing = degraded but not blocking
+  const degradedPages = [
+    ...missingHtmlFiles.filter(f => f !== homeFilename),
+    ...missingBlueprints.filter(f => f !== homeFilename),
+  ]
+
+  if (degradedPages.length > 0) {
     return {
-      ready: false,
-      reason: `Exact-clone export is waiting to capture the generated UI for: ${missingBlueprints.join(', ')}.`,
+      ready: true,
+      degradedPages,
+      reason: `Export ready. ${degradedPages.length} page(s) will use section-based layout: ${degradedPages.join(', ')}.`,
     }
   }
 
   return {
     ready: true,
+    degradedPages: [],
     reason: 'All generated UI pages are captured and ready for exact-clone export.',
   }
 }
@@ -96,6 +111,7 @@ export function getSessionExportTargets(session) {
       ready,
       buildReady: siteSpec ? exactCloneStatus.ready : true,
       buildReason: siteSpec ? exactCloneStatus.reason : null,
+      degradedPages: siteSpec ? (exactCloneStatus.degradedPages || []) : [],
       generatedAt: targetMeta.generatedAt || null,
       fileCount: targetMeta.fileCount || 0,
       downloadPath: ready ? `/api/sessions/${session.id}/download/${target}` : null,
