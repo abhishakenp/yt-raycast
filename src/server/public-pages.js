@@ -20,6 +20,13 @@ const HOME_KEYWORDS = [
 ].join(', ')
 const OG_IMAGE_URL = `${SITE_URL}/og-image.png`
 
+function resolveSiteImageUrl(raw) {
+  const t = String(raw || '').trim()
+  if (!t) return ''
+  if (/^https?:\/\//i.test(t)) return t
+  return `${SITE_URL.replace(/\/+$/, '')}/${t.replace(/^\/+/, '')}`
+}
+
 function renderStructuredData(descriptionOverride) {
   const desc = descriptionOverride ?? HOME_DESCRIPTION
   return JSON.stringify([
@@ -124,8 +131,14 @@ function renderTopActions() {
 }
 
 export function renderHomePage(siteSettings = null) {
-  const pageTitle = siteSettings?.homeTitle?.trim() || HOME_TITLE
-  const pageDescription = siteSettings?.homeDescription?.trim() || HOME_DESCRIPTION
+  const pageTitle = HOME_TITLE
+  const pageDescription = HOME_DESCRIPTION
+  const ogImageAbsolute =
+    resolveSiteImageUrl(siteSettings?.ogImageUrl) || OG_IMAGE_URL
+  const heroSrc = resolveSiteImageUrl(siteSettings?.homeHeroImageUrl)
+  const heroBlock = heroSrc
+    ? `<div class="cms-home-hero"><img src="${escapeHtml(heroSrc)}" alt="" loading="lazy" decoding="async" /></div>`
+    : ''
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -133,6 +146,7 @@ export function renderHomePage(siteSettings = null) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="sf-home" content="ssr" />
     <title>${escapeHtml(pageTitle)}</title>
+    <meta name="sf-home-tab-title" content="${escapeHtml(HOME_TITLE)}" />
     <meta name="description" content="${escapeHtml(pageDescription)}" />
     <meta name="keywords" content="${escapeHtml(HOME_KEYWORDS)}" />
     <meta name="author" content="${escapeHtml(SITE_NAME)}" />
@@ -152,7 +166,7 @@ export function renderHomePage(siteSettings = null) {
     <meta property="og:url" content="${escapeHtml(SITE_URL)}" />
     <meta property="og:title" content="${escapeHtml(pageTitle)}" />
     <meta property="og:description" content="${escapeHtml(pageDescription)}" />
-    <meta property="og:image" content="${escapeHtml(OG_IMAGE_URL)}" />
+    <meta property="og:image" content="${escapeHtml(ogImageAbsolute)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Ship Fast homepage preview" />
@@ -161,7 +175,7 @@ export function renderHomePage(siteSettings = null) {
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
     <meta name="twitter:description" content="${escapeHtml(pageDescription)}" />
-    <meta name="twitter:image" content="${escapeHtml(OG_IMAGE_URL)}" />
+    <meta name="twitter:image" content="${escapeHtml(ogImageAbsolute)}" />
     <meta name="twitter:image:alt" content="Ship Fast homepage preview" />
     <script defer data-domain="${escapeHtml(PLAUSIBLE_DOMAIN)}" data-api="/api/event" src="/js/script.js"></script>
     <script type="application/ld+json">${renderStructuredData(pageDescription)}</script>
@@ -200,6 +214,7 @@ export function renderHomePage(siteSettings = null) {
     <div class="container">
       <h1 class="sr-only">${escapeHtml(SITE_NAME)} AI website generator</h1>
       ${renderLogo()}
+      ${heroBlock}
       <form id="prompt-form" class="input-group">
         <label class="sr-only" for="prompt-input">Describe the website you want to build</label>
         <div class="prompt-field">

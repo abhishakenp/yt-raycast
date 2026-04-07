@@ -188,6 +188,7 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
+- Semantic structure: use a single site <footer> only at the end of <body> (nav links, legal). For feature grids, pricing columns, or card rows use <article> or <div>, never <footer> as a grid cell or card wrapper.
 - Tailwind CSS via CDN, Google Fonts${mixedEnglish && scriptFontHint ? ` (load Inter + ${scriptFontHint} + a display font for headings)` : ' (load a body font + a display font for headings — not Inter-only)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
 - Dark theme: rich dark base (slate/zinc/neutral with subtle hue), not identical gray-950 everywhere; surfaces and borders should feel intentional.
 - Vanilla JS only. No frameworks.

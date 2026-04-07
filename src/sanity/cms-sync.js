@@ -1,4 +1,124 @@
+import { fetchSiteSettings } from './client.js'
 import { getSanityWriteClient } from './chat-sync.js'
+
+const SITE_SETTINGS_STRING_KEYS = [
+  'homeTitle',
+  'homeDescription',
+  'pricingPageTitle',
+  'pricingPageDescription',
+  'pricingHeroHeadline',
+  'shipChatHeadline',
+  'shipChatSubheadline',
+  'ogImageUrl',
+  'homeHeroImageUrl',
+]
+
+const buildSanityImageField = (assetRef, alt) => {
+  const ref = String(assetRef ?? '').trim()
+  if (!ref) return null
+  const o = {
+    _type: 'image',
+    asset: { _type: 'reference', _ref: ref },
+  }
+  const a = String(alt ?? '').trim()
+  if (a) o.alt = a
+  return o
+}
+
+export function pickSiteSettingsPatch(body) {
+  if (!body || typeof body !== 'object') return {}
+  const out = {}
+  for (const k of SITE_SETTINGS_STRING_KEYS) {
+    if (body[k] === undefined) continue
+    const v = body[k]
+    out[k] = typeof v === 'string' ? v : String(v ?? '')
+  }
+  return out
+}
+
+const URL_FIELD_KEYS = new Set(['ogImageUrl', 'homeHeroImageUrl'])
+
+function splitStringPatch(patch) {
+  const setFields = {}
+  const unsetFields = []
+  for (const [k, v] of Object.entries(patch)) {
+    if (URL_FIELD_KEYS.has(k)) {
+      const t = typeof v === 'string' ? v.trim() : ''
+      if (!t) unsetFields.push(k)
+      else setFields[k] = t
+    } else {
+      setFields[k] = v
+    }
+  }
+  return { setFields, unsetFields }
+}
+
+export async function applySiteSettingsPatch(body) {
+  const client = getSanityWriteClient()
+  if (!client) return { ok: false, error: 'Sanity write not configured' }
+  const stringPatch = pickSiteSettingsPatch(body)
+  const touchOg = body && 'ogImageAssetId' in body
+  const touchHero = body && 'homeHeroImageAssetId' in body
+  const ogAsset = touchOg ? String(body.ogImageAssetId ?? '').trim() : null
+  const heroAsset = touchHero ? String(body.homeHeroImageAssetId ?? '').trim() : null
+
+  if (!Object.keys(stringPatch).length && !touchOg && !touchHero) {
+    return { ok: false, error: 'No valid fields' }
+  }
+
+  const { setFields, unsetFields: uf } = splitStringPatch(stringPatch)
+  let unsetFields = uf
+
+  if (touchOg) {
+    if (ogAsset) {
+      const img = buildSanityImageField(ogAsset, body?.ogImageAlt)
+      if (img) {
+        setFields.ogImage = img
+        delete setFields.ogImageUrl
+        unsetFields.push('ogImageUrl')
+      }
+    } else {
+      unsetFields.push('ogImage')
+    }
+  }
+
+  if (touchHero) {
+    if (heroAsset) {
+      const img = buildSanityImageField(heroAsset, body?.homeHeroImageAlt)
+      if (img) {
+        setFields.homeHeroImage = img
+        delete setFields.homeHeroImageUrl
+        unsetFields.push('homeHeroImageUrl')
+      }
+    } else {
+      unsetFields.push('homeHeroImage')
+    }
+  }
+
+  unsetFields = [...new Set(unsetFields)]
+
+  if (!Object.keys(setFields).length && !unsetFields.length) {
+    return { ok: false, error: 'No valid fields' }
+  }
+
+  try {
+    const existing = await client.fetch(`*[_type == "siteSettings"] | order(_updatedAt desc) [0]{ _id }`)
+    const id = existing?._id
+    if (!id) {
+      if (!Object.keys(setFields).length) return { ok: false, error: 'No valid fields' }
+      await client.create({ _type: 'siteSettings', ...setFields })
+    } else {
+      let builder = client.patch(id)
+      if (Object.keys(setFields).length) builder = builder.set(setFields)
+      if (unsetFields.length) builder = builder.unset(unsetFields)
+      await builder.commit()
+    }
+    const siteSettings = await fetchSiteSettings()
+    return { ok: true, siteSettings }
+  } catch (e) {
+    return { ok: false, error: e?.message ? String(e.message) : 'Patch failed' }
+  }
+}
 
 const findHomeHero = (siteSpec) => {
   const pages = siteSpec?.pages
@@ -21,13 +141,14 @@ export async function syncSiteSettingsFromSiteSpec(siteSpec) {
   if (!client || !siteSpec) return
   const { headline, subheadline, description } = findHomeHero(siteSpec)
   const syncedAt = new Date().toISOString()
+  const projectTitle = String(siteSpec?.projectName ?? '').trim() || headline || ''
   const patch = {
     shipChatHeadline: headline || '',
     shipChatSubheadline: subheadline || '',
     shipChatSyncedAt: syncedAt,
+    homeTitle: projectTitle,
+    homeDescription: description || '',
   }
-  if (headline || siteSpec.projectName) patch.homeTitle = headline || siteSpec.projectName
-  if (description) patch.homeDescription = description
   try {
     const existing = await client.fetch(`*[_type == "siteSettings"] | order(_updatedAt desc) [0]{ _id }`)
     const id = existing?._id

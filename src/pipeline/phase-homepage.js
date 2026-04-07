@@ -105,12 +105,10 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
     </div>
   `
 
-  if (/<\/footer>/i.test(next)) {
-    next = next.replace(/<\/footer>/i, `${brandingHtml}\n</footer>`)
-  } else if (/<\/body>/i.test(next)) {
+  if (/<\/body>/i.test(next)) {
     next = next.replace(
       /<\/body>/i,
-      `<footer style="padding: 1.5rem 1rem 2.5rem; text-align: center;">${brandingHtml}</footer>\n</body>`,
+      `<footer class="sf-built-with-strip" style="padding: 1.5rem 1rem 2.5rem; text-align: center; clear: both; width: 100%; box-sizing: border-box;">${brandingHtml}</footer>\n</body>`,
     )
   } else {
     next = `${next}\n${brandingHtml}`
