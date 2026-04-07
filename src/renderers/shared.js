@@ -346,6 +346,11 @@ export default function ExactClonePage({ page }) {
       if (node.nodeType === Node.ELEMENT_NODE) node.dataset.sfCloneMounted = '1'
       document.body.insertBefore(node, insertionAnchor)
     })
+${mode === 'nextjs' ? `
+    // Remove SSR fallback div now that client-side clone is mounted
+    const ssrDiv = document.querySelector('[data-sf-clone-ssr]')
+    if (ssrDiv) ssrDiv.remove()
+` : ''}
 
     const isInsideClone = (target) =>
       cloneNodes.some(
@@ -381,7 +386,16 @@ export default function ExactClonePage({ page }) {
 
   if (!blueprint?.bodyHtml) return null
 
-  return <span ref={anchorRef} hidden data-sf-clone-anchor="1" />
+  return (
+    <>
+      <span ref={anchorRef} hidden data-sf-clone-anchor="1" />${mode === 'nextjs' ? `
+      <div
+        data-sf-clone-ssr="1"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: blueprint.bodyHtml }}
+      />` : ''}
+    </>
+  )
 }
 `
 }

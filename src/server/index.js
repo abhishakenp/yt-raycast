@@ -411,6 +411,7 @@ export async function startServer(sessionsDir) {
   startPublicWatch()
 
   const app = express()
+  app.disable('x-powered-by')
   app.set('trust proxy', true)
 
   const getSessionSubdomain = (req) => {
@@ -449,6 +450,12 @@ export async function startServer(sessionsDir) {
   })
 
   app.use(express.json({ limit: '15mb' }))
+  app.use((err, req, res, next) => {
+    if (err.type === 'entity.parse.failed') {
+      return res.status(400).json({ error: 'Invalid JSON in request body' })
+    }
+    next(err)
+  })
 
   // ─── Plausible Analytics Proxy ──────────────────────────
   const plausibleHost = 'https://plausible.liviogama.com'
@@ -1044,9 +1051,21 @@ export async function startServer(sessionsDir) {
 
   // ─── API: Recent public sessions gallery (no auth required) ──
   app.get('/api/sessions/recent', (req, res) => {
-    const all = getAllSessions().filter((s) => s.homepageReady && !s.isPrivate)
+    const all = getAllSessions()
+      .filter((s) => s.homepageReady && !s.isPrivate && s.cost > 0 && (s.previewUrl || s.deployUrl))
     const { limit, page } = parseGalleryPagination(req.query)
-    res.json(paginateGalleryList(all, page, limit))
+    const paginated = paginateGalleryList(all, page, limit)
+    paginated.items = paginated.items.map((s) => ({
+      id: s.id,
+      prompt: s.prompt ? s.prompt.substring(0, 100) : '',
+      deployUrl: s.deployUrl || '',
+      previewUrl: s.previewUrl || '',
+      generationTime: s.generationTime,
+      cost: s.cost,
+      createdAt: s.createdAt,
+      homepageReady: s.homepageReady,
+    }))
+    res.json(paginated)
   })
 
   // ─── API: Claim anonymous sessions ─────────────────────────
@@ -1695,6 +1714,16 @@ export async function startServer(sessionsDir) {
     })
 
     res.json({ ok: true, message: 'Generating alternative design...' })
+  })
+
+  // ─── Catch-all 404 handler ──────────────────────────────
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/preview/')) return next()
+    res.status(404)
+    if (req.path.startsWith('/api/')) {
+      return res.json({ error: 'Not found' })
+    }
+    res.redirect('/')
   })
 
   // ─── Preview: per-session workspace static files ──────────

@@ -22,7 +22,7 @@ function renderNextPackageJson(projectName, extraDependencies = {}) {
       version: '0.0.0',
       scripts: {
         dev: 'next dev',
-        build: 'next build',
+        build: 'NODE_ENV=production next build',
         start: 'next start',
       },
       dependencies: {
@@ -37,39 +37,177 @@ function renderNextPackageJson(projectName, extraDependencies = {}) {
   )
 }
 
-function renderSanityNextExportFiles() {
+function renderMedusaExportFiles() {
   return {
-    '.env.example': `NEXT_PUBLIC_SANITY_PROJECT_ID=
+    '.env.example.medusa': `# Medusa.js E-Commerce — optional, works without these
+MEDUSA_BACKEND_URL=http://localhost:9000
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
+`,
+    'lib/medusa.js': `import Medusa from '@medusajs/js-sdk'
+
+const backendUrl = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ''
+
+let sdk = null
+
+export function getMedusaSdk() {
+  if (!publishableKey) return null
+  if (!sdk) {
+    sdk = new Medusa({ baseUrl: backendUrl, publishableKey })
+  }
+  return sdk
+}
+
+export async function getProducts(params = {}) {
+  const client = getMedusaSdk()
+  if (!client) return []
+  try {
+    const { products } = await client.store.product.list(params)
+    return products || []
+  } catch {
+    return []
+  }
+}
+
+export async function getProductByHandle(handle) {
+  const client = getMedusaSdk()
+  if (!client || !handle) return null
+  try {
+    const { products } = await client.store.product.list({ handle })
+    return products?.[0] || null
+  } catch {
+    return null
+  }
+}
+
+export async function getCategories() {
+  const client = getMedusaSdk()
+  if (!client) return []
+  try {
+    const { product_categories } = await client.store.category.list()
+    return product_categories || []
+  } catch {
+    return []
+  }
+}
+`,
+  }
+}
+
+function renderCmsNextExportFiles(cmsType) {
+  const envFiles = {
+    sanity: `NEXT_PUBLIC_SANITY_PROJECT_ID=
 NEXT_PUBLIC_SANITY_DATASET=production
 NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
 SANITY_READ_TOKEN=
 `,
-    'lib/sanity.client.js': `import { createClient } from 'next-sanity'
+    contentful: `CONTENTFUL_SPACE_ID=
+CONTENTFUL_ACCESS_TOKEN=
+CONTENTFUL_ENVIRONMENT=master
+`,
+    strapi: `STRAPI_URL=http://localhost:1337
+STRAPI_API_TOKEN=
+`,
+  }
+
+  const clientFiles = {
+    sanity: `import { createClient } from 'next-sanity'
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || ''
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
 const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-01-01'
 
-export const client = createClient({
+const client = createClient({
   projectId,
   dataset,
   apiVersion,
   useCdn: true,
   ...(process.env.SANITY_READ_TOKEN ? { token: process.env.SANITY_READ_TOKEN } : {}),
 })
-`,
-    'app/blog/page.jsx': `import Link from 'next/link'
-import { client } from '../../lib/sanity.client'
 
-const POSTS_QUERY = \`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
-  "slug": slug.current,
-  title,
-  publishedAt,
-  excerpt
-}\`
+export async function fetchPosts() {
+  return client.fetch(\`*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+    "slug": slug.current, title, publishedAt, excerpt
+  }\`)
+}
+
+export async function fetchPostBySlug(slug) {
+  return client.fetch(
+    \`*[_type == "post" && slug.current == $slug][0]{
+      title, publishedAt, excerpt, body,
+      "authorName": author->name,
+      "categories": categories[]->title
+    }\`,
+    { slug },
+  )
+}
+`,
+    contentful: `const SPACE = process.env.CONTENTFUL_SPACE_ID || ''
+const TOKEN = process.env.CONTENTFUL_ACCESS_TOKEN || ''
+const ENV = process.env.CONTENTFUL_ENVIRONMENT || 'master'
+const BASE = \`https://cdn.contentful.com/spaces/\${SPACE}/environments/\${ENV}\`
+
+async function cfFetch(path, params = {}) {
+  const qs = new URLSearchParams({ access_token: TOKEN, ...params })
+  const res = await fetch(\`\${BASE}\${path}?\${qs}\`, { next: { revalidate: 60 } })
+  if (!res.ok) return null
+  return res.json()
+}
+
+export async function fetchPosts() {
+  const data = await cfFetch('/entries', { content_type: 'blogPost', order: '-fields.publishedAt' })
+  return (data?.items || []).map((i) => ({
+    slug: i.fields.slug, title: i.fields.title,
+    publishedAt: i.fields.publishedAt, excerpt: i.fields.excerpt || '',
+  }))
+}
+
+export async function fetchPostBySlug(slug) {
+  const data = await cfFetch('/entries', { content_type: 'blogPost', 'fields.slug': slug, limit: '1' })
+  if (!data?.items?.length) return null
+  const f = data.items[0].fields
+  return { title: f.title, publishedAt: f.publishedAt, excerpt: f.excerpt || '', body: f.body || null, authorName: f.authorName || null, categories: f.categories || [] }
+}
+`,
+    strapi: `const BASE = process.env.STRAPI_URL || 'http://localhost:1337'
+const TOKEN = process.env.STRAPI_API_TOKEN || ''
+
+async function strapiFetch(path) {
+  const res = await fetch(\`\${BASE}\${path}\`, {
+    headers: { Authorization: \`Bearer \${TOKEN}\` },
+    next: { revalidate: 60 },
+  })
+  if (!res.ok) return null
+  return res.json()
+}
+
+export async function fetchPosts() {
+  const data = await strapiFetch('/api/posts?populate=*&sort=publishedAt:desc')
+  return (data?.data || []).map((i) => {
+    const a = i.attributes || i
+    return { slug: a.slug, title: a.title, publishedAt: a.publishedAt, excerpt: a.excerpt || '' }
+  })
+}
+
+export async function fetchPostBySlug(slug) {
+  const data = await strapiFetch(\`/api/posts?filters[slug][$eq]=\${encodeURIComponent(slug)}&populate=*\`)
+  if (!data?.data?.length) return null
+  const a = data.data[0].attributes || data.data[0]
+  return { title: a.title, publishedAt: a.publishedAt, excerpt: a.excerpt || '', body: a.body || null, authorName: a.authorName || null, categories: [] }
+}
+`,
+  }
+
+  const usesPortableText = cmsType === 'sanity'
+
+  return {
+    '.env.example': envFiles[cmsType] || envFiles.sanity,
+    'lib/cms-client.js': clientFiles[cmsType] || clientFiles.sanity,
+    'app/blog/page.jsx': `import Link from 'next/link'
+import { fetchPosts } from '../../lib/cms-client'
 
 export default async function BlogIndexPage() {
-  const posts = await client.fetch(POSTS_QUERY)
+  const posts = await fetchPosts()
   return (
     <main className="container" style={{ padding: 'var(--spacing-section) 0' }}>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>Blog</h1>
@@ -90,21 +228,11 @@ export default async function BlogIndexPage() {
 }
 `,
     'app/blog/[slug]/page.jsx': `import Link from 'next/link'
-import { PortableText } from '@portabletext/react'
-import { notFound } from 'next/navigation'
-import { client } from '../../../lib/sanity.client'
-
-const POST_QUERY = \`*[_type == "post" && slug.current == $slug][0]{
-  title,
-  publishedAt,
-  excerpt,
-  body,
-  "authorName": author->name,
-  "categories": categories[]->title
-}\`
+${usesPortableText ? "import { PortableText } from '@portabletext/react'\n" : ''}import { notFound } from 'next/navigation'
+import { fetchPostBySlug } from '../../../lib/cms-client'
 
 export default async function BlogPostPage({ params }) {
-  const post = await client.fetch(POST_QUERY, { slug: params.slug })
+  const post = await fetchPostBySlug(params.slug)
   if (!post) notFound()
   return (
     <article className="container" style={{ padding: 'var(--spacing-section) 0', maxWidth: '48rem' }}>
@@ -115,7 +243,7 @@ export default async function BlogPostPage({ params }) {
       </p>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-h1)' }}>{post.title}</h1>
       {post.authorName ? <p style={{ color: 'var(--color-muted)' }}>{post.authorName}</p> : null}
-      {post.body ? <PortableText value={post.body} /> : null}
+      ${usesPortableText ? '{post.body ? <PortableText value={post.body} /> : null}' : '{post.body ? <div dangerouslySetInnerHTML={{ __html: post.body }} /> : null}'}
     </article>
   )
 }
@@ -468,14 +596,18 @@ export default function GeneratedPage() {
 }
 
 export function renderNextProject(siteSpec) {
-  const cmsSanity = siteSpec.exportOptions?.cms === 'sanity'
-  const sanityDependencies = cmsSanity
-    ? {
-        'next-sanity': '^9.8.27',
-        '@sanity/client': '^7.20.0',
-        '@portabletext/react': '^3.2.0',
-      }
-    : {}
+  const cmsType = (siteSpec.exportOptions?.cms || '').toLowerCase()
+  const isEcommerce = siteSpec.siteType === 'ecommerce'
+  const cmsDependencies = {
+    ...(cmsType === 'sanity'
+      ? {
+          'next-sanity': '^9.8.27',
+          '@sanity/client': '^7.20.0',
+          '@portabletext/react': '^3.2.0',
+        }
+      : {}),
+    ...(isEcommerce ? { '@medusajs/js-sdk': '^2.13.5' } : {}),
+  }
   const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
   const siteSeo = resolvePageSeo(siteSpec, homePage)
   const sitemapEntries = buildSitemapEntries(siteSpec)
@@ -483,13 +615,23 @@ export function renderNextProject(siteSpec) {
     ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
     : { rules: [{ userAgent: '*', allow: '/' }] }
   const files = {
-    'package.json': renderNextPackageJson(siteSpec.projectName, sanityDependencies),
+    'package.json': renderNextPackageJson(siteSpec.projectName, cmsDependencies),
     'next.config.mjs': `/** @type {import('next').NextConfig} */
 const nextConfig = {}
 
 export default nextConfig
 `,
-    'app/layout.jsx': `import './globals.css'
+    'app/layout.jsx': (() => {
+      const typo = siteSpec.theme?.typography || {}
+      const fontFamilies = [typo.headingFont, typo.bodyFont].filter(Boolean)
+      const uniqueFonts = [...new Set(fontFamilies)]
+      const googleFontsLink = uniqueFonts.length > 0
+        ? `\n      <head>\n        <link rel="preconnect" href="https://fonts.googleapis.com" />\n        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />\n${uniqueFonts.map(f => {
+            const family = f.replace(/\s+/g, '+')
+            return `        <link href="https://fonts.googleapis.com/css2?family=${family}:wght@300;400;500;600;700&display=swap" rel="stylesheet" />`
+          }).join('\n')}\n      </head>`
+        : ''
+      return `import './globals.css'
 
 export const metadata = {
   title: ${JSON.stringify(siteSpec.seo?.title || siteSpec.projectName)},
@@ -500,12 +642,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang=${JSON.stringify(siteSeo.htmlLang)} suppressHydrationWarning>
+    <html lang=${JSON.stringify(siteSeo.htmlLang)} suppressHydrationWarning>${googleFontsLink}
       <body suppressHydrationWarning>{children}</body>
     </html>
   )
 }
-`,
+`
+    })(),
     'app/globals.css': buildGlobalCss(siteSpec.theme),
     'app/robots.js': `export default function robots() {
   return ${serializeModule(robotsConfig)}
@@ -576,8 +719,12 @@ export default function SmartLink({ href = '#', children, ...props }) {
     files[`${dir}/page.jsx`] = renderNextPageModule(siteSpec, page, segments.length)
   }
 
-  if (cmsSanity) {
-    Object.assign(files, renderSanityNextExportFiles())
+  if (cmsType && ['sanity', 'contentful', 'strapi'].includes(cmsType)) {
+    Object.assign(files, renderCmsNextExportFiles(cmsType))
+  }
+
+  if (isEcommerce) {
+    Object.assign(files, renderMedusaExportFiles())
   }
 
   return { files }
