@@ -1,6 +1,7 @@
 {
   "name": "ship-fast",
   "version": "1.0.0",
+  "packageManager": "bun@1.2.5",
   "type": "module",
   "main": "src/index.js",
   "bin": {
