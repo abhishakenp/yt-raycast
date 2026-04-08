@@ -1325,6 +1325,10 @@
         const fab = document.getElementById('preview-chat-fab')
         const chatPanelEl = document.getElementById('preview-chat-panel')
         const showCms = chatPanelMode === 'cms'
+        const browserContent = document.querySelector('.browser-content')
+        const chatDock = document.getElementById('preview-chat-dock')
+        if (browserContent) browserContent.classList.toggle('browser-content--cms-sidebar', showCms)
+        if (chatDock) chatDock.classList.toggle('preview-chat-dock--cms-sidebar', showCms)
         if (cms) cms.hidden = !showCms
         if (llm) llm.hidden = showCms
         if (title) title.textContent = showCms ? 'Site content' : 'Chat'

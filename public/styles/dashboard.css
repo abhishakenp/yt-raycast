@@ -2460,6 +2460,68 @@ body.debug-mode .debug-panel {
 .preview-chat-dock > * {
   pointer-events: auto;
 }
+.browser-content--cms-sidebar {
+  align-items: stretch;
+}
+.browser-content--cms-sidebar .preview-stage {
+  min-height: 0;
+}
+.preview-chat-dock--cms-sidebar {
+  position: relative;
+  inset: auto;
+  align-self: stretch;
+  flex: 0 0 clamp(300px, 38vw, 440px);
+  width: min(440px, 100%);
+  max-width: 100%;
+  height: auto;
+  min-height: 0;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 10px;
+  padding: 0 0 8px;
+  background: linear-gradient(180deg, rgba(14, 12, 22, 0.97) 0%, #09080f 100%);
+  border-left: 1px solid rgba(124, 58, 237, 0.22);
+  box-shadow: -8px 0 28px rgba(0, 0, 0, 0.38);
+  pointer-events: auto;
+}
+.browser-content--cms-sidebar .preview-chat-panel {
+  width: 100%;
+  margin: 0;
+}
+.browser-content--cms-sidebar .preview-chat-panel--cms {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid rgba(45, 42, 62, 0.9);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.browser-content--cms-sidebar .preview-chat-cms-block {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+}
+.browser-content--cms-sidebar .preview-chat-cms-studio-frame {
+  min-height: 0;
+}
+.browser-content--cms-sidebar .preview-chat-fab {
+  align-self: stretch;
+  margin: 0 12px 8px;
+  margin-top: auto;
+  border-radius: 12px;
+}
+@media (max-width: 720px) {
+  .browser-content--cms-sidebar .preview-chat-dock--cms-sidebar {
+    flex: 1 1 auto;
+    min-height: min(50vh, 520px);
+    border-left: none;
+    border-top: 1px solid rgba(124, 58, 237, 0.22);
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.38);
+  }
+}
 .preview-chat-fab {
   flex-shrink: 0;
   padding: 11px 18px;
@@ -2508,8 +2570,8 @@ body.debug-mode .debug-panel {
   display: none !important;
 }
 .preview-chat-panel--cms {
-  height: min(640px, 72vh);
-  min-height: 420px;
+  height: min(820px, 86vh);
+  min-height: 480px;
 }
 .preview-chat-panel--cms > .preview-chat-cms-block {
   flex: 1;
@@ -2781,7 +2843,7 @@ body.debug-mode .debug-panel {
 
 .preview-chat-cms-block {
   padding: 0 12px 12px;
-  max-height: min(78vh, 680px);
+  max-height: min(88vh, 860px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2920,7 +2982,7 @@ body.debug-mode .debug-panel {
 .preview-chat-cms-studio-frame {
   width: 100%;
   flex: 1;
-  min-height: min(58vh, 520px);
+  min-height: min(64vh, 620px);
   border: 1px solid rgba(72, 67, 107, 0.85);
   border-radius: 12px;
   background: #0c0a12;
