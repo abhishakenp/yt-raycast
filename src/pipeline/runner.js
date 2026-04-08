@@ -8,6 +8,7 @@ import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
 import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
 import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
+import { shouldReplaceLlmHomepageWithRenderer } from './homepage-substance.js'
 import { injectLLMHomepageSwiper } from './homepage-swiper.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
@@ -352,6 +353,12 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     const withSwiper = injectLLMHomepageSwiper(homepage, siteSpec)
     if (withSwiper !== homepage) {
       homepage = withSwiper
+      writeFile(workspace, 'index.html', homepage)
+    }
+    if (siteSpec?.pages?.length && shouldReplaceLlmHomepageWithRenderer(homepage, siteSpec)) {
+      _log('  homepage: LLM page body looks too sparse; rendering homepage from site spec instead')
+      const recovered = renderPreviewToWorkspace(siteSpec, workspace)
+      homepage = recovered.files['index.html'] ?? homepage
       writeFile(workspace, 'index.html', homepage)
     }
   } else if (siteSpec) {
