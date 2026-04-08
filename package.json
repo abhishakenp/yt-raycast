@@ -14,6 +14,7 @@
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write \"src/**/*.js\"",
     "verify:site-spec": "node scripts/vemrify-site-spec.js",
+    "verify:swiper-policy": "node scripts/verify-swiper-policy.mjs",
     "studio:build": "cd studio && bun --env-file=../.env.local --env-file=../.env run build"
   },
   "dependencies": {
