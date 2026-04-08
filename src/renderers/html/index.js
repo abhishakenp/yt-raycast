@@ -136,6 +136,8 @@ function applySiteCssHrefToHtml(html, siteCssHref) {
 
 const SWIPER_CDN_CSS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css'
 const SWIPER_CDN_JS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js'
+const SPLIDE_CDN_CSS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css'
+const SPLIDE_CDN_JS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js'
 
 function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwiper = false) {
   const sections = (page.sections || []).map((section) => renderSectionHtml(section, siteSpec)).join('\n')
@@ -143,9 +145,11 @@ function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwip
   const indianFontMarkup = getLanguageFontMarkup(siteSpec._indiaMode)
   const cssHref = escapeHtml(siteCssHref)
   const motionHref = escapeHtml(siteMotionHref)
-  const swiperHead = useSwiper ? `    <link rel="stylesheet" href="${escapeHtml(SWIPER_CDN_CSS)}" />\n` : ''
+  const swiperHead = useSwiper
+    ? `    <link rel="stylesheet" href="${escapeHtml(SWIPER_CDN_CSS)}" />\n    <link rel="stylesheet" href="${escapeHtml(SPLIDE_CDN_CSS)}" />\n`
+    : ''
   const swiperBeforeSiteJs = useSwiper
-    ? `    <script src="${escapeHtml(SWIPER_CDN_JS)}" defer></script>\n`
+    ? `    <script src="${escapeHtml(SWIPER_CDN_JS)}" defer></script>\n    <script src="${escapeHtml(SPLIDE_CDN_JS)}" defer></script>\n`
     : ''
 
   return `<!doctype html>

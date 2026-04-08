@@ -9,8 +9,9 @@ import { brandProfilePromptBlock } from './brand-profile.js'
 
 function imageGuide(imageHints) {
   const photos = imageHints?.photos ?? []
-  if (!photos.length) {
-    return 'No curated verified images are available. Do not insert unrelated stock photos. If a section still needs visual weight, use gradients, patterns, icons, framed typography, or reuse existing layout treatments instead of random images.'
+  const videos = imageHints?.videos ?? []
+  if (!photos.length && !videos.length) {
+    return 'No verified Pexels/Unsplash URLs are available (API keys may be unset). Do not invent image or video URLs or use placeholder domains. If a section needs visual weight, use gradients, patterns, icons, or typography only — never fake stock URLs.'
   }
 
   const lines = photos
@@ -24,7 +25,21 @@ function imageGuide(imageHints) {
       return `- ${index + 1}. ${hint}: ${photo.url}`
     })
     .join('\n')
-  return `Use these verified image URLs first:\n${lines}\nReuse the closest matching verified URL if multiple cards need similar imagery. If no line is a good fit, avoid adding a random photo and use a non-photo visual treatment instead.`
+  const videoLines = videos
+    .slice(0, 6)
+    .map((v, index) => {
+      const hint = String(
+        v.query && v.alt && v.alt !== v.query ? `[${v.query}] ${v.alt}` : v.alt || v.query,
+      ).slice(0, 120)
+      const poster = v.posterUrl ? ` | poster: ${v.posterUrl}` : ''
+      return `- ${index + 1}. ${hint}\n  mp4: ${v.url}${poster}`
+    })
+    .join('\n')
+  const imgBlock = photos.length ? `Use these verified image URLs first:\n${lines}` : ''
+  const vidBlock = videos.length
+    ? `${photos.length ? '\n\n' : ''}Verified Pexels videos (hero/background: <video muted loop playsinline> + <source type="video/mp4">):\n${videoLines}`
+    : ''
+  return `${imgBlock}${vidBlock}\n\nReuse the closest matching verified URL when multiple blocks need similar media. If no line fits, use a non-photo visual treatment instead of inventing URLs.`
 }
 
 export function pagePrompt(

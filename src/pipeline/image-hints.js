@@ -1,11 +1,15 @@
 import { PEXELS_API_KEY, UNSPLASH_ACCESS_KEY } from '../config.js'
 
 const PEXELS_API_URL = 'https://api.pexels.com/v1/search'
+const PEXELS_VIDEOS_API_URL = 'https://api.pexels.com/v1/videos/search'
 const UNSPLASH_API_URL = 'https://api.unsplash.com/search/photos'
 const MAX_REQUESTS = 6
 const MAX_REQUESTS_WITH_CTX = 8
 const FETCH_PAGE_SIZE = 18
 const KEEP_PER_QUERY = 3
+const KEEP_VIDEOS_PER_QUERY = 1
+const MAX_VIDEO_QUERIES = 4
+const MAX_VIDEOS_TOTAL = 6
 const REQUEST_TIMEOUT_MS = 5000
 
 const BAD_ALT_PET_RE =
@@ -56,8 +60,10 @@ const PRODUCT_PHOTO_RE =
 const LIFESTYLE_PHOTO_RE =
   /\b(friend|friends|family|couple|person|people|holding|sharing|lifestyle|portrait|outdoor|smiling)\b/i
 
-const STOCK_IMAGE_URL_RE =
-  /(images\.pexels\.com|images\.unsplash\.com|source\.unsplash\.com|picsum\.photos)/i
+const TRANSPARENT_PIXEL_GIF =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+const NEUTRAL_IMG_FALLBACK_STYLE =
+  'background:linear-gradient(to bottom right,rgb(15 23 42),rgb(30 41 59));object-fit:cover;width:100%'
 
 const STOP_WORDS = new Set([
   'a',
@@ -656,6 +662,19 @@ function themedQueries(prompt) {
       'cat rescue shelter adoption',
     ]
   }
+  if (
+    /\b(jewelry|jewellery|ornaments?|tribal\s+craft|925\s+silver|sterling\s+silver|handcrafted\s+jewelry|bangles|necklace\s+gold)\b/.test(
+      p,
+    )
+  ) {
+    return uniqueValues([
+      'indian traditional gold silver jewelry',
+      'handcrafted silver jewelry editorial',
+      'ethnic jewelry woman portrait',
+      'indian festival jewelry necklace',
+      'artisan jewelry workshop detail',
+    ]).slice(0, MAX_REQUESTS)
+  }
   if (APPLE_STORE_RE.test(p)) {
     return [
       'macbook pro laptop minimal aluminum',
@@ -1070,25 +1089,128 @@ async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
     .slice(0, keep)
 }
 
-function toPromptBlock(hits) {
-  if (!Array.isArray(hits) || hits.length === 0) return ''
-  return `\nVERIFIED CURATED IMAGES:\n${hits
-    .slice(0, 8)
-    .map((item, index) => {
-      const hint = descriptivePhotoHint(item).slice(0, 140)
-      return `- ${index + 1}. ${hint}: ${item.url}`
+function pickBestVideoFile(files) {
+  if (!Array.isArray(files) || !files.length) return null
+  const mp4 = files.filter((f) => String(f?.file_type || '').includes('mp4') && f?.link)
+  if (!mp4.length) return null
+  const landscape = mp4.filter((f) => Number(f.width) >= Number(f.height))
+  const pool = landscape.length ? landscape : mp4
+  const hd = pool.filter((f) => f.quality === 'hd')
+  const tier = hd.length ? hd : pool
+  return [...tier].sort((a, b) => Number(b.width) - Number(a.width))[0] || null
+}
+
+async function fetchPexelsVideos(query, subjectKey, keep = KEEP_VIDEOS_PER_QUERY) {
+  if (!query || !PEXELS_API_KEY || keep <= 0) return []
+  const url = new URL(PEXELS_VIDEOS_API_URL)
+  url.searchParams.set('query', query)
+  url.searchParams.set('per_page', '12')
+  url.searchParams.set('orientation', 'landscape')
+  url.searchParams.set('size', 'medium')
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => {
+    controller.abort()
+  }, REQUEST_TIMEOUT_MS)
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: PEXELS_API_KEY,
+      },
+      signal: controller.signal,
     })
-    .join('\n')}`
+
+    if (!res.ok) return []
+    const payload = await res.json()
+    const out = []
+    for (const [sourceRank, video] of (payload.videos || []).entries()) {
+      const file = pickBestVideoFile(video?.video_files)
+      if (!file?.link) continue
+      const candidate = {
+        kind: 'video',
+        provider: 'pexels',
+        query,
+        id: String(video.id),
+        sourceRank,
+        url: file.link,
+        rawUrl: file.link,
+        posterUrl: typeof video.image === 'string' ? video.image : '',
+        alt: query,
+        matchText: query,
+      }
+      if (!isUsablePhoto(candidate, subjectKey) || !hasRelevantQueryMatch(candidate)) continue
+      out.push(candidate)
+      if (out.length >= keep) break
+    }
+    return out
+  } catch {
+    return []
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+function toMediaPromptBlock(photos, videos) {
+  const lines = []
+  if (Array.isArray(photos) && photos.length) {
+    lines.push(
+      `VERIFIED IMAGES:\n${photos
+        .slice(0, 8)
+        .map((item, index) => {
+          const hint = descriptivePhotoHint(item).slice(0, 140)
+          return `- ${index + 1}. ${hint}: ${item.url}`
+        })
+        .join('\n')}`,
+    )
+  }
+  if (Array.isArray(videos) && videos.length) {
+    lines.push(
+      `VERIFIED VIDEOS (use one <video muted loop playsinline> per slot; single <source src="MP4" type="video/mp4">; poster attribute when listed):\n${videos
+        .slice(0, MAX_VIDEOS_TOTAL)
+        .map((item, index) => {
+          const hint = descriptivePhotoHint(item).slice(0, 120)
+          const poster = item.posterUrl ? `\n  poster: ${item.posterUrl}` : ''
+          return `- ${index + 1}. ${hint}\n  mp4: ${item.url}${poster}`
+        })
+        .join('\n')}`,
+    )
+  }
+  if (!lines.length) return ''
+  return `\n${lines.join('\n\n')}\n`
+}
+
+function mergeVideosLists(va = [], vb = []) {
+  const merged = []
+  const seen = new Set()
+  for (const v of [...vb, ...va]) {
+    if (!v?.url || seen.has(v.url)) continue
+    seen.add(v.url)
+    merged.push(v)
+    if (merged.length >= 8) break
+  }
+  return merged
 }
 
 export function mergeImageHintLists(primary, secondary) {
   const a = primary?.photos ?? []
   const b = secondary?.photos ?? []
+  const va = primary?.videos ?? []
+  const vb = secondary?.videos ?? []
+
   if (!b.length) {
-    return a.length ? primary : { photos: [], promptBlock: '' }
+    if (!a.length) {
+      const vOnly = mergeVideosLists(va, [])
+      return vOnly.length
+        ? { photos: [], videos: vOnly, promptBlock: toMediaPromptBlock([], vOnly) }
+        : { photos: [], videos: [], promptBlock: '' }
+    }
+    const vm = mergeVideosLists(va, [])
+    return { photos: a, videos: vm, promptBlock: toMediaPromptBlock(a, vm) }
   }
   if (!a.length) {
-    return { photos: b, promptBlock: toPromptBlock(b) }
+    const vm = mergeVideosLists([], vb)
+    return { photos: b, videos: vm, promptBlock: toMediaPromptBlock(b, vm) }
   }
   const seen = new Set()
   const merged = []
@@ -1098,7 +1220,8 @@ export function mergeImageHintLists(primary, secondary) {
     merged.push(photo)
     if (merged.length >= 18) break
   }
-  return { photos: merged, promptBlock: toPromptBlock(merged) }
+  const vm = mergeVideosLists(va, vb)
+  return { photos: merged, videos: vm, promptBlock: toMediaPromptBlock(merged, vm) }
 }
 
 function chooseBestPhotoForLabel(label, photos, usage) {
@@ -1118,6 +1241,103 @@ function chooseBestPhotoForLabel(label, photos, usage) {
   return bestScore > 0 ? best : null
 }
 
+function pickPhotoForImg(label, photos, usage) {
+  if (!photos.length) return null
+  const best = chooseBestPhotoForLabel(label, photos, usage)
+  if (best) return best
+  let minU = Infinity
+  let pick = photos[0]
+  for (const photo of photos) {
+    const u = usage.get(photo.url) || 0
+    if (u < minU) {
+      minU = u
+      pick = photo
+    }
+  }
+  return pick
+}
+
+function isStrictPexelsOrUnsplashUrl(url = '') {
+  const u = String(url || '').trim()
+  if (!u) return false
+  if (u.startsWith('data:image/')) return true
+  try {
+    const parsed = new URL(u)
+    if (parsed.protocol !== 'https:') return false
+    if (parsed.hostname === 'images.pexels.com') return /\/photos\/\d+\//.test(parsed.pathname)
+    if (parsed.hostname === 'images.unsplash.com') return true
+    return false
+  } catch {
+    return false
+  }
+}
+
+function extractVideoLabel(block) {
+  const open = String(block).match(/^<video\b[^>]*/i)?.[0] || ''
+  const aria = extractAttribute(open, 'aria-label')
+  if (aria) return aria
+  const title = extractAttribute(open, 'title')
+  if (title) return title
+  const dataAlt = extractAttribute(open, 'data-alt')
+  if (dataAlt) return dataAlt
+  return ''
+}
+
+function replaceVideoMp4Url(block, url) {
+  let next = block
+  if (/<source/i.test(next)) {
+    let first = true
+    next = next.replace(/<source\b[^>]*>/gi, (st) => {
+      if (!first) return st
+      first = false
+      if (!/\bsrc\s*=/i.test(st)) return st
+      return st.replace(/\bsrc\s*=\s*["'][^"']*["']/i, `src="${url}"`)
+    })
+    return next
+  }
+  const open = next.match(/^<video\b[^>]*/i)?.[0] || ''
+  if (/\bsrc\s*=/i.test(open)) {
+    return next.replace(/^<video\b[^>]*/i, (tag) =>
+      tag.replace(/\bsrc\s*=\s*["'][^"']*["']/i, `src="${url}"`),
+    )
+  }
+  return next.replace(/^<video\b[^>]*>/i, (tag) => `${tag}<source src="${url}" type="video/mp4">`)
+}
+
+function applyVideoPoster(block, posterUrl) {
+  if (!posterUrl) return block
+  const open = block.match(/^<video\b[^>]*/i)?.[0] || ''
+  if (/\bposter\s*=/i.test(open)) {
+    return block.replace(/\bposter\s*=\s*["'][^"']*["']/i, `poster="${posterUrl}"`)
+  }
+  return block.replace(/^<video\b/i, `<video poster="${posterUrl}"`)
+}
+
+function enforceVerifiedVideoElements(html, videos, usage) {
+  if (!videos.length) return html
+  return html.replace(/<video\b[\s\S]*?<\/video>/gi, (block) => {
+    if (/data-sf-skip-video/i.test(block)) return block
+    const open = block.match(/^<video\b[^>]*/i)?.[0] || ''
+    let label = extractVideoLabel(block)
+    if (!label) {
+      const poster = extractAttribute(open, 'poster')
+      if (poster) label = poster
+    }
+    const v = pickPhotoForImg(label, videos, usage)
+    if (!v) return block
+    usage.set(v.url, (usage.get(v.url) || 0) + 1)
+    let next = replaceVideoMp4Url(block, v.url)
+    next = applyVideoPoster(next, v.posterUrl)
+    return next
+  })
+}
+
+function stripSrcsetFromTag(tag) {
+  return tag
+    .replace(/\s+srcset\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/\s+sizes\s*=\s*["'][^"']*["']/gi, '')
+}
+
 function replaceAttributeValue(tag, attr, value) {
   const pattern = new RegExp(`(${attr}\\s*=\\s*["'])[^"']*(["'])`, 'i')
   return tag.replace(pattern, `$1${value}$2`)
@@ -1128,53 +1348,85 @@ function extractAttribute(tag, attr) {
   return match ? match[1] : ''
 }
 
-function shouldReplaceStockUrl(url = '') {
-  return STOCK_IMAGE_URL_RE.test(String(url || ''))
+function setImgSrcAttribute(tag, value) {
+  if (/\bsrc\s*=/i.test(tag)) return replaceAttributeValue(tag, 'src', value)
+  return tag.replace(/<img\b/i, `<img src="${value}" `)
 }
 
-function realignImgTags(html, photos, usage) {
+function isLikelyLogoTag(tag) {
+  const cls = extractAttribute(tag, 'class')
+  const alt = extractAttribute(tag, 'alt')
+  if (/\blogo\b/i.test(alt) || /\blogo\b|brand-mark|navbar-brand|site-logo|footer-brand/i.test(cls))
+    return true
+  const w = extractAttribute(tag, 'width')
+  const h = extractAttribute(tag, 'height')
+  if (w && h && Number(w) <= 56 && Number(h) <= 56) return true
+  return false
+}
+
+function enforceVerifiedPhotoSources(html, photos, usage) {
   return html.replace(/<img\b[^>]*>/gi, (tag) => {
-    const src = extractAttribute(tag, 'src')
+    if (isLikelyLogoTag(tag)) return tag
     const alt = extractAttribute(tag, 'alt')
-    if (!src || !alt || !shouldReplaceStockUrl(src)) return tag
+    const photo = pickPhotoForImg(alt, photos, usage)
+    if (!photo) return stripSrcsetFromTag(tag)
+    usage.set(photo.url, (usage.get(photo.url) || 0) + 1)
+    const out = setImgSrcAttribute(tag, photo.url)
+    return stripSrcsetFromTag(out)
+  })
+}
 
-    const best = chooseBestPhotoForLabel(alt, photos, usage)
-    if (!best || best.url === src) return tag
-
-    usage.set(best.url, (usage.get(best.url) || 0) + 1)
-    return replaceAttributeValue(tag, 'src', best.url)
+function neutralizeNonStockImages(html) {
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    if (isLikelyLogoTag(tag)) return tag
+    const src = extractAttribute(tag, 'src')
+    if (isStrictPexelsOrUnsplashUrl(src)) return tag
+    let out = setImgSrcAttribute(tag, TRANSPARENT_PIXEL_GIF)
+    out = stripSrcsetFromTag(out)
+    if (!/\bstyle\s*=/i.test(out)) {
+      out = out.replace(/<img/i, `<img style="${NEUTRAL_IMG_FALLBACK_STYLE}"`)
+    } else {
+      out = out.replace(/\bstyle\s*=\s*["']([^"']*)["']/i, (m, st) => `style="${st};${NEUTRAL_IMG_FALLBACK_STYLE}"`)
+    }
+    return out
   })
 }
 
 function realignObjectImageUrls(html, photos, usage) {
+  if (!photos.length) return html
   const pattern =
     /((?:"?(?:name|title)"?)\s*:\s*["'`])([^"'`]+)(["'`][\s\S]{0,240}?(?:"?image"?)\s*:\s*["'`])([^"'`]+)(["'`])/gi
 
-  let next = html
-  next = next.replace(pattern, (match, prefix, label, middle, currentUrl, suffix) => {
-    if (!shouldReplaceStockUrl(currentUrl)) return match
-    const best = chooseBestPhotoForLabel(label, photos, usage)
+  return html.replace(pattern, (match, prefix, label, middle, currentUrl, suffix) => {
+    const best = pickPhotoForImg(label, photos, usage)
     if (!best || best.url === currentUrl) return match
 
     usage.set(best.url, (usage.get(best.url) || 0) + 1)
     return `${prefix}${label}${middle}${best.url}${suffix}`
   })
-
-  return next
 }
 
 export function alignGeneratedImagesToContext(html, imageHints = null) {
   const photos = imageHints?.photos ?? []
-  if (!html || typeof html !== 'string' || !photos.length) return html
+  const videos = imageHints?.videos ?? []
+  if (!html || typeof html !== 'string') return html
 
   const usage = new Map()
-  let next = realignImgTags(html, photos, usage)
-  next = realignObjectImageUrls(next, photos, usage)
+  let next = html
+  if (photos.length) {
+    next = enforceVerifiedPhotoSources(next, photos, usage)
+    next = realignObjectImageUrls(next, photos, usage)
+  } else {
+    next = neutralizeNonStockImages(next)
+  }
+  if (videos.length) {
+    next = enforceVerifiedVideoElements(next, videos, usage)
+  }
   return next
 }
 
 export async function resolvePexelsImageHints(hintsInput = null) {
-  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return { photos: [], promptBlock: '' }
+  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return { photos: [], videos: [], promptBlock: '' }
 
   const prompt = hintsInput?.prompt ?? ''
   const hasRichCtx =
@@ -1192,11 +1444,19 @@ export async function resolvePexelsImageHints(hintsInput = null) {
     siteSpec: hintsInput?.siteSpec,
     maxQueries,
   })
-  if (!queries.length) return { photos: [], promptBlock: '' }
+  if (!queries.length) return { photos: [], videos: [], promptBlock: '' }
 
   const subjectKey = subjectKeyFromPrompt(prompt)
 
-  const results = await Promise.all(queries.map((query) => fetchPhotos(query, subjectKey)))
+  const videoQueries = queries.slice(0, MAX_VIDEO_QUERIES)
+  const [results, videoLists] = await Promise.all([
+    Promise.all(queries.map((query) => fetchPhotos(query, subjectKey))),
+    PEXELS_API_KEY && videoQueries.length
+      ? Promise.all(
+          videoQueries.map((query) => fetchPexelsVideos(query, subjectKey, KEEP_VIDEOS_PER_QUERY)),
+        )
+      : Promise.resolve([]),
+  ])
   const seen = new Set()
   const photos = []
 
@@ -1208,9 +1468,20 @@ export async function resolvePexelsImageHints(hintsInput = null) {
       photos.push(photo)
     }
   }
+  const seenV = new Set()
+  const videos = []
+  for (const list of videoLists) {
+    for (const item of list || []) {
+      if (videos.length >= MAX_VIDEOS_TOTAL) break
+      if (seenV.has(item.url)) continue
+      seenV.add(item.url)
+      videos.push(item)
+    }
+  }
 
   return {
     photos,
-    promptBlock: toPromptBlock(photos),
+    videos,
+    promptBlock: toMediaPromptBlock(photos, videos),
   }
 }

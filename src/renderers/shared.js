@@ -1413,6 +1413,31 @@ export function buildHtmlRuntimeScript(includeSwiper = false) {
     })
   }`
     : ''
+  const splideInit = includeSwiper
+    ? `
+  if (typeof Splide !== 'undefined') {
+    const prm =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    document.querySelectorAll('.splide[data-sf-splide]').forEach((root) => {
+      if (root.getAttribute('data-sf-splide-mounted')) return
+      const slides = root.querySelectorAll('.splide__slide')
+      const n = slides.length
+      if (!n) return
+      root.setAttribute('data-sf-splide-mounted', '1')
+      new Splide(root, {
+        type: n > 2 ? 'loop' : 'slide',
+        perPage: Math.min(3, n),
+        gap: '1rem',
+        pagination: true,
+        arrows: n > 1,
+        rewind: true,
+        speed: prm ? 0 : 480,
+        breakpoints: { 640: { perPage: Math.min(2, n) }, 1024: { perPage: Math.min(3, n) } },
+      }).mount()
+    })
+  }`
+    : ''
   return `
 document.addEventListener('click', (event) => {
   const navToggle = event.target.closest('[data-mobile-nav-toggle]')
@@ -1555,7 +1580,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { threshold: 0.08 },
     )
     io.observe(el)
-  })${swiperInit}
+  })${swiperInit}${splideInit}
 })
 
 document.querySelectorAll('[data-demo-form]').forEach((form) => {

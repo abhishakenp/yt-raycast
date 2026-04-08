@@ -8,6 +8,7 @@ import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
 import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
 import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
+import { injectLLMHomepageSwiper } from './homepage-swiper.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
 import { formatRunAllReport, formatEditReport } from './report.js'
@@ -348,6 +349,11 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   if (homepage && designBrief) {
     homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
     if (siteSpec) writeNextAppToWorkspace(siteSpec, workspace)
+    const withSwiper = injectLLMHomepageSwiper(homepage, siteSpec)
+    if (withSwiper !== homepage) {
+      homepage = withSwiper
+      writeFile(workspace, 'index.html', homepage)
+    }
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })

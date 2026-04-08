@@ -11,6 +11,7 @@ import {
 } from '../config.js'
 import { isMixedEnglishIndicCode, lookupKnownLanguage } from '../config/languages.js'
 import { brandProfilePromptBlock } from '../prompts/brand-profile.js'
+import { DYNAMIC_UI_LIBRARY_APPEND } from '../prompts/dynamic-ui-append.js'
 import { calculateCost } from './utils.js'
 
 async function groqFetch({
@@ -66,7 +67,7 @@ export async function groq(prompt, opts = {}) {
 function buildImagePrompt(imageHints = '') {
   const trimmed = String(imageHints || '').trim()
   if (!trimmed) return ''
-  return `\n${trimmed}\nUse these verified image URLs first. Each line starts with a bracketed search intent — match that URL to the section, card, or hero whose copy is about that same topic (hero with travel copy gets travel-tagged URLs, not a random office). Set each img alt to a short literal description of the scene (repeat the subject: food, fashion, solar panels, clinic, logistics) so imagery and text stay aligned. Reuse the closest URL when you need more slots. If nothing fits a block, use a gradient, pattern, or icon block instead of an unrelated stock photo.`
+  return `\n${trimmed}\nUse these verified media URLs first (still images and MP4 videos when listed). Match each URL to the section or hero whose copy fits that topic. For VIDEO entries, use one <video muted loop playsinline><source src="(listed mp4)" type="video/mp4"></video> and the listed poster on the <video> when provided. Set each img alt to a short literal description of the scene so imagery and text stay aligned. Reuse the closest listed URL when you need more slots. If nothing fits a block, use a gradient, pattern, or icon block instead of inventing URLs.`
 }
 
 const HINGLISH_HOMEPAGE_APPEND = `
@@ -129,7 +130,7 @@ Build a real, interactive app like Proton Mail, Linear, Notion, or Figma. Not a 
 Adapt the layout to the type of site:
 - SaaS/Landing: typography-first, no hero images. Massive headlines, pill badge + CTA, features cards, pricing, footer.
 - Blog: featured article hero with image, article grid with images + titles + excerpts, categories, newsletter signup.
-- Ecommerce: build a FULL retail homepage (match structural depth of exemplar URLs — ${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')}): promo strip, dense header (search, account, cart badge, multi-level shop nav), hero + benefit chips, four-plus category tiles, six-plus product cards with reviews and prices, bundle band, three learn cards, stats/testimonials, review quotes, newsletter, fat multi-column footer. Do not copy third-party brands or assets. BANNED: sparse SaaS-style storefronts with only hero + 3 cards + footer. Also study ${ECOMMERCE_AWWWARDS_GALLERY_URL} and ${ECOMMERCE_ENVATO_TEMPLATES_URL}. Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): Store API, cart, products, regions — editorial type, strong product imagery, many distinct sections.
+- Ecommerce: build a FULL retail homepage (match structural depth of exemplar URLs — ${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')}): promo strip, dense header (search, account, cart badge, multi-level shop nav), hero + benefit chips, four-plus category tiles, six-plus product cards with reviews and prices, bundle band, three learn cards, stats/testimonials, review quotes, newsletter, fat multi-column footer. Do not copy third-party brands or assets. BANNED: sparse SaaS-style storefronts with only hero + 3 cards + footer. Also study ${ECOMMERCE_AWWWARDS_GALLERY_URL} and ${ECOMMERCE_ENVATO_TEMPLATES_URL}. Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): Store API, cart, products, regions — editorial type, strong product imagery, many distinct sections. Any section titled like a carousel, "curated/gift sets", bundles, or "shop the …" row MUST place **at least three** product cards in the same horizontal strip (one shared \`grid\` or \`flex flex-row gap-*\` containing multiple cards)—never a single product tile with a large empty area beside it.
 - Portfolio: project showcase with images, about section, skills, contact form.
 - Docs: search bar, quick start code block, topic cards grid.
 - Community: member stats, trending topics, activity feed.
@@ -153,7 +154,7 @@ Do not ship a static brochure unless the user asked for a single static page. Fo
 - FAQ: [data-accordion] + [data-accordion-item] + button [data-accordion-trigger] + panel (already standard); ensure items open/close.
 - Reveal on scroll: optional [data-reveal] sections get class is-visible when intersecting (CSS transition opacity/transform you define).
 After any JS that injects or swaps nodes with Lucide placeholders, call lucide.createIcons() if window.lucide exists.
-
+${DYNAMIC_UI_LIBRARY_APPEND}
 ── GAME ──
 Build a sophisticated, fully playable 3D game using THREE.js. NOT a landing page, demo, or 2D Canvas game.
 
@@ -198,12 +199,12 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
-- Optional carousels: for product or image strips you may use a root with class "swiper", inner ".swiper-wrapper" / ".swiper-slide", and attribute data-sf-swiper so a Swiper bundle can attach when the export pipeline loads it (ecommerce or slider-style prompts); otherwise keep scroll-snap CSS or data-carousel patterns from the dynamic UI rules above.
+- Optional carousels: for product or image strips use a root with class "swiper", inner ".swiper-wrapper" / ".swiper-slide", and attribute data-sf-swiper so a Swiper bundle can attach when the export pipeline loads it (ecommerce or slider-style prompts); put **multiple slides** (3+ cards) inside the wrapper—single-card rows break the carousel. Otherwise use scroll-snap CSS or data-carousel patterns from the dynamic UI rules above.
 - Semantic structure: use a single site <footer> only at the end of <body> (nav links, legal). For feature grids, pricing columns, or card rows use <article> or <div>, never <footer> as a grid cell or card wrapper.
 - Tailwind CSS via CDN, Google Fonts${mixedEnglish && scriptFontHint ? ` (load Inter + ${scriptFontHint} + a display font for headings)` : ' (load a body font + a display font for headings — not Inter-only)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
 - Dark theme: rich dark base (slate/zinc/neutral with subtle hue), not identical gray-950 everywhere; surfaces and borders should feel intentional.
 - Vanilla JS only. No frameworks.
-- IMAGES: Use provided verified image URLs first. Each line lists a scene description before the URL — assign the URL whose description best matches that card or section (breed, rescue, bridal, dairy, etc.). Reuse the closest matching provided URL when you need more image slots than unique photos. Never use a laptop, phone, or screen image for animals or nature posts. If no relevant photo exists, use a non-photo treatment such as a gradient panel, pattern, icon, or typography block instead of a random stock image.`,
+- IMAGES & VIDEO: Use ONLY the verified Pexels/Unsplash image URLs and Pexels MP4 URLs listed in the media block below — never invent IDs or domains. For a hero or background loop, prefer a listed MP4 + poster pair when the block includes VERIFIED VIDEOS. Never use placeholder.com, picsum, source.unsplash, or any URL not copied from that list. Never use a laptop, phone, or screen image for animals or nature posts. If no listed URL fits, use a non-photo treatment (gradient, pattern, icon, typography) instead of a random or made-up URL.`,
     prompt: `${prompt}${brandBlock}${buildImagePrompt(imageHints?.promptBlock)}\n${
       brandProfile
         ? 'Use the verified brand details above as exact source data. Do not invent missing logo, contact, or social fields.'
