@@ -1317,6 +1317,15 @@
       let chatAttachmentPaths = []
       let chatPanelMode = 'llm'
 
+      function syncCmsSidebarLayout() {
+        const browserContent = document.querySelector('.browser-content')
+        const chatDock = document.getElementById('preview-chat-dock')
+        const chatPanelEl = document.getElementById('preview-chat-panel')
+        const useSidebar = chatPanelMode === 'cms' && chatPanelEl && !chatPanelEl.hidden
+        if (browserContent) browserContent.classList.toggle('browser-content--cms-sidebar', useSidebar)
+        if (chatDock) chatDock.classList.toggle('preview-chat-dock--cms-sidebar', useSidebar)
+      }
+
       function applyChatPanelMode(mode) {
         chatPanelMode = mode === 'cms' ? 'cms' : 'llm'
         const cms = document.getElementById('preview-chat-cms-block')
@@ -1325,15 +1334,12 @@
         const fab = document.getElementById('preview-chat-fab')
         const chatPanelEl = document.getElementById('preview-chat-panel')
         const showCms = chatPanelMode === 'cms'
-        const browserContent = document.querySelector('.browser-content')
-        const chatDock = document.getElementById('preview-chat-dock')
-        if (browserContent) browserContent.classList.toggle('browser-content--cms-sidebar', showCms)
-        if (chatDock) chatDock.classList.toggle('preview-chat-dock--cms-sidebar', showCms)
         if (cms) cms.hidden = !showCms
         if (llm) llm.hidden = showCms
         if (title) title.textContent = showCms ? 'Site content' : 'Chat'
         if (fab) fab.textContent = showCms ? 'Site content' : 'Chat'
         if (chatPanelEl) chatPanelEl.classList.toggle('preview-chat-panel--cms', showCms)
+        syncCmsSidebarLayout()
       }
 
       function populateCmsForm(siteSettings) {
@@ -3289,6 +3295,7 @@
           if (!panel || !fab) return
           panel.hidden = !open
           fab.setAttribute('aria-expanded', open ? 'true' : 'false')
+          syncCmsSidebarLayout()
         }
 
         const cmsForm = document.getElementById('preview-chat-cms-form')
@@ -4054,6 +4061,7 @@
           if (chatPanel && !chatPanel.hidden) {
             chatPanel.hidden = true
             document.getElementById('preview-chat-fab')?.setAttribute('aria-expanded', 'false')
+            syncCmsSidebarLayout()
             event.preventDefault()
             return
           }
