@@ -1,3 +1,4 @@
+import { ECOMMERCE_GENERATION_GUIDELINES } from '../config.js'
 import { siteSpecSchema } from '../spec/schema.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
 
@@ -18,6 +19,11 @@ export function siteSpecPrompt({
   const editThemeRules =
     mode === 'edit'
       ? `\n- Edit mode — theme safety: Whenever you change theme.colors, mood, or palette, you MUST keep strong readable contrast. Body text must stay clearly visible on both background and surface (avoid near-identical luminance between text and background). Prefer coherent light OR dark schemes; do not produce dark gray text on black backgrounds or other low-contrast combinations.\n- Edit mode — navigation: If the user reports header, nav, or link text being hard to see, set theme.colors.text and theme.colors.mutedText so they contrast clearly with theme.colors.background and theme.colors.surface, and keep the home page’s first section as type navbar with non-empty link labels.\n`
+      : ''
+
+  const ecommerceRules =
+    ctx?.site_type === 'ecommerce' || ctx?.siteType === 'ecommerce'
+      ? `\n- Ecommerce: ${ECOMMERCE_GENERATION_GUIDELINES} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). Section density should match Envato-grade ecommerce templates, not minimal landing pages.\n`
       : ''
 
   return {
@@ -90,6 +96,7 @@ export function siteSpecPrompt({
       `  "backendFeatureHints": []\n` +
       `}\n\n` +
       `Rules:\n` +
+      `- When siteType is ecommerce or the user asks for a carousel/slider/gallery/marquee, expect Swiper-powered product strips in framework exports and matching Swiper markup in static HTML (policy-driven).\n` +
       `- The output must be directly renderable into HTML, React, and Next.js.\n` +
       `- Prefer structured content and interaction descriptors over raw scripts.\n` +
       `- Include enough pages and sections to satisfy the prompt.\n` +
@@ -102,7 +109,7 @@ export function siteSpecPrompt({
       `- Use clean title patterns: homepage as "Project Name | Core benefit" and secondary pages as "Topic | Project Name" or "Project Name Topic | Benefit". Avoid keyword stuffing.\n` +
       `- When you include FAQ content, write realistic buyer or user questions rather than placeholder copy.\n` +
       `- When verified brand details are provided, use them for logo/contact/footer/social sections and keep those fields exact.\n` +
-      `- Use the fallback structure when uncertain rather than inventing a malformed schema.${editThemeRules}`,
+      `- Use the fallback structure when uncertain rather than inventing a malformed schema.${ecommerceRules}${editThemeRules}`,
     temperature: 0.2,
     maxTokens: 4000,
   }

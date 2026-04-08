@@ -38,8 +38,16 @@ export function writeRenderedFiles(baseDir, files) {
   }
 }
 
+export function writeNextAppToWorkspace(siteSpec, workspace) {
+  if (!siteSpec) return
+  const rendered = renderProject(siteSpec, 'nextjs')
+  const root = join(workspace, 'next-app')
+  writeRenderedFiles(root, rendered.files)
+}
+
 export function renderPreviewToWorkspace(siteSpec, workspace) {
   const { files } = renderHtmlProject(siteSpec)
   writeRenderedFiles(workspace, files)
+  writeNextAppToWorkspace(siteSpec, workspace)
   return { files }
 }

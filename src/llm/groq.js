@@ -1,4 +1,14 @@
-import { GROQ_API_KEY, GROQ_HOST, GROQ_MODEL, HOMEPAGE_MODEL, LLM_CONFIG } from '../config.js'
+import {
+  ECOMMERCE_AWWWARDS_GALLERY_URL,
+  ECOMMERCE_ENVATO_TEMPLATES_URL,
+  ECOMMERCE_MEDUSA_DOCS_LEARN,
+  ECOMMERCE_REFERENCE_EXEMPLAR_URLS,
+  GROQ_API_KEY,
+  GROQ_HOST,
+  GROQ_MODEL,
+  HOMEPAGE_MODEL,
+  LLM_CONFIG,
+} from '../config.js'
 import { isMixedEnglishIndicCode, lookupKnownLanguage } from '../config/languages.js'
 import { brandProfilePromptBlock } from '../prompts/brand-profile.js'
 import { calculateCost } from './utils.js'
@@ -104,7 +114,7 @@ export async function groqHomepage(prompt, imageHints = null, indiaMode = null, 
     system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
 ${mixedAppend || nonEnglishLanguageAppend(indiaMode)}
 
-CLASSIFY: If the prompt describes functionality (app, client, editor, dashboard, manager, tool), build an APPLICATION UI. If it describes a business/product/service, build a LANDING PAGE. Default to APP when unclear.
+CLASSIFY: If the prompt describes ecommerce, online store, shopping cart, product catalog, checkout, retail, DTC, or selling physical/digital goods, build a WEBSITE (storefront) — product-forward marketing layout with cart in nav, NOT a dashboard app. If the prompt describes application functionality (app, client, editor, dashboard, manager, tool) without retail/store context, build an APPLICATION UI. If it describes a business/product/service without store semantics, build a LANDING PAGE. Default to APP when unclear for non-store prompts.
 
 ── APPLICATION UI ──
 Build a real, interactive app like Proton Mail, Linear, Notion, or Figma. Not a landing page about the app — the actual app.
@@ -119,7 +129,7 @@ Build a real, interactive app like Proton Mail, Linear, Notion, or Figma. Not a 
 Adapt the layout to the type of site:
 - SaaS/Landing: typography-first, no hero images. Massive headlines, pill badge + CTA, features cards, pricing, footer.
 - Blog: featured article hero with image, article grid with images + titles + excerpts, categories, newsletter signup.
-- Ecommerce: product grid with images + prices, category filters, featured products, cart icon in nav.
+- Ecommerce: build a FULL retail homepage (match structural depth of exemplar URLs — ${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')}): promo strip, dense header (search, account, cart badge, multi-level shop nav), hero + benefit chips, four-plus category tiles, six-plus product cards with reviews and prices, bundle band, three learn cards, stats/testimonials, review quotes, newsletter, fat multi-column footer. Do not copy third-party brands or assets. BANNED: sparse SaaS-style storefronts with only hero + 3 cards + footer. Also study ${ECOMMERCE_AWWWARDS_GALLERY_URL} and ${ECOMMERCE_ENVATO_TEMPLATES_URL}. Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): Store API, cart, products, regions — editorial type, strong product imagery, many distinct sections.
 - Portfolio: project showcase with images, about section, skills, contact form.
 - Docs: search bar, quick start code block, topic cards grid.
 - Community: member stats, trending topics, activity feed.
@@ -188,6 +198,7 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
+- Optional carousels: for product or image strips you may use a root with class "swiper", inner ".swiper-wrapper" / ".swiper-slide", and attribute data-sf-swiper so a Swiper bundle can attach when the export pipeline loads it (ecommerce or slider-style prompts); otherwise keep scroll-snap CSS or data-carousel patterns from the dynamic UI rules above.
 - Semantic structure: use a single site <footer> only at the end of <body> (nav links, legal). For feature grids, pricing columns, or card rows use <article> or <div>, never <footer> as a grid cell or card wrapper.
 - Tailwind CSS via CDN, Google Fonts${mixedEnglish && scriptFontHint ? ` (load Inter + ${scriptFontHint} + a display font for headings)` : ' (load a body font + a display font for headings — not Inter-only)'}, Lucide icons via CDN (<script src="https://unpkg.com/lucide@latest"></script> then call lucide.createIcons() after render). Use exact placeholders like <i data-lucide="heart"></i> for icons, prefer x / instagram / whatsapp for brand socials, and NEVER class="lucide-heart" placeholder syntax. No inline SVGs, no emojis.
 - Dark theme: rich dark base (slate/zinc/neutral with subtle hue), not identical gray-950 everywhere; surfaces and borders should feel intentional.

@@ -1,4 +1,5 @@
 import { isMixedEnglishIndicCode } from '../config/languages.js'
+import { shouldUseSwiper } from '../lib/swiper-policy.js'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
 
 /**
@@ -506,7 +507,7 @@ function renderGenericCard(item = {}) {
   const img = src
     ? `<figure class="card-media"><img src="${escapeHtml(src)}" alt="${escapeHtml(item.alt || item.title || item.label || '')}" loading="lazy" decoding="async" /></figure>`
     : ''
-  return `<article class="card">${img}<h3>${escapeHtml(item.title || item.label || 'Item')}</h3><p>${escapeHtml(item.body || item.quote || '')}</p></article>`
+  return `<article class="card" data-reveal>${img}<h3>${escapeHtml(item.title || item.label || 'Item')}</h3><p>${escapeHtml(item.body || item.quote || '')}</p></article>`
 }
 
 function renderShipFastFooterBrandingHtml() {
@@ -523,7 +524,7 @@ function renderShipFastFooterBrandingHtml() {
   `
 }
 
-export function renderSectionHtml(section) {
+export function renderSectionHtml(section, siteSpec = {}) {
   const headline = section.headline ? `<h2>${escapeHtml(section.headline)}</h2>` : ''
   const subheadline = section.subheadline
     ? `<p class="eyebrow">${escapeHtml(section.subheadline)}</p>`
@@ -577,7 +578,7 @@ export function renderSectionHtml(section) {
             ${subheadline}
             ${headline}
             <div class="stat-grid">
-              ${renderItemList(section.items || [], (item) => `<div class="stat-card"><strong>${escapeHtml(item.value || item.title || '')}</strong><span>${escapeHtml(item.label || item.body || '')}</span></div>`)}
+              ${renderItemList(section.items || [], (item) => `<div class="stat-card" data-reveal><strong>${escapeHtml(item.value || item.title || '')}</strong><span>${escapeHtml(item.label || item.body || '')}</span></div>`)}
             </div>
           </div>
         </section>
@@ -611,7 +612,7 @@ export function renderSectionHtml(section) {
               ${renderItemList(
                 section.items || [],
                 (item) => `
-                  <article class="pricing-card">
+                  <article class="pricing-card" data-reveal>
                     <h3>${escapeHtml(item.title || '')}</h3>
                     <div class="price">${escapeHtml(item.price || '')}</div>
                     <p>${escapeHtml(item.body || '')}</p>
@@ -634,7 +635,7 @@ export function renderSectionHtml(section) {
               ${renderItemList(
                 section.items || [],
                 (item) =>
-                  `<blockquote class="card quote-card"><p>“${escapeHtml(item.quote || item.body || '')}”</p><footer>${escapeHtml(item.author || item.title || '')}</footer></blockquote>`,
+                  `<blockquote class="card quote-card" data-reveal><p>“${escapeHtml(item.quote || item.body || '')}”</p><footer>${escapeHtml(item.author || item.title || '')}</footer></blockquote>`,
               )}
             </div>
           </div>
@@ -677,7 +678,57 @@ export function renderSectionHtml(section) {
         </section>
       `
     case 'product-grid':
-    case 'featured-products':
+    case 'featured-products': {
+      const items = section.items || []
+      const swiperCarousel = shouldUseSwiper(siteSpec) && items.length > 0
+      const cssMarqueeCarousel =
+        !shouldUseSwiper(siteSpec) && siteSpec.siteType === 'ecommerce' && items.length > 0
+      const productCardHtml = (item, dup) => `
+                  <article class="card product-card product-card--carousel"${dup ? ' aria-hidden="true"' : ''}>
+                    <div class="product-image">${item.image ? `<img src="${escapeHtml(item.image)}" alt="${dup ? '' : escapeHtml(item.title || '')}" />` : '<div class="product-placeholder"></div>'}</div>
+                    <h3>${escapeHtml(item.title || '')}</h3>
+                    ${item.price ? `<span class="product-price">${escapeHtml(String(item.price))}</span>` : ''}
+                    <p>${escapeHtml(item.body || '')}</p>
+                  </article>
+                `
+      if (swiperCarousel) {
+        return `
+        <section class="section ${escapeHtml(section.type)} section--product-marquee" id="${escapeHtml(section.id)}">
+          <div class="container">
+            ${subheadline}
+            ${headline}
+            ${body}
+          </div>
+          <div class="product-carousel swiper" data-sf-swiper data-swiper-managed role="region" aria-label="Products">
+            <div class="swiper-wrapper">
+              ${renderItemList(items, (item) => `
+                <div class="swiper-slide">${productCardHtml(item, false)}
+                </div>`)}
+            </div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </section>
+      `
+      }
+      if (cssMarqueeCarousel) {
+        return `
+        <section class="section ${escapeHtml(section.type)} section--product-marquee" id="${escapeHtml(section.id)}">
+          <div class="container">
+            ${subheadline}
+            ${headline}
+            ${body}
+          </div>
+          <div class="product-carousel" role="region" aria-label="Products">
+            <div class="product-carousel__mask">
+              <div class="product-carousel__track product-carousel__track--css">
+                ${renderItemList(items, (item) => productCardHtml(item, false))}
+                ${renderItemList(items, (item) => productCardHtml(item, true))}
+              </div>
+            </div>
+          </div>
+        </section>
+      `
+      }
       return `
         <section class="section ${escapeHtml(section.type)}" id="${escapeHtml(section.id)}">
           <div class="container">
@@ -687,7 +738,7 @@ export function renderSectionHtml(section) {
               ${renderItemList(
                 section.items || [],
                 (item) => `
-                  <article class="card product-card">
+                  <article class="card product-card" data-reveal>
                     <div class="product-image">${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title || '')}" />` : '<div class="product-placeholder"></div>'}</div>
                     <h3>${escapeHtml(item.title || '')}</h3>
                     ${item.price ? `<span class="product-price">${escapeHtml(String(item.price))}</span>` : ''}
@@ -699,6 +750,7 @@ export function renderSectionHtml(section) {
           </div>
         </section>
       `
+    }
     case 'cart-summary':
       return `
         <section class="section cart-summary" id="${escapeHtml(section.id)}">
@@ -829,6 +881,70 @@ a { color: inherit; text-decoration: none; }
 button, input, textarea { font: inherit; }
 .container { width: var(--container-width); margin: 0 auto; }
 .site-shell { min-height: 100vh; }
+.motion-page-shell {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+@keyframes sf-motion-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .site-shell > section,
+  .site-shell > header.site-header,
+  .site-shell > footer.site-footer {
+    animation: sf-motion-enter 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .site-shell > *:nth-child(1) { animation-delay: 0.02s; }
+  .site-shell > *:nth-child(2) { animation-delay: 0.08s; }
+  .site-shell > *:nth-child(3) { animation-delay: 0.14s; }
+  .site-shell > *:nth-child(4) { animation-delay: 0.2s; }
+  .site-shell > *:nth-child(5) { animation-delay: 0.26s; }
+  .site-shell > *:nth-child(6) { animation-delay: 0.32s; }
+  .site-shell > *:nth-child(7) { animation-delay: 0.38s; }
+  .site-shell > *:nth-child(8) { animation-delay: 0.44s; }
+  .site-shell > *:nth-child(9) { animation-delay: 0.5s; }
+  .site-shell > *:nth-child(10) { animation-delay: 0.56s; }
+  .site-shell > *:nth-child(11) { animation-delay: 0.62s; }
+  .site-shell > *:nth-child(12) { animation-delay: 0.68s; }
+  .site-shell > *:nth-child(13) { animation-delay: 0.74s; }
+  .site-shell > *:nth-child(14) { animation-delay: 0.8s; }
+  .site-shell > *:nth-child(15) { animation-delay: 0.86s; }
+  .site-shell > *:nth-child(16) { animation-delay: 0.92s; }
+  .site-shell > *:nth-child(17) { animation-delay: 0.98s; }
+  .site-shell > *:nth-child(18) { animation-delay: 1.04s; }
+  .site-shell > *:nth-child(19) { animation-delay: 1.1s; }
+  .site-shell > *:nth-child(20) { animation-delay: 1.16s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-shell > section,
+  .site-shell > header.site-header,
+  .site-shell > footer.site-footer {
+    animation: none;
+  }
+}
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 1.25rem, 0);
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
 .section { padding: var(--spacing-section) 0; }
 .section h1, .section h2, .section h3, .site-header .brand {
   font-family: var(--font-heading);
@@ -890,11 +1006,21 @@ button, input, textarea { font: inherit; }
   border: 1px solid color-mix(in srgb, var(--color-border) 95%, transparent);
   background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface));
   color: var(--color-text);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
 }
 .button--primary {
   border-color: transparent;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .button:hover {
+    transform: translateY(-2px);
+  }
+  .button--primary:hover {
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 35%, transparent);
+    filter: brightness(1.05);
+  }
 }
 .hero-grid, .contact-shell, .cta-shell {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -931,6 +1057,19 @@ button, input, textarea { font: inherit; }
   );
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
+  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .card:hover,
+  .pricing-card:hover,
+  .stat-card:hover,
+  .quote-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+  }
+  .hero-panel:hover {
+    transform: translateY(-3px);
+  }
 }
 .hero-panel, .stat-card, .card, .pricing-card, .contact-form, .cta-shell, .faq-item {
   padding: 1.25rem;
@@ -1066,6 +1205,167 @@ button, input, textarea { font: inherit; }
   place-items: center;
   text-align: center;
 }
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--gap);
+  margin-top: 2rem;
+}
+.product-card {
+  border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-text) 5%, var(--color-surface)),
+    color-mix(in srgb, var(--color-text) 2%, var(--color-background))
+  );
+  box-shadow: var(--shadow-card);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.24);
+  }
+}
+.product-image {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  aspect-ratio: 1;
+  background: color-mix(in srgb, var(--color-text) 8%, var(--color-background));
+}
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 10rem;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 28%, transparent),
+    color-mix(in srgb, var(--color-secondary) 18%, transparent)
+  );
+}
+.product-price {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--color-secondary);
+  margin: 0.35rem 0;
+}
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  background: color-mix(in srgb, var(--color-background) 55%, transparent);
+  backdrop-filter: blur(6px);
+}
+.cart-drawer {
+  width: min(26rem, 100vw);
+  max-width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.25rem;
+  border-left: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-text) 6%, var(--color-surface)),
+    var(--color-background)
+  );
+  box-shadow: var(--shadow-soft);
+}
+.cart-toggle {
+  cursor: pointer;
+}
+.product-carousel {
+  margin-top: 2rem;
+  width: 100%;
+}
+.product-carousel__mask {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+}
+.product-carousel__track {
+  display: flex;
+  gap: var(--gap);
+  width: max-content;
+  padding-bottom: 0.5rem;
+}
+.product-carousel__track--css {
+  animation: product-carousel-marquee 50s linear infinite;
+  will-change: transform;
+}
+.product-carousel:hover .product-carousel__track--css {
+  animation-play-state: paused;
+}
+.product-carousel__track--motion {
+  animation: none;
+}
+.product-carousel__mask--scroll {
+  overflow-x: auto;
+  mask-image: none;
+  -webkit-mask-image: none;
+  scroll-snap-type: x proximity;
+  padding-inline: max(0px, calc(50vw - var(--container-width) / 2));
+}
+.product-carousel__track--static {
+  width: max-content;
+}
+@keyframes product-carousel-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.product-card--carousel {
+  flex: 0 0 min(280px, 82vw);
+  scroll-snap-align: start;
+}
+.product-carousel.swiper {
+  overflow: hidden;
+  width: 100%;
+  padding-bottom: 2.5rem;
+  box-sizing: border-box;
+}
+.product-carousel.swiper .swiper-slide {
+  width: min(280px, 85vw);
+  max-width: min(280px, 85vw);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: auto;
+}
+.product-carousel.swiper .swiper-slide .product-card--carousel {
+  flex: none;
+  width: 100%;
+  max-width: none;
+}
+.product-carousel .swiper-pagination-bullet-active {
+  background: var(--color-primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-carousel__mask {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+    scroll-snap-type: x proximity;
+    padding-inline: max(0px, calc(50vw - var(--container-width) / 2));
+  }
+  .product-carousel__track {
+    animation: none;
+    width: max-content;
+  }
+}
 @media (max-width: 900px) {
   .hero-grid, .contact-shell, .cta-shell, .card-grid, .pricing-grid, .stat-grid, .footer-shell {
     grid-template-columns: 1fr;
@@ -1093,7 +1393,26 @@ button, input, textarea { font: inherit; }
 `
 }
 
-export function buildHtmlRuntimeScript() {
+export function buildHtmlRuntimeScript(includeSwiper = false) {
+  const swiperInit = includeSwiper
+    ? `
+  if (typeof Swiper !== 'undefined') {
+    document.querySelectorAll('[data-sf-swiper]').forEach((el) => {
+      const slides = el.querySelectorAll('.swiper-slide')
+      const n = slides.length
+      if (!n) return
+      const pag = el.querySelector('.swiper-pagination')
+      new Swiper(el, {
+        slidesPerView: 'auto',
+        spaceBetween: 16,
+        loop: n > 2,
+        grabCursor: true,
+        watchOverflow: true,
+        ...(pag ? { pagination: { el: pag, clickable: true, dynamicBullets: n > 4 } } : {}),
+      })
+    })
+  }`
+    : ''
   return `
 document.addEventListener('click', (event) => {
   const navToggle = event.target.closest('[data-mobile-nav-toggle]')
@@ -1185,14 +1504,6 @@ document.addEventListener('click', (event) => {
 })
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (!document.getElementById('sf-reveal-base')) {
-    const style = document.createElement('style')
-    style.id = 'sf-reveal-base'
-    style.textContent =
-      '[data-reveal]{opacity:0;transform:translate3d(0,1.25rem,0)}[data-reveal].is-visible{opacity:1;transform:none;transition:opacity .65s ease,transform .65s ease}@media (prefers-reduced-motion:reduce){[data-reveal]{opacity:1;transform:none}}'
-    document.head.appendChild(style)
-  }
-
   document.querySelectorAll('[data-carousel]').forEach((root) => {
     const track = root.querySelector('[data-carousel-track]')
     if (!track) return
@@ -1244,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { threshold: 0.08 },
     )
     io.observe(el)
-  })
+  })${swiperInit}
 })
 
 document.querySelectorAll('[data-demo-form]').forEach((form) => {
@@ -1254,5 +1565,39 @@ document.querySelectorAll('[data-demo-form]').forEach((form) => {
     if (message) message.textContent = 'Thanks. This demo form is ready for a backend integration.'
   })
 })
+`
+}
+
+export function buildHtmlMotionModule() {
+  return `import { animate } from 'https://esm.sh/framer-motion@12.38.0/dom'
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+function run() {
+  if (prefersReducedMotion()) return
+  document.querySelectorAll('.product-carousel__track--css').forEach((track) => {
+    if (track.closest('[data-swiper-managed]')) return
+    track.style.animation = 'none'
+    const carousel = track.closest('.product-carousel')
+    const controls = animate(
+      track,
+      { x: ['0%', '-50%'] },
+      { duration: 50, ease: 'linear', repeat: Infinity, repeatType: 'loop' },
+    )
+    if (carousel && controls && typeof controls.pause === 'function' && typeof controls.play === 'function') {
+      carousel.addEventListener('mouseenter', () => controls.pause())
+      carousel.addEventListener('mouseleave', () => controls.play())
+    }
+  })
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', run, { once: true })
+} else {
+  run()
+}
 `
 }

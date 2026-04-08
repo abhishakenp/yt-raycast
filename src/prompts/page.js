@@ -1,3 +1,9 @@
+import {
+  ECOMMERCE_ENVATO_TEMPLATES_URL,
+  ECOMMERCE_GENERATION_GUIDELINES,
+  ECOMMERCE_MEDUSA_DOCS_LEARN,
+  MOTION_REACT_GUIDELINES,
+} from '../config.js'
 import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
 
@@ -38,10 +44,21 @@ export function pagePrompt(
       : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
   const taskLower = (task.title || '').toLowerCase()
+  const fnameLower = (task.filename || '').toLowerCase()
+  const isContactPage = taskLower.includes('contact') || fnameLower.includes('contact')
+  const contactPageBlock = isContactPage
+    ? `\nCONTACT PAGE (mandatory):
+- Include a real HTML <form> in <main> with: a text <input name="name">, an email <input type="email" name="email">, a <textarea name="message">, and a submit <button type="submit">. Labels must be visible.
+- Add a small inline <script> before </body> that prevents default submit and shows a polite success message, or use data attributes consistent with the homepage demo patterns.
+- Do NOT put "Built with Ship Fast", footer-branding, rocket logos, or builder marketing inside the form card or as the only content in the message column. Those elements belong ONLY in the site <footer> copied from the homepage, once at the bottom of the page.
+- The panel titled "Send us a Message" (or similar) must contain the form fields above, not a logo or empty decorative block.\n`
+    : ''
   const ecommercePageBlock = siteType === 'ecommerce'
     ? taskLower.includes('shop') || taskLower.includes('catalog') || taskLower.includes('product')
-      ? `\nE-COMMERCE SHOP PAGE:
-This is a product listing page for an e-commerce store. Build it like a real online shop:
+      ? `\n${ECOMMERCE_GENERATION_GUIDELINES}
+
+E-COMMERCE SHOP PAGE:
+This is a product listing page for an e-commerce store. Build it like a real online shop (template density: ${ECOMMERCE_ENVATO_TEMPLATES_URL}):
 - Category filter sidebar or top filter bar (by category, price range, sort)
 - Product grid (3-col or 4-col): each card has product image (use gradient placeholder if no image), product name, price (formatted with $ symbol, bold), "Add to Cart" button
 - Product cards must have hover effects: image slight zoom, card lift shadow
@@ -51,8 +68,10 @@ This is a product listing page for an e-commerce store. Build it like a real onl
 - Price display: font-semibold, slightly larger than body text
 - "Add to Cart" buttons: primary accent color, rounded, hover darker\n`
       : taskLower.includes('cart')
-        ? `\nE-COMMERCE CART PAGE:
-This is a shopping cart page. Build it like a real checkout experience:
+        ? `\n${ECOMMERCE_GENERATION_GUIDELINES}
+
+E-COMMERCE CART PAGE:
+This is a shopping cart page. Build it like a real checkout experience (Medusa cart flow per ${ECOMMERCE_MEDUSA_DOCS_LEARN}):
 - Cart items list: each row has product thumbnail (small square), product name, unit price, quantity selector (- / number / +), line total, remove button (X)
 - Order summary sidebar: subtotal, estimated shipping, estimated tax, order total (bold, larger)
 - "Proceed to Checkout" button: large, primary accent, full-width in sidebar
@@ -60,8 +79,10 @@ This is a shopping cart page. Build it like a real checkout experience:
 - Empty cart state: "Your cart is empty" message with CTA to shop
 - Use realistic mock cart data (2-3 items)
 - Clean table/grid layout, clear visual hierarchy\n`
-        : `\nE-COMMERCE PAGE:
-This page is part of an e-commerce store. Maintain the store aesthetic:
+        : `\n${ECOMMERCE_GENERATION_GUIDELINES}
+
+E-COMMERCE PAGE:
+This page is part of an e-commerce store. Maintain the store aesthetic and Medusa-aligned commerce patterns:
 - Keep the cart icon in the nav
 - Use product-oriented language and imagery
 - Maintain trust signals (payment, shipping badges) if in footer\n`
@@ -72,7 +93,7 @@ This page is part of an e-commerce store. Maintain the store aesthetic:
       `HOMEPAGE (index.html) \u2014 match this exact style, head, nav, and footer:\n\n${homepageHtml}\n`,
     prompt: `Create the "${task.title}" page. Reuse the exact <head>, nav, and footer from the homepage.
 Write unique <main> content for: ${task.description ?? task.title}
-${ecommercePageBlock}
+${contactPageBlock}${ecommercePageBlock}
 ${langNote}Nav links:
 ${navList}
 
@@ -84,6 +105,7 @@ NEVER use placeholder.com, placehold.co, via.placeholder, or random source endpo
 If verified brand details are provided, keep them exact and do not invent missing contact fields.
 Design must match the homepage craft: same fonts, depth (blur, rings, shadows), and motion — not a flat appendix page.
 Reuse the same dynamic patterns as the homepage where relevant: data-mobile-nav, data-accordion, data-tab-group, data-carousel, data-counter, data-pricing-billing, with matching inline <script> behavior so buttons and toggles work.
+When this site is exported as Next.js or React components, ${MOTION_REACT_GUIDELINES}
 Output ONLY the complete HTML file.
 CRITICAL: Your output MUST be a complete HTML document starting with <!DOCTYPE html> and containing <html>, <head>, and <body> tags. Do NOT output just a fragment or partial HTML.`,
     temperature: 0.3,

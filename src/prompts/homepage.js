@@ -1,4 +1,11 @@
-import { HOME_LABELS, SITE_TYPE_INSTRUCTIONS } from '../config.js'
+import {
+  ECOMMERCE_GENERATION_GUIDELINES,
+  ECOMMERCE_MEDUSA_DOCS_LEARN,
+  HOME_LABELS,
+  MOTION_DEV_DOCS_REACT,
+  MOTION_REACT_GUIDELINES,
+  SITE_TYPE_INSTRUCTIONS,
+} from '../config.js'
 import { slug } from '../pipeline/workspace.js'
 
 export function homepagePrompt(prompt, ctx, designBrief) {
@@ -55,8 +62,10 @@ DO NOT:
   const taglineBlock = ctx?.tagline ? `\nTagline: "${ctx.tagline}"\n` : ''
 
   const ecommerceBlock = st === 'ecommerce'
-    ? `\nE-COMMERCE INTEGRATION:
-This site uses Medusa.js as the e-commerce backend. The generated Next.js export includes lib/medusa.js with these SDK functions:
+    ? `\n${ECOMMERCE_GENERATION_GUIDELINES}
+
+E-COMMERCE INTEGRATION (Medusa):
+This site uses Medusa.js as the e-commerce backend per ${ECOMMERCE_MEDUSA_DOCS_LEARN}. The generated Next.js export includes lib/medusa.js with these SDK functions:
 - getProducts(params) — fetch product listings for shop/catalog pages
 - getProductByHandle(handle) — fetch single product for detail pages
 - getCategories() — fetch product categories for navigation/filtering
@@ -65,20 +74,18 @@ This site uses Medusa.js as the e-commerce backend. The generated Next.js export
 - getCart(cartId) — retrieve cart with items and totals
 - getRegions() — fetch available shipping regions
 
-Build the homepage to showcase products prominently:
-- Hero should feature a flagship product or seasonal collection with a bold CTA to shop
-- Include a featured products section with product cards (image, title, price, quick-add button)
-- Category navigation section with visual category cards linking to filtered views
-- Trust signals: shipping info, return policy, secure payment badges
-- The AI-generated product cards should use onClick handlers that call addLineItem()
-- Price display should use Intl.NumberFormat for currency formatting
-- Product cards need hover states: image zoom, quick-view overlay, add-to-cart button reveal\n`
+Homepage must match the structural depth of the exemplar URLs in the block above (patterns only — original copy and brand for this project), not a thin SaaS-style page:
+- Implement the full section stack from the design brief: promo strip, rich header (search, account, cart count, multi-link shop nav), hero + benefit chips, four-plus category tiles, six-plus featured product cards with reviews and prices, bundle band, learn trio, stats/testimonials, review quotes, newsletter, multi-column footer
+- Product cards: onClick handlers that call addLineItem(); Intl.NumberFormat for money; hover: image zoom, add-to-cart reveal
+- ${MOTION_REACT_GUIDELINES} Next.js export includes \`framer-motion\`; import from \`framer-motion\` (${MOTION_DEV_DOCS_REACT}) for marquees, cart, cards, and section motion.
+- Use data-carousel for testimonials if needed; data-counter for stat percentages; mobile nav pattern from BUILD RULES\n`
     : ''
 
   const dynamicUiRule =
     st === 'game'
       ? '- For games: follow LAYOUT game rules; use the THREE.js loop and HUD instead of marketing carousels or pricing toggles.\n'
-      : '- Include dynamic client behavior for marketing pages: mobile nav toggle (data-mobile-nav / data-mobile-nav-toggle), at least one of FAQ accordion (data-accordion), tabbed content (data-tab-group / data-tab / data-tab-panel), carousel (data-carousel / data-carousel-track / prev-next), animated stat counters (data-counter / data-counter-target), or billing period toggle (data-pricing-billing / data-billing / data-show-monthly / data-show-yearly), implemented in one inline <script> before </body> with vanilla JS.\n'
+      : '- Include dynamic client behavior for marketing pages: mobile nav toggle (data-mobile-nav / data-mobile-nav-toggle), at least one of FAQ accordion (data-accordion), tabbed content (data-tab-group / data-tab / data-tab-panel), carousel (data-carousel / data-carousel-track / prev-next), animated stat counters (data-counter / data-counter-target), or billing period toggle (data-pricing-billing / data-billing / data-show-monthly / data-show-yearly), implemented in one inline <script> before </body> with vanilla JS.\n' +
+        `- For Next.js or React component exports (not this static HTML task): ${MOTION_REACT_GUIDELINES} Prefer Motion over static-only layouts for interactive sections.\n`
 
   return `Build: index.html \u2014 ${st} homepage
 Project: ${ctx?.project_name ?? 'My App'}${taglineBlock}

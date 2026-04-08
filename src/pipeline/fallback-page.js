@@ -42,7 +42,19 @@ export const buildFallbackPageFromHomepage = (homepageHtml, task, sections = [])
       contentHtml = `<section class="max-w-3xl mx-auto px-4 pt-16 pb-8"><h1 class="text-3xl md:text-4xl font-bold mb-4">${title}</h1>${desc ? `<p class="text-lg opacity-90">${desc}</p>` : ''}</section>\n` + contentHtml
     }
   } else {
-    contentHtml = `<section class="page-fallback max-w-3xl mx-auto px-4 py-16 md:py-24"><h1 class="text-3xl md:text-4xl font-bold mb-4">${title}</h1><p class="text-lg opacity-90 mb-6">${desc}</p></section>`
+    const t = String(task.title ?? '').toLowerCase()
+    const f = String(task.filename ?? '').toLowerCase()
+    const isContact = t.includes('contact') || f.includes('contact')
+    const contactForm = isContact
+      ? `<form class="contact-form mt-8 space-y-4 max-w-xl" onsubmit="event.preventDefault();var m=this.querySelector('[data-form-message]');if(m)m.textContent='Thanks — we will reply soon.';return false">
+<label class="block"><span class="block text-sm mb-1 opacity-80">Name</span><input name="name" type="text" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3" /></label>
+<label class="block"><span class="block text-sm mb-1 opacity-80">Email</span><input name="email" type="email" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3" /></label>
+<label class="block"><span class="block text-sm mb-1 opacity-80">Message</span><textarea name="message" rows="5" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3"></textarea></label>
+<button type="submit" class="rounded-full px-8 py-3 font-semibold text-white" style="background:linear-gradient(145deg,#7c3aed,#a78bfa)">Send message</button>
+<p data-form-message class="text-sm mt-2" aria-live="polite"></p>
+</form>`
+      : ''
+    contentHtml = `<section class="page-fallback max-w-3xl mx-auto px-4 py-16 md:py-24"><h1 class="text-3xl md:text-4xl font-bold mb-4">${title}</h1>${desc ? `<p class="text-lg opacity-90 mb-6">${desc}</p>` : ''}${contactForm}</section>`
   }
 
   const mainRe = /<main\b[^>]*>[\s\S]*?<\/main>/i

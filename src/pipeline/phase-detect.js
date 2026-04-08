@@ -1,31 +1,38 @@
 import { groq } from '../llm/groq.js'
 import { formatTps } from '../llm/utils.js'
 import { VALID_SITE_TYPES } from '../config.js'
+import { inferSiteTypeHint } from '../lib/infer-site-type.js'
 import { siteTypePrompt } from '../prompts/site-type.js'
 
 export async function detectSiteType(prompt, log) {
+  const hinted = inferSiteTypeHint(prompt)
+  if (hinted && VALID_SITE_TYPES.includes(hinted)) {
+    log(`  site type: ${hinted} (heuristic)`)
+    return {
+      siteType: hinted,
+      inputTokens: 0,
+      outputTokens: 0,
+      cost: 0,
+    }
+  }
+
   const { system, user, temperature, maxTokens } = siteTypePrompt(prompt)
   const result = await groq(user, { system, temperature, maxTokens })
 
-  // Get raw response and clean it aggressively
   let groqResponse = (result.content ?? '').trim()
 
-  // Remove quotes, JSON artifacts, and extra whitespace
   groqResponse = groqResponse
-    .replace(/^["']/, '') // Remove leading quote
-    .replace(/["']$/, '') // Remove trailing quote
-    .replace(/[\n\r]/g, '') // Remove newlines
+    .replace(/^["']/, '')
+    .replace(/["']$/, '')
+    .replace(/[\n\r]/g, '')
     .trim()
 
-  // Clean to only letters
   const raw = groqResponse.toLowerCase().replace(/[^a-z]/g, '')
 
-  // Find best match
-  let siteType = 'saas'
-  if (VALID_SITE_TYPES.includes(raw)) {
+  let siteType = 'landing'
+  if (raw && VALID_SITE_TYPES.includes(raw)) {
     siteType = raw
-  } else {
-    // Try to find partial matches
+  } else if (raw) {
     for (const validType of VALID_SITE_TYPES) {
       if (raw.includes(validType) || validType.includes(raw)) {
         siteType = validType
@@ -36,7 +43,6 @@ export async function detectSiteType(prompt, log) {
 
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
 
-  // Log detection details
   if (groqResponse.toLowerCase() !== siteType) {
     console.log(`[SITE TYPE] Raw: "${groqResponse}" → cleaned: "${raw}" → matched: "${siteType}"`)
   }

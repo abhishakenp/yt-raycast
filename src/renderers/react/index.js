@@ -15,8 +15,9 @@ import {
   serializeStructuredData,
 } from '../seo.js'
 import { SHIP_FAST_SITE_URL } from '../../marketing.js'
+import { shouldUseSwiper } from '../../lib/swiper-policy.js'
 
-function renderReactPackageJson(projectName) {
+function renderReactPackageJson(projectName, extraDependencies = {}) {
   return JSON.stringify(
     {
       name: projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -30,9 +31,11 @@ function renderReactPackageJson(projectName) {
         preview: 'vite preview',
       },
       dependencies: {
+        'framer-motion': '^12.38.0',
         react: '^18.3.1',
         'react-dom': '^18.3.1',
         'react-router-dom': '^6.28.0',
+        ...extraDependencies,
       },
       devDependencies: {
         '@vitejs/plugin-react': '^4.3.3',
@@ -89,9 +92,51 @@ ${routes}
 `
 }
 
-function renderReactSectionRenderer() {
-  return `import { useMemo, useState } from 'react'
+function renderReactSectionRenderer(siteSpec) {
+  const useSwiperExport = shouldUseSwiper(siteSpec)
+  const useMarqueeExport = !useSwiperExport && siteSpec.siteType === 'ecommerce'
+  const swiperImportBlock = useSwiperExport
+    ? `import { Swiper, SwiperSlide } from 'swiper/react'
+import { Pagination } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/pagination'
+
+`
+    : ''
+  const productMarqueeTrackBlock = useMarqueeExport
+    ? `function ProductMarqueeTrack({ children }) {
+  const reduceMotion = useReducedMotion()
+  if (reduceMotion) {
+    return (
+      <div className="product-carousel__mask product-carousel__mask--scroll">
+        <div className="product-carousel__track product-carousel__track--static">{children}</div>
+      </div>
+    )
+  }
+  return (
+    <div className="product-carousel__mask">
+      <motion.div
+        className="product-carousel__track product-carousel__track--motion"
+        animate={{ x: ['0%', '-50%'] }}
+        transition={{ duration: 50, repeat: Infinity, ease: 'linear', repeatType: 'loop' }}
+        style={{ willChange: 'transform' }}
+      >
+        {children}
+      </motion.div>
+    </div>
+  )
+}
+
+`
+    : ''
+  return `${swiperImportBlock}import { useMemo, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import SmartLink from './SmartLink'
+
+const USE_PRODUCT_SWIPER = ${useSwiperExport ? 'true' : 'false'}
+const USE_PRODUCT_MARQUEE = ${useMarqueeExport ? 'true' : 'false'}
+
+${productMarqueeTrackBlock}
 
 function SectionIntro({ section }) {
   return (
@@ -124,7 +169,7 @@ function CardGrid({ items = [] }) {
   return (
     <div className="card-grid">
       {items.map((item) => (
-        <article key={item.id || item.title} className="card">
+        <article key={item.id || item.title} className="card" data-reveal>
           <h3>{item.title || item.label || item.value}</h3>
           <p>{item.body || item.quote || ''}</p>
         </article>
@@ -188,7 +233,7 @@ function StatsSection({ section }) {
         <SectionIntro section={section} />
         <div className="stat-grid">
           {(section.items || []).map((item) => (
-            <div key={item.id || item.label} className="stat-card">
+            <div key={item.id || item.label} className="stat-card" data-reveal>
               <strong>{item.value || item.title}</strong>
               <span>{item.label || item.body}</span>
             </div>
@@ -206,7 +251,7 @@ function PricingSection({ section }) {
         <SectionIntro section={section} />
         <div className="pricing-grid">
           {(section.items || []).map((item) => (
-            <article key={item.id || item.title} className="pricing-card">
+            <article key={item.id || item.title} className="pricing-card" data-reveal>
               <h3>{item.title}</h3>
               <div className="price">{item.price}</div>
               <p>{item.body}</p>
@@ -230,7 +275,7 @@ function TestimonialsSection({ section }) {
         <SectionIntro section={section} />
         <div className="card-grid">
           {(section.items || []).map((item) => (
-            <blockquote key={item.id || item.author} className="card quote-card">
+            <blockquote key={item.id || item.author} className="card quote-card" data-reveal>
               <p>“{item.quote || item.body}”</p>
               <footer>{item.author || item.title}</footer>
             </blockquote>
@@ -399,7 +444,8 @@ function FooterSection({ section }) {
   )
 }
 
-export default function SectionRenderer({ section }) {
+export default function SectionRenderer({ section, siteSpec }) {
+  const reduceMotion = useReducedMotion()
   switch (section.type) {
     case 'navbar':
       return <NavbarSection section={section} />
@@ -431,14 +477,92 @@ export default function SectionRenderer({ section }) {
     case 'footer':
       return <FooterSection section={section} />
     case 'product-grid':
-    case 'featured-products':
+    case 'featured-products': {
+      const items = section.items || []
+      const showSwiper = USE_PRODUCT_SWIPER && items.length > 0
+      const showMarquee = USE_PRODUCT_MARQUEE && items.length > 0
+      const card = (item, idx, hidden) => (
+        <article
+          key={\`\${item.id || item.title}-\${idx}\`}
+          className="product-card product-card--carousel"
+          {...(hidden ? { 'aria-hidden': true } : {})}
+        >
+          <div className="product-image">
+            {item.image ? <img src={item.image} alt={hidden ? '' : item.title} /> : <div className="product-placeholder" />}
+          </div>
+          <h3>{item.title}</h3>
+          {item.price ? <span className="product-price">{item.price}</span> : null}
+          <p>{item.body || ''}</p>
+        </article>
+      )
+      if (showSwiper) {
+        if (reduceMotion) {
+          return (
+            <section className={\`section \${section.type} section--product-marquee\`} id={section.id}>
+              <div className="container">
+                <SectionIntro section={section} />
+              </div>
+              <div className="product-carousel" role="region" aria-label="Products">
+                <div className="product-carousel__mask product-carousel__mask--scroll">
+                  <div className="product-carousel__track product-carousel__track--static">
+                    {items.map((item, idx) => card(item, idx, false))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )
+        }
+        return (
+          <section className={\`section \${section.type} section--product-marquee\`} id={section.id}>
+            <div className="container">
+              <SectionIntro section={section} />
+            </div>
+            <Swiper
+              modules={[Pagination]}
+              slidesPerView="auto"
+              spaceBetween={16}
+              loop={items.length > 2}
+              grabCursor
+              watchOverflow
+              pagination={{ clickable: true, dynamicBullets: items.length > 4 }}
+              className="product-carousel swiper"
+              role="region"
+              aria-label="Products"
+            >
+              {items.map((item, idx) => (
+                <SwiperSlide
+                  key={\`\${item.id || item.title}-\${idx}\`}
+                  style={{ width: 'min(280px, 85vw)', maxWidth: 'min(280px, 85vw)', flexShrink: 0 }}
+                >
+                  {card(item, idx, false)}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </section>
+        )
+      }
+      if (showMarquee) {
+        return (
+          <section className={\`section \${section.type} section--product-marquee\`} id={section.id}>
+            <div className="container">
+              <SectionIntro section={section} />
+            </div>
+            <div className="product-carousel" role="region" aria-label="Products">
+              <ProductMarqueeTrack>
+                {items.map((item, idx) => card(item, idx, false))}
+                {items.map((item, idx) => card(item, idx, true))}
+              </ProductMarqueeTrack>
+            </div>
+          </section>
+        )
+      }
       return (
         <section className={\`section \${section.type}\`} id={section.id}>
           <div className="container">
             <SectionIntro section={section} />
             <div className="product-grid">
-              {(section.items || []).map((item) => (
-                <article key={item.id || item.title} className="product-card">
+              {items.map((item) => (
+                <article key={item.id || item.title} className="product-card" data-reveal>
                   <div className="product-image">{item.image ? <img src={item.image} alt={item.title} /> : <div className="product-placeholder" />}</div>
                   <h3>{item.title}</h3>
                   {item.price ? <span className="product-price">{item.price}</span> : null}
@@ -449,6 +573,7 @@ export default function SectionRenderer({ section }) {
           </div>
         </section>
       )
+    }
     case 'cart-summary':
       return (
         <section className="section cart-summary" id={section.id}>
@@ -473,11 +598,12 @@ export default function SectionRenderer({ section }) {
 }
 
 export function renderReactProject(siteSpec) {
+  const useSwiper = shouldUseSwiper(siteSpec)
   const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
   const homeSeo = resolvePageSeo(siteSpec, homePage)
   const homeStructuredData = homePage ? buildStructuredData(siteSpec, homePage) : []
   const files = {
-    'package.json': renderReactPackageJson(siteSpec.projectName),
+    'package.json': renderReactPackageJson(siteSpec.projectName, useSwiper ? { swiper: '^12.0.0' } : {}),
     'index.html': `<!doctype html>
 <html lang="${homeSeo.htmlLang}">
   <head>
@@ -526,7 +652,9 @@ export default defineConfig({
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './styles.css'
-
+${useSwiper ? `import 'swiper/css'
+import 'swiper/css/pagination'
+` : ''}
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
@@ -754,7 +882,56 @@ export default function SmartLink({ href = '#', children, ...props }) {
 }
 `,
     'src/components/ExactClonePage.jsx': renderExactClonePageComponent({ mode: 'react' }),
+    'src/components/MotionPageShell.jsx': `'use client'
+
+import { motion, useReducedMotion } from 'framer-motion'
+
+export default function MotionPageShell({ children }) {
+  const reduceMotion = useReducedMotion()
+  return (
+    <motion.main
+      className="motion-page-shell"
+      initial={reduceMotion ? false : { opacity: 1, y: 12 }}
+      animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.main>
+  )
+}
+`,
+    'src/components/RevealObserver.jsx': `'use client'
+
+import { useEffect } from 'react'
+
+export default function RevealObserver() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'))
+      return
+    }
+    const els = document.querySelectorAll('[data-reveal]')
+    if (!els.length) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return
+          entry.target.classList.add('is-visible')
+          io.unobserve(entry.target)
+        })
+      },
+      { threshold: 0.08 },
+    )
+    els.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
+  return null
+}
+`,
     'src/components/PageTemplate.jsx': `import ExactClonePage from './ExactClonePage'
+import MotionPageShell from './MotionPageShell'
+import RevealObserver from './RevealObserver'
 import SeoHead from './SeoHead'
 import SectionRenderer from './SectionRenderer'
 
@@ -782,16 +959,19 @@ export default function PageTemplate({ siteSpec, page }) {
   return (
     <>
       <SeoHead siteSpec={siteSpec} page={page} />
-      <div className="site-shell">
-        {page.sections.map((section) => (
-          <SectionRenderer key={section.id} section={section} siteSpec={siteSpec} />
-        ))}
-      </div>
+      <MotionPageShell>
+        <RevealObserver />
+        <div className="site-shell">
+          {page.sections.map((section) => (
+            <SectionRenderer key={section.id} section={section} siteSpec={siteSpec} />
+          ))}
+        </div>
+      </MotionPageShell>
     </>
   )
 }
 `,
-    'src/components/SectionRenderer.jsx': renderReactSectionRenderer(),
+    'src/components/SectionRenderer.jsx': renderReactSectionRenderer(siteSpec),
   }
 
   const sitemapXml = renderSitemapXml(siteSpec)

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import {
   buildGlobalCss,
+  buildHtmlMotionModule,
   buildHtmlRuntimeScript,
   escapeHtml,
   getLanguageFontMarkup,
@@ -15,6 +16,7 @@ import {
   resolvePageSeo,
   serializeStructuredData,
 } from '../seo.js'
+import { shouldUseSwiper } from '../../lib/swiper-policy.js'
 
 function renderSeoHeadMarkup(siteSpec, page) {
   const seo = resolvePageSeo(siteSpec, page)
@@ -132,36 +134,51 @@ function applySiteCssHrefToHtml(html, siteCssHref) {
   return next
 }
 
-function renderPageDocument(siteSpec, page, siteCssHref) {
-  const sections = (page.sections || []).map((section) => renderSectionHtml(section)).join('\n')
+const SWIPER_CDN_CSS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css'
+const SWIPER_CDN_JS = 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js'
+
+function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwiper = false) {
+  const sections = (page.sections || []).map((section) => renderSectionHtml(section, siteSpec)).join('\n')
   const { htmlLang, markup } = renderSeoHeadMarkup(siteSpec, page)
   const indianFontMarkup = getLanguageFontMarkup(siteSpec._indiaMode)
   const cssHref = escapeHtml(siteCssHref)
+  const motionHref = escapeHtml(siteMotionHref)
+  const swiperHead = useSwiper ? `    <link rel="stylesheet" href="${escapeHtml(SWIPER_CDN_CSS)}" />\n` : ''
+  const swiperBeforeSiteJs = useSwiper
+    ? `    <script src="${escapeHtml(SWIPER_CDN_JS)}" defer></script>\n`
+    : ''
 
   return `<!doctype html>
 <html lang="${escapeHtml(htmlLang)}">
   <head>
     ${markup}
     ${indianFontMarkup}
-    <link rel="stylesheet" href="${cssHref}" />
+${swiperHead}    <link rel="stylesheet" href="${cssHref}" />
   </head>
   <body>
     <div class="site-shell">
       ${sections}
     </div>
-    <script src="./site.js"></script>
+${swiperBeforeSiteJs}    <script src="./site.js" defer></script>
+    <script type="module" src="${motionHref}"></script>
   </body>
 </html>`
 }
 
 export function renderHtmlProject(siteSpec) {
+  const useSwiper = shouldUseSwiper(siteSpec)
   const cssContent = buildGlobalCss(siteSpec.theme)
   const cssFingerprint = createHash('sha256').update(cssContent).digest('hex').slice(0, 12)
   const siteCssHref = `./site.css?v=${cssFingerprint}`
 
+  const motionContent = buildHtmlMotionModule()
+  const motionFingerprint = createHash('sha256').update(motionContent).digest('hex').slice(0, 12)
+  const siteMotionHref = `./site-motion.mjs?v=${motionFingerprint}`
+
   const files = {
     'site.css': cssContent,
-    'site.js': buildHtmlRuntimeScript(),
+    'site.js': buildHtmlRuntimeScript(useSwiper),
+    'site-motion.mjs': motionContent,
     'robots.txt': renderRobotsTxt(siteSpec),
   }
   const sitemapXml = renderSitemapXml(siteSpec)
@@ -199,7 +216,7 @@ export function renderHtmlProject(siteSpec) {
           applySeoToExactCloneDocument(page.renderBlueprint.originalHtmlDocument, siteSpec, page),
           siteCssHref,
         )
-      : renderPageDocument(siteSpec, page, siteCssHref)
+      : renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwiper)
   }
 
   return { files }

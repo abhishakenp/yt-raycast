@@ -18,7 +18,7 @@ import {
   saveSiteSpec,
   stripSiteSpecBlueprints,
 } from '../spec/index.js'
-import { renderPreviewToWorkspace } from '../renderers/index.js'
+import { renderPreviewToWorkspace, writeNextAppToWorkspace } from '../renderers/index.js'
 import { detectLanguage } from './detect-language.js'
 import {
   alignGeneratedImagesToContext,
@@ -347,6 +347,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   // Inject design system colors into the homepage now that both are ready
   if (homepage && designBrief) {
     homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
+    if (siteSpec) writeNextAppToWorkspace(siteSpec, workspace)
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })

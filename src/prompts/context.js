@@ -29,7 +29,8 @@ export function contextPrompt(prompt, designBrief, siteType, brandProfile = null
       `}\n\n` +
       `When verified brand details are present, use them for project_name, tagline, and site_url rather than guessing. Do not invent contact details.\n` +
       `The site_type is "${siteType}". Use it to decide page count:\n` +
-      `- saas/ecommerce/marketplace/docs/blog/dashboard/community → 4-8 pages\n` +
+      `- ecommerce → 6-10 pages (e.g. Shop, product collections, Cart, About, Contact, FAQ, Learn/Blog) — real DTC breadth\n` +
+      `- saas/marketplace/docs/blog/dashboard/community → 4-8 pages\n` +
       `- game → just ["Home"]\n` +
       `- landing/portfolio → 3-5 pages unless the user explicitly asks for a one-page site\n` +
       `- For public marketing sites, prefer crawlable secondary pages such as Pricing, FAQ, About, Docs, Work, or Contact when they fit the prompt`,
