@@ -109,6 +109,8 @@ export function siteSpecPrompt({
       `- Use clean title patterns: homepage as "Project Name | Core benefit" and secondary pages as "Topic | Project Name" or "Project Name Topic | Benefit". Avoid keyword stuffing.\n` +
       `- When you include FAQ content, write realistic buyer or user questions rather than placeholder copy.\n` +
       `- When verified brand details are provided, use them for logo/contact/footer/social sections and keep those fields exact.\n` +
+      `- Do not invent physical addresses or phone numbers in contact/footer; omit them if not in the prompt or brand block.\n` +
+      `- Do not put generator/tool branding strings in any page content.\n` +
       `- Use the fallback structure when uncertain rather than inventing a malformed schema.${ecommerceRules}${editThemeRules}`,
     temperature: 0.2,
     maxTokens: 4000,

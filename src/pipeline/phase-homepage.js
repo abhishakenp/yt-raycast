@@ -18,11 +18,18 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   if (!next.includes(SHIPFAST_FOOTER_STYLE_ID)) {
     const styleTag = `
     <style id="${SHIPFAST_FOOTER_STYLE_ID}">
-      [${SHIPFAST_FOOTER_MARKER}].footer-branding {
-        margin-top: 1rem;
-        display: flex;
-        justify-content: center;
+      .sf-built-with-strip[${SHIPFAST_FOOTER_MARKER}] {
+        padding: 1.5rem 1rem 2rem;
+        text-align: center;
+        clear: both;
         width: 100%;
+        box-sizing: border-box;
+        border-top: 1px solid rgba(63, 63, 70, 0.5);
+      }
+      [${SHIPFAST_FOOTER_MARKER}].footer-branding {
+        margin-top: 0;
+        display: inline-flex;
+        justify-content: center;
       }
       [${SHIPFAST_FOOTER_MARKER}] .footer-branding__link {
         display: inline-flex;
@@ -111,10 +118,10 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
       `<footer class="sf-built-with-strip" style="padding: 1.5rem 1rem 2.5rem; text-align: center; clear: both; width: 100%; box-sizing: border-box;">${brandingHtml}</footer>\n</body>`,
     )
   } else {
-    next = `${next}\n${brandingHtml}`
+    next = `${next}\n<footer class="sf-built-with-strip">${brandingHtml}</footer>`
   }
 
-  if (next !== html) log('  ✓ ShipFast footer branding injected into homepage')
+  if (next !== html) log('  ✓ Ship Fast footer branding appended')
   return next
 }
 
@@ -138,7 +145,6 @@ export async function generateHomepage(
 
   let html = stripFences(result.content)
 
-  // Clean up invalid server-side code in generated HTML
   html = html
     .replace(/const\s+\{[^}]*\}\s*=\s*require\([^)]*\);?\n?/g, '')
     .replace(/<link[^>]*href="styles\.css"[^>]*>/g, '')

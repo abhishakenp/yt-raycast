@@ -15,8 +15,8 @@ import {
   serializeStructuredData,
 } from '../seo.js'
 import { collectShipFastStudioFiles } from '../studio-export.js'
-import { SHIP_FAST_SITE_URL } from '../../marketing.js'
 import { shouldUseSwiper } from '../../lib/swiper-policy.js'
+import { SHIP_FAST_SITE_URL } from '../../marketing.js'
 
 function collectThemeGoogleFontFamilies(theme = {}) {
   const typo = theme.typography || {}
@@ -1330,20 +1330,6 @@ function FooterSection({ section }) {
             <strong>{section.headline}</strong>
             {section.body ? <p>{section.body}</p> : null}
           </div>
-          <div className="footer-branding" aria-label="Built with Ship Fast">
-            <a
-              className="footer-branding__link"
-              href="${SHIP_FAST_SITE_URL}"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <ShipFastFooterLogo />
-              <span className="footer-branding__text">
-                <span className="footer-branding__label">Built with</span>
-                <span className="footer-branding__name">Ship Fast</span>
-              </span>
-            </a>
-          </div>
         </div>
         <nav className="footer-links">
           {(section.links || []).map((link) => (
@@ -1352,6 +1338,17 @@ function FooterSection({ section }) {
             </SmartLink>
           ))}
         </nav>
+        <div className="footer-ship-fast-attribution">
+          <div className="footer-branding" aria-label="Built with Ship Fast">
+            <a className="footer-branding__link" href={SHIP_FAST_SITE_URL} target="_blank" rel="noreferrer">
+              <ShipFastFooterLogo />
+              <span className="footer-branding__text">
+                <span className="footer-branding__label">Built with</span>
+                <span className="footer-branding__name">Ship Fast</span>
+              </span>
+            </a>
+          </div>
+        </div>
       </div>
     </footer>
   )

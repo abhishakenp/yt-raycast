@@ -65,7 +65,8 @@ export function pagePrompt(
     ? `\nCONTACT PAGE (mandatory):
 - Include a real HTML <form> in <main> with: a text <input name="name">, an email <input type="email" name="email">, a <textarea name="message">, and a submit <button type="submit">. Labels must be visible.
 - Add a small inline <script> before </body> that prevents default submit and shows a polite success message, or use data attributes consistent with the homepage demo patterns.
-- Do NOT put "Built with Ship Fast", footer-branding, rocket logos, or builder marketing inside the form card or as the only content in the message column. Those elements belong ONLY in the site <footer> copied from the homepage, once at the bottom of the page.
+- Do not add street addresses, cities, or map pins unless the user prompt or verified brand block explicitly provides them—never invent place names.
+- Do not include "Ship Fast", builder badges, rocket logos, or generator marketing anywhere on the page.
 - The panel titled "Send us a Message" (or similar) must contain the form fields above, not a logo or empty decorative block.\n`
     : ''
   const ecommercePageBlock = siteType === 'ecommerce'

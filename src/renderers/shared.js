@@ -812,11 +812,13 @@ export function renderSectionHtml(section, siteSpec = {}) {
                 <strong>${escapeHtml(section.headline || '')}</strong>
                 ${body}
               </div>
-              ${renderShipFastFooterBrandingHtml()}
             </div>
             <nav class="footer-links">
               ${renderItemList(section.links || [], (link) => `<a href="${escapeHtml(link.href || '#')}">${escapeHtml(link.label || 'Link')}</a>`)}
             </nav>
+            <div class="footer-ship-fast-attribution">
+              ${renderShipFastFooterBrandingHtml()}
+            </div>
           </div>
         </footer>
       `
@@ -1134,6 +1136,14 @@ button, input, textarea { font: inherit; }
 }
 .footer-meta strong {
   color: var(--color-text);
+}
+.footer-ship-fast-attribution {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 .footer-branding {
   display: inline-flex;
