@@ -234,8 +234,8 @@ function StatsSection({ section }) {
         <div className="stat-grid">
           {(section.items || []).map((item) => (
             <div key={item.id || item.label} className="stat-card" data-reveal>
-              <strong>{item.value || item.title}</strong>
-              <span>{item.label || item.body}</span>
+              <span className="stat-card__label">{item.label || item.body}</span>
+              <strong className="stat-card__value">{item.value || item.title}</strong>
             </div>
           ))}
         </div>
@@ -427,7 +427,7 @@ function FooterSection({ section }) {
         </nav>
         <div className="footer-ship-fast-attribution">
           <div className="footer-branding" aria-label="Built with Ship Fast">
-            <a className="footer-branding__link" href={SHIP_FAST_SITE_URL} target="_blank" rel="noreferrer">
+            <a className="footer-branding__link" href="${SHIP_FAST_SITE_URL}" target="_blank" rel="noreferrer">
               <ShipFastFooterLogo />
               <span className="footer-branding__text">
                 <span className="footer-branding__label">Built with</span>

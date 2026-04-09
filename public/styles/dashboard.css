@@ -3026,8 +3026,48 @@ body.debug-mode .debug-panel {
   margin-bottom: 0;
 }
 .preview-chat-cms-studio-panel[hidden],
+.preview-chat-cms-medusa-panel[hidden],
 .preview-chat-cms-quick-panel[hidden] {
   display: none !important;
+}
+.preview-chat-medusa-inline {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.preview-chat-medusa-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.preview-chat-medusa-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e0f0;
+}
+.preview-chat-medusa-open-link {
+  font-size: 12px;
+  color: #a78bfa;
+  text-decoration: none;
+}
+.preview-chat-medusa-open-link:hover {
+  text-decoration: underline;
+}
+.preview-chat-medusa-frame {
+  width: 100%;
+  flex: 1;
+  min-height: min(64vh, 620px);
+  border: 1px solid rgba(72, 67, 107, 0.85);
+  border-radius: 12px;
+  background: #0c0a12;
+}
+.preview-chat-cms-note--medusa {
+  margin-bottom: 0;
 }
 .preview-chat-cms-quick-panel {
   flex: 1;

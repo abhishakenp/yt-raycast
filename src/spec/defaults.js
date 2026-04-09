@@ -190,7 +190,15 @@ function defaultFaqItems(projectName, siteType, ctx = {}) {
   ]
 }
 
-function defaultNavActions(projectName, pageNames = []) {
+function defaultNavActions(projectName, pageNames = [], siteType = 'landing') {
+  if (siteType === 'ecommerce') {
+    const shopHref = findPageRoute(pageNames, /shop|catalog/i, '/shop')
+    const cartHref = findPageRoute(pageNames, /cart/i, '/cart')
+    return [
+      { id: 'cta-primary', label: 'Shop', href: shopHref, style: 'primary' },
+      { id: 'cta-secondary', label: 'Cart', href: cartHref, style: 'secondary' },
+    ]
+  }
   const pricingHref = findPageRoute(pageNames, /pricing/i, '#pricing')
   const contactHref = findPageRoute(pageNames, /contact/i, '#contact')
   return [
@@ -200,6 +208,31 @@ function defaultNavActions(projectName, pageNames = []) {
 }
 
 function defaultHero(projectName, tagline, siteType, features = [], pageNames = []) {
+  if (siteType === 'ecommerce') {
+    const shopHref = findPageRoute(pageNames, /shop|catalog/i, '/shop')
+    const cartHref = findPageRoute(pageNames, /cart/i, '/cart')
+    const body =
+      tagline ||
+      `Browse curated categories, new arrivals, and dependable service at ${projectName}.`
+    return {
+      id: 'hero',
+      type: 'hero',
+      variant: 'split',
+      headline: projectName,
+      subheadline: tagline || 'Quality products, straightforward shopping.',
+      body,
+      actions: [
+        { label: 'Shop now', href: shopHref, style: 'primary' },
+        { label: 'View cart', href: cartHref, style: 'secondary' },
+      ],
+      items: [
+        { title: 'New arrivals' },
+        { title: 'Secure checkout' },
+        { title: 'Easy returns' },
+      ],
+      interactions: [{ type: 'heroCta', behavior: 'scroll', target: '#featured-products' }],
+    }
+  }
   const body =
     siteType === 'dashboard'
       ? `Operate ${projectName} from one control surface with focused workflows and fast team collaboration.`
@@ -231,7 +264,181 @@ function defaultFeatureItems(ctx) {
   }))
 }
 
+function defaultEcommerceFaqItems(projectName) {
+  return [
+    {
+      title: `How long does shipping take?`,
+      body: `Orders typically ship within one to two business days. You will receive tracking as soon as your package is on the way.`,
+    },
+    {
+      title: `What is your return policy?`,
+      body: `If something is not right, start a return within 30 days of delivery. We will help with exchanges or refunds for eligible items.`,
+    },
+    {
+      title: `Is checkout secure?`,
+      body: `Yes. Payments are processed with industry-standard encryption. We do not store your full card details on our servers.`,
+    },
+    {
+      title: `How can I contact ${projectName} about an order?`,
+      body: `Use the contact form or email on this site with your order number. We aim to reply within one business day.`,
+    },
+  ]
+}
+
+function buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames) {
+  return [
+    defaultHero(projectName, tagline, 'ecommerce', [], pageNames),
+    {
+      id: 'stats',
+      type: 'stats',
+      variant: 'pill-grid',
+      headline: 'Shopping you can trust',
+      items: [
+        { label: 'Dispatch', value: 'Under 48 hours' },
+        { label: 'Returns', value: '30-day window' },
+        { label: 'Checkout', value: 'Encrypted' },
+      ],
+    },
+    {
+      id: 'features',
+      type: 'features',
+      variant: 'cards',
+      headline: 'Why customers shop here',
+      body: 'Straightforward policies and products chosen for everyday use.',
+      items: [
+        {
+          id: 'ec-f1',
+          title: 'Curated selection',
+          body: 'We focus on quality and value across the categories we carry.',
+        },
+        {
+          id: 'ec-f2',
+          title: 'Clear pricing',
+          body: 'See prices up front so you know what you pay before checkout.',
+        },
+        {
+          id: 'ec-f3',
+          title: 'Helpful support',
+          body: 'Questions about sizing, delivery, or orders get a timely response.',
+        },
+        {
+          id: 'ec-f4',
+          title: 'Hassle-free returns',
+          body: 'Simple steps if an item is not what you expected.',
+        },
+      ],
+    },
+    {
+      id: 'featured-products',
+      type: 'featured-products',
+      variant: 'carousel',
+      headline: 'Featured products',
+      body: 'Hand-picked items from our collection.',
+      items: [
+        { title: 'Premium pick', price: '$49.99', body: 'Built for daily wear with dependable materials.', image: '' },
+        { title: 'Customer favorite', price: '$39.99', body: 'Our most popular choice this season.', image: '' },
+        { title: 'New arrival', price: '$59.99', body: 'Fresh styles just added to the catalog.', image: '' },
+        { title: 'Limited run', price: '$79.99', body: 'Small-batch release while supplies last.', image: '' },
+      ],
+    },
+    {
+      id: 'product-grid',
+      type: 'product-grid',
+      variant: 'filterable',
+      headline: 'Shop all',
+      body: 'Browse the full collection.',
+      items: [],
+      dataSource: { type: 'medusa', function: 'getProducts' },
+    },
+    {
+      id: 'cart-summary',
+      type: 'cart-summary',
+      variant: 'drawer',
+      headline: 'Your cart',
+      body: 'Review items before checkout.',
+      dataSource: { type: 'medusa', function: 'getCart' },
+    },
+    {
+      id: 'testimonials',
+      type: 'testimonials',
+      variant: 'cards',
+      headline: 'What shoppers say',
+      items: [
+        {
+          quote: `Great quality and quick delivery. ${projectName} made it easy to find what I needed.`,
+          author: 'Verified buyer',
+        },
+        {
+          quote: `Straightforward checkout and responsive support when I had a sizing question.`,
+          author: 'Repeat customer',
+        },
+      ],
+    },
+    {
+      id: 'promo-cta',
+      type: 'cta',
+      variant: 'banner',
+      headline: 'Stay in the loop',
+      body: 'Be first to hear about new arrivals and seasonal offers.',
+      actions: [{ label: 'Join the list', href: '#contact', style: 'primary' }],
+    },
+    {
+      id: 'faq',
+      type: 'faq',
+      variant: 'accordion',
+      headline: `${projectName} — common questions`,
+      body: 'Shipping, returns, and order help in one place.',
+      items: defaultEcommerceFaqItems(projectName),
+      interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
+    },
+    {
+      id: 'contact',
+      type: 'contact-form',
+      variant: 'split',
+      headline: 'We are here to help',
+      body: 'Questions about an order, sizing, or delivery? Send a message and we will get back to you.',
+      fields: [
+        { name: 'name', label: 'Name', type: 'text', placeholder: 'Your name', required: true },
+        { name: 'email', label: 'Email', type: 'email', placeholder: 'you@example.com', required: true },
+        {
+          name: 'message',
+          label: 'Message',
+          type: 'textarea',
+          placeholder: 'How can we help?',
+          required: true,
+        },
+      ],
+      form: {
+        successMessage: 'Thanks — we will reply shortly.',
+        errorMessage: 'Please check the required fields and try again.',
+        action: { type: 'placeholder', target: 'lead_capture' },
+      },
+    },
+    {
+      id: 'footer',
+      type: 'footer',
+      variant: 'simple',
+      headline: projectName,
+      links:
+        pageNames.length > 1
+          ? pageNames.slice(0, 5).map((pageName, pageIdx) => ({
+              label: pageName,
+              href: toPageRoute(pageName, pageIdx),
+            }))
+          : [
+              { label: 'Home', href: '/' },
+              { label: 'Shop', href: '/shop' },
+              { label: 'FAQ', href: '/faq' },
+              { label: 'Contact', href: '/contact' },
+            ],
+    },
+  ]
+}
+
 function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNames = []) {
+  if (siteType === 'ecommerce') {
+    return buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames)
+  }
   const sections = [
     defaultHero(projectName, tagline, siteType, ctx?.features || [], pageNames),
     {
@@ -311,39 +518,6 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
         { title: 'Activity', body: 'Review state changes and generated outputs as they happen.' },
       ],
     })
-  } else if (siteType === 'ecommerce') {
-    sections.push(
-      {
-        id: 'featured-products',
-        type: 'featured-products',
-        variant: 'carousel',
-        headline: 'Featured Products',
-        body: 'Hand-picked items from our collection.',
-        items: [
-          { title: 'Premium Product', price: '$49.99', body: 'Quality craftsmanship meets modern design.', image: '' },
-          { title: 'Best Seller', price: '$39.99', body: 'Our most popular item this season.', image: '' },
-          { title: 'New Arrival', price: '$59.99', body: 'Just landed — be the first to own it.', image: '' },
-          { title: 'Limited Edition', price: '$79.99', body: 'Exclusive release, limited stock available.', image: '' },
-        ],
-      },
-      {
-        id: 'product-grid',
-        type: 'product-grid',
-        variant: 'filterable',
-        headline: 'Shop All',
-        body: 'Browse our complete collection.',
-        items: [],
-        dataSource: { type: 'medusa', function: 'getProducts' },
-      },
-      {
-        id: 'cart-summary',
-        type: 'cart-summary',
-        variant: 'drawer',
-        headline: 'Your Cart',
-        body: 'Review your items before checkout.',
-        dataSource: { type: 'medusa', function: 'getCart' },
-      },
-    )
   } else {
     sections.push({
       id: 'testimonials',
@@ -653,7 +827,7 @@ export function buildFallbackSiteSpec({
                   label: pageName,
                   href: toPageRoute(pageName, pageIdx),
                 })),
-              actions: defaultNavActions(projectName, pageNames),
+              actions: defaultNavActions(projectName, pageNames, inferredSiteType),
               interactions: [{ type: 'mobileMenu', target: 'main-nav', behavior: 'toggle' }],
             },
             ...defaultSectionsForSiteType(ctx, inferredSiteType, projectName, ctx.tagline, pageNames),
@@ -703,7 +877,7 @@ export function buildFallbackSiteSpec({
     navigation: {
       global: pages.map((page) => ({ label: page.name, href: page.route })),
       footer: pages.map((page) => ({ label: page.name, href: page.route })),
-      ctas: defaultNavActions(projectName, pageNames),
+      ctas: defaultNavActions(projectName, pageNames, inferredSiteType),
     },
     pages,
     components: [

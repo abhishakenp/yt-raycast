@@ -6,12 +6,14 @@ import {
   BASE_DOMAIN,
   DASHBOARD_PORT,
   HOMEPAGE_MODEL,
+  getMedusaAdminAppUrl,
   isSanityConfigured,
   isSanityChatWriteConfigured,
   LLM_CONFIG,
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
 } from '../config.js'
+import { getMedusaAdminEmbedAndEcommerce } from './medusa-embed.js'
 import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
 import { groq } from '../llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
@@ -101,6 +103,13 @@ import {
   checkPromptContentPolicy,
   CONTENT_POLICY_CLIENT_MESSAGE,
 } from '../../public/scripts/content-policy.js'
+import {
+  getNextPreviewSnapshot,
+  isNextPreviewFeatureEnabled,
+  shutdownNextPreview,
+  startNextPreview,
+  stopNextPreview,
+} from './next-dev-preview.js'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -593,11 +602,13 @@ export async function startServer(sessionsDir) {
 
   // ─── Public: Firebase client config ──────────────────────
   app.get('/api/config', (_req, res) => {
+    const medusaUrl = getMedusaAdminAppUrl()
     res.json({
       apiKey: process.env.FIREBASE_API_KEY ?? '',
       authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
       projectId: process.env.FIREBASE_PROJECT_ID ?? '',
       appId: process.env.FIREBASE_APP_ID ?? '',
+      medusaAdminConfigured: Boolean(medusaUrl),
     })
   })
 
@@ -1130,6 +1141,7 @@ export async function startServer(sessionsDir) {
           createdAt: session.createdAt,
           done: session.tasks.filter((t) => t.status === 'DONE').length,
           isPrivate: true,
+          medusaAdminEmbed: { show: false, url: null },
         })
       }
     }
@@ -1140,6 +1152,7 @@ export async function startServer(sessionsDir) {
       req,
     )
     const payment = await getSessionPaymentDetails(session, req, targets[0]?.target || 'html')
+    const { ecommerce, medusaAdminEmbed } = getMedusaAdminEmbedAndEcommerce(session)
     res.json({
       id: session.id,
       prompt: session.prompt,
@@ -1155,6 +1168,8 @@ export async function startServer(sessionsDir) {
       taskCount: session.tasks.length,
       done: session.tasks.filter((t) => t.status === 'DONE').length,
       isAnonymous: !session.userId,
+      ecommerce,
+      medusaAdminEmbed,
     })
   })
 
@@ -1165,6 +1180,8 @@ export async function startServer(sessionsDir) {
     const store = await readChatStoreAsync(session.workspace, session.id)
     const editable = canSessionRunEdit(session.workspace)
     const cmsMode = isSanityChatWriteConfigured()
+    const { medusaAdminEmbed } = getMedusaAdminEmbedAndEcommerce(session)
+    const siteContentDock = cmsMode || medusaAdminEmbed.show
     let siteSettings = null
     if (cmsMode) {
       try {
@@ -1179,7 +1196,8 @@ export async function startServer(sessionsDir) {
       summary: store.summary,
       messages: store.messages,
       editable,
-      mode: cmsMode ? 'cms' : 'llm',
+      mode: siteContentDock ? 'cms' : 'llm',
+      medusaAdminEmbed,
       ...(cmsMode ? { siteSettings } : {}),
     })
   })
@@ -1755,6 +1773,36 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  app.get('/api/sessions/:id/next-preview', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    res.json(getNextPreviewSnapshot(session))
+  })
+
+  app.post('/api/sessions/:id/next-preview/start', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    if (!isNextPreviewFeatureEnabled()) {
+      return res.status(403).json({ error: 'Next preview is disabled in this environment' })
+    }
+    try {
+      const sessionCtx = makeSessionState(session)
+      const out = await startNextPreview(session, (msg) => sessionCtx.broadcast(msg))
+      res.json(out)
+    } catch (err) {
+      res.status(400).json({ error: err?.message || 'Failed to start Next preview' })
+    }
+  })
+
+  app.post('/api/sessions/:id/next-preview/stop', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    res.json(stopNextPreview(session.id))
+  })
+
   app.post('/api/sessions/:id/github/push', requireAuth, async (req, res) => {
     const { parseGitHubPushPayload, sanitizeErrorResponse } = await httpContractsPromise
     const payload = parseGitHubPushPayload(req.body ?? {})
@@ -1880,6 +1928,11 @@ export async function startServer(sessionsDir) {
   console.log(`  Server      → http://localhost:${DASHBOARD_PORT}`)
   console.log(`  Sessions dir: ${_sessionsDir}`)
   void ensureSanityCorsOrigins().catch(() => {})
+  const stopNextPreviewOnExit = () => {
+    shutdownNextPreview()
+  }
+  process.once('SIGINT', stopNextPreviewOnExit)
+  process.once('SIGTERM', stopNextPreviewOnExit)
 }
 
 /** Start a session from CLI (backward compat) */

@@ -104,6 +104,11 @@ function readmeRoutes(siteSpec) {
     routes.push('/studio')
   }
 
+  if (siteSpec?.siteType === 'ecommerce') {
+    if (!routes.includes('/shop')) routes.push('/shop')
+    if (!routes.includes('/checkout')) routes.push('/checkout')
+  }
+
   return routes.length ? routes : ['/']
 }
 
@@ -148,6 +153,11 @@ function readmeTargetDetails(target, siteSpec = {}) {
             'Embedded Sanity Studio is served at `/studio` after `bun install`. Use `bun run studio` to run the copied `studio/` package standalone.',
           )
         }
+      }
+      if (siteSpec.siteType === 'ecommerce') {
+        notes.push(
+          'Medusa: run the bundled backend with `bun run medusa:dev` (see `medusa-backend/README.txt`) or any Medusa v2 server; copy `.env.example.medusa` into `.env.local`, set `MEDUSA_BACKEND_URL`, `NEXT_PUBLIC_MEDUSA_BACKEND_URL`, and `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`. Allow your Next origin in `STORE_CORS` (`infra/medusa/run-medusa.txt`). Catalog sync: `bun run sync:medusa-catalog` with a site-spec JSON file.',
+        )
       }
       return {
         label: 'Next.js',
@@ -578,7 +588,11 @@ export function renderSectionHtml(section, siteSpec = {}) {
             ${subheadline}
             ${headline}
             <div class="stat-grid">
-              ${renderItemList(section.items || [], (item) => `<div class="stat-card" data-reveal><strong>${escapeHtml(item.value || item.title || '')}</strong><span>${escapeHtml(item.label || item.body || '')}</span></div>`)}
+              ${renderItemList(
+                section.items || [],
+                (item) =>
+                  `<div class="stat-card" data-reveal><span class="stat-card__label">${escapeHtml(item.label || item.body || '')}</span><strong class="stat-card__value">${escapeHtml(item.value || item.title || '')}</strong></div>`,
+              )}
             </div>
           </div>
         </section>

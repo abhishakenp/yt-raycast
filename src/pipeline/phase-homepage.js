@@ -174,7 +174,6 @@ export async function generateHomepage(
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
   log(`  index.html: ${html.length} chars${tpsStr}`)
 
-  sessionCtx.signalHomepageReady()
   return {
     html,
     inputTokens: result.inputTokens ?? 0,

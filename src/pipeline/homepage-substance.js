@@ -38,9 +38,13 @@ function hasMarketingStructure(bodyHtml) {
   )
 }
 
+const siteSpecLooksEcommerce = (siteSpec) =>
+  String(siteSpec?.siteType || siteSpec?.metadata?.siteType || '').toLowerCase() === 'ecommerce'
+
 export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   if (!html || typeof html !== 'string') return true
   if (!siteSpec?.pages?.length) return false
+  if (siteSpecLooksEcommerce(siteSpec)) return false
 
   if (looksLikeThreeJsGame(html)) return false
   if (looksLikeDeclaredAppUi(html)) return false

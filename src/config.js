@@ -86,6 +86,38 @@ export const ECOMMERCE_AWWWARDS_GALLERY_URL = 'https://www.awwwards.com/websites
 
 export const ECOMMERCE_MEDUSA_DOCS_LEARN = 'https://docs.medusajs.com/learn'
 
+export const getMedusaAdminAppUrl = () => {
+  const explicit = (process.env.MEDUSA_ADMIN_URL || '').trim()
+  if (explicit) {
+    try {
+      const u = new URL(explicit)
+      return u.pathname === '/' || u.pathname === ''
+        ? `${u.origin}/app`
+        : explicit.replace(/\/+$/, '')
+    } catch {
+      return ''
+    }
+  }
+  const backend = (process.env.MEDUSA_BACKEND_URL || '').trim()
+  if (!backend) return ''
+  try {
+    const u = new URL(backend)
+    return `${u.origin}/app`
+  } catch {
+    return ''
+  }
+}
+
+export const resolveMedusaAdminEmbedPayload = (eligible) => {
+  if (process.env.SHIP_FAST_MEDUSA_ADMIN_EMBED === '0') {
+    return { show: false, url: null }
+  }
+  const url = getMedusaAdminAppUrl()
+  if (!url) return { show: false, url: null }
+  if (!eligible) return { show: false, url }
+  return { show: true, url }
+}
+
 export const ECOMMERCE_REFERENCE_EXEMPLAR_URLS = Object.freeze([
   'https://www.mvmt.com/home',
   'https://www.ledger.com/',

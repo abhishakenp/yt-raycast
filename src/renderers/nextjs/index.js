@@ -80,12 +80,15 @@ function renderNextPackageJson(projectName, extraDependencies = {}, extraScripts
 
 function renderMedusaExportFiles() {
   return {
-    '.env.example.medusa': `# Medusa.js E-Commerce — optional, works without these
+    '.env.example.medusa': `# Medusa Store API (server + browser)
 MEDUSA_BACKEND_URL=http://localhost:9000
 NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
-# Payment (Stripe — optional, configure in Medusa admin)
+# Optional: override default system payment provider id from Medusa Admin
+# NEXT_PUBLIC_MEDUSA_PAYMENT_PROVIDER_ID=pp_system_default
+# Stripe (when configured in Medusa for the storefront)
 # NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+# On the Medusa server, set STORE_CORS to include this app origin (e.g. http://localhost:3000,http://localhost:7420). See infra/medusa/run-medusa.txt in Ship Fast.
 `,
     'lib/medusa.js': `import Medusa from '@medusajs/js-sdk'
 
@@ -190,11 +193,15 @@ export async function removeLineItem(cartId, lineItemId) {
   }
 }
 
-export async function createPaymentSessions(cartId) {
+export async function createPaymentSessions(cartId, providerId) {
   const client = getMedusaSdk()
   if (!client || !cartId) return null
+  const pid =
+    providerId ||
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_MEDUSA_PAYMENT_PROVIDER_ID) ||
+    'pp_system_default'
   try {
-    const { cart } = await client.store.payment.initiatePaymentSession(cartId, { provider_id: 'pp_system_default' })
+    const { cart } = await client.store.payment.initiatePaymentSession(cartId, { provider_id: pid })
     return cart || null
   } catch {
     return null
@@ -256,11 +263,22 @@ export async function listShippingOptions(cartId) {
   }
 }
 
-export async function setCartAddress(cartId, address) {
+export async function setCartAddress(cartId, shippingAddress) {
   const client = getMedusaSdk()
   if (!client || !cartId) return null
   try {
-    const { cart } = await client.store.cart.update(cartId, address)
+    const { cart } = await client.store.cart.update(cartId, { shipping_address: shippingAddress })
+    return cart || null
+  } catch {
+    return null
+  }
+}
+
+export async function updateStoreCart(cartId, payload) {
+  const client = getMedusaSdk()
+  if (!client || !cartId) return null
+  try {
+    const { cart } = await client.store.cart.update(cartId, payload)
     return cart || null
   } catch {
     return null
@@ -442,7 +460,9 @@ export function CartProvider({ children }) {
   const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
 
   return (
-    <CartContext.Provider value={{ cart, loading, addItem, updateItem, removeItem, itemCount }}>
+    <CartContext.Provider
+      value={{ cart, loading, addItem, updateItem, removeItem, itemCount, refreshCart }}
+    >
       {children}
     </CartContext.Provider>
   )
@@ -506,6 +526,7 @@ export default function ProductCard({ product }) {
     'components/ecommerce/CartDrawer.jsx': `'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCart } from './CartProvider'
 
@@ -562,7 +583,7 @@ export default function CartDrawer() {
             </ul>
             <div className="cart-footer">
               <strong>Subtotal: {subtotal}</strong>
-              <a href="/checkout" className="button button--primary">Checkout</a>
+              <Link href="/checkout" className="button button--primary">Checkout</Link>
             </div>
             </motion.aside>
           </motion.div>
@@ -601,6 +622,303 @@ export default function AddToCart({ variantId, disabled }) {
 }
 `,
     'components/ecommerce/ProductMarquee.jsx': productMarqueeFile,
+  }
+}
+
+function renderEcommerceAppShellFiles() {
+  return {
+    'components/ecommerce/EcommerceClientRoot.jsx': `'use client'
+
+import { CartProvider } from './CartProvider'
+
+export default function EcommerceClientRoot({ children }) {
+  return <CartProvider>{children}</CartProvider>
+}
+`,
+    'hooks/useCheckout.js': `'use client'
+
+import { useCallback, useMemo, useState } from 'react'
+import { useCart } from '../components/ecommerce/CartProvider'
+import {
+  completeCart,
+  createPaymentSessions,
+  listShippingOptions,
+  setShippingMethod,
+  updateStoreCart,
+} from '../lib/medusa'
+
+export const useCheckout = () => {
+  const { cart, loading: cartLoading, refreshCart } = useCart()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [email, setEmail] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [address1, setAddress1] = useState('')
+  const [city, setCity] = useState('')
+  const [countryCode, setCountryCode] = useState('us')
+  const [postalCode, setPostalCode] = useState('')
+
+  const canSubmit = useMemo(
+    () =>
+      Boolean(
+        email.trim() &&
+          firstName.trim() &&
+          lastName.trim() &&
+          address1.trim() &&
+          city.trim() &&
+          countryCode.trim() &&
+          postalCode.trim(),
+      ),
+    [email, firstName, lastName, address1, city, countryCode, postalCode],
+  )
+
+  const submit = useCallback(async () => {
+    setError('')
+    if (!cart?.id) {
+      setError('Cart unavailable. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and connect to Medusa.')
+      return
+    }
+    if (!cart.items?.length) {
+      setError('Your cart is empty.')
+      return
+    }
+    if (!canSubmit) {
+      setError('Fill in all fields.')
+      return
+    }
+    setBusy(true)
+    try {
+      const next = await updateStoreCart(cart.id, {
+        email: email.trim(),
+        shipping_address: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          address_1: address1.trim(),
+          city: city.trim(),
+          country_code: countryCode.trim().toLowerCase(),
+          postal_code: postalCode.trim(),
+        },
+      })
+      if (!next?.id) {
+        setError('Could not update cart.')
+        return
+      }
+      await refreshCart()
+      const shipOpts = await listShippingOptions(next.id)
+      const opt = shipOpts?.[0]
+      if (!opt?.id) {
+        setError('No shipping options. Configure shipping in Medusa Admin for this region.')
+        return
+      }
+      await setShippingMethod(next.id, opt.id)
+      await createPaymentSessions(next.id)
+      await refreshCart()
+      const result = await completeCart(next.id)
+      const order = result?.order
+      if (order?.id) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('medusa_cart_id')
+          window.location.reload()
+        }
+        return
+      }
+      setError('Complete payment setup in Medusa or choose a different payment provider.')
+    } catch {
+      setError('Checkout failed.')
+    } finally {
+      setBusy(false)
+    }
+  }, [
+    cart,
+    canSubmit,
+    email,
+    firstName,
+    lastName,
+    address1,
+    city,
+    countryCode,
+    postalCode,
+    refreshCart,
+  ])
+
+  return {
+    cart,
+    cartLoading,
+    busy,
+    error,
+    email,
+    setEmail,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    address1,
+    setAddress1,
+    city,
+    setCity,
+    countryCode,
+    setCountryCode,
+    postalCode,
+    setPostalCode,
+    submit,
+  }
+}
+`,
+    'components/ecommerce/CheckoutView.jsx': `'use client'
+
+import Link from 'next/link'
+import { useCheckout } from '../../hooks/useCheckout'
+
+export default function CheckoutView() {
+  const {
+    cart,
+    cartLoading,
+    busy,
+    error,
+    email,
+    setEmail,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    address1,
+    setAddress1,
+    city,
+    setCity,
+    countryCode,
+    setCountryCode,
+    postalCode,
+    setPostalCode,
+    submit,
+  } = useCheckout()
+
+  return (
+    <div className="checkout-shell">
+      {cartLoading ? <p>Loading cart…</p> : null}
+      {!cartLoading && !cart?.items?.length ? (
+        <p className="cart-empty-state">Your cart is empty. <Link href="/shop">Browse the shop</Link>.</p>
+      ) : null}
+      {cart?.items?.length ? (
+        <form
+          className="checkout-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            submit()
+          }}
+        >
+          <label>
+            <span>Email</span>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+          </label>
+          <label>
+            <span>First name</span>
+            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} required autoComplete="given-name" />
+          </label>
+          <label>
+            <span>Last name</span>
+            <input value={lastName} onChange={(e) => setLastName(e.target.value)} required autoComplete="family-name" />
+          </label>
+          <label>
+            <span>Address</span>
+            <input value={address1} onChange={(e) => setAddress1(e.target.value)} required autoComplete="street-address" />
+          </label>
+          <label>
+            <span>City</span>
+            <input value={city} onChange={(e) => setCity(e.target.value)} required autoComplete="address-level2" />
+          </label>
+          <label>
+            <span>Country (ISO code)</span>
+            <input value={countryCode} onChange={(e) => setCountryCode(e.target.value)} required autoComplete="country" maxLength={2} />
+          </label>
+          <label>
+            <span>Postal code</span>
+            <input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required autoComplete="postal-code" />
+          </label>
+          {error ? <p className="form-message" role="alert">{error}</p> : null}
+          <button type="submit" className="button button--primary" disabled={busy}>
+            {busy ? 'Processing…' : 'Place order'}
+          </button>
+        </form>
+      ) : null}
+    </div>
+  )
+}
+`,
+    'app/shop/page.jsx': `import ProductCard from '../../components/ecommerce/ProductCard'
+import { getProducts } from '../../lib/medusa'
+
+export const metadata = {
+  title: 'Shop',
+}
+
+export default async function ShopPage() {
+  const products = await getProducts({ limit: 100 })
+  return (
+    <main className="container shop-page" style={{ padding: 'var(--spacing-section) 0' }}>
+      <h1 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1.5rem' }}>Shop</h1>
+      {products.length === 0 ? (
+        <p style={{ color: 'var(--color-muted)' }}>
+          No products loaded. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and publish products in Medusa Admin.
+        </p>
+      ) : (
+        <div
+          className="product-grid"
+          style={{
+            display: 'grid',
+            gap: '1.5rem',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+          }}
+        >
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
+    </main>
+  )
+}
+`,
+    'app/product/[handle]/page.jsx': `import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import ProductCard from '../../../components/ecommerce/ProductCard'
+import { getProductByHandle } from '../../../lib/medusa'
+
+export async function generateMetadata({ params }) {
+  const product = await getProductByHandle(params.handle)
+  return { title: product?.title || 'Product' }
+}
+
+export default async function ProductDetailPage({ params }) {
+  const product = await getProductByHandle(params.handle)
+  if (!product) notFound()
+  return (
+    <main className="container" style={{ padding: 'var(--spacing-section) 0' }}>
+      <p style={{ marginBottom: '1rem' }}>
+        <Link href="/shop" style={{ color: 'var(--color-primary)' }}>
+          ← Shop
+        </Link>
+      </p>
+      <ProductCard product={product} />
+    </main>
+  )
+}
+`,
+    'app/checkout/page.jsx': `import CheckoutView from '../../components/ecommerce/CheckoutView'
+
+export const metadata = {
+  title: 'Checkout',
+}
+
+export default function CheckoutPage() {
+  return (
+    <main className="container" style={{ padding: 'var(--spacing-section) 0' }}>
+      <h1 style={{ fontFamily: 'var(--font-heading)' }}>Checkout</h1>
+      <CheckoutView />
+    </main>
+  )
+}
+`,
   }
 }
 
@@ -1075,9 +1393,25 @@ import 'swiper/css/pagination'
 
 `
     : ''
+  const ecommerceImportBlock =
+    siteSpec.siteType === 'ecommerce'
+      ? `import CartDrawer from './ecommerce/CartDrawer'
+
+`
+      : ''
+  const ecommerceNavBlock =
+    siteSpec.siteType === 'ecommerce'
+      ? `          <div className="nav-actions">
+            <SmartLink className="button" href="/shop">Shop</SmartLink>
+            <CartDrawer />
+            <ActionRow actions={section.actions} />
+          </div>`
+      : `          <div className="nav-actions">
+            <ActionRow actions={section.actions} />
+          </div>`
   return `'use client'
 
-${swiperImportBlock}import { useMemo, useState } from 'react'
+${swiperImportBlock}${ecommerceImportBlock}import { useMemo, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import SmartLink from './SmartLink'
 
@@ -1143,9 +1477,7 @@ function NavbarSection({ section }) {
               {link.label || 'Link'}
             </SmartLink>
           ))}
-          <div className="nav-actions">
-            <ActionRow actions={section.actions} />
-          </div>
+${ecommerceNavBlock}
         </nav>
       </div>
     </header>
@@ -1182,8 +1514,8 @@ function StatsSection({ section }) {
         <div className="stat-grid">
           {(section.items || []).map((item) => (
             <div key={item.id || item.label} className="stat-card" data-reveal>
-              <strong>{item.value || item.title}</strong>
-              <span>{item.label || item.body}</span>
+              <span className="stat-card__label">{item.label || item.body}</span>
+              <strong className="stat-card__value">{item.value || item.title}</strong>
             </div>
           ))}
         </div>
@@ -1340,7 +1672,7 @@ function FooterSection({ section }) {
         </nav>
         <div className="footer-ship-fast-attribution">
           <div className="footer-branding" aria-label="Built with Ship Fast">
-            <a className="footer-branding__link" href={SHIP_FAST_SITE_URL} target="_blank" rel="noreferrer">
+            <a className="footer-branding__link" href="${SHIP_FAST_SITE_URL}" target="_blank" rel="noreferrer">
               <ShipFastFooterLogo />
               <span className="footer-branding__text">
                 <span className="footer-branding__label">Built with</span>
@@ -1595,11 +1927,18 @@ export default nextConfig
   const layoutHeadBlock = fontLines.trim()
     ? `      <head>${fontLines}      </head>\n`
     : ''
+  const layoutEcommerceImport = isEcommerce
+    ? `import EcommerceClientRoot from '../components/ecommerce/EcommerceClientRoot'
+`
+    : ''
+  const layoutEcommerceBody = isEcommerce
+    ? '<EcommerceClientRoot>{children}</EcommerceClientRoot>'
+    : '{children}'
   const files = {
     'package.json': renderNextPackageJson(siteSpec.projectName, cmsDependencies, sanityScripts),
     'next.config.mjs': nextConfigMjs,
     'app/layout.jsx': `import './globals.css'
-${useSwiper ? `import 'swiper/css'
+${layoutEcommerceImport}${useSwiper ? `import 'swiper/css'
 import 'swiper/css/pagination'
 ` : ''}
 export const metadata = {
@@ -1617,7 +1956,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang=${JSON.stringify(siteSeo.htmlLang)} suppressHydrationWarning>
-${layoutHeadBlock}      <body suppressHydrationWarning>{children}</body>
+${layoutHeadBlock}      <body suppressHydrationWarning>${layoutEcommerceBody}</body>
     </html>
   )
 }
@@ -1767,6 +2106,7 @@ export default function StudioPage() {
   if (isEcommerce) {
     Object.assign(files, renderMedusaExportFiles())
     Object.assign(files, renderEcommerceComponents(useSwiper))
+    Object.assign(files, renderEcommerceAppShellFiles())
   }
 
   return { files }

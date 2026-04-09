@@ -361,6 +361,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       homepage = recovered.files['index.html'] ?? homepage
       writeFile(workspace, 'index.html', homepage)
     }
+    sessionCtx.signalHomepageReady()
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })

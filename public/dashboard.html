@@ -552,6 +552,18 @@
                     <button
                       type="button"
                       class="preview-chat-cms-tab"
+                      id="preview-chat-cms-tab-medusa"
+                      data-cms-tab="medusa"
+                      role="tab"
+                      aria-selected="false"
+                      aria-controls="preview-chat-cms-medusa-panel"
+                      hidden
+                    >
+                      Products (Medusa)
+                    </button>
+                    <button
+                      type="button"
+                      class="preview-chat-cms-tab"
                       id="preview-chat-cms-tab-quick"
                       data-cms-tab="quick"
                       role="tab"
@@ -605,6 +617,39 @@
                     <p class="preview-chat-cms-note preview-chat-cms-note--studio" id="preview-chat-cms-studio-footnote">
                       Same project as your content lake. Token-based Studio skips OAuth; rebuild Studio after changing
                       tokens. Then Apply to update this session’s preview HTML.
+                    </p>
+                  </div>
+                  <div
+                    class="preview-chat-cms-medusa-panel preview-chat-medusa-inline"
+                    id="preview-chat-cms-medusa-panel"
+                    role="tabpanel"
+                    aria-labelledby="preview-chat-cms-tab-medusa"
+                    hidden
+                  >
+                    <div class="preview-chat-medusa-toolbar">
+                      <span class="preview-chat-medusa-title">Products (Medusa)</span>
+                      <a
+                        class="preview-chat-medusa-open-link"
+                        id="preview-chat-medusa-open-link"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Open in new tab</a
+                      >
+                    </div>
+                    <iframe
+                      class="preview-chat-medusa-frame"
+                      id="preview-chat-medusa-frame"
+                      title="Medusa products admin"
+                      src="about:blank"
+                    ></iframe>
+                    <p class="preview-chat-cms-note preview-chat-cms-note--medusa" id="preview-chat-medusa-footnote">
+                      Commerce API and admin UI are served by your Medusa process (
+                      <code class="preview-chat-cms-studio-unbuilt-code">bun run medusa:dev</code>
+                      in <code class="preview-chat-cms-studio-unbuilt-code">medusa-backend</code>). Ensure
+                      <code class="preview-chat-cms-studio-unbuilt-code">ADMIN_CORS</code> /
+                      <code class="preview-chat-cms-studio-unbuilt-code">AUTH_CORS</code> include this origin if login
+                      fails.
                     </p>
                   </div>
                   <div
@@ -1285,6 +1330,9 @@
       let allDone = false
       let drawerOpen = false
       let previewLoaded = false
+      let nextPreviewActive = false
+      let nextPreviewBase = ''
+      let nextPreviewBootPromise = null
       let homepageReady = false
       let wsConnected = false
       let introActive = true
@@ -1316,6 +1364,24 @@
       let chatAwaitingEdit = false
       let chatAttachmentPaths = []
       let chatPanelMode = 'llm'
+      let medusaAdminEmbedState = { show: false, url: null }
+
+      function applyMedusaAdminControls() {
+        const tabMedusa = document.getElementById('preview-chat-cms-tab-medusa')
+        const openLink = document.getElementById('preview-chat-medusa-open-link')
+        const frame = document.getElementById('preview-chat-medusa-frame')
+        const show = Boolean(medusaAdminEmbedState?.show && medusaAdminEmbedState?.url)
+        if (tabMedusa) tabMedusa.hidden = !show
+        if (!show) {
+          if (frame) frame.src = 'about:blank'
+          return
+        }
+        if (openLink) openLink.href = medusaAdminEmbedState.url
+        if (frame && medusaAdminEmbedState.url) {
+          const next = medusaAdminEmbedState.url
+          if (frame.src !== next) frame.src = next
+        }
+      }
 
       function syncCmsSidebarLayout() {
         const browserContent = document.querySelector('.browser-content')
@@ -1551,12 +1617,19 @@
           if (urlLive) urlLive.hidden = true
           if (urlText) {
             urlText.hidden = false
-            if (previewLoaded || homepageReady) urlText.textContent = new URL(PREVIEW_BASE).pathname
+            if (nextPreviewActive && nextPreviewBase) {
+              try {
+                urlText.textContent = `${new URL(nextPreviewBase).host}/`
+              } catch {
+                urlText.textContent = nextPreviewBase
+              }
+            } else if (previewLoaded || homepageReady) urlText.textContent = new URL(PREVIEW_BASE).pathname
             else urlText.textContent = window.location.host
           }
         }
         if (statusText) {
           if (deploymentState?.url) statusText.textContent = 'Deployed'
+          else if (nextPreviewActive) statusText.textContent = 'Next.js'
           else if (previewLoaded) statusText.textContent = 'Live'
           else statusText.textContent = 'Preview'
         }
@@ -3059,11 +3132,66 @@
       // ─── Preview iframe loading ─────────────────────────────────
       let preloadStarted = false
 
+      function getPreviewFrameSrc(cacheBust) {
+        if (nextPreviewActive && nextPreviewBase) {
+          const b = String(nextPreviewBase).replace(/\/$/, '')
+          return cacheBust ? `${b}/?t=${Date.now()}` : `${b}/`
+        }
+        return cacheBust ? `${PREVIEW_BASE}?t=${Date.now()}` : PREVIEW_BASE
+      }
+
+      function resetPreviewToSessionHtml() {
+        nextPreviewActive = false
+        nextPreviewBase = ''
+        const iframe = document.getElementById('preview-iframe')
+        if (!iframe || !SESSION_ID) return
+        preloadStarted = true
+        iframe.src = getPreviewFrameSrc(true)
+        iframe.onload = () => {
+          previewLoaded = true
+          syncPreviewChrome()
+          syncPreviewTheme()
+          syncPreviewInspectTools()
+        }
+      }
+
+      function maybeWarmNextDevServerInBackground() {
+        if (!SESSION_ID) return Promise.resolve()
+        if (nextPreviewBootPromise) return nextPreviewBootPromise
+        nextPreviewBootPromise = (async () => {
+          try {
+            const res = await apiFetch(`/api/sessions/${SESSION_ID}/next-preview`)
+            const data = await res.json().catch(() => ({}))
+            if (!res.ok || !data.enabled) return
+            if (!data.autostart) return
+            if (data.running && data.url) return
+            if (!data.ecommerce) return
+            const st = await apiFetch(`/api/sessions/${SESSION_ID}/next-preview/start`, { method: 'POST' })
+            const out = await st.json().catch(() => ({}))
+            if (!st.ok) return
+            if (out.starting) {
+              const deadline = Date.now() + 200000
+              while (Date.now() < deadline) {
+                await new Promise((r) => setTimeout(r, 2000))
+                const r2 = await apiFetch(`/api/sessions/${SESSION_ID}/next-preview`)
+                const d2 = await r2.json().catch(() => ({}))
+                if (r2.ok && d2.running && d2.url) return
+              }
+            }
+          } catch {
+            void 0
+          } finally {
+            nextPreviewBootPromise = null
+          }
+        })()
+        return nextPreviewBootPromise
+      }
+
       function preloadPreview() {
         if (preloadStarted) return
         preloadStarted = true
         const iframe = document.getElementById('preview-iframe')
-        iframe.src = PREVIEW_BASE
+        iframe.src = getPreviewFrameSrc(false)
         iframe.onload = () => {
           previewLoaded = true
           syncPreviewChrome()
@@ -3076,14 +3204,14 @@
         if (!preloadStarted) preloadPreview()
         else if (previewLoaded) {
           const iframe = document.getElementById('preview-iframe')
-          iframe.src = `${PREVIEW_BASE}?t=${Date.now()}`
+          iframe.src = getPreviewFrameSrc(true)
         }
       }
 
       function reloadPreview() {
         if (!preloadStarted) return
         const iframe = document.getElementById('preview-iframe')
-        iframe.src = `${PREVIEW_BASE}?t=${Date.now()}`
+        iframe.src = getPreviewFrameSrc(true)
       }
 
       const PREVIEW_DEVICE_KEY = 'sf_preview_device'
@@ -3093,6 +3221,7 @@
           const raw = formatDeploymentUrl(deploymentState.url)
           return raw.startsWith('http') ? raw : `https://${raw}`
         }
+        if (nextPreviewActive && nextPreviewBase) return nextPreviewBase
         return PREVIEW_BASE
       }
 
@@ -3206,8 +3335,11 @@
               data.error || (r.status === 404 ? 'Session not found.' : `Chat unavailable (${r.status}).`)
             if (stat) stat.textContent = err
             if (cmsStat) cmsStat.textContent = err
+            applyMedusaAdminControls()
             return
           }
+          medusaAdminEmbedState = data.medusaAdminEmbed || { show: false, url: null }
+          applyMedusaAdminControls()
           const mode = data.mode === 'cms' ? 'cms' : 'llm'
           applyChatPanelMode(mode)
           if (mode === 'cms') {
@@ -3225,7 +3357,7 @@
             stat.textContent = chatEditable ? '' : 'Finish generating your site to edit from chat.'
           }
         } catch {
-          void 0
+          applyMedusaAdminControls()
         }
       }
 
@@ -3300,6 +3432,7 @@
 
         const cmsForm = document.getElementById('preview-chat-cms-form')
         const cmsStudioPanel = document.getElementById('preview-chat-cms-studio-panel')
+        const cmsMedusaPanel = document.getElementById('preview-chat-cms-medusa-panel')
         const cmsQuickPanel = document.getElementById('preview-chat-cms-quick-panel')
         const fetchStudioEmbedReady = async () => {
           try {
@@ -3334,8 +3467,35 @@
           }
         }
         const initStudioEmbedForCmsPanel = async () => {
+          applyMedusaAdminControls()
+          const tabMedusa = document.getElementById('preview-chat-cms-tab-medusa')
+          const useMedusaDefault =
+            Boolean(medusaAdminEmbedState?.show && medusaAdminEmbedState?.url) &&
+            tabMedusa &&
+            !tabMedusa.hidden
           const built = await fetchStudioEmbedReady()
           applyStudioEmbedAssets(built)
+          if (useMedusaDefault && !built) {
+            const tabStudio = document.getElementById('preview-chat-cms-tab-studio')
+            const tabQuick = document.getElementById('preview-chat-cms-tab-quick')
+            if (tabStudio) {
+              tabStudio.classList.remove('is-active')
+              tabStudio.setAttribute('aria-selected', 'false')
+            }
+            if (tabQuick) {
+              tabQuick.classList.remove('is-active')
+              tabQuick.setAttribute('aria-selected', 'false')
+            }
+            if (tabMedusa) {
+              tabMedusa.classList.add('is-active')
+              tabMedusa.setAttribute('aria-selected', 'true')
+            }
+            if (cmsStudioPanel) cmsStudioPanel.hidden = true
+            if (cmsQuickPanel) cmsQuickPanel.hidden = true
+            if (cmsMedusaPanel) cmsMedusaPanel.hidden = false
+            applyMedusaAdminControls()
+            return
+          }
           if (built) return
           const tabStudio = document.getElementById('preview-chat-cms-tab-studio')
           const tabQuick = document.getElementById('preview-chat-cms-tab-quick')
@@ -3347,7 +3507,12 @@
             tabQuick.classList.add('is-active')
             tabQuick.setAttribute('aria-selected', 'true')
           }
+          if (tabMedusa) {
+            tabMedusa.classList.remove('is-active')
+            tabMedusa.setAttribute('aria-selected', 'false')
+          }
           if (cmsStudioPanel) cmsStudioPanel.hidden = true
+          if (cmsMedusaPanel) cmsMedusaPanel.hidden = true
           if (cmsQuickPanel) cmsQuickPanel.hidden = false
         }
         document.querySelectorAll('[data-cms-tab]').forEach((tabBtn) => {
@@ -3359,11 +3524,13 @@
               b.setAttribute('aria-selected', active ? 'true' : 'false')
             })
             if (cmsStudioPanel) cmsStudioPanel.hidden = t !== 'studio'
+            if (cmsMedusaPanel) cmsMedusaPanel.hidden = t !== 'medusa'
             if (cmsQuickPanel) cmsQuickPanel.hidden = t !== 'quick'
             if (t === 'studio') {
               const built = await fetchStudioEmbedReady()
               applyStudioEmbedAssets(built)
             }
+            if (t === 'medusa') applyMedusaAdminControls()
           })
         })
         document.querySelectorAll('[data-cms-sanity-sync]').forEach((btn) => {
@@ -3729,8 +3896,9 @@
 
             case 'homepage_ready':
               homepageReady = true
+              resetPreviewToSessionHtml()
               syncPreviewChrome()
-              preloadPreview()
+              void maybeWarmNextDevServerInBackground()
               void refreshExportTargets()
               showPreviewChatDock()
               void refreshChatHistory()
@@ -3754,6 +3922,8 @@
             case 'site_spec_ready':
               siteSpecReady = Boolean(ev.ready)
               refreshExportTargets()
+              if (siteSpecReady && homepageReady) void maybeWarmNextDevServerInBackground()
+              if (siteSpecReady) void refreshChatHistory()
               break
 
             case 'alternative_design_ready':
@@ -3777,6 +3947,7 @@
               const timingFinal = document.getElementById('gen-timing')
               if (timingFinal)
                 timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
+              resetPreviewToSessionHtml()
               checkAllDone()
               if (chatAwaitingEdit) {
                 chatAwaitingEdit = false
@@ -3788,8 +3959,16 @@
               }, 4500)
               break
 
+            case 'next_preview_ready':
+              break
+
             case 'preview_reload':
-              reloadPreview()
+              if (nextPreviewActive && nextPreviewBase) {
+                const iframe = document.getElementById('preview-iframe')
+                if (iframe) iframe.src = getPreviewFrameSrc(true)
+              } else {
+                reloadPreview()
+              }
               if (chatAwaitingEdit) {
                 chatAwaitingEdit = false
                 setChatBuilding(false)
@@ -4170,6 +4349,8 @@
           }
           homepageReady = Boolean(session.homepageReady) || homepageReady
           siteSpecReady = Boolean(session.siteSpecReady) || siteSpecReady
+          if (session.medusaAdminEmbed) medusaAdminEmbedState = session.medusaAdminEmbed
+          applyMedusaAdminControls()
           sessionPreferredLanguage = String(session.preferredLanguage || 'en')
           isAnonymousSession = Boolean(session.isAnonymous)
           preferredExportTarget = String(session.preferredExportTarget || 'html').toLowerCase()
@@ -4183,6 +4364,7 @@
           if (homepageReady) {
             showPreviewChatDock()
             void refreshChatHistory()
+            void maybeWarmNextDevServerInBackground()
           }
         })
         .catch(() => {})

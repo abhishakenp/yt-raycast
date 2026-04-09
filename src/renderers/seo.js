@@ -217,7 +217,7 @@ export function buildSitemapEntries(siteSpec) {
     ? new Date(siteSpec.generatedTimestamp).toISOString()
     : new Date().toISOString()
 
-  return (siteSpec?.pages || [])
+  const pageEntries = (siteSpec?.pages || [])
     .filter((page) => page?.seo?.noIndex !== true)
     .map((page) =>
       cleanObject({
@@ -227,6 +227,26 @@ export function buildSitemapEntries(siteSpec) {
         priority: page.route === '/' ? 1 : 0.8,
       }),
     )
+
+  if (siteSpec?.siteType === 'ecommerce') {
+    const extra = [
+      cleanObject({
+        url: joinUrl(siteUrl, '/shop'),
+        lastModified,
+        changeFrequency: 'weekly',
+        priority: 0.85,
+      }),
+      cleanObject({
+        url: joinUrl(siteUrl, '/checkout'),
+        lastModified,
+        changeFrequency: 'monthly',
+        priority: 0.6,
+      }),
+    ]
+    return [...pageEntries, ...extra]
+  }
+
+  return pageEntries
 }
 
 export function renderRobotsTxt(siteSpec) {
