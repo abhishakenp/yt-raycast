@@ -1,0 +1,10 @@
+node_modules
+.git
+.env
+.cache
+dist
+*.log
+integration-tests
+coverage
+.vscode
+README.txt

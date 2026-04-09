@@ -1380,6 +1380,33 @@
         if (frame && medusaAdminEmbedState.url) {
           const next = medusaAdminEmbedState.url
           if (frame.src !== next) frame.src = next
+          // The Ecommercify widget sends SF_WIDGET_READY when it mounts.
+          // We reply with SF_SESSION_ID. This request-response pattern is reliable
+          // regardless of React Router SPA navigation timing.
+          const medusaOrigin = new URL(medusaAdminEmbedState.url).origin
+          if (!frame._sfReadyListenerAttached) {
+            frame._sfReadyListenerAttached = true
+            window.addEventListener('message', (e) => {
+              if (e.data?.type !== 'SF_WIDGET_READY') return
+              if (SESSION_ID && frame.contentWindow) {
+                frame.contentWindow.postMessage(
+                  { type: 'SF_SESSION_ID', sessionId: SESSION_ID },
+                  medusaOrigin,
+                )
+              }
+            })
+          }
+          // Also send on iframe load in case the widget is already mounted (tab switch)
+          const sendSession = () => {
+            if (SESSION_ID && frame.contentWindow) {
+              frame.contentWindow.postMessage(
+                { type: 'SF_SESSION_ID', sessionId: SESSION_ID },
+                medusaOrigin,
+              )
+            }
+          }
+          frame.addEventListener('load', sendSession)
+          setTimeout(sendSession, 500)
         }
       }
 

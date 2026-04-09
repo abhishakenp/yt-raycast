@@ -34,6 +34,7 @@ import { sanitizeSiteSpec } from '../contracts/contracts.js'
 import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt.js'
 import { enrichBrandProfile } from './brand-profile.js'
 import { syncSiteSettingsFromSiteSpec } from '../sanity/cms-sync.js'
+import { syncProductsToMedusa, isMedusaSyncConfigured } from '../server/sync-medusa-catalog.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -83,6 +84,17 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
     saveSiteSpec(workspace, enrichedSiteSpec)
     sessionCtx.setSiteSpec?.(enrichedSiteSpec)
     void syncSiteSettingsFromSiteSpec(enrichedSiteSpec)
+    if (
+      enrichedSiteSpec?.siteType === 'ecommerce' &&
+      enrichedSiteSpec?.ecommerce?.products?.length &&
+      isMedusaSyncConfigured()
+    ) {
+      syncProductsToMedusa(enrichedSiteSpec.ecommerce.products)
+        .then(({ synced, errors }) => {
+          _log(`  medusa: synced ${synced} product(s)${errors.length ? ` (${errors.length} failed)` : ''}`)
+        })
+        .catch((err) => _log(`  medusa: catalog sync skipped – ${err.message}`))
+    }
 
     const taskList = deriveTasks(enrichedSiteSpec).map((task) => {
       if (String(task.id).startsWith('backend-')) return { ...task, status: 'DONE' }
@@ -415,6 +427,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     saveSiteSpec(workspace, siteSpec)
     sessionCtx.setSiteSpec?.(siteSpec)
     void syncSiteSettingsFromSiteSpec(siteSpec)
+    if (
+      siteSpec?.siteType === 'ecommerce' &&
+      siteSpec?.ecommerce?.products?.length &&
+      isMedusaSyncConfigured()
+    ) {
+      syncProductsToMedusa(siteSpec.ecommerce.products)
+        .then(({ synced, errors }) => {
+          _status(`Synced ${synced} product(s) to Medusa${errors.length ? ` (${errors.length} failed)` : ''}`, 'medusa_sync')
+        })
+        .catch((err) => console.warn(`medusa: catalog auto-sync skipped – ${err.message}`))
+    }
   }
 
   const done = tasks.filter((t) => t.status === 'DONE').length

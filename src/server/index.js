@@ -14,6 +14,8 @@ import {
   RUNPOD_API_URL,
 } from '../config.js'
 import { getMedusaAdminEmbedAndEcommerce } from './medusa-embed.js'
+import { syncProductsToMedusa, isMedusaSyncConfigured } from './sync-medusa-catalog.js'
+import { loadSiteSpec } from '../spec/index.js'
 import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
 import { groq } from '../llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
@@ -1876,6 +1878,177 @@ export async function startServer(sessionsDir) {
     })
 
     res.json({ ok: true, message: 'Generating alternative design...' })
+  })
+
+  // ─── API: Ecommercify — return all Ship Fast ecommerce products ──
+  // Used by the Medusa admin widget to pull products into Medusa.
+  app.options('/api/ecommercify/products', (_req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    res.sendStatus(204)
+  })
+
+  app.get('/api/ecommercify/products', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+
+    if (!_sessionsDir) return res.json({ products: [], total: 0 })
+
+    const filterSessionId = String(req.query.sessionId || '').trim()
+    const slugify = (s) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'product'
+
+    // Generic placeholder titles that ship-fast uses when real product names aren't specified
+    const PLACEHOLDER_TITLES = new Set([
+      'premium pick', 'customer favorite', 'new arrival', 'limited run',
+      'best seller', 'premium product', 'featured product', 'top pick',
+      'popular item', 'trending now', 'staff pick', "editor's choice",
+      'editor choice', 'most loved', 'new release', 'hot deal', 'special offer',
+      'shop now', 'view product', 'buy now', 'add to cart', 'explore now',
+    ])
+
+    // Extract real products from rendered HTML (most reliable source — section.items often
+    // contains generic placeholders; the rendered HTML has the actual product catalogue)
+    const extractFromHtml = (html, sessionId, sessionPrompt) => {
+      const products = []
+      const seen = new Set()
+
+      // Strategy 1: split by <article> — most generated sites wrap cards in <article>
+      const parts = html.split(/<article\b/)
+      if (parts.length > 1) {
+        for (let i = 1; i < parts.length; i++) {
+          const chunk = parts[i]
+          const h3Match = chunk.match(/<h3[^>]*>([^<]{3,80})<\/h3>/)
+          if (!h3Match) continue
+          const title = h3Match[1].trim()
+          const lc = title.toLowerCase()
+          if (PLACEHOLDER_TITLES.has(lc) || seen.has(lc)) continue
+          const priceMatch = chunk.match(/[₹$€£]([\d,]+(?:\.\d{2})?)/)
+          if (!priceMatch) continue
+          const imgMatch = chunk.match(/<img[^>]+src="([^"]+)"/)
+          const descMatch = chunk.match(/<p[^>]*>([^<]{10,200})<\/p>/)
+          const priceNum = parseFloat(priceMatch[1].replace(/,/g, ''))
+          const priceStr = priceMatch[0]
+          seen.add(lc)
+          products.push({
+            id: slugify(title), title, handle: slugify(title),
+            description: descMatch?.[1]?.trim() || '',
+            price: priceNum,
+            currency: priceStr.startsWith('₹') ? 'INR' : priceStr.startsWith('€') ? 'EUR' : priceStr.startsWith('£') ? 'GBP' : 'USD',
+            image: imgMatch?.[1] || null,
+            category: '', sessionId, sessionPrompt,
+          })
+        }
+      }
+
+      // Strategy 2: fallback for sites that use div/li cards — h3 + nearby price in 600-char window
+      if (products.length === 0) {
+        const h3Regex = /<h3[^>]*>([^<]{3,80})<\/h3>/g
+        let m
+        while ((m = h3Regex.exec(html)) !== null) {
+          const title = m[1].trim()
+          const lc = title.toLowerCase()
+          if (PLACEHOLDER_TITLES.has(lc) || seen.has(lc)) continue
+          const pos = m.index
+          const fwd = html.slice(pos, pos + 600)
+          const priceMatch = fwd.match(/[₹$€£]([\d,]+(?:\.\d{2})?)/)
+          if (!priceMatch) continue
+          // Look in a 2500-char window for the nearest img
+          const window2 = html.slice(Math.max(0, pos - 2000), pos + 600)
+          const imgMatches = [...window2.matchAll(/<img[^>]+src="([^"]+)"/g)]
+          const imgMatch = imgMatches[imgMatches.length - 1]
+          const descMatch = fwd.match(/<p[^>]*>([^<]{10,200})<\/p>/)
+          const priceNum = parseFloat(priceMatch[1].replace(/,/g, ''))
+          const priceStr = priceMatch[0]
+          seen.add(lc)
+          products.push({
+            id: slugify(title), title, handle: slugify(title),
+            description: descMatch?.[1]?.trim() || '',
+            price: priceNum,
+            currency: priceStr.startsWith('₹') ? 'INR' : priceStr.startsWith('€') ? 'EUR' : priceStr.startsWith('£') ? 'GBP' : 'USD',
+            image: imgMatch?.[1] || null,
+            category: '', sessionId, sessionPrompt,
+          })
+        }
+      }
+      return products
+    }
+
+    const allSessions = getAllSessions(null)
+    const seen = new Set()
+    const products = []
+
+    for (const s of allSessions) {
+      if (filterSessionId && s.id !== filterSessionId) continue
+      if (!s.siteSpecReady) continue
+      const workspace = join(_sessionsDir, s.id)
+      const spec = loadSiteSpec(workspace)
+      if (!spec || spec.siteType !== 'ecommerce') continue
+
+      // First try: extract from rendered HTML (real product names)
+      const pages = Array.isArray(spec.pages) ? spec.pages : []
+      let extracted = false
+      for (const page of pages) {
+        const html = page.renderBlueprint?.bodyHtml
+        if (!html) continue
+        const pageProducts = extractFromHtml(html, s.id, s.prompt || '')
+        for (const p of pageProducts) {
+          if (seen.has(p.handle)) continue
+          seen.add(p.handle)
+          products.push(p)
+        }
+        if (pageProducts.length > 0) extracted = true
+      }
+
+      // Second try: fallback to section.items (filters out known placeholders)
+      if (!extracted) {
+        const PRODUCT_SECTION_TYPES = new Set(['featured-products', 'product-grid', 'product-detail', 'product-list'])
+        for (const page of pages) {
+          const sections = Array.isArray(page.sections) ? page.sections : []
+          for (const section of sections) {
+            if (!PRODUCT_SECTION_TYPES.has(section.type)) continue
+            const items = Array.isArray(section.items) ? section.items : []
+            for (const item of items) {
+              if (!item.title) continue
+              const lc = item.title.toLowerCase().trim()
+              if (PLACEHOLDER_TITLES.has(lc) || seen.has(slugify(item.title))) continue
+              seen.add(slugify(item.title))
+              products.push({
+                id: item.id || slugify(item.title),
+                title: item.title,
+                handle: slugify(item.title),
+                description: item.body || item.description || '',
+                price: item.price || null,
+                image: item.image || item.thumbnail || null,
+                category: item.label || item.category || '',
+                sessionId: s.id,
+                sessionPrompt: s.prompt,
+              })
+            }
+          }
+        }
+      }
+    }
+
+    res.json({ products, total: products.length })
+  })
+
+  // ─── API: Sync ecommerce catalog to Medusa ────────────────
+  app.post('/api/sessions/:id/sync-medusa-catalog', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    const siteSpec = loadSiteSpec(session.workspace)
+    const products = siteSpec?.ecommerce?.products
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ error: 'No ecommerce products found in this session.' })
+    }
+
+    try {
+      const result = await syncProductsToMedusa(products)
+      res.json({ ok: true, total: products.length, ...result })
+    } catch (e) {
+      res.status(500).json({ ok: false, error: e.message })
+    }
   })
 
   // ─── Catch-all 404 handler ──────────────────────────────
