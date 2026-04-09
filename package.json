@@ -20,6 +20,7 @@
     "medusa:docker:down": "docker compose -f infra/medusa/docker-compose.yml down",
     "medusa:migrate": "cd medusa-backend && npm run db:migrate",
     "medusa:seed": "cd medusa-backend && npm run seed",
+    "medusa:delete-demo-products": "cd medusa-backend && bun run delete-demo-products",
     "medusa:dev": "cd medusa-backend && bun run dev",
     "medusa:user": "cd medusa-backend && bun run user:create",
     "medusa:migrate:docker": "docker compose -f infra/medusa/docker-compose.yml run --rm medusa-migrate",
