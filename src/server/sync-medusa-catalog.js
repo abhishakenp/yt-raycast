@@ -56,18 +56,7 @@ async function getAdminToken(base, email, password) {
   return data.token
 }
 
-export function isMedusaSyncConfigured() {
-  return Boolean(
-    process.env.MEDUSA_ADMIN_API_TOKEN ||
-    (process.env.MEDUSA_ADMIN_EMAIL && process.env.MEDUSA_ADMIN_PASSWORD),
-  )
-}
-
-/**
- * Sync products from a site-spec to Medusa admin.
- * Returns { synced: number, errors: string[] }
- */
-export async function syncProductsToMedusa(products, options = {}) {
+async function resolveMedusaAdmin(options = {}) {
   const base = options.backendUrl || process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
   let token = options.token || process.env.MEDUSA_ADMIN_API_TOKEN || ''
   const email = options.email || process.env.MEDUSA_ADMIN_EMAIL || ''
@@ -81,8 +70,103 @@ export async function syncProductsToMedusa(products, options = {}) {
       'No Medusa admin credentials: set MEDUSA_ADMIN_API_TOKEN or MEDUSA_ADMIN_EMAIL + MEDUSA_ADMIN_PASSWORD',
     )
   }
+  return { base, token }
+}
+
+export function isMedusaSyncConfigured() {
+  return Boolean(
+    process.env.MEDUSA_ADMIN_API_TOKEN ||
+    (process.env.MEDUSA_ADMIN_EMAIL && process.env.MEDUSA_ADMIN_PASSWORD),
+  )
+}
+
+function mapMedusaAdminProductToSiteSpecProduct(p) {
+  if (!p) return null
+  const handle = String(p.handle || '').trim() || slugify(p.title || 'product')
+  const title = String(p.title || handle).trim()
+  const variant = Array.isArray(p.variants) ? p.variants[0] : null
+  const prices = variant?.prices
+  const priceEntry = Array.isArray(prices) ? prices[0] : null
+  let price = null
+  if (priceEntry && typeof priceEntry.amount === 'number') {
+    price = priceEntry.amount / 100
+  }
+  const currency = priceEntry?.currency_code
+    ? String(priceEntry.currency_code).toUpperCase()
+    : 'USD'
+  let image = p.thumbnail ? String(p.thumbnail) : null
+  if (!image && Array.isArray(p.images) && p.images.length > 0) {
+    const first = p.images[0]
+    image = typeof first === 'string' ? first : first?.url ? String(first.url) : null
+  }
+  return {
+    id: handle,
+    title,
+    handle,
+    description: p.description ? String(p.description) : '',
+    price,
+    currency,
+    image,
+    category: '',
+  }
+}
+
+export async function fetchMedusaProductsForSiteSpec(options = {}) {
+  const { base, token } = await resolveMedusaAdmin(options)
+  const all = []
+  let offset = 0
+  const limit = 100
+  for (;;) {
+    const q = new URLSearchParams({
+      limit: String(limit),
+      offset: String(offset),
+      expand: 'variants',
+    })
+    const data = await adminFetch(base, token, `/admin/products?${q.toString()}`)
+    const batch = data?.products ?? []
+    if (!Array.isArray(batch) || batch.length === 0) break
+    for (const p of batch) {
+      const row = mapMedusaAdminProductToSiteSpecProduct(p)
+      if (row) all.push(row)
+    }
+    if (batch.length < limit) break
+    offset += limit
+  }
+  return all
+}
+
+/**
+ * Sync products from a site-spec to Medusa admin.
+ * Returns { synced: number, errors: string[] }
+ */
+export async function syncProductsToMedusa(products, options = {}) {
+  const { base, token } = await resolveMedusaAdmin(options)
 
   if (!Array.isArray(products) || products.length === 0) return { synced: 0, errors: [] }
+
+  const deleteAllProductsAdmin = async () => {
+    const limit = 80
+    for (;;) {
+      const data = await adminFetch(base, token, `/admin/products?limit=${limit}&offset=0&fields=id`)
+      const batch = data?.products ?? []
+      if (!Array.isArray(batch) || batch.length === 0) break
+      for (const pr of batch) {
+        const id = pr?.id
+        if (!id) continue
+        try {
+          await adminFetch(base, token, `/admin/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
+        } catch {
+          /* continue */
+        }
+      }
+    }
+  }
+
+  try {
+    await deleteAllProductsAdmin()
+  } catch {
+    /* non-fatal — proceed with create */
+  }
 
   let defaultCurrency = (process.env.MEDUSA_REGION_CURRENCY || 'usd').toLowerCase()
   try {

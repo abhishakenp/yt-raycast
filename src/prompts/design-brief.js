@@ -1,4 +1,9 @@
-import { ECOMMERCE_GENERATION_GUIDELINES, INDIAN_DESIGN_TOKENS, MOTION_DEV_DOCS_REACT } from '../config.js'
+import {
+  ECOMMERCE_GENERATION_GUIDELINES,
+  GLOBAL_UI_CRAFT_GUIDELINES,
+  INDIAN_DESIGN_TOKENS,
+  MOTION_DEV_DOCS_REACT,
+} from '../config.js'
 import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { inferSiteTypeHint } from '../lib/infer-site-type.js'
 
@@ -47,7 +52,7 @@ export function designBriefPrompt(prompt, indiaMode = null, siteType = null) {
   const effectiveSiteType = siteType || inferSiteTypeHint(prompt)
   return {
     system:
-      'You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. Output ONLY markdown. No preamble.',
+      `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.`,
     user: `Create a design system for this project:
 ${prompt}
 
@@ -111,12 +116,14 @@ ${effectiveSiteType === 'ecommerce' ? `### Sections (homepage order) — DTC ret
 8. Footer (centered: logo + links row + copyright)`}
 
 ### Key Principles
+- Apply the UI craft line in your system instructions to spacing rhythm, typographic hierarchy, accent restraint, and interactive states across every pattern below.
 ${effectiveSiteType === 'ecommerce' ? `- Minimum viable homepage is long-form retail: at least ten distinct sections below the nav (see section list). A short page reads as failed output.
 - Product-first: hero with lifestyle or product imagery; category and product blocks must feel photo-led like major retail sites, not icon-led SaaS.
 - Product cards: consistent aspect ratio (4:3 or 1:1), hover zoom, review line, clear price + compare-at when on sale, prominent Add to Cart
 - Price styling: font-semibold or bold, currency symbol first
 - Cart icon in nav with numeric badge; search visible in header
-- Footer: multi-column link groups, not a single centered row` : `- Typography-first: NO hero images, NO screenshots, NO floating mockups`}
+- Footer: multi-column link groups, not a single centered row
+- Growth design: state one primary success metric for this storefront (e.g. conversion rate, cart abandonment, AOV, or page-load perception) and one hypothesis for the hero CTA; repeat for checkout (e.g. guest-first clarity vs. account upsell) — design choices should map to those KPIs in prose, not analytics code` : `- Typography-first: NO hero images, NO screenshots, NO floating mockups`}
 - Layout: default centered max-w-4xl, but allow ONE section to break the grid (asymmetric split, bento, or full-bleed band) if it increases wow factor
 - 2-column grids by default; bento-style unequal cells allowed for features when it improves hierarchy
 - Generous spacing: py-20 md:py-28 per section; use whitespace as a luxury

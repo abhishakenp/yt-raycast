@@ -41,10 +41,28 @@ function hasMarketingStructure(bodyHtml) {
 const siteSpecLooksEcommerce = (siteSpec) =>
   String(siteSpec?.siteType || siteSpec?.metadata?.siteType || '').toLowerCase() === 'ecommerce'
 
+function hasEcommerceSignals(bodyHtml) {
+  return (
+    /\b(add to cart|add to bag|buy now|shop now|free shipping|checkout|your cart)\b/i.test(bodyHtml) ||
+    /\$\s*\d[\d,.]*/.test(bodyHtml) ||
+    /class="[^"]*(?:product|cart|price)/i.test(bodyHtml)
+  )
+}
+
+function looksLikeSubstantialEcommerceHomepage(html) {
+  const body = extractBodyInnerHtml(html)
+  const words = visibleTextFromHtmlFragment(body).split(/\s+/).filter(Boolean)
+  const wc = words.length
+  if (wc >= 85) return true
+  if (wc >= 55 && hasEcommerceSignals(body) && hasMarketingStructure(body)) return true
+  if (wc >= 65 && hasEcommerceSignals(body)) return true
+  return false
+}
+
 export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   if (!html || typeof html !== 'string') return true
   if (!siteSpec?.pages?.length) return false
-  if (siteSpecLooksEcommerce(siteSpec)) return false
+  if (siteSpecLooksEcommerce(siteSpec) && looksLikeSubstantialEcommerceHomepage(html)) return false
 
   if (looksLikeThreeJsGame(html)) return false
   if (looksLikeDeclaredAppUi(html)) return false

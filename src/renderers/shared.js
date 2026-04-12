@@ -512,6 +512,56 @@ function renderItemList(items = [], itemRenderer) {
   return items.map((item, idx) => itemRenderer(item, idx)).join('')
 }
 
+function retailProductCategoryHtml(item) {
+  const cat = item.category || item.collection || item.catalogLabel
+  if (!cat) return ''
+  return `<span class="product-card__category">${escapeHtml(String(cat))}</span>`
+}
+
+function retailProductRatingHtml(item) {
+  const raw = item.rating
+  if (raw == null || raw === '') return ''
+  const n = Number(raw)
+  if (Number.isNaN(n)) return ''
+  const clamped = Math.max(0, Math.min(5, n))
+  const full = Math.round(clamped)
+  const stars = `${'\u2605'.repeat(full)}${'\u2606'.repeat(5 - full)}`
+  return `<div class="product-card__rating"><span class="product-stars" aria-hidden="true">${stars}</span><span class="product-card__rating-num">${clamped.toFixed(1)}</span></div>`
+}
+
+function retailProductPriceRowHtml(item) {
+  const price =
+    item.price != null && item.price !== ''
+      ? `<span class="product-price">${escapeHtml(String(item.price))}</span>`
+      : ''
+  const was = item.compareAt ?? item.compare_at
+  const wasStr =
+    was != null && was !== '' ? `<span class="product-price product-price--compare">${escapeHtml(String(was))}</span>` : ''
+  if (!price && !wasStr) return ''
+  return `<div class="product-card__price-row">${price}${wasStr}</div>`
+}
+
+function retailProductCardInnerHtml(item) {
+  const excerpt = item.body ? String(item.body).slice(0, 180) : ''
+  const excerptHtml = excerpt
+    ? `<p class="product-card__excerpt">${escapeHtml(excerpt)}${String(item.body).length > 180 ? '\u2026' : ''}</p>`
+    : ''
+  const cta = item.ctaLabel ? escapeHtml(String(item.ctaLabel)) : 'Add to cart'
+  return `<div class="product-card__content">
+      ${retailProductCategoryHtml(item)}
+      <h3>${escapeHtml(item.title || '')}</h3>
+      ${retailProductRatingHtml(item)}
+      ${retailProductPriceRowHtml(item)}
+      ${excerptHtml}
+      <button type="button" class="product-card__atc button button--primary">${cta}</button>
+    </div>`
+}
+
+function productFigureHtml(item, { emptyAlt = false } = {}) {
+  const alt = emptyAlt ? '' : escapeHtml(item.title || '')
+  return `<div class="product-image">${item.image ? `<img src="${escapeHtml(item.image)}" alt="${alt}" loading="lazy" decoding="async" />` : '<div class="product-placeholder"></div>'}</div>`
+}
+
 function renderGenericCard(item = {}) {
   const src = item.imageUrl || item.image
   const img = src
@@ -542,14 +592,27 @@ export function renderSectionHtml(section, siteSpec = {}) {
   const body = section.body ? `<p class="section-body">${escapeHtml(section.body)}</p>` : ''
 
   switch (section.type) {
-    case 'navbar':
+    case 'navbar': {
+      const isStore = String(siteSpec?.siteType || '').toLowerCase() === 'ecommerce'
+      const promoBar = isStore
+        ? `<div class="store-promo-bar"><div class="container store-promo-bar__inner"><span class="store-promo-bar__msg">Free shipping on orders over $75 \u00b7 Easy returns</span></div></div>`
+        : ''
+      const storeTools = isStore
+        ? `<div class="store-nav-tools">
+            <label class="store-search"><span class="visually-hidden">Search products</span><input type="search" class="store-search__input" placeholder="Search products\u2026" autocomplete="off" /></label>
+            <a class="store-account" href="/account">Account</a>
+            <a class="store-cart" href="/cart">Cart <span class="store-cart__count">0</span></a>
+          </div>`
+        : ''
       return `
-        <header class="site-header" data-mobile-nav>
+        ${promoBar}
+        <header class="site-header${isStore ? ' site-header--store' : ''}" data-mobile-nav>
           <div class="container nav-shell">
             <a class="brand" href="/">${escapeHtml(section.headline || 'Ship Fast')}</a>
             <button class="nav-toggle" type="button" data-mobile-nav-toggle aria-label="Toggle navigation">Menu</button>
             <nav class="nav-links" data-mobile-nav-panel>
               ${renderItemList(section.links || [], (link) => `<a href="${escapeHtml(link.href || '#')}">${escapeHtml(link.label || 'Link')}</a>`)}
+              ${storeTools}
               <div class="nav-actions">
                 ${renderItemList(section.actions || [], (action) => renderActionLink(action))}
               </div>
@@ -557,13 +620,15 @@ export function renderSectionHtml(section, siteSpec = {}) {
           </div>
         </header>
       `
+    }
     case 'hero': {
       const heroImg = section.heroImage || section.imageUrl || section.image
+      const storeHero = String(siteSpec?.siteType || '').toLowerCase() === 'ecommerce'
       const heroFigure = heroImg
         ? `<figure class="hero-figure"><img class="hero-image" src="${escapeHtml(heroImg)}" alt="${escapeHtml(section.imageAlt || '')}" loading="eager" decoding="async" /></figure>`
         : ''
       return `
-        <section class="section hero hero--${escapeHtml(section.variant || 'default')}" id="${escapeHtml(section.id)}">
+        <section class="section hero hero--${escapeHtml(section.variant || 'default')}${storeHero ? ' hero--store' : ''}" id="${escapeHtml(section.id)}">
           <div class="container hero-grid">
             <div>
               ${subheadline}
@@ -698,11 +763,9 @@ export function renderSectionHtml(section, siteSpec = {}) {
       const cssMarqueeCarousel =
         !shouldUseSwiper(siteSpec) && siteSpec.siteType === 'ecommerce' && items.length > 0
       const productCardHtml = (item, dup) => `
-                  <article class="card product-card product-card--carousel"${dup ? ' aria-hidden="true"' : ''}>
-                    <div class="product-image">${item.image ? `<img src="${escapeHtml(item.image)}" alt="${dup ? '' : escapeHtml(item.title || '')}" />` : '<div class="product-placeholder"></div>'}</div>
-                    <h3>${escapeHtml(item.title || '')}</h3>
-                    ${item.price ? `<span class="product-price">${escapeHtml(String(item.price))}</span>` : ''}
-                    <p>${escapeHtml(item.body || '')}</p>
+                  <article class="card product-card product-card--retail product-card--carousel"${dup ? ' aria-hidden="true"' : ''}>
+                    ${productFigureHtml(item, { emptyAlt: dup })}
+                    ${retailProductCardInnerHtml(item)}
                   </article>
                 `
       if (swiperCarousel) {
@@ -744,19 +807,18 @@ export function renderSectionHtml(section, siteSpec = {}) {
       `
       }
       return `
-        <section class="section ${escapeHtml(section.type)}" id="${escapeHtml(section.id)}">
+        <section class="section ${escapeHtml(section.type)} section--store-products" id="${escapeHtml(section.id)}">
           <div class="container">
+            ${subheadline}
             ${headline}
             ${body}
             <div class="product-grid">
               ${renderItemList(
                 section.items || [],
                 (item) => `
-                  <article class="card product-card" data-reveal>
-                    <div class="product-image">${item.image ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title || '')}" />` : '<div class="product-placeholder"></div>'}</div>
-                    <h3>${escapeHtml(item.title || '')}</h3>
-                    ${item.price ? `<span class="product-price">${escapeHtml(String(item.price))}</span>` : ''}
-                    <p>${escapeHtml(item.body || '')}</p>
+                  <article class="card product-card product-card--retail" data-reveal>
+                    ${productFigureHtml(item)}
+                    ${retailProductCardInnerHtml(item)}
                   </article>
                 `,
               )}
@@ -848,7 +910,8 @@ export function renderSectionHtml(section, siteSpec = {}) {
   }
 }
 
-export function buildGlobalCss(theme = {}) {
+export function buildGlobalCss(theme = {}, layout = {}) {
+  const isStore = layout.ecommerce === true || String(layout.siteType || '').toLowerCase() === 'ecommerce'
   const colors = theme.colors || {}
   const typography = theme.typography || {}
   const scale = typography.scale || {}
@@ -1413,6 +1476,159 @@ button, input, textarea { font: inherit; }
 }
 .site-header .nav-links a:not(.button--primary):hover {
   color: var(--color-primary);
+}
+${
+  isStore
+    ? `
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.site-shell--store .section--store-products .product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.store-promo-bar {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 35%, #0f172a), color-mix(in srgb, var(--color-accent) 25%, #0f172a));
+  color: #f8fafc;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+}
+.store-promo-bar__inner {
+  padding: 0.5rem 0;
+}
+.site-header--store {
+  border-bottom-width: 2px;
+}
+.site-header--store .nav-shell {
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem 1.25rem;
+}
+.store-nav-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  justify-content: flex-end;
+}
+.store-search__input {
+  min-width: 10rem;
+  max-width: 16rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-background));
+  color: var(--color-text);
+}
+.store-account,
+.store-cart {
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.store-cart__count {
+  display: inline-flex;
+  min-width: 1.25rem;
+  justify-content: center;
+  margin-left: 0.25rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  color: #fff;
+  font-size: 0.75rem;
+}
+.hero--store {
+  padding-top: calc(var(--spacing-section) * 0.85);
+}
+.hero--store .hero-image {
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+.product-card--retail {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.product-card__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.35rem;
+  padding-top: 0.25rem;
+}
+.product-card__category {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.product-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+.product-stars {
+  letter-spacing: 0.06em;
+  color: #fbbf24;
+}
+.product-card__rating-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.product-card__price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  margin: 0.25rem 0 0.35rem;
+}
+.product-price--compare {
+  text-decoration: line-through;
+  font-weight: 500;
+  color: var(--color-muted);
+  font-size: 0.9em;
+}
+.product-card__excerpt {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+  flex: 1;
+}
+.product-card__atc {
+  margin-top: 0.5rem;
+  width: 100%;
+  justify-content: center;
+  font-size: 0.875rem;
+  padding: 0.65rem 1rem;
+}
+@media (max-width: 900px) {
+  .store-nav-tools {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .store-search__input {
+    max-width: none;
+    flex: 1;
+  }
+}
+`
+    : ''
 }
 `
 }

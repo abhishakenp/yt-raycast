@@ -1,4 +1,4 @@
-import { ECOMMERCE_GENERATION_GUIDELINES } from '../config.js'
+import { ECOMMERCE_GENERATION_GUIDELINES, GLOBAL_UI_CRAFT_GUIDELINES } from '../config.js'
 import { siteSpecSchema } from '../spec/schema.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
 
@@ -23,8 +23,10 @@ export function siteSpecPrompt({
 
   const ecommerceRules =
     ctx?.site_type === 'ecommerce' || ctx?.siteType === 'ecommerce'
-      ? `\n- Ecommerce: ${ECOMMERCE_GENERATION_GUIDELINES} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). Section density should match Envato-grade ecommerce templates, not minimal landing pages.\n`
+      ? `\n- Ecommerce: ${ECOMMERCE_GENERATION_GUIDELINES} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). The home page sections must look like a storefront: navbar + hero with heroImage when possible, features or gallery rows used as category tiles with images, at least one product-grid or featured-products section with six-plus items (populate items from ecommerce.products when available), testimonials, CTA newsletter, rich footer — not a sparse SaaS layout.\n`
       : ''
+
+  const craftRules = `\n- Visual craft: ${GLOBAL_UI_CRAFT_GUIDELINES} Encode spacing and typographic intent in theme.spacing, theme.typography.scale, and theme.radius; keep sections scannable without clutter.\n`
 
   return {
     system:
@@ -111,7 +113,7 @@ export function siteSpecPrompt({
       `- When verified brand details are provided, use them for logo/contact/footer/social sections and keep those fields exact.\n` +
       `- Do not invent physical addresses or phone numbers in contact/footer; omit them if not in the prompt or brand block.\n` +
       `- Do not put generator/tool branding strings in any page content.\n` +
-      `- Use the fallback structure when uncertain rather than inventing a malformed schema.${ecommerceRules}${editThemeRules}`,
+      `- Use the fallback structure when uncertain rather than inventing a malformed schema.${craftRules}${ecommerceRules}${editThemeRules}`,
     temperature: 0.2,
     maxTokens: 4000,
   }

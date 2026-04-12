@@ -4,6 +4,7 @@ import { translateHtml } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { alignGeneratedImagesToContext } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
+import { htmlLooksDegenerate } from './homepage-degeneracy.js'
 import { writeFile } from './workspace.js'
 
 const SHIPFAST_FOOTER_STYLE_ID = 'sf-footer-branding-style'
@@ -167,8 +168,18 @@ export async function generateHomepage(
     }
   }
 
+  if (htmlLooksDegenerate(html)) {
+    log('  ❌ homepage: rejected — output looks degenerate before image pass')
+    throw new Error('Homepage output failed quality check')
+  }
+
   html = alignGeneratedImagesToContext(html, imageHints)
   html = ensureLucideIconRuntime(html, log)
+
+  if (htmlLooksDegenerate(html)) {
+    log('  ❌ homepage: rejected — output looks degenerate (repetition or invalid HTML)')
+    throw new Error('Homepage output failed quality check')
+  }
 
   writeFile(workspace, 'index.html', html)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''

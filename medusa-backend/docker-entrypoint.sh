@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
 echo "Running database migrations..."
-npx medusa db:migrate
+node ./node_modules/@medusajs/cli/cli.js db:migrate
 echo "Starting Medusa on port ${PORT:-9000}..."
-exec npx medusa start --host 0.0.0.0
+exec node ./node_modules/@medusajs/cli/cli.js start --host 0.0.0.0

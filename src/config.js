@@ -52,7 +52,7 @@ export const LLM_CONFIG = {
     maxTokens: 8000,
   },
   homepage: {
-    temperature: 0.4,
+    temperature: 0.32,
     maxTokens: 12000,
   },
   parallel: {
@@ -132,6 +132,22 @@ export const MOTION_REACT_GUIDELINES = `Framer Motion: React — \`import { moti
 
 export const MOTION_NEXT_EXPORT_SUFFIX = ` Next.js or Vite React exports ship with \`framer-motion\`: import from \`framer-motion\` (${MOTION_DEV_DOCS_REACT}) for interactive motion — scroll-linked sections, hover, staggered grids, carousels, modals — not a fully static page; respect \`useReducedMotion\`.`
 
+export const GLOBAL_UI_CRAFT_GUIDELINES =
+  `Spacing: consistent rhythm (e.g. 4/8px steps, generous section padding). Align blocks to a clear grid; avoid arbitrary staggered columns. ` +
+  `Typography: limit distinct levels per view (hero, section title, body, caption); keep body copy readable on mobile—never tiny low-contrast gray for primary text. ` +
+  `Color: one dominant accent per major view; neutrals for structure; avoid competing rainbow accents and cliché violet/indigo defaults unless the brand demands it. ` +
+  `Components: consistent border-radius scale and restrained elevation; interactive elements need clear hover and focus-visible states. ` +
+  `Whitespace: separate sections and ideas with space, not decoration; strip non-functional visual noise.`
+
+export const ECOMMERCE_GROWTH_UX_PRINCIPLES =
+  `Growth-aligned UX: mobile-first; keep nav and first screen lean for perceived speed. ` +
+  `Discovery: reinforce sticky or always-visible search; IA so shoppers reach catalog or PDP intent in few clicks; filters and sort stay applied while browsing (client-held state). ` +
+  `Search/collection empty states: helpful copy (suggestions, categories). ` +
+  `PDP: 3–7 gallery items when images exist; meaningful alt text; product video only when verified assets are provided. ` +
+  `Cart and checkout: guest checkout as default framing; stepped or single-page flow with a visible progress indicator; show subtotal, shipping, tax, and total before payment; minimal fields; use HTML autocomplete on name, email, and address fields where applicable (Medusa-aligned; no invented payment backends). ` +
+  `Trust: security and payment badges near checkout summary and in footer; optional slim cookie/privacy strip as UI chrome only. ` +
+  `CTAs: clear primary vs secondary on shop, cart, and checkout. When proposing headline or checkout copy variants, name one plausible target KPI (conversion, cart abandonment, AOV) and a one-line test hypothesis.`
+
 export const ECOMMERCE_GENERATION_GUIDELINES =
   `Exemplar URLs — study structure, nav depth, section count, and commerce patterns only. For the user's project, invent original naming, copy, and visuals; do not reproduce third-party trademarks, logos, or proprietary text from these pages:\n${ECOMMERCE_REFERENCE_EXEMPLARS_FOR_PROMPTS}\n` +
   `Pattern mix to emulate (abstractly): lifestyle / accessories storefront density; security-hardware style mega-nav with ecosystem and compare paths; long-form product-line page with chaptered features, lineup, education, and support — adapted to the prompt's industry. ` +
@@ -139,8 +155,10 @@ export const ECOMMERCE_GENERATION_GUIDELINES =
   `DTC bar: match real retail homepage depth — multi-level shop navigation, promo strip, category shop, large featured assortment, bundles, learn content, reviews, newsletter, fat footer. Not acceptable: sparse SaaS-style pages. ` +
   `Minimum homepage structure: (1) slim top promo/urgency strip, (2) header with logo, search, account link, cart with numeric badge, shop menu with categories/collections/benefits, (3) hero with headline, subcopy, primary shop CTA, optional three benefit chips, (4) shop-by-category — at least four large image tiles with titles, blurbs, CTAs, (5) featured products — six or more cards with image, label, title, review line or stars, price (and compare-at if discounted), add to cart, (6) bundle or subscription band, (7) three educational or story cards, (8) social proof — stats and/or testimonials with names, (9) reviews or press strip, (10) email capture, (11) multi-column footer plus legal. ` +
   `Visual polish: strong photography or gradient placeholders, editorial typography — not a single-column stack of generic cards. ` +
+  `Every ecommerce homepage must visually scan as retail: promo band, store-style header (search + cart cues), hero with product or lifestyle imagery, category tiles with photos, dense product grids with price + CTA — not a SaaS marketing page with a few icons. ` +
   `Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): Store API via @medusajs/js-sdk; cart, products, regions, checkout per Medusa commerce modules and ecommerce recipe; Next.js export matches Medusa starter integration patterns. ` +
-  `${MOTION_REACT_GUIDELINES} Generated ecommerce exports include \`framer-motion\`: use it for cart drawer, cards, and section entrances — not static-only UI. Product carousels in HTML, Next.js, and Vite React use Swiper when the export policy applies (ecommerce sites and prompts that ask for sliders/carousels); static HTML loads Swiper from CDN and initializes \`[data-sf-swiper]\` roots.`
+  `${MOTION_REACT_GUIDELINES} Generated ecommerce exports include \`framer-motion\`: use it for cart drawer, cards, and section entrances — not static-only UI. Product carousels in HTML, Next.js, and Vite React use Swiper when the export policy applies (ecommerce sites and prompts that ask for sliders/carousels); static HTML loads Swiper from CDN and initializes \`[data-sf-swiper]\` roots. ` +
+  `${ECOMMERCE_GROWTH_UX_PRINCIPLES}`
 
 export const SITE_TYPE_INSTRUCTIONS = {
   saas: `SaaS product. Typography-first, no hero images. Premium editorial feel — display font headlines, layered surfaces, optional bento feature grid. Hero: pill badge + massive headline + subtitle + 1 gradient CTA (rounded-full); consider split layout or gradient mesh behind type. Then: features (section label + headline + strong 2-col or bento card grid) \u2192 pricing (2-col, featured has Popular badge + visual emphasis) \u2192 highlight card (gradient/glass with icon) \u2192 logo cloud (company names as text) \u2192 final CTA (headline + 2 buttons) \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,

@@ -5,9 +5,16 @@ const SHIP_FAST_URL = process.env.SHIP_FAST_URL || "http://localhost:7420"
 // GET /admin/shipfast/products — proxy Ship Fast ecommerce products into the admin
 // Accepts ?sf_session=<sessionId> to scope results to the active Ship Fast session
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const sfSession = (req.query as Record<string, string>).sf_session || ""
+  const sfSession = String((req.query as Record<string, string>).sf_session || "").trim()
+  if (!sfSession) {
+    return res.json({
+      products: [],
+      total: 0,
+      message: "sf_session query parameter is required (open Medusa from the Ship Fast dashboard embed)",
+    })
+  }
   const url = new URL(`${SHIP_FAST_URL}/api/ecommercify/products`)
-  if (sfSession) url.searchParams.set("sessionId", sfSession)
+  url.searchParams.set("sessionId", sfSession)
 
   try {
     const response = await fetch(url.toString())

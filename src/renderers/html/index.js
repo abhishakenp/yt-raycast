@@ -152,6 +152,7 @@ function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwip
     ? `    <script src="${escapeHtml(SWIPER_CDN_JS)}" defer></script>\n    <script src="${escapeHtml(SPLIDE_CDN_JS)}" defer></script>\n`
     : ''
 
+  const storeShell = siteSpec.siteType === 'ecommerce' ? ' site-shell--store' : ''
   return `<!doctype html>
 <html lang="${escapeHtml(htmlLang)}">
   <head>
@@ -160,7 +161,7 @@ function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwip
 ${swiperHead}    <link rel="stylesheet" href="${cssHref}" />
   </head>
   <body>
-    <div class="site-shell">
+    <div class="site-shell${storeShell}">
       ${sections}
     </div>
 ${swiperBeforeSiteJs}    <script src="./site.js" defer></script>
@@ -171,7 +172,10 @@ ${swiperBeforeSiteJs}    <script src="./site.js" defer></script>
 
 export function renderHtmlProject(siteSpec) {
   const useSwiper = shouldUseSwiper(siteSpec)
-  const cssContent = buildGlobalCss(siteSpec.theme)
+  const cssContent = buildGlobalCss(siteSpec.theme, {
+    ecommerce: siteSpec.siteType === 'ecommerce',
+    siteType: siteSpec.siteType,
+  })
   const cssFingerprint = createHash('sha256').update(cssContent).digest('hex').slice(0, 12)
   const siteCssHref = `./site.css?v=${cssFingerprint}`
 
@@ -199,6 +203,18 @@ export function renderHtmlProject(siteSpec) {
             body: p.description,
             price: typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
             image: p.image || '',
+            category: p.category || p.categoryName || '',
+            compareAt:
+              p.compareAt != null
+                ? typeof p.compareAt === 'number'
+                  ? `$${p.compareAt.toFixed(2)}`
+                  : p.compareAt
+                : p.compare_at != null
+                  ? typeof p.compare_at === 'number'
+                    ? `$${p.compare_at.toFixed(2)}`
+                    : p.compare_at
+                  : '',
+            rating: typeof p.rating === 'number' ? p.rating : undefined,
           }))
         }
         if (section.type === 'featured-products' && (!section.items || section.items.length === 0)) {
@@ -208,6 +224,18 @@ export function renderHtmlProject(siteSpec) {
             body: p.description,
             price: typeof p.price === 'number' ? `$${p.price.toFixed(2)}` : p.price,
             image: p.image || '',
+            category: p.category || p.categoryName || '',
+            compareAt:
+              p.compareAt != null
+                ? typeof p.compareAt === 'number'
+                  ? `$${p.compareAt.toFixed(2)}`
+                  : p.compareAt
+                : p.compare_at != null
+                  ? typeof p.compare_at === 'number'
+                    ? `$${p.compare_at.toFixed(2)}`
+                    : p.compare_at
+                  : '',
+            rating: typeof p.rating === 'number' ? p.rating : undefined,
           }))
         }
       }

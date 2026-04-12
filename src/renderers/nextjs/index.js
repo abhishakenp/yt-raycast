@@ -1460,33 +1460,61 @@ function CardGrid({ items = [] }) {
   )
 }
 
-function NavbarSection({ section }) {
+function NavbarSection({ section, siteSpec }) {
   const [open, setOpen] = useState(false)
+  const isStore = siteSpec?.siteType === 'ecommerce'
   return (
-    <header className={open ? 'site-header is-open' : 'site-header'}>
-      <div className="container nav-shell">
-        <SmartLink className="brand" href="/">
-          {section.headline || 'Site'}
-        </SmartLink>
-        <button className="nav-toggle" type="button" onClick={() => setOpen((value) => !value)}>
-          Menu
-        </button>
-        <nav className="nav-links">
-          {(section.links || []).map((link) => (
-            <SmartLink key={link.id || link.label} href={link.href || '#'}>
-              {link.label || 'Link'}
-            </SmartLink>
-          ))}
+    <>
+      {isStore ? (
+        <div className="store-promo-bar">
+          <div className="container store-promo-bar__inner">
+            <span className="store-promo-bar__msg">Free shipping on orders over $75 · Easy returns</span>
+          </div>
+        </div>
+      ) : null}
+      <header
+        className={\`\${open ? 'site-header is-open' : 'site-header'}\${isStore ? ' site-header--store' : ''}\`}
+      >
+        <div className="container nav-shell">
+          <SmartLink className="brand" href="/">
+            {section.headline || 'Site'}
+          </SmartLink>
+          <button className="nav-toggle" type="button" onClick={() => setOpen((value) => !value)}>
+            Menu
+          </button>
+          <nav className="nav-links">
+            {(section.links || []).map((link) => (
+              <SmartLink key={link.id || link.label} href={link.href || '#'}>
+                {link.label || 'Link'}
+              </SmartLink>
+            ))}
+            {isStore ? (
+              <div className="store-nav-tools">
+                <label className="store-search">
+                  <span className="visually-hidden">Search products</span>
+                  <input type="search" className="store-search__input" placeholder="Search products…" autoComplete="off" />
+                </label>
+                <SmartLink className="store-account" href="/account">
+                  Account
+                </SmartLink>
+              </div>
+            ) : null}
 ${ecommerceNavBlock}
-        </nav>
-      </div>
-    </header>
+          </nav>
+        </div>
+      </header>
+    </>
   )
 }
 
-function HeroSection({ section }) {
+function HeroSection({ section, siteSpec }) {
+  const isStore = siteSpec?.siteType === 'ecommerce'
+  const heroImg = section.heroImage || section.imageUrl || section.image
   return (
-    <section className={\`section hero hero--\${section.variant || 'default'}\`} id={section.id}>
+    <section
+      className={\`section hero hero--\${section.variant || 'default'}\${isStore ? ' hero--store' : ''}\`}
+      id={section.id}
+    >
       <div className="container hero-grid">
         <div>
           {section.subheadline ? <p className="eyebrow">{section.subheadline}</p> : null}
@@ -1495,6 +1523,17 @@ function HeroSection({ section }) {
           <ActionRow actions={section.actions} />
         </div>
         <div className="hero-panel">
+          {heroImg ? (
+            <figure className="hero-figure">
+              <img
+                className="hero-image"
+                src={heroImg}
+                alt={section.imageAlt || ''}
+                loading="eager"
+                decoding="async"
+              />
+            </figure>
+          ) : null}
           {(section.items || []).map((item) => (
             <div key={item.id || item.title} className="hero-chip">
               {item.title || item.label || item.value}
@@ -1690,9 +1729,9 @@ export default function SectionRenderer({ section, siteSpec }) {
   const reduceMotion = useReducedMotion()
   switch (section.type) {
     case 'navbar':
-      return <NavbarSection section={section} />
+      return <NavbarSection section={section} siteSpec={siteSpec} />
     case 'hero':
-      return <HeroSection section={section} />
+      return <HeroSection section={section} siteSpec={siteSpec} />
     case 'stats':
       return <StatsSection section={section} />
     case 'pricing':
@@ -1719,20 +1758,46 @@ export default function SectionRenderer({ section, siteSpec }) {
       const items = section.items || []
       const showSwiper = USE_PRODUCT_SWIPER && items.length > 0
       const showMarquee = USE_PRODUCT_MARQUEE && items.length > 0
-      const card = (item, idx, hidden) => (
-        <article
-          key={\`\${item.id || item.title}-\${idx}\`}
-          className="product-card product-card--carousel"
-          {...(hidden ? { 'aria-hidden': true } : {})}
-        >
-          <div className="product-image">
-            {item.image ? <img src={item.image} alt={hidden ? '' : item.title} /> : <div className="product-placeholder" />}
-          </div>
-          <h3>{item.title}</h3>
-          {item.price ? <span className="product-price">{item.price}</span> : null}
-          <p>{item.body || ''}</p>
-        </article>
-      )
+      const card = (item, idx, hidden) => {
+        const cat = item.category || item.collection
+        const compare =
+          item.compareAt != null && item.compareAt !== ''
+            ? String(item.compareAt)
+            : item.compare_at != null && item.compare_at !== ''
+              ? String(item.compare_at)
+              : null
+        return (
+          <article
+            key={\`\${item.id || item.title}-\${idx}\`}
+            className="card product-card product-card--retail product-card--carousel"
+            {...(hidden ? { 'aria-hidden': true } : {})}
+          >
+            <div className="product-image">
+              {item.image ? <img src={item.image} alt={hidden ? '' : item.title} /> : <div className="product-placeholder" />}
+            </div>
+            <div className="product-card__content">
+              {cat ? <span className="product-card__category">{cat}</span> : null}
+              <h3>{item.title}</h3>
+              {item.rating != null && item.rating !== '' ? (
+                <div className="product-card__rating">
+                  <span className="product-stars" aria-hidden="true">
+                    ★★★★★
+                  </span>
+                  <span className="product-card__rating-num">{Number(item.rating).toFixed(1)}</span>
+                </div>
+              ) : null}
+              <div className="product-card__price-row">
+                {item.price ? <span className="product-price">{item.price}</span> : null}
+                {compare ? <span className="product-price product-price--compare">{compare}</span> : null}
+              </div>
+              {item.body ? <p className="product-card__excerpt">{item.body}</p> : null}
+              <button type="button" className="product-card__atc button button--primary">
+                Add to cart
+              </button>
+            </div>
+          </article>
+        )
+      }
       if (showSwiper) {
         if (reduceMotion) {
           return (
@@ -1795,18 +1860,46 @@ export default function SectionRenderer({ section, siteSpec }) {
         )
       }
       return (
-        <section className={\`section \${section.type}\`} id={section.id}>
+        <section className={\`section \${section.type} section--store-products\`} id={section.id}>
           <div className="container">
             <SectionIntro section={section} />
             <div className="product-grid">
-              {items.map((item) => (
-                <article key={item.id || item.title} className="product-card" data-reveal>
-                  <div className="product-image">{item.image ? <img src={item.image} alt={item.title} /> : <div className="product-placeholder" />}</div>
-                  <h3>{item.title}</h3>
-                  {item.price ? <span className="product-price">{item.price}</span> : null}
-                  <p>{item.body || ''}</p>
-                </article>
-              ))}
+              {items.map((item) => {
+                const cat = item.category || item.collection
+                const compare =
+                  item.compareAt != null && item.compareAt !== ''
+                    ? String(item.compareAt)
+                    : item.compare_at != null && item.compare_at !== ''
+                      ? String(item.compare_at)
+                      : null
+                return (
+                  <article key={item.id || item.title} className="card product-card product-card--retail" data-reveal>
+                    <div className="product-image">
+                      {item.image ? <img src={item.image} alt={item.title} /> : <div className="product-placeholder" />}
+                    </div>
+                    <div className="product-card__content">
+                      {cat ? <span className="product-card__category">{cat}</span> : null}
+                      <h3>{item.title}</h3>
+                      {item.rating != null && item.rating !== '' ? (
+                        <div className="product-card__rating">
+                          <span className="product-stars" aria-hidden="true">
+                            ★★★★★
+                          </span>
+                          <span className="product-card__rating-num">{Number(item.rating).toFixed(1)}</span>
+                        </div>
+                      ) : null}
+                      <div className="product-card__price-row">
+                        {item.price ? <span className="product-price">{item.price}</span> : null}
+                        {compare ? <span className="product-price product-price--compare">{compare}</span> : null}
+                      </div>
+                      {item.body ? <p className="product-card__excerpt">{item.body}</p> : null}
+                      <button type="button" className="product-card__atc button button--primary">
+                        Add to cart
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           </div>
         </section>
@@ -1961,7 +2054,10 @@ ${layoutHeadBlock}      <body suppressHydrationWarning>${layoutEcommerceBody}</b
   )
 }
 `,
-    'app/globals.css': buildGlobalCss(siteSpec.theme),
+    'app/globals.css': buildGlobalCss(siteSpec.theme, {
+      ecommerce: siteSpec.siteType === 'ecommerce',
+      siteType: siteSpec.siteType,
+    }),
     'app/robots.js': `export default function robots() {
   return ${serializeModule(robotsConfig)}
 }
@@ -2047,7 +2143,7 @@ export default function PageTemplate({ siteSpec, page }) {
   return (
     <MotionPageShell>
       <RevealObserver />
-      <div className="site-shell">
+      <div className={siteSpec?.siteType === 'ecommerce' ? 'site-shell site-shell--store' : 'site-shell'}>
         {page.sections.map((section) => (
           <SectionRenderer key={section.id} section={section} siteSpec={siteSpec} />
         ))}

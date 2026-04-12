@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "sanity dev",
-    "build": "sanity build",
+    "dev": "bunx sanity dev",
+    "build": "bunx sanity build",
     "studio:build": "bun --env-file=../.env.local --env-file=../.env run build",
-    "deploy": "sanity deploy"
+    "deploy": "bunx sanity deploy"
   },
   "dependencies": {
     "@sanity/vision": "^5.20.0",

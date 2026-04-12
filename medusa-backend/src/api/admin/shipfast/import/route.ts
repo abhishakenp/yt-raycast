@@ -32,6 +32,7 @@ type ShipFastProduct = {
   image?: string
   price?: unknown
   currency?: string
+  sessionId?: string
 }
 
 // POST /admin/shipfast/import — wipe existing products, then create Ship Fast products in Medusa
@@ -41,6 +42,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   if (!Array.isArray(products) || products.length === 0) {
     return res.status(400).json({ error: "No products provided" })
+  }
+
+  const sessionIds = products
+    .map((p) => (p.sessionId != null && String(p.sessionId).trim() ? String(p.sessionId).trim() : null))
+    .filter((id): id is string => id != null)
+  if (sessionIds.length > 0) {
+    const unique = new Set(sessionIds)
+    if (unique.size > 1) {
+      return res.status(400).json({ error: "All products must belong to the same Ship Fast session" })
+    }
   }
 
   const defaultCurrency = (process.env.MEDUSA_DEFAULT_CURRENCY || "usd").toLowerCase()

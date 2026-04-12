@@ -14,12 +14,24 @@ import {
   RUNPOD_API_URL,
 } from '../config.js'
 import { getMedusaAdminEmbedAndEcommerce } from './medusa-embed.js'
-import { syncProductsToMedusa, isMedusaSyncConfigured } from './sync-medusa-catalog.js'
-import { loadSiteSpec } from '../spec/index.js'
+import { applyThemeOverrideToSiteSpec } from './theme.js'
+import { renderPreviewToWorkspace } from '../renderers/index.js'
+import {
+  syncProductsToMedusa,
+  isMedusaSyncConfigured,
+  fetchMedusaProductsForSiteSpec,
+} from './sync-medusa-catalog.js'
+import {
+  loadSiteSpec,
+  saveSiteSpec,
+  enrichSiteSpecWithWorkspaceBlueprints,
+  ensureCompatibleSiteSpec,
+} from '../spec/index.js'
 import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
 import { groq } from '../llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
+import { htmlLooksDegenerate } from '../pipeline/homepage-degeneracy.js'
 import { compactStyleFragmentHtml, trimInlineAiHtmlFragment, trimInlineAiText } from '../llm/utils.js'
 import {
   createSession,
@@ -1503,6 +1515,8 @@ export async function startServer(sessionsDir) {
     if (raw.length > 14 * 1024 * 1024) return res.status(413).json({ error: 'Too large' })
     try {
       const cleaned = stripPreviewArtifactsFromHtml(raw)
+      if (htmlLooksDegenerate(cleaned))
+        return res.status(422).json({ error: 'Homepage HTML failed quality check (repetition or invalid structure)' })
       writeFileSync(join(session.workspace, 'index.html'), cleaned, 'utf8')
       session.homepageReady = true
       makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
@@ -1895,6 +1909,23 @@ export async function startServer(sessionsDir) {
     if (!_sessionsDir) return res.json({ products: [], total: 0 })
 
     const filterSessionId = String(req.query.sessionId || '').trim()
+    if (!filterSessionId) {
+      return res.json({
+        products: [],
+        total: 0,
+        message: 'sessionId query parameter is required',
+      })
+    }
+
+    const scopedSession = getSession(filterSessionId)
+    if (!scopedSession) {
+      return res.json({
+        products: [],
+        total: 0,
+        message: 'Unknown session',
+      })
+    }
+
     const slugify = (s) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'product'
 
     // Generic placeholder titles that ship-fast uses when real product names aren't specified
@@ -1973,63 +2004,111 @@ export async function startServer(sessionsDir) {
       return products
     }
 
-    const allSessions = getAllSessions(null)
     const seen = new Set()
     const products = []
+    const s = scopedSession
 
-    for (const s of allSessions) {
-      if (filterSessionId && s.id !== filterSessionId) continue
-      if (!s.siteSpecReady) continue
-      const workspace = join(_sessionsDir, s.id)
-      const spec = loadSiteSpec(workspace)
-      if (!spec || spec.siteType !== 'ecommerce') continue
+    if (!s.siteSpecReady) {
+      return res.json({ products: [], total: 0, message: 'Site spec not ready' })
+    }
 
-      // First try: extract from rendered HTML (real product names)
-      const pages = Array.isArray(spec.pages) ? spec.pages : []
-      let extracted = false
-      for (const page of pages) {
-        const html = page.renderBlueprint?.bodyHtml
-        if (!html) continue
-        const pageProducts = extractFromHtml(html, s.id, s.prompt || '')
-        for (const p of pageProducts) {
-          if (seen.has(p.handle)) continue
-          seen.add(p.handle)
-          products.push(p)
-        }
-        if (pageProducts.length > 0) extracted = true
+    const workspace = join(_sessionsDir, s.id)
+    const spec = loadSiteSpec(workspace)
+    if (!spec || spec.siteType !== 'ecommerce') {
+      return res.json({ products: [], total: 0, message: 'Not an ecommerce site spec' })
+    }
+
+    const pages = Array.isArray(spec.pages) ? spec.pages : []
+    let extracted = false
+    for (const page of pages) {
+      const html = page.renderBlueprint?.bodyHtml
+      if (!html) continue
+      const pageProducts = extractFromHtml(html, s.id, s.prompt || '')
+      for (const p of pageProducts) {
+        if (seen.has(p.handle)) continue
+        seen.add(p.handle)
+        products.push(p)
       }
+      if (pageProducts.length > 0) extracted = true
+    }
 
-      // Second try: fallback to section.items (filters out known placeholders)
-      if (!extracted) {
-        const PRODUCT_SECTION_TYPES = new Set(['featured-products', 'product-grid', 'product-detail', 'product-list'])
-        for (const page of pages) {
-          const sections = Array.isArray(page.sections) ? page.sections : []
-          for (const section of sections) {
-            if (!PRODUCT_SECTION_TYPES.has(section.type)) continue
-            const items = Array.isArray(section.items) ? section.items : []
-            for (const item of items) {
-              if (!item.title) continue
-              const lc = item.title.toLowerCase().trim()
-              if (PLACEHOLDER_TITLES.has(lc) || seen.has(slugify(item.title))) continue
-              seen.add(slugify(item.title))
-              products.push({
-                id: item.id || slugify(item.title),
-                title: item.title,
-                handle: slugify(item.title),
-                description: item.body || item.description || '',
-                price: item.price || null,
-                image: item.image || item.thumbnail || null,
-                category: item.label || item.category || '',
-                sessionId: s.id,
-                sessionPrompt: s.prompt,
-              })
-            }
+    if (!extracted) {
+      const PRODUCT_SECTION_TYPES = new Set(['featured-products', 'product-grid', 'product-detail', 'product-list'])
+      for (const page of pages) {
+        const sections = Array.isArray(page.sections) ? page.sections : []
+        for (const section of sections) {
+          if (!PRODUCT_SECTION_TYPES.has(section.type)) continue
+          const items = Array.isArray(section.items) ? section.items : []
+          for (const item of items) {
+            if (!item.title) continue
+            const lc = item.title.toLowerCase().trim()
+            if (PLACEHOLDER_TITLES.has(lc) || seen.has(slugify(item.title))) continue
+            seen.add(slugify(item.title))
+            products.push({
+              id: item.id || slugify(item.title),
+              title: item.title,
+              handle: slugify(item.title),
+              description: item.body || item.description || '',
+              price: item.price || null,
+              image: item.image || item.thumbnail || null,
+              category: item.label || item.category || '',
+              sessionId: s.id,
+              sessionPrompt: s.prompt,
+            })
           }
         }
       }
     }
 
     res.json({ products, total: products.length })
+  })
+
+  app.options('/api/ecommercify/push-from-medusa', (_req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    res.sendStatus(204)
+  })
+
+  app.post('/api/ecommercify/push-from-medusa', async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    const sessionId = String(req.body?.sessionId || '').trim()
+    if (!sessionId) {
+      return res.status(400).json({ ok: false, error: 'sessionId is required' })
+    }
+    if (!isMedusaSyncConfigured()) {
+      return res.status(503).json({
+        ok: false,
+        error:
+          'Ship Fast needs Medusa admin credentials: MEDUSA_ADMIN_API_TOKEN or MEDUSA_ADMIN_EMAIL + MEDUSA_ADMIN_PASSWORD',
+      })
+    }
+    const session = getSession(sessionId)
+    if (!session) {
+      return res.status(404).json({ ok: false, error: 'Session not found' })
+    }
+    let siteSpec = loadSiteSpec(session.workspace)
+    if (!siteSpec || siteSpec.siteType !== 'ecommerce') {
+      return res.status(400).json({ ok: false, error: 'Not an ecommerce site spec for this session' })
+    }
+    try {
+      const products = await fetchMedusaProductsForSiteSpec()
+      siteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, session.workspace)
+      siteSpec.ecommerce = {
+        ...(siteSpec.ecommerce || {}),
+        products,
+      }
+      saveSiteSpec(session.workspace, siteSpec)
+      const themed = applyThemeOverrideToSiteSpec(
+        ensureCompatibleSiteSpec(session.workspace),
+        session.themeOverride,
+      )
+      renderPreviewToWorkspace(themed, session.workspace)
+      makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
+      return res.json({ ok: true, products: products.length })
+    } catch (e) {
+      return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) })
+    }
   })
 
   // ─── API: Sync ecommerce catalog to Medusa ────────────────

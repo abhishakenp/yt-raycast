@@ -199,6 +199,7 @@ QUALITY:
 - Fully functional: all controls work, game is winnable/loseable, score tracks.
 
 ── SHARED ──
+- Never enter a repetition loop: do not repeat the same words, bigrams, or short phrases hundreds of times. If you catch yourself repeating, stop and emit a short but complete valid HTML document with </body></html> — garbage walls of text are forbidden.
 - Never invent street addresses, cities, states, regions, postal codes, phone numbers, or map pins. If the user or verified brand block does not supply a real location, omit address lines entirely; use neutral copy only (e.g. "Remote", "Worldwide", "By appointment") or email/social CTAs without a fake place name.
 - Never output the host product name "Ship Fast", builder attribution, or purple rocket-style builder logos in the page body, contact column, hero, or nav—generated sites must not advertise the generator.
 - Optional carousels: for product or image strips use a root with class "swiper", inner ".swiper-wrapper" / ".swiper-slide", and attribute data-sf-swiper so a Swiper bundle can attach when the export pipeline loads it (ecommerce or slider-style prompts); put **multiple slides** (3+ cards) inside the wrapper—single-card rows break the carousel. Otherwise use scroll-snap CSS or data-carousel patterns from the dynamic UI rules above.

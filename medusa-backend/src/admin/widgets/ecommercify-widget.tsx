@@ -1,5 +1,5 @@
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
-import { useState, useEffect, useRef, CSSProperties } from "react"
+import { useState, useEffect, useRef, useCallback, CSSProperties } from "react"
 
 type ShipFastProduct = {
   id: string
@@ -27,13 +27,21 @@ const EcommercifyWidget = () => {
   const [products, setProducts] = useState<ShipFastProduct[]>([])
   const [loading, setLoading] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [pushing, setPushing] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
+  const [pushResult, setPushResult] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   // sfSession is received via postMessage from the Ship Fast parent window.
   // React Router strips URL query params on SPA navigation, so postMessage is the
   // only reliable way to scope products to the currently open Ship Fast session.
   const [sfSession, setSfSession] = useState<string>("")
   const fetchedForSession = useRef<string>("")
+  const importRanForSfSessionRef = useRef<string>("")
+
+  const autoImportEnabled =
+    typeof import.meta !== "undefined" &&
+    ((import.meta as { env?: Record<string, string> }).env?.VITE_ECOMMERCIFY_AUTO_IMPORT === "true" ||
+      (import.meta as { env?: Record<string, string> }).env?.VITE_ECOMMERCIFY_AUTO_IMPORT === "1")
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
@@ -44,7 +52,9 @@ const EcommercifyWidget = () => {
         if (prev !== id) {
           setProducts([])
           setResult(null)
+          setPushResult(null)
           fetchedForSession.current = ""
+          importRanForSfSessionRef.current = ""
         }
         return id
       })
@@ -74,12 +84,15 @@ const EcommercifyWidget = () => {
   }
 
   const fetchProducts = async (sessionId: string) => {
+    const sid = String(sessionId || "").trim()
+    if (!sid) {
+      setError("No Ship Fast session. Open Medusa from the Ship Fast dashboard (embedded preview) so the session can be linked.")
+      return
+    }
     setLoading(true)
     setError(null)
     try {
-      const url = sessionId
-        ? `/admin/shipfast/products?sf_session=${encodeURIComponent(sessionId)}`
-        : "/admin/shipfast/products"
+      const url = `/admin/shipfast/products?sf_session=${encodeURIComponent(sid)}`
       const res = await fetch(url, { credentials: "include" })
       const data = (await res.json()) as { products?: ShipFastProduct[]; error?: string }
       if (!res.ok) throw new Error(data.error || "Fetch failed")
@@ -92,8 +105,8 @@ const EcommercifyWidget = () => {
     }
   }
 
-  const importAll = async () => {
-    if (!products.length) return
+  const importAll = useCallback(async () => {
+    if (!sfSession.trim() || !products.length) return
     setImporting(true)
     setResult(null)
     setError(null)
@@ -107,14 +120,47 @@ const EcommercifyWidget = () => {
       const data = (await res.json()) as ImportResult & { error?: string }
       if (!res.ok) throw new Error(data.error || "Import failed")
       setResult({ synced: data.synced, errors: data.errors || [] })
-      // After successful import reload the page so the product list updates
       if (data.synced > 0) setTimeout(() => window.location.reload(), 1500)
     } catch (e) {
+      importRanForSfSessionRef.current = ""
       setError(e instanceof Error ? e.message : String(e))
     } finally {
       setImporting(false)
     }
-  }
+  }, [sfSession, products])
+
+  const pushToShipFast = useCallback(async () => {
+    if (!sfSession.trim()) return
+    setPushing(true)
+    setError(null)
+    setPushResult(null)
+    setResult(null)
+    try {
+      const res = await fetch("/admin/shipfast/push-to-shipfast", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: sfSession }),
+      })
+      const data = (await res.json()) as { ok?: boolean; error?: string; products?: number }
+      if (!res.ok) throw new Error(data.error || "Could not update Ship Fast")
+      setPushResult(`Updated Ship Fast preview with ${data.products ?? 0} product(s) from Medusa.`)
+      setTimeout(() => window.location.reload(), 1400)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setPushing(false)
+    }
+  }, [sfSession])
+
+  useEffect(() => {
+    if (!autoImportEnabled) return
+    if (!sfSession.trim() || loading || importing) return
+    if (products.length === 0) return
+    if (importRanForSfSessionRef.current === sfSession) return
+    importRanForSfSessionRef.current = sfSession
+    void importAll()
+  }, [autoImportEnabled, sfSession, products.length, loading, importing, importAll])
 
   return (
     <div style={{ ...s.wrap, ...(open ? s.wrapOpen : {}) }}>
@@ -136,6 +182,25 @@ const EcommercifyWidget = () => {
           {/* Status messages */}
           {loading && <p style={s.muted}>Contacting Ship Fast…</p>}
           {error && <p style={s.err}>{error}</p>}
+          {!loading && products.length > 0 && (
+            <div style={s.callout}>
+              The <strong>Products</strong> table below is Medusa&apos;s saved catalog. It does not
+              update when you switch Ship Fast sessions until you import. Use{' '}
+              <strong>Replace Medusa catalog</strong> to wipe the server catalog and load only the
+              products from <strong>this</strong> linked session (shown in the grid). After you edit
+              products or prices in Medusa, use <strong>Update Ship Fast preview</strong> to write
+              those changes into this session&apos;s site spec and refresh the Ship Fast preview
+              (requires the same Medusa admin credentials on the Ship Fast server).
+              {autoImportEnabled ? (
+                <span> Auto-import is on (VITE_ECOMMERCIFY_AUTO_IMPORT).</span>
+              ) : null}
+            </div>
+          )}
+          {pushResult && (
+            <div style={s.success}>
+              ✅ {pushResult}
+            </div>
+          )}
           {result && (
             <div style={s.success}>
               ✅ {result.synced} product(s) imported into Medusa.
@@ -173,14 +238,41 @@ const EcommercifyWidget = () => {
               </div>
 
               <div style={s.footer}>
-                <span style={s.muted}>{products.length} product(s) found in Ship Fast sessions</span>
-                <button
-                  style={importing ? { ...s.btn, ...s.btnDisabled } : s.btn}
-                  onClick={importAll}
-                  disabled={importing}
-                >
-                  {importing ? "Importing…" : `Import All (${products.length})`}
-                </button>
+                <span style={s.muted}>
+                  {products.length} product(s) from this Ship Fast session
+                </span>
+                <div style={s.footerBtns}>
+                  <button
+                    type="button"
+                    style={
+                      pushing || importing || !sfSession.trim()
+                        ? { ...s.btnSecondary, ...s.btnDisabled }
+                        : s.btnSecondary
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void pushToShipFast()
+                    }}
+                    disabled={pushing || importing || !sfSession.trim()}
+                  >
+                    {pushing ? "Updating…" : "Update Ship Fast preview"}
+                  </button>
+                  <button
+                    type="button"
+                    style={
+                      importing || pushing || !sfSession.trim()
+                        ? { ...s.btn, ...s.btnDisabled }
+                        : s.btn
+                    }
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void importAll()
+                    }}
+                    disabled={importing || pushing || !sfSession.trim()}
+                  >
+                    {importing ? "Importing…" : `Replace Medusa catalog (${products.length})`}
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -188,13 +280,29 @@ const EcommercifyWidget = () => {
           {/* Empty state */}
           {!loading && products.length === 0 && !error && (
             <div style={s.empty}>
-              <p style={{ margin: 0 }}>No ecommerce products found in Ship Fast.</p>
-              <p style={{ margin: "4px 0 0", ...s.muted }}>
-                Generate an ecommerce site in Ship Fast first, then come back here.
-              </p>
-              <button style={{ ...s.btn, marginTop: 12 }} onClick={() => fetchProducts(sfSession)}>
-                Refresh
-              </button>
+              {!sfSession.trim() ? (
+                <>
+                  <p style={{ margin: 0 }}>Waiting for Ship Fast session…</p>
+                  <p style={{ margin: "4px 0 0", ...s.muted }}>
+                    Open Medusa from the Ship Fast dashboard (site preview embed) so your
+                    workspace session is linked. Standalone Admin cannot receive the session
+                    automatically.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ margin: 0 }}>No ecommerce products found for this session.</p>
+                  <p style={{ margin: "4px 0 0", ...s.muted }}>
+                    Generate an ecommerce site in Ship Fast first, then refresh.
+                  </p>
+                  <button
+                    style={{ ...s.btn, marginTop: 12 }}
+                    onClick={() => fetchProducts(sfSession)}
+                  >
+                    Refresh
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -276,10 +384,17 @@ const s: Record<string, CSSProperties> = {
   session: { marginTop: 4, fontSize: 10, color: "#9ca3af", overflow: "hidden", whiteSpace: "nowrap" },
   footer: {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 12,
     borderTop: "1px solid #f3f4f6",
     paddingTop: 14,
+  },
+  footerBtns: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "flex-end",
   },
   btn: {
     background: "#111827",
@@ -291,7 +406,17 @@ const s: Record<string, CSSProperties> = {
     fontWeight: 600,
     fontSize: 13,
   },
-  btnDisabled: { background: "#9ca3af", cursor: "not-allowed" },
+  btnDisabled: { background: "#9ca3af", cursor: "not-allowed", opacity: 0.85 },
+  btnSecondary: {
+    background: "#ffffff",
+    color: "#111827",
+    border: "1px solid #d1d5db",
+    borderRadius: 7,
+    padding: "8px 16px",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: 13,
+  },
   success: {
     background: "#f0fdf4",
     border: "1px solid #bbf7d0",
@@ -304,6 +429,16 @@ const s: Record<string, CSSProperties> = {
   err: { color: "#dc2626", fontSize: 13, margin: "4px 0" },
   muted: { fontSize: 13, color: "#6b7280", margin: 0 },
   empty: { textAlign: "center", padding: "20px 0", fontSize: 13, color: "#374151" },
+  callout: {
+    background: "#fffbeb",
+    border: "1px solid #fcd34d",
+    borderRadius: 8,
+    padding: "12px 14px",
+    marginBottom: 14,
+    fontSize: 13,
+    color: "#78350f",
+    lineHeight: 1.45,
+  },
 }
 
 export const config = defineWidgetConfig({

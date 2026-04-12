@@ -75,13 +75,15 @@ export function pagePrompt(
 
 E-COMMERCE SHOP PAGE:
 This is a product listing page for an e-commerce store. Build it like a real online shop (template density: ${ECOMMERCE_ENVATO_TEMPLATES_URL}):
-- Category filter sidebar or top filter bar (by category, price range, sort)
+- Sticky or prominent header search; nav depth so shoppers reach this catalog from home in few clicks (Home → category → listing or search → listing)
+- Category filter sidebar or top filter bar (by category, price range, sort); filters and sort selection persist while browsing (use client-side state or data attributes + small script so changing pages does not reset filters in the demo)
 - Product grid (3-col or 4-col): each card has product image (use gradient placeholder if no image), product name, price (formatted with $ symbol, bold), "Add to Cart" button
 - Product cards must have hover effects: image slight zoom, card lift shadow
 - Pagination or "Load More" button at bottom
 - Breadcrumbs at top: Home > Shop
 - Use realistic mock product data (8-12 products with varied prices $19.99-$149.99)
 - Price display: font-semibold, slightly larger than body text
+- Primary CTA: Add to cart; secondary: quick view or save if present — visually distinct
 - "Add to Cart" buttons: primary accent color, rounded, hover darker\n`
       : taskLower.includes('cart')
         ? `\n${ECOMMERCE_GENERATION_GUIDELINES}
@@ -89,19 +91,23 @@ This is a product listing page for an e-commerce store. Build it like a real onl
 E-COMMERCE CART PAGE:
 This is a shopping cart page. Build it like a real checkout experience (Medusa cart flow per ${ECOMMERCE_MEDUSA_DOCS_LEARN}):
 - Cart items list: each row has product thumbnail (small square), product name, unit price, quantity selector (- / number / +), line total, remove button (X)
-- Order summary sidebar: subtotal, estimated shipping, estimated tax, order total (bold, larger)
+- Order summary sidebar: subtotal, estimated shipping, estimated tax, order total (bold, larger) — all visible before any payment step
+- Copy defaulting to guest checkout (e.g. "Checkout as guest" or no forced account wall before email/shipping)
+- If the page includes a checkout step or modal: show a progress indicator (Cart → Details → Payment) or equivalent
 - "Proceed to Checkout" button: large, primary accent, full-width in sidebar
 - "Continue Shopping" link back to /shop
 - Empty cart state: "Your cart is empty" message with CTA to shop
 - Use realistic mock cart data (2-3 items)
-- Clean table/grid layout, clear visual hierarchy\n`
+- Clean table/grid layout, clear visual hierarchy
+- For any shipping or contact fields on this page or inline checkout, use appropriate autocomplete attributes (e.g. autocomplete="email", "given-name", "family-name", "address-line1", "postal-code")\n`
         : `\n${ECOMMERCE_GENERATION_GUIDELINES}
 
 E-COMMERCE PAGE:
 This page is part of an e-commerce store. Maintain the store aesthetic and Medusa-aligned commerce patterns:
-- Keep the cart icon in the nav
+- Keep the cart icon in the nav and search discoverable in the header where applicable
 - Use product-oriented language and imagery
-- Maintain trust signals (payment, shipping badges) if in footer\n`
+- Primary vs secondary CTAs: one clear main action per section (e.g. Shop vs Learn more)
+- Maintain trust signals (payment, shipping badges) near purchase paths and in footer\n`
     : ''
   return {
     system:
