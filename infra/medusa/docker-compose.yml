@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: medusa
+      POSTGRES_DB: medusa
+    ports:
+      - "5432:5432"
+    volumes:
+      - medusa_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medusa -d medusa"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  medusa:
+    build:
+      context: ../../medusa-backend
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      DATABASE_URL: postgres://medusa:medusa@postgres:5432/medusa?sslmode=disable
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+      PORT: "9000"
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:-http://localhost:9000}
+      JWT_SECRET: ${JWT_SECRET:-supersecret}
+      COOKIE_SECRET: ${COOKIE_SECRET:-supersecret}
+      STORE_CORS: ${STORE_CORS:-http://localhost:3000,http://localhost:7420,http://localhost:7430,http://127.0.0.1:3000,http://127.0.0.1:7420,http://127.0.0.1:7430}
+      ADMIN_CORS: ${ADMIN_CORS:-http://localhost:9000,http://127.0.0.1:9000,http://localhost:7420,http://127.0.0.1:7420}
+      AUTH_CORS: ${AUTH_CORS:-http://localhost:9000,http://127.0.0.1:9000,http://localhost:3000,http://localhost:7420,http://127.0.0.1:3000,http://127.0.0.1:7420}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  medusa-migrate:
+    build:
+      context: ../../medusa-backend
+      dockerfile: Dockerfile.migrate
+    working_dir: /app
+    environment:
+      DATABASE_URL: postgres://medusa:medusa@postgres:5432/medusa?sslmode=disable
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+    command: ["node", "./node_modules/@medusajs/cli/cli.js", "db:migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  medusa_pg:
