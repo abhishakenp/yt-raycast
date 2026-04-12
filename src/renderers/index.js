@@ -4,8 +4,12 @@ import { renderHtmlProject } from './html/index.js'
 import { renderReactProject } from './react/index.js'
 import { renderNextProject } from './nextjs/index.js'
 import { renderProjectReadme } from './shared.js'
+import { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
+
+export { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 
 export function renderProject(siteSpec, target) {
+  prepareSiteSpecForReliableRender(siteSpec)
   let rendered
   switch (target) {
     case 'html':
@@ -46,6 +50,7 @@ export function writeNextAppToWorkspace(siteSpec, workspace) {
 }
 
 export function renderPreviewToWorkspace(siteSpec, workspace) {
+  prepareSiteSpecForReliableRender(siteSpec)
   const { files } = renderHtmlProject(siteSpec)
   writeRenderedFiles(workspace, files)
   writeNextAppToWorkspace(siteSpec, workspace)

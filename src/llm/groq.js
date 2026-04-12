@@ -1,5 +1,6 @@
 import {
   ECOMMERCE_AWWWARDS_GALLERY_URL,
+  ECOMMERCE_DRIBBBLE_TAG_URL,
   ECOMMERCE_ENVATO_TEMPLATES_URL,
   ECOMMERCE_MEDUSA_DOCS_LEARN,
   ECOMMERCE_REFERENCE_EXEMPLAR_URLS,
@@ -101,7 +102,13 @@ function nonEnglishLanguageAppend(indiaMode) {
 All visible UI text must be in ${indiaMode.name} (${indiaMode.nativeName}). Nav, buttons, headings, and body — everything the user reads.${fontNote}${rtlNote}`
 }
 
-export async function groqHomepage(prompt, imageHints = null, indiaMode = null, brandProfile = null) {
+export async function groqHomepage(
+  prompt,
+  imageHints = null,
+  indiaMode = null,
+  brandProfile = null,
+  hasDesignReferenceUrls = false,
+) {
   const mixedAppend = mixedEnglishHomepageAppend(indiaMode)
   const mixedEnglish = Boolean(mixedAppend)
   const scriptFontHint = mixedEnglish
@@ -110,10 +117,19 @@ export async function groqHomepage(prompt, imageHints = null, indiaMode = null, 
         .trim()
     : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
+  const referenceFirstAppend = hasDesignReferenceUrls
+    ? `\n\nREFERENCE-FIRST: The user message includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs and optional path hints. You cannot fetch URLs. Prioritize the user's product description and those path hints for header layout, hero composition, navigation density, and visual personality. Named external exemplar sites in these instructions are a loose pattern library for section checklist and density only—not a default aesthetic when they conflict with the user's direction.\n`
+    : ''
+  const storefrontRetailReminder =
+    /\b(ecommerce|e-commerce|online store|shop|shopping cart|product catalog|checkout|retail|dtc|storefront)\b/i.test(
+      String(prompt || ''),
+    )
+      ? '\n\nStorefront finish: lead with merchandising—categories, product grids, prices, cart/search in header—not a SaaS pricing table or icon-feature grid as the dominant hero.'
+      : ''
   return groqFetch({
     model: HOMEPAGE_MODEL,
     system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
-${mixedAppend || nonEnglishLanguageAppend(indiaMode)}
+${mixedAppend || nonEnglishLanguageAppend(indiaMode)}${referenceFirstAppend}
 
 CLASSIFY: If the prompt describes ecommerce, online store, shopping cart, product catalog, checkout, retail, DTC, or selling physical/digital goods, build a WEBSITE (storefront) — product-forward marketing layout with cart in nav, NOT a dashboard app. If the prompt describes application functionality (app, client, editor, dashboard, manager, tool) without retail/store context, build an APPLICATION UI. If it describes a business/product/service without store semantics, build a LANDING PAGE. Portfolio, personal site, resume, photographer/designer showcase, or creative work MUST be a WEBSITE with visible sections (hero, work grid, about, contact) — NEVER an empty application shell. Default to APP when unclear for non-store prompts only if the prompt clearly implies a software product UI.
 
@@ -130,7 +146,7 @@ Build a real, interactive app like Proton Mail, Linear, Notion, or Figma. Not a 
 Adapt the layout to the type of site:
 - SaaS/Landing: typography-first, no hero images. Massive headlines, pill badge + CTA, features cards, pricing, footer.
 - Blog: featured article hero with image, article grid with images + titles + excerpts, categories, newsletter signup.
-- Ecommerce: build a FULL retail homepage (match structural depth of exemplar URLs — ${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')}): promo strip, dense header (search, account, cart badge, multi-level shop nav), hero + benefit chips, four-plus category tiles, six-plus product cards with reviews and prices, bundle band, three learn cards, stats/testimonials, review quotes, newsletter, fat multi-column footer. Do not copy third-party brands or assets. BANNED: sparse SaaS-style storefronts with only hero + 3 cards + footer. Also study ${ECOMMERCE_AWWWARDS_GALLERY_URL} and ${ECOMMERCE_ENVATO_TEMPLATES_URL}. Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): Store API, cart, products, regions — editorial type, strong product imagery, many distinct sections. Any section titled like a carousel, "curated/gift sets", bundles, or "shop the …" row MUST place **at least three** product cards in the same horizontal strip (one shared \`grid\` or \`flex flex-row gap-*\` containing multiple cards)—never a single product tile with a large empty area beside it.
+- Ecommerce: build a FULL retail homepage (match structural depth of exemplar URLs — ${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')}): promo strip, dense header (search, account, cart badge, multi-level shop nav), hero + benefit chips, four-plus category tiles, six-plus product cards with reviews and prices, bundle band, three learn cards, stats/testimonials, review quotes, newsletter, fat multi-column footer. Do not copy third-party brands or assets. BANNED: sparse SaaS-style storefronts with only hero + 3 cards + footer. FORBIDDEN as the dominant above-the-fold story for storefronts: pricing comparison tables, three-column icon "features", symmetric bento-as-hero, dashboard/login framing, or marketing-page pill badge + single CTA without product or category merchandising. REQUIRED: visible shop cues early—product or lifestyle imagery, category entry points, prices + add-to-cart paths, cart/search in header. Also study ${ECOMMERCE_AWWWARDS_GALLERY_URL}, ${ECOMMERCE_ENVATO_TEMPLATES_URL}, and ${ECOMMERCE_DRIBBBLE_TAG_URL} (patterns and craft only — no copying specific shots). Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): Store API, cart, products, regions — editorial type, strong product imagery, many distinct sections. Any section titled like a carousel, "curated/gift sets", bundles, or "shop the …" row MUST place **at least three** product cards in the same horizontal strip (one shared \`grid\` or \`flex flex-row gap-*\` containing multiple cards)—never a single product tile with a large empty area beside it.
 - Portfolio: project showcase with images, about section, skills, contact form.
 - Docs: search bar, quick start code block, topic cards grid.
 - Community: member stats, trending topics, activity feed.
@@ -208,7 +224,7 @@ QUALITY:
 - Dark theme: rich dark base (slate/zinc/neutral with subtle hue), not identical gray-950 everywhere; surfaces and borders should feel intentional.
 - Vanilla JS only. No frameworks.
 - IMAGES & VIDEO: Use ONLY the verified Pexels/Unsplash image URLs and Pexels MP4 URLs listed in the media block below — never invent IDs or domains. For a hero or background loop, prefer a listed MP4 + poster pair when the block includes VERIFIED VIDEOS. Never use placeholder.com, picsum, source.unsplash, or any URL not copied from that list. Never use a laptop, phone, or screen image for animals or nature posts. If no listed URL fits, use a non-photo treatment (gradient, pattern, icon, typography) instead of a random or made-up URL.`,
-    prompt: `${prompt}${brandBlock}${buildImagePrompt(imageHints?.promptBlock)}\n${
+    prompt: `${prompt}${brandBlock}${buildImagePrompt(imageHints?.promptBlock)}${storefrontRetailReminder}\n${
       brandProfile
         ? 'Use the verified brand details above as exact source data. Do not invent missing logo, contact, or social fields.'
         : ''

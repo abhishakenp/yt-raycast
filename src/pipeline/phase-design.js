@@ -2,11 +2,18 @@ import { groq } from '../llm/groq.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { writeFile } from './workspace.js'
 import { designBriefPrompt } from '../prompts/design-brief.js'
+import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 
 export async function generateDesignBrief(prompt, workspace, log, indiaMode = null) {
   log('  design brief: generating with kimi-k2\u2026')
 
-  const { system, user, model, temperature, maxTokens } = designBriefPrompt(prompt, indiaMode)
+  const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
+  const { system, user, model, temperature, maxTokens } = designBriefPrompt(
+    prompt,
+    indiaMode,
+    null,
+    hasUserDesignReferences,
+  )
   const result = await groq(user, { system, model, temperature, maxTokens })
 
   const brief = stripFences(result.content ?? '')

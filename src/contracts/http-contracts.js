@@ -38,6 +38,34 @@ export function parseCreateSessionRequest(body = {}) {
     errors.push(`prompt must be under ${MAX_PROMPT_LENGTH} characters.`)
   }
 
+  const designReferenceUrls = []
+  const rawRefs = body.designReferenceUrls
+  if (rawRefs != null && !Array.isArray(rawRefs)) {
+    errors.push('designReferenceUrls must be an array when provided.')
+  } else if (Array.isArray(rawRefs)) {
+    if (rawRefs.length > 4) errors.push('designReferenceUrls may include at most 4 URLs.')
+    for (const entry of rawRefs.slice(0, 4)) {
+      const s = toString(entry, '').trim()
+      if (!s) continue
+      if (s.length > MAX_PATH_LENGTH) {
+        errors.push('each designReferenceUrls entry is too long.')
+        break
+      }
+      let parsedUrl = null
+      try {
+        parsedUrl = new URL(s)
+      } catch {
+        errors.push('each designReferenceUrls entry must be a valid URL.')
+        break
+      }
+      if (parsedUrl.protocol !== 'https:') {
+        errors.push('designReferenceUrls must use HTTPS.')
+        break
+      }
+      designReferenceUrls.push(s)
+    }
+  }
+
   if (errors.length) return { ok: false, errors }
 
   return {
@@ -46,6 +74,7 @@ export function parseCreateSessionRequest(body = {}) {
       prompt,
       preferredLanguage: preferredLanguage || 'en',
       preferredExportTarget,
+      designReferenceUrls,
     },
   }
 }

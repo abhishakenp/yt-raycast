@@ -862,6 +862,10 @@
                     </div>
                   </form>
                   <p class="preview-chat-status" id="preview-chat-status" role="status"></p>
+                  <p class="preview-chat-legal" id="preview-chat-legal">
+                    Images you attach must be yours to use. Ship Fast does not clone third-party brands or
+                    copyrighted artwork.
+                  </p>
                 </div>
                 </div>
               </div>
@@ -932,6 +936,31 @@
           rows="4"
           autocomplete="off"
         ></textarea>
+        <details class="new-prompt-design-ref">
+          <summary class="new-prompt-design-ref-summary">Optional layout inspiration (HTTPS links)</summary>
+          <p class="new-prompt-design-ref-disclaimer">
+            Ship Fast creates original UI. Only add links you have rights to use for inspiration. References guide
+            spacing and mood only—not pixel-perfect copies of third-party designs.
+          </p>
+          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-1">Reference URL 1</label>
+          <input
+            class="new-prompt-design-ref-input"
+            type="url"
+            id="new-prompt-ref-url-1"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="https://"
+          />
+          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-2">Reference URL 2</label>
+          <input
+            class="new-prompt-design-ref-input"
+            type="url"
+            id="new-prompt-ref-url-2"
+            inputmode="url"
+            autocomplete="off"
+            placeholder="https://"
+          />
+        </details>
         <div
           class="new-prompt-policy-violation"
           id="new-prompt-policy-block"
@@ -4453,11 +4482,18 @@
         btn.disabled = true
         btn.textContent = 'Generating…'
 
+        const nr1 = document.getElementById('new-prompt-ref-url-1')?.value?.trim() || ''
+        const nr2 = document.getElementById('new-prompt-ref-url-2')?.value?.trim() || ''
+        const designReferenceUrls = [nr1, nr2].filter(Boolean)
+
         try {
           const res = await fetch('/api/sessions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt }),
+            body: JSON.stringify({
+              prompt,
+              ...(designReferenceUrls.length ? { designReferenceUrls } : {}),
+            }),
           })
           const data = await res.json().catch(() => ({}))
           if (data.id) {

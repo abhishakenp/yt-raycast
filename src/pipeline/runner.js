@@ -35,6 +35,10 @@ import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt
 import { enrichBrandProfile } from './brand-profile.js'
 import { syncSiteSettingsFromSiteSpec } from '../sanity/cms-sync.js'
 import { syncProductsToMedusa, isMedusaSyncConfigured } from '../server/sync-medusa-catalog.js'
+import {
+  mergePromptWithDesignReferences,
+  readDesignReferenceUrlsFromWorkspace,
+} from './ecommerce-design-references.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -233,6 +237,9 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   sessionCtx.setPrompt(normalizedPrompt)
 
+  const promptWithRefs = mergePromptWithDesignReferences(normalizedPrompt, workspace)
+  const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
+
   const [brandProfile, indiaMode] = await Promise.all([
     enrichBrandProfile(normalizedPrompt, workspace, _log).catch((error) => {
       _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
@@ -241,7 +248,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     detectLanguage(normalizedPrompt, preferredLanguage),
   ])
 
-  const pipelinePrompt = withLanguageEnforcementBlock(normalizedPrompt, indiaMode.code)
+  const pipelinePrompt = withLanguageEnforcementBlock(promptWithRefs, indiaMode.code)
   writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
 
   if (indiaMode.code !== 'en') {
@@ -411,6 +418,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     indiaMode,
     imageHints,
     brandProfile,
+    hasUserDesignReferences,
   )
   tick('gen_end')
 

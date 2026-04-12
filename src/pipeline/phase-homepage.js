@@ -1,4 +1,5 @@
 import { groqHomepage } from '../llm/groq.js'
+import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
 import { translateHtml } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
@@ -137,7 +138,8 @@ export async function generateHomepage(
 ) {
   log('  homepage: generating from scratch (LLM)...')
 
-  const result = await groqHomepage(prompt, imageHints, indiaMode, brandProfile)
+  const hasDesignReferenceUrls = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
+  const result = await groqHomepage(prompt, imageHints, indiaMode, brandProfile, hasDesignReferenceUrls)
 
   if (!result?.content || result.error) {
     log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)

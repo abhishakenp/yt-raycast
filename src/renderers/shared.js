@@ -1820,7 +1820,10 @@ document.addEventListener('DOMContentLoaded', () => {
       { threshold: 0.08 },
     )
     io.observe(el)
-  })${swiperInit}${splideInit}
+  })
+  window.setTimeout(() => {
+    document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach((el) => el.classList.add('is-visible'))
+  }, 2800)${swiperInit}${splideInit}
 })
 
 document.querySelectorAll('[data-demo-form]').forEach((form) => {

@@ -1,5 +1,5 @@
 import {
-  ECOMMERCE_GENERATION_GUIDELINES,
+  getEcommerceGenerationGuidelines,
   GLOBAL_UI_CRAFT_GUIDELINES,
   INDIAN_DESIGN_TOKENS,
   MOTION_DEV_DOCS_REACT,
@@ -48,8 +48,14 @@ This website is in ${indiaMode.name} (${indiaMode.nativeName}). Apply these cons
 - **Font**: Use "${fontName}" as the primary font for body text. Load it from Google Fonts.${indiaMode.isRTL ? '\n- **Direction**: Use right-to-left (RTL) layout with dir="rtl" on the html element.' : ''}`
 }
 
-export function designBriefPrompt(prompt, indiaMode = null, siteType = null) {
+export function designBriefPrompt(
+  prompt,
+  indiaMode = null,
+  siteType = null,
+  hasUserDesignReferences = false,
+) {
   const effectiveSiteType = siteType || inferSiteTypeHint(prompt)
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   return {
     system:
       `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.`,
@@ -86,7 +92,7 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 - Buttons secondary: outline with subtle border, rounded-full, hover: slightly lighter bg
 - CTA link: accent color, hover: lighter accent, text-sm, with \u2192 arrow
 - Footer: dark bg, subtle top border, centered
-${effectiveSiteType === 'ecommerce' ? `- ${ECOMMERCE_GENERATION_GUIDELINES}
+${effectiveSiteType === 'ecommerce' ? `- ${ecommerceGuidelines}
 - Product card: surface bg, rounded-xl, overflow-hidden. Image top (aspect-ratio: 4/3, object-cover), hover: scale-105 transition. Title bold, price accent-colored font-semibold, "Add to Cart" button primary small
 - Category card: relative, rounded-xl, overflow-hidden. Background image with dark overlay gradient, title white text-lg font-bold centered
 - Price tag: font-semibold, text-lg for main price. Strike-through for original price if on sale
@@ -94,7 +100,7 @@ ${effectiveSiteType === 'ecommerce' ? `- ${ECOMMERCE_GENERATION_GUIDELINES}
 - Trust badge row: flex gap-8 justify-center, each badge: icon + text, muted color, text-sm
 - Promo banner: accent gradient bg, white text, py-4, text-center, uppercase tracking-wide` : ''}
 
-${effectiveSiteType === 'ecommerce' ? `### Sections (homepage order) — DTC retail depth (exemplar URLs are listed in the ecommerce generation guidelines above)
+${effectiveSiteType === 'ecommerce' ? `### Sections (homepage order) — DTC retail depth (${hasUserDesignReferences ? 'user reference URLs in the prompt override exemplar aesthetics for layout and mood; ' : ''}patterns-only guidance is in the ecommerce block above)
 1. Top promo strip (shipping threshold, subscribe-and-save, or limited offer)
 2. Nav: logo, search field or icon, Account, Cart with count; Shop mega-paths (categories, bestsellers, bundles, by benefit); Learn/Blog/Help as needed
 3. Hero: dominant headline + supporting line + primary Shop CTA; optional three benefit chips; lifestyle or product imagery

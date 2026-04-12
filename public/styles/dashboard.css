@@ -2109,6 +2109,53 @@ a.intro-back-btn:hover {
 .new-prompt-input::placeholder {
   color: #4a4660;
 }
+.new-prompt-design-ref {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(45, 42, 62, 0.9);
+  background: rgba(12, 10, 22, 0.65);
+}
+.new-prompt-design-ref-summary {
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a89fc9;
+  list-style: none;
+}
+.new-prompt-design-ref-summary::-webkit-details-marker {
+  display: none;
+}
+.new-prompt-design-ref-disclaimer {
+  margin: 10px 0 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #8b849f;
+}
+.new-prompt-design-ref-label {
+  display: block;
+  font-size: 11px;
+  color: #6b6580;
+  margin-bottom: 4px;
+}
+.new-prompt-design-ref-input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #2d2a3e;
+  background: #0f0d1a;
+  color: #e2e0f0;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.new-prompt-design-ref-input:focus {
+  border-color: #7c3aed;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.12);
+}
 .new-prompt-policy-violation {
   display: none;
   margin-top: 12px;
@@ -2839,6 +2886,13 @@ body.debug-mode .debug-panel {
   padding: 8px 4px 0;
   margin: 0;
   min-height: 0;
+}
+.preview-chat-legal {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #6b6580;
+  padding: 10px 4px 0;
+  margin: 0;
 }
 
 .preview-chat-cms-block {

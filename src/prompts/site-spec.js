@@ -1,4 +1,4 @@
-import { ECOMMERCE_GENERATION_GUIDELINES, GLOBAL_UI_CRAFT_GUIDELINES } from '../config.js'
+import { getEcommerceGenerationGuidelines, GLOBAL_UI_CRAFT_GUIDELINES } from '../config.js'
 import { siteSpecSchema } from '../spec/schema.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
 
@@ -9,7 +9,9 @@ export function siteSpecPrompt({
   fallbackSpec,
   brandProfile = null,
   mode = 'generate',
+  hasUserDesignReferences = false,
 }) {
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   const actionLine =
     mode === 'edit'
       ? 'Update the canonical site spec so the requested changes are reflected structurally.'
@@ -23,7 +25,7 @@ export function siteSpecPrompt({
 
   const ecommerceRules =
     ctx?.site_type === 'ecommerce' || ctx?.siteType === 'ecommerce'
-      ? `\n- Ecommerce: ${ECOMMERCE_GENERATION_GUIDELINES} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). The home page sections must look like a storefront: navbar + hero with heroImage when possible, features or gallery rows used as category tiles with images, at least one product-grid or featured-products section with six-plus items (populate items from ecommerce.products when available), testimonials, CTA newsletter, rich footer — not a sparse SaaS layout.\n`
+      ? `\n- Ecommerce: ${ecommerceGuidelines} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). The home page sections must look like a storefront: navbar + hero with heroImage when possible, features or gallery rows used as category tiles with images, at least one product-grid or featured-products section with six-plus items (populate items from ecommerce.products when available), testimonials, CTA newsletter, rich footer — not a sparse SaaS layout.\n`
       : ''
 
   const craftRules = `\n- Visual craft: ${GLOBAL_UI_CRAFT_GUIDELINES} Encode spacing and typographic intent in theme.spacing, theme.typography.scale, and theme.radius; keep sections scannable without clutter.\n`

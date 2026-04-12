@@ -445,6 +445,60 @@ textarea {
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
+.design-ref-details {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(45, 42, 62, 0.85);
+  background: rgba(12, 10, 22, 0.55);
+  width: 100%;
+}
+
+.design-ref-summary {
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a89fc9;
+  list-style: none;
+}
+
+.design-ref-summary::-webkit-details-marker {
+  display: none;
+}
+
+.design-ref-disclaimer {
+  margin: 10px 0 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #8b849f;
+}
+
+.design-ref-label {
+  display: block;
+  font-size: 11px;
+  color: #6b6580;
+  margin-bottom: 4px;
+}
+
+.design-ref-input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #2d2a3e;
+  background: #0f0d1a;
+  color: #e2e0f0;
+  font-size: 14px;
+}
+
+.design-ref-input:focus {
+  border-color: #7c3aed;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.12);
+}
+
 .prompt-input:focus {
   border-color: #7c3aed;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);

@@ -32,6 +32,7 @@ import { groq } from '../llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
 import { htmlLooksDegenerate } from '../pipeline/homepage-degeneracy.js'
+import { writeDesignReferencesFile } from '../pipeline/ecommerce-design-references.js'
 import { compactStyleFragmentHtml, trimInlineAiHtmlFragment, trimInlineAiText } from '../llm/utils.js'
 import {
   createSession,
@@ -753,7 +754,7 @@ export async function startServer(sessionsDir) {
       await httpContractsPromise
     const parsed = parseCreateSessionRequest(req.body ?? {})
     if (!parsed.ok) return res.status(400).json(sanitizeErrorResponse(parsed.errors.join(' | ')))
-    const { prompt, preferredLanguage, preferredExportTarget } = parsed.data
+    const { prompt, preferredLanguage, preferredExportTarget, designReferenceUrls = [] } = parsed.data
     const trimmedPrompt = prompt?.trim()
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
@@ -974,6 +975,10 @@ export async function startServer(sessionsDir) {
           }),
         }).catch(() => {})
       }
+    }
+
+    if (designReferenceUrls.length) {
+      writeDesignReferencesFile(session.workspace, designReferenceUrls)
     }
 
     const sessionCtx = makeSessionState(session)

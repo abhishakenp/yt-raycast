@@ -9,6 +9,7 @@ import {
   validateSiteSpec,
 } from '../spec/index.js'
 import { siteSpecPrompt } from '../prompts/site-spec.js'
+import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 import { repairThemeColors } from '../spec/theme-contrast.js'
 
@@ -38,6 +39,7 @@ export async function generateSiteSpec({
   let normalized = null
   let validation = { valid: false, errors: [] }
 
+  const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   for (let attempt = 0; attempt < 2; attempt++) {
     const promptBlock = siteSpecPrompt({
       prompt,
@@ -46,6 +48,7 @@ export async function generateSiteSpec({
       fallbackSpec: fallback,
       brandProfile,
       mode: 'generate',
+      hasUserDesignReferences,
     })
     const result = await groq(promptBlock.user, {
       system: promptBlock.system,
@@ -115,6 +118,7 @@ export async function generateSiteSpec({
 
 export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace, log }) {
   const baseSpec = currentSpec || buildFallbackSiteSpec({ prompt })
+  const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   const promptBlock = siteSpecPrompt({
     prompt: `Update the existing site spec using this edit request:\n${prompt}\n\nCurrent site spec:\n${JSON.stringify(baseSpec, null, 2)}`,
     ctx: {
@@ -129,6 +133,7 @@ export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace,
     designBrief: JSON.stringify(baseSpec.theme, null, 2),
     fallbackSpec: baseSpec,
     mode: 'edit',
+    hasUserDesignReferences,
   })
 
   const result = await groq(promptBlock.user, {

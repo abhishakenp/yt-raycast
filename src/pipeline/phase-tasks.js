@@ -188,6 +188,7 @@ export async function generateAllTasks(
   indiaMode = null,
   imageHints = null,
   brandProfile = null,
+  hasUserDesignReferences = false,
 ) {
   const isFrontend = (t) => t.status !== 'DONE' && !String(t.id).startsWith('backend-')
   const isBackend = (t) => String(t.id).startsWith('backend-') && t.status !== 'DONE'
@@ -205,7 +206,16 @@ export async function generateAllTasks(
 
   const siteType = ctx?.site_type || null
   const pageCalls = pageTasks.map((t) =>
-    pagePrompt(t, navList, homepageHtml, imageHints, indiaMode, brandProfile, siteType),
+    pagePrompt(
+      t,
+      navList,
+      homepageHtml,
+      imageHints,
+      indiaMode,
+      brandProfile,
+      siteType,
+      hasUserDesignReferences,
+    ),
   )
   const backendCalls = backendTasks.map((t) => backendPrompt(t, ctx))
 

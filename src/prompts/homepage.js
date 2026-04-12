@@ -1,5 +1,6 @@
 import {
-  ECOMMERCE_GENERATION_GUIDELINES,
+  buildEcommerceSiteTypeInstructions,
+  getEcommerceGenerationGuidelines,
   ECOMMERCE_MEDUSA_DOCS_LEARN,
   GLOBAL_UI_CRAFT_GUIDELINES,
   HOME_LABELS,
@@ -9,8 +10,9 @@ import {
 } from '../config.js'
 import { slug } from '../pipeline/workspace.js'
 
-export function homepagePrompt(prompt, ctx, designBrief) {
+export function homepagePrompt(prompt, ctx, designBrief, hasUserDesignReferences = false) {
   const st = ctx?.site_type ?? 'saas'
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   const otherPages = (ctx?.pages ?? []).filter((p) => !HOME_LABELS.includes(p.toLowerCase()))
   const isOnePager = ['landing', 'portfolio', 'game'].includes(st) || otherPages.length === 0
 
@@ -50,7 +52,9 @@ DO NOT:
 - Include non-functional UI elements.
 - Create slow/laggy experiences.
 - Depend on external assets or image files.`
-      : SITE_TYPE_INSTRUCTIONS[st] || SITE_TYPE_INSTRUCTIONS.landing
+      : st === 'ecommerce'
+        ? buildEcommerceSiteTypeInstructions(hasUserDesignReferences)
+        : SITE_TYPE_INSTRUCTIONS[st] || SITE_TYPE_INSTRUCTIONS.landing
 
   const pagesBlock = isOnePager
     ? 'ONE-PAGER. All content in this file. Anchor links (#features, #pricing) for nav.'
@@ -63,7 +67,7 @@ DO NOT:
   const taglineBlock = ctx?.tagline ? `\nTagline: "${ctx.tagline}"\n` : ''
 
   const ecommerceBlock = st === 'ecommerce'
-    ? `\n${ECOMMERCE_GENERATION_GUIDELINES}
+    ? `\n${ecommerceGuidelines}
 
 E-COMMERCE INTEGRATION (Medusa):
 This site uses Medusa.js as the e-commerce backend per ${ECOMMERCE_MEDUSA_DOCS_LEARN}. The generated Next.js export includes lib/medusa.js with these SDK functions:
@@ -75,7 +79,7 @@ This site uses Medusa.js as the e-commerce backend per ${ECOMMERCE_MEDUSA_DOCS_L
 - getCart(cartId) — retrieve cart with items and totals
 - getRegions() — fetch available shipping regions
 
-Homepage must match the structural depth of the exemplar URLs in the block above (patterns only — original copy and brand for this project), not a thin SaaS-style page:
+Homepage must match the structural depth in the ecommerce block above (patterns only — original copy and brand for this project; when user reference URLs are present they steer layout and mood ahead of generic exemplars), not a thin SaaS-style page:
 - Implement the full section stack from the design brief: promo strip, rich header (search, account, cart count, multi-link shop nav), hero + benefit chips, four-plus category tiles, six-plus featured product cards with reviews and prices, bundle band, learn trio, stats/testimonials, review quotes, newsletter, multi-column footer
 - Product cards: onClick handlers that call addLineItem(); Intl.NumberFormat for money; hover: image zoom, add-to-cart reveal
 - ${MOTION_REACT_GUIDELINES} Next.js export includes \`framer-motion\`; import from \`framer-motion\` (${MOTION_DEV_DOCS_REACT}) for marquees, cart, cards, and section motion.

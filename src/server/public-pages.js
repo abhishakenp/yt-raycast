@@ -246,6 +246,33 @@ export function renderHomePage(siteSettings = null) {
               ${renderLanguageOptions()}
             </select>
           </div>
+          <details class="design-ref-details">
+            <summary class="design-ref-summary">Optional layout inspiration (HTTPS links)</summary>
+            <p class="design-ref-disclaimer">
+              Ship Fast creates original UI. Only add links you have rights to use for inspiration. Do not expect
+              pixel-perfect copies of gallery or marketplace shots; references guide spacing, hierarchy, and mood only.
+            </p>
+            <label class="design-ref-label" for="design-ref-url-1">Reference URL 1</label>
+            <input
+              class="design-ref-input"
+              type="url"
+              id="design-ref-url-1"
+              name="design-ref-url-1"
+              inputmode="url"
+              autocomplete="off"
+              placeholder="https://"
+            />
+            <label class="design-ref-label" for="design-ref-url-2">Reference URL 2</label>
+            <input
+              class="design-ref-input"
+              type="url"
+              id="design-ref-url-2"
+              name="design-ref-url-2"
+              inputmode="url"
+              autocomplete="off"
+              placeholder="https://"
+            />
+          </details>
         </div>
         <button type="submit" class="submit-btn" id="submit-btn" disabled>
           <svg

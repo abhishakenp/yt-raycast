@@ -1017,7 +1017,13 @@ export default function RevealObserver() {
       { threshold: 0.08 },
     )
     els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+    const t = window.setTimeout(() => {
+      document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach((el) => el.classList.add('is-visible'))
+    }, 2800)
+    return () => {
+      window.clearTimeout(t)
+      io.disconnect()
+    }
   }, [])
   return null
 }

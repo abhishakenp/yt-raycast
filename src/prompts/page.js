@@ -1,6 +1,6 @@
 import {
   ECOMMERCE_ENVATO_TEMPLATES_URL,
-  ECOMMERCE_GENERATION_GUIDELINES,
+  getEcommerceGenerationGuidelines,
   ECOMMERCE_MEDUSA_DOCS_LEARN,
   MOTION_REACT_GUIDELINES,
 } from '../config.js'
@@ -50,7 +50,9 @@ export function pagePrompt(
   indiaMode = null,
   brandProfile = null,
   siteType = null,
+  hasUserDesignReferences = false,
 ) {
+  const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   const mixedEn = isMixedEnglishIndicCode(indiaMode?.language?.code)
   const langNote = mixedEn
     ? `\n\nLANGUAGE: ${indiaMode.language?.name || 'Mixed'} — match the homepage. All new visible text stays a natural mix of the local language and English, not a single language throughout unless a short fragment requires it.\n`
@@ -71,7 +73,7 @@ export function pagePrompt(
     : ''
   const ecommercePageBlock = siteType === 'ecommerce'
     ? taskLower.includes('shop') || taskLower.includes('catalog') || taskLower.includes('product')
-      ? `\n${ECOMMERCE_GENERATION_GUIDELINES}
+      ? `\n${ecommerceGuidelines}
 
 E-COMMERCE SHOP PAGE:
 This is a product listing page for an e-commerce store. Build it like a real online shop (template density: ${ECOMMERCE_ENVATO_TEMPLATES_URL}):
@@ -86,7 +88,7 @@ This is a product listing page for an e-commerce store. Build it like a real onl
 - Primary CTA: Add to cart; secondary: quick view or save if present — visually distinct
 - "Add to Cart" buttons: primary accent color, rounded, hover darker\n`
       : taskLower.includes('cart')
-        ? `\n${ECOMMERCE_GENERATION_GUIDELINES}
+        ? `\n${ecommerceGuidelines}
 
 E-COMMERCE CART PAGE:
 This is a shopping cart page. Build it like a real checkout experience (Medusa cart flow per ${ECOMMERCE_MEDUSA_DOCS_LEARN}):
@@ -100,7 +102,7 @@ This is a shopping cart page. Build it like a real checkout experience (Medusa c
 - Use realistic mock cart data (2-3 items)
 - Clean table/grid layout, clear visual hierarchy
 - For any shipping or contact fields on this page or inline checkout, use appropriate autocomplete attributes (e.g. autocomplete="email", "given-name", "family-name", "address-line1", "postal-code")\n`
-        : `\n${ECOMMERCE_GENERATION_GUIDELINES}
+        : `\n${ecommerceGuidelines}
 
 E-COMMERCE PAGE:
 This page is part of an e-commerce store. Maintain the store aesthetic and Medusa-aligned commerce patterns:

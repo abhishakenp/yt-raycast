@@ -1143,11 +1143,19 @@ form.addEventListener('submit', async (event) => {
   submitButton.classList.add('loading')
   syncSubmitButtonState()
 
+  const ref1 = document.getElementById('design-ref-url-1')?.value?.trim() || ''
+  const ref2 = document.getElementById('design-ref-url-2')?.value?.trim() || ''
+  const designReferenceUrls = [ref1, ref2].filter(Boolean)
+
   try {
     const response = await authFetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, preferredLanguage }),
+      body: JSON.stringify({
+        prompt,
+        preferredLanguage,
+        ...(designReferenceUrls.length ? { designReferenceUrls } : {}),
+      }),
     })
     const data = await response.json().catch(() => ({}))
 

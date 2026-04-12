@@ -5,6 +5,7 @@ function extractBodyInnerHtml(html) {
 
 function visibleTextFromHtmlFragment(fragment) {
   return fragment
+    .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
@@ -42,20 +43,23 @@ const siteSpecLooksEcommerce = (siteSpec) =>
   String(siteSpec?.siteType || siteSpec?.metadata?.siteType || '').toLowerCase() === 'ecommerce'
 
 function hasEcommerceSignals(bodyHtml) {
-  return (
+  const textSignals =
     /\b(add to cart|add to bag|buy now|shop now|free shipping|checkout|your cart)\b/i.test(bodyHtml) ||
-    /\$\s*\d[\d,.]*/.test(bodyHtml) ||
-    /class="[^"]*(?:product|cart|price)/i.test(bodyHtml)
-  )
+    /\$\s*\d[\d,.]*/.test(bodyHtml)
+  const retailMarkup =
+    /class="[^"]*\b(product-card|product-grid|product-carousel|featured-products|shop-grid|pdp|price-row)\b/i.test(
+      bodyHtml,
+    ) ||
+    /<(?:section|article|main)\b[^>]*class="[^"]*\b(?:products?|catalog|collection|shop-all)\b/i.test(bodyHtml)
+  return Boolean(textSignals || retailMarkup)
 }
 
 function looksLikeSubstantialEcommerceHomepage(html) {
   const body = extractBodyInnerHtml(html)
   const words = visibleTextFromHtmlFragment(body).split(/\s+/).filter(Boolean)
   const wc = words.length
-  if (wc >= 85) return true
+  if (wc >= 95) return true
   if (wc >= 55 && hasEcommerceSignals(body) && hasMarketingStructure(body)) return true
-  if (wc >= 65 && hasEcommerceSignals(body)) return true
   return false
 }
 
@@ -78,4 +82,8 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   if (!hasMarketingStructure(body) && wc < 58) return true
 
   return false
+}
+
+export function htmlDocumentPassesPreviewQuality(html, siteSpec) {
+  return Boolean(html && typeof html === 'string' && !shouldReplaceLlmHomepageWithRenderer(html, siteSpec))
 }
