@@ -32,7 +32,10 @@ import { groq } from '../llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
 import { htmlLooksDegenerate } from '../pipeline/homepage-degeneracy.js'
-import { writeDesignReferencesFile } from '../pipeline/ecommerce-design-references.js'
+import {
+  writeDesignReferencesFile,
+  designReferenceFingerprintFromUrls,
+} from '../pipeline/ecommerce-design-references.js'
 import { compactStyleFragmentHtml, trimInlineAiHtmlFragment, trimInlineAiText } from '../llm/utils.js'
 import {
   createSession,
@@ -754,7 +757,14 @@ export async function startServer(sessionsDir) {
       await httpContractsPromise
     const parsed = parseCreateSessionRequest(req.body ?? {})
     if (!parsed.ok) return res.status(400).json(sanitizeErrorResponse(parsed.errors.join(' | ')))
-    const { prompt, preferredLanguage, preferredExportTarget, designReferenceUrls = [] } = parsed.data
+    const {
+      prompt,
+      preferredLanguage,
+      preferredExportTarget,
+      designReferenceUrls = [],
+      designReferenceNotes = '',
+    } = parsed.data
+    const designRefFingerprint = designReferenceFingerprintFromUrls(designReferenceUrls, designReferenceNotes)
     const trimmedPrompt = prompt?.trim()
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
@@ -787,7 +797,12 @@ export async function startServer(sessionsDir) {
       )
 
       // Check for exact prompt match - return existing project
-      const existing = findSessionByPrompt(req.user.uid, trimmedPrompt, preferredLanguage)
+      const existing = findSessionByPrompt(
+        req.user.uid,
+        trimmedPrompt,
+        preferredLanguage,
+        designRefFingerprint,
+      )
       const shouldBypassBrandCache =
         existing &&
         promptLooksBrandDriven(trimmedPrompt) &&
@@ -978,7 +993,7 @@ export async function startServer(sessionsDir) {
     }
 
     if (designReferenceUrls.length) {
-      writeDesignReferencesFile(session.workspace, designReferenceUrls)
+      writeDesignReferencesFile(session.workspace, designReferenceUrls, designReferenceNotes)
     }
 
     const sessionCtx = makeSessionState(session)

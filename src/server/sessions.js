@@ -15,6 +15,7 @@ import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.j
 import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deployments.js'
 import { normalizeSession, validateSession } from '../contracts/contracts.js'
+import { readDesignReferenceFingerprintFromWorkspace } from '../pipeline/ecommerce-design-references.js'
 
 const sessions = new Map()
 let _sessionsDir = null
@@ -422,16 +423,21 @@ export function findSessionByPrompt(
   userId,
   promptText,
   preferredLanguage = DEFAULT_PREFERRED_LANGUAGE,
+  incomingDesignRefFingerprint = '{"u":[],"n":""}',
 ) {
   const needle = promptText.trim()
   const normalizedPreferredLanguage = normalizePreferredLanguage(preferredLanguage)
+
+  const matchesRefs = (workspace) =>
+    readDesignReferenceFingerprintFromWorkspace(workspace) === incomingDesignRefFingerprint
 
   // Check in-memory sessions first
   for (const s of sessions.values()) {
     if (
       s.userId === userId &&
       s.prompt?.trim() === needle &&
-      normalizePreferredLanguage(s.preferredLanguage) === normalizedPreferredLanguage
+      normalizePreferredLanguage(s.preferredLanguage) === normalizedPreferredLanguage &&
+      matchesRefs(s.workspace)
     ) {
       return s
     }
@@ -447,7 +453,8 @@ export function findSessionByPrompt(
             s &&
             s.userId === userId &&
             s.prompt?.trim() === needle &&
-            normalizePreferredLanguage(s.preferredLanguage) === normalizedPreferredLanguage
+            normalizePreferredLanguage(s.preferredLanguage) === normalizedPreferredLanguage &&
+            matchesRefs(s.workspace)
           ) {
             return s
           }

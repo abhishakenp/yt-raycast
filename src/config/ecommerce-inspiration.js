@@ -42,7 +42,7 @@ export const inferPathHintFromReferenceUrl = (rawUrl) => {
   return ''
 }
 
-export const formatDesignReferenceUrlsForPrompt = (urls = []) => {
+export const formatDesignReferenceUrlsForPrompt = (urls = [], notes = '') => {
   const list = (Array.isArray(urls) ? urls : [])
     .map((u) => String(u || '').trim())
     .filter(Boolean)
@@ -50,14 +50,23 @@ export const formatDesignReferenceUrlsForPrompt = (urls = []) => {
   const numbered = list
     .map((u, i) => {
       const hint = inferPathHintFromReferenceUrl(u)
-      const hintLine = hint ? `\n   Path hint (from URL only): ${hint}` : ''
-      return `${i + 1}. ${u}${hintLine}`
+      const hintLine = hint ? `\n   Path hint (from URL path only, not live page content): ${hint}` : ''
+      const rootHint = !hint ? `\n   (Homepage/root URL — no path segments; rely on the user's description and optional notes below.)` : ''
+      return `${i + 1}. ${u}${hintLine}${rootHint}`
     })
     .join('\n')
+  const notesBlock = String(notes || '')
+    .trim()
+    .slice(0, 800)
+  const notesSection = notesBlock
+    ? `\nUser notes on what to borrow (layout, hierarchy, mood — original execution only):\n${notesBlock}\n`
+    : ''
   return (
     `\n\n── Primary stylistic direction (user-supplied reference links) ──\n` +
-    `You cannot open these URLs. Infer intent from the user's prompt plus each path hint below (derived only from the link path, not from guessing site content). When this block conflicts with generic ecommerce exemplar language elsewhere in system instructions, follow the user's prompt and these hints for header, hero, navigation emphasis, rhythm, and palette family—while still meeting storefront section depth when the project is a shop.\n` +
-    `${DESIGN_REFERENCE_LEGAL_BLOCK}\n\n` +
+    `Models cannot fetch or screenshot these URLs. Use the project description, path hints, and any user notes — not pixel-level imitation.\n` +
+    `When this block conflicts with generic ecommerce exemplar language elsewhere in system instructions, follow the user's prompt and these hints for header, hero, navigation emphasis, rhythm, and palette family—while still meeting storefront section depth when the project is a shop.\n` +
+    `${DESIGN_REFERENCE_LEGAL_BLOCK}\n` +
+    `${notesSection}\n` +
     `${numbered}\n`
   )
 }

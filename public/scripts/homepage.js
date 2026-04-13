@@ -1146,6 +1146,7 @@ form.addEventListener('submit', async (event) => {
   const ref1 = document.getElementById('design-ref-url-1')?.value?.trim() || ''
   const ref2 = document.getElementById('design-ref-url-2')?.value?.trim() || ''
   const designReferenceUrls = [ref1, ref2].filter(Boolean)
+  const designReferenceNotes = document.getElementById('design-ref-notes')?.value?.trim() || ''
 
   try {
     const response = await authFetch('/api/sessions', {
@@ -1154,7 +1155,12 @@ form.addEventListener('submit', async (event) => {
       body: JSON.stringify({
         prompt,
         preferredLanguage,
-        ...(designReferenceUrls.length ? { designReferenceUrls } : {}),
+        ...(designReferenceUrls.length
+          ? {
+              designReferenceUrls,
+              ...(designReferenceNotes ? { designReferenceNotes } : {}),
+            }
+          : {}),
       }),
     })
     const data = await response.json().catch(() => ({}))

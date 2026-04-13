@@ -2,6 +2,7 @@ import { SUPPORTED_EXPORT_TARGETS } from '../spec/defaults.js'
 
 const MAX_PROMPT_LENGTH = 5000
 const MAX_PATH_LENGTH = 2000
+const MAX_DESIGN_REFERENCE_NOTES = 800
 
 function isObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -66,6 +67,14 @@ export function parseCreateSessionRequest(body = {}) {
     }
   }
 
+  let designReferenceNotes = ''
+  const rawNotes = body.designReferenceNotes
+  if (rawNotes != null && typeof rawNotes !== 'string') {
+    errors.push('designReferenceNotes must be a string when provided.')
+  } else if (typeof rawNotes === 'string') {
+    designReferenceNotes = rawNotes.trim().slice(0, MAX_DESIGN_REFERENCE_NOTES)
+  }
+
   if (errors.length) return { ok: false, errors }
 
   return {
@@ -75,6 +84,7 @@ export function parseCreateSessionRequest(body = {}) {
       preferredLanguage: preferredLanguage || 'en',
       preferredExportTarget,
       designReferenceUrls,
+      designReferenceNotes,
     },
   }
 }

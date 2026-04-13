@@ -374,11 +374,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       homepage = withSwiper
       writeFile(workspace, 'index.html', homepage)
     }
-    if (siteSpec?.pages?.length && shouldReplaceLlmHomepageWithRenderer(homepage, siteSpec)) {
+    const wouldReplaceLlmWithRenderer = shouldReplaceLlmHomepageWithRenderer(homepage, siteSpec)
+    const replaceLlmWithRenderer = wouldReplaceLlmWithRenderer && !hasUserDesignReferences
+    if (siteSpec?.pages?.length && replaceLlmWithRenderer) {
       _log('  homepage: LLM page body looks too sparse; rendering homepage from site spec instead')
       const recovered = renderPreviewToWorkspace(siteSpec, workspace)
       homepage = recovered.files['index.html'] ?? homepage
       writeFile(workspace, 'index.html', homepage)
+    } else if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && hasUserDesignReferences) {
+      _log(
+        '  homepage: keeping LLM HTML — layout inspiration references set (skipping spec renderer substitution for sparse output)',
+      )
     }
     sessionCtx.signalHomepageReady()
   } else if (siteSpec) {

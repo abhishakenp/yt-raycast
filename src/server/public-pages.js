@@ -249,8 +249,9 @@ export function renderHomePage(siteSettings = null) {
           <details class="design-ref-details">
             <summary class="design-ref-summary">Optional layout inspiration (HTTPS links)</summary>
             <p class="design-ref-disclaimer">
-              Ship Fast creates original UI. Only add links you have rights to use for inspiration. Do not expect
-              pixel-perfect copies of gallery or marketplace shots; references guide spacing, hierarchy, and mood only.
+              Ship Fast creates original UI. Only add links you have rights to use for inspiration. The generator does
+              not load or screenshot pages—it uses your description, optional notes, and path-only hints from each URL.
+              References guide structure and mood—not pixel-perfect copies.
             </p>
             <label class="design-ref-label" for="design-ref-url-1">Reference URL 1</label>
             <input
@@ -272,6 +273,16 @@ export function renderHomePage(siteSettings = null) {
               autocomplete="off"
               placeholder="https://"
             />
+            <label class="design-ref-label" for="design-ref-notes">What to borrow (optional)</label>
+            <textarea
+              class="design-ref-input"
+              id="design-ref-notes"
+              name="design-ref-notes"
+              rows="2"
+              maxlength="800"
+              autocomplete="off"
+              placeholder="e.g. split hero, dense header, editorial grid…"
+            ></textarea>
           </details>
         </div>
         <button type="submit" class="submit-btn" id="submit-btn" disabled>

@@ -117,15 +117,19 @@ export async function groqHomepage(
         .trim()
     : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
+  const storefrontIntent = /\b(ecommerce|e-commerce|online store|shop|shopping cart|product catalog|checkout|retail|dtc|storefront)\b/i.test(
+    String(prompt || ''),
+  )
   const referenceFirstAppend = hasDesignReferenceUrls
-    ? `\n\nREFERENCE-FIRST: The user message includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs and optional path hints. You cannot fetch URLs. Prioritize the user's product description and those path hints for header layout, hero composition, navigation density, and visual personality. Named external exemplar sites in these instructions are a loose pattern library for section checklist and density only—not a default aesthetic when they conflict with the user's direction.\n`
+    ? `\n\nREFERENCE-FIRST: The user message includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs, optional path hints, and optional user notes. You cannot fetch URLs or see screenshots. Prioritize the user's product description, notes, and path hints for header layout, hero composition, navigation density, and visual personality. Named external exemplar sites in these instructions are a loose pattern library for section checklist and density only—not a default aesthetic when they conflict with the user's direction.\n${
+        storefrontIntent
+          ? ''
+          : `\nNON-STORE LAYOUT: For landing, SaaS, portfolio, docs, or app-marketing prompts, still apply those reference hints to real layout choices—hero structure (split vs centered vs bento), section order, nav density, and typographic scale—instead of interchangeable boilerplate when hints imply a different composition.\n`
+      }`
     : ''
-  const storefrontRetailReminder =
-    /\b(ecommerce|e-commerce|online store|shop|shopping cart|product catalog|checkout|retail|dtc|storefront)\b/i.test(
-      String(prompt || ''),
-    )
-      ? '\n\nStorefront finish: lead with merchandising—categories, product grids, prices, cart/search in header—not a SaaS pricing table or icon-feature grid as the dominant hero.'
-      : ''
+  const storefrontRetailReminder = storefrontIntent
+    ? '\n\nStorefront finish: lead with merchandising—categories, product grids, prices, cart/search in header—not a SaaS pricing table or icon-feature grid as the dominant hero.'
+    : ''
   return groqFetch({
     model: HOMEPAGE_MODEL,
     system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
