@@ -532,9 +532,32 @@
               <div class="preview-chat-panel" id="preview-chat-panel" hidden>
                 <div class="preview-chat-head">
                   <span class="preview-chat-head-title" id="preview-chat-head-title">Chat</span>
-                  <button type="button" class="preview-chat-close" id="preview-chat-close" aria-label="Close">
-                    &times;
-                  </button>
+                  <div class="preview-chat-head-trail">
+                    <button
+                      type="button"
+                      class="preview-chat-add-section"
+                      id="preview-chat-add-section"
+                      aria-label="Add section"
+                      title="Add section"
+                    >
+                      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        />
+                        <path d="M12 8v8M8 12h8" fill="none" stroke="currentColor" stroke-width="2" />
+                      </svg>
+                    </button>
+                    <button type="button" class="preview-chat-close" id="preview-chat-close" aria-label="Close">
+                      &times;
+                    </button>
+                  </div>
                 </div>
                 <div id="preview-chat-cms-block" class="preview-chat-cms-block" hidden>
                   <div class="preview-chat-cms-tabs" role="tablist" aria-label="Site content mode">
@@ -1350,6 +1373,7 @@
       let chatSending = false
       let chatAwaitingEdit = false
       let chatAttachmentPaths = []
+      let previewChatRequestAddSection = null
       let chatPanelMode = 'llm'
       let medusaAdminEmbedState = { show: false, url: null }
 
@@ -3371,6 +3395,26 @@
         if (dock && SESSION_ID) dock.removeAttribute('hidden')
       }
 
+      function openPreviewChatPanel() {
+        showPreviewChatDock()
+        const panel = document.getElementById('preview-chat-panel')
+        const fab = document.getElementById('preview-chat-fab')
+        if (panel) panel.hidden = false
+        if (fab) fab.setAttribute('aria-expanded', 'true')
+        syncCmsSidebarLayout()
+      }
+
+      function getPreviewFramePathname() {
+        const iframe = document.getElementById('preview-iframe')
+        try {
+          const p = iframe?.contentWindow?.location?.pathname
+          if (p && typeof p === 'string') return p
+        } catch {
+          void 0
+        }
+        return '/'
+      }
+
       function setChatBuilding(show) {
         const typing = document.getElementById('preview-chat-typing')
         const panel = document.getElementById('preview-chat-panel')
@@ -3403,10 +3447,12 @@
         const input = document.getElementById('preview-chat-input')
         const send = document.getElementById('preview-chat-send')
         const attach = document.getElementById('preview-chat-attach')
+        const addSec = document.getElementById('preview-chat-add-section')
         const d = disabled || !chatEditable
         if (input) input.disabled = d
         if (send) send.disabled = d
         if (attach) attach.disabled = d
+        if (addSec) addSec.disabled = d || chatPanelMode !== 'llm'
       }
 
       async function refreshChatHistory() {
@@ -3480,6 +3526,81 @@
             attachWrap.appendChild(chip)
           })
           attachWrap.hidden = chatAttachmentPaths.length === 0
+        }
+
+        const resizeChatInput = () => {
+          if (!input) return
+          input.style.height = 'auto'
+          input.style.height = Math.min(input.scrollHeight, 140) + 'px'
+        }
+
+        const postChatEditRequest = async (text, attachmentPaths, opts) => {
+          const options = opts || {}
+          const raw = String(text || '').trim()
+          const paths = Array.isArray(attachmentPaths) ? attachmentPaths : []
+          if ((!raw && paths.length === 0) || !SESSION_ID || chatSending) return false
+          if (raw) {
+            const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } = await import(
+              '/scripts/content-policy.js'
+            )
+            if (!checkPromptContentPolicy(raw).ok) {
+              const st = document.getElementById('preview-chat-status')
+              if (st) st.textContent = CONTENT_POLICY_CLIENT_MESSAGE
+              return false
+            }
+          }
+          chatSending = true
+          setChatFormDisabled(true)
+          const stat = document.getElementById('preview-chat-status')
+          if (stat) stat.textContent = ''
+          try {
+            const res = await apiFetch(`/api/sessions/${SESSION_ID}/chat`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: raw, attachmentPaths: paths }),
+            })
+            const data = await res.json().catch(() => ({}))
+            if (res.status === 202) {
+              if (options.clearInput !== false) {
+                if (input) input.value = ''
+                resizeChatInput()
+              }
+              if (options.clearAttachments !== false) {
+                chatAttachmentPaths = []
+                renderChatAttachments()
+              }
+              chatAwaitingEdit = true
+              setChatBuilding(true)
+              void refreshChatHistory()
+              return true
+            }
+            if (stat) stat.textContent = data.error || res.statusText || 'Request failed'
+          } catch (err) {
+            if (stat) stat.textContent = err?.message || 'Network error'
+          } finally {
+            chatSending = false
+            setChatFormDisabled(false)
+          }
+          return false
+        }
+
+        previewChatRequestAddSection = async (route) => {
+          openPreviewChatPanel()
+          await refreshChatHistory()
+          if (!chatEditable) {
+            const st = document.getElementById('preview-chat-status')
+            if (st) st.textContent = 'Finish generating your site to add sections.'
+            return
+          }
+          if (chatPanelMode === 'cms') {
+            applyChatPanelMode('llm')
+          }
+          const path = typeof route === 'string' && route.trim() ? route.trim() : '/'
+          const text =
+            'Add a new section (page component/block) to the generated site. The user is viewing path: ' +
+            path +
+            '. Update the canonical site spec so this page gains an additional section that fits the existing design; pick an appropriate section type (for example features, testimonials, faq, cta, logo strip, pricing, or stats) and insert it in a sensible position. Regenerate preview HTML.'
+          await postChatEditRequest(text, [], { clearInput: false, clearAttachments: false })
         }
 
         attachBtn?.addEventListener('click', () => fileInput?.click())
@@ -3844,52 +3965,17 @@
           }
         })
         closeBtn?.addEventListener('click', () => setOpen(false))
-        const resizeChatInput = () => {
-          if (!input) return
-          input.style.height = 'auto'
-          input.style.height = Math.min(input.scrollHeight, 140) + 'px'
-        }
         input?.addEventListener('input', resizeChatInput)
+        document.getElementById('preview-chat-add-section')?.addEventListener('click', () => {
+          const path = getPreviewFramePathname()
+          void previewChatRequestAddSection?.(path)
+        })
         form?.addEventListener('submit', async (e) => {
           e.preventDefault()
           const raw = input?.value?.trim() || ''
-          if ((!raw && chatAttachmentPaths.length === 0) || !SESSION_ID || chatSending) return
-          const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } = await import(
-            '/scripts/content-policy.js'
-          )
-          if (raw && !checkPromptContentPolicy(raw).ok) {
-            const st = document.getElementById('preview-chat-status')
-            if (st) st.textContent = CONTENT_POLICY_CLIENT_MESSAGE
-            return
-          }
-          chatSending = true
-          setChatFormDisabled(true)
-          const stat = document.getElementById('preview-chat-status')
-          if (stat) stat.textContent = ''
-          try {
-            const res = await apiFetch(`/api/sessions/${SESSION_ID}/chat`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: raw, attachmentPaths: chatAttachmentPaths }),
-            })
-            const data = await res.json().catch(() => ({}))
-            if (res.status === 202) {
-              input.value = ''
-              resizeChatInput()
-              chatAttachmentPaths = []
-              renderChatAttachments()
-              chatAwaitingEdit = true
-              setChatBuilding(true)
-              void refreshChatHistory()
-            } else {
-              if (stat) stat.textContent = data.error || res.statusText || 'Request failed'
-            }
-          } catch (err) {
-            if (stat) stat.textContent = err?.message || 'Network error'
-          } finally {
-            chatSending = false
-            setChatFormDisabled(false)
-          }
+          const paths = [...chatAttachmentPaths]
+          if ((!raw && paths.length === 0) || !SESSION_ID || chatSending) return
+          await postChatEditRequest(raw, paths, { clearInput: true, clearAttachments: true })
         })
       }
 
@@ -4238,6 +4324,11 @@
             })
             if (res.ok) reloadPreview()
           })()
+          return
+        }
+        if (data.type === 'SF_ADD_COMPONENT_CLICK' && SESSION_ID) {
+          const path = typeof data.route === 'string' && data.route.trim() ? data.route.trim() : '/'
+          void previewChatRequestAddSection?.(path)
           return
         }
         if (data.type === 'SF_PREVIEW_TEXT_AI_REQ' && data.id && SESSION_ID) {

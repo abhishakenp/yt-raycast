@@ -19,6 +19,9 @@ export const SUPPORTED_SECTION_TYPES = [
   'stats',
   'team',
   'blog-list',
+  'notice-board',
+  'document-list',
+  'careers-table',
   'dashboard-shell',
   'product-grid',
   'product-detail',
@@ -102,6 +105,8 @@ function defaultPageNamesForSiteType(siteType) {
       return ['Home', 'Work', 'About', 'Contact']
     case 'blog':
       return ['Home', 'Blog', 'About', 'Contact']
+    case 'institutional':
+      return ['Home', 'Notices', 'Careers', 'Contact']
     case 'docs':
       return ['Home', 'Docs', 'Pricing', 'FAQ', 'Contact']
     case 'ecommerce':
@@ -139,6 +144,8 @@ function inferHomeSeoTitle(projectName, tagline, siteType) {
       return `${projectName} | Documentation and Quickstart`
     case 'blog':
       return `${projectName} | Insights and Updates`
+    case 'institutional':
+      return `${projectName} | Official portal`
     case 'ecommerce':
       return `${projectName} | Shop Premium Products`
     default:
@@ -154,6 +161,8 @@ function inferPageTitle(pageName, projectName, siteType, tagline = '') {
   if (lower.includes('about')) return `About ${projectName} | Company Overview`
   if (lower.includes('docs')) return `${projectName} Docs | Guides and Reference`
   if (lower.includes('blog')) return `${projectName} Blog | Insights and Updates`
+  if (lower.includes('notices')) return `${projectName} | Notices and tenders`
+  if (lower.includes('careers')) return `${projectName} | Careers`
   if (lower.includes('faq')) return `${projectName} FAQ | Common Questions and Answers`
   if (lower.includes('work')) return `${projectName} Work | Projects and Case Studies`
   if (lower.includes('shop') || lower.includes('catalog')) return `${projectName} Shop | Browse Our Collection`
@@ -199,6 +208,14 @@ function defaultNavActions(projectName, pageNames = [], siteType = 'landing') {
       { id: 'cta-secondary', label: 'Cart', href: cartHref, style: 'secondary' },
     ]
   }
+  if (siteType === 'institutional') {
+    const noticesHref = findPageRoute(pageNames, /notices/i, '/notices')
+    const careersHref = findPageRoute(pageNames, /careers/i, '/careers')
+    return [
+      { id: 'cta-primary', label: 'Careers', href: careersHref, style: 'primary' },
+      { id: 'cta-secondary', label: 'Notices', href: noticesHref, style: 'secondary' },
+    ]
+  }
   const pricingHref = findPageRoute(pageNames, /pricing/i, '#pricing')
   const contactHref = findPageRoute(pageNames, /contact/i, '#contact')
   return [
@@ -231,6 +248,31 @@ function defaultHero(projectName, tagline, siteType, features = [], pageNames = 
         { title: 'Easy returns' },
       ],
       interactions: [{ type: 'heroCta', behavior: 'scroll', target: '#featured-products' }],
+    }
+  }
+  if (siteType === 'institutional') {
+    const noticesHref = findPageRoute(pageNames, /notices/i, '/notices')
+    const careersHref = findPageRoute(pageNames, /careers/i, '/careers')
+    const body =
+      tagline ||
+      `${projectName} publishes official notices, documents, and career opportunities in one place.`
+    return {
+      id: 'hero',
+      type: 'hero',
+      variant: 'split',
+      headline: projectName,
+      subheadline: tagline || 'Official information for stakeholders and applicants.',
+      body,
+      actions: [
+        { label: 'View notices', href: noticesHref, style: 'primary' },
+        { label: 'Careers', href: careersHref, style: 'secondary' },
+      ],
+      items: [
+        { title: 'Tenders and notifications' },
+        { title: 'Document downloads' },
+        { title: 'Job openings' },
+      ],
+      interactions: [{ type: 'heroCta', behavior: 'navigate', target: noticesHref }],
     }
   }
   const body =
@@ -435,9 +477,112 @@ function buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames) {
   ]
 }
 
+function buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames) {
+  return [
+    defaultHero(projectName, tagline, 'institutional', ctx?.features || [], pageNames),
+    {
+      id: 'notice-board',
+      type: 'notice-board',
+      variant: 'highlights',
+      headline: 'Latest notifications',
+      subheadline: 'Tenders, circulars, and official updates',
+      body: 'Connect this section to your CMS for dated entries, PDFs, and compliance archives.',
+      items: [
+        {
+          title: 'Sample tender — infrastructure',
+          body: 'Submission deadline and document download.',
+          href: '#',
+        },
+        {
+          title: 'Public circular — policy update',
+          body: 'Summary with link to full text.',
+          href: '#',
+        },
+      ],
+    },
+    {
+      id: 'document-list',
+      type: 'document-list',
+      variant: 'archive',
+      headline: 'Documents',
+      body: 'Annual reports, disclosures, and downloadable PDFs.',
+      items: [
+        { title: 'Annual report', body: 'PDF', href: '#' },
+        { title: 'Citizen charter', body: 'PDF', href: '#' },
+      ],
+    },
+    {
+      id: 'careers-table',
+      type: 'careers-table',
+      variant: 'openings',
+      headline: 'Job openings',
+      body: 'Vacancies with closing dates and application channels.',
+      items: [
+        { title: 'Graduate engineer trainee', body: 'Full time · multiple locations', href: '#' },
+        { title: 'Assistant officer', body: 'Operations', href: '#' },
+      ],
+    },
+    {
+      id: 'stats',
+      type: 'stats',
+      variant: 'pill-grid',
+      headline: 'At a glance',
+      items: [
+        { label: 'Transparency', value: 'Published notices' },
+        { label: 'Information', value: 'Updated regularly' },
+        { label: 'Careers', value: 'Open recruitment' },
+      ],
+    },
+    {
+      id: 'faq',
+      type: 'faq',
+      variant: 'accordion',
+      headline: `${projectName} — information for visitors`,
+      body: 'Guidance for stakeholders, applicants, and partners.',
+      items: defaultFaqItems(projectName, 'institutional', ctx),
+      interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
+    },
+    {
+      id: 'contact',
+      type: 'contact-form',
+      variant: 'split',
+      headline: 'Contact',
+      body: 'General enquiries, partnerships, and office locations.',
+      fields: [
+        { name: 'name', label: 'Name', type: 'text', placeholder: 'Full name', required: true },
+        { name: 'email', label: 'Email', type: 'email', placeholder: 'you@example.com', required: true },
+        {
+          name: 'message',
+          label: 'Message',
+          type: 'textarea',
+          placeholder: 'Describe your enquiry.',
+          required: true,
+        },
+      ],
+      form: {
+        successMessage: 'Thank you. Your message has been recorded.',
+        errorMessage: 'Please check the required fields and try again.',
+        action: { type: 'placeholder', target: 'contact_request' },
+      },
+    },
+    {
+      id: 'footer',
+      type: 'footer',
+      variant: 'simple',
+      headline: projectName,
+      links: pageNames
+        .slice(0, 6)
+        .map((pageName, pageIdx) => ({ label: pageName, href: toPageRoute(pageName, pageIdx) })),
+    },
+  ]
+}
+
 function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNames = []) {
   if (siteType === 'ecommerce') {
     return buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames)
+  }
+  if (siteType === 'institutional') {
+    return buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
   }
   const sections = [
     defaultHero(projectName, tagline, siteType, ctx?.features || [], pageNames),
@@ -615,6 +760,12 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
 }
 
 function inferPageDescription(pageName, projectName, siteType, tagline = '') {
+  if (/notices/i.test(pageName)) {
+    return `Browse tenders, circulars, and official notifications from ${projectName}.`
+  }
+  if (/careers/i.test(pageName)) {
+    return `Explore current job openings and how to apply at ${projectName}.`
+  }
   if (/pricing/i.test(pageName)) return `Compare ${projectName} pricing, included features, and plan details before you choose a rollout path.`
   if (/contact/i.test(pageName)) return `Contact the ${projectName} team for sales, support, onboarding, or implementation questions.`
   if (/about/i.test(pageName)) return `Learn what ${projectName} does, how it is positioned, and why teams choose it.`
@@ -624,6 +775,11 @@ function inferPageDescription(pageName, projectName, siteType, tagline = '') {
   if (/work/i.test(pageName)) return `Explore ${projectName} projects, case studies, and selected work.`
   if (/catalog/i.test(pageName)) return `Browse ${projectName} products, key details, and buying guidance.`
   if (/home/i.test(pageName)) {
+    if (siteType === 'institutional') {
+      return tagline
+        ? `${tagline} Official notices, documents, and careers on the ${projectName} homepage.`
+        : `${projectName} official portal: notices, downloads, careers, and contact.`
+    }
     return tagline
       ? `${tagline} Explore pricing, FAQs, and next steps from the ${projectName} homepage.`
       : `${projectName} overview, pricing, FAQs, and contact options for prospective buyers.`
@@ -738,6 +894,38 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         items: [
           { title: 'Building with structured output', body: 'Why canonical specs scale better than HTML conversion.' },
           { title: 'Renderer architecture', body: 'How one spec powers multiple frontend targets.' },
+        ],
+      },
+    ]
+  }
+
+  if (lower.includes('notices')) {
+    return [
+      {
+        id: 'notices-archive',
+        type: 'document-list',
+        variant: 'table',
+        headline: `${projectName} notices and tenders`,
+        body: 'Official notifications with dates and downloads.',
+        items: [
+          { title: 'Invitation for bids — sample', body: 'Closing 30 days from publish', href: '#' },
+          { title: 'Amendment to tender', body: 'PDF notice', href: '#' },
+        ],
+      },
+    ]
+  }
+
+  if (lower.includes('careers')) {
+    return [
+      {
+        id: 'careers-openings',
+        type: 'careers-table',
+        variant: 'openings',
+        headline: `Careers at ${projectName}`,
+        body: 'Current vacancies and how to apply.',
+        items: [
+          { title: 'Executive trainee', body: 'Engineering · PAN India', href: '#' },
+          { title: 'Safety officer', body: 'Full time', href: '#' },
         ],
       },
     ]

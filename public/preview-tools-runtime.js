@@ -641,6 +641,31 @@
     row1.appendChild(hint)
     row1.appendChild(save)
     row1.appendChild(cancel)
+    const addSection = document.createElement('button')
+    addSection.type = 'button'
+    addSection.setAttribute('aria-label', 'Add section')
+    addSection.setAttribute('title', 'Add section')
+    addSection.innerHTML =
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>'
+    Object.assign(addSection.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '34px',
+      height: '34px',
+      padding: '0',
+      borderRadius: '8px',
+      border: '1px solid rgba(124, 58, 237, 0.35)',
+      background: 'rgba(124, 58, 237, 0.12)',
+      color: '#e9d5ff',
+      cursor: 'pointer',
+      flexShrink: '0',
+    })
+    addSection.addEventListener('click', () => {
+      const path = window.location && window.location.pathname ? window.location.pathname : '/'
+      post({ type: 'SF_ADD_COMPONENT_CLICK', route: path })
+    })
+    row1.appendChild(addSection)
 
     const aiCfg = window.__SF_PREVIEW_AI__ || {}
     const aiPanel = document.createElement('div')

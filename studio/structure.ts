@@ -16,6 +16,18 @@ export const structure: StructureResolver = (S) =>
             ]),
         ),
       S.divider(),
+      S.listItem()
+        .title('Institutional')
+        .child(
+          S.list()
+            .title('Institutional')
+            .items([
+              S.documentTypeListItem('officialNotice').title('Notices and tenders'),
+              S.documentTypeListItem('jobOpening').title('Job openings'),
+              S.documentTypeListItem('documentCategory').title('Document categories'),
+            ]),
+        ),
+      S.divider(),
       S.documentTypeListItem('siteSettings').title('Site settings'),
       S.documentTypeListItem('sessionChat').title('Session chats'),
     ])

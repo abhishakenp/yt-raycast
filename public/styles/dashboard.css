@@ -2641,6 +2641,39 @@ body.debug-mode .debug-panel {
   color: #e8e4ff;
   letter-spacing: 0.01em;
 }
+.preview-chat-head-trail {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.preview-chat-add-section {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: rgba(167, 139, 250, 0.12);
+  color: #c4b5fd;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.preview-chat-add-section:hover:not(:disabled) {
+  background: rgba(167, 139, 250, 0.22);
+  color: #e9d5ff;
+}
+.preview-chat-add-section:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.preview-chat-panel--cms .preview-chat-add-section {
+  display: none;
+}
 .preview-chat-close {
   border: none;
   background: transparent;

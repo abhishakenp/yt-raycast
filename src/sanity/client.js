@@ -115,3 +115,83 @@ export async function fetchPostBySlug(slug) {
     return null
   }
 }
+
+export async function fetchOfficialNotices(options = {}) {
+  const client = getSanityClient()
+  if (!client) return []
+  const noticeKind = String(options.noticeKind || '').trim()
+  const limit = Math.min(200, Math.max(1, Number(options.limit) || 100))
+  const params = {}
+  let filter = `_type == "officialNotice" && defined(slug.current)`
+  if (noticeKind) {
+    filter += ' && noticeKind == $noticeKind'
+    params.noticeKind = noticeKind
+  }
+  const query = `*[${filter}] | order(coalesce(publishedAt, _createdAt) desc) [0...${limit}] {
+    "slug": slug.current,
+    noticeKind,
+    title { en, hi, ta, te, kn, ml, bn, mr, gu },
+    summary { en, hi, ta, te, kn, ml, bn, mr, gu },
+    publishedAt,
+    validUntil,
+    "attachmentUrl": attachment.asset->url,
+    "attachmentFilename": attachment.asset->originalFilename,
+    "categoryTitle": documentCategory->title { en, hi, ta, te, kn, ml, bn, mr, gu },
+    body,
+    seo { metaTitle, metaDescription }
+  }`
+  try {
+    const rows = await client.fetch(query, params)
+    return Array.isArray(rows) ? rows : []
+  } catch {
+    return []
+  }
+}
+
+export async function fetchOfficialNoticeBySlug(slug) {
+  const client = getSanityClient()
+  if (!client || !slug) return null
+  const query = `*[_type == "officialNotice" && slug.current == $slug][0]{
+    noticeKind,
+    title { en, hi, ta, te, kn, ml, bn, mr, gu },
+    summary { en, hi, ta, te, kn, ml, bn, mr, gu },
+    publishedAt,
+    validUntil,
+    body,
+    "attachmentUrl": attachment.asset->url,
+    "attachmentFilename": attachment.asset->originalFilename,
+    "categoryTitle": documentCategory->title { en, hi, ta, te, kn, ml, bn, mr, gu },
+    seo { metaTitle, metaDescription }
+  }`
+  try {
+    return await client.fetch(query, { slug })
+  } catch {
+    return null
+  }
+}
+
+export async function fetchJobOpenings(options = {}) {
+  const client = getSanityClient()
+  if (!client) return []
+  const openOnly = options.openOnly !== false
+  const limit = Math.min(200, Math.max(1, Number(options.limit) || 100))
+  let filter = `_type == "jobOpening"`
+  if (openOnly) filter += ' && status == "open"'
+  const query = `*[${filter}] | order(coalesce(postedAt, _createdAt) desc) [0...${limit}] {
+    title { en, hi, ta, te, kn, ml, bn, mr, gu },
+    department { en, hi, ta, te, kn, ml, bn, mr, gu },
+    location { en, hi, ta, te, kn, ml, bn, mr, gu },
+    description { en, hi, ta, te, kn, ml, bn, mr, gu },
+    postedAt,
+    closingAt,
+    applyUrl,
+    applyEmail,
+    status
+  }`
+  try {
+    const rows = await client.fetch(query)
+    return Array.isArray(rows) ? rows : []
+  } catch {
+    return []
+  }
+}

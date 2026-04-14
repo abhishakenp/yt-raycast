@@ -77,6 +77,7 @@ export const VALID_SITE_TYPES = [
   'marketplace',
   'community',
   'game',
+  'institutional',
 ]
 
 export const HOME_LABELS = ['home', 'homepage', 'index', 'landing']

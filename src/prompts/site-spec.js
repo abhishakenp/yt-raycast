@@ -28,6 +28,11 @@ export function siteSpecPrompt({
       ? `\n- Ecommerce: ${ecommerceGuidelines} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). The home page sections must look like a storefront: navbar + hero with heroImage when possible, features or gallery rows used as category tiles with images, at least one product-grid or featured-products section with six-plus items (populate items from ecommerce.products when available), testimonials, CTA newsletter, rich footer — not a sparse SaaS layout.\n`
       : ''
 
+  const institutionalRules =
+    ctx?.site_type === 'institutional' || ctx?.siteType === 'institutional'
+      ? `\n- Institutional / PSU-style: Set siteType to "institutional". Include pages such as Home, Notices, Careers, Contact. Use section types notice-board, document-list, and careers-table on the home page where appropriate; prefer clear dated list items, formal tone, accessible contrast, and navbar links to notices and careers routes. Avoid ecommerce sections unless the prompt asks for a store.\n`
+      : ''
+
   const craftRules = `\n- Visual craft: ${GLOBAL_UI_CRAFT_GUIDELINES} Encode spacing and typographic intent in theme.spacing, theme.typography.scale, and theme.radius; keep sections scannable without clutter.\n`
 
   return {
@@ -39,6 +44,7 @@ export function siteSpecPrompt({
       `Existing project context:\n${JSON.stringify(ctx, null, 2)}\n\n` +
       `Design brief:\n${designBrief}\n\n` +
       `${brandBlock ? `${brandBlock}\n` : ''}` +
+      `${institutionalRules}` +
       `Required section types (use only when relevant):\n${siteSpecSchema.supportedSectionTypes.join(', ')}\n\n` +
       `Required export targets:\n${siteSpecSchema.supportedExportTargets.join(', ')}\n\n` +
       `Use this fallback structure as a shape reference and minimum completeness baseline:\n${JSON.stringify(fallbackSpec, null, 2)}\n\n` +

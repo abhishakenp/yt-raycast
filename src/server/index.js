@@ -86,12 +86,17 @@ import { razorpayStartHandler, razorpayWebhookHandler } from './razorpay.js'
 import { applySiteSettingsPatch } from '../sanity/cms-sync.js'
 import { getSanityWriteClient } from '../sanity/chat-sync.js'
 import {
+  fetchJobOpenings,
+  fetchOfficialNoticeBySlug,
+  fetchOfficialNotices,
   fetchPostBySlug,
   fetchPosts,
   fetchSanityImageAssets,
   fetchSiteSettings,
 } from '../sanity/client.js'
 import { applyPricingPageOverrides, renderBlogIndex, renderBlogPost } from './blog-pages.js'
+import { applyPublicLocaleResponseHeaders, getLocaleFromRequest } from './locale.js'
+import { renderCareersPage, renderNoticeDetail, renderNoticesIndex } from './psu-pages.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { ensureEmbeddedStudioBuilt } from './ensure-studio-build.js'
 import { mountEmbeddedSanityStudio } from './sanity-studio-static.js'
@@ -733,6 +738,72 @@ export async function startServer(sessionsDir) {
       res.type('html').send(renderBlogPost(post, slug))
     } catch {
       res.status(500).type('html').send('Error')
+    }
+  })
+
+  app.get('/notices', async (req, res) => {
+    if (!isSanityConfigured()) {
+      return res.status(503).type('html').send(`<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"/><title>Notices</title></head>
+<body style="font-family:system-ui;padding:2rem;background:#05030d;color:#e4e4e7">
+<p>Notices are not configured. Set SANITY_PROJECT_ID and SANITY_DATASET in the server environment.</p>
+<p><a href="/" style="color:#a78bfa">Home</a></p>
+</body></html>`)
+    }
+    try {
+      applyPublicLocaleResponseHeaders(res)
+      const locale = getLocaleFromRequest(req, res)
+      const kind = String(req.query?.kind || '').trim()
+      const notices = await fetchOfficialNotices({
+        noticeKind: kind || undefined,
+        limit: 100,
+      })
+      res.type('html').send(renderNoticesIndex(notices, locale, { filterKind: kind }))
+    } catch {
+      res.status(500).type('html').send('<!doctype html><html><body>Error loading notices.</body></html>')
+    }
+  })
+
+  app.get('/notices/:slug', async (req, res) => {
+    if (!isSanityConfigured()) {
+      return res.status(503).type('html').send('Service unavailable')
+    }
+    const slug = String(req.params.slug || '').trim()
+    if (!slug) return res.status(404).type('html').send('Not found')
+    try {
+      applyPublicLocaleResponseHeaders(res)
+      const locale = getLocaleFromRequest(req, res)
+      const notice = await fetchOfficialNoticeBySlug(slug)
+      if (!notice) {
+        return res
+          .status(404)
+          .type('html')
+          .send(
+            '<!doctype html><html><body>Notice not found. <a href="/notices">Notices</a></body></html>',
+          )
+      }
+      res.type('html').send(renderNoticeDetail(notice, slug, locale))
+    } catch {
+      res.status(500).type('html').send('Error')
+    }
+  })
+
+  app.get('/careers', async (req, res) => {
+    if (!isSanityConfigured()) {
+      return res.status(503).type('html').send(`<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"/><title>Careers</title></head>
+<body style="font-family:system-ui;padding:2rem;background:#05030d;color:#e4e4e7">
+<p>Careers are not configured. Set SANITY_PROJECT_ID and SANITY_DATASET in the server environment.</p>
+<p><a href="/" style="color:#a78bfa">Home</a></p>
+</body></html>`)
+    }
+    try {
+      applyPublicLocaleResponseHeaders(res)
+      const locale = getLocaleFromRequest(req, res)
+      const jobs = await fetchJobOpenings({ openOnly: true, limit: 100 })
+      res.type('html').send(renderCareersPage(jobs, locale))
+    } catch {
+      res.status(500).type('html').send('<!doctype html><html><body>Error loading careers.</body></html>')
     }
   })
 

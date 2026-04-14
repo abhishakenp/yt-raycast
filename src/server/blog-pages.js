@@ -42,7 +42,8 @@ export function renderBlogIndex(posts) {
   <link rel="canonical" href="${escapeHtml(SITE_URL)}/blog" />
   <link rel="stylesheet" href="/styles/index.css" />
   <style>
-    .blog-wrap { max-width: 42rem; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    body.bg-glow { pointer-events: auto; }
+    .blog-wrap { max-width: 42rem; margin: 0 auto; padding: 2rem 1rem 4rem; position: relative; z-index: 1; }
     .blog-card { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .blog-card h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
     .blog-card a { color: #c4b5fd; text-decoration: none; }

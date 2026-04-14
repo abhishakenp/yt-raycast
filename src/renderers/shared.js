@@ -666,6 +666,9 @@ export function renderSectionHtml(section, siteSpec = {}) {
     case 'gallery':
     case 'team':
     case 'blog-list':
+    case 'notice-board':
+    case 'document-list':
+    case 'careers-table':
     case 'docs-content':
     case 'dashboard-shell':
       return `

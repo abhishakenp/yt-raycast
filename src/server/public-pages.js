@@ -114,10 +114,14 @@ function renderAuthOverlay() {
 }
 
 function renderTopActions() {
+  const institutionalLinks = isSanityConfigured()
+    ? '<a class="top-action-link" href="/notices">Notices</a><a class="top-action-link" href="/careers">Careers</a>'
+    : ''
   const blogLink = isSanityConfigured()
     ? '<a class="top-action-link" href="/blog">Blog</a>'
     : ''
   return `<nav class="top-actions" aria-label="Primary">
+    ${institutionalLinks}
     ${blogLink}
     <a class="top-action-link" href="/pricing">Pricing</a>
     <div class="top-actions-auth-slot">
@@ -384,6 +388,19 @@ Sitemap: ${SITE_URL}/sitemap.xml
 }
 
 export function renderSitemapXml() {
+  const psuBlock = isSanityConfigured()
+    ? `  <url>
+    <loc>${escapeHtml(SITE_URL)}/notices</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>${escapeHtml(SITE_URL)}/careers</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+`
+    : ''
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -396,7 +413,7 @@ export function renderSitemapXml() {
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
-  <url>
+  ${psuBlock}  <url>
     <loc>${escapeHtml(SITE_URL)}/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
