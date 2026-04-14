@@ -143,7 +143,7 @@ export const ECOMMERCE_EDITORIAL_CANVAS_PATTERN =
   'reviews as three light cards in a row with stars, quote, name or locale, verified buyer cue; ' +
   'newsletter as a full-width inverted band (charcoal or black), serif-style headline, email field, light high-contrast submit button; ' +
   'footer four columns of links plus compact social icons as inline SVGs. ' +
-  'This pattern is the internal quality bar for generated luxury DTC homepages alongside assets/generated-samples/leon-scroll-stitched-full.png.'
+  'This pattern is the internal quality bar for generated luxury DTC homepages.'
 
 export const ECOMMERCE_DRIBBBLE_VISUAL_LANGUAGE =
   `Contemporary ecommerce UI direction (${ECOMMERCE_DRIBBBLE_TAG_URL} — use for layout and craft patterns only; do not copy specific shots, logos, or proprietary artwork): ` +
