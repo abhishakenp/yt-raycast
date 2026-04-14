@@ -48,7 +48,7 @@ if (promptArg) {
 
   await startServer(sessionsDir)
 
-  const { session, generation } = await startCLISession(workspace, promptArg)
+  const { generation } = await startCLISession(workspace, promptArg)
 
   await generation
 } else {

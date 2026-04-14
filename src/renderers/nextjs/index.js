@@ -476,48 +476,99 @@ export function useCart() {
 `,
     'components/ecommerce/ProductCard.jsx': `'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useCart } from './CartProvider'
 
-export default function ProductCard({ product }) {
+const formatMoney = (amount, currency) =>
+  amount == null
+    ? ''
+    : new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(amount / 100)
+
+const getProductBadge = (product) => {
+  const tag = product?.tags?.[0]?.value || ''
+  const subtitle = product?.subtitle || ''
+  const candidate = String(tag || subtitle).trim()
+  if (!candidate) return ''
+  if (candidate.length > 18) return candidate.slice(0, 18).trim()
+  return candidate
+}
+
+export default function ProductCard({ product, variantId: forcedVariantId = null, cta = 'Add to cart' }) {
   const { addItem } = useCart()
   const [adding, setAdding] = useState(false)
   const reduceMotion = useReducedMotion()
-  const variant = product.variants?.[0]
-  const price = variant?.calculated_price?.calculated_amount
-  const currency = variant?.calculated_price?.currency_code || 'USD'
-  const formatted = price != null
-    ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(price / 100)
-    : ''
 
-  async function handleAdd() {
-    if (!variant?.id) return
+  const selectedVariant = useMemo(() => {
+    const variants = product?.variants || []
+    if (!variants.length) return null
+    if (!forcedVariantId) return variants[0] || null
+    return variants.find((v) => v?.id === forcedVariantId) || variants[0] || null
+  }, [product, forcedVariantId])
+
+  const price = selectedVariant?.calculated_price?.calculated_amount
+  const compareAt = selectedVariant?.calculated_price?.original_amount
+  const currency = selectedVariant?.calculated_price?.currency_code || 'USD'
+  const formatted = formatMoney(price, currency)
+  const formattedCompare =
+    compareAt != null && price != null && compareAt > price ? formatMoney(compareAt, currency) : ''
+
+  const rating = product?.metadata?.rating
+  const reviewsCount = product?.metadata?.reviewsCount
+  const badge = useMemo(() => getProductBadge(product), [product])
+  const href = '/product/' + (product?.handle || product?.id || '')
+  const hasVariant = Boolean(selectedVariant?.id)
+
+  const onAdd = async () => {
+    if (!selectedVariant?.id) return
     setAdding(true)
-    await addItem(variant.id)
+    await addItem(selectedVariant.id)
     setAdding(false)
   }
 
   return (
     <motion.article
-      className="product-card"
+      className="card product-card product-card--retail"
       whileHover={reduceMotion ? undefined : { y: -6 }}
       transition={{ type: 'spring', stiffness: 420, damping: 32 }}
     >
-      <Link href={'/product/' + (product.handle || product.id)}>
-        <div className="product-image">
-          {product.thumbnail ? (
-            <img src={product.thumbnail} alt={product.title} />
+      <Link href={href} aria-label={product?.title || 'View product'}>
+        <div className="card-media">
+          {product?.thumbnail ? (
+            <img src={product.thumbnail} alt={product.title || ''} />
           ) : (
             <div className="product-placeholder" />
           )}
         </div>
-        <h3>{product.title}</h3>
+        <div className="product-card__content">
+          {badge ? <span className="product-card__category">{badge}</span> : null}
+          <h3>{product?.title || 'Product'}</h3>
+          {rating != null || reviewsCount != null ? (
+            <p className="product-card__rating">
+              <span aria-hidden>★★★★★</span>
+              <span className="product-card__rating-num">
+                {rating != null ? String(rating) : '—'}
+                {reviewsCount != null ? ' · ' + String(reviewsCount) + ' reviews' : ''}
+              </span>
+            </p>
+          ) : null}
+          {formatted ? (
+            <p className="product-card__price-row">
+              <span className="product-price">{formatted}</span>
+              {formattedCompare ? <span className="product-price--compare">{formattedCompare}</span> : null}
+            </p>
+          ) : null}
+          <p className="product-card__excerpt">Free shipping over $75 · 30-day returns</p>
+        </div>
       </Link>
-      {formatted ? <span className="product-price">{formatted}</span> : null}
-      <button className="button button--primary" onClick={handleAdd} disabled={adding || !variant}>
-        {adding ? 'Adding...' : 'Add to Cart'}
+      <button
+        className="button button--primary product-card__atc"
+        onClick={onAdd}
+        disabled={adding || !hasVariant}
+        type="button"
+      >
+        {adding ? 'Adding…' : cta}
       </button>
     </motion.article>
   )
@@ -530,13 +581,17 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCart } from './CartProvider'
 
+const formatMoney = (amount, currency) =>
+  amount == null
+    ? ''
+    : new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(amount / 100)
+
 export default function CartDrawer() {
   const { cart, loading, updateItem, removeItem, itemCount } = useCart()
   const [open, setOpen] = useState(false)
 
-  const subtotal = cart?.total != null
-    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: cart.region?.currency_code || 'USD' }).format(cart.total / 100)
-    : '$0.00'
+  const currency = cart?.region?.currency_code || 'USD'
+  const subtotal = cart?.total != null ? formatMoney(cart.total, currency) : '$0.00'
 
   return (
     <>
@@ -569,21 +624,31 @@ export default function CartDrawer() {
             <ul className="cart-items">
               {(cart?.items || []).map((item) => (
                 <li key={item.id} className="cart-item">
-                  <div>
-                    <strong>{item.title}</strong>
-                    <div className="cart-item-controls">
-                      <button onClick={() => updateItem(item.id, Math.max(1, item.quantity - 1))} type="button">-</button>
-                      <span>{item.quantity}</span>
-                      <button onClick={() => updateItem(item.id, item.quantity + 1)} type="button">+</button>
-                      <button onClick={() => removeItem(item.id)} type="button">Remove</button>
+                  <div className="cart-item__row">
+                    <div className="cart-item__meta">
+                      <strong className="cart-item__title">{item.title}</strong>
+                      <div className="cart-item__controls">
+                        <button onClick={() => updateItem(item.id, Math.max(1, item.quantity - 1))} type="button">-</button>
+                        <span className="cart-item__qty" aria-label="Quantity">{item.quantity}</span>
+                        <button onClick={() => updateItem(item.id, item.quantity + 1)} type="button">+</button>
+                        <button onClick={() => removeItem(item.id)} type="button">Remove</button>
+                      </div>
                     </div>
                   </div>
                 </li>
               ))}
             </ul>
             <div className="cart-footer">
-              <strong>Subtotal: {subtotal}</strong>
-              <Link href="/checkout" className="button button--primary">Checkout</Link>
+              <div className="cart-summary">
+                <div className="cart-summary__row">
+                  <span>Subtotal</span>
+                  <strong>{subtotal}</strong>
+                </div>
+                <p className="cart-summary__hint">Shipping and taxes are calculated at checkout.</p>
+              </div>
+              <Link href="/checkout" className="button button--primary">Secure checkout</Link>
+              <Link href="/shop" className="button">Continue shopping</Link>
+              <p className="cart-trust">Free returns · Secure payment · Fast dispatch</p>
             </div>
             </motion.aside>
           </motion.div>
@@ -770,6 +835,11 @@ export const useCheckout = () => {
 import Link from 'next/link'
 import { useCheckout } from '../../hooks/useCheckout'
 
+const formatMoney = (amount, currency) =>
+  amount == null
+    ? ''
+    : new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(amount / 100)
+
 export default function CheckoutView() {
   const {
     cart,
@@ -793,53 +863,97 @@ export default function CheckoutView() {
     submit,
   } = useCheckout()
 
+  const currency = cart?.region?.currency_code || 'USD'
+  const subtotal = cart?.subtotal != null ? formatMoney(cart.subtotal, currency) : ''
+  const shipping = cart?.shipping_total != null ? formatMoney(cart.shipping_total, currency) : ''
+  const tax = cart?.tax_total != null ? formatMoney(cart.tax_total, currency) : ''
+  const total = cart?.total != null ? formatMoney(cart.total, currency) : ''
+
   return (
     <div className="checkout-shell">
+      <div className="checkout-progress" aria-label="Checkout progress">
+        <div className="checkout-progress__step is-active">Details</div>
+        <div className="checkout-progress__step">Shipping</div>
+        <div className="checkout-progress__step">Payment</div>
+      </div>
       {cartLoading ? <p>Loading cart…</p> : null}
       {!cartLoading && !cart?.items?.length ? (
         <p className="cart-empty-state">Your cart is empty. <Link href="/shop">Browse the shop</Link>.</p>
       ) : null}
       {cart?.items?.length ? (
-        <form
-          className="checkout-form"
-          onSubmit={(e) => {
-            e.preventDefault()
-            submit()
-          }}
-        >
-          <label>
-            <span>Email</span>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-          </label>
-          <label>
-            <span>First name</span>
-            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} required autoComplete="given-name" />
-          </label>
-          <label>
-            <span>Last name</span>
-            <input value={lastName} onChange={(e) => setLastName(e.target.value)} required autoComplete="family-name" />
-          </label>
-          <label>
-            <span>Address</span>
-            <input value={address1} onChange={(e) => setAddress1(e.target.value)} required autoComplete="street-address" />
-          </label>
-          <label>
-            <span>City</span>
-            <input value={city} onChange={(e) => setCity(e.target.value)} required autoComplete="address-level2" />
-          </label>
-          <label>
-            <span>Country (ISO code)</span>
-            <input value={countryCode} onChange={(e) => setCountryCode(e.target.value)} required autoComplete="country" maxLength={2} />
-          </label>
-          <label>
-            <span>Postal code</span>
-            <input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required autoComplete="postal-code" />
-          </label>
-          {error ? <p className="form-message" role="alert">{error}</p> : null}
-          <button type="submit" className="button button--primary" disabled={busy}>
-            {busy ? 'Processing…' : 'Place order'}
-          </button>
-        </form>
+        <div className="checkout-grid">
+          <form
+            className="checkout-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              submit()
+            }}
+          >
+            <div className="checkout-form__header">
+              <h2>Guest checkout</h2>
+              <p className="checkout-form__hint">Secure payment. Easy returns. Fast dispatch.</p>
+            </div>
+            <label>
+              <span>Email</span>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+            </label>
+            <div className="checkout-form__row">
+              <label>
+                <span>First name</span>
+                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} required autoComplete="given-name" />
+              </label>
+              <label>
+                <span>Last name</span>
+                <input value={lastName} onChange={(e) => setLastName(e.target.value)} required autoComplete="family-name" />
+              </label>
+            </div>
+            <label>
+              <span>Address</span>
+              <input value={address1} onChange={(e) => setAddress1(e.target.value)} required autoComplete="street-address" />
+            </label>
+            <div className="checkout-form__row">
+              <label>
+                <span>City</span>
+                <input value={city} onChange={(e) => setCity(e.target.value)} required autoComplete="address-level2" />
+              </label>
+              <label>
+                <span>Postal code</span>
+                <input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required autoComplete="postal-code" />
+              </label>
+            </div>
+            <label>
+              <span>Country (ISO)</span>
+              <input value={countryCode} onChange={(e) => setCountryCode(e.target.value)} required autoComplete="country" maxLength={2} />
+            </label>
+            {error ? <p className="form-message" role="alert">{error}</p> : null}
+            <button type="submit" className="button button--primary" disabled={busy}>
+              {busy ? 'Processing…' : 'Continue to payment'}
+            </button>
+            <p className="checkout-trust">By placing your order, you agree to our Shipping and Returns policies.</p>
+          </form>
+          <aside className="checkout-summary" aria-label="Order summary">
+            <h3>Order summary</h3>
+            <ul className="checkout-summary__items">
+              {(cart?.items || []).slice(0, 6).map((item) => (
+                <li key={item.id} className="checkout-summary__item">
+                  <span className="checkout-summary__itemTitle">{item.title}</span>
+                  <span className="checkout-summary__itemQty">×{item.quantity}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="checkout-summary__totals">
+              {subtotal ? <div className="checkout-summary__row"><span>Subtotal</span><span>{subtotal}</span></div> : null}
+              {shipping ? <div className="checkout-summary__row"><span>Shipping</span><span>{shipping}</span></div> : <div className="checkout-summary__row"><span>Shipping</span><span>Calculated</span></div>}
+              {tax ? <div className="checkout-summary__row"><span>Tax</span><span>{tax}</span></div> : <div className="checkout-summary__row"><span>Tax</span><span>Calculated</span></div>}
+              {total ? <div className="checkout-summary__row checkout-summary__row--total"><strong>Total</strong><strong>{total}</strong></div> : null}
+            </div>
+            <div className="checkout-summary__badges">
+              <span className="checkout-badge">Secure payment</span>
+              <span className="checkout-badge">Free returns</span>
+              <span className="checkout-badge">Fast dispatch</span>
+            </div>
+          </aside>
+        </div>
       ) : null}
     </div>
   )
@@ -856,7 +970,13 @@ export default async function ShopPage() {
   const products = await getProducts({ limit: 100 })
   return (
     <main className="container shop-page" style={{ padding: 'var(--spacing-section) 0' }}>
-      <h1 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1.5rem' }}>Shop</h1>
+      <header className="shop-hero">
+        <p className="eyebrow">Collections</p>
+        <h1 style={{ fontFamily: 'var(--font-heading)', marginBottom: '0.5rem' }}>Shop</h1>
+        <p style={{ color: 'var(--color-muted)', maxWidth: '56ch' }}>
+          Crafted essentials, designed to age beautifully. Explore the full assortment and discover your next staple.
+        </p>
+      </header>
       {products.length === 0 ? (
         <p style={{ color: 'var(--color-muted)' }}>
           No products loaded. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and publish products in Medusa Admin.
@@ -881,8 +1001,8 @@ export default async function ShopPage() {
 `,
     'app/product/[handle]/page.jsx': `import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import ProductCard from '../../../components/ecommerce/ProductCard'
 import { getProductByHandle } from '../../../lib/medusa'
+import AddToCart from '../../../components/ecommerce/AddToCart'
 
 export async function generateMetadata({ params }) {
   const product = await getProductByHandle(params.handle)
@@ -892,14 +1012,79 @@ export async function generateMetadata({ params }) {
 export default async function ProductDetailPage({ params }) {
   const product = await getProductByHandle(params.handle)
   if (!product) notFound()
+  const variant = product?.variants?.[0]
+  const price = variant?.calculated_price?.calculated_amount
+  const compareAt = variant?.calculated_price?.original_amount
+  const currency = variant?.calculated_price?.currency_code || 'USD'
+  const formatted =
+    price != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(price / 100) : ''
+  const formattedCompare =
+    compareAt != null && price != null && compareAt > price
+      ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(compareAt / 100)
+      : ''
   return (
-    <main className="container" style={{ padding: 'var(--spacing-section) 0' }}>
-      <p style={{ marginBottom: '1rem' }}>
-        <Link href="/shop" style={{ color: 'var(--color-primary)' }}>
-          ← Shop
-        </Link>
-      </p>
-      <ProductCard product={product} />
+    <main className="container product-page" style={{ padding: 'var(--spacing-section) 0' }}>
+      <nav className="breadcrumbs" aria-label="Breadcrumb">
+        <Link href="/" style={{ color: 'var(--color-muted)' }}>Home</Link>
+        <span aria-hidden> / </span>
+        <Link href="/shop" style={{ color: 'var(--color-muted)' }}>Shop</Link>
+        <span aria-hidden> / </span>
+        <span>{product.title}</span>
+      </nav>
+      <div className="product-detail">
+        <section className="product-detail__media" aria-label="Product gallery">
+          {product.thumbnail ? (
+            <img className="product-detail__img" src={product.thumbnail} alt={product.title || ''} />
+          ) : (
+            <div className="product-detail__placeholder" />
+          )}
+          <div className="product-detail__thumbRow" aria-hidden>
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="product-detail__thumb" />
+            ))}
+          </div>
+        </section>
+        <section className="product-detail__buy" aria-label="Purchase">
+          <p className="eyebrow">In stock · Fast dispatch</p>
+          <h1 style={{ fontFamily: 'var(--font-heading)', marginBottom: '0.25rem' }}>{product.title}</h1>
+          {formatted ? (
+            <p className="product-detail__priceRow">
+              <span className="product-detail__price">{formatted}</span>
+              {formattedCompare ? <span className="product-detail__compare">{formattedCompare}</span> : null}
+            </p>
+          ) : null}
+          <p className="product-detail__subcopy" style={{ color: 'var(--color-muted)' }}>
+            A refined essential built for daily wear. Thoughtful details, premium feel, and an easy silhouette.
+          </p>
+          <div className="product-detail__ctaRow">
+            <AddToCart variantId={variant?.id || ''} disabled={!variant?.id} />
+            <Link href="/checkout" className="button">Checkout</Link>
+          </div>
+          <div className="product-detail__policies">
+            <details className="product-detail__accordion">
+              <summary>Shipping</summary>
+              <p>Free shipping over $75. Most orders ship within 24 hours.</p>
+            </details>
+            <details className="product-detail__accordion">
+              <summary>Returns</summary>
+              <p>30-day returns. Simple, no-hassle exchanges.</p>
+            </details>
+            <details className="product-detail__accordion">
+              <summary>Warranty</summary>
+              <p>Built to last. We stand behind every piece.</p>
+            </details>
+          </div>
+          <div className="product-detail__trustRow" aria-label="Trust badges">
+            <span className="product-detail__trust">Secure payment</span>
+            <span className="product-detail__trust">Free returns</span>
+            <span className="product-detail__trust">Premium materials</span>
+          </div>
+        </section>
+      </div>
+      <section className="product-related" aria-label="Complete the look">
+        <h2 style={{ fontFamily: 'var(--font-heading)' }}>Complete the look</h2>
+        <p style={{ color: 'var(--color-muted)' }}>A few pairings our customers love.</p>
+      </section>
     </main>
   )
 }
