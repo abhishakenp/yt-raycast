@@ -86,8 +86,8 @@ NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
 # Optional: override default system payment provider id from Medusa Admin
 # NEXT_PUBLIC_MEDUSA_PAYMENT_PROVIDER_ID=pp_system_default
-# Stripe (when configured in Medusa for the storefront)
-# NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+# Razorpay (when configured in Medusa for the storefront)
+# NEXT_PUBLIC_RAZORPAY_KEY_ID=
 # On the Medusa server, set STORE_CORS to include this app origin (e.g. http://localhost:3000,http://localhost:7420). See infra/medusa/run-medusa.txt in Ship Fast.
 `,
     'lib/medusa.js': `import Medusa from '@medusajs/js-sdk'

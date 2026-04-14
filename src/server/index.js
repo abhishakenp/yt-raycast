@@ -53,7 +53,7 @@ import {
   setSessionPreferredLanguage,
   readAnonOwnerSecret,
 } from './sessions.js'
-import { verifyIdToken, db } from '../auth/firebase-admin.js'
+import { verifyIdToken } from '../auth/firebase-admin.js'
 import {
   generateSessionExport,
   getSessionExportBundle,
@@ -71,7 +71,6 @@ import {
   stripPreviewArtifactsFromHtml,
 } from './preview-tools-serve.js'
 import {
-  addUserCredits,
   consumeUserCredit,
   decorateExportTargetsForRequest,
   getDownloadAccessDecision,
@@ -83,6 +82,7 @@ import {
   startPaymentListeners,
   setQuotaInfoGetter,
 } from './payments.js'
+import { razorpayStartHandler, razorpayWebhookHandler } from './razorpay.js'
 import { applySiteSettingsPatch } from '../sanity/cms-sync.js'
 import { getSanityWriteClient } from '../sanity/chat-sync.js'
 import {
@@ -490,6 +490,12 @@ export async function startServer(sessionsDir) {
     setNoIndexHeaders(res)
     next()
   })
+
+  app.post(
+    '/api/payments/razorpay/webhook',
+    express.raw({ type: 'application/json' }),
+    razorpayWebhookHandler,
+  )
 
   app.use(express.json({ limit: '15mb' }))
   app.use((err, req, res, next) => {
@@ -1684,56 +1690,11 @@ export async function startServer(sessionsDir) {
     }
   })
 
-  // ─── API: Credits status + fulfillment ─────────────────────
+  app.post('/api/payments/razorpay/start', requireAuth, razorpayStartHandler)
+
   app.get('/api/credits', requireAuth, async (req, res) => {
     const credits = await getUserCredits(req.user.uid)
     res.json({ credits })
-  })
-
-  app.post('/api/credits/fulfill', requireAuth, async (req, res) => {
-    // Called after a successful Stripe one-time payment for credit packs.
-    // The checkout_session in Firestore contains the price metadata with credit count.
-    const { checkoutSessionId } = req.body
-    if (!checkoutSessionId) return res.status(400).json({ error: 'checkoutSessionId required' })
-
-    try {
-      const sessionDoc = await db
-        .collection('customers')
-        .doc(req.user.uid)
-        .collection('checkout_sessions')
-        .doc(checkoutSessionId)
-        .get()
-
-      if (!sessionDoc.exists) return res.status(404).json({ error: 'Checkout session not found' })
-
-      const data = sessionDoc.data()
-      if (data.mode !== 'payment')
-        return res.status(400).json({ error: 'Not a one-time payment session' })
-      if (data.fulfilled)
-        return res.json({ ok: true, already: true, credits: await getUserCredits(req.user.uid) })
-
-      // Get credit count from the price metadata in Stripe (stored in Firestore products)
-      const priceId = data.price
-      let creditAmount = 0
-      if (priceId === process.env.STRIPE_3_CREDITS_PRICE_ID) creditAmount = 3
-      else if (priceId === process.env.STRIPE_10_CREDITS_PRICE_ID) creditAmount = 10
-
-      if (creditAmount <= 0) return res.status(400).json({ error: 'Unknown credit pack' })
-
-      addUserCredits(req.user.uid, creditAmount)
-
-      // Mark as fulfilled to prevent double-granting
-      await sessionDoc.ref.update({ fulfilled: true })
-
-      res.json({
-        ok: true,
-        creditsAdded: creditAmount,
-        credits: await getUserCredits(req.user.uid),
-      })
-    } catch (error) {
-      console.error('[credits/fulfill] error:', error?.message ?? error)
-      res.status(500).json({ error: 'Failed to fulfill credits' })
-    }
   })
 
   app.get('/api/sessions/:id/download/:target', optionalAuth, async (req, res) => {

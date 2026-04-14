@@ -5,11 +5,10 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const projectRoot = resolve(__dirname, '..')
 
-for (const file of ['.env', '.env.local']) {
-  loadEnvFile(resolve(projectRoot, file))
-}
+loadEnvFile(resolve(projectRoot, '.env'), false)
+loadEnvFile(resolve(projectRoot, '.env.local'), true)
 
-function loadEnvFile(filePath) {
+function loadEnvFile(filePath, override) {
   if (!existsSync(filePath)) return
 
   const contents = readFileSync(filePath, 'utf8')
@@ -23,7 +22,8 @@ function loadEnvFile(filePath) {
     if (separatorIndex === -1) continue
 
     const key = normalized.slice(0, separatorIndex).trim()
-    if (!key || Object.prototype.hasOwnProperty.call(process.env, key)) continue
+    if (!key) continue
+    if (!override && Object.prototype.hasOwnProperty.call(process.env, key)) continue
 
     let value = normalized.slice(separatorIndex + 1).trim()
     if (

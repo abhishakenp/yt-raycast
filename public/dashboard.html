@@ -1040,7 +1040,7 @@
         </div>
         <div class="payment-option-list" id="payment-option-list"></div>
         <div class="payment-note" id="payment-note">
-          Secure checkout with Stripe — you will be redirected to complete payment.
+          Secure checkout with Razorpay — complete payment in the Razorpay window.
         </div>
         <div class="payment-error" id="payment-error"></div>
         <div class="payment-actions">
@@ -1063,60 +1063,6 @@
     </div>
 
     <script type="module" src="/scripts/dashboard-auth.js"></script>
-    <script type="module" id="stripe-checkout-module">
-      import {
-        getFirestore,
-        collection,
-        addDoc,
-        onSnapshot,
-      } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js'
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js'
-      import { getAuth } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
-
-      window._stripeCheckout = {
-        async createCheckoutSession(priceId, sessionId) {
-          const auth = getAuth()
-          const user = auth.currentUser
-          if (!user) throw new Error('Sign in required')
-
-          const db = getFirestore()
-          const docRef = await addDoc(collection(db, 'customers', user.uid, 'checkout_sessions'), {
-            price: priceId,
-            success_url: window.location.origin + '/session/' + sessionId,
-            cancel_url: window.location.origin + '/session/' + sessionId,
-            mode: 'subscription',
-          })
-
-          return new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Checkout session timed out')), 30000)
-            onSnapshot(docRef, (snap) => {
-              const data = snap.data()
-              if (data?.error) {
-                clearTimeout(timeout)
-                reject(new Error(data.error.message))
-              }
-              if (data?.url) {
-                clearTimeout(timeout)
-                resolve(data.url)
-              }
-            })
-          })
-        },
-        async checkSubscriptionStatus() {
-          const auth = getAuth()
-          const user = auth.currentUser
-          if (!user) return false
-
-          const token = await user.getIdToken()
-          const res = await fetch('/api/subscription-status', {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          if (!res.ok) return false
-          const data = await res.json()
-          return data.active === true
-        },
-      }
-    </script>
     <script>
       // ─── Config ────────────────────────────────────────────────
       const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
@@ -1523,7 +1469,6 @@
       let ws = null
       let reconnectTimer = null
       let leavingDashboard = false
-      let stripeCheckoutReady = false
       const DEV_PROMPT_EXAMPLES = [
         'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
         'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
@@ -1593,7 +1538,7 @@
 
       function normalizePaymentState(rawPayment) {
         return {
-          gateway: rawPayment?.gateway || 'stripe',
+          gateway: rawPayment?.gateway || 'razorpay',
           countryCode: rawPayment?.countryCode || 'GLOBAL',
           isIndianUser: Boolean(rawPayment?.isIndianUser),
           configured: Boolean(rawPayment?.configured),
@@ -1964,26 +1909,82 @@
         document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
       }
 
-      async function startIndianPayment() {
+      function loadRazorpayScript() {
+        return new Promise((resolve, reject) => {
+          if (window.Razorpay) {
+            resolve()
+            return
+          }
+          const existing = document.querySelector('script[data-razorpay-checkout]')
+          if (existing) {
+            existing.addEventListener('load', () => resolve())
+            existing.addEventListener('error', () => reject(new Error('Razorpay load failed')))
+            return
+          }
+          const s = document.createElement('script')
+          s.src = 'https://checkout.razorpay.com/v1/checkout.js'
+          s.async = true
+          s.setAttribute('data-razorpay-checkout', '1')
+          s.onload = () => resolve()
+          s.onerror = () => reject(new Error('Failed to load Razorpay'))
+          document.head.appendChild(s)
+        })
+      }
+
+      async function startCheckout() {
         if (!paymentModalTarget || paymentBusy) return
         setPaymentBusyState(true)
         setPaymentError('')
 
         try {
-          let priceId
-          if (selectedPaymentMode === 'early_adopter' && paymentState?.earlyAdopter?.priceId) {
-            priceId = paymentState.earlyAdopter.priceId
+          const tier =
+            selectedPaymentMode === 'early_adopter' && paymentState?.earlyAdopter?.priceId
+              ? 'early_adopter'
+              : 'pro'
+          if (tier === 'early_adopter' && !paymentState?.earlyAdopter?.priceId) {
+            throw new Error('Early adopter plan is not configured yet.')
+          }
+          if (tier === 'pro' && !(paymentState?.plan?.priceId || window._shipFastPriceId)) {
+            throw new Error('Subscription plan is not configured yet.')
+          }
+
+          const res = await apiFetch('/api/payments/razorpay/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: 'subscription', tier }),
+          })
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok) throw new Error(data.error || 'Unable to start checkout')
+
+          await loadRazorpayScript()
+
+          const options = {
+            key: data.key_id,
+            name: data.name || 'Ship Fast',
+            description: data.description || '',
+            prefill: data.prefill || {},
+            handler: () => {
+              setPaymentBusyState(false)
+            },
+            modal: {
+              ondismiss: () => {
+                setPaymentBusyState(false)
+              },
+            },
+            theme: { color: '#6366f1' },
+          }
+          if (data.subscription_id) {
+            options.subscription_id = data.subscription_id
+          } else if (data.order_id) {
+            options.order_id = data.order_id
+            options.amount = data.amount
+            options.currency = data.currency || 'INR'
           } else {
-            priceId = window._shipFastPriceId || paymentState?.plan?.priceId
-          }
-          if (!priceId) throw new Error('Subscription plan is not configured yet.')
-
-          if (!window._stripeCheckout) {
-            throw new Error('Stripe checkout module not loaded. Please refresh the page.')
+            throw new Error('Invalid checkout response')
           }
 
-          const url = await window._stripeCheckout.createCheckoutSession(priceId, SESSION_ID)
-          window.location.assign(url)
+          const rzp = new window.Razorpay(options)
+          rzp.open()
         } catch (error) {
           setPaymentError(error.message || 'Unable to start checkout')
           setPaymentBusyState(false)
@@ -2300,20 +2301,28 @@
 
         const isBuilding = siteSpecReady && exactCloneReady && selected && !selected.ready
         buildingIndicator.style.display = isBuilding ? 'inline-flex' : 'none'
-        download.className = `export-download-link${selected?.downloadPath ? ' primary' : ' secondary'}`
 
         if (!siteSpecReady) {
           statusEl.textContent = 'Legacy Session'
           subtextEl.textContent =
             'Build once and Ship Fast will create the canonical site spec, then generate future exports from that exact UI.'
-          if (selected?.downloadPath && !requiresPayment) {
+          if (requiresPayment) {
+            delete download.dataset.downloadUrl
+            download.dataset.requiresPayment = '1'
+            download.dataset.target = selected?.target || ''
+            download.textContent = 'Subscribe to Pro'
+            download.className = 'export-download-link primary'
+            download.style.display = 'inline-flex'
+          } else if (selected?.downloadPath) {
             download.dataset.downloadUrl = selected.downloadPath
             download.dataset.target = selected.target
             download.dataset.requiresPayment = '0'
             download.textContent = `Download ${selectedLabel}`
+            download.className = `export-download-link${selected?.downloadPath ? ' primary' : ' secondary'}`
             download.style.display = 'inline-flex'
           } else {
             delete download.dataset.downloadUrl
+            download.dataset.requiresPayment = '0'
             download.style.display = 'none'
           }
           setExportMenuOpen(exportMenuOpen)
@@ -2339,14 +2348,23 @@
               : selected?.buildReason ||
                 `Waiting for the generated UI to finish before building ${selectedLabel}.`
 
-        if (selected?.downloadPath && !requiresPayment) {
+        if (requiresPayment) {
+          delete download.dataset.downloadUrl
+          download.dataset.requiresPayment = '1'
+          download.dataset.target = selected?.target || ''
+          download.textContent = 'Subscribe to Pro'
+          download.className = 'export-download-link primary'
+          download.style.display = 'inline-flex'
+        } else if (selected?.downloadPath) {
           download.dataset.downloadUrl = selected.downloadPath
           download.dataset.target = selected.target
           download.dataset.requiresPayment = '0'
           download.textContent = `Download ${selectedLabel}`
+          download.className = `export-download-link${selected?.downloadPath ? ' primary' : ' secondary'}`
           download.style.display = 'inline-flex'
         } else {
           delete download.dataset.downloadUrl
+          download.dataset.requiresPayment = '0'
           download.style.display = 'none'
         }
 
@@ -4143,7 +4161,7 @@
       })
       document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal)
       document.getElementById('payment-cancel-btn').addEventListener('click', closePaymentModal)
-      document.getElementById('payment-confirm-btn').addEventListener('click', startIndianPayment)
+      document.getElementById('payment-confirm-btn').addEventListener('click', startCheckout)
       document.getElementById('payment-modal').addEventListener('click', (event) => {
         if (event.target.closest('[data-close-payment="1"]')) closePaymentModal()
       })

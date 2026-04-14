@@ -132,7 +132,7 @@ export const renderPrivacyPage = () => {
         </p>
         <h3>3.5 Payments</h3>
         <p>
-          Paid features are processed through <strong>Stripe</strong> and, where offered, <strong>Razorpay</strong>.
+          Paid features are processed through <strong>Razorpay</strong>.
           We do not receive your full payment card number on our servers; payment data is handled by the payment
           provider. We receive status information (for example subscription state or credit purchases) through our
           billing integration and may store it in <strong>Google Cloud Firestore</strong> associated with your
@@ -186,7 +186,7 @@ export const renderPrivacyPage = () => {
         <p>We share data with categories of recipients including:</p>
         <ul>
           <li>Google (Firebase Authentication, Firestore, and related Google Cloud services)</li>
-          <li>Stripe and Razorpay (payments)</li>
+          <li>Razorpay (payments)</li>
           <li>Plausible Analytics</li>
           <li>AI, GPU, or inference providers (for example Groq, Runpod) and stock imagery APIs (for example Pexels, Unsplash)</li>
           <li>Infrastructure and deployment providers that host ${domain} and related services</li>
