@@ -1257,6 +1257,66 @@ function pickPhotoForImg(label, photos, usage) {
   return pick
 }
 
+const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+function tryDerivePexelsFallbackUrl(url) {
+  try {
+    const parsed = new URL(String(url || '').trim())
+    if (parsed.hostname !== 'images.pexels.com') return null
+    const id = parsed.pathname.match(/\/photos\/(\d+)\//)?.[1]
+    if (!id) return null
+    return formatImageUrl(id, 1400, 1050)
+  } catch {
+    return null
+  }
+}
+
+async function isImageUrlHealthy(url, { attempt = 0 } = {}) {
+  const u = String(url || '').trim()
+  if (!u) return false
+  if (u.startsWith('data:image/')) return true
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 4500)
+  try {
+    const r = await fetch(u, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-0' },
+      redirect: 'follow',
+      signal: controller.signal,
+    })
+    if (!r.ok) return false
+    const ct = String(r.headers.get('content-type') || '').toLowerCase()
+    if (!ct.includes('image/')) return false
+    return true
+  } catch {
+    if (attempt === 0) {
+      await sleep(220)
+      return isImageUrlHealthy(u, { attempt: 1 })
+    }
+    return false
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function validateAndRepairPhotoList(photos) {
+  const next = []
+  for (const photo of photos || []) {
+    if (next.length >= 12) break
+    const ok = await isImageUrlHealthy(photo.url)
+    if (ok) {
+      next.push(photo)
+      continue
+    }
+    const fallback = tryDerivePexelsFallbackUrl(photo.url)
+    if (fallback && (await isImageUrlHealthy(fallback))) {
+      next.push({ ...photo, url: fallback })
+    }
+  }
+  return next
+}
+
 function isStrictPexelsOrUnsplashUrl(url = '') {
   const u = String(url || '').trim()
   if (!u) return false
@@ -1468,6 +1528,7 @@ export async function resolvePexelsImageHints(hintsInput = null) {
       photos.push(photo)
     }
   }
+  const healthyPhotos = await validateAndRepairPhotoList(photos)
   const seenV = new Set()
   const videos = []
   for (const list of videoLists) {
@@ -1480,8 +1541,8 @@ export async function resolvePexelsImageHints(hintsInput = null) {
   }
 
   return {
-    photos,
+    photos: healthyPhotos,
     videos,
-    promptBlock: toMediaPromptBlock(photos, videos),
+    promptBlock: toMediaPromptBlock(healthyPhotos, videos),
   }
 }
