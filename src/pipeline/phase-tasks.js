@@ -1,7 +1,11 @@
 import { groq, groqParallel } from '../llm/groq.js'
 import { translateHtmlSequential } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
-import { alignGeneratedImagesToContext } from './image-hints.js'
+import {
+  alignGeneratedImagesToContext,
+  hydrateStorefrontGradientSlots,
+  verifyTrustedStockImageUrls,
+} from './image-hints.js'
 import { buildFallbackPageFromHomepage } from './fallback-page.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { slug, writeFile } from './workspace.js'
@@ -18,7 +22,12 @@ const htmlFromGroqResponse = async (r, imageHints, log, indiaMode) => {
     const tr = await translateHtmlSequential([html], indiaMode)
     html = tr[0] ?? html
   }
-  return ensureLucideIconRuntime(alignGeneratedImagesToContext(html, imageHints), log)
+  return ensureLucideIconRuntime(
+    await verifyTrustedStockImageUrls(
+      hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(html, imageHints), imageHints),
+    ),
+    log,
+  )
 }
 
 const persistPageHtml = (task, html, taskCtx, workspace) => {
@@ -134,7 +143,7 @@ export function deriveTasks(ctxOrSiteSpec) {
   return tasks
 }
 
-function processResults(taskCtx, filteredTasks, results, workspace, getFname, log, imageHints = null) {
+async function processResults(taskCtx, filteredTasks, results, workspace, getFname, log, imageHints = null) {
   const { taskList, updateTask } = taskCtx
   const saveTasks = () =>
     writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
@@ -151,7 +160,9 @@ function processResults(taskCtx, filteredTasks, results, workspace, getFname, lo
       continue
     }
     const content = ensureLucideIconRuntime(
-      alignGeneratedImagesToContext(stripFences(r.content), imageHints),
+      await verifyTrustedStockImageUrls(
+        hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(stripFences(r.content), imageHints), imageHints),
+      ),
       log,
     )
 
@@ -246,7 +257,7 @@ export async function generateAllTasks(
   const backendResults = backendCalls.length > 0 ? await groqParallel(backendCalls) : []
 
   if (pageTasks.length > 0) {
-    processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log, imageHints)
+    await processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log, imageHints)
     const failedAfterBatch = pageTasks.filter(
       (t) => taskCtx.taskList.find((x) => x.id === t.id)?.status === 'FAILED',
     )
@@ -276,7 +287,7 @@ export async function generateAllTasks(
     }
   }
   if (backendTasks.length > 0) {
-    processResults(
+    await processResults(
       taskCtx,
       backendTasks,
       backendResults,

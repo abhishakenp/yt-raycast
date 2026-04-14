@@ -3,7 +3,12 @@ import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-referen
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
 import { translateHtml } from '../llm/translator.js'
 import { stripFences, formatTps } from '../llm/utils.js'
-import { alignGeneratedImagesToContext } from './image-hints.js'
+import {
+  alignGeneratedImagesToContext,
+  hydrateStorefrontGradientSlots,
+  verifyTrustedStockImageUrls,
+} from './image-hints.js'
+import { injectStorefrontCartUi } from './storefront-cart-ui.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { htmlLooksDegenerate } from './homepage-degeneracy.js'
 import { writeFile } from './workspace.js'
@@ -176,7 +181,10 @@ export async function generateHomepage(
   }
 
   html = alignGeneratedImagesToContext(html, imageHints)
+  html = hydrateStorefrontGradientSlots(html, imageHints)
+  html = await verifyTrustedStockImageUrls(html)
   html = ensureLucideIconRuntime(html, log)
+  html = injectStorefrontCartUi(html)
 
   if (htmlLooksDegenerate(html)) {
     log('  ❌ homepage: rejected — output looks degenerate (repetition or invalid HTML)')

@@ -1629,6 +1629,21 @@ button, input, textarea { font: inherit; }
 }
 .cart-toggle {
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0.25rem 0;
+}
+.cart-toggle__icon {
+  flex-shrink: 0;
+  display: block;
+}
+.cart-toggle__label {
+  white-space: nowrap;
 }
 .product-carousel {
   margin-top: 2rem;

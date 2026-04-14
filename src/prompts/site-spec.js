@@ -26,15 +26,19 @@ export function siteSpecPrompt({
   const ecommerceRules =
     ctx?.site_type === 'ecommerce' || ctx?.siteType === 'ecommerce'
       ? `\n- Ecommerce (Luxury DTC): ${ecommerceGuidelines} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). Encode a premium funnel (collection → PDP → cart → checkout) and make the site spec structurally enforce retail depth and luxury craft.\n` +
-        `  - Navigation must include shop/collections/categories, search affordance, account, and cart (numeric badge in rendered UIs).\n` +
+        `  - Theme default for luxury storefronts: light canvas (cream or off-white background), near-black text, deep wine or burgundy accent on primary CTAs and rating emphasis unless the user specifies otherwise.\n` +
+        `  - Navigation must include shop/collections/categories, search affordance, account, and cart with icon + numeric badge in rendered UIs.\n` +
         `  - Navigation depth: include a Shop dropdown/mega-nav model via navigation.global items with children (New arrivals, Bestsellers, Gift sets, Wallets, Bags, Leather care; plus optional Sale when prompt implies promotions).\n` +
-        `  - Homepage must read as a storefront (not SaaS): promo/benefit strip + store-style header + art-directed hero with heroImage when possible + shop-by-collection/category tiles with images + featured products (6+ items; populate from ecommerce.products when available) + gift set/bundle band + editorial story/learn section + social proof + newsletter + rich multi-column footer with policy links.\n` +
-        `  - Collections module: on desktop, prefer a 2x2 (or 4-up) grid of collection tiles; reserve carousel behavior for mobile only.\n` +
+        `  - Homepage must match the editorial canvas pattern: thin dark promo strip; sticky header with centered primary links; split hero (headline, dual CTAs, large product image); horizontal shop-by-collection with image tiles; featured product grid with per-card add-to-cart and star ratings; curated sets (two-up or carousel); materials two-column; three review cards; inverted dark newsletter band; four-column footer.\n` +
+        `  - If the user prompt omits layout or visual detail, default to that full editorial luxury DTC canvas in English unless they specify otherwise.\n` +
+        `  - Homepage must read as a storefront (not SaaS): populate featured products (6+ items from ecommerce.products when available) and keep photo-forward merchandising.\n` +
+        `  - Collections module: desktop may use grid or horizontal rail with image scrims; carousel dots acceptable for curated or collection strips on desktop when multiple slides exist.\n` +
         `  - Collections/category browsing: include at least one dedicated collection/category page (not just a generic shop grid). It should support sorting (optional) and visually consistent product grids.\n` +
         `  - PDP richness: include a product detail page route with gallery, variant selector (size/color), delivery/returns/warranty info near CTA, and cross-sell (related / complete-the-look).\n` +
         `  - Reviews credibility: include testimonials/reviews with reviewer name, product name, verified purchaser flag, and a date; add a rating summary line at section intro.\n` +
         `  - Newsletter form: the submit button label must be non-empty (e.g. "Subscribe"). Include helper text "No spam. Unsubscribe anytime."\n` +
-        `  - Cart & checkout: include cart and checkout pages (or a combined flow) with visible progress indicator, order summary with subtotal/shipping/tax/total, and trust badges. Use guest checkout framing.\n`
+        `  - Cart & checkout: include cart and checkout pages (or a combined flow) with visible progress indicator, order summary with subtotal/shipping/tax/total, and trust badges. Use guest checkout framing. Model add-to-cart, quantity changes, and checkout progression as explicit button actions in interactions or actions arrays, not link-only CTAs.\n` +
+        `  - SEO and naming: homepage seo.title must pair the invented brand with a concrete value proposition (roughly six to twelve words), not a bland generic title.\n`
       : ''
 
   const institutionalRules =

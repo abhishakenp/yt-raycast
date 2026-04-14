@@ -595,8 +595,32 @@ export default function CartDrawer() {
 
   return (
     <>
-      <button className="cart-toggle" onClick={() => setOpen(true)} type="button">
-        Cart {itemCount > 0 ? '(' + itemCount + ')' : ''}
+      <button
+        className="cart-toggle"
+        onClick={() => setOpen(true)}
+        type="button"
+        aria-label={'Shopping cart' + (itemCount > 0 ? ', ' + itemCount + ' items' : '')}
+      >
+        <svg
+          className="cart-toggle__icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6Z" />
+          <path d="M3 6h18" />
+          <path d="M16 10a4 4 0 1 1-8 0" />
+        </svg>
+        <span className="cart-toggle__label">
+          Cart{itemCount > 0 ? ' (' + itemCount + ')' : ''}
+        </span>
       </button>
       <AnimatePresence>
         {open ? (

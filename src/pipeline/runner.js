@@ -8,6 +8,7 @@ import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
 import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
 import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
+import { injectStorefrontCartUi } from './storefront-cart-ui.js'
 import { shouldReplaceLlmHomepageWithRenderer } from './homepage-substance.js'
 import { injectLLMHomepageSwiper } from './homepage-swiper.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
@@ -24,8 +25,10 @@ import { renderPreviewToWorkspace, writeNextAppToWorkspace } from '../renderers/
 import { detectLanguage } from './detect-language.js'
 import {
   alignGeneratedImagesToContext,
+  hydrateStorefrontGradientSlots,
   mergeImageHintLists,
   resolvePexelsImageHints,
+  verifyTrustedStockImageUrls,
 } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { withLanguageEnforcementBlock } from './prompt-language.js'
@@ -294,7 +297,14 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   })()
 
   const homepagePromise = (async () => {
-    const imageHints = await resolvePexelsImageHints({ prompt: normalizedPrompt })
+    const imageHints = {
+      ...(await resolvePexelsImageHints({
+        prompt: normalizedPrompt,
+        hydrationPrompt: normalizedPrompt,
+      })),
+      hydrationPrompt: normalizedPrompt,
+      prompt: normalizedPrompt,
+    }
     try {
       const stats = await generateHomepage(
         pipelinePrompt,
@@ -356,12 +366,21 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   homepage = homepageStats.html
   const richImageHints = await resolvePexelsImageHints({
     prompt: normalizedPrompt,
+    hydrationPrompt: normalizedPrompt,
     ctx,
     siteSpec,
   })
-  const imageHints = mergeImageHintLists(homepageStats.imageHints, richImageHints)
+  const imageHints = {
+    ...mergeImageHintLists(homepageStats.imageHints, richImageHints),
+    hydrationPrompt: normalizedPrompt,
+    prompt: normalizedPrompt,
+  }
   if (homepage) {
-    homepage = alignGeneratedImagesToContext(homepage, imageHints)
+    homepage = injectStorefrontCartUi(
+      await verifyTrustedStockImageUrls(
+        hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(homepage, imageHints), imageHints),
+      ),
+    )
     writeFile(workspace, 'index.html', homepage)
   }
 
@@ -386,11 +405,16 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
         '  homepage: keeping LLM HTML — layout inspiration references set (skipping spec renderer substitution for sparse output)',
       )
     }
+    if (homepage) {
+      homepage = injectStorefrontCartUi(homepage)
+      writeFile(workspace, 'index.html', homepage)
+    }
     sessionCtx.signalHomepageReady()
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
-    homepage = preview.files['index.html'] ?? ''
+    homepage = injectStorefrontCartUi(preview.files['index.html'] ?? '')
+    writeFile(workspace, 'index.html', homepage)
     sessionCtx.signalHomepageReady()
   }
   const ctxPages = ctx.pages?.length ?? 0
