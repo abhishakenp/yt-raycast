@@ -1317,21 +1317,6 @@ async function validateAndRepairPhotoList(photos) {
   return next
 }
 
-function isStrictPexelsOrUnsplashUrl(url = '') {
-  const u = String(url || '').trim()
-  if (!u) return false
-  if (u.startsWith('data:image/')) return true
-  try {
-    const parsed = new URL(u)
-    if (parsed.protocol !== 'https:') return false
-    if (parsed.hostname === 'images.pexels.com') return /\/photos\/\d+\//.test(parsed.pathname)
-    if (parsed.hostname === 'images.unsplash.com') return true
-    return false
-  } catch {
-    return false
-  }
-}
-
 function extractVideoLabel(block) {
   const open = String(block).match(/^<video\b[^>]*/i)?.[0] || ''
   const aria = extractAttribute(open, 'aria-label')
@@ -1439,8 +1424,6 @@ function enforceVerifiedPhotoSources(html, photos, usage) {
 function neutralizeNonStockImages(html) {
   return html.replace(/<img\b[^>]*>/gi, (tag) => {
     if (isLikelyLogoTag(tag)) return tag
-    const src = extractAttribute(tag, 'src')
-    if (isStrictPexelsOrUnsplashUrl(src)) return tag
     let out = setImgSrcAttribute(tag, TRANSPARENT_PIXEL_GIF)
     out = stripSrcsetFromTag(out)
     if (!/\bstyle\s*=/i.test(out)) {
