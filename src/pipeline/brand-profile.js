@@ -525,7 +525,7 @@ function chooseBestName(brandName = '', organizations = [], meta = {}, title = '
   const candidates = [
     ...organizations.map((item) => trimCandidate(item.name || '')),
     trimCandidate(meta['og:site_name'] || ''),
-    trimCandidate(title.replace(/\s*[\-|–|:]\s*.+$/, '')),
+    trimCandidate(title.replace(/\s*[-|–|:]\s*.+$/, '')),
     trimCandidate(brandName),
   ].filter(Boolean)
 

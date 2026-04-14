@@ -132,13 +132,14 @@ export const ECOMMERCE_REFERENCE_EXEMPLARS_FOR_PROMPTS = ECOMMERCE_REFERENCE_EXE
 
 export const ECOMMERCE_DRIBBBLE_VISUAL_LANGUAGE =
   `Contemporary ecommerce UI direction (${ECOMMERCE_DRIBBBLE_TAG_URL} — use for layout and craft patterns only; do not copy specific shots, logos, or proprietary artwork): ` +
-  `art-directed hero with strong display typography and layered product or lifestyle photography (or gradient mesh when no photo); ` +
-  `dense but breathable grids — rounded-2xl cards, soft shadows, consistent image aspect ratios, hover lift and subtle image zoom; ` +
+  `luxury DTC: editorial spacing, disciplined palette, and product-first composition; quiet luxury tone (craftsmanship/materials/provenance) without sounding like generic AI; ` +
+  `art-directed hero with strong display typography and layered product or lifestyle photography (or gradient mesh / duotone silhouette when no photo); ` +
+  `dense but breathable grids — consistent image aspect ratios, careful baseline alignment, hover lift and subtle image zoom; ` +
   `category rows as full-bleed tiles, horizontal scroll strips, or small bento clusters; ` +
   `pills and micro-labels (e.g. New, Sale, Bestseller) with clear hierarchy; ` +
-  `one confident accent on disciplined neutrals, or intentional duotone / tinted imagery; ` +
+  `one confident accent on disciplined neutrals (stone/zinc/ink), or intentional duotone / tinted imagery; avoid “default violet-on-gray template”; ` +
   `editorial tension — asymmetric splits, oversized numerals or words as background, or a single full-bleed promo band; ` +
-  `polished chrome: sticky store header with search and cart affordances, promo strip, fat footer; ` +
+  `polished chrome: sticky store header with search and cart badge, promo strip, fat footer; ` +
   `avoid sparse SaaS symmetry and icon-only merchandising — the page must read as a designed storefront, not a marketing landing with three feature cards.`
 
 export const MOTION_DEV_DOCS_REACT = 'https://motion.dev/docs/react'
@@ -155,12 +156,13 @@ export const GLOBAL_UI_CRAFT_GUIDELINES =
   `Whitespace: separate sections and ideas with space, not decoration; strip non-functional visual noise.`
 
 export const ECOMMERCE_GROWTH_UX_PRINCIPLES =
-  `Growth-aligned UX: mobile-first; keep nav and first screen lean for perceived speed. ` +
-  `Discovery: reinforce sticky or always-visible search; IA so shoppers reach catalog or PDP intent in few clicks; filters and sort stay applied while browsing (client-held state). ` +
-  `Search/collection empty states: helpful copy (suggestions, categories). ` +
-  `PDP: 3–7 gallery items when images exist; meaningful alt text; product video only when verified assets are provided. ` +
+  `Luxury DTC UX: mobile-first; speed-feeling UI (lean first screen, defer heavy sections), generous rhythm, and confident hierarchy. ` +
+  `Discovery: sticky or always-visible search; clear IA so shoppers reach collection or PDP intent in few taps; collection sort stays applied; filters are optional but when present they must be usable on mobile. ` +
+  `Merchandising clarity: every product grid item shows name, price, and one trust microline (e.g. “Free shipping over …”, “30-day returns”, “Ships in 24h”) and a real CTA (Add to cart or View details). ` +
+  `PDP: clear breadcrumbs; 3–7 gallery items when images exist; meaningful alt text; variant selectors (size/color) with disabled states; show delivery/returns/warranty policy near the CTA; product video only when verified assets are provided. ` +
   `Cart and checkout: guest checkout as default framing; stepped or single-page flow with a visible progress indicator; show subtotal, shipping, tax, and total before payment; minimal fields; use HTML autocomplete on name, email, and address fields where applicable (Medusa-aligned; no invented payment backends). ` +
-  `Trust: security and payment badges near checkout summary and in footer; optional slim cookie/privacy strip as UI chrome only. ` +
+  `Trust: security and payment badges near checkout summary and in footer; add policy links (Shipping, Returns, Warranty) where it reduces anxiety (PDP and checkout). Optional slim cookie/privacy strip as UI chrome only. ` +
+  `Copy tone: premium, concise, specific; avoid hypey clichés and generic AI phrasing. ` +
   `CTAs: clear primary vs secondary on shop, cart, and checkout. When proposing headline or checkout copy variants, name one plausible target KPI (conversion, cart abandonment, AOV) and a one-line test hypothesis.`
 
 const ECOMMERCE_GUIDELINES_EXEMPLAR_LEAD =
@@ -173,9 +175,9 @@ const ECOMMERCE_GUIDELINES_SHARED_BODY =
   `Pattern mix to emulate (abstractly): lifestyle / accessories storefront density; security-hardware style mega-nav with ecosystem and compare paths; long-form product-line page with chaptered features, lineup, education, and support — adapted to the prompt's industry. ` +
   `Also scan: premium web templates (${ECOMMERCE_ENVATO_TEMPLATES_URL}), storefront gallery (${ECOMMERCE_AWWWARDS_GALLERY_URL}), ecommerce UI tag (${ECOMMERCE_DRIBBBLE_TAG_URL}). ` +
   `${ECOMMERCE_DRIBBBLE_VISUAL_LANGUAGE} ` +
-  `DTC bar: match real retail homepage depth — multi-level shop navigation, promo strip, category shop, large featured assortment, bundles, learn content, reviews, newsletter, fat footer. Not acceptable: sparse SaaS-style pages. ` +
-  `Minimum homepage structure: (1) slim top promo/urgency strip, (2) header with logo, search, account link, cart with numeric badge, shop menu with categories/collections/benefits, (3) hero with headline, subcopy, primary shop CTA, optional three benefit chips, (4) shop-by-category — at least four large image tiles with titles, blurbs, CTAs, (5) featured products — six or more cards with image, label, title, review line or stars, price (and compare-at if discounted), add to cart, (6) bundle or subscription band, (7) three educational or story cards, (8) social proof — stats and/or testimonials with names, (9) reviews or press strip, (10) email capture, (11) multi-column footer plus legal. ` +
-  `Visual polish: strong photography or gradient placeholders, editorial typography — not a single-column stack of generic cards. ` +
+  `Luxury DTC bar: match real premium retail depth and restraint — multi-level shop navigation, promo strip, shop-by-collection, featured assortment, gift sets/bundles, brand story, reviews, newsletter, fat footer. Not acceptable: sparse SaaS-style pages or generic “feature-card” layouts. ` +
+  `Minimum homepage structure: (1) slim top promo/benefit strip (shipping/returns), (2) sticky header with logo, search, account link, cart with numeric badge, shop menu with collections/categories, (3) hero with headline, subcopy, primary shop CTA, optional three benefit chips, (4) shop by collection/category — at least four large image tiles with titles + 1-line descriptor + CTA, (5) featured products — six or more cards with image, label/badge, title, rating line or review count, price (and compare-at if discounted), primary CTA; add a trust microline, (6) gift set / bundle / subscription band, (7) editorial story band (materials/craft/guarantee) or three learn cards, (8) social proof — testimonials with names and context (role/location optional only if provided), (9) reviews or press strip, (10) email capture, (11) multi-column footer plus legal and policy links. ` +
+  `Visual polish: art-directed hero composition, consistent product imagery treatment, editorial typography pairing and whitespace — not a single-column stack of generic cards. ` +
   `${ECOMMERCE_CURATED_STYLE_ANCHORS} ` +
   `Every ecommerce homepage must visually scan as retail: promo band, store-style header (search + cart cues), hero with product or lifestyle imagery, category tiles with photos, dense product grids with price + CTA — not a SaaS marketing page with a few icons. ` +
   `Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): Store API via @medusajs/js-sdk; cart, products, regions, checkout per Medusa commerce modules and ecommerce recipe; Next.js export matches Medusa starter integration patterns. ` +

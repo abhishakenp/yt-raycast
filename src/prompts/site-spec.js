@@ -25,7 +25,12 @@ export function siteSpecPrompt({
 
   const ecommerceRules =
     ctx?.site_type === 'ecommerce' || ctx?.siteType === 'ecommerce'
-      ? `\n- Ecommerce: ${ecommerceGuidelines} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). The home page sections must look like a storefront: navbar + hero with heroImage when possible, features or gallery rows used as category tiles with images, at least one product-grid or featured-products section with six-plus items (populate items from ecommerce.products when available), testimonials, CTA newsletter, rich footer — not a sparse SaaS layout.\n`
+      ? `\n- Ecommerce (Luxury DTC): ${ecommerceGuidelines} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). Encode a premium funnel (collection → PDP → cart → checkout) and make the site spec structurally enforce retail depth and luxury craft.\n` +
+        `  - Navigation must include shop/collections/categories, search affordance, account, and cart (numeric badge in rendered UIs).\n` +
+        `  - Homepage must read as a storefront (not SaaS): promo/benefit strip + store-style header + art-directed hero with heroImage when possible + shop-by-collection/category tiles with images + featured products (6+ items; populate from ecommerce.products when available) + gift set/bundle band + editorial story/learn section + social proof + newsletter + rich multi-column footer with policy links.\n` +
+        `  - Collections/category browsing: include at least one dedicated collection/category page (not just a generic shop grid). It should support sorting (optional) and visually consistent product grids.\n` +
+        `  - PDP richness: include a product detail page route with gallery, variant selector (size/color), delivery/returns/warranty info near CTA, and cross-sell (related / complete-the-look).\n` +
+        `  - Cart & checkout: include cart and checkout pages (or a combined flow) with visible progress indicator, order summary with subtotal/shipping/tax/total, and trust badges. Use guest checkout framing.\n`
       : ''
 
   const institutionalRules =

@@ -3,8 +3,8 @@ import { join } from 'node:path'
 
 const DEPLOYMENTS_FILE = '_deployments.json'
 let deploymentsDir
-let deploymentMap = new Map()
-let sessionMap = new Map()
+const deploymentMap = new Map()
+const sessionMap = new Map()
 
 function normalizeSlug(slug) {
   return String(slug || '')
@@ -28,7 +28,9 @@ function persist() {
   const path = join(deploymentsDir, DEPLOYMENTS_FILE)
   try {
     writeFileSync(path, JSON.stringify(buildPayload(), null, 2))
-  } catch {}
+  } catch {
+    return
+  }
 }
 
 function setDeployment(slug, sessionId, deployedAt = Date.now()) {
@@ -64,7 +66,9 @@ export function initDeployments(sessionsDir) {
         sessionMap.set(sessionId, { slug: key, deployedAt })
       }
     }
-  } catch {}
+  } catch {
+    return
+  }
 }
 
 export function getDeploymentBySlug(slug) {
