@@ -117,6 +117,7 @@ export function siteSpecPrompt({
       `- Include enough pages and sections to satisfy the prompt.\n` +
       `- Do not omit required project metadata.\n` +
       `- If the prompt mentions a production domain, preserve it in seo.siteUrl and page canonicals.\n` +
+      `- Programmatic SEO: use clean subfolder routes only for indexable pages (no query-string permutations); each indexable page needs a distinct title and description; link hub pages to spokes via navigation or footer.\n` +
       `- Keep page seo.noIndex false for public pages unless the user explicitly asks for private routes.\n` +
       `- For public marketing sites, prefer Home plus 2-4 meaningful secondary pages unless the user explicitly requests a single-page site.\n` +
       `- Secondary pages should be internally linkable through navigation, footer links, or CTAs.\n` +

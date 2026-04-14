@@ -9,6 +9,7 @@ import {
   renderSectionHtml,
   routeToHtmlFile,
 } from '../shared.js'
+import { renderGeneratedSiteLlmsTxt } from '../llms-txt.js'
 import {
   buildStructuredData,
   renderRobotsTxt,
@@ -188,6 +189,7 @@ export function renderHtmlProject(siteSpec) {
     'site.js': buildHtmlRuntimeScript(useSwiper),
     'site-motion.mjs': motionContent,
     'robots.txt': renderRobotsTxt(siteSpec),
+    'llms.txt': renderGeneratedSiteLlmsTxt(siteSpec),
   }
   const sitemapXml = renderSitemapXml(siteSpec)
   if (sitemapXml) files['sitemap.xml'] = sitemapXml

@@ -15,6 +15,7 @@ import {
   serializeStructuredData,
 } from '../seo.js'
 import { collectShipFastStudioFiles } from '../studio-export.js'
+import { renderGeneratedSiteLlmsTxt } from '../llms-txt.js'
 import { shouldUseSwiper } from '../../lib/swiper-policy.js'
 import { SHIP_FAST_SITE_URL } from '../../marketing.js'
 
@@ -2205,6 +2206,7 @@ export default nextConfig
   const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
   const siteSeo = resolvePageSeo(siteSpec, homePage)
   const sitemapEntries = buildSitemapEntries(siteSpec)
+  const llmsTxtBody = renderGeneratedSiteLlmsTxt(siteSpec)
   const robotsConfig = siteSeo.siteUrl
     ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
     : { rules: [{ userAgent: '*', allow: '/' }] }
@@ -2254,6 +2256,13 @@ ${layoutHeadBlock}      <body suppressHydrationWarning>${layoutEcommerceBody}</b
     }),
     'app/robots.js': `export default function robots() {
   return ${serializeModule(robotsConfig)}
+}
+`,
+    'app/llms.txt/route.js': `export function GET() {
+  return new Response(${JSON.stringify(llmsTxtBody)}, {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  })
 }
 `,
     'app/sitemap.js': `export default function sitemap() {
