@@ -7,4 +7,4 @@ dist
 integration-tests
 coverage
 .vscode
-README.txt
+README.md
