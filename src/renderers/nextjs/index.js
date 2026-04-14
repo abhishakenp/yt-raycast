@@ -25,9 +25,16 @@ function collectThemeGoogleFontFamilies(theme = {}) {
   const out = []
   for (const f of raw) {
     if (typeof f !== 'string') continue
-    const first = f.split(',')[0].trim().replace(/^["']|["']$/g, '').trim()
+    const first = f
+      .split(',')[0]
+      .trim()
+      .replace(/^["']|["']$/g, '')
+      .trim()
     if (!first) continue
-    if (/^(system-ui|sans-serif|serif|monospace|ui-sans-serif|ui-monospace|apple-system)/i.test(first)) continue
+    if (
+      /^(system-ui|sans-serif|serif|monospace|ui-sans-serif|ui-monospace|apple-system)/i.test(first)
+    )
+      continue
     const k = first.toLowerCase()
     if (seen.has(k)) continue
     seen.add(k)
@@ -88,7 +95,7 @@ NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
 # NEXT_PUBLIC_MEDUSA_PAYMENT_PROVIDER_ID=pp_system_default
 # Razorpay (when configured in Medusa for the storefront)
 # NEXT_PUBLIC_RAZORPAY_KEY_ID=
-# On the Medusa server, set STORE_CORS to include this app origin (e.g. http://localhost:3000,http://localhost:7420). See infra/medusa/run-medusa.txt in Ship Fast.
+# On the Medusa server, set STORE_CORS to include this app origin (e.g. http://localhost:3000,http://localhost:7420). See infra/medusa/README.md in Ship Fast.
 `,
     'lib/medusa.js': `import Medusa from '@medusajs/js-sdk'
 
@@ -2202,9 +2209,7 @@ export default nextConfig
     ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
     : { rules: [{ userAgent: '*', allow: '/' }] }
   const fontLines = buildNextLayoutFontLinkLines(siteSpec)
-  const layoutHeadBlock = fontLines.trim()
-    ? `      <head>${fontLines}      </head>\n`
-    : ''
+  const layoutHeadBlock = fontLines.trim() ? `      <head>${fontLines}      </head>\n` : ''
   const layoutEcommerceImport = isEcommerce
     ? `import EcommerceClientRoot from '../components/ecommerce/EcommerceClientRoot'
 `
@@ -2216,9 +2221,13 @@ export default nextConfig
     'package.json': renderNextPackageJson(siteSpec.projectName, cmsDependencies, sanityScripts),
     'next.config.mjs': nextConfigMjs,
     'app/layout.jsx': `import './globals.css'
-${layoutEcommerceImport}${useSwiper ? `import 'swiper/css'
+${layoutEcommerceImport}${
+      useSwiper
+        ? `import 'swiper/css'
 import 'swiper/css/pagination'
-` : ''}
+`
+        : ''
+    }
 export const metadata = {
   title: ${JSON.stringify(siteSpec.seo?.title || siteSpec.projectName)},
   description: ${JSON.stringify(siteSpec.seo?.description || '')},

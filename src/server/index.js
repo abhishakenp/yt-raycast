@@ -36,7 +36,11 @@ import {
   writeDesignReferencesFile,
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
-import { compactStyleFragmentHtml, trimInlineAiHtmlFragment, trimInlineAiText } from '../llm/utils.js'
+import {
+  compactStyleFragmentHtml,
+  trimInlineAiHtmlFragment,
+  trimInlineAiText,
+} from '../llm/utils.js'
 import {
   createSession,
   getSession,
@@ -511,32 +515,54 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── Plausible Analytics Proxy ──────────────────────────
-  const plausibleHost = 'https://plausible.liviogama.com'
+  const plausibleHost = String(
+    process.env.PLAUSIBLE_HOST || 'https://plausible.liviogama.com',
+  ).replace(/\/$/, '')
+  const plausibleVendorHost = 'https://plausible.io'
+  const plausibleScriptNoop =
+    'window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)};'
+  const isPlausibleScriptPayload = (r, buf) => {
+    const ct = String(r.headers.get('content-type') || '')
+    const probe = buf.subarray(0, Math.min(64, buf.length)).toString('utf8').trimStart()
+    return r.ok && /javascript|ecmascript/i.test(ct) && !probe.startsWith('<')
+  }
   app.get('/js/script.js', async (_req, res) => {
     try {
-      const r = await fetch(`${plausibleHost}/js/script.js`)
-      res.set('Content-Type', 'application/javascript')
-      res.set('Cache-Control', 'public, max-age=86400')
-      res.send(Buffer.from(await r.arrayBuffer()))
+      for (const base of [plausibleHost, plausibleVendorHost]) {
+        const r = await fetch(`${base}/js/script.js`)
+        const buf = Buffer.from(await r.arrayBuffer())
+        if (!isPlausibleScriptPayload(r, buf)) continue
+        res.set('Content-Type', 'application/javascript; charset=utf-8')
+        res.set('Cache-Control', `public, max-age=${base === plausibleHost ? 86400 : 3600}`)
+        res.send(buf)
+        return
+      }
     } catch {
-      res.status(502).end()
+      void 0
     }
+    res.type('application/javascript; charset=utf-8')
+    res.set('Cache-Control', 'public, max-age=300')
+    res.send(plausibleScriptNoop)
   })
   app.post('/api/event', express.text({ type: '*/*' }), async (req, res) => {
-    try {
-      const r = await fetch(`${plausibleHost}/api/event`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain',
-          'User-Agent': req.headers['user-agent'] || '',
-          'X-Forwarded-For': req.headers['x-forwarded-for'] || req.ip,
-        },
-        body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
-      })
-      res.status(r.status).end()
-    } catch {
-      res.status(502).end()
+    const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body)
+    const headers = {
+      'Content-Type': 'text/plain',
+      'User-Agent': req.headers['user-agent'] || '',
+      'X-Forwarded-For': req.headers['x-forwarded-for'] || req.ip,
     }
+    try {
+      for (const base of [plausibleHost, plausibleVendorHost]) {
+        const r = await fetch(`${base}/api/event`, { method: 'POST', headers, body })
+        if (r.ok) {
+          res.status(r.status).end()
+          return
+        }
+      }
+    } catch {
+      void 0
+    }
+    res.status(204).end()
   })
 
   // ─── Auth middleware ──────────────────────────────────────
@@ -722,7 +748,10 @@ export async function startServer(sessionsDir) {
       const posts = await fetchPosts()
       res.type('html').send(renderBlogIndex(posts))
     } catch {
-      res.status(500).type('html').send('<!doctype html><html><body>Error loading blog.</body></html>')
+      res
+        .status(500)
+        .type('html')
+        .send('<!doctype html><html><body>Error loading blog.</body></html>')
     }
   })
 
@@ -734,7 +763,11 @@ export async function startServer(sessionsDir) {
     if (!slug) return res.status(404).type('html').send('Not found')
     try {
       const post = await fetchPostBySlug(slug)
-      if (!post) return res.status(404).type('html').send('<!doctype html><html><body>Post not found. <a href="/blog">Blog</a></body></html>')
+      if (!post)
+        return res
+          .status(404)
+          .type('html')
+          .send('<!doctype html><html><body>Post not found. <a href="/blog">Blog</a></body></html>')
       res.type('html').send(renderBlogPost(post, slug))
     } catch {
       res.status(500).type('html').send('Error')
@@ -760,7 +793,10 @@ export async function startServer(sessionsDir) {
       })
       res.type('html').send(renderNoticesIndex(notices, locale, { filterKind: kind }))
     } catch {
-      res.status(500).type('html').send('<!doctype html><html><body>Error loading notices.</body></html>')
+      res
+        .status(500)
+        .type('html')
+        .send('<!doctype html><html><body>Error loading notices.</body></html>')
     }
   })
 
@@ -803,7 +839,10 @@ export async function startServer(sessionsDir) {
       const jobs = await fetchJobOpenings({ openOnly: true, limit: 100 })
       res.type('html').send(renderCareersPage(jobs, locale))
     } catch {
-      res.status(500).type('html').send('<!doctype html><html><body>Error loading careers.</body></html>')
+      res
+        .status(500)
+        .type('html')
+        .send('<!doctype html><html><body>Error loading careers.</body></html>')
     }
   })
 
@@ -841,7 +880,10 @@ export async function startServer(sessionsDir) {
       designReferenceUrls = [],
       designReferenceNotes = '',
     } = parsed.data
-    const designRefFingerprint = designReferenceFingerprintFromUrls(designReferenceUrls, designReferenceNotes)
+    const designRefFingerprint = designReferenceFingerprintFromUrls(
+      designReferenceUrls,
+      designReferenceNotes,
+    )
     const trimmedPrompt = prompt?.trim()
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
@@ -1193,8 +1235,9 @@ export async function startServer(sessionsDir) {
 
   // ─── API: Recent public sessions gallery (no auth required) ──
   app.get('/api/sessions/recent', (req, res) => {
-    const all = getAllSessions()
-      .filter((s) => s.homepageReady && !s.isPrivate && s.cost > 0 && (s.previewUrl || s.deployUrl))
+    const all = getAllSessions().filter(
+      (s) => s.homepageReady && !s.isPrivate && s.cost > 0 && (s.previewUrl || s.deployUrl),
+    )
     const { limit, page } = parseGalleryPagination(req.query)
     const paginated = paginateGalleryList(all, page, limit)
     paginated.items = paginated.items.map((s) => ({
@@ -1421,7 +1464,10 @@ export async function startServer(sessionsDir) {
 
     let raw = req.body?.text ?? req.body?.message ?? ''
     if (typeof raw !== 'string') raw = ''
-    const attachmentPaths = sanitizeChatAttachmentPaths(session.workspace, req.body?.attachmentPaths)
+    const attachmentPaths = sanitizeChatAttachmentPaths(
+      session.workspace,
+      req.body?.attachmentPaths,
+    )
     if (!normalizePromptText(raw) && attachmentPaths.length) {
       raw =
         'Apply the attached images across the site: use them for the hero, gallery, cards, logos, and other images as appropriate.'
@@ -1613,7 +1659,9 @@ export async function startServer(sessionsDir) {
     try {
       const cleaned = stripPreviewArtifactsFromHtml(raw)
       if (htmlLooksDegenerate(cleaned))
-        return res.status(422).json({ error: 'Homepage HTML failed quality check (repetition or invalid structure)' })
+        return res
+          .status(422)
+          .json({ error: 'Homepage HTML failed quality check (repetition or invalid structure)' })
       writeFileSync(join(session.workspace, 'index.html'), cleaned, 'utf8')
       session.homepageReady = true
       makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
@@ -1633,7 +1681,8 @@ export async function startServer(sessionsDir) {
     if (typeof text !== 'string' || typeof instruction !== 'string') {
       return res.status(400).json({ error: 'text and instruction required' })
     }
-    if (text.length > 12000 || instruction.length > 4000) return res.status(400).json({ error: 'Too long' })
+    if (text.length > 12000 || instruction.length > 4000)
+      return res.status(400).json({ error: 'Too long' })
     if (outputLanguage !== 'en' && outputLanguage !== 'indian') {
       return res.status(400).json({ error: 'Invalid outputLanguage' })
     }
@@ -1698,7 +1747,8 @@ export async function startServer(sessionsDir) {
       return res.status(400).json({ error: 'fragmentHtml and instruction required' })
     }
     const fragmentHtml = compactStyleFragmentHtml(rawFragment)
-    if (fragmentHtml.length > 120000 || instruction.length > 8000) return res.status(400).json({ error: 'Too long' })
+    if (fragmentHtml.length > 120000 || instruction.length > 8000)
+      return res.status(400).json({ error: 'Too long' })
     if (!fragmentHtml.includes('<')) return res.status(400).json({ error: 'Invalid fragment' })
     const hadLargeEmbeddedImage = /data:image\/[a-z0-9+.@-]+;base64,[A-Za-z0-9+/=\s]{800,}/i.test(
       rawFragment,
@@ -1949,14 +1999,20 @@ export async function startServer(sessionsDir) {
   // ─── API: Ecommercify — return all Ship Fast ecommerce products ──
   // Used by the Medusa admin widget to pull products into Medusa.
   app.options('/api/ecommercify/products', (_req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
+    )
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     res.sendStatus(204)
   })
 
   app.get('/api/ecommercify/products', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
+    )
 
     if (!_sessionsDir) return res.json({ products: [], total: 0 })
 
@@ -1978,15 +2034,37 @@ export async function startServer(sessionsDir) {
       })
     }
 
-    const slugify = (s) => String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'product'
+    const slugify = (s) =>
+      String(s || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') || 'product'
 
     // Generic placeholder titles that ship-fast uses when real product names aren't specified
     const PLACEHOLDER_TITLES = new Set([
-      'premium pick', 'customer favorite', 'new arrival', 'limited run',
-      'best seller', 'premium product', 'featured product', 'top pick',
-      'popular item', 'trending now', 'staff pick', "editor's choice",
-      'editor choice', 'most loved', 'new release', 'hot deal', 'special offer',
-      'shop now', 'view product', 'buy now', 'add to cart', 'explore now',
+      'premium pick',
+      'customer favorite',
+      'new arrival',
+      'limited run',
+      'best seller',
+      'premium product',
+      'featured product',
+      'top pick',
+      'popular item',
+      'trending now',
+      'staff pick',
+      "editor's choice",
+      'editor choice',
+      'most loved',
+      'new release',
+      'hot deal',
+      'special offer',
+      'shop now',
+      'view product',
+      'buy now',
+      'add to cart',
+      'explore now',
     ])
 
     // Extract real products from rendered HTML (most reliable source — section.items often
@@ -2013,12 +2091,22 @@ export async function startServer(sessionsDir) {
           const priceStr = priceMatch[0]
           seen.add(lc)
           products.push({
-            id: slugify(title), title, handle: slugify(title),
+            id: slugify(title),
+            title,
+            handle: slugify(title),
             description: descMatch?.[1]?.trim() || '',
             price: priceNum,
-            currency: priceStr.startsWith('₹') ? 'INR' : priceStr.startsWith('€') ? 'EUR' : priceStr.startsWith('£') ? 'GBP' : 'USD',
+            currency: priceStr.startsWith('₹')
+              ? 'INR'
+              : priceStr.startsWith('€')
+                ? 'EUR'
+                : priceStr.startsWith('£')
+                  ? 'GBP'
+                  : 'USD',
             image: imgMatch?.[1] || null,
-            category: '', sessionId, sessionPrompt,
+            category: '',
+            sessionId,
+            sessionPrompt,
           })
         }
       }
@@ -2044,12 +2132,22 @@ export async function startServer(sessionsDir) {
           const priceStr = priceMatch[0]
           seen.add(lc)
           products.push({
-            id: slugify(title), title, handle: slugify(title),
+            id: slugify(title),
+            title,
+            handle: slugify(title),
             description: descMatch?.[1]?.trim() || '',
             price: priceNum,
-            currency: priceStr.startsWith('₹') ? 'INR' : priceStr.startsWith('€') ? 'EUR' : priceStr.startsWith('£') ? 'GBP' : 'USD',
+            currency: priceStr.startsWith('₹')
+              ? 'INR'
+              : priceStr.startsWith('€')
+                ? 'EUR'
+                : priceStr.startsWith('£')
+                  ? 'GBP'
+                  : 'USD',
             image: imgMatch?.[1] || null,
-            category: '', sessionId, sessionPrompt,
+            category: '',
+            sessionId,
+            sessionPrompt,
           })
         }
       }
@@ -2085,7 +2183,12 @@ export async function startServer(sessionsDir) {
     }
 
     if (!extracted) {
-      const PRODUCT_SECTION_TYPES = new Set(['featured-products', 'product-grid', 'product-detail', 'product-list'])
+      const PRODUCT_SECTION_TYPES = new Set([
+        'featured-products',
+        'product-grid',
+        'product-detail',
+        'product-list',
+      ])
       for (const page of pages) {
         const sections = Array.isArray(page.sections) ? page.sections : []
         for (const section of sections) {
@@ -2116,14 +2219,20 @@ export async function startServer(sessionsDir) {
   })
 
   app.options('/api/ecommercify/push-from-medusa', (_req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
+    )
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
     res.sendStatus(204)
   })
 
   app.post('/api/ecommercify/push-from-medusa', async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000')
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
+    )
     const sessionId = String(req.body?.sessionId || '').trim()
     if (!sessionId) {
       return res.status(400).json({ ok: false, error: 'sessionId is required' })
@@ -2141,7 +2250,9 @@ export async function startServer(sessionsDir) {
     }
     let siteSpec = loadSiteSpec(session.workspace)
     if (!siteSpec || siteSpec.siteType !== 'ecommerce') {
-      return res.status(400).json({ ok: false, error: 'Not an ecommerce site spec for this session' })
+      return res
+        .status(400)
+        .json({ ok: false, error: 'Not an ecommerce site spec for this session' })
     }
     try {
       const products = await fetchMedusaProductsForSiteSpec()

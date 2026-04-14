@@ -156,7 +156,7 @@ function readmeTargetDetails(target, siteSpec = {}) {
       }
       if (siteSpec.siteType === 'ecommerce') {
         notes.push(
-          'Medusa: run the bundled backend with `bun run medusa:dev` (see `medusa-backend/README.txt`) or any Medusa v2 server; copy `.env.example.medusa` into `.env.local`, set `MEDUSA_BACKEND_URL`, `NEXT_PUBLIC_MEDUSA_BACKEND_URL`, and `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`. Allow your Next origin in `STORE_CORS` (`infra/medusa/run-medusa.txt`). Catalog sync: `bun run sync:medusa-catalog` with a site-spec JSON file.',
+          'Medusa: run the bundled backend with `bun run medusa:dev` (see `medusa-backend/README.md`) or any Medusa v2 server; copy `.env.example.medusa` into `.env.local`, set `MEDUSA_BACKEND_URL`, `NEXT_PUBLIC_MEDUSA_BACKEND_URL`, and `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`. Allow your Next origin in `STORE_CORS` (`infra/medusa/README.md`). Catalog sync: `bun run sync:medusa-catalog` with a site-spec JSON file.',
         )
       }
       return {
@@ -447,11 +447,15 @@ export default function ExactClonePage({ page }) {
       if (node.nodeType === Node.ELEMENT_NODE) node.dataset.sfCloneMounted = '1'
       document.body.insertBefore(node, insertionAnchor)
     })
-${mode === 'nextjs' ? `
+${
+  mode === 'nextjs'
+    ? `
     // Remove SSR fallback div now that client-side clone is mounted
     const ssrDiv = document.querySelector('[data-sf-clone-ssr]')
     if (ssrDiv) ssrDiv.remove()
-` : ''}
+`
+    : ''
+}
 
     const isInsideClone = (target) =>
       cloneNodes.some(
@@ -489,12 +493,16 @@ ${mode === 'nextjs' ? `
 
   return (
     <>
-      <span ref={anchorRef} hidden data-sf-clone-anchor="1" />${mode === 'nextjs' ? `
+      <span ref={anchorRef} hidden data-sf-clone-anchor="1" />${
+        mode === 'nextjs'
+          ? `
       <div
         data-sf-clone-ssr="1"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: blueprint.bodyHtml }}
-      />` : ''}
+      />`
+          : ''
+      }
     </>
   )
 }
@@ -536,7 +544,9 @@ function retailProductPriceRowHtml(item) {
       : ''
   const was = item.compareAt ?? item.compare_at
   const wasStr =
-    was != null && was !== '' ? `<span class="product-price product-price--compare">${escapeHtml(String(was))}</span>` : ''
+    was != null && was !== ''
+      ? `<span class="product-price product-price--compare">${escapeHtml(String(was))}</span>`
+      : ''
   if (!price && !wasStr) return ''
   return `<div class="product-card__price-row">${price}${wasStr}</div>`
 }
@@ -781,9 +791,12 @@ export function renderSectionHtml(section, siteSpec = {}) {
           </div>
           <div class="product-carousel swiper" data-sf-swiper data-swiper-managed role="region" aria-label="Products">
             <div class="swiper-wrapper">
-              ${renderItemList(items, (item) => `
+              ${renderItemList(
+                items,
+                (item) => `
                 <div class="swiper-slide">${productCardHtml(item, false)}
-                </div>`)}
+                </div>`,
+              )}
             </div>
             <div class="swiper-pagination"></div>
           </div>
@@ -914,7 +927,8 @@ export function renderSectionHtml(section, siteSpec = {}) {
 }
 
 export function buildGlobalCss(theme = {}, layout = {}) {
-  const isStore = layout.ecommerce === true || String(layout.siteType || '').toLowerCase() === 'ecommerce'
+  const isStore =
+    layout.ecommerce === true || String(layout.siteType || '').toLowerCase() === 'ecommerce'
   const colors = theme.colors || {}
   const typography = theme.typography || {}
   const scale = typography.scale || {}
