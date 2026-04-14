@@ -27,9 +27,13 @@ export function siteSpecPrompt({
     ctx?.site_type === 'ecommerce' || ctx?.siteType === 'ecommerce'
       ? `\n- Ecommerce (Luxury DTC): ${ecommerceGuidelines} Set siteType to "ecommerce". Include pages and backendFeatureHints appropriate for a Medusa-backed store (catalog, cart, checkout-related flows per Medusa docs). Encode a premium funnel (collection → PDP → cart → checkout) and make the site spec structurally enforce retail depth and luxury craft.\n` +
         `  - Navigation must include shop/collections/categories, search affordance, account, and cart (numeric badge in rendered UIs).\n` +
+        `  - Navigation depth: include a Shop dropdown/mega-nav model via navigation.global items with children (New arrivals, Bestsellers, Gift sets, Wallets, Bags, Leather care; plus optional Sale when prompt implies promotions).\n` +
         `  - Homepage must read as a storefront (not SaaS): promo/benefit strip + store-style header + art-directed hero with heroImage when possible + shop-by-collection/category tiles with images + featured products (6+ items; populate from ecommerce.products when available) + gift set/bundle band + editorial story/learn section + social proof + newsletter + rich multi-column footer with policy links.\n` +
+        `  - Collections module: on desktop, prefer a 2x2 (or 4-up) grid of collection tiles; reserve carousel behavior for mobile only.\n` +
         `  - Collections/category browsing: include at least one dedicated collection/category page (not just a generic shop grid). It should support sorting (optional) and visually consistent product grids.\n` +
         `  - PDP richness: include a product detail page route with gallery, variant selector (size/color), delivery/returns/warranty info near CTA, and cross-sell (related / complete-the-look).\n` +
+        `  - Reviews credibility: include testimonials/reviews with reviewer name, product name, verified purchaser flag, and a date; add a rating summary line at section intro.\n` +
+        `  - Newsletter form: the submit button label must be non-empty (e.g. "Subscribe"). Include helper text "No spam. Unsubscribe anytime."\n` +
         `  - Cart & checkout: include cart and checkout pages (or a combined flow) with visible progress indicator, order summary with subtotal/shipping/tax/total, and trust badges. Use guest checkout framing.\n`
       : ''
 

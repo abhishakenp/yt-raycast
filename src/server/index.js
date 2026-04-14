@@ -515,11 +515,14 @@ export async function startServer(sessionsDir) {
   app.get('/js/script.js', async (_req, res) => {
     try {
       const r = await fetch(`${plausibleHost}/js/script.js`)
+      if (!r.ok) return res.status(204).end()
+      const contentType = r.headers.get('content-type') || ''
+      if (!contentType.toLowerCase().includes('javascript')) return res.status(204).end()
       res.set('Content-Type', 'application/javascript')
       res.set('Cache-Control', 'public, max-age=86400')
       res.send(Buffer.from(await r.arrayBuffer()))
     } catch {
-      res.status(502).end()
+      res.status(204).end()
     }
   })
   app.post('/api/event', express.text({ type: '*/*' }), async (req, res) => {

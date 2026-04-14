@@ -601,9 +601,22 @@ export function renderSectionHtml(section, siteSpec = {}) {
         ? `<div class="store-nav-tools">
             <label class="store-search"><span class="visually-hidden">Search products</span><input type="search" class="store-search__input" placeholder="Search products\u2026" autocomplete="off" /></label>
             <a class="store-account" href="/account">Account</a>
+            <a class="store-account" href="/wishlist">Wishlist</a>
             <a class="store-cart" href="/cart">Cart <span class="store-cart__count">0</span></a>
           </div>`
         : ''
+      const navLinksHtml = renderItemList(section.links || [], (link) => {
+        const children = Array.isArray(link?.children) ? link.children : []
+        if (isStore && children.length) {
+          return `<div class="nav-dropdown">
+              <button type="button" class="nav-dropdown__trigger">${escapeHtml(link.label || 'Shop')}</button>
+              <div class="nav-dropdown__panel" role="menu" aria-label="${escapeHtml(link.label || 'Shop')}">
+                ${renderItemList(children, (child) => `<a role="menuitem" href="${escapeHtml(child.href || '#')}">${escapeHtml(child.label || 'Link')}</a>`)}
+              </div>
+            </div>`
+        }
+        return `<a href="${escapeHtml(link.href || '#')}">${escapeHtml(link.label || 'Link')}</a>`
+      })
       return `
         ${promoBar}
         <header class="site-header${isStore ? ' site-header--store' : ''}" data-mobile-nav>
@@ -611,7 +624,7 @@ export function renderSectionHtml(section, siteSpec = {}) {
             <a class="brand" href="/">${escapeHtml(section.headline || 'Ship Fast')}</a>
             <button class="nav-toggle" type="button" data-mobile-nav-toggle aria-label="Toggle navigation">Menu</button>
             <nav class="nav-links" data-mobile-nav-panel>
-              ${renderItemList(section.links || [], (link) => `<a href="${escapeHtml(link.href || '#')}">${escapeHtml(link.label || 'Link')}</a>`)}
+              ${navLinksHtml}
               ${storeTools}
               <div class="nav-actions">
                 ${renderItemList(section.actions || [], (action) => renderActionLink(action))}
@@ -717,7 +730,21 @@ export function renderSectionHtml(section, siteSpec = {}) {
               ${renderItemList(
                 section.items || [],
                 (item) =>
-                  `<blockquote class="card quote-card" data-reveal><p>“${escapeHtml(item.quote || item.body || '')}”</p><footer>${escapeHtml(item.author || item.title || '')}</footer></blockquote>`,
+                  `<blockquote class="card quote-card" data-reveal>
+                    <p>“${escapeHtml(item.quote || item.body || '')}”</p>
+                    <footer>
+                      <strong>${escapeHtml(item.author || item.title || '')}</strong>
+                      ${
+                        item.product || item.date || item.verified
+                          ? `<span class="quote-meta">
+                              ${item.product ? escapeHtml(item.product) : ''}
+                              ${item.verified ? `${item.product ? ' · ' : ''}Verified purchaser` : ''}
+                              ${item.date ? `${item.product || item.verified ? ' · ' : ''}${escapeHtml(item.date)}` : ''}
+                            </span>`
+                          : ''
+                      }
+                    </footer>
+                  </blockquote>`,
               )}
             </div>
           </div>
@@ -1671,6 +1698,26 @@ button, input, textarea { font: inherit; }
 .product-carousel .swiper-pagination-bullet-active {
   background: var(--color-primary);
 }
+@media (min-width: 900px) {
+  .product-carousel .swiper-pagination {
+    display: none;
+  }
+}
+.product-carousel .swiper-button-prev,
+.product-carousel .swiper-button-next {
+  color: var(--color-text);
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  background: color-mix(in srgb, var(--color-text) 4%, var(--color-background));
+  box-shadow: var(--shadow-soft);
+}
+.product-carousel .swiper-button-prev:after,
+.product-carousel .swiper-button-next:after {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
 @media (prefers-reduced-motion: reduce) {
   .product-carousel__mask {
     overflow-x: auto;
@@ -1760,6 +1807,52 @@ ${
   border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
   background: color-mix(in srgb, var(--color-text) 6%, var(--color-background));
   color: var(--color-text);
+}
+.nav-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-dropdown__trigger {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0.35rem;
+  font-weight: 600;
+}
+.nav-dropdown__panel {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  left: 0;
+  min-width: 14rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-background));
+  box-shadow: var(--shadow-card);
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 30;
+}
+.nav-dropdown:hover .nav-dropdown__panel {
+  display: flex;
+}
+.nav-dropdown__panel a {
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.75rem;
+  border: 1px solid transparent;
+}
+.nav-dropdown__panel a:hover {
+  border-color: color-mix(in srgb, var(--color-border) 80%, transparent);
+  background: color-mix(in srgb, var(--color-text) 4%, var(--color-background));
+}
+.quote-meta {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--color-muted);
 }
 .store-account,
 .store-cart {
