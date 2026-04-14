@@ -1,5 +1,6 @@
 import { htmlDocumentPassesPreviewQuality } from '../pipeline/homepage-substance.js'
 import { buildFallbackSiteSpec } from '../spec/defaults.js'
+import { applyGeneratedSitePseoGuardrails } from './pseo-guardrails.js'
 import { pageUsesExactClone } from './shared.js'
 
 function countNonChromeSections(sections) {
@@ -59,6 +60,7 @@ function stripUnstableExactClones(siteSpec) {
 
 export function prepareSiteSpecForReliableRender(siteSpec) {
   if (!siteSpec?.pages?.length) return siteSpec
+  applyGeneratedSitePseoGuardrails(siteSpec)
   stripUnstableExactClones(siteSpec)
   mergeMinimalHomeBodyFromFallback(siteSpec)
   repairEmptyHeroSections(siteSpec)

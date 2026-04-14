@@ -228,21 +228,34 @@ export function buildSitemapEntries(siteSpec) {
       }),
     )
 
+  const pages = siteSpec?.pages || []
+  const hasRoute = (path) => {
+    const n = normalizePath(path)
+    return pages.some((p) => normalizePath(p?.route) === n)
+  }
+
   if (siteSpec?.siteType === 'ecommerce') {
-    const extra = [
-      cleanObject({
-        url: joinUrl(siteUrl, '/shop'),
-        lastModified,
-        changeFrequency: 'weekly',
-        priority: 0.85,
-      }),
-      cleanObject({
-        url: joinUrl(siteUrl, '/checkout'),
-        lastModified,
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      }),
-    ]
+    const extra = []
+    if (hasRoute('/shop')) {
+      extra.push(
+        cleanObject({
+          url: joinUrl(siteUrl, '/shop'),
+          lastModified,
+          changeFrequency: 'weekly',
+          priority: 0.85,
+        }),
+      )
+    }
+    if (hasRoute('/checkout')) {
+      extra.push(
+        cleanObject({
+          url: joinUrl(siteUrl, '/checkout'),
+          lastModified,
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        }),
+      )
+    }
     return [...pageEntries, ...extra]
   }
 

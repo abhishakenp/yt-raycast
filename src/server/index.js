@@ -6,6 +6,7 @@ import {
   BASE_DOMAIN,
   DASHBOARD_PORT,
   HOMEPAGE_MODEL,
+  SITE_URL,
   getMedusaAdminAppUrl,
   isSanityConfigured,
   isSanityChatWriteConfigured,
@@ -101,6 +102,7 @@ import {
 import { applyPricingPageOverrides, renderBlogIndex, renderBlogPost } from './blog-pages.js'
 import { applyPublicLocaleResponseHeaders, getLocaleFromRequest } from './locale.js'
 import { renderCareersPage, renderNoticeDetail, renderNoticesIndex } from './psu-pages.js'
+import { renderShipFastLlmsTxt } from '../renderers/llms-txt.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { ensureEmbeddedStudioBuilt } from './ensure-studio-build.js'
 import { mountEmbeddedSanityStudio } from './sanity-studio-static.js'
@@ -691,6 +693,19 @@ export async function startServer(sessionsDir) {
 
   app.get('/sitemap.xml', (_req, res) => {
     res.type('application/xml').send(renderSitemapXml())
+  })
+
+  app.get('/llms.txt', (_req, res) => {
+    const sanity = isSanityConfigured()
+    res
+      .type('text/plain; charset=utf-8')
+      .send(
+        renderShipFastLlmsTxt({
+          siteUrl: SITE_URL,
+          includeBlog: sanity,
+          includeInstitutional: sanity,
+        }),
+      )
   })
 
   app.get('/index.html', (_req, res) => {

@@ -7,6 +7,7 @@ import {
   serializeModule,
   slimSiteSpecForBundle,
 } from '../shared.js'
+import { renderGeneratedSiteLlmsTxt } from '../llms-txt.js'
 import {
   buildStructuredData,
   renderRobotsTxt,
@@ -731,6 +732,7 @@ export function renderReactProject(siteSpec) {
 </html>
 `,
     'public/robots.txt': renderRobotsTxt(siteSpec),
+    'public/llms.txt': renderGeneratedSiteLlmsTxt(siteSpec),
     'vite.config.js': `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
