@@ -444,23 +444,26 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   void brandProfilePromise.then((profile) => {
     if (!profile?.logo) return
-    try {
-      const updated = applyBrandLogoToSiteSpec(siteSpec, profile)
-      const themed = applyBrandPaletteToSiteSpec(siteSpec, profile)
-      if (updated) {
-        saveSiteSpec(workspace, siteSpec)
-        renderPreviewToWorkspace(siteSpec, workspace)
+    const tryStitch = (attempt = 0) => {
+      try {
+        const updated = applyBrandLogoToSiteSpec(siteSpec, profile)
+        const themed = applyBrandPaletteToSiteSpec(siteSpec, profile)
+        if (updated || themed) {
+          saveSiteSpec(workspace, siteSpec)
+          renderPreviewToWorkspace(siteSpec, workspace)
+        }
+        const logoInjected = injectBrandLogoIntoHomepageHtml(workspace, profile)
+        const paletteInjected = injectBrandPaletteIntoHomepageHtml(workspace, profile)
+        if (logoInjected || paletteInjected) {
+          sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
+          return
+        }
+        if (attempt < 6) setTimeout(() => tryStitch(attempt + 1), 450)
+      } catch (e) {
+        _log(`  brand-logo: rerender failed — ${e?.message || 'error'}`)
       }
-      injectBrandLogoIntoHomepageHtml(workspace, profile)
-      if (themed) {
-        injectBrandPaletteIntoHomepageHtml(workspace, profile)
-        saveSiteSpec(workspace, siteSpec)
-        renderPreviewToWorkspace(siteSpec, workspace)
-      }
-      sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
-    } catch (e) {
-      _log(`  brand-logo: rerender failed — ${e?.message || 'error'}`)
     }
+    tryStitch(0)
   })
   const ctxPages = ctx.pages?.length ?? 0
   const homepageChars = homepage?.length ?? 0
@@ -646,30 +649,88 @@ function applyBrandLogoToSiteSpec(siteSpec, brandProfile) {
 
 function applyBrandPaletteToSiteSpec(siteSpec, brandProfile) {
   const palette = brandProfile?.palette
-  if (!siteSpec?.theme?.colors || !palette || palette.confidence == null) return false
+  if (!siteSpec?.theme) siteSpec.theme = {}
+  if (!siteSpec.theme.colors) siteSpec.theme.colors = {}
+  if (!palette || palette.confidence == null) return false
   const confidence = Number(palette.confidence || 0)
   if (confidence < 0.75) return false
-  const next = {
+  const brand = {
     primary: String(palette.primary || '').trim(),
     secondary: String(palette.secondary || '').trim() || String(palette.primary || '').trim(),
     accent: String(palette.accent || '').trim() || String(palette.secondary || '').trim(),
   }
-  if (!next.primary || !/^#[0-9a-f]{6}$/i.test(next.primary)) return false
-  if (next.secondary && !/^#[0-9a-f]{6}$/i.test(next.secondary)) next.secondary = next.primary
-  if (next.accent && !/^#[0-9a-f]{6}$/i.test(next.accent)) next.accent = next.secondary || next.primary
+  if (!brand.primary || !/^#[0-9a-f]{6}$/i.test(brand.primary)) return false
+  if (brand.secondary && !/^#[0-9a-f]{6}$/i.test(brand.secondary)) brand.secondary = brand.primary
+  if (brand.accent && !/^#[0-9a-f]{6}$/i.test(brand.accent)) brand.accent = brand.secondary || brand.primary
+
+  const derive = (hex, { l, s } = {}) => {
+    const h = String(hex || '').trim().replace('#', '')
+    if (!/^[0-9a-f]{6}$/i.test(h)) return null
+    const r = parseInt(h.slice(0, 2), 16) / 255
+    const g = parseInt(h.slice(2, 4), 16) / 255
+    const b = parseInt(h.slice(4, 6), 16) / 255
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const d = max - min
+    let hue = 0
+    if (d !== 0) {
+      hue =
+        max === r
+          ? ((g - b) / d) % 6
+          : max === g
+            ? (b - r) / d + 2
+            : (r - g) / d + 4
+    }
+    hue = Math.round(hue * 60)
+    if (hue < 0) hue += 360
+    const light = (max + min) / 2
+    const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * light - 1))
+    const ll = l == null ? light : l
+    const ss = s == null ? sat : s
+    const clamp01 = (v) => Math.max(0, Math.min(1, v))
+    return { h: hue, s: clamp01(ss), l: clamp01(ll) }
+  }
+
+  const primaryHsl = derive(brand.primary)
+  const isLight = String(siteSpec?.theme?.colors?.background || '').trim().startsWith('#f')
+  const bg =
+    primaryHsl &&
+    `hsl(${primaryHsl.h} ${Math.round((isLight ? Math.max(0.08, primaryHsl.s * 0.18) : Math.max(0.1, primaryHsl.s * 0.22)) * 100)}% ${Math.round((isLight ? 0.97 : 0.06) * 100)}%)`
+  const surface =
+    primaryHsl &&
+    `hsl(${primaryHsl.h} ${Math.round((isLight ? Math.max(0.08, primaryHsl.s * 0.14) : Math.max(0.1, primaryHsl.s * 0.18)) * 100)}% ${Math.round((isLight ? 0.995 : 0.11) * 100)}%)`
+  const border =
+    primaryHsl &&
+    `hsl(${primaryHsl.h} ${Math.round((isLight ? Math.max(0.06, primaryHsl.s * 0.12) : Math.max(0.08, primaryHsl.s * 0.16)) * 100)}% ${Math.round((isLight ? 0.88 : 0.18) * 100)}%)`
+  const text = isLight ? '#0b0b0b' : '#f4f4f5'
+  const mutedText = isLight ? '#334155' : '#a1a1aa'
+
+  const next = {
+    primary: brand.primary,
+    secondary: brand.secondary,
+    accent: brand.accent,
+    background: bg || siteSpec.theme.colors.background,
+    surface: surface || siteSpec.theme.colors.surface,
+    border: border || siteSpec.theme.colors.border,
+    text,
+    mutedText,
+  }
 
   const existing = siteSpec.theme.colors || {}
   const changed =
     existing.primary !== next.primary ||
     existing.secondary !== next.secondary ||
-    existing.accent !== next.accent
+    existing.accent !== next.accent ||
+    existing.background !== next.background ||
+    existing.surface !== next.surface ||
+    existing.border !== next.border ||
+    existing.text !== next.text ||
+    existing.mutedText !== next.mutedText
   if (!changed) return false
 
   siteSpec.theme.colors = {
     ...existing,
-    primary: next.primary,
-    secondary: next.secondary,
-    accent: next.accent,
+    ...next,
   }
   if (!siteSpec.theme.tailwind) siteSpec.theme.tailwind = {}
   siteSpec.theme.tailwind = {
@@ -698,21 +759,93 @@ function injectBrandPaletteIntoHomepageHtml(workspace, brandProfile) {
   if (!palette || Number(palette.confidence || 0) < 0.75) return false
   const fp = join(workspace, 'index.html')
   if (!existsSync(fp)) return false
+  const themedPalette = buildDerivedBrandPalette(palette, brandProfile?.officialName || brandProfile?.requestedName || '')
   const html = readFileSync(fp, 'utf8')
-  const next = injectBrandPaletteIntoHtml(html, palette)
+  const next = injectBrandPaletteIntoHtml(html, themedPalette)
   if (!next || next === html) return false
   writeFile(workspace, 'index.html', next)
   return true
 }
 
+function buildDerivedBrandPalette(palette, brandName = '') {
+  const primary = String(palette?.primary || '').trim()
+  const secondary = String(palette?.secondary || palette?.primary || '').trim()
+  const accent = String(palette?.accent || palette?.secondary || palette?.primary || '').trim()
+  const confidence = Number(palette?.confidence || 0)
+  const clamp01 = (v) => Math.max(0, Math.min(1, v))
+  const toHsl = (hex) => {
+    const h = String(hex || '').trim().replace('#', '')
+    if (!/^[0-9a-f]{6}$/i.test(h)) return null
+    const r = parseInt(h.slice(0, 2), 16) / 255
+    const g = parseInt(h.slice(2, 4), 16) / 255
+    const b = parseInt(h.slice(4, 6), 16) / 255
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const d = max - min
+    let hue = 0
+    if (d !== 0) {
+      hue =
+        max === r
+          ? ((g - b) / d) % 6
+          : max === g
+            ? (b - r) / d + 2
+            : (r - g) / d + 4
+    }
+    hue = Math.round(hue * 60)
+    if (hue < 0) hue += 360
+    const light = (max + min) / 2
+    const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * light - 1))
+    return { h: hue, s: clamp01(sat), l: clamp01(light) }
+  }
+  const hsl = toHsl(primary) || toHsl(secondary) || toHsl(accent)
+  const wantsLight = /\b(psu|government|ministry|department|authority|limited|ltd)\b/i.test(String(brandName || ''))
+  const background =
+    hsl &&
+    `hsl(${hsl.h} ${Math.round(Math.max(0.1, hsl.s * (wantsLight ? 0.12 : 0.22)) * 100)}% ${Math.round(
+      (wantsLight ? 0.985 : 0.06) * 100,
+    )}%)`
+  const surface =
+    hsl &&
+    `hsl(${hsl.h} ${Math.round(Math.max(0.08, hsl.s * (wantsLight ? 0.1 : 0.18)) * 100)}% ${Math.round(
+      (wantsLight ? 0.995 : 0.11) * 100,
+    )}%)`
+  const border =
+    hsl &&
+    `hsl(${hsl.h} ${Math.round(Math.max(0.06, hsl.s * (wantsLight ? 0.08 : 0.16)) * 100)}% ${Math.round(
+      (wantsLight ? 0.9 : 0.18) * 100,
+    )}%)`
+  const text = wantsLight ? '#0b0b0b' : '#f4f4f5'
+  const mutedText = wantsLight ? '#334155' : '#a1a1aa'
+  return {
+    primary,
+    secondary,
+    accent,
+    background,
+    surface,
+    border,
+    text,
+    mutedText,
+    confidence,
+    provider: String(palette?.provider || ''),
+  }
+}
+
 function injectBrandPaletteIntoHtml(html = '', palette) {
   if (!palette?.primary) return ''
+  const primary = String(palette.primary || '').trim()
+  const secondary = String(palette.secondary || palette.primary || '').trim()
+  const accent = String(palette.accent || palette.secondary || palette.primary || '').trim()
   const vars = [
-    ['--color-primary', palette.primary],
-    ['--color-secondary', palette.secondary || palette.primary],
-    ['--color-accent', palette.accent || palette.secondary || palette.primary],
+    ['--color-primary', primary],
+    ['--color-secondary', secondary],
+    ['--color-accent', accent],
+    ['--color-background', String(palette.background || '').trim()],
+    ['--color-surface', String(palette.surface || '').trim()],
+    ['--color-border', String(palette.border || '').trim()],
+    ['--color-text', String(palette.text || '').trim()],
+    ['--color-muted', String(palette.mutedText || palette.muted || '').trim()],
   ]
-    .filter(([, v]) => /^#[0-9a-f]{6}$/i.test(String(v || '').trim()))
+    .filter(([, v]) => Boolean(v))
     .map(([k, v]) => `${k}:${String(v).trim()}`)
     .join(';')
   if (!vars) return ''
@@ -733,7 +866,7 @@ function injectBrandLogoIntoHtml(html = '', logo, brandName = '') {
   if (/\bbrand-logo\b/i.test(html)) return ''
   const img = `<span class="brand-logo"><img src="${escapeHtmlAttr(src)}" alt="${escapeHtmlAttr(
     String(logo.alt || 'Company logo'),
-  )}" decoding="async" loading="eager" style="height:44px;width:auto;display:block" /></span>`
+  )}" decoding="async" loading="eager" /></span>`
   let patched = html.replace(
     /<a([^>]*\bclass=["'][^"']*\bbrand\b[^"']*["'][^>]*)>([\s\S]*?)<\/a>/i,
     (_m, attrs, inner) => `<a${attrs}>${img}<span class="brand-name">${inner}</span></a>`,
@@ -757,7 +890,7 @@ function injectBrandLogoIntoHtml(html = '', logo, brandName = '') {
   }
   if (patched === html) return ''
   const style =
-    '<style>.brand{display:inline-flex;align-items:center;gap:.75rem;min-height:3rem}.brand-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:180px}.brand-name{white-space:nowrap}</style>'
+    '<style>.brand{display:inline-flex;align-items:center;gap:.9rem;min-height:3.5rem}.brand-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:240px}.brand-logo img,.brand-logo svg{height:56px;width:auto;display:block}.brand-name{white-space:nowrap;font-weight:800;letter-spacing:-0.01em}</style>'
   if (/<\/head>/i.test(patched) && !/\.brand-logo\{/i.test(patched)) {
     return patched.replace(/<\/head>/i, `${style}</head>`)
   }

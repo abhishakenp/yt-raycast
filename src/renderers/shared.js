@@ -1138,14 +1138,14 @@ button, input, textarea { font: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
+  height: 56px;
   width: auto;
   max-width: 180px;
   flex: 0 0 auto;
 }
 .brand-logo img,
 .brand-logo svg {
-  height: 44px;
+  height: 56px;
   width: auto;
   display: block;
 }
@@ -1828,7 +1828,7 @@ button, input, textarea { font: inherit; }
   .brand-logo,
   .brand-logo img,
   .brand-logo svg {
-    height: 38px;
+    height: 44px;
   }
 }
 .site-header .brand,
