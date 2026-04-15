@@ -603,8 +603,32 @@ export default function CartDrawer() {
 
   return (
     <>
-      <button className="cart-toggle" onClick={() => setOpen(true)} type="button">
-        Cart {itemCount > 0 ? '(' + itemCount + ')' : ''}
+      <button
+        className="cart-toggle"
+        onClick={() => setOpen(true)}
+        type="button"
+        aria-label={'Shopping cart' + (itemCount > 0 ? ', ' + itemCount + ' items' : '')}
+      >
+        <svg
+          className="cart-toggle__icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6Z" />
+          <path d="M3 6h18" />
+          <path d="M16 10a4 4 0 1 1-8 0" />
+        </svg>
+        <span className="cart-toggle__label">
+          Cart{itemCount > 0 ? ' (' + itemCount + ')' : ''}
+        </span>
       </button>
       <AnimatePresence>
         {open ? (
@@ -1554,8 +1578,9 @@ function renderNextSectionRenderer(siteSpec) {
   const useMarqueeExport = !useSwiperExport && siteSpec.siteType === 'ecommerce'
   const swiperImportBlock = useSwiperExport
     ? `import { Swiper, SwiperSlide } from 'swiper/react'
-import { Pagination } from 'swiper/modules'
+import { Navigation, Pagination } from 'swiper/modules'
 import 'swiper/css'
+import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
 `
@@ -1656,6 +1681,10 @@ function CardGrid({ items = [] }) {
 function NavbarSection({ section, siteSpec }) {
   const [open, setOpen] = useState(false)
   const isStore = siteSpec?.siteType === 'ecommerce'
+  const shopLink = useMemo(
+    () => (section.links || []).find((l) => String(l?.label || '').toLowerCase() === 'shop' && Array.isArray(l?.children) && l.children.length),
+    [section.links],
+  )
   return (
     <>
       {isStore ? (
@@ -1676,11 +1705,30 @@ function NavbarSection({ section, siteSpec }) {
             Menu
           </button>
           <nav className="nav-links">
-            {(section.links || []).map((link) => (
-              <SmartLink key={link.id || link.label} href={link.href || '#'}>
-                {link.label || 'Link'}
-              </SmartLink>
-            ))}
+            {(section.links || []).map((link) => {
+              const hasChildren = Array.isArray(link?.children) && link.children.length
+              if (isStore && hasChildren) {
+                return (
+                  <div key={link.id || link.label} className="nav-dropdown">
+                    <button type="button" className="nav-dropdown__trigger">
+                      {link.label || 'Shop'}
+                    </button>
+                    <div className="nav-dropdown__panel" role="menu" aria-label={link.label || 'Shop'}>
+                      {(link.children || []).map((child) => (
+                        <SmartLink key={child.id || child.label} href={child.href || '#'} role="menuitem">
+                          {child.label || 'Link'}
+                        </SmartLink>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <SmartLink key={link.id || link.label} href={link.href || '#'}>
+                  {link.label || 'Link'}
+                </SmartLink>
+              )
+            })}
             {isStore ? (
               <div className="store-nav-tools">
                 <label className="store-search">
@@ -1689,6 +1737,9 @@ function NavbarSection({ section, siteSpec }) {
                 </label>
                 <SmartLink className="store-account" href="/account">
                   Account
+                </SmartLink>
+                <SmartLink className="store-account" href="/wishlist">
+                  Wishlist
                 </SmartLink>
               </div>
             ) : null}
@@ -2014,12 +2065,13 @@ export default function SectionRenderer({ section, siteSpec }) {
               <SectionIntro section={section} />
             </div>
             <Swiper
-              modules={[Pagination]}
+              modules={[Pagination, Navigation]}
               slidesPerView="auto"
               spaceBetween={16}
               loop={items.length > 2}
               grabCursor
               watchOverflow
+              navigation
               pagination={{ clickable: true, dynamicBullets: items.length > 4 }}
               className="product-carousel swiper"
               role="region"

@@ -1,6 +1,7 @@
 import { existsSync, statSync } from 'node:fs'
 import { extname, join, resolve, sep } from 'node:path'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
+import { injectStorefrontCartUi } from '../pipeline/storefront-cart-ui.js'
 
 const MARK = 'data-sf-preview-tools="1"'
 
@@ -11,8 +12,10 @@ export function stripPreviewArtifactsFromHtml(html) {
     .replace(/<script\b[^>]*data-sf-preview-tools="1"[^>]*><\/script>\s*/gi, '')
 }
 
-export function injectPreviewToolsHtml(html, sessionId, preferredLanguage) {
-  if (typeof html !== 'string' || html.includes(MARK)) return html
+export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessionWorkspace) {
+  if (typeof html !== 'string') return html
+  html = injectStorefrontCartUi(html, sessionWorkspace ? { workspace: sessionWorkspace } : {})
+  if (html.includes(MARK)) return html
   const mode = resolveLanguageModeFromPreference(preferredLanguage)
   const aiOpts = {
     canIndian: mode.isIndian === true,

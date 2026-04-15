@@ -63,7 +63,7 @@ const LIFESTYLE_PHOTO_RE =
 const TRANSPARENT_PIXEL_GIF =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
 const NEUTRAL_IMG_FALLBACK_STYLE =
-  'background:linear-gradient(to bottom right,rgb(15 23 42),rgb(30 41 59));object-fit:cover;width:100%'
+  'background:linear-gradient(to bottom right,rgb(244 244 245),rgb(228 228 231));object-fit:cover;width:100%'
 
 const STOP_WORDS = new Set([
   'a',
@@ -1155,7 +1155,7 @@ function toMediaPromptBlock(photos, videos) {
   const lines = []
   if (Array.isArray(photos) && photos.length) {
     lines.push(
-      `VERIFIED IMAGES:\n${photos
+      `Approved still images (use only these URLs in img src):\n${photos
         .slice(0, 8)
         .map((item, index) => {
           const hint = descriptivePhotoHint(item).slice(0, 140)
@@ -1166,7 +1166,7 @@ function toMediaPromptBlock(photos, videos) {
   }
   if (Array.isArray(videos) && videos.length) {
     lines.push(
-      `VERIFIED VIDEOS (use one <video muted loop playsinline> per slot; single <source src="MP4" type="video/mp4">; poster attribute when listed):\n${videos
+      `Approved short videos (use only these mp4 URLs; set the matching poster when listed):\n${videos
         .slice(0, MAX_VIDEOS_TOTAL)
         .map((item, index) => {
           const hint = descriptivePhotoHint(item).slice(0, 120)
@@ -1197,20 +1197,28 @@ export function mergeImageHintLists(primary, secondary) {
   const b = secondary?.photos ?? []
   const va = primary?.videos ?? []
   const vb = secondary?.videos ?? []
+  const hydrationPrompt =
+    secondary?.hydrationPrompt ??
+    primary?.hydrationPrompt ??
+    secondary?.prompt ??
+    primary?.prompt ??
+    ''
+  const prompt = secondary?.prompt ?? primary?.prompt ?? ''
+  const meta = { hydrationPrompt, prompt }
 
   if (!b.length) {
     if (!a.length) {
       const vOnly = mergeVideosLists(va, [])
       return vOnly.length
-        ? { photos: [], videos: vOnly, promptBlock: toMediaPromptBlock([], vOnly) }
-        : { photos: [], videos: [], promptBlock: '' }
+        ? { photos: [], videos: vOnly, promptBlock: toMediaPromptBlock([], vOnly), ...meta }
+        : { photos: [], videos: [], promptBlock: '', ...meta }
     }
     const vm = mergeVideosLists(va, [])
-    return { photos: a, videos: vm, promptBlock: toMediaPromptBlock(a, vm) }
+    return { photos: a, videos: vm, promptBlock: toMediaPromptBlock(a, vm), ...meta }
   }
   if (!a.length) {
     const vm = mergeVideosLists([], vb)
-    return { photos: b, videos: vm, promptBlock: toMediaPromptBlock(b, vm) }
+    return { photos: b, videos: vm, promptBlock: toMediaPromptBlock(b, vm), ...meta }
   }
   const seen = new Set()
   const merged = []
@@ -1221,24 +1229,37 @@ export function mergeImageHintLists(primary, secondary) {
     if (merged.length >= 18) break
   }
   const vm = mergeVideosLists(va, vb)
-  return { photos: merged, videos: vm, promptBlock: toMediaPromptBlock(merged, vm) }
+  return { photos: merged, videos: vm, promptBlock: toMediaPromptBlock(merged, vm), ...meta }
 }
 
 function chooseBestPhotoForLabel(label, photos, usage) {
   if (!label || !Array.isArray(photos) || !photos.length) return null
 
-  let best = null
   let bestScore = -Infinity
   for (const photo of photos) {
     const usageCount = usage.get(photo.url) || 0
     const score = labelRelevanceScore(photo, label, usageCount)
-    if (score > bestScore) {
-      bestScore = score
-      best = photo
+    if (score > bestScore) bestScore = score
+  }
+  if (bestScore <= 0) return null
+
+  const ties = []
+  for (const photo of photos) {
+    const usageCount = usage.get(photo.url) || 0
+    const score = labelRelevanceScore(photo, label, usageCount)
+    if (score === bestScore) ties.push(photo)
+  }
+  if (ties.length === 1) return ties[0]
+  let minU = Infinity
+  let pick = ties[0]
+  for (const photo of ties) {
+    const u = usage.get(photo.url) || 0
+    if (u < minU) {
+      minU = u
+      pick = photo
     }
   }
-
-  return bestScore > 0 ? best : null
+  return pick
 }
 
 function pickPhotoForImg(label, photos, usage) {
@@ -1257,19 +1278,95 @@ function pickPhotoForImg(label, photos, usage) {
   return pick
 }
 
-function isStrictPexelsOrUnsplashUrl(url = '') {
-  const u = String(url || '').trim()
-  if (!u) return false
-  if (u.startsWith('data:image/')) return true
+const sleep = async (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+function tryDerivePexelsFallbackUrl(url) {
   try {
-    const parsed = new URL(u)
-    if (parsed.protocol !== 'https:') return false
-    if (parsed.hostname === 'images.pexels.com') return /\/photos\/\d+\//.test(parsed.pathname)
-    if (parsed.hostname === 'images.unsplash.com') return true
-    return false
+    const parsed = new URL(String(url || '').trim())
+    if (parsed.hostname !== 'images.pexels.com') return null
+    const id = parsed.pathname.match(/\/photos\/(\d+)\//)?.[1]
+    if (!id) return null
+    return formatImageUrl(id, 1400, 1050)
+  } catch {
+    return null
+  }
+}
+
+function isKnownStockCdnUrl(url) {
+  try {
+    const h = new URL(String(url || '').trim()).hostname
+    return (
+      h === 'images.pexels.com' ||
+      h.endsWith('.pexels.com') ||
+      h === 'images.unsplash.com' ||
+      h.endsWith('.unsplash.com')
+    )
   } catch {
     return false
   }
+}
+
+function responseLooksLikeImage(res, url) {
+  const ct = String(res.headers.get('content-type') || '').toLowerCase()
+  if (ct.includes('image/')) return true
+  if (ct.includes('application/octet-stream') && isKnownStockCdnUrl(url)) return true
+  return false
+}
+
+async function fetchUrlProbe(u, init) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+  try {
+    return await fetch(u, { ...init, signal: controller.signal, redirect: 'follow' })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function isImageUrlHealthy(url, { attempt = 0 } = {}) {
+  const u = String(url || '').trim()
+  if (!u) return false
+  if (u.startsWith('data:image/')) return true
+
+  const probes = [
+    () => fetchUrlProbe(u, { method: 'HEAD' }),
+    () => fetchUrlProbe(u, { method: 'GET', headers: { Range: 'bytes=0-2047' } }),
+    () => fetchUrlProbe(u, { method: 'GET', headers: { Range: 'bytes=0-0' } }),
+  ]
+
+  try {
+    for (const run of probes) {
+      const r = await run()
+      if (r.ok && responseLooksLikeImage(r, u)) return true
+    }
+  } catch {
+    if (attempt === 0) {
+      await sleep(220)
+      return isImageUrlHealthy(u, { attempt: 1 })
+    }
+    return false
+  }
+  return false
+}
+
+async function validateAndRepairPhotoList(photos) {
+  const next = []
+  for (const photo of photos || []) {
+    if (next.length >= 12) break
+    const ok = await isImageUrlHealthy(photo.url)
+    if (ok) {
+      next.push(photo)
+      continue
+    }
+    const fallback = tryDerivePexelsFallbackUrl(photo.url)
+    if (fallback && (await isImageUrlHealthy(fallback))) {
+      next.push({ ...photo, url: fallback })
+    }
+  }
+  if (next.length === 0 && (photos?.length ?? 0) > 0) {
+    return photos.slice(0, 12)
+  }
+  return next
 }
 
 function extractVideoLabel(block) {
@@ -1353,6 +1450,24 @@ function setImgSrcAttribute(tag, value) {
   return tag.replace(/<img\b/i, `<img src="${value}" `)
 }
 
+function looksLikeTrustedStockImageUrl(src) {
+  const s = String(src || '').trim()
+  if (!s || s.startsWith('data:')) return false
+  try {
+    const u = new URL(s)
+    if (u.protocol !== 'https:') return false
+    const h = u.hostname
+    return (
+      h === 'images.pexels.com' ||
+      h.endsWith('.pexels.com') ||
+      h === 'images.unsplash.com' ||
+      h.endsWith('.unsplash.com')
+    )
+  } catch {
+    return false
+  }
+}
+
 function isLikelyLogoTag(tag) {
   const cls = extractAttribute(tag, 'class')
   const alt = extractAttribute(tag, 'alt')
@@ -1379,8 +1494,8 @@ function enforceVerifiedPhotoSources(html, photos, usage) {
 function neutralizeNonStockImages(html) {
   return html.replace(/<img\b[^>]*>/gi, (tag) => {
     if (isLikelyLogoTag(tag)) return tag
-    const src = extractAttribute(tag, 'src')
-    if (isStrictPexelsOrUnsplashUrl(src)) return tag
+    const rawSrc = extractAttribute(tag, 'src')
+    if (looksLikeTrustedStockImageUrl(rawSrc)) return stripSrcsetFromTag(tag)
     let out = setImgSrcAttribute(tag, TRANSPARENT_PIXEL_GIF)
     out = stripSrcsetFromTag(out)
     if (!/\bstyle\s*=/i.test(out)) {
@@ -1425,10 +1540,244 @@ export function alignGeneratedImagesToContext(html, imageHints = null) {
   return next
 }
 
-export async function resolvePexelsImageHints(hintsInput = null) {
-  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return { photos: [], videos: [], promptBlock: '' }
+const VERIFIED_FALLBACK_PEXELS_IDS = [
+  1152077, 1034812, 1446292, 1628239, 1670770, 1755386, 1855765, 2149475, 2036646, 3760772, 298863,
+  267320, 2983464,
+]
 
+const TEA_BEVERAGE_PEXELS_IDS = [
+  5946964, 5946965, 5946966, 5946967, 5946968, 5946969, 5946970, 5946971, 5946972, 5946973, 5946974, 5946975,
+  5946976, 5946977, 5946978, 5946979, 5946980, 5946981, 5946982, 5946983, 5946985,
+]
+
+const HYDRATION_MATCH_BLOB = {
+  tea: 'tea assam oolong sencha chamomile chai matcha black tea green tea white tea herbal loose leaf beverage cup drink organic brew kettle malt honey ginger cardamom rose floral peony breakfast evening garden spiced hot calming restful grassy delicate bold full bodied',
+  coffee:
+    'coffee espresso latte cappuccino roast arabica beans cup cafe beverage hot cold brew organic craft pour iced morning',
+  leather: 'leather bag wallet tote handbag craft premium accessory grain stitch natural tanned artisan',
+  generic:
+    'product retail ecommerce catalog commercial still life studio photography clean minimal merchandise shopping',
+}
+
+function detectHydrationRetailCategory(prompt = '') {
+  const p = String(prompt || '')
+  if (
+    /\b(tea|oolong|chai|chamomile|sencha|assam|matcha|herbal|loose[\s-]?leaf|kettle|teapot|black tea|green tea|brew|steep|leaf)\b/i.test(
+      p,
+    )
+  )
+    return 'tea'
+  if (/\b(coffee|espresso|latte|cappuccino|roast|arabica|coffee beans?)\b/i.test(p)) return 'coffee'
+  if (/\b(leather|wallet|tote|handbag|satchel|accessories)\b/i.test(p)) return 'leather'
+  return 'generic'
+}
+
+function buildSyntheticFallbackPhotos(category) {
+  let ids = VERIFIED_FALLBACK_PEXELS_IDS
+  let blob = HYDRATION_MATCH_BLOB.generic
+  let query = 'product photography retail'
+  if (category === 'tea') {
+    ids = TEA_BEVERAGE_PEXELS_IDS
+    blob = HYDRATION_MATCH_BLOB.tea
+    query = 'loose leaf tea beverage'
+  } else if (category === 'coffee') {
+    ids = TEA_BEVERAGE_PEXELS_IDS
+    blob = HYDRATION_MATCH_BLOB.coffee
+    query = 'coffee beverage cafe'
+  } else if (category === 'leather') {
+    blob = HYDRATION_MATCH_BLOB.leather
+    query = 'leather goods product'
+  }
+  return ids.map((id) => ({
+    url: formatImageUrl(id, 1400, 900),
+    alt: '',
+    matchText: blob,
+    query,
+  }))
+}
+
+function escapeHtmlAttribute(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+}
+
+function stockPhotosForHydration(imageHints = null) {
+  const prompt = imageHints?.hydrationPrompt ?? imageHints?.prompt ?? ''
+  const cat = detectHydrationRetailCategory(prompt)
+  if (cat === 'tea' || cat === 'coffee' || cat === 'leather') {
+    return buildSyntheticFallbackPhotos(cat)
+  }
+  const fromApi = imageHints?.photos
+  if (Array.isArray(fromApi) && fromApi.length) return fromApi
+  return buildSyntheticFallbackPhotos(cat)
+}
+
+function injectStockHydrationCss(html) {
+  if (!html || typeof html !== 'string') return html
+  const h = html.replace(/<style[^>]*\sdata-sf-stock-hydration[^>]*>[\s\S]*?<\/style>\s*/gi, '')
+  const block = `<style data-sf-stock-hydration>
+.hero-visual{background:transparent !important}
+.hero-visual img{width:100%;height:100%;min-height:260px;object-fit:cover;display:block;border-radius:inherit}
+.product-card > img.img,.product-card img.img{width:100%;height:220px;max-height:none;object-fit:cover;display:block;background:transparent !important}
+.collection-card > img.img,.collection-card img.img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:transparent !important}
+.curated-card img.img{width:100%;object-fit:cover;display:block;background:transparent !important}
+.curated-visual{background:transparent !important}
+section.curated .curated-visual,section.materials .curated-visual{position:relative;overflow:hidden}
+.curated-visual img{width:100%;height:100%;min-height:280px;object-fit:cover;display:block;border-radius:inherit}
+.materials .visual img{width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--radius,.75rem)}
+</style>`
+  return /<\s*\/\s*head\s*>/i.test(h) ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`) : `${block}\n${h}`
+}
+
+export function hydrateStorefrontGradientSlots(html, imageHints = null) {
+  if (!html || typeof html !== 'string') return html
+  if (!/product-card|collection-card/i.test(html)) return html
+
+  const photos = stockPhotosForHydration(imageHints)
+  if (!photos.length) return html
+
+  const usage = new Map()
+  let next = html
+
+  next = next.replace(/<article\s+class="product-card"[^>]*>([\s\S]*?)<\/article>/gi, (block) => {
+    const h = block.match(/<h3[^>]*>([^<]*)</i)
+    const title = (h?.[1] ?? 'Product').trim()
+    const desc =
+      block.match(/class\s*=\s*["'][^"']*desc[^"']*["'][^>]*>([^<]*)</i)?.[1] ??
+      block.match(/<p[^>]*class\s*=\s*["'][^"']*desc[^"']*["'][^>]*>([^<]*)</i)?.[1] ??
+      ''
+    const label = [title, String(desc).trim()].filter(Boolean).join(' ')
+    const pick = pickPhotoForImg(label, photos, usage)
+    const url = pick?.url ?? photos[0].url
+    usage.set(url, (usage.get(url) || 0) + 1)
+    return block.replace(
+      /<div\s+class="img"[^>]*>\s*<\/div>/i,
+      `<img class="img" src="${url}" alt="${escapeHtmlAttribute(title)}" loading="lazy" decoding="async" width="800" height="600" />`,
+    )
+  })
+
+  next = next.replace(/<article\s+class="collection-card"[^>]*>([\s\S]*?)<\/article>/gi, (block) => {
+    const lab = block.match(/class="label"[^>]*>([^<]*)</i)
+    const title = (lab?.[1] ?? 'Collection').trim()
+    const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 160)
+    const label = [title, promptCtx].filter(Boolean).join(' ')
+    const pick = pickPhotoForImg(label, photos, usage)
+    const url = pick?.url ?? photos[0].url
+    usage.set(url, (usage.get(url) || 0) + 1)
+    return block.replace(
+      /<div\s+class="img"[^>]*>\s*<\/div>/i,
+      `<img class="img" src="${url}" alt="${escapeHtmlAttribute(title)}" loading="lazy" decoding="async" width="800" height="1000" />`,
+    )
+  })
+
+  next = next.replace(/<div\s+class="hero-visual"[^>]*>\s*<\/div>/i, () => {
+    const hp = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 220)
+    const pick = pickPhotoForImg(hp || 'hero product lifestyle editorial retail', photos, usage)
+    const url = pick?.url ?? photos[0].url
+    usage.set(url, (usage.get(url) || 0) + 1)
+    return `<div class="hero-visual"><img src="${url}" alt="${escapeHtmlAttribute('Featured product')}" loading="eager" decoding="async" width="1200" height="900" /></div>`
+  })
+
+  next = next.replace(/(<section[^>]*class="[^"]*materials[^"]*"[^>]*>)([\s\S]*?)(<\/section>)/i, (full, open, inner, close) => {
+    if (!/<div\s+class="visual"[^>]*>\s*<\/div>/i.test(inner)) return full
+    const mp = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 200)
+    const pick = pickPhotoForImg(
+      mp ? `${mp} materials craft ingredients story` : 'materials craft ingredients product',
+      photos,
+      usage,
+    )
+    const url = pick?.url ?? photos[0].url
+    usage.set(url, (usage.get(url) || 0) + 1)
+    const inner2 = inner.replace(
+      /<div\s+class="visual"[^>]*>\s*<\/div>/i,
+      `<div class="visual"><img src="${url}" alt="${escapeHtmlAttribute('Materials and craft')}" loading="lazy" decoding="async" width="1000" height="800" /></div>`,
+    )
+    return open + inner2 + close
+  })
+
+  if (photos.length) {
+    let cvIdx = 0
+    next = next.replace(/<div\s+class="curated-visual"[^>]*>\s*<\/div>/gi, () => {
+      cvIdx += 1
+      const pick = pickPhotoForImg(`editorial lifestyle panel ${cvIdx} craft story`, photos, usage)
+      const url = pick?.url ?? photos[0].url
+      usage.set(url, (usage.get(url) || 0) + 1)
+      return `<div class="curated-visual"><img src="${url}" alt="" loading="eager" decoding="async" width="1200" height="800" /></div>`
+    })
+  }
+
+  if (next !== html) next = injectStockHydrationCss(next)
+  else if (
+    !next.includes('data-sf-stock-hydration') &&
+    /class\s*=\s*["'][^"']*(?:product-card|collection-card)/i.test(next)
+  )
+    next = injectStockHydrationCss(next)
+  return next
+}
+
+export async function verifyTrustedStockImageUrls(html) {
+  if (!html || typeof html !== 'string') return html
+  const fallbacks = VERIFIED_FALLBACK_PEXELS_IDS.map((id) => formatImageUrl(id, 1400, 900))
+  let fi = 0
+  const re = /<img\b[^>]*>/gi
+  let m
+  let out = ''
+  let lastIndex = 0
+  while ((m = re.exec(html)) !== null) {
+    out += html.slice(lastIndex, m.index)
+    let tag = m[0]
+    const src = extractAttribute(tag, 'src')
+    if (looksLikeTrustedStockImageUrl(src) && !isLikelyLogoTag(tag)) {
+      const healthy = await isImageUrlHealthy(src)
+      if (!healthy) {
+        const rep = fallbacks[fi % fallbacks.length]
+        fi += 1
+        tag = stripSrcsetFromTag(setImgSrcAttribute(tag, rep))
+      }
+    }
+    out += tag
+    lastIndex = m.index + m[0].length
+  }
+  out += html.slice(lastIndex)
+  return markTrustedStockImagesEager(out)
+}
+
+function markTrustedStockImagesEager(html) {
+  if (!html || typeof html !== 'string') return html
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    if (!/\sloading=["']lazy["']/i.test(tag)) return tag
+    const src = extractAttribute(tag, 'src')
+    if (!looksLikeTrustedStockImageUrl(src)) return tag
+    return tag.replace(/\sloading=["']lazy["']/i, ' loading="eager"')
+  })
+}
+
+export function injectEcommerceHeroResponsiveCss(html) {
+  if (!html || typeof html !== 'string') return html
+  if (!/\bhero-left\b|class\s*=\s*["'][^"']*\bhero\b/i.test(html)) return html
+  const h = html.replace(/<style[^>]*\sdata-sf-hero-responsive[^>]*>[\s\S]*?<\/style>\s*/gi, '')
+  const block = `<style data-sf-hero-responsive>
+@media (max-width:900px){
+section.hero,.hero{align-items:center!important;text-align:center!important}
+.hero-left{display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important;padding-left:1rem!important;padding-right:1rem!important;margin-left:auto!important;margin-right:auto!important;max-width:36rem!important;width:100%!important;box-sizing:border-box!important}
+.hero-left h1,.hero .hero-left h1{font-size:clamp(1.45rem,4.4vw+.3rem,2.35rem)!important;line-height:1.1!important;text-wrap:balance;text-align:center!important;max-width:22em;margin-left:auto!important;margin-right:auto!important}
+.hero-left p,.hero .hero-left p{margin-left:auto!important;margin-right:auto!important;text-align:center!important}
+.hero-btns,.hero .hero-btns{justify-content:center!important;flex-wrap:wrap!important;width:100%!important}
+.hero-visual{margin-left:auto!important;margin-right:auto!important;width:100%!important;max-width:26rem}
+}
+</style>`
+  return /<\s*\/\s*head\s*>/i.test(h) ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`) : `${block}\n${h}`
+}
+
+export async function resolvePexelsImageHints(hintsInput = null) {
   const prompt = hintsInput?.prompt ?? ''
+  const meta = {
+    prompt,
+    hydrationPrompt: hintsInput?.hydrationPrompt ?? prompt,
+  }
+  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return { photos: [], videos: [], promptBlock: '', ...meta }
   const hasRichCtx =
     (hintsInput?.ctx &&
       (hintsInput.ctx.project_name ||
@@ -1444,7 +1793,7 @@ export async function resolvePexelsImageHints(hintsInput = null) {
     siteSpec: hintsInput?.siteSpec,
     maxQueries,
   })
-  if (!queries.length) return { photos: [], videos: [], promptBlock: '' }
+  if (!queries.length) return { photos: [], videos: [], promptBlock: '', ...meta }
 
   const subjectKey = subjectKeyFromPrompt(prompt)
 
@@ -1468,6 +1817,7 @@ export async function resolvePexelsImageHints(hintsInput = null) {
       photos.push(photo)
     }
   }
+  const healthyPhotos = await validateAndRepairPhotoList(photos)
   const seenV = new Set()
   const videos = []
   for (const list of videoLists) {
@@ -1480,8 +1830,9 @@ export async function resolvePexelsImageHints(hintsInput = null) {
   }
 
   return {
-    photos,
+    photos: healthyPhotos,
     videos,
-    promptBlock: toMediaPromptBlock(photos, videos),
+    promptBlock: toMediaPromptBlock(healthyPhotos, videos),
+    ...meta,
   }
 }

@@ -23,9 +23,9 @@ ${designBlock}
 
 RULES:
 - Output ONLY complete, self-contained HTML file. No markdown, no fences, no explanation.
-- Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
+- Do NOT use Tailwind via CDN. No external CSS frameworks. Write plain CSS in a <style> tag.
 - Load fonts from Google Fonts in <head>
-- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>; call lucide.createIcons() after render, use x / instagram / whatsapp for brand socials, and never use class="lucide-heart" placeholders
+- Do NOT rely on icon CDNs. Use text labels for social links (Instagram / X / Facebook) or inline SVGs you embed directly.
 - Images only if needed: use relevant verified provider images first. If no good photo exists, use gradients, patterns, icons, or strong typography instead of random stock images
 - NO screenshots, mockups, or hero images for SaaS/landing pages
 - Typography-first, minimal, premium aesthetic

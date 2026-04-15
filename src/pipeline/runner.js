@@ -8,6 +8,11 @@ import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
 import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
 import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
+import {
+  injectMedusaVariantDataAttributes,
+  injectStorefrontCartUi,
+  stripStorefrontCartUi,
+} from './storefront-cart-ui.js'
 import { shouldReplaceLlmHomepageWithRenderer } from './homepage-substance.js'
 import { injectLLMHomepageSwiper } from './homepage-swiper.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
@@ -24,8 +29,11 @@ import { renderPreviewToWorkspace, writeNextAppToWorkspace } from '../renderers/
 import { detectLanguage } from './detect-language.js'
 import {
   alignGeneratedImagesToContext,
+  hydrateStorefrontGradientSlots,
+  injectEcommerceHeroResponsiveCss,
   mergeImageHintLists,
   resolvePexelsImageHints,
+  verifyTrustedStockImageUrls,
 } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { withLanguageEnforcementBlock } from './prompt-language.js'
@@ -93,11 +101,25 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
       enrichedSiteSpec?.ecommerce?.products?.length &&
       isMedusaSyncConfigured()
     ) {
-      syncProductsToMedusa(enrichedSiteSpec.ecommerce.products)
-        .then(({ synced, errors }) => {
-          _log(`  medusa: synced ${synced} product(s)${errors.length ? ` (${errors.length} failed)` : ''}`)
-        })
-        .catch((err) => _log(`  medusa: catalog sync skipped – ${err.message}`))
+      try {
+        const medusaResult = await syncProductsToMedusa(enrichedSiteSpec.ecommerce.products, { workspace })
+        _log(
+          `  medusa: synced ${medusaResult.synced} product(s)${medusaResult.errors.length ? ` (${medusaResult.errors.length} failed)` : ''}`,
+        )
+        if (
+          medusaResult?.byTitle &&
+          Object.keys(medusaResult.byTitle).length &&
+          existsSync(join(workspace, 'index.html'))
+        ) {
+          let h = readFileSync(join(workspace, 'index.html'), 'utf8')
+          h = injectMedusaVariantDataAttributes(h, medusaResult.byTitle)
+          h = stripStorefrontCartUi(h)
+          h = injectStorefrontCartUi(h, { workspace, variantMap: medusaResult, force: true })
+          writeFile(workspace, 'index.html', h)
+        }
+      } catch (err) {
+        _log(`  medusa: catalog sync skipped – ${err.message}`)
+      }
     }
 
     const taskList = deriveTasks(enrichedSiteSpec).map((task) => {
@@ -294,7 +316,14 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   })()
 
   const homepagePromise = (async () => {
-    const imageHints = await resolvePexelsImageHints({ prompt: normalizedPrompt })
+    const imageHints = {
+      ...(await resolvePexelsImageHints({
+        prompt: normalizedPrompt,
+        hydrationPrompt: normalizedPrompt,
+      })),
+      hydrationPrompt: normalizedPrompt,
+      prompt: normalizedPrompt,
+    }
     try {
       const stats = await generateHomepage(
         pipelinePrompt,
@@ -356,12 +385,24 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   homepage = homepageStats.html
   const richImageHints = await resolvePexelsImageHints({
     prompt: normalizedPrompt,
+    hydrationPrompt: normalizedPrompt,
     ctx,
     siteSpec,
   })
-  const imageHints = mergeImageHintLists(homepageStats.imageHints, richImageHints)
+  const imageHints = {
+    ...mergeImageHintLists(homepageStats.imageHints, richImageHints),
+    hydrationPrompt: normalizedPrompt,
+    prompt: normalizedPrompt,
+  }
   if (homepage) {
-    homepage = alignGeneratedImagesToContext(homepage, imageHints)
+    homepage = injectStorefrontCartUi(
+      injectEcommerceHeroResponsiveCss(
+        await verifyTrustedStockImageUrls(
+          hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(homepage, imageHints), imageHints),
+        ),
+      ),
+      { workspace },
+    )
     writeFile(workspace, 'index.html', homepage)
   }
 
@@ -386,11 +427,19 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
         '  homepage: keeping LLM HTML — layout inspiration references set (skipping spec renderer substitution for sparse output)',
       )
     }
+    if (homepage) {
+      homepage = injectStorefrontCartUi(injectEcommerceHeroResponsiveCss(homepage), { workspace })
+      writeFile(workspace, 'index.html', homepage)
+    }
     sessionCtx.signalHomepageReady()
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
-    homepage = preview.files['index.html'] ?? ''
+    homepage = injectStorefrontCartUi(
+      injectEcommerceHeroResponsiveCss(preview.files['index.html'] ?? ''),
+      { workspace },
+    )
+    writeFile(workspace, 'index.html', homepage)
     sessionCtx.signalHomepageReady()
   }
   const ctxPages = ctx.pages?.length ?? 0
@@ -446,11 +495,28 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       siteSpec?.ecommerce?.products?.length &&
       isMedusaSyncConfigured()
     ) {
-      syncProductsToMedusa(siteSpec.ecommerce.products)
-        .then(({ synced, errors }) => {
-          _status(`Synced ${synced} product(s) to Medusa${errors.length ? ` (${errors.length} failed)` : ''}`, 'medusa_sync')
-        })
-        .catch((err) => console.warn(`medusa: catalog auto-sync skipped – ${err.message}`))
+      try {
+        const medusaResult = await syncProductsToMedusa(siteSpec.ecommerce.products, { workspace })
+        _status(
+          `Synced ${medusaResult.synced} product(s) to Medusa${medusaResult.errors.length ? ` (${medusaResult.errors.length} failed)` : ''}`,
+          'medusa_sync',
+        )
+        if (
+          homepage &&
+          medusaResult?.byTitle &&
+          Object.keys(medusaResult.byTitle).length &&
+          existsSync(join(workspace, 'index.html'))
+        ) {
+          let h = readFileSync(join(workspace, 'index.html'), 'utf8')
+          h = injectMedusaVariantDataAttributes(h, medusaResult.byTitle)
+          h = stripStorefrontCartUi(h)
+          h = injectStorefrontCartUi(h, { workspace, variantMap: medusaResult, force: true })
+          homepage = h
+          writeFile(workspace, 'index.html', homepage)
+        }
+      } catch (err) {
+        console.warn(`medusa: catalog auto-sync skipped – ${err.message}`)
+      }
     }
   }
 

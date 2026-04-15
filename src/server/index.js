@@ -15,6 +15,7 @@ import {
   RUNPOD_API_URL,
 } from '../config.js'
 import { getMedusaAdminEmbedAndEcommerce } from './medusa-embed.js'
+import { createMedusaStoreRouter } from './medusa-store-routes.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
 import {
@@ -516,6 +517,8 @@ export async function startServer(sessionsDir) {
     next(err)
   })
 
+  app.use('/api/storefront/medusa', createMedusaStoreRouter())
+
   // ─── Plausible Analytics Proxy ──────────────────────────
   const plausibleHost = String(
     process.env.PLAUSIBLE_HOST || 'https://plausible.liviogama.com',
@@ -539,8 +542,11 @@ export async function startServer(sessionsDir) {
         res.send(buf)
         return
       }
-    } catch {
-      void 0
+    } catch (err) {
+      if (res.headersSent) {
+        console.error('[plausible proxy] GET /js/script.js after headers sent', err)
+        return
+      }
     }
     res.type('application/javascript; charset=utf-8')
     res.set('Cache-Control', 'public, max-age=300')
@@ -561,8 +567,11 @@ export async function startServer(sessionsDir) {
           return
         }
       }
-    } catch {
-      void 0
+    } catch (err) {
+      if (res.headersSent) {
+        console.error('[plausible proxy] POST /api/event after headers sent', err)
+        return
+      }
     }
     res.status(204).end()
   })
@@ -2334,7 +2343,9 @@ export async function startServer(sessionsDir) {
           const html = readFileSync(fp, 'utf8')
           res
             .type('html')
-            .send(injectPreviewToolsHtml(html, req.params.sessionId, session.preferredLanguage))
+            .send(
+              injectPreviewToolsHtml(html, req.params.sessionId, session.preferredLanguage, session.workspace),
+            )
         } catch {
           express.static(session.workspace, { extensions: ['html'] })(req, res, next)
         }

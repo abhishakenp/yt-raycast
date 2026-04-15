@@ -130,6 +130,21 @@ export const ECOMMERCE_REFERENCE_EXEMPLAR_URLS = Object.freeze([
 
 export const ECOMMERCE_REFERENCE_EXEMPLARS_FOR_PROMPTS = ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join('\n')
 
+export const ECOMMERCE_EDITORIAL_CANVAS_PATTERN =
+  'Default luxury mid-market storefront composition (invent an original brand; do not copy third-party names or marks): ' +
+  'off-white or cream page ground, near-black primary text, one deep wine or burgundy accent for primary buttons, star ratings, and key highlights; ' +
+  'thin top promo strip in near-black with light text; ' +
+  'sticky header with wordmark left, three to five core nav links centered (shop, collections, about pattern), utilities right with small inline SVGs for search, account, and shopping bag cart plus item count or notification dot; ' +
+  'split hero: left column serif headline, supporting line, solid accent primary CTA (e.g. shop), secondary outline or ghost CTA (e.g. story); right column one tall product or lifestyle photo with rounded corners and soft shadow; in CSS include @media (max-width: 900px) for the hero so stacked layout centers headline, subcopy, and button row (justify-content center), not awkward flush-left; hero h1 uses a responsive clamp() so the title stays one or two balanced lines; ' +
+  'shop-by-collection as a horizontal rail or carousel of image-forward tiles with bottom gradient scrim and light category titles; ' +
+  'featured products as a dense grid: large photo, optional corner badge, serif product name, short sans description, bold price, accent-colored star row, full-width solid accent add-to-cart button per card—each such button must include data-product="<exact same title as the product name on that card>" for Medusa line-item wiring; ' +
+  'curated sets as two equal editorial panels or one carousel with clear dots and two visible offers; ' +
+  'materials and craft as two columns—copy with short checklist and one large supporting image; ' +
+  'reviews as three light cards in a row with stars, quote, name or locale, verified buyer cue; ' +
+  'newsletter as a full-width inverted band (charcoal or black), serif-style headline, email field, light high-contrast submit button; ' +
+  'footer four columns of links plus compact social icons as inline SVGs. ' +
+  'This pattern is the internal quality bar for generated luxury DTC homepages.'
+
 export const ECOMMERCE_DRIBBBLE_VISUAL_LANGUAGE =
   `Contemporary ecommerce UI direction (${ECOMMERCE_DRIBBBLE_TAG_URL} — use for layout and craft patterns only; do not copy specific shots, logos, or proprietary artwork): ` +
   `luxury DTC: editorial spacing, disciplined palette, and product-first composition; quiet luxury tone (craftsmanship/materials/provenance) without sounding like generic AI; ` +
@@ -172,6 +187,8 @@ const ECOMMERCE_GUIDELINES_USER_REFS_LEAD =
   `When the prompt includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs and path hints, treat that block as primary for layout, header, hero emphasis, rhythm, and palette family—ahead of named retail exemplars. Invent original naming, copy, and visuals; do not reproduce third-party trademarks, logos, or proprietary text. `
 
 const ECOMMERCE_GUIDELINES_SHARED_BODY =
+  `${ECOMMERCE_EDITORIAL_CANVAS_PATTERN} ` +
+  `When the user prompt omits layout or section specifics, still ship the full editorial luxury DTC canvas above—thin black promo strip; header with logo left, Shop / Collections / About centered, search + account + cart with badge right; split hero with serif headline, dual CTAs, large product photo; shop-by-collection rail with scrims; 6+ featured products with full-width add-to-cart; curated sets two-up; materials two-column with checklist; three review cards; dark newsletter band; four-column footer—in English unless the prompt requests another language. ` +
   `Pattern mix to emulate (abstractly): lifestyle / accessories storefront density; security-hardware style mega-nav with ecosystem and compare paths; long-form product-line page with chaptered features, lineup, education, and support — adapted to the prompt's industry. ` +
   `Also scan: premium web templates (${ECOMMERCE_ENVATO_TEMPLATES_URL}), storefront gallery (${ECOMMERCE_AWWWARDS_GALLERY_URL}), ecommerce UI tag (${ECOMMERCE_DRIBBBLE_TAG_URL}). ` +
   `${ECOMMERCE_DRIBBBLE_VISUAL_LANGUAGE} ` +
@@ -191,7 +208,7 @@ export const getEcommerceGenerationGuidelines = ({ hasUserDesignReferences = fal
 
 export const ECOMMERCE_GENERATION_GUIDELINES = getEcommerceGenerationGuidelines({ hasUserDesignReferences: false })
 
-export const ECOMMERCE_SITE_TYPE_MEDUSA_SUFFIX = ` Premium e-commerce storefront powered by Medusa.js SDK (lib/medusa.js). Product images allowed here. Data functions: getProducts(), getProductByHandle(), getCategories(), createCart(), addLineItem(), getCart(). Hero: bold headline + subtitle + primary CTA (Shop Now) + featured product hero image with overlay gradient. Then: category grid (2x2 cards via getCategories, lifestyle imagery, hover lift) \u2192 featured products section (horizontal scrolling marquee of product cards \u2014 hover-zoom image, product name, currency-formatted price, stock badge, quick-add-to-cart; wrap Medusa \`ProductCard\` rows in \`ProductMarquee\` from \`components/ecommerce/ProductMarquee.jsx\` when building shop UIs) \u2192 product detail pages (getProductByHandle \u2014 large gallery, variant selector, size/color pickers, Add to Cart CTA, breadcrumbs) \u2192 cart page (getCart + addLineItem \u2014 line items, qty controls, subtotal, checkout CTA) \u2192 checkout flow \u2192 trust & reviews section (star ratings, testimonial cards, trust badges) \u2192 newsletter signup \u2192 footer.`
+export const ECOMMERCE_SITE_TYPE_MEDUSA_SUFFIX = ` Premium Medusa-backed storefront (lib/medusa.js): getProducts(), getProductByHandle(), getCategories(), createCart(), addLineItem(), getCart(). Flow: editorial hero with bold headline, subtitle, primary shop CTA, and hero product frame \u2192 category grid with lifestyle or product photography \u2192 featured products as a dense grid or horizontal rail with hover on imagery, clear prices, stock or badge cues, and add-to-cart as real buttons \u2192 PDP with gallery, variants, and add-to-cart \u2192 cart with line items, quantity controls as buttons, subtotal, checkout CTA \u2192 checkout \u2192 trust and reviews \u2192 newsletter \u2192 footer.`
 
 export const buildEcommerceSiteTypeInstructions = (hasUserDesignReferences = false) =>
   `${getEcommerceGenerationGuidelines({ hasUserDesignReferences })}${ECOMMERCE_SITE_TYPE_MEDUSA_SUFFIX}`

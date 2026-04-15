@@ -1,3 +1,6 @@
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 const slugify = (s) =>
   String(s || '')
     .toLowerCase()
@@ -179,6 +182,8 @@ export async function syncProductsToMedusa(products, options = {}) {
 
   let synced = 0
   const errors = []
+  const byHandle = {}
+  const byTitle = {}
 
   for (const p of products) {
     const title = String(p.title || 'Product').trim()
@@ -205,15 +210,33 @@ export async function syncProductsToMedusa(products, options = {}) {
     if (!body.variants[0].sku) delete body.variants[0].sku
 
     try {
-      await adminFetch(base, token, '/admin/products', {
+      const created = await adminFetch(base, token, '/admin/products', {
         method: 'POST',
         body: JSON.stringify(body),
       })
+      const pr = created?.product
+      const vid = pr?.variants?.[0]?.id
+      if (vid) {
+        byHandle[handle] = vid
+        byTitle[title] = vid
+      }
       synced++
     } catch (e) {
       errors.push(`${handle}: ${e.message}`)
     }
   }
 
-  return { synced, errors }
+  if (options.workspace) {
+    try {
+      writeFileSync(
+        join(options.workspace, 'medusa-variants.json'),
+        JSON.stringify({ byHandle, byTitle }, null, 2),
+        'utf8',
+      )
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return { synced, errors, byHandle, byTitle }
 }
