@@ -686,7 +686,8 @@ function injectBrandLogoIntoHomepageHtml(workspace, brandProfile) {
   const fp = join(workspace, 'index.html')
   if (!existsSync(fp)) return false
   const html = readFileSync(fp, 'utf8')
-  const next = injectBrandLogoIntoHtml(html, brandProfile.logo)
+  const brandName = String(brandProfile.officialName || brandProfile.requestedName || '').trim()
+  const next = injectBrandLogoIntoHtml(html, brandProfile.logo, brandName)
   if (!next || next === html) return false
   writeFile(workspace, 'index.html', next)
   return true
@@ -721,7 +722,7 @@ function injectBrandPaletteIntoHtml(html = '', palette) {
   return `${style}\n${html}`
 }
 
-function injectBrandLogoIntoHtml(html = '', logo) {
+function injectBrandLogoIntoHtml(html = '', logo, brandName = '') {
   const kind = logo?.kind
   if (kind !== 'remote' && kind !== 'svg') return ''
   const src =
@@ -733,10 +734,27 @@ function injectBrandLogoIntoHtml(html = '', logo) {
   const img = `<span class="brand-logo"><img src="${escapeHtmlAttr(src)}" alt="${escapeHtmlAttr(
     String(logo.alt || 'Company logo'),
   )}" decoding="async" loading="eager" style="height:44px;width:auto;display:block" /></span>`
-  const patched = html.replace(
+  let patched = html.replace(
     /<a([^>]*\bclass=["'][^"']*\bbrand\b[^"']*["'][^>]*)>([\s\S]*?)<\/a>/i,
     (_m, attrs, inner) => `<a${attrs}>${img}<span class="brand-name">${inner}</span></a>`,
   )
+  if (patched === html) {
+    patched = html.replace(
+      /<(div|span)([^>]*\bclass=["'][^"']*\bbrand\b[^"']*["'][^>]*)>([\s\S]*?)<\/\1>/i,
+      (_m, tag, attrs, inner) => `<${tag}${attrs}>${img}<span class="brand-name">${inner}</span></${tag}>`,
+    )
+  }
+  if (patched === html && brandName) {
+    const safe = brandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    patched = html.replace(
+      /<header\b[\s\S]*?<\/header>/i,
+      (header) =>
+        header.replace(
+          new RegExp(`>(\\s*${safe}\\s*)<`, 'i'),
+          (_mm, t) => `>${img}<span class="brand-name">${t}</span><`,
+        ),
+    )
+  }
   if (patched === html) return ''
   const style =
     '<style>.brand{display:inline-flex;align-items:center;gap:.75rem;min-height:3rem}.brand-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:180px}.brand-name{white-space:nowrap}</style>'

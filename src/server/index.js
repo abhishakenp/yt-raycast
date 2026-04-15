@@ -10,7 +10,6 @@ import {
   getMedusaAdminAppUrl,
   isSanityConfigured,
   isSanityChatWriteConfigured,
-  isSanityOAuthConfigured,
   LLM_CONFIG,
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
@@ -32,16 +31,6 @@ import {
   ensureCompatibleSiteSpec,
 } from '../spec/index.js'
 import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
-import { readSanityConnection, writeSanityConnection } from './sanity-connection.js'
-import {
-  buildAuthorizeUrl,
-  buildOAuthState,
-  exchangeCodeForToken,
-  fetchSanityUser,
-  getSanityOAuthRedirectUrl,
-  isSanityOAuthReady,
-} from './sanity-oauth.js'
-import { addSanityCorsOrigin, createSanityDataset, createSanityProject } from './sanity-provision.js'
 import { groq } from '../llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
@@ -915,114 +904,6 @@ export async function startServer(sessionsDir) {
 
   app.get('/api/studio-embed-ready', (_req, res) => {
     res.json({ built: existsSync(join(studioRoot, 'dist', 'index.html')) })
-  })
-
-  app.get('/api/sessions/:id/sanity/status', optionalAuth, async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (!ensureSessionArtifactAccess(req, res, session)) return
-    const connection = readSanityConnection(session.workspace)
-    res.json({
-      suggested: Boolean(
-        loadSiteSpec(session.workspace)?.backendFeatureHints?.some((h) =>
-          String(h || '').toLowerCase().includes('cms'),
-        ),
-      ),
-      connected: Boolean(connection),
-      connection,
-      oauthConfigured: Boolean(isSanityOAuthConfigured() && isSanityOAuthReady()),
-      oauthRedirectUrl: getSanityOAuthRedirectUrl(),
-    })
-  })
-
-  app.get('/api/sessions/:id/sanity/connect/start', optionalAuth, async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).type('html').send('Session not found')
-    if (!ensureSessionArtifactAccess(req, res, session)) return
-    if (!isSanityOAuthConfigured() || !isSanityOAuthReady()) {
-      return res.status(503).type('html').send('Sanity OAuth is not configured on this server.')
-    }
-    const state = buildOAuthState({ sessionId: session.id })
-    try {
-      const metaFile = join(session.workspace, '.session.json')
-      let meta = {}
-      try {
-        if (existsSync(metaFile)) meta = JSON.parse(readFileSync(metaFile, 'utf-8'))
-      } catch {
-        meta = {}
-      }
-      meta.sanityOAuthState = state
-      writeFileSync(metaFile, JSON.stringify(meta, null, 2))
-    } catch {
-      return res.status(500).type('html').send('Failed to start OAuth flow.')
-    }
-    res.redirect(302, buildAuthorizeUrl({ state }))
-  })
-
-  app.get('/api/sanity/oauth/callback', async (req, res) => {
-    const code = String(req.query?.code || '').trim()
-    const state = String(req.query?.state || '').trim()
-    if (!code || !state) return res.status(400).type('html').send('Missing OAuth parameters.')
-    const sessionId = state.split(':')[0]
-    const session = getSession(sessionId)
-    if (!session) return res.status(404).type('html').send('Session not found.')
-    const metaFile = join(session.workspace, '.session.json')
-    let expected = ''
-    try {
-      if (existsSync(metaFile)) {
-        const meta = JSON.parse(readFileSync(metaFile, 'utf-8'))
-        expected = String(meta?.sanityOAuthState || '')
-      }
-    } catch {
-      expected = ''
-    }
-    if (!expected || expected !== state) return res.status(400).type('html').send('Invalid OAuth state.')
-
-    try {
-      const { accessToken } = await exchangeCodeForToken({ code })
-      const sanityUser = await fetchSanityUser({ accessToken })
-      const displayName = `Ship Fast — ${session.id}`
-      const project = await createSanityProject({ accessToken, displayName })
-      const dataset = `sf_${session.id}`.replace(/[^a-z0-9_]/gi, '_').toLowerCase()
-      await createSanityDataset({ accessToken, projectId: project.id, datasetName: dataset })
-      const origin = new URL(SITE_URL).origin
-      await addSanityCorsOrigin({ accessToken, projectId: project.id, origin })
-      writeSanityConnection(session.workspace, {
-        projectId: project.id,
-        dataset,
-        connectedAt: Date.now(),
-        userId: session.userId || null,
-        sanityUser: sanityUser
-          ? {
-              id: sanityUser?.id || sanityUser?._id || '',
-              name: sanityUser?.name || '',
-              email: sanityUser?.email || '',
-            }
-          : null,
-      })
-      try {
-        const meta = existsSync(metaFile) ? JSON.parse(readFileSync(metaFile, 'utf-8')) : {}
-        delete meta.sanityOAuthState
-        writeFileSync(metaFile, JSON.stringify(meta, null, 2))
-      } catch {
-        void 0
-      }
-      res
-        .status(200)
-        .type('html')
-        .send(
-          `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Sanity connected</title></head><body style="font-family:system-ui;padding:24px;background:#07060d;color:#e4e4e7;line-height:1.4"><h1 style="font-size:18px;margin:0 0 12px">Sanity connected</h1><p style="margin:0 0 16px;color:#a1a1aa">You can close this tab and go back to Ship Fast.</p><script>try{window.opener&&window.opener.postMessage({type:"SF_SANITY_CONNECTED",sessionId:"${session.id}"},"*")}catch{}</script></body></html>`,
-        )
-    } catch (err) {
-      res
-        .status(400)
-        .type('html')
-        .send(
-          `<!doctype html><html><body style="font-family:system-ui;padding:24px;background:#07060d;color:#e4e4e7">Failed to connect Sanity: ${String(
-            err?.message || 'Unknown error',
-          )}</body></html>`,
-        )
-    }
   })
 
   // Serve public assets statically, but keep / routed through SSR.
@@ -2058,30 +1939,6 @@ export async function startServer(sessionsDir) {
     } catch (error) {
       res.status(400).json({ error: error.message })
     }
-  })
-
-  app.post('/api/sessions/:id/coming-soon-click', optionalAuth, express.json(), async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (!ensureSessionArtifactAccess(req, res, session)) return
-    const feature = String(req.body?.feature || '').trim()
-    if (!feature) return res.status(400).json({ error: 'Missing feature' })
-    const fp = join(session.workspace, '.coming-soon.json')
-    let data = { clicks: {} }
-    try {
-      if (existsSync(fp)) data = JSON.parse(readFileSync(fp, 'utf-8'))
-    } catch {
-      data = { clicks: {} }
-    }
-    if (!data || typeof data !== 'object') data = { clicks: {} }
-    if (!data.clicks || typeof data.clicks !== 'object') data.clicks = {}
-    data.clicks[feature] = Number(data.clicks[feature] || 0) + 1
-    try {
-      writeFileSync(fp, JSON.stringify(data, null, 2))
-    } catch {
-      return res.status(500).json({ error: 'Failed to record click' })
-    }
-    res.json({ ok: true, feature, count: data.clicks[feature] })
   })
 
   app.get('/api/sessions/:id/next-preview', optionalAuth, async (req, res) => {
