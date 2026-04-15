@@ -135,9 +135,9 @@ export const ECOMMERCE_EDITORIAL_CANVAS_PATTERN =
   'off-white or cream page ground, near-black primary text, one deep wine or burgundy accent for primary buttons, star ratings, and key highlights; ' +
   'thin top promo strip in near-black with light text; ' +
   'sticky header with wordmark left, three to five core nav links centered (shop, collections, about pattern), utilities right with small inline SVGs for search, account, and shopping bag cart plus item count or notification dot; ' +
-  'split hero: left column serif headline, supporting line, solid accent primary CTA (e.g. shop), secondary outline or ghost CTA (e.g. story); right column one tall product or lifestyle photo with rounded corners and soft shadow; ' +
+  'split hero: left column serif headline, supporting line, solid accent primary CTA (e.g. shop), secondary outline or ghost CTA (e.g. story); right column one tall product or lifestyle photo with rounded corners and soft shadow; in CSS include @media (max-width: 900px) for the hero so stacked layout centers headline, subcopy, and button row (justify-content center), not awkward flush-left; hero h1 uses a responsive clamp() so the title stays one or two balanced lines; ' +
   'shop-by-collection as a horizontal rail or carousel of image-forward tiles with bottom gradient scrim and light category titles; ' +
-  'featured products as a dense grid: large photo, optional corner badge, serif product name, short sans description, bold price, accent-colored star row, full-width solid accent add-to-cart button per card; ' +
+  'featured products as a dense grid: large photo, optional corner badge, serif product name, short sans description, bold price, accent-colored star row, full-width solid accent add-to-cart button per card—each such button must include data-product="<exact same title as the product name on that card>" for Medusa line-item wiring; ' +
   'curated sets as two equal editorial panels or one carousel with clear dots and two visible offers; ' +
   'materials and craft as two columns—copy with short checklist and one large supporting image; ' +
   'reviews as three light cards in a row with stars, quote, name or locale, verified buyer cue; ' +

@@ -12,9 +12,9 @@ export function stripPreviewArtifactsFromHtml(html) {
     .replace(/<script\b[^>]*data-sf-preview-tools="1"[^>]*><\/script>\s*/gi, '')
 }
 
-export function injectPreviewToolsHtml(html, sessionId, preferredLanguage) {
+export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessionWorkspace) {
   if (typeof html !== 'string') return html
-  html = injectStorefrontCartUi(html)
+  html = injectStorefrontCartUi(html, sessionWorkspace ? { workspace: sessionWorkspace } : {})
   if (html.includes(MARK)) return html
   const mode = resolveLanguageModeFromPreference(preferredLanguage)
   const aiOpts = {

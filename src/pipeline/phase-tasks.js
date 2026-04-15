@@ -4,6 +4,7 @@ import { stripFences, formatTps } from '../llm/utils.js'
 import {
   alignGeneratedImagesToContext,
   hydrateStorefrontGradientSlots,
+  injectEcommerceHeroResponsiveCss,
   verifyTrustedStockImageUrls,
 } from './image-hints.js'
 import { buildFallbackPageFromHomepage } from './fallback-page.js'
@@ -23,8 +24,10 @@ const htmlFromGroqResponse = async (r, imageHints, log, indiaMode) => {
     html = tr[0] ?? html
   }
   return ensureLucideIconRuntime(
-    await verifyTrustedStockImageUrls(
-      hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(html, imageHints), imageHints),
+    injectEcommerceHeroResponsiveCss(
+      await verifyTrustedStockImageUrls(
+        hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(html, imageHints), imageHints),
+      ),
     ),
     log,
   )

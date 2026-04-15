@@ -1615,15 +1615,20 @@ function stockPhotosForHydration(imageHints = null) {
 }
 
 function injectStockHydrationCss(html) {
-  if (!html || html.includes('data-sf-stock-hydration')) return html
+  if (!html || typeof html !== 'string') return html
+  const h = html.replace(/<style[^>]*\sdata-sf-stock-hydration[^>]*>[\s\S]*?<\/style>\s*/gi, '')
   const block = `<style data-sf-stock-hydration>
-.product-card img.img,.product-card > img.img{width:100%;object-fit:cover;display:block}
-.product-card img.img{height:200px}
-.collection-card img.img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.hero-visual img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.hero-visual{background:transparent !important}
+.hero-visual img{width:100%;height:100%;min-height:260px;object-fit:cover;display:block;border-radius:inherit}
+.product-card > img.img,.product-card img.img{width:100%;height:220px;max-height:none;object-fit:cover;display:block;background:transparent !important}
+.collection-card > img.img,.collection-card img.img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:transparent !important}
+.curated-card img.img{width:100%;object-fit:cover;display:block;background:transparent !important}
+.curated-visual{background:transparent !important}
+section.curated .curated-visual,section.materials .curated-visual{position:relative;overflow:hidden}
+.curated-visual img{width:100%;height:100%;min-height:280px;object-fit:cover;display:block;border-radius:inherit}
 .materials .visual img{width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--radius,.75rem)}
 </style>`
-  return /<\s*\/\s*head\s*>/i.test(html) ? html.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`) : `${block}\n${html}`
+  return /<\s*\/\s*head\s*>/i.test(h) ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`) : `${block}\n${h}`
 }
 
 export function hydrateStorefrontGradientSlots(html, imageHints = null) {
@@ -1692,7 +1697,23 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
     return open + inner2 + close
   })
 
+  if (photos.length) {
+    let cvIdx = 0
+    next = next.replace(/<div\s+class="curated-visual"[^>]*>\s*<\/div>/gi, () => {
+      cvIdx += 1
+      const pick = pickPhotoForImg(`editorial lifestyle panel ${cvIdx} craft story`, photos, usage)
+      const url = pick?.url ?? photos[0].url
+      usage.set(url, (usage.get(url) || 0) + 1)
+      return `<div class="curated-visual"><img src="${url}" alt="" loading="eager" decoding="async" width="1200" height="800" /></div>`
+    })
+  }
+
   if (next !== html) next = injectStockHydrationCss(next)
+  else if (
+    !next.includes('data-sf-stock-hydration') &&
+    /class\s*=\s*["'][^"']*(?:product-card|collection-card)/i.test(next)
+  )
+    next = injectStockHydrationCss(next)
   return next
 }
 
@@ -1720,7 +1741,34 @@ export async function verifyTrustedStockImageUrls(html) {
     lastIndex = m.index + m[0].length
   }
   out += html.slice(lastIndex)
-  return out
+  return markTrustedStockImagesEager(out)
+}
+
+function markTrustedStockImagesEager(html) {
+  if (!html || typeof html !== 'string') return html
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    if (!/\sloading=["']lazy["']/i.test(tag)) return tag
+    const src = extractAttribute(tag, 'src')
+    if (!looksLikeTrustedStockImageUrl(src)) return tag
+    return tag.replace(/\sloading=["']lazy["']/i, ' loading="eager"')
+  })
+}
+
+export function injectEcommerceHeroResponsiveCss(html) {
+  if (!html || typeof html !== 'string') return html
+  if (!/\bhero-left\b|class\s*=\s*["'][^"']*\bhero\b/i.test(html)) return html
+  const h = html.replace(/<style[^>]*\sdata-sf-hero-responsive[^>]*>[\s\S]*?<\/style>\s*/gi, '')
+  const block = `<style data-sf-hero-responsive>
+@media (max-width:900px){
+section.hero,.hero{align-items:center!important;text-align:center!important}
+.hero-left{display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important;padding-left:1rem!important;padding-right:1rem!important;margin-left:auto!important;margin-right:auto!important;max-width:36rem!important;width:100%!important;box-sizing:border-box!important}
+.hero-left h1,.hero .hero-left h1{font-size:clamp(1.45rem,4.4vw+.3rem,2.35rem)!important;line-height:1.1!important;text-wrap:balance;text-align:center!important;max-width:22em;margin-left:auto!important;margin-right:auto!important}
+.hero-left p,.hero .hero-left p{margin-left:auto!important;margin-right:auto!important;text-align:center!important}
+.hero-btns,.hero .hero-btns{justify-content:center!important;flex-wrap:wrap!important;width:100%!important}
+.hero-visual{margin-left:auto!important;margin-right:auto!important;width:100%!important;max-width:26rem}
+}
+</style>`
+  return /<\s*\/\s*head\s*>/i.test(h) ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`) : `${block}\n${h}`
 }
 
 export async function resolvePexelsImageHints(hintsInput = null) {

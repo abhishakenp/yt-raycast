@@ -6,9 +6,9 @@ import { stripFences, formatTps } from '../llm/utils.js'
 import {
   alignGeneratedImagesToContext,
   hydrateStorefrontGradientSlots,
+  injectEcommerceHeroResponsiveCss,
   verifyTrustedStockImageUrls,
 } from './image-hints.js'
-import { injectStorefrontCartUi } from './storefront-cart-ui.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { htmlLooksDegenerate } from './homepage-degeneracy.js'
 import { writeFile } from './workspace.js'
@@ -183,8 +183,8 @@ export async function generateHomepage(
   html = alignGeneratedImagesToContext(html, imageHints)
   html = hydrateStorefrontGradientSlots(html, imageHints)
   html = await verifyTrustedStockImageUrls(html)
+  html = injectEcommerceHeroResponsiveCss(html)
   html = ensureLucideIconRuntime(html, log)
-  html = injectStorefrontCartUi(html)
 
   if (htmlLooksDegenerate(html)) {
     log('  ❌ homepage: rejected — output looks degenerate (repetition or invalid HTML)')
