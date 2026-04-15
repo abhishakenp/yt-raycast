@@ -14,6 +14,7 @@ import {
   RUNPOD_API_URL,
 } from '../config.js'
 import { getMedusaAdminEmbedAndEcommerce } from './medusa-embed.js'
+import { createMedusaStoreRouter } from './medusa-store-routes.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
 import {
@@ -510,19 +511,26 @@ export async function startServer(sessionsDir) {
     next(err)
   })
 
+  app.use('/api/storefront/medusa', createMedusaStoreRouter())
+
   // ─── Plausible Analytics Proxy ──────────────────────────
   const plausibleHost = 'https://plausible.liviogama.com'
   app.get('/js/script.js', async (_req, res) => {
     try {
       const r = await fetch(`${plausibleHost}/js/script.js`)
-      if (!r.ok) return res.status(204).end()
+      if (!r.ok) return res.status(502).end()
       const contentType = r.headers.get('content-type') || ''
-      if (!contentType.toLowerCase().includes('javascript')) return res.status(204).end()
+      if (!contentType.toLowerCase().includes('javascript')) return res.status(502).end()
       res.set('Content-Type', 'application/javascript')
       res.set('Cache-Control', 'public, max-age=86400')
       res.send(Buffer.from(await r.arrayBuffer()))
-    } catch {
-      res.status(204).end()
+    } catch (err) {
+      // Cannot send a second HTTP status after headers are committed; log only.
+      if (res.headersSent) {
+        console.error('[plausible proxy] GET /js/script.js after headers sent', err)
+        return
+      }
+      return res.status(502).end()
     }
   })
   app.post('/api/event', express.text({ type: '*/*' }), async (req, res) => {
@@ -537,8 +545,13 @@ export async function startServer(sessionsDir) {
         body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
       })
       res.status(r.status).end()
-    } catch {
-      res.status(502).end()
+    } catch (err) {
+      // Cannot send a second HTTP status after headers are committed; log only.
+      if (res.headersSent) {
+        console.error('[plausible proxy] POST /api/event after headers sent', err)
+        return
+      }
+      return res.status(502).end()
     }
   })
 
@@ -2211,7 +2224,9 @@ export async function startServer(sessionsDir) {
           const html = readFileSync(fp, 'utf8')
           res
             .type('html')
-            .send(injectPreviewToolsHtml(html, req.params.sessionId, session.preferredLanguage))
+            .send(
+              injectPreviewToolsHtml(html, req.params.sessionId, session.preferredLanguage, session.workspace),
+            )
         } catch {
           express.static(session.workspace, { extensions: ['html'] })(req, res, next)
         }
