@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "latest",
+    "@medusajs/js-sdk": "^2.13.5",
     "@portabletext/to-html": "^5.0.2",
     "@sanity/client": "^7.20.0",
     "express": "^4.21.0",
