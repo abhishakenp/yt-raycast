@@ -182,6 +182,7 @@ function CardGrid({ items = [] }) {
 function NavbarSection({ section, siteSpec }) {
   const [open, setOpen] = useState(false)
   const isStore = siteSpec?.siteType === 'ecommerce'
+  const brandLogo = section?.styling?.brandLogo
   return (
     <>
       {isStore ? (
@@ -196,7 +197,14 @@ function NavbarSection({ section, siteSpec }) {
       >
         <div className="container nav-shell">
           <SmartLink className="brand" href="/">
-            {section.headline || 'Site'}
+            {brandLogo?.kind === 'remote' && brandLogo.src ? (
+              <span className="brand-logo" aria-hidden={false}>
+                <img src={brandLogo.src} alt={brandLogo.alt || 'Company logo'} decoding="async" loading="eager" />
+              </span>
+            ) : brandLogo?.kind === 'svg' && brandLogo.svg ? (
+              <span className="brand-logo" aria-hidden={false} dangerouslySetInnerHTML={{ __html: brandLogo.svg }} />
+            ) : null}
+            <span className="brand-name">{section.headline || 'Site'}</span>
           </SmartLink>
           <button className="nav-toggle" type="button" onClick={() => setOpen((value) => !value)}>
             Menu
@@ -449,12 +457,26 @@ function ShipFastFooterLogo() {
 }
 
 function FooterSection({ section }) {
+  const brandLogo = section?.styling?.brandLogo
   return (
     <footer className="site-footer" id={section.id}>
       <div className="container footer-shell">
         <div className="footer-meta">
           <div>
-            <strong>{section.headline}</strong>
+            <div className="footer-brand">
+              {brandLogo?.kind === 'remote' && brandLogo.src ? (
+                <span className="brand-logo" aria-hidden={false}>
+                  <img src={brandLogo.src} alt={brandLogo.alt || 'Company logo'} decoding="async" loading="eager" />
+                </span>
+              ) : brandLogo?.kind === 'svg' && brandLogo.svg ? (
+                <span
+                  className="brand-logo"
+                  aria-hidden={false}
+                  dangerouslySetInnerHTML={{ __html: brandLogo.svg }}
+                />
+              ) : null}
+              <strong>{section.headline}</strong>
+            </div>
             {section.body ? <p>{section.body}</p> : null}
           </div>
         </div>

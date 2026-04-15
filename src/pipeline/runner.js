@@ -262,13 +262,12 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   const promptWithRefs = mergePromptWithDesignReferences(normalizedPrompt, workspace)
   const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
 
-  const [brandProfile, indiaMode] = await Promise.all([
-    enrichBrandProfile(normalizedPrompt, workspace, _log).catch((error) => {
-      _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
-      return null
-    }),
-    detectLanguage(normalizedPrompt, preferredLanguage),
-  ])
+  const brandProfilePromise = enrichBrandProfile(normalizedPrompt, workspace, _log).catch((error) => {
+    _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
+    return null
+  })
+  const indiaMode = await detectLanguage(normalizedPrompt, preferredLanguage)
+  const brandProfileCached = readBrandProfileFromWorkspace(workspace)
 
   const pipelinePrompt = withLanguageEnforcementBlock(promptWithRefs, indiaMode.code)
   writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
@@ -299,7 +298,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       detectStats.siteType,
       workspace,
       _log,
-      brandProfile,
+      brandProfileCached?.verified ? brandProfileCached : null,
     )
     tick('ctx_end')
     const siteSpecStats = await generateSiteSpec({
@@ -309,7 +308,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       siteType: detectStats.siteType,
       workspace,
       log: _log,
-      brandProfile,
+      brandProfile: brandProfileCached?.verified ? brandProfileCached : null,
     })
     tick('site_spec_end')
     return { designStats, detectStats, ctxStats, siteSpecStats }
@@ -332,7 +331,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
         sessionCtx,
         indiaMode,
         imageHints,
-        brandProfile,
+        brandProfileCached?.verified ? brandProfileCached : null,
       )
       tick('homepage_end')
       return { ...stats, imageHints }
@@ -442,6 +441,27 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     writeFile(workspace, 'index.html', homepage)
     sessionCtx.signalHomepageReady()
   }
+
+  void brandProfilePromise.then((profile) => {
+    if (!profile?.logo) return
+    try {
+      const updated = applyBrandLogoToSiteSpec(siteSpec, profile)
+      const themed = applyBrandPaletteToSiteSpec(siteSpec, profile)
+      if (updated) {
+        saveSiteSpec(workspace, siteSpec)
+        renderPreviewToWorkspace(siteSpec, workspace)
+      }
+      injectBrandLogoIntoHomepageHtml(workspace, profile)
+      if (themed) {
+        injectBrandPaletteIntoHomepageHtml(workspace, profile)
+        saveSiteSpec(workspace, siteSpec)
+        renderPreviewToWorkspace(siteSpec, workspace)
+      }
+      sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
+    } catch (e) {
+      _log(`  brand-logo: rerender failed — ${e?.message || 'error'}`)
+    }
+  })
   const ctxPages = ctx.pages?.length ?? 0
   const homepageChars = homepage?.length ?? 0
 
@@ -472,7 +492,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     taskCtx,
     indiaMode,
     imageHints,
-    brandProfile,
+    brandProfileCached?.verified ? brandProfileCached : null,
     hasUserDesignReferences,
   )
   tick('gen_end')
@@ -579,8 +599,172 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     const logEntry = `\n--- /ship-fast completed at ${timestamp} ---\n  prompt: ${promptSnippet(normalizedPrompt, 120)}\n  workspace: ${workspace}\n  result: ${done}/${total} tasks in ${elapsed}s\n${report}\n`
     writeFileSync(logFile, readFileSync(logFile, 'utf-8') + logEntry)
   } catch {
-    /* log writing is best-effort */
+    void 0
   }
+}
+
+function readBrandProfileFromWorkspace(workspace) {
+  try {
+    const fp = join(workspace, 'brand-profile.json')
+    if (!existsSync(fp)) return null
+    const parsed = JSON.parse(readFileSync(fp, 'utf8'))
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function applyBrandLogoToSiteSpec(siteSpec, brandProfile) {
+  if (!siteSpec?.pages?.length) return false
+  const logo = brandProfile?.logo
+  if (!logo || (logo.kind !== 'remote' && logo.kind !== 'svg')) return false
+  const alt = String(logo.alt || `${brandProfile.officialName || brandProfile.requestedName || 'Brand'} logo`)
+  const payload =
+    logo.kind === 'remote'
+      ? { kind: 'remote', src: String(logo.src || ''), alt, provider: String(logo.provider || '') }
+      : { kind: 'svg', svg: String(logo.svg || ''), alt, provider: String(logo.provider || '') }
+  if (payload.kind === 'remote' && !payload.src) return false
+  if (payload.kind === 'svg' && !payload.svg) return false
+
+  let changed = false
+  for (const page of siteSpec.pages || []) {
+    for (const section of page.sections || []) {
+      if (section.type !== 'navbar' && section.type !== 'footer') continue
+      const styling = section.styling && typeof section.styling === 'object' ? section.styling : {}
+      const existing = styling.brandLogo && typeof styling.brandLogo === 'object' ? styling.brandLogo : null
+      const same =
+        existing &&
+        existing.kind === payload.kind &&
+        (payload.kind === 'remote' ? existing.src === payload.src : existing.svg === payload.svg)
+      if (same) continue
+      section.styling = { ...styling, brandLogo: payload }
+      changed = true
+    }
+  }
+  return changed
+}
+
+function applyBrandPaletteToSiteSpec(siteSpec, brandProfile) {
+  const palette = brandProfile?.palette
+  if (!siteSpec?.theme?.colors || !palette || palette.confidence == null) return false
+  const confidence = Number(palette.confidence || 0)
+  if (confidence < 0.75) return false
+  const next = {
+    primary: String(palette.primary || '').trim(),
+    secondary: String(palette.secondary || '').trim() || String(palette.primary || '').trim(),
+    accent: String(palette.accent || '').trim() || String(palette.secondary || '').trim(),
+  }
+  if (!next.primary || !/^#[0-9a-f]{6}$/i.test(next.primary)) return false
+  if (next.secondary && !/^#[0-9a-f]{6}$/i.test(next.secondary)) next.secondary = next.primary
+  if (next.accent && !/^#[0-9a-f]{6}$/i.test(next.accent)) next.accent = next.secondary || next.primary
+
+  const existing = siteSpec.theme.colors || {}
+  const changed =
+    existing.primary !== next.primary ||
+    existing.secondary !== next.secondary ||
+    existing.accent !== next.accent
+  if (!changed) return false
+
+  siteSpec.theme.colors = {
+    ...existing,
+    primary: next.primary,
+    secondary: next.secondary,
+    accent: next.accent,
+  }
+  if (!siteSpec.theme.tailwind) siteSpec.theme.tailwind = {}
+  siteSpec.theme.tailwind = {
+    ...siteSpec.theme.tailwind,
+    primary: next.primary,
+    secondary: next.secondary,
+    accent: next.accent,
+  }
+  return true
+}
+
+function injectBrandLogoIntoHomepageHtml(workspace, brandProfile) {
+  if (!brandProfile?.logo) return false
+  const fp = join(workspace, 'index.html')
+  if (!existsSync(fp)) return false
+  const html = readFileSync(fp, 'utf8')
+  const next = injectBrandLogoIntoHtml(html, brandProfile.logo)
+  if (!next || next === html) return false
+  writeFile(workspace, 'index.html', next)
+  return true
+}
+
+function injectBrandPaletteIntoHomepageHtml(workspace, brandProfile) {
+  const palette = brandProfile?.palette
+  if (!palette || Number(palette.confidence || 0) < 0.75) return false
+  const fp = join(workspace, 'index.html')
+  if (!existsSync(fp)) return false
+  const html = readFileSync(fp, 'utf8')
+  const next = injectBrandPaletteIntoHtml(html, palette)
+  if (!next || next === html) return false
+  writeFile(workspace, 'index.html', next)
+  return true
+}
+
+function injectBrandPaletteIntoHtml(html = '', palette) {
+  if (!palette?.primary) return ''
+  const vars = [
+    ['--color-primary', palette.primary],
+    ['--color-secondary', palette.secondary || palette.primary],
+    ['--color-accent', palette.accent || palette.secondary || palette.primary],
+  ]
+    .filter(([, v]) => /^#[0-9a-f]{6}$/i.test(String(v || '').trim()))
+    .map(([k, v]) => `${k}:${String(v).trim()}`)
+    .join(';')
+  if (!vars) return ''
+  const style = `<style id="sf-brand-palette">:root{${vars}}</style>`
+  if (/<style[^>]+id=["']sf-brand-palette["']/i.test(html)) return ''
+  if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${style}</head>`)
+  return `${style}\n${html}`
+}
+
+function injectBrandLogoIntoHtml(html = '', logo) {
+  const kind = logo?.kind
+  if (kind !== 'remote' && kind !== 'svg') return ''
+  const src =
+    kind === 'remote'
+      ? String(logo.src || '').trim()
+      : svgToDataUri(String(logo.svg || '').trim())
+  if (!src) return ''
+  if (/\bbrand-logo\b/i.test(html)) return ''
+  const img = `<span class="brand-logo"><img src="${escapeHtmlAttr(src)}" alt="${escapeHtmlAttr(
+    String(logo.alt || 'Company logo'),
+  )}" decoding="async" loading="eager" style="height:44px;width:auto;display:block" /></span>`
+  const patched = html.replace(
+    /<a([^>]*\bclass=["'][^"']*\bbrand\b[^"']*["'][^>]*)>([\s\S]*?)<\/a>/i,
+    (_m, attrs, inner) => `<a${attrs}>${img}<span class="brand-name">${inner}</span></a>`,
+  )
+  if (patched === html) return ''
+  const style =
+    '<style>.brand{display:inline-flex;align-items:center;gap:.75rem;min-height:3rem}.brand-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:180px}.brand-name{white-space:nowrap}</style>'
+  if (/<\/head>/i.test(patched) && !/\.brand-logo\{/i.test(patched)) {
+    return patched.replace(/<\/head>/i, `${style}</head>`)
+  }
+  return patched
+}
+
+function svgToDataUri(svg = '') {
+  const raw = String(svg || '').trim()
+  if (!raw) return ''
+  const compact = raw.replace(/\s+/g, ' ').trim()
+  const encoded = encodeURIComponent(compact)
+    .replace(/%20/g, ' ')
+    .replace(/%3D/g, '=')
+    .replace(/%3A/g, ':')
+    .replace(/%2F/g, '/')
+  return `data:image/svg+xml;charset=utf-8,${encoded}`
+}
+
+function escapeHtmlAttr(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/'/g, '&#39;')
 }
 
 // Generate alternative design with fallback colors

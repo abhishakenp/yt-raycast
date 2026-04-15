@@ -594,6 +594,20 @@ function renderShipFastFooterBrandingHtml() {
   `
 }
 
+function renderBrandLogoMarkup(brandLogo, opts = {}) {
+  if (!brandLogo || typeof brandLogo !== 'object') return ''
+  const size = Number(opts.size || 44) || 44
+  const alt = escapeHtml(String(brandLogo.alt || 'Company logo'))
+  if (brandLogo.kind === 'remote' && brandLogo.src) {
+    const src = escapeHtml(String(brandLogo.src))
+    return `<span class="brand-logo" aria-hidden="false"><img src="${src}" alt="${alt}" decoding="async" loading="eager" style="height:${size}px" /></span>`
+  }
+  if (brandLogo.kind === 'svg' && brandLogo.svg) {
+    return `<span class="brand-logo" aria-hidden="false" style="height:${size}px">${brandLogo.svg}</span>`
+  }
+  return ''
+}
+
 export function renderSectionHtml(section, siteSpec = {}) {
   const headline = section.headline ? `<h2>${escapeHtml(section.headline)}</h2>` : ''
   const subheadline = section.subheadline
@@ -604,6 +618,8 @@ export function renderSectionHtml(section, siteSpec = {}) {
   switch (section.type) {
     case 'navbar': {
       const isStore = String(siteSpec?.siteType || '').toLowerCase() === 'ecommerce'
+      const brandLogo = section?.styling?.brandLogo
+      const brandLogoMarkup = renderBrandLogoMarkup(brandLogo)
       const promoBar = isStore
         ? `<div class="store-promo-bar"><div class="container store-promo-bar__inner"><span class="store-promo-bar__msg">Free shipping on orders over $75 \u00b7 Easy returns</span></div></div>`
         : ''
@@ -631,7 +647,7 @@ export function renderSectionHtml(section, siteSpec = {}) {
         ${promoBar}
         <header class="site-header${isStore ? ' site-header--store' : ''}" data-mobile-nav>
           <div class="container nav-shell">
-            <a class="brand" href="/">${escapeHtml(section.headline || 'Ship Fast')}</a>
+            <a class="brand" href="/">${brandLogoMarkup}<span class="brand-name">${escapeHtml(section.headline || 'Ship Fast')}</span></a>
             <button class="nav-toggle" type="button" data-mobile-nav-toggle aria-label="Toggle navigation">Menu</button>
             <nav class="nav-links" data-mobile-nav-panel>
               ${navLinksHtml}
@@ -922,13 +938,18 @@ export function renderSectionHtml(section, siteSpec = {}) {
           </div>
         </section>
       `
-    case 'footer':
+    case 'footer': {
+      const footerLogo = section?.styling?.brandLogo
+      const footerLogoMarkup = renderBrandLogoMarkup(footerLogo, { size: 36 })
       return `
         <footer class="site-footer" id="${escapeHtml(section.id)}">
           <div class="container footer-shell">
             <div class="footer-meta">
               <div>
-                <strong>${escapeHtml(section.headline || '')}</strong>
+                <div class="footer-brand">
+                  ${footerLogoMarkup}
+                  <strong>${escapeHtml(section.headline || '')}</strong>
+                </div>
                 ${body}
               </div>
             </div>
@@ -941,6 +962,7 @@ export function renderSectionHtml(section, siteSpec = {}) {
           </div>
         </footer>
       `
+    }
     default:
       return `
         <section class="section" id="${escapeHtml(section.id)}">
@@ -1104,7 +1126,35 @@ button, input, textarea { font: inherit; }
   align-items: center;
   padding: 1rem 0;
 }
-.brand { font-size: 1.1rem; font-weight: 700; }
+.brand {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+}
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  width: auto;
+  max-width: 180px;
+  flex: 0 0 auto;
+}
+.brand-logo img,
+.brand-logo svg {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+.brand-name { white-space: nowrap; }
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 .nav-links, .nav-actions, .footer-links, .action-row, .logo-row {
   display: flex;
   gap: 1rem;
@@ -1775,6 +1825,11 @@ button, input, textarea { font: inherit; }
     align-items: flex-start;
   }
   .site-header.is-open .nav-links { display: flex; }
+  .brand-logo,
+  .brand-logo img,
+  .brand-logo svg {
+    height: 38px;
+  }
 }
 .site-header .brand,
 .site-header .nav-links a:not(.button--primary) {

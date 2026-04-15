@@ -1144,14 +1144,16 @@ function renderSanityNextExportFiles(siteSpec) {
   const staticSitemapEntries = buildSitemapEntries(siteSpec)
   const embeddedSiteUrl = JSON.stringify(siteUrl)
   const embeddedStaticSitemap = JSON.stringify(staticSitemapEntries)
+  const sanityProjectId = String(siteSpec?.exportOptions?.sanityProjectId || '').trim()
+  const sanityDataset = String(siteSpec?.exportOptions?.sanityDataset || '').trim() || 'production'
 
   return {
-    '.env.example': `NEXT_PUBLIC_SANITY_PROJECT_ID=
-NEXT_PUBLIC_SANITY_DATASET=production
+    '.env.example': `NEXT_PUBLIC_SANITY_PROJECT_ID=${sanityProjectId}
+NEXT_PUBLIC_SANITY_DATASET=${sanityDataset || 'production'}
 NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
 SANITY_READ_TOKEN=
-SANITY_STUDIO_PROJECT_ID=
-SANITY_STUDIO_DATASET=production
+SANITY_STUDIO_PROJECT_ID=${sanityProjectId}
+SANITY_STUDIO_DATASET=${sanityDataset || 'production'}
 `,
     'lib/sanity.client.js': `import { createClient } from 'next-sanity'
 
@@ -1503,8 +1505,6 @@ export async function fetchPostBySlug(slug) {
 `,
   }
 
-  const usesPortableText = false
-
   return {
     '.env.example': envFiles[cmsType],
     'lib/cms-client.js': clientFiles[cmsType],
@@ -1681,6 +1681,7 @@ function CardGrid({ items = [] }) {
 function NavbarSection({ section, siteSpec }) {
   const [open, setOpen] = useState(false)
   const isStore = siteSpec?.siteType === 'ecommerce'
+  const brandLogo = section?.styling?.brandLogo
   const shopLink = useMemo(
     () => (section.links || []).find((l) => String(l?.label || '').toLowerCase() === 'shop' && Array.isArray(l?.children) && l.children.length),
     [section.links],
@@ -1699,7 +1700,14 @@ function NavbarSection({ section, siteSpec }) {
       >
         <div className="container nav-shell">
           <SmartLink className="brand" href="/">
-            {section.headline || 'Site'}
+            {brandLogo?.kind === 'remote' && brandLogo.src ? (
+              <span className="brand-logo" aria-hidden={false}>
+                <img src={brandLogo.src} alt={brandLogo.alt || 'Company logo'} decoding="async" loading="eager" />
+              </span>
+            ) : brandLogo?.kind === 'svg' && brandLogo.svg ? (
+              <span className="brand-logo" aria-hidden={false} dangerouslySetInnerHTML={{ __html: brandLogo.svg }} />
+            ) : null}
+            <span className="brand-name">{section.headline || 'Site'}</span>
           </SmartLink>
           <button className="nav-toggle" type="button" onClick={() => setOpen((value) => !value)}>
             Menu
@@ -1937,12 +1945,26 @@ function ShipFastFooterLogo() {
 }
 
 function FooterSection({ section }) {
+  const brandLogo = section?.styling?.brandLogo
   return (
     <footer className="site-footer" id={section.id}>
       <div className="container footer-shell">
         <div className="footer-meta">
           <div>
-            <strong>{section.headline}</strong>
+            <div className="footer-brand">
+              {brandLogo?.kind === 'remote' && brandLogo.src ? (
+                <span className="brand-logo" aria-hidden={false}>
+                  <img src={brandLogo.src} alt={brandLogo.alt || 'Company logo'} decoding="async" loading="eager" />
+                </span>
+              ) : brandLogo?.kind === 'svg' && brandLogo.svg ? (
+                <span
+                  className="brand-logo"
+                  aria-hidden={false}
+                  dangerouslySetInnerHTML={{ __html: brandLogo.svg }}
+                />
+              ) : null}
+              <strong>{section.headline}</strong>
+            </div>
             {section.body ? <p>{section.body}</p> : null}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { writeFile } from './workspace.js'
+import { resolveBrandfetchBrandProfile } from '../server/brandfetch.js'
 
 const SEARCH_API_URL = 'https://search.brave.com/search'
 const FETCH_TIMEOUT_MS = 7000
@@ -220,13 +221,13 @@ export function extractOrganizationCandidate(prompt = '') {
     const match = input.match(pattern)
     if (!match) continue
     const candidate = trimCandidate(match[1] || '')
-    if (candidate.split(/\s+/).length >= 2) return candidate
+    if (candidate && candidate.length >= 3) return candidate
   }
 
   const quoted = input.match(/["“]([^"”]{3,80})["”]/)
   if (quoted) {
     const candidate = trimCandidate(quoted[1] || '')
-    if (candidate.split(/\s+/).length >= 2) return candidate
+    if (candidate && candidate.length >= 3) return candidate
   }
 
   const lines = input
@@ -637,6 +638,9 @@ function buildBrandProfile({
   homepageSignals,
   pageSignals = [],
   searchResults = [],
+  logo = null,
+  palette = null,
+  verified = false,
 }) {
   const allSignals = [homepageSignals, ...pageSignals].filter(Boolean)
   const socialsFromSearch = searchResults
@@ -684,6 +688,8 @@ function buildBrandProfile({
     officialUrl,
     logoUrl,
     faviconUrl,
+    logo,
+    palette,
     description,
     emails,
     phones,
@@ -691,6 +697,7 @@ function buildBrandProfile({
     socials,
     sourceUrls,
     confidence: Number(confidence.toFixed(2)),
+    verified,
     retrievedAt: new Date().toISOString(),
   }
 }
@@ -704,6 +711,38 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
 
   log(`  brand-profile: resolving ${explicitUrl || `"${brandName}"`} from the web`)
 
+  const brandfetch = await resolveBrandfetchBrandProfile({ query: brandName, timeoutMs: 5500 }).catch(() => null)
+  if (brandfetch?.ok && brandfetch.logo?.src) {
+    const profile = buildBrandProfile({
+      brandName,
+      officialUrl: brandfetch.match?.officialUrl || '',
+      selectedResult: null,
+      homepageSignals: {
+        url: brandfetch.match?.officialUrl || '',
+        title: brandfetch.match?.name || '',
+        name: brandfetch.match?.name || brandName,
+        description: '',
+        logoUrl: brandfetch.logo.src,
+        faviconUrl: '',
+        emails: [],
+        phones: [],
+        addresses: [],
+        socials: [],
+        relatedLinks: [],
+      },
+      pageSignals: [],
+      searchResults: [],
+      logo: brandfetch.logo,
+      palette: brandfetch.palette || null,
+      verified: true,
+    })
+    writeFile(workspace, 'brand-profile.json', JSON.stringify(profile, null, 2))
+    log(
+      `  brand-profile.json: ${profile.officialName || brandName} | logo=yes | contacts=${profile.emails.length + profile.phones.length + profile.addresses.length} | socials=${profile.socials.length}`,
+    )
+    return profile
+  }
+
   let searchResults = []
   let selectedResult = null
   let officialUrl = explicitUrl
@@ -716,13 +755,17 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
 
   if (!officialUrl) {
     log('  brand-profile: no confident official site match found')
-    return null
+    const profile = buildFallbackBrandProfile(brandName)
+    writeFile(workspace, 'brand-profile.json', JSON.stringify(profile, null, 2))
+    return profile
   }
 
   const homepagePage = await fetchText(officialUrl)
   if (!homepagePage?.html) {
     log(`  brand-profile: failed to fetch ${officialUrl}`)
-    return null
+    const profile = buildFallbackBrandProfile(brandName)
+    writeFile(workspace, 'brand-profile.json', JSON.stringify(profile, null, 2))
+    return profile
   }
 
   const homepageSignals = collectPageSignals(homepagePage, brandName)
@@ -737,11 +780,13 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
     homepageSignals,
     pageSignals: extraSignals,
     searchResults,
+    logo: profileFromSignals(homepageSignals, extraSignals, brandName),
+    verified: true,
   })
 
-  if (!profile.officialUrl || (!profile.logoUrl && !profile.emails.length && !profile.socials.length)) {
-    log(`  brand-profile: insufficient verified data for ${brandName}`)
-    return null
+  if (!profile.logoUrl) {
+    const fallback = buildFallbackSvgLogo(profile.officialName || brandName)
+    profile.logo = fallback
   }
 
   writeFile(workspace, 'brand-profile.json', JSON.stringify(profile, null, 2))
@@ -750,4 +795,72 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
   )
 
   return profile
+}
+
+function buildFallbackBrandProfile(brandName) {
+  const fallback = buildFallbackSvgLogo(brandName)
+  return {
+    requestedName: brandName,
+    officialName: brandName,
+    officialUrl: '',
+    logoUrl: '',
+    faviconUrl: '',
+    logo: fallback,
+    description: '',
+    emails: [],
+    phones: [],
+    addresses: [],
+    socials: [],
+    sourceUrls: [],
+    confidence: 0.2,
+    verified: false,
+    retrievedAt: new Date().toISOString(),
+  }
+}
+
+function profileFromSignals(homepageSignals, extraSignals, brandName) {
+  const all = [homepageSignals, ...(extraSignals || [])].filter(Boolean)
+  const logoUrl = all.find((item) => item.logoUrl)?.logoUrl || ''
+  const officialName = all.find((item) => item.name && item.name.toLowerCase() !== 'home')?.name || brandName
+  if (!logoUrl) return null
+  return {
+    kind: 'remote',
+    src: logoUrl,
+    provider: 'scrape',
+    confidence: 0.6,
+    alt: officialName ? `${officialName} logo` : 'Company logo',
+  }
+}
+
+function buildFallbackSvgLogo(name = '') {
+  const safeName = String(name || '').trim() || 'Brand'
+  const parts = safeName.split(/\s+/).filter(Boolean)
+  const initialsRaw = parts.slice(0, 2).map((p) => p[0] || '').join('')
+  const initials = (initialsRaw || safeName.slice(0, 2)).toUpperCase()
+  const hash = Array.from(safeName).reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) >>> 0, 7)
+  const hue = hash % 360
+  const bg = `hsl(${hue} 78% 46%)`
+  const fg = 'white'
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" role="img" aria-label="${escapeXml(
+    safeName,
+  )} logo"><rect x="0" y="0" width="160" height="48" rx="14" fill="${bg}"/><text x="80" y="31" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="20" font-weight="800" fill="${fg}" letter-spacing="-0.02em">${escapeXml(
+    initials,
+  )}</text></svg>`
+  return {
+    kind: 'svg',
+    svg,
+    provider: 'fallback',
+    confidence: 0.2,
+    alt: `${safeName} logo`,
+    dominantColor: bg,
+  }
+}
+
+function escapeXml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }

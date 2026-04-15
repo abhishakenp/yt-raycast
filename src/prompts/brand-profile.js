@@ -4,7 +4,7 @@ function listLine(label, values = []) {
 }
 
 export function brandProfilePromptBlock(brandProfile = null) {
-  if (!brandProfile) return ''
+  if (!brandProfile || brandProfile.verified !== true) return ''
 
   const socialLines = (brandProfile.socials || [])
     .slice(0, 6)
