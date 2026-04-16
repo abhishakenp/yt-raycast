@@ -8,6 +8,7 @@
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://ship-fast.devliv.io/pricing" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#050506" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -29,9 +30,9 @@
       html { scroll-behavior: smooth; }
 
       body {
-        background: #0a0a0a;
+        background: #050506;
         font-family: 'Inter', system-ui, sans-serif;
-        color: #ededed;
+        color: #EDEDEF;
         min-height: 100vh;
         overflow-x: hidden;
       }
@@ -65,9 +66,9 @@
         padding: 0 24px;
         height: 60px;
         display: flex; align-items: center;
-        background: rgba(10, 10, 10, 0.85);
+        background: rgba(5,5,6,0.85);
         backdrop-filter: blur(18px);
-        border-bottom: 1px solid #1e1e1e;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
       }
       .nav-inner {
         width: min(1160px, 100%);
@@ -83,17 +84,17 @@
       .nav-logo-text {
         font-family: 'JetBrains Mono', monospace;
         font-size: 18px; font-weight: 700;
-        letter-spacing: 3px;
+        letter-spacing: 0.2em;
         color: #ffffff;
       }
       .nav-links {
         display: flex; align-items: center; gap: 28px;
       }
       .nav-links a {
-        font-size: 14px; color: #888888;
+        font-size: 14px; color: #8A8F98;
         transition: color 0.2s;
       }
-      .nav-links a:hover { color: #ededed; }
+      .nav-links a:hover { color: #EDEDEF; }
       .nav-links a.active {
         color: #ffffff;
         font-weight: 600;
@@ -101,9 +102,9 @@
       .nav-cta {
         height: 36px; padding: 0 18px;
         border-radius: 999px;
-        border: 1px solid #333333;
+        border: 1px solid rgba(255,255,255,0.12);
         background: transparent;
-        color: #ededed;
+        color: #EDEDEF;
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px; letter-spacing: 0.14em;
         text-transform: uppercase;
@@ -114,7 +115,7 @@
       }
       .nav-cta:hover {
         background: rgba(255, 255, 255, 0.06);
-        border-color: #555555;
+        border-color: #4E5259;
         transform: translateY(-1px);
       }
 
@@ -135,7 +136,7 @@
       .kicker {
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px; letter-spacing: 0.2em;
-        text-transform: uppercase; color: #888888;
+        text-transform: uppercase; color: #8A8F98;
       }
       .pricing-hero h1 {
         font-size: clamp(2.4rem, 5vw, 4rem);
@@ -143,7 +144,7 @@
         max-width: 14ch;
       }
       .pricing-hero p {
-        font-size: 18px; color: #888888;
+        font-size: 18px; color: #8A8F98;
         line-height: 1.6; max-width: 52ch;
       }
 
@@ -205,22 +206,22 @@
       .pricing-card {
         position: relative;
         border-radius: 26px;
-        border: 1px solid #1e1e1e;
-        background: #141414;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: #111113;
         padding: 32px 28px 28px;
         display: flex; flex-direction: column;
         gap: 0;
         box-shadow: 0 18px 64px rgba(0, 0, 0, 0.26);
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: all 300ms cubic-bezier(0.16,1,0.3,1);
       }
       .pricing-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
         box-shadow: 0 28px 80px rgba(0, 0, 0, 0.4);
       }
 
       /* Featured card */
       .pricing-card.featured {
-        border-color: #333333;
+        border-color: rgba(255,255,255,0.12);
         background: #181818;
         box-shadow:
           0 0 0 1px rgba(255, 255, 255, 0.08),
@@ -243,7 +244,7 @@
         padding: 4px 14px;
         border-radius: 999px;
         background: #ffffff;
-        color: #0a0a0a;
+        color: #050506;
         font-family: 'JetBrains Mono', monospace;
         font-size: 10px; letter-spacing: 0.14em;
         text-transform: uppercase; font-weight: 700;
@@ -258,8 +259,8 @@
         padding: 4px 10px;
         border-radius: 6px;
         background: rgba(255, 255, 255, 0.06);
-        border: 1px solid #333333;
-        color: #cccccc;
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #B0B5BD;
         font-family: 'JetBrains Mono', monospace;
         font-size: 10px; letter-spacing: 0.12em;
         text-transform: uppercase;
@@ -267,16 +268,16 @@
       }
       .ribbon-dot {
         width: 5px; height: 5px; border-radius: 50%;
-        background: #888888; flex-shrink: 0;
+        background: #8A8F98; flex-shrink: 0;
       }
 
       .plan-label {
         font-family: 'JetBrains Mono', monospace;
         font-size: 12px; letter-spacing: 0.18em;
-        text-transform: uppercase; color: #555555;
+        text-transform: uppercase; color: #4E5259;
         margin-bottom: 14px;
       }
-      .featured .plan-label { color: #888888; }
+      .featured .plan-label { color: #8A8F98; }
 
       .plan-price-row {
         display: flex; align-items: baseline; gap: 4px;
@@ -285,14 +286,14 @@
       .plan-price {
         font-size: 3rem; font-weight: 700;
         letter-spacing: -0.04em; line-height: 1;
-        color: #ededed;
+        color: #EDEDEF;
       }
       .plan-period {
-        font-size: 15px; color: #555555; font-weight: 400;
+        font-size: 15px; color: #4E5259; font-weight: 400;
       }
       .plan-original {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 12px; color: #555555;
+        font-size: 12px; color: #4E5259;
         text-decoration: line-through;
         margin-bottom: 4px;
       }
@@ -309,14 +310,14 @@
         letter-spacing: 0.05em;
       }
       .plan-desc {
-        font-size: 14px; color: #888888;
+        font-size: 14px; color: #8A8F98;
         line-height: 1.55; margin-bottom: 24px;
       }
 
       /* Divider */
       .plan-divider {
         height: 1px;
-        background: #1e1e1e;
+        background: rgba(255,255,255,0.06);
         margin-bottom: 20px;
       }
 
@@ -329,7 +330,7 @@
       }
       .plan-features li {
         display: flex; align-items: flex-start; gap: 10px;
-        font-size: 14px; color: #cccccc; line-height: 1.4;
+        font-size: 14px; color: #B0B5BD; line-height: 1.4;
       }
       .plan-features li.off {
         color: #333333;
@@ -338,9 +339,9 @@
         width: 16px; height: 16px; flex-shrink: 0;
         margin-top: 1px;
       }
-      .feat-icon.check { color: #888888; }
+      .feat-icon.check { color: #8A8F98; }
       .feat-icon.cross { color: #333333; }
-      .featured .feat-icon.check { color: #ededed; }
+      .featured .feat-icon.check { color: #EDEDEF; }
 
       /* CTA button */
       .plan-btn {
@@ -354,8 +355,8 @@
         display: flex; align-items: center; justify-content: center; gap: 8px;
       }
       .plan-btn.primary {
-        background: #ffffff;
-        color: #0a0a0a;
+        background: #EDEDEF;
+        color: #050506;
         box-shadow: 0 8px 28px rgba(255, 255, 255, 0.08);
       }
       .plan-btn.primary:hover {
@@ -365,12 +366,12 @@
       .plan-btn.primary:active { transform: scale(0.97); }
       .plan-btn.ghost {
         background: transparent;
-        border: 1px solid #333333;
-        color: #888888;
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #8A8F98;
       }
       .plan-btn.ghost:hover {
         background: rgba(255, 255, 255, 0.04);
-        color: #ededed; border-color: #555555;
+        color: #EDEDEF; border-color: #4E5259;
         transform: translateY(-1px);
       }
       .plan-btn:disabled {
@@ -381,7 +382,7 @@
         margin-top: 10px;
         text-align: center;
         font-family: 'JetBrains Mono', monospace;
-        font-size: 11px; color: #555555; letter-spacing: 0.06em;
+        font-size: 11px; color: #4E5259; letter-spacing: 0.06em;
       }
 
       /* ─── Credit packs ─── */
@@ -394,7 +395,7 @@
         letter-spacing: -0.03em; line-height: 1.1;
       }
       .section-title p {
-        margin-top: 10px; font-size: 15px; color: #888888;
+        margin-top: 10px; font-size: 15px; color: #8A8F98;
       }
 
       .packs-section { margin-bottom: 56px; }
@@ -409,8 +410,8 @@
       .pack-card {
         position: relative;
         border-radius: 22px;
-        border: 1px solid #1e1e1e;
-        background: #141414;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: #111113;
         padding: 28px 26px;
         display: flex; flex-direction: column; gap: 18px;
         box-shadow: 0 14px 48px rgba(0, 0, 0, 0.22);
@@ -421,7 +422,7 @@
         box-shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
       }
       .pack-card.best {
-        border-color: #333333;
+        border-color: rgba(255,255,255,0.12);
         box-shadow:
           0 0 0 1px rgba(255, 255, 255, 0.06),
           0 18px 56px rgba(0, 0, 0, 0.2);
@@ -430,7 +431,7 @@
         position: absolute; top: -12px; left: 22px;
         padding: 3px 12px; border-radius: 999px;
         background: #ffffff;
-        color: #0a0a0a;
+        color: #050506;
         font-family: 'JetBrains Mono', monospace;
         font-size: 9px; letter-spacing: 0.14em;
         text-transform: uppercase; font-weight: 700;
@@ -440,7 +441,7 @@
         gap: 12px;
       }
       .pack-name {
-        font-size: 16px; font-weight: 600; color: #ededed;
+        font-size: 16px; font-weight: 600; color: #EDEDEF;
       }
       .pack-qty {
         font-family: 'JetBrains Mono', monospace;
@@ -448,18 +449,18 @@
         padding: 4px 10px;
         border-radius: 6px;
         background: rgba(255, 255, 255, 0.06);
-        border: 1px solid #333333;
-        color: #888888;
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #8A8F98;
       }
       .pack-price-row {
         display: flex; align-items: baseline; gap: 4px;
       }
       .pack-price {
         font-size: 2.2rem; font-weight: 700;
-        letter-spacing: -0.04em; color: #ededed;
+        letter-spacing: -0.04em; color: #EDEDEF;
       }
       .pack-per {
-        font-size: 13px; color: #555555;
+        font-size: 13px; color: #4E5259;
       }
       .pack-features {
         list-style: none;
@@ -467,9 +468,9 @@
       }
       .pack-features li {
         display: flex; align-items: center; gap: 8px;
-        font-size: 13px; color: #888888;
+        font-size: 13px; color: #8A8F98;
       }
-      .pack-features .feat-icon { color: #555555; }
+      .pack-features .feat-icon { color: #4E5259; }
       .pack-btn {
         width: 100%; padding: 12px 16px;
         border-radius: 10px; border: none;
@@ -480,19 +481,19 @@
         transition: opacity 0.2s, transform 0.15s;
       }
       .pack-btn.primary {
-        background: #ffffff;
-        color: #0a0a0a;
+        background: #EDEDEF;
+        color: #050506;
       }
       .pack-btn.primary:hover { opacity: 0.9; transform: translateY(-1px); }
       .pack-btn.ghost {
         background: transparent;
-        border: 1px solid #333333;
-        color: #888888;
+        border: 1px solid rgba(255,255,255,0.12);
+        color: #8A8F98;
       }
       .pack-btn.ghost:hover {
         background: rgba(255, 255, 255, 0.04);
-        border-color: #555555;
-        color: #ededed;
+        border-color: #4E5259;
+        color: #EDEDEF;
         transform: translateY(-1px);
       }
 
@@ -503,32 +504,32 @@
         border-collapse: collapse;
         border-radius: 18px;
         overflow: hidden;
-        border: 1px solid #1e1e1e;
-        background: #141414;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: #111113;
         margin-top: 28px;
       }
       .compare-table th, .compare-table td {
         padding: 14px 20px;
         text-align: left;
-        border-bottom: 1px solid #1e1e1e;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
         font-size: 14px;
       }
       .compare-table thead th {
         background: #181818;
         font-family: 'JetBrains Mono', monospace;
         font-size: 11px; letter-spacing: 0.14em;
-        text-transform: uppercase; color: #888888;
+        text-transform: uppercase; color: #8A8F98;
         font-weight: 600;
       }
-      .compare-table thead th:first-child { color: #555555; }
+      .compare-table thead th:first-child { color: #4E5259; }
       .compare-table tbody tr:last-child td { border-bottom: none; }
       .compare-table tbody tr:hover td { background: rgba(255, 255, 255, 0.02); }
-      .compare-table td:first-child { color: #888888; }
+      .compare-table td:first-child { color: #8A8F98; }
       .compare-table td:not(:first-child) {
         text-align: center;
       }
       .compare-table thead th:not(:first-child) { text-align: center; }
-      .check-icon { color: #888888; display: inline-flex; justify-content: center; }
+      .check-icon { color: #8A8F98; display: inline-flex; justify-content: center; }
       .cross-icon { color: #333333; display: inline-flex; justify-content: center; }
       .highlight-col { background: rgba(255, 255, 255, 0.02); }
 
@@ -537,8 +538,8 @@
       .faq-list { display: grid; gap: 12px; margin-top: 28px; }
       .faq-item {
         border-radius: 18px;
-        border: 1px solid #1e1e1e;
-        background: #141414;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: #111113;
         overflow: hidden;
       }
       .faq-item summary {
@@ -555,21 +556,21 @@
       .faq-item summary::-webkit-details-marker { display: none; }
       .faq-chevron {
         width: 18px; height: 18px; flex-shrink: 0;
-        color: #555555;
+        color: #4E5259;
         transition: transform 0.25s;
       }
-      .faq-item[open] summary { color: #ffffff; border-bottom: 1px solid #1e1e1e; }
-      .faq-item[open] .faq-chevron { transform: rotate(180deg); color: #888888; }
+      .faq-item[open] summary { color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.06); }
+      .faq-item[open] .faq-chevron { transform: rotate(180deg); color: #8A8F98; }
       .faq-item p {
         padding: 16px 22px 22px;
-        color: #888888; line-height: 1.75; font-size: 14px;
+        color: #8A8F98; line-height: 1.75; font-size: 14px;
       }
 
       /* ─── CTA ─── */
       .cta-section {
         border-radius: 26px;
-        border: 1px solid #1e1e1e;
-        background: #141414;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: #111113;
         box-shadow:
           0 0 0 1px rgba(255, 255, 255, 0.04),
           0 24px 80px rgba(0, 0, 0, 0.2);
@@ -583,12 +584,12 @@
         letter-spacing: -0.03em; line-height: 1.1;
         max-width: 18ch;
       }
-      .cta-section p { font-size: 16px; color: #888888; max-width: 46ch; line-height: 1.65; }
+      .cta-section p { font-size: 16px; color: #8A8F98; max-width: 46ch; line-height: 1.65; }
       .cta-btn {
         padding: 16px 36px;
         border-radius: 12px; border: none;
-        background: #ffffff;
-        color: #0a0a0a;
+        background: #EDEDEF;
+        color: #050506;
         font-family: 'JetBrains Mono', monospace;
         font-size: 13px; font-weight: 700;
         letter-spacing: 0.12em; text-transform: uppercase;
@@ -604,14 +605,14 @@
       .cta-btn:active { transform: scale(0.97); }
       .cta-note {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 11px; color: #555555; letter-spacing: 0.08em;
+        font-size: 11px; color: #4E5259; letter-spacing: 0.08em;
       }
 
       /* ─── Footer ─── */
       .site-footer {
         border-radius: 20px;
-        border: 1px solid #1e1e1e;
-        background: #141414;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: #111113;
         padding: 22px 28px;
         display: flex; align-items: center; justify-content: space-between;
         gap: 20px; flex-wrap: wrap;
@@ -619,16 +620,16 @@
       }
       .footer-brand {
         font-family: 'JetBrains Mono', monospace;
-        font-size: 13px; color: #555555; letter-spacing: 0.12em;
+        font-size: 13px; color: #4E5259; letter-spacing: 0.12em;
       }
       .footer-nav {
         display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
       }
       .footer-nav a {
-        font-size: 13px; color: #555555;
+        font-size: 13px; color: #4E5259;
         transition: color 0.2s;
       }
-      .footer-nav a:hover { color: #ededed; }
+      .footer-nav a:hover { color: #EDEDEF; }
 
       /* ─── Section spacing ─── */
       .section-gap { margin-bottom: 72px; }
@@ -663,11 +664,11 @@
           <div class="nav-logo-icon" aria-hidden="true">
             <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="#ffffff" opacity="0.9"/>
-              <path d="M14 22L14 40L22 36V24L14 22Z" fill="#888888" opacity="0.8"/>
-              <path d="M38 22L38 40L30 36V24L38 22Z" fill="#888888" opacity="0.8"/>
+              <path d="M14 22L14 40L22 36V24L14 22Z" fill="#8A8F98" opacity="0.8"/>
+              <path d="M38 22L38 40L30 36V24L38 22Z" fill="#8A8F98" opacity="0.8"/>
               <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="#ffffff"/>
-              <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#888888" opacity="0.7"/>
-              <circle cx="26" cy="16" r="2" fill="#cccccc"/>
+              <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#8A8F98" opacity="0.7"/>
+              <circle cx="26" cy="16" r="2" fill="#B0B5BD"/>
             </svg>
           </div>
           <span class="nav-logo-text">SHIP FAST</span>
@@ -820,7 +821,7 @@
           </div>
 
         </div>
-        <p style="text-align:center;margin-top:24px;font-size:14px;color:#555555;">Need more than 30 generations/month? <a href="https://x.com/LivioGama" target="_blank" rel="noopener" style="color:#ededed;text-decoration:underline;">Contact us</a></p>
+        <p style="text-align:center;margin-top:24px;font-size:14px;color:#4E5259;">Need more than 30 generations/month? <a href="https://x.com/LivioGama" target="_blank" rel="noopener" style="color:#EDEDEF;text-decoration:underline;">Contact us</a></p>
       </section>
 
       <!-- ─── Credit packs ─── -->
@@ -913,45 +914,45 @@
             <tbody>
               <tr>
                 <td>Website generation</td>
-                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
-                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ededed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
-                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8F98" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EDEDEF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8F98" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
               </tr>
               <tr>
                 <td>Generation limit</td>
                 <td>10/month</td>
-                <td class="highlight-col" style="color:#ededed;font-weight:600;">30/month</td>
+                <td class="highlight-col" style="color:#EDEDEF;font-weight:600;">30/month</td>
                 <td>Unlimited</td>
               </tr>
               <tr>
                 <td>ZIP download</td>
                 <td><span class="cross-icon" aria-label="Not included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
-                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ededed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EDEDEF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
                 <td>Per credit</td>
               </tr>
               <tr>
                 <td>Template library</td>
                 <td>Limited</td>
-                <td class="highlight-col"><span class="check-icon" aria-label="Full access"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ededed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td class="highlight-col"><span class="check-icon" aria-label="Full access"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EDEDEF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
                 <td><span class="cross-icon" aria-label="Not included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
               </tr>
               <tr>
                 <td>AI iteration</td>
                 <td><span class="cross-icon" aria-label="Not included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
-                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ededed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EDEDEF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
                 <td><span class="cross-icon" aria-label="Not included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
               </tr>
               <tr>
                 <td>Community &amp; monthly drops</td>
                 <td><span class="cross-icon" aria-label="Not included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
-                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ededed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EDEDEF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
                 <td><span class="cross-icon" aria-label="Not included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span></td>
               </tr>
               <tr>
                 <td>UPI payment (India)</td>
-                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
-                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ededed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
-                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8F98" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td class="highlight-col"><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EDEDEF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
+                <td><span class="check-icon" aria-label="Included"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A8F98" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></td>
               </tr>
             </tbody>
           </table>

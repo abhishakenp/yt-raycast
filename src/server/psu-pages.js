@@ -124,29 +124,29 @@ const psuStyles = `<style>
   .psu-wrap { max-width: 48rem; margin: 0 auto; padding: 2rem 1rem 4rem; position: relative; z-index: 1; }
   .psu-top { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
   .psu-nav { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; }
-  .psu-nav-link { color: #ededed; text-decoration: none; font-size: 0.9rem; }
+  .psu-nav-link { color: #EDEDEF; text-decoration: none; font-size: 0.9rem; }
   .psu-nav-link:hover { color: #ffffff; text-decoration: underline; }
-  .psu-locale { font-size: 0.85rem; color: #888888; }
+  .psu-locale { font-size: 0.85rem; color: #8A8F98; }
   .psu-locale-label { margin-right: 0.35rem; }
-  .psu-lang { color: #ededed; text-decoration: none; }
+  .psu-lang { color: #EDEDEF; text-decoration: none; }
   .psu-lang:hover { color: #ffffff; text-decoration: underline; }
   .psu-lang-active { font-weight: 600; color: #ffffff; }
   .psu-locale-sep { margin: 0 0.35rem; opacity: 0.5; }
-  .psu-card { margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid #1e1e1e; }
+  .psu-card { margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid #1a1a1c; }
   .psu-card h2 { font-size: 1.15rem; margin-bottom: 0.35rem; }
-  .psu-card h2 a { color: #ededed; text-decoration: none; }
+  .psu-card h2 a { color: #EDEDEF; text-decoration: none; }
   .psu-card h2 a:hover { color: #ffffff; text-decoration: underline; }
-  .psu-badge { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888888; margin-bottom: 0.35rem; }
-  .psu-meta { font-size: 0.8rem; color: #888888; margin-bottom: 0.5rem; }
-  .psu-excerpt { color: #888888; font-size: 0.95rem; }
+  .psu-badge { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #8A8F98; margin-bottom: 0.35rem; }
+  .psu-meta { font-size: 0.8rem; color: #8A8F98; margin-bottom: 0.5rem; }
+  .psu-excerpt { color: #8A8F98; font-size: 0.95rem; }
   .psu-dl { display: inline-block; margin-top: 0.5rem; color: #4ade80; font-size: 0.9rem; text-decoration: none; }
   .psu-dl:hover { text-decoration: underline; }
   .psu-filters { margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .psu-filters a { color: #888888; font-size: 0.85rem; text-decoration: none; }
+  .psu-filters a { color: #8A8F98; font-size: 0.85rem; text-decoration: none; }
   .psu-filters a:hover, .psu-filters a.psu-filter-on { color: #ffffff; text-decoration: underline; }
-  .psu-job { margin-bottom: 1.75rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; border: 1px solid #1e1e1e; }
+  .psu-job { margin-bottom: 1.75rem; padding: 1rem; background: rgba(255,255,255,0.03); border-radius: 0.5rem; border: 1px solid #1a1a1c; }
   .psu-job h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-  .psu-apply { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0.85rem; background: #ededed; color: #0a0a0a; border-radius: 0.35rem; text-decoration: none; font-size: 0.9rem; }
+  .psu-apply { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0.85rem; background: #EDEDEF; color: #050506; border-radius: 0.35rem; text-decoration: none; font-size: 0.9rem; }
   .psu-apply:hover { background: #ffffff; }
   .post-body { line-height: 1.7; }
   .post-body p { margin-bottom: 1rem; }
@@ -202,7 +202,7 @@ export function renderNoticesIndex(notices, locale, { filterKind = '' } = {}) {
   <link rel="stylesheet" href="/styles/index.css" />
   ${psuStyles}
 </head>
-<body class="bg-glow" style="background:#0a0a0a;color:#ededed;min-height:100vh;">
+<body class="bg-glow" style="background:#050506;color:#EDEDEF;min-height:100vh;">
   <div class="psu-wrap">
     <div class="psu-top">
       ${renderPsuNav(locale)}
@@ -218,7 +218,7 @@ export function renderNoticesIndex(notices, locale, { filterKind = '' } = {}) {
 
 export function renderNoticeDetail(notice, slug, locale) {
   if (!notice) {
-    return `<!doctype html><html lang="en"><head><meta charset="UTF-8"/><title>Not found</title></head><body style="background:#0a0a0a;color:#ededed;padding:2rem;font-family:system-ui"><p>Not found.</p><a href="/notices" style="color:#ededed">Notices</a></body></html>`
+    return `<!doctype html><html lang="en"><head><meta charset="UTF-8"/><title>Not found</title></head><body style="background:#050506;color:#EDEDEF;padding:2rem;font-family:system-ui"><p>Not found.</p><a href="/notices" style="color:#EDEDEF">Notices</a></body></html>`
   }
   const q = langQuery(locale)
   const title = escapeHtml(pickLocalized(notice.title, locale))
@@ -265,13 +265,13 @@ export function renderNoticeDetail(notice, slug, locale) {
   <link rel="stylesheet" href="/styles/index.css" />
   ${psuStyles}
 </head>
-<body style="background:#0a0a0a;color:#ededed;min-height:100vh;">
+<body style="background:#050506;color:#EDEDEF;min-height:100vh;">
   <article class="psu-wrap">
     <div class="psu-top">
       ${renderPsuNav(locale)}
       ${renderLocaleBar(`/notices/${safeSlug}`, locale)}
     </div>
-    <nav style="margin-bottom:1rem;font-size:0.9rem"><a href="/notices${q}" style="color:#ededed;text-decoration:none">← ${escapeHtml(tr(locale, 'noticesTitle'))}</a></nav>
+    <nav style="margin-bottom:1rem;font-size:0.9rem"><a href="/notices${q}" style="color:#EDEDEF;text-decoration:none">← ${escapeHtml(tr(locale, 'noticesTitle'))}</a></nav>
     <div class="psu-badge">${badge}</div>
     <h1>${title}</h1>
     <p class="psu-meta">${escapeHtml(tr(locale, 'published'))}: ${date}${valid ? ` · ${valid}` : ''}</p>
@@ -336,7 +336,7 @@ export function renderCareersPage(jobs, locale) {
   <link rel="stylesheet" href="/styles/index.css" />
   ${psuStyles}
 </head>
-<body class="bg-glow" style="background:#0a0a0a;color:#ededed;min-height:100vh;">
+<body class="bg-glow" style="background:#050506;color:#EDEDEF;min-height:100vh;">
   <div class="psu-wrap">
     <div class="psu-top">
       ${renderPsuNav(locale)}

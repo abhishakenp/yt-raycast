@@ -142,7 +142,7 @@ export function renderHomePage(siteSettings = null) {
     <meta name="keywords" content="${escapeHtml(HOME_KEYWORDS)}" />
     <meta name="author" content="${escapeHtml(SITE_NAME)}" />
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#050506" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="canonical" href="${escapeHtml(SITE_URL)}" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -151,7 +151,7 @@ export function renderHomePage(siteSettings = null) {
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${escapeHtml(SITE_URL)}" />
@@ -202,8 +202,20 @@ export function renderHomePage(siteSettings = null) {
     <div class="wappalyzer-banner" id="wappalyzer-banner">Sorry, Wappalyzer won't help you this time</div>
     <div class="bg-glow"></div>
 
-    <div class="container">
-      <h1 class="sr-only">${escapeHtml(SITE_NAME)} AI website generator</h1>
+    <div class="page-layout">
+      <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
+        <h2>See what other speedsters generated</h2>
+        <ul class="session-list" id="session-list"></ul>
+        <nav class="session-pagination" id="session-pagination" aria-label="Gallery pages" hidden>
+          <p class="session-page-status" id="session-page-status" aria-live="polite"></p>
+          <div class="session-pagination-actions" id="session-pagination-actions">
+            <button type="button" class="session-page-btn" id="session-page-prev">Previous</button>
+            <button type="button" class="session-page-btn" id="session-page-next">Next</button>
+          </div>
+        </nav>
+      </section>
+      <div class="container sidebar-panel">
+        <h1 class="sr-only">${escapeHtml(SITE_NAME)} AI website generator</h1>
       ${renderLogo()}
       ${heroBlock}
       <form id="prompt-form" class="input-group">
@@ -320,19 +332,8 @@ export function renderHomePage(siteSettings = null) {
           <span class="pro-badge">PRO</span>
         </label>
       </div>
+      </div>
     </div>
-
-    <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
-      <h2>See what other speedsters generated</h2>
-      <ul class="session-list" id="session-list"></ul>
-      <nav class="session-pagination" id="session-pagination" aria-label="Gallery pages" hidden>
-        <p class="session-page-status" id="session-page-status" aria-live="polite"></p>
-        <div class="session-pagination-actions" id="session-pagination-actions">
-          <button type="button" class="session-page-btn" id="session-page-prev">Previous</button>
-          <button type="button" class="session-page-btn" id="session-page-next">Next</button>
-        </div>
-      </nav>
-    </section>
 
     <footer class="homepage-footer">
       <nav class="homepage-footer-legal" aria-label="Legal">
