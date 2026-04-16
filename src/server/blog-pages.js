@@ -44,17 +44,17 @@ export function renderBlogIndex(posts) {
   <style>
     body.bg-glow { pointer-events: auto; }
     .blog-wrap { max-width: 42rem; margin: 0 auto; padding: 2rem 1rem 4rem; position: relative; z-index: 1; }
-    .blog-card { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .blog-card { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #1e1e1e; }
     .blog-card h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
-    .blog-card a { color: #c4b5fd; text-decoration: none; }
-    .blog-card a:hover { text-decoration: underline; }
-    .blog-excerpt { color: #a1a1aa; font-size: 0.95rem; margin-top: 0.5rem; }
-    time { font-size: 0.8rem; color: #71717a; }
+    .blog-card a { color: #ededed; text-decoration: none; }
+    .blog-card a:hover { color: #ffffff; text-decoration: underline; }
+    .blog-excerpt { color: #888888; font-size: 0.95rem; margin-top: 0.5rem; }
+    time { font-size: 0.8rem; color: #888888; }
     .blog-nav { margin-bottom: 2rem; }
-    .blog-nav a { color: #a78bfa; }
+    .blog-nav a { color: #ededed; }
   </style>
 </head>
-<body class="bg-glow" style="background:#05030d;color:#e4e4e7;min-height:100vh;">
+<body class="bg-glow" style="background:#0a0a0a;color:#ededed;min-height:100vh;">
   <div class="blog-wrap">
     <nav class="blog-nav"><a href="/">← Home</a></nav>
     <h1>Blog</h1>
@@ -88,11 +88,11 @@ export function renderBlogPost(post, slug) {
     .post-body h2 { font-size: 1.35rem; margin: 1.5rem 0 0.75rem; }
     .post-body ul { margin: 0.5rem 0 1rem 1.25rem; }
     .post-nav { margin-bottom: 2rem; }
-    .post-nav a { color: #a78bfa; }
-    .post-meta { color: #71717a; font-size: 0.9rem; margin-bottom: 1rem; }
+    .post-nav a { color: #ededed; }
+    .post-meta { color: #888888; font-size: 0.9rem; margin-bottom: 1rem; }
   </style>
 </head>
-<body style="background:#05030d;color:#e4e4e7;min-height:100vh;">
+<body style="background:#0a0a0a;color:#ededed;min-height:100vh;">
   <article class="post-wrap">
     <nav class="post-nav"><a href="/blog">← Blog</a></nav>
     <h1>${title}</h1>

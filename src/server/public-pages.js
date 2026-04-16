@@ -56,22 +56,12 @@ function renderLogo() {
     <div class="logo">
       <div class="logo-icon">
         <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#g1)" opacity="0.9" />
-          <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#g2)" opacity="0.8" />
-          <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#g2)" opacity="0.8" />
-          <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#g1)" />
-          <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7" />
-          <circle cx="26" cy="16" r="2" fill="#c4b5fd" />
-          <defs>
-            <linearGradient id="g1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#7c3aed" />
-              <stop offset="1" stop-color="#a78bfa" />
-            </linearGradient>
-            <linearGradient id="g2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#6d28d9" />
-              <stop offset="1" stop-color="#7c3aed" />
-            </linearGradient>
-          </defs>
+          <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="#ffffff" opacity="0.9" />
+          <path d="M14 22L14 40L22 36V24L14 22Z" fill="#dddddd" opacity="0.8" />
+          <path d="M38 22L38 40L30 36V24L38 22Z" fill="#dddddd" opacity="0.8" />
+          <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="#ffffff" />
+          <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#cccccc" opacity="0.7" />
+          <circle cx="26" cy="16" r="2" fill="#999999" />
         </svg>
       </div>
       <span class="logo-text">SHIP FAST</span>
@@ -117,9 +107,7 @@ function renderTopActions() {
   const institutionalLinks = isSanityConfigured()
     ? '<a class="top-action-link" href="/notices">Notices</a><a class="top-action-link" href="/careers">Careers</a>'
     : ''
-  const blogLink = isSanityConfigured()
-    ? '<a class="top-action-link" href="/blog">Blog</a>'
-    : ''
+  const blogLink = isSanityConfigured() ? '<a class="top-action-link" href="/blog">Blog</a>' : ''
   return `<nav class="top-actions" aria-label="Primary">
     ${institutionalLinks}
     ${blogLink}
@@ -137,8 +125,7 @@ function renderTopActions() {
 export function renderHomePage(siteSettings = null) {
   const pageTitle = HOME_TITLE
   const pageDescription = HOME_DESCRIPTION
-  const ogImageAbsolute =
-    resolveSiteImageUrl(siteSettings?.ogImageUrl) || OG_IMAGE_URL
+  const ogImageAbsolute = resolveSiteImageUrl(siteSettings?.ogImageUrl) || OG_IMAGE_URL
   const heroSrc = resolveSiteImageUrl(siteSettings?.homeHeroImageUrl)
   const heroBlock = heroSrc
     ? `<div class="cms-home-hero"><img src="${escapeHtml(heroSrc)}" alt="" loading="lazy" decoding="async" /></div>`
@@ -155,7 +142,7 @@ export function renderHomePage(siteSettings = null) {
     <meta name="keywords" content="${escapeHtml(HOME_KEYWORDS)}" />
     <meta name="author" content="${escapeHtml(SITE_NAME)}" />
     <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
-    <meta name="theme-color" content="#05030d" />
+    <meta name="theme-color" content="#0a0a0a" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="canonical" href="${escapeHtml(SITE_URL)}" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
