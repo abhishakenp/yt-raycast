@@ -11,15 +11,15 @@ html {
 }
 
 body {
-  background: #0a0a0a;
+  background: #050506;
   font-family: 'Inter', system-ui, sans-serif;
-  color: #ededed;
+  color: #EDEDEF;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
 a {
-  color: #ededed;
+  color: #EDEDEF;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -54,9 +54,9 @@ a:hover {
   height: 60px;
   display: flex;
   align-items: center;
-  background: rgba(10, 10, 10, 0.72);
+  background: rgba(5, 5, 6, 0.72);
   backdrop-filter: blur(18px);
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .nav-inner {
@@ -81,7 +81,7 @@ a:hover {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 3px;
-  color: #ededed;
+  color: #EDEDEF;
   -webkit-background-clip: unset;
   -webkit-text-fill-color: unset;
   background-clip: unset;
@@ -95,16 +95,16 @@ a:hover {
 
 .nav-links a {
   font-size: 14px;
-  color: #888888;
+  color: #8A8F98;
   text-decoration: none;
 }
 
 .nav-links a:hover {
-  color: #ededed;
+  color: #EDEDEF;
 }
 
 .nav-links a.active {
-  color: #ededed;
+  color: #EDEDEF;
   font-weight: 600;
 }
 
@@ -112,9 +112,9 @@ a:hover {
   height: 36px;
   padding: 0 18px;
   border-radius: 999px;
-  border: 1px solid #555555;
+  border: 1px solid #4E5259;
   background: rgba(255, 255, 255, 0.05);
-  color: #ededed;
+  color: #EDEDEF;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -131,7 +131,7 @@ a:hover {
 
 .nav-cta:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: #888888;
+  border-color: #8A8F98;
 }
 
 .page {
@@ -145,13 +145,13 @@ a:hover {
 .legal-doc {
   font-size: 16px;
   line-height: 1.65;
-  color: #ededed;
+  color: #EDEDEF;
 }
 
 .legal-header {
   margin-bottom: 40px;
   padding-bottom: 28px;
-  border-bottom: 1px solid #1e1e1e;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .kicker {
@@ -159,7 +159,7 @@ a:hover {
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #888888;
+  color: #8A8F98;
   margin-bottom: 12px;
 }
 
@@ -172,7 +172,7 @@ a:hover {
 
 .legal-meta {
   font-size: 14px;
-  color: #555555;
+  color: #4E5259;
 }
 
 .legal-doc section {
@@ -181,14 +181,14 @@ a:hover {
 
 .legal-doc h2 {
   font-size: 1.15rem;
-  color: #ededed;
+  color: #EDEDEF;
   margin-bottom: 14px;
   letter-spacing: -0.02em;
 }
 
 .legal-doc h3 {
   font-size: 1rem;
-  color: #888888;
+  color: #8A8F98;
   margin: 20px 0 10px;
   font-weight: 600;
 }
@@ -208,10 +208,10 @@ a:hover {
 .legal-address {
   margin: 12px 0;
   padding: 14px 16px;
-  background: #141414;
-  border: 1px solid #1e1e1e;
+  background: #111113;
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 10px;
-  color: #ededed;
+  color: #EDEDEF;
 }
 
 @media (max-width: 720px) {
