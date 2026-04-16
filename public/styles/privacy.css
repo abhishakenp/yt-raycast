@@ -11,23 +11,21 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top, rgba(124, 58, 237, 0.12), transparent 42%),
-    linear-gradient(180deg, #05030d 0%, #000 55%, #05030d 100%);
+  background: #0a0a0a;
   font-family: 'Inter', system-ui, sans-serif;
-  color: #e2e0f0;
+  color: #ededed;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
 a {
-  color: #c4b5fd;
+  color: #ededed;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 a:hover {
-  color: #f5f3ff;
+  color: #ffffff;
 }
 
 .bg-glow {
@@ -45,7 +43,7 @@ a:hover {
   transform: translateX(-50%);
   width: 680px;
   height: 680px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.07) 0%, transparent 70%);
+  background: none;
   border-radius: 50%;
 }
 
@@ -56,9 +54,9 @@ a:hover {
   height: 60px;
   display: flex;
   align-items: center;
-  background: rgba(5, 3, 13, 0.72);
+  background: rgba(10, 10, 10, 0.72);
   backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(45, 42, 62, 0.6);
+  border-bottom: 1px solid #1e1e1e;
 }
 
 .nav-inner {
@@ -83,10 +81,10 @@ a:hover {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 3px;
-  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 50%, #c4b5fd 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ededed;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
 }
 
 .nav-links {
@@ -97,16 +95,16 @@ a:hover {
 
 .nav-links a {
   font-size: 14px;
-  color: #9c96bc;
+  color: #888888;
   text-decoration: none;
 }
 
 .nav-links a:hover {
-  color: #d4ccff;
+  color: #ededed;
 }
 
 .nav-links a.active {
-  color: #c4b5fd;
+  color: #ededed;
   font-weight: 600;
 }
 
@@ -114,9 +112,9 @@ a:hover {
   height: 36px;
   padding: 0 18px;
   border-radius: 999px;
-  border: 1px solid rgba(124, 58, 237, 0.7);
-  background: rgba(124, 58, 237, 0.12);
-  color: #c4b5fd;
+  border: 1px solid #555555;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ededed;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -132,8 +130,8 @@ a:hover {
 }
 
 .nav-cta:hover {
-  background: rgba(124, 58, 237, 0.22);
-  border-color: rgba(124, 58, 237, 1);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #888888;
 }
 
 .page {
@@ -147,13 +145,13 @@ a:hover {
 .legal-doc {
   font-size: 16px;
   line-height: 1.65;
-  color: #cfcadd;
+  color: #ededed;
 }
 
 .legal-header {
   margin-bottom: 40px;
   padding-bottom: 28px;
-  border-bottom: 1px solid rgba(45, 42, 62, 0.9);
+  border-bottom: 1px solid #1e1e1e;
 }
 
 .kicker {
@@ -161,20 +159,20 @@ a:hover {
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #9f8fff;
+  color: #888888;
   margin-bottom: 12px;
 }
 
 .legal-header h1 {
   font-size: clamp(1.75rem, 4vw, 2.25rem);
   letter-spacing: -0.03em;
-  color: #f5f3ff;
+  color: #ffffff;
   margin-bottom: 14px;
 }
 
 .legal-meta {
   font-size: 14px;
-  color: #8b86a8;
+  color: #555555;
 }
 
 .legal-doc section {
@@ -183,14 +181,14 @@ a:hover {
 
 .legal-doc h2 {
   font-size: 1.15rem;
-  color: #e8e4ff;
+  color: #ededed;
   margin-bottom: 14px;
   letter-spacing: -0.02em;
 }
 
 .legal-doc h3 {
   font-size: 1rem;
-  color: #c4b5fd;
+  color: #888888;
   margin: 20px 0 10px;
   font-weight: 600;
 }
@@ -210,10 +208,10 @@ a:hover {
 .legal-address {
   margin: 12px 0;
   padding: 14px 16px;
-  background: rgba(124, 58, 237, 0.06);
-  border: 1px solid rgba(45, 42, 62, 0.8);
+  background: #141414;
+  border: 1px solid #1e1e1e;
   border-radius: 10px;
-  color: #d4ccff;
+  color: #ededed;
 }
 
 @media (max-width: 720px) {
