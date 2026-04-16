@@ -203,7 +203,12 @@ function NavbarSection({ section, siteSpec }) {
                 <img src={brandLogo.src} alt={brandLogo.alt || 'Company logo'} decoding="async" loading="eager" />
               </span>
             ) : brandLogo?.kind === 'svg' && brandLogo.svg ? (
-              <span className="brand-logo" aria-hidden={false} dangerouslySetInnerHTML={{ __html: brandLogo.svg }} />
+              <span
+                className="brand-logo"
+                aria-hidden={false}
+                aria-label={brandLogo.alt || 'Company logo'}
+                dangerouslySetInnerHTML={{ __html: brandLogo.svg }}
+              />
             ) : null}
             <span className="brand-name">{section.headline || 'Site'}</span>
           </SmartLink>
@@ -473,6 +478,7 @@ function FooterSection({ section }) {
                 <span
                   className="brand-logo"
                   aria-hidden={false}
+                  aria-label={brandLogo.alt || 'Company logo'}
                   dangerouslySetInnerHTML={{ __html: brandLogo.svg }}
                 />
               ) : null}
@@ -1055,7 +1061,7 @@ export default function RevealObserver() {
     els.forEach((el) => io.observe(el))
     const t = window.setTimeout(() => {
       document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach((el) => el.classList.add('is-visible'))
-    }, 2800)
+    }, 400)
     return () => {
       window.clearTimeout(t)
       io.disconnect()

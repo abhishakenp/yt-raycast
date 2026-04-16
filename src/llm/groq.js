@@ -17,6 +17,7 @@ import {
   OPENROUTER_HOST,
 } from '../config.js'
 import { isMixedEnglishIndicCode, lookupKnownLanguage } from '../config/languages.js'
+import { inferSiteTypeHint } from '../lib/infer-site-type.js'
 import { brandProfilePromptBlock } from '../prompts/brand-profile.js'
 import { businessProfilePromptBlock } from '../prompts/business-profile.js'
 import { contentPlanPromptAppendix } from '../prompts/content-refs.js'
@@ -179,9 +180,12 @@ async function groqHomepageCore(
     : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
   const businessBlock = businessProfilePromptBlock(businessProfile)
-  const storefrontIntent = /\b(ecommerce|e-commerce|online store|shop|shopping cart|product catalog|checkout|retail|dtc|storefront)\b/i.test(
-    String(prompt || ''),
-  )
+  const institutional = inferSiteTypeHint(String(prompt || '')) === 'institutional'
+  const storefrontIntent =
+    !institutional &&
+    /\b(ecommerce|e-commerce|online store|shop|shopping cart|product catalog|checkout|retail|dtc|storefront)\b/i.test(
+      String(prompt || ''),
+    )
   const referenceFirstAppend = hasDesignReferenceUrls
     ? `\n\nREFERENCE-FIRST: The user message includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs, optional path hints, and optional user notes. You cannot fetch URLs or see screenshots. Prioritize the user's product description, notes, and path hints for header layout, hero composition, navigation density, and visual personality. Named external exemplar sites in these instructions are a loose pattern library for section checklist and density only—not a default aesthetic when they conflict with the user's direction.\n${
         storefrontIntent
@@ -232,6 +236,24 @@ async function groqHomepageCore(
     designRef,
     hasDesignReferenceUrls: hasDesignReferenceUrls,
   })
+  const institutionalAppend = institutional
+    ? `
+
+── INSTITUTIONAL / PSU / GOVERNMENT WEBSITE (this generation) ──
+The prompt is a public-sector / PSU / ministry / tender / citizen-information portal. Overrides conflicting WEBSITE / DISTINCTIVE CRAFT / SHARED default-mood rules for this HTML only.
+
+- CLASSIFY: Build a multi-section public INFORMATION WEBSITE (not a storefront, not a dark SaaS marketing landing). Do not use the SaaS/Landing pattern (massive headline, pill+CTA, three icon columns as the whole page).
+- Surface: #ffffff or #f5f5f5 page background. Do not use the default "rich dark base (tinted slate or zinc)" for the main shell. Do not use a full-viewport charcoal/navy gradient behind the entire page.
+- Mandatory CSS (embed in <style>): \`body { background: #f5f5f5 !important; color: #1a1a1a; }\` and \`header, nav, .site-header { background: #0d2d52; color: #fff; }\` (or teal #1f8a9f if you choose teal chrome—pick one). Main content panels \`background: #fff;\`. Never set \`html, body { background: #0f172a|#111827|#0b1120|... }\`.
+- No ecommerce: no cart, bag icon, checkout, product SKUs, prices, "featured products", "shop now", reviews, shipping banners, or storefront merchandising blocks.
+- Typography: conservative sans (system-ui, Arial, Helvetica; Noto Sans / Noto Sans Devanagari when needed). Do not use Fraunces, Playfair, Syne, Cabinet Grotesk, or editorial display fonts as the dominant identity.
+- Layout: utility row (accessibility, language, tenders/RTI/vigilance shortcuts) → branding row → dense horizontal nav (10+ items) + search → optional ticker → centered ~1140px main: sidebar dated notices + hero carousel (infrastructure/civic imagery) + tender/notice tables + portal icon grids + mega-footer.
+- Skip: do not apply the "── DISTINCTIVE CRAFT ──" subsection. Ignore the SHARED bullet that sets "Default mood for non-store sites: rich dark surfaces" for this page.
+`
+    : ''
+  const homepageUserTail = institutional
+    ? 'Ship a light-canvas PSU information portal with dense nav and notice/tender modules—not a storefront, not a dark SaaS marketing page.'
+    : 'Ship something that looks deliberately designed: bold typography hierarchy, layered surfaces, tasteful motion, and at least one surprising layout choice — not interchangeable template output.'
   const mid = String(model)
   let reasoningEffort = null
   let reasoningFormat = null
@@ -243,10 +265,9 @@ async function groqHomepageCore(
     reasoningFormat = 'hidden'
   }
   return groqFetch({
-    model,
-    system: `You are a world-class frontend engineer and visual designer. Your first priority is bespoke UI design for this brief: layout composition, typography, palette, surface depth, and motion must read as intentional art direction—not a reusable template. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
-Before writing HTML, infer ONE strong aesthetic direction from the user's topic and tone (e.g. editorial luxury, brutalist tech, soft organic wellness, neon nightlife, quiet museum minimal, festival maximalism). Execute it consistently; never drift back to neutral gray-violet SaaS sameness.
-${mixedAppend || nonEnglishLanguageAppend(indiaMode)}${referenceFirstAppend}
+    model: HOMEPAGE_MODEL,
+    system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
+${mixedAppend || nonEnglishLanguageAppend(indiaMode)}${referenceFirstAppend}${institutionalAppend}
 
 CLASSIFY: If the prompt describes ecommerce, online store, shopping cart, product catalog, checkout, retail, DTC, or selling physical/digital goods, build a WEBSITE (storefront) — product-forward marketing layout with cart in nav, NOT a dashboard app. If the prompt describes application functionality (app, client, editor, dashboard, manager, tool) without retail/store context, build an APPLICATION UI. If it describes a business/product/service without store semantics, build a LANDING PAGE. Portfolio, personal site, resume, photographer/designer showcase, or creative work MUST be a WEBSITE with visible sections (hero, work grid, about, contact) — NEVER an empty application shell. Default to APP when unclear for non-store prompts only if the prompt clearly implies a software product UI.
 
@@ -350,7 +371,7 @@ QUALITY:
       brandProfile
         ? 'Use the verified brand details above as exact source data. Do not invent missing logo, contact, or social fields.'
         : ''
-    }\nShip something that looks deliberately designed: fully responsive (viewport + mobile stacks), accessible contrast on every surface, working anchors only, Lucide icons at readable sizes, and for shops warm editorial gradients with interactive product hover—not interchangeable template output.`,
+    }\n${homepageUserTail}`,
     temperature: LLM_CONFIG.homepage.temperature,
     maxTokens: maxTokensOverride ?? LLM_CONFIG.homepage.maxTokens,
     reasoningEffort,

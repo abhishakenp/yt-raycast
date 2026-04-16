@@ -596,14 +596,15 @@ function renderShipFastFooterBrandingHtml() {
 
 function renderBrandLogoMarkup(brandLogo, opts = {}) {
   if (!brandLogo || typeof brandLogo !== 'object') return ''
-  const size = Number(opts.size || 44) || 44
+  const size = Number(opts.size || 72) || 72
   const alt = escapeHtml(String(brandLogo.alt || 'Company logo'))
   if (brandLogo.kind === 'remote' && brandLogo.src) {
     const src = escapeHtml(String(brandLogo.src))
     return `<span class="brand-logo" aria-hidden="false"><img src="${src}" alt="${alt}" decoding="async" loading="eager" style="height:${size}px" /></span>`
   }
   if (brandLogo.kind === 'svg' && brandLogo.svg) {
-    return `<span class="brand-logo" aria-hidden="false" style="height:${size}px">${brandLogo.svg}</span>`
+    const label = escapeHtml(String(brandLogo.alt || 'Company logo'))
+    return `<span class="brand-logo" aria-hidden="false" role="img" aria-label="${label}" style="height:${size}px">${brandLogo.svg}</span>`
   }
   return ''
 }
@@ -965,7 +966,7 @@ export function renderSectionHtml(section, siteSpec = {}) {
       `
     case 'footer': {
       const footerLogo = section?.styling?.brandLogo
-      const footerLogoMarkup = renderBrandLogoMarkup(footerLogo, { size: 36 })
+      const footerLogoMarkup = renderBrandLogoMarkup(footerLogo, { size: 44 })
       return `
         <footer class="site-footer" id="${escapeHtml(section.id)}">
           <div class="container footer-shell">
@@ -1101,13 +1102,18 @@ button, input, textarea { font: inherit; }
   }
 }
 [data-reveal] {
-  opacity: 0;
-  transform: translate3d(0, 1.25rem, 0);
-}
-[data-reveal].is-visible {
   opacity: 1;
   transform: none;
-  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 1;
+    transform: translate3d(0, 0.5rem, 0);
+  }
+  [data-reveal].is-visible {
+    transform: none;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] {
@@ -1163,15 +1169,17 @@ button, input, textarea { font: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 56px;
+  height: 72px;
   width: auto;
-  max-width: 180px;
+  max-width: 280px;
   flex: 0 0 auto;
 }
 .brand-logo img,
 .brand-logo svg {
-  height: 56px;
+  height: 72px;
   width: auto;
+  min-width: 7rem;
+  max-width: 100%;
   display: block;
 }
 .brand-name { white-space: nowrap; }
@@ -1285,6 +1293,24 @@ button, input, textarea { font: inherit; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--gap);
   margin-top: 2rem;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+.stat-card__label {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.stat-card__value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.25;
 }
 .pricing-card .price {
   font-size: 2rem;
@@ -1853,7 +1879,7 @@ button, input, textarea { font: inherit; }
   .brand-logo,
   .brand-logo img,
   .brand-logo svg {
-    height: 44px;
+    height: 52px;
   }
 }
 .site-header .brand,
@@ -2256,7 +2282,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
   window.setTimeout(() => {
     document.querySelectorAll('[data-reveal]:not(.is-visible)').forEach((el) => el.classList.add('is-visible'))
-  }, 2800)${swiperInit}${splideInit}
+  }, 400)${swiperInit}${splideInit}
 })
 
 document.querySelectorAll('[data-demo-form]').forEach((form) => {

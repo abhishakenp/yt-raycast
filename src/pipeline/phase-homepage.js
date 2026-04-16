@@ -4,6 +4,7 @@ import {
   VAGUE_MARKETING_HOMEPAGE_APPENDIX,
   shouldExpandVagueMarketing,
 } from '../prompts/vague-marketing-brief.js'
+import { inferSiteTypeHint } from '../lib/infer-site-type.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
 import { translateHtml } from '../llm/translator.js'
@@ -15,6 +16,8 @@ import {
   verifyTrustedStockImageUrls,
 } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { htmlLooksDegenerate } from './homepage-degeneracy.js'
 import { passesHomepagePublicDesignVerification } from './ralph-homepage-score.js'
 import { getPublicDesignExemplarPath } from '../prompts/public-design-exemplar-append.js'
@@ -23,6 +26,163 @@ import { writeFile } from './workspace.js'
 import { buildHomepageSpecSliceJson } from '../spec/homepage-spec-slice.js'
 
 const SHIPFAST_FOOTER_MARKER = 'data-sf-footer-branding'
+const INSTITUTIONAL_CHROME_STYLE_ID = 'sf-institutional-chrome'
+
+const institutionalChromeStyleBlock = () => {
+  const id = INSTITUTIONAL_CHROME_STYLE_ID
+  return `<style id="${id}">
+:root {
+  --color-primary: #0d2d52 !important;
+  --color-secondary: #ffffff !important;
+  --color-accent: #1a3d82 !important;
+  --color-background: #f0f2f5 !important;
+  --color-surface: #ffffff !important;
+  --color-text: #111827 !important;
+  --color-muted: #374151 !important;
+  --color-border: #94a3b8 !important;
+  --shadow-soft: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+}
+html { background: #f0f2f5 !important; }
+body {
+  margin: 0;
+  background: #f0f2f5 !important;
+  background-image: none !important;
+  color: #111827 !important;
+}
+.site-shell { background: #f0f2f5 !important; }
+.site-header {
+  background: #0d2d52 !important;
+  border-bottom: 1px solid #001a33 !important;
+  color: #ffffff !important;
+  backdrop-filter: none !important;
+}
+.site-header a,
+.site-header .nav-toggle,
+.site-header .brand,
+.site-header .brand-name {
+  color: #ffffff !important;
+}
+.site-header .button {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+}
+.site-header .button--primary {
+  background: #ffffff !important;
+  color: #0d2d52 !important;
+  border-color: #ffffff !important;
+}
+.section h1,
+.section h2,
+.section h3 {
+  color: var(--color-text) !important;
+}
+.site-shell > .section {
+  color: var(--color-text) !important;
+}
+.section-body,
+.hero-chip,
+.logo-pill {
+  color: var(--color-muted) !important;
+}
+.eyebrow {
+  color: #0d2d52 !important;
+  background: #e8eef5 !important;
+  border-color: #94a3b8 !important;
+}
+.hero-panel,
+.card,
+.pricing-card,
+.stat-card,
+.faq-item,
+.contact-form,
+.cta-shell,
+.quote-card,
+.product-card {
+  background: #ffffff !important;
+  color: var(--color-text) !important;
+  border-color: #cbd5e1 !important;
+}
+.hero-chip,
+.logo-pill {
+  background: #f1f5f9 !important;
+}
+.button {
+  background: #f8fafc !important;
+  color: #111827 !important;
+  border-color: #cbd5e1 !important;
+}
+.button--primary {
+  background: #0d2d52 !important;
+  color: #ffffff !important;
+  border-color: #0d2d52 !important;
+  filter: none !important;
+}
+.site-footer {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-top-color: #1e293b !important;
+}
+.site-footer a,
+.footer-meta strong {
+  color: #f8fafc !important;
+}
+.footer-meta {
+  color: #cbd5e1 !important;
+}
+.contact-form label {
+  color: #475569 !important;
+}
+.contact-form input,
+.contact-form textarea {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border-color: #cbd5e1 !important;
+}
+.form-message {
+  color: #0d2d52 !important;
+}
+.faq-trigger {
+  color: #111827 !important;
+}
+.faq-content {
+  color: #374151 !important;
+}
+</style>`
+}
+
+export function injectInstitutionalLightChrome(html, prompt) {
+  if (inferSiteTypeHint(String(prompt || '')) !== 'institutional' || !html) return html
+  const tag = institutionalChromeStyleBlock()
+  const re = new RegExp(`<style\\s+id=["']${INSTITUTIONAL_CHROME_STYLE_ID}["'][\\s\\S]*?<\\/style>`, 'i')
+  if (re.test(html)) return html.replace(re, tag)
+  if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${tag}\n</head>`)
+  if (/<head\b[^>]*>/i.test(html)) return html.replace(/<head\b[^>]*>/i, (h) => `${h}\n${tag}\n`)
+  return `${tag}\n${html}`
+}
+
+export function applyInstitutionalLightChromeToWorkspaceHtml(workspace, prompt) {
+  if (inferSiteTypeHint(String(prompt || '')) !== 'institutional' || !workspace) return
+  let names
+  try {
+    names = readdirSync(workspace)
+  } catch {
+    return
+  }
+  for (const name of names) {
+    if (!name.endsWith('.html')) continue
+    const fp = join(workspace, name)
+    let h
+    try {
+      h = readFileSync(fp, 'utf8')
+    } catch {
+      continue
+    }
+    const next = injectInstitutionalLightChrome(h, prompt)
+    if (next !== h) writeFile(workspace, name, next)
+  }
+}
 
 export function injectShipFastFooterBranding(html, log = () => {}) {
   if (!html) return html
@@ -146,6 +306,14 @@ export async function generateHomepage(
       throw new Error(`Homepage failed reference-tier verification after ${maxRalph} attempts: ${ralphFeedback}`)
     }
   }
+
+  html = html
+    .replace(/const\s+\{[^}]*\}\s*=\s*require\([^)]*\);?\n?/g, '')
+    .replace(/<link[^>]*href="styles\.css"[^>]*>/g, '')
+    .replace(/<script[^>]*>\s*const\s+\{[^}]*\}\s*=\s*\{[^}]*\};\s*<\/script>\n?/g, '')
+
+  html = injectInstitutionalLightChrome(html, prompt)
+  html = injectShipFastFooterBranding(html, log)
 
   if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation) {
     log(`  homepage: translating to ${indiaMode.name || indiaMode.language?.name} via Groq...`)

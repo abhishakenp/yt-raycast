@@ -19,7 +19,7 @@ export const inferSiteTypeHint = (prompt) => {
   )
     return 'ecommerce'
   if (
-    /\b(government|govt|psu|public\s*sector|ministry|tender|tenders|notification|circular|bhel|ntpc|iocl|ongc|cpcb|powermin|shipindia)\b/.test(
+    /\b(government|govt|psu|public\s*sector|ministry|maharatna|cpse|tender|tenders|notification|circular|bhel|ntpc|iocl|ongc|cpcb|powermin|shipindia)\b/.test(
       lower,
     )
   )

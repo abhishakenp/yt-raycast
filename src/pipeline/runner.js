@@ -7,7 +7,11 @@ import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
 import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
-import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
+import {
+  applyInstitutionalLightChromeToWorkspaceHtml,
+  generateHomepage,
+  injectDesignIntoHomepage,
+} from './phase-homepage.js'
 import {
   injectMedusaVariantDataAttributes,
   injectStorefrontCartUi,
@@ -562,6 +566,11 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     }
   }
 
+  applyInstitutionalLightChromeToWorkspaceHtml(workspace, pipelinePrompt)
+  if (existsSync(join(workspace, 'index.html'))) {
+    homepage = readFileSync(join(workspace, 'index.html'), 'utf8')
+  }
+
   const done = tasks.filter((t) => t.status === 'DONE').length
   const total = tasks.length
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
@@ -669,6 +678,38 @@ function applyBrandLogoToSiteSpec(siteSpec, brandProfile) {
   return changed
 }
 
+function resolveBrandCanvasLight({ brandName = '', primary = '', siteSpec } = {}) {
+  const name = String(brandName || '')
+  if (/\b(psu|government|ministry|department|authority|limited|ltd)\b/i.test(name)) return true
+  if (
+    /\b(instacart|grocery|groceries|supermarket|food\s*delivery|meal\s*kit|walmart|target|farm\b|fresh\b|retail|marketplace)\b/i.test(
+      name,
+    )
+  )
+    return true
+  const h = String(primary || '').trim().replace('#', '')
+  if (/^[0-9a-f]{6}$/i.test(h)) {
+    const r = parseInt(h.slice(0, 2), 16) / 255
+    const g = parseInt(h.slice(2, 4), 16) / 255
+    const b = parseInt(h.slice(4, 6), 16) / 255
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const d = max - min
+    let hue = 0
+    if (d !== 0) {
+      hue =
+        max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+    }
+    hue = Math.round(hue * 60)
+    if (hue < 0) hue += 360
+    const light = (max + min) / 2
+    const sat = d === 0 ? 0 : d / (1 - Math.abs(2 * light - 1))
+    if (hue >= 80 && hue <= 165 && sat > 0.2 && light > 0.15) return true
+  }
+  const bg = String(siteSpec?.theme?.colors?.background || '').trim()
+  return bg.startsWith('#f')
+}
+
 function applyBrandPaletteToSiteSpec(siteSpec, brandProfile) {
   const palette = brandProfile?.palette
   if (!siteSpec?.theme) siteSpec.theme = {}
@@ -712,9 +753,11 @@ function applyBrandPaletteToSiteSpec(siteSpec, brandProfile) {
   }
 
   const primaryHsl = derive(brand.primary)
-  const isLight = String(siteSpec?.theme?.colors?.background || '')
-    .trim()
-    .startsWith('#f')
+  const isLight = resolveBrandCanvasLight({
+    brandName: brandProfile?.officialName || brandProfile?.requestedName || '',
+    primary: brand.primary,
+    siteSpec,
+  })
   const bg =
     primaryHsl &&
     `hsl(${primaryHsl.h} ${Math.round((isLight ? Math.max(0.08, primaryHsl.s * 0.18) : Math.max(0.1, primaryHsl.s * 0.22)) * 100)}% ${Math.round((isLight ? 0.97 : 0.06) * 100)}%)`
@@ -792,7 +835,7 @@ function injectBrandPaletteIntoHomepageHtml(workspace, brandProfile) {
   return true
 }
 
-function buildDerivedBrandPalette(palette, brandName = '') {
+function buildDerivedBrandPalette(palette, brandName = '', siteSpec = null) {
   const primary = String(palette?.primary || '').trim()
   const secondary = String(palette?.secondary || palette?.primary || '').trim()
   const accent = String(palette?.accent || palette?.secondary || palette?.primary || '').trim()
@@ -820,9 +863,7 @@ function buildDerivedBrandPalette(palette, brandName = '') {
     return { h: hue, s: clamp01(sat), l: clamp01(light) }
   }
   const hsl = toHsl(primary) || toHsl(secondary) || toHsl(accent)
-  const wantsLight = /\b(psu|government|ministry|department|authority|limited|ltd)\b/i.test(
-    String(brandName || ''),
-  )
+  const wantsLight = resolveBrandCanvasLight({ brandName, primary, siteSpec })
   const background =
     hsl &&
     `hsl(${hsl.h} ${Math.round(Math.max(0.1, hsl.s * (wantsLight ? 0.12 : 0.22)) * 100)}% ${Math.round(
@@ -911,7 +952,7 @@ function injectBrandLogoIntoHtml(html = '', logo, brandName = '') {
   }
   if (patched === html) return ''
   const style =
-    '<style>.brand{display:inline-flex;align-items:center;gap:.9rem;min-height:3.5rem}.brand-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:240px}.brand-logo img,.brand-logo svg{height:56px;width:auto;display:block}.brand-name{white-space:nowrap;font-weight:800;letter-spacing:-0.01em}</style>'
+    '<style>.brand{display:inline-flex;align-items:center;gap:.9rem;min-height:3.5rem}.brand-logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;max-width:280px}.brand-logo img,.brand-logo svg{height:72px;width:auto;display:block}.brand-name{white-space:nowrap;font-weight:800;letter-spacing:-0.01em}</style>'
   if (/<\/head>/i.test(patched) && !/\.brand-logo\{/i.test(patched)) {
     return patched.replace(/<\/head>/i, `${style}</head>`)
   }
