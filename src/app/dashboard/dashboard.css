@@ -1,4 +1,4 @@
-@import url('./space-shell.css');
+@import url('/styles/space-shell.css');
 * {
   margin: 0;
   padding: 0;
@@ -3563,4 +3563,27 @@ body::after {
   opacity: 0.015;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 256px 256px;
+}
+
+#intro-media-orbit .intro-media-thumb {
+  transform: translate(-50%, -50%);
+  animation-name: introMediaThumbOrbit;
+}
+.preview-site-rail-badge--new {
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: #c7d2fe;
+}
+.preview-site-rail-row--provisioned .preview-site-rail-row-label {
+  opacity: 0.95;
+}
+@keyframes introMediaThumbOrbit {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.92) translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }

@@ -2,17 +2,40 @@
  * CmsifyAnimation — React Scan–style DOM scanning overlay
  * Renders animated colored boxes over the preview iframe during Sanity provisioning.
  */
-class CmsifyAnimation {
-  constructor(previewStageEl, previewIframeEl) {
+
+type PaletteEntry = { hex: string; rgb: string; label: string }
+type StageEntry = { at: number; text: string }
+type ElementSelector = { sel: string; label: string }
+type Rect = { x: number; y: number; w: number; h: number; label: string }
+type Box = { el: HTMLElement; color: PaletteEntry }
+
+export class CmsifyAnimation {
+  stage: HTMLElement
+  iframe: HTMLIFrameElement
+  overlay: HTMLElement | null
+  statusEl: HTMLElement | null
+  boxes: Box[]
+  running: boolean
+  rafId: number | null
+  startTime: number
+  flashTimeout: ReturnType<typeof setTimeout> | null
+  _stageTimeout: ReturnType<typeof setTimeout> | null
+  styleTag: HTMLStyleElement | null
+  _palette: PaletteEntry[]
+  _stages: StageEntry[]
+  _elementSelectors: ElementSelector[]
+
+  constructor(previewStageEl: HTMLElement, previewIframeEl: HTMLIFrameElement) {
     this.stage = previewStageEl
     this.iframe = previewIframeEl
     this.overlay = null
     this.statusEl = null
-    this.boxes = [] // { el, color, colorRgb, label }
+    this.boxes = []
     this.running = false
     this.rafId = null
     this.startTime = 0
     this.flashTimeout = null
+    this._stageTimeout = null
     this.styleTag = null
 
     this._palette = [
@@ -50,7 +73,7 @@ class CmsifyAnimation {
 
   // ─── Public API ──────────────────────────────────────────────────────────────
 
-  start() {
+  start(): void {
     if (this.running) return
     this.running = true
     this.startTime = performance.now()
@@ -64,11 +87,11 @@ class CmsifyAnimation {
     this._runStageLoop()
   }
 
-  stop() {
+  stop(): void {
     this.running = false
-    cancelAnimationFrame(this.rafId)
-    clearTimeout(this.flashTimeout)
-    clearTimeout(this._stageTimeout)
+    if (this.rafId !== null) cancelAnimationFrame(this.rafId)
+    if (this.flashTimeout !== null) clearTimeout(this.flashTimeout)
+    if (this._stageTimeout !== null) clearTimeout(this._stageTimeout)
 
     if (this.overlay) {
       // Fade the whole overlay out before removing
@@ -86,7 +109,7 @@ class CmsifyAnimation {
 
   // ─── Setup ───────────────────────────────────────────────────────────────────
 
-  _injectStyles() {
+  _injectStyles(): void {
     if (document.getElementById('cmsify-animation-styles')) return
     const style = document.createElement('style')
     style.id = 'cmsify-animation-styles'
@@ -167,7 +190,7 @@ class CmsifyAnimation {
     this.styleTag = style
   }
 
-  _buildOverlay() {
+  _buildOverlay(): void {
     const overlay = document.createElement('div')
     overlay.className = 'cmsify-overlay'
     overlay.id = 'cmsify-overlay'
@@ -185,8 +208,8 @@ class CmsifyAnimation {
 
   // ─── DOM scanning ────────────────────────────────────────────────────────────
 
-  _collectRects() {
-    let rects = []
+  _collectRects(): Rect[] {
+    let rects: Rect[] = []
 
     try {
       const iDoc = this.iframe.contentDocument || this.iframe.contentWindow?.document
@@ -214,12 +237,12 @@ class CmsifyAnimation {
                 label,
               })
             })
-          } catch (_) {
+          } catch {
             /* skip selector errors */
           }
         }
       }
-    } catch (_) {
+    } catch {
       // Cross-origin or inaccessible — fall through to synthetic layout
     }
 
@@ -234,8 +257,8 @@ class CmsifyAnimation {
     return rects.slice(0, 48) // cap for perf
   }
 
-  _dedup(rects) {
-    const out = []
+  _dedup(rects: Rect[]): Rect[] {
+    const out: Rect[] = []
     for (const r of rects) {
       const overlaps = out.some((o) => {
         const ix = Math.max(0, Math.min(r.x + r.w, o.x + o.w) - Math.max(r.x, o.x))
@@ -249,7 +272,7 @@ class CmsifyAnimation {
     return out
   }
 
-  _syntheticLayout() {
+  _syntheticLayout(): Rect[] {
     // Reasonable approximation of a typical marketing page
     const W = this.iframe.offsetWidth || 960
     const H = this.iframe.offsetHeight || 640
@@ -271,7 +294,10 @@ class CmsifyAnimation {
 
   // ─── Box creation ─────────────────────────────────────────────────────────
 
-  _createBoxes(rects) {
+  _createBoxes(rects: Rect[]): void {
+    const overlay = this.overlay
+    const statusEl = this.statusEl
+    if (!overlay || !statusEl) return
     this.boxes = []
     rects.forEach((r, i) => {
       const color = this._palette[i % this._palette.length]
@@ -291,14 +317,14 @@ class CmsifyAnimation {
       lbl.textContent = r.label
       box.appendChild(lbl)
 
-      this.overlay.insertBefore(box, this.statusEl)
+      overlay.insertBefore(box, statusEl)
       this.boxes.push({ el: box, color })
     })
   }
 
   // ─── Flash loop ───────────────────────────────────────────────────────────
 
-  _runFlashLoop() {
+  _runFlashLoop(): void {
     if (!this.running) return
 
     const elapsed = performance.now() - this.startTime
@@ -349,7 +375,7 @@ class CmsifyAnimation {
 
   // ─── Stage text loop ──────────────────────────────────────────────────────
 
-  _runStageLoop() {
+  _runStageLoop(): void {
     if (!this.running || !this.statusEl) return
     const elapsed = performance.now() - this.startTime
     let currentStage = this._stages[0]
@@ -370,6 +396,3 @@ class CmsifyAnimation {
     }
   }
 }
-
-// Make available as global for inline script usage
-window.CmsifyAnimation = CmsifyAnimation

@@ -1,63 +1,84 @@
 ;(function () {
-  let selectMode = false
-  let annotateMode = false
-  let veil = null
-  let highlight = null
-  let canvas = null
-  let ctx = null
-  let drawing = false
-  let last = null
+  interface PreviewAIConfig {
+    canIndian?: boolean
+    indianLabel?: string
+  }
 
-  let activeInlineEl = null
-  let inlineSnapshot = null
-  let inlineToolbar = null
-  let pendingTextAiId = null
-  let pendingStyleAiId = null
-  let aiEnhanceBtn = null
-  let imgPanCleanup = null
+  interface WindowWithPreviewAI extends Window {
+    __SF_PREVIEW_AI__?: PreviewAIConfig
+  }
 
-  const zBase = 2147482000
+  type Point = { x: number; y: number }
+  type ToolbarElement = HTMLElement & { _sfScroll?: EventListener }
+  type MessageData = {
+    type?: string
+    id?: string
+    error?: string
+    text?: string | number | null
+    html?: string | null
+    selectMode?: boolean
+    annotateMode?: boolean
+  }
 
-  function stopImgPan() {
+  let selectMode: boolean = false
+  let annotateMode: boolean = false
+  let veil: HTMLElement | null = null
+  let highlight: HTMLElement | null = null
+  let canvas: HTMLCanvasElement | null = null
+  let ctx: CanvasRenderingContext2D | null = null
+  let drawing: boolean = false
+  let last: Point | null = null
+
+  let activeInlineEl: Element | null = null
+  let inlineSnapshot: string | null = null
+  let inlineToolbar: HTMLElement | null = null
+  let pendingTextAiId: string | null = null
+  let pendingStyleAiId: string | null = null
+  let aiEnhanceBtn: HTMLButtonElement | null = null
+  let imgPanCleanup: (() => void) | null = null
+
+  const zBase: number = 2147482000
+
+  function stopImgPan(): void {
     if (typeof imgPanCleanup === 'function') {
       imgPanCleanup()
       imgPanCleanup = null
     }
   }
 
-  function attachImgPan(img) {
+  function attachImgPan(img: HTMLImageElement): () => void {
     if (!img || img.tagName !== 'IMG') return () => {}
-    const cs0 = getComputedStyle(img)
+    const cs0: CSSStyleDeclaration = getComputedStyle(img)
     if (cs0.objectFit !== 'cover' && cs0.objectFit !== 'contain') {
       img.style.objectFit = 'cover'
     }
-    const parsePos = () => {
-      const parts = getComputedStyle(img).objectPosition.trim().split(/\s+/)
-      const p1 = parts[0] || '50%'
-      const p2 = parts[1] || parts[0] || '50%'
-      const num = (v) => {
+    const parsePos = (): { x: number; y: number } => {
+      const parts: string[] = getComputedStyle(img).objectPosition.trim().split(/\s+/)
+      const p1: string = parts[0] || '50%'
+      const p2: string = parts[1] || parts[0] || '50%'
+      const num = (v: string): number => {
         if (v === 'left' || v === 'top') return 0
         if (v === 'center') return 50
         if (v === 'right' || v === 'bottom') return 100
-        const m = String(v).match(/^([\d.]+)%$/)
+        const m: RegExpMatchArray | null = String(v).match(/^([\d.]+)%$/)
         return m ? Number(m[1]) : 50
       }
       return { x: num(p1), y: num(p2) }
     }
-    let { x, y } = parsePos()
-    let dragging = false
-    let lastX = 0
-    let lastY = 0
-    const prevCursor = img.style.cursor
-    const prevTouchAction = img.style.touchAction
-    const prevUserSelect = img.style.userSelect
-    const prevPe = img.style.pointerEvents
-    const prevDraggable = img.getAttribute('draggable')
+    let { x, y }: { x: number; y: number } = parsePos()
+    let dragging: boolean = false
+    let lastX: number = 0
+    let lastY: number = 0
+    const prevCursor: string = img.style.cursor
+    const prevTouchAction: string = img.style.touchAction
+    const prevUserSelect: string = img.style.userSelect
+    const prevPe: string = img.style.pointerEvents
+    const prevDraggable: string | null = img.getAttribute('draggable')
     img.style.cursor = 'grab'
     img.style.touchAction = 'none'
     img.style.pointerEvents = 'auto'
     img.setAttribute('draggable', 'false')
-    const onDown = (e) => {
+    const onDown = (e: PointerEvent): void => {
       if (e.button !== 0) return
       e.preventDefault()
       e.stopPropagation()
@@ -72,13 +93,13 @@
         void 0
       }
     }
-    const onMove = (e) => {
+    const onMove = (e: PointerEvent): void => {
       if (!dragging) return
       e.preventDefault()
-      const w = Math.max(1, img.clientWidth)
-      const h = Math.max(1, img.clientHeight)
-      let dx = e.movementX
-      let dy = e.movementY
+      const w: number = Math.max(1, img.clientWidth)
+      const h: number = Math.max(1, img.clientHeight)
+      let dx: number = e.movementX
+      let dy: number = e.movementY
       if (dx === 0 && dy === 0) {
         dx = e.clientX - lastX
         dy = e.clientY - lastY
@@ -91,7 +112,7 @@
       y = Math.max(0, Math.min(100, y))
       img.style.objectPosition = `${x}% ${y}%`
     }
-    const endDrag = (e) => {
+    const endDrag = (e: PointerEvent): void => {
       if (!dragging) return
       dragging = false
       img.style.cursor = 'grab'
@@ -102,11 +123,11 @@
         void 0
       }
     }
-    const onDocMove = (e) => {
+    const onDocMove = (e: PointerEvent): void => {
       if (!dragging) return
       onMove(e)
     }
-    const onDocUp = (e) => {
+    const onDocUp = (e: PointerEvent): void => {
       if (!dragging) return
       endDrag(e)
     }
@@ -134,7 +155,7 @@
     }
   }
 
-  function post(obj) {
+  function post(obj: Record<string, unknown>): void {
     try {
       if (window.parent && window.parent !== window) window.parent.postMessage(obj, '*')
     } catch {
@@ -142,7 +163,7 @@
     }
   }
 
-  function ensureVeil() {
+  function ensureVeil(): HTMLElement {
     if (veil) return veil
     veil = document.createElement('div')
     veil.setAttribute('data-sf-pt-veil', '1')
@@ -160,7 +181,7 @@
     return veil
   }
 
-  function ensureHighlight() {
+  function ensureHighlight(): HTMLElement {
     if (highlight) return highlight
     highlight = document.createElement('div')
     highlight.setAttribute('data-sf-pt-hl', '1')
@@ -177,7 +198,7 @@
     return highlight
   }
 
-  function ensureCanvas() {
+  function ensureCanvas(): HTMLCanvasElement {
     if (canvas) return canvas
     canvas = document.createElement('canvas')
     canvas.setAttribute('data-sf-pt-draw', '1')
@@ -198,11 +219,11 @@
     return canvas
   }
 
-  function resizeCanvas() {
+  function resizeCanvas(): void {
     if (!canvas || !ctx) return
-    const dpr = window.devicePixelRatio || 1
-    const w = window.innerWidth
-    const h = window.innerHeight
+    const dpr: number = window.devicePixelRatio || 1
+    const w: number = window.innerWidth
+    const h: number = window.innerHeight
     canvas.width = Math.floor(w * dpr)
     canvas.height = Math.floor(h * dpr)
     canvas.style.width = w + 'px'
@@ -210,7 +231,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   }
 
-  function removeSelectUi() {
+  function removeSelectUi(): void {
     if (veil) {
       veil.remove()
       veil = null
@@ -221,7 +242,7 @@
     }
   }
 
-  function removeAnnotateUi() {
+  function removeAnnotateUi(): void {
     if (canvas) {
       window.removeEventListener('resize', resizeCanvas)
       canvas.remove()
@@ -232,40 +253,41 @@
     last = null
   }
 
-  function isOverlayNode(el) {
+  function isOverlayNode(el: Node | null): boolean {
     if (!el || el.nodeType !== 1) return true
-    if (el === veil || el === highlight || (canvas && el === canvas)) return true
-    if (el.getAttribute('data-sf-pt-veil') != null) return true
-    if (el.getAttribute('data-sf-pt-hl') != null) return true
-    if (el.getAttribute('data-sf-pt-draw') != null) return true
-    if (el.getAttribute('data-sf-inline-toolbar') != null) return true
+    const element: Element = el as Element
+    if (element === veil || element === highlight || (canvas && element === canvas)) return true
+    if (element.getAttribute('data-sf-pt-veil') != null) return true
+    if (element.getAttribute('data-sf-pt-hl') != null) return true
+    if (element.getAttribute('data-sf-pt-draw') != null) return true
+    if (element.getAttribute('data-sf-inline-toolbar') != null) return true
     return false
   }
 
-  function pickTarget(ev) {
-    let list = []
+  function pickTarget(ev: MouseEvent | PointerEvent): Element | null {
+    let list: Element[] = []
     try {
       list = document.elementsFromPoint(ev.clientX, ev.clientY)
     } catch {
       return null
     }
     for (let i = 0; i < list.length; i++) {
-      const el = list[i]
+      const el: Element = list[i]
       if (isOverlayNode(el)) continue
-      const tag = el.tagName
+      const tag: string = el.tagName
       if (tag === 'HTML' || tag === 'BODY') continue
       return el
     }
     return null
   }
 
-  function syncHighlight(el) {
-    const h = ensureHighlight()
+  function syncHighlight(el: Element | null): void {
+    const h: HTMLElement = ensureHighlight()
     if (!el || !el.getBoundingClientRect) {
       h.style.display = 'none'
       return
     }
-    const r = el.getBoundingClientRect()
+    const r: DOMRect = el.getBoundingClientRect()
     if (r.width < 1 && r.height < 1) {
       h.style.display = 'none'
       return
@@ -277,18 +299,28 @@
     h.style.height = r.height + 'px'
   }
 
-  function onSelectMove(ev) {
+  function onSelectMove(ev: MouseEvent): void {
     if (!selectMode) return
-    const el = pickTarget(ev)
+    const el: Element | null = pickTarget(ev)
     syncHighlight(el)
   }
 
-  function canTextEdit(el) {
+  function canTextEdit(el: Element | null): boolean {
     if (!el || el.nodeType !== 1) return false
-    const t = el.tagName
-    if (t === 'IMG' || t === 'SVG' || t === 'VIDEO' || t === 'CANVAS' || t === 'IFRAME' || t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || t === 'BUTTON')
+    const t: string = el.tagName
+    if (
+      t === 'IMG' ||
+      t === 'SVG' ||
+      t === 'VIDEO' ||
+      t === 'CANVAS' ||
+      t === 'IFRAME' ||
+      t === 'INPUT' ||
+      t === 'TEXTAREA' ||
+      t === 'SELECT' ||
+      t === 'BUTTON'
+    )
       return t === 'BUTTON'
-    const allow = {
+    const allow: Record<string, number> = {
       P: 1,
       H1: 1,
       H2: 1,
@@ -324,21 +356,21 @@
     return Boolean(allow[t])
   }
 
-  function removeInlineToolbar() {
+  function removeInlineToolbar(): void {
     if (inlineToolbar) {
       inlineToolbar.remove()
       inlineToolbar = null
     }
   }
 
-  function positionToolbarNear(el) {
+  function positionToolbarNear(el: Element | null): void {
     if (!inlineToolbar || !el) return
-    const r = el.getBoundingClientRect()
-    const pad = 8
-    let top = r.bottom + pad
-    let left = r.left
-    const tw = inlineToolbar.offsetWidth || 280
-    const th = inlineToolbar.offsetHeight || 48
+    const r: DOMRect = el.getBoundingClientRect()
+    const pad: number = 8
+    let top: number = r.bottom + pad
+    let left: number = r.left
+    const tw: number = inlineToolbar.offsetWidth || 280
+    const th: number = inlineToolbar.offsetHeight || 48
     if (left + tw > window.innerWidth - pad) left = window.innerWidth - tw - pad
     if (left < pad) left = pad
     if (r.bottom + th + pad * 2 > window.innerHeight) {
@@ -349,8 +381,8 @@
     inlineToolbar.style.left = left + 'px'
   }
 
-  function baseToolbar() {
-    const bar = document.createElement('div')
+  function baseToolbar(): ToolbarElement {
+    const bar: ToolbarElement = document.createElement('div') as ToolbarElement
     bar.setAttribute('data-sf-inline-toolbar', '1')
     Object.assign(bar.style, {
       position: 'fixed',
@@ -370,15 +402,17 @@
     return bar
   }
 
-  function btn(label, primary) {
-    const b = document.createElement('button')
+  function btn(label: string, primary: boolean): HTMLButtonElement {
+    const b: HTMLButtonElement = document.createElement('button')
     b.type = 'button'
     b.textContent = label
     Object.assign(b.style, {
       padding: '6px 12px',
       borderRadius: '8px',
       border: primary ? '1px solid rgba(167, 139, 250, 0.5)' : '1px solid #3d3758',
-      background: primary ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(167, 139, 250, 0.75))' : 'transparent',
+      background: primary
+        ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(167, 139, 250, 0.75))'
+        : 'transparent',
       color: '#fff',
       cursor: 'pointer',
       fontWeight: '600',
@@ -387,37 +421,38 @@
     return b
   }
 
-  function applyStyleHtmlToActive(htmlStr) {
+  function applyStyleHtmlToActive(htmlStr: string): boolean {
     stopImgPan()
-    const el = activeInlineEl
+    const el: Element | null = activeInlineEl
     if (!el || !el.parentNode) return false
-    const parent = el.parentNode
-    const wrap = document.createElement('div')
+    const parent: Node = el.parentNode
+    const wrap: HTMLDivElement = document.createElement('div')
     wrap.innerHTML = String(htmlStr || '').trim()
-    const next = wrap.firstElementChild
+    const next: Element | null = wrap.firstElementChild
     if (!next) return false
-    const wasImg = el.tagName === 'IMG'
+    const wasImg: boolean = el.tagName === 'IMG'
     parent.replaceChild(next, el)
     activeInlineEl = next
     if (!wasImg && canTextEdit(next)) {
-      next.contentEditable = 'true'
+      ;(next as HTMLElement).contentEditable = 'true'
     }
-    activeInlineEl.style.outline = '2px solid rgba(167, 139, 250, 0.95)'
-    activeInlineEl.style.outlineOffset = '3px'
+    ;(activeInlineEl as HTMLElement).style.outline = '2px solid rgba(167, 139, 250, 0.95)'
+    ;(activeInlineEl as HTMLElement).style.outlineOffset = '3px'
     if (activeInlineEl.tagName === 'IMG') {
-      imgPanCleanup = attachImgPan(activeInlineEl)
+      imgPanCleanup = attachImgPan(activeInlineEl as HTMLImageElement)
     }
     if (inlineToolbar && activeInlineEl) positionToolbarNear(activeInlineEl)
     return true
   }
 
-  function teardownInlineEdit(restore) {
+  function teardownInlineEdit(restore: boolean): void {
     pendingTextAiId = null
     pendingStyleAiId = null
     aiEnhanceBtn = null
     stopImgPan()
-    if (inlineToolbar && inlineToolbar._sfScroll) {
-      window.removeEventListener('scroll', inlineToolbar._sfScroll, true)
+    const toolbar: ToolbarElement | null = inlineToolbar as ToolbarElement | null
+    if (toolbar && toolbar._sfScroll) {
+      window.removeEventListener('scroll', toolbar._sfScroll, true)
     }
     removeInlineToolbar()
     if (activeInlineEl && restore && inlineSnapshot !== null) {
@@ -427,52 +462,55 @@
         void 0
       }
     } else if (activeInlineEl) {
-      activeInlineEl.contentEditable = 'false'
-      activeInlineEl.style.outline = ''
-      activeInlineEl.style.outlineOffset = ''
+      ;(activeInlineEl as HTMLElement).contentEditable = 'false'
+      ;(activeInlineEl as HTMLElement).style.outline = ''
+      ;(activeInlineEl as HTMLElement).style.outlineOffset = ''
     }
     activeInlineEl = null
     inlineSnapshot = null
   }
 
-  function prepareDocumentForSave() {
+  function prepareDocumentForSave(): void {
     stopImgPan()
     removeInlineToolbar()
-    document.querySelectorAll('[data-sf-pt-veil], [data-sf-pt-hl], [data-sf-pt-draw]').forEach((n) => n.remove())
+    document
+      .querySelectorAll('[data-sf-pt-veil], [data-sf-pt-hl], [data-sf-pt-draw]')
+      .forEach((n: Element) => n.remove())
     veil = null
     highlight = null
     canvas = null
     ctx = null
     if (activeInlineEl) {
-      activeInlineEl.contentEditable = 'false'
-      activeInlineEl.style.outline = ''
-      activeInlineEl.style.outlineOffset = ''
+      ;(activeInlineEl as HTMLElement).contentEditable = 'false'
+      ;(activeInlineEl as HTMLElement).style.outline = ''
+      ;(activeInlineEl as HTMLElement).style.outlineOffset = ''
     }
     activeInlineEl = null
     inlineSnapshot = null
   }
 
-  function saveHomepageFromDom() {
+  function saveHomepageFromDom(): void {
     pendingTextAiId = null
     pendingStyleAiId = null
     aiEnhanceBtn = null
-    if (inlineToolbar && inlineToolbar._sfScroll) {
-      window.removeEventListener('scroll', inlineToolbar._sfScroll, true)
+    const toolbar: ToolbarElement | null = inlineToolbar as ToolbarElement | null
+    if (toolbar && toolbar._sfScroll) {
+      window.removeEventListener('scroll', toolbar._sfScroll, true)
     }
     prepareDocumentForSave()
     selectMode = false
     annotateMode = false
-    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML
+    const html: string = '<!DOCTYPE html>\n' + document.documentElement.outerHTML
     post({ type: 'SF_SAVE_HOMEPAGE_HTML', html })
     post({ type: 'SF_INLINE_EDIT_END' })
   }
 
-  function beginImgEdit(el) {
+  function beginImgEdit(el: HTMLImageElement): void {
     inlineSnapshot = el.outerHTML
     activeInlineEl = el
-    const bar = baseToolbar()
+    const bar: ToolbarElement = baseToolbar()
     inlineToolbar = bar
-    const urlIn = document.createElement('input')
+    const urlIn: HTMLInputElement = document.createElement('input')
     urlIn.type = 'text'
     urlIn.placeholder = 'Image URL'
     urlIn.value = el.getAttribute('src') || ''
@@ -484,54 +522,64 @@
       background: '#0f0d1a',
       color: '#f5f3ff',
     })
-    const fileIn = document.createElement('input')
+    const fileIn: HTMLInputElement = document.createElement('input')
     fileIn.type = 'file'
     fileIn.accept = 'image/*'
     fileIn.style.maxWidth = '120px'
     fileIn.addEventListener('change', () => {
-      const f = fileIn.files && fileIn.files[0]
+      const f: File | null = fileIn.files && fileIn.files[0] ? fileIn.files[0] : null
       if (!f) return
-      const r = new FileReader()
+      const r: FileReader = new FileReader()
       r.onload = () => {
         el.src = String(r.result || '')
       }
       r.readAsDataURL(f)
     })
-    const applyUrl = btn('Set URL', true)
+    const applyUrl: HTMLButtonElement = btn('Set URL', true)
     applyUrl.addEventListener('click', () => {
-      const u = urlIn.value.trim()
+      const u: string = urlIn.value.trim()
       if (u) el.src = u
     })
-    const save = btn('Save', true)
+    const save: HTMLButtonElement = btn('Save', true)
     save.addEventListener('click', () => saveHomepageFromDom())
-    const cancel = btn('Cancel', false)
+    const cancel: HTMLButtonElement = btn('Cancel', false)
     cancel.addEventListener('click', () => {
       teardownInlineEdit(true)
       post({ type: 'SF_INLINE_EDIT_END' })
     })
-    const rowImg = document.createElement('div')
-    Object.assign(rowImg.style, { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' })
+    const rowImg: HTMLDivElement = document.createElement('div')
+    Object.assign(rowImg.style, {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      flexWrap: 'wrap',
+    })
     rowImg.appendChild(urlIn)
     rowImg.appendChild(fileIn)
     rowImg.appendChild(applyUrl)
     rowImg.appendChild(save)
     rowImg.appendChild(cancel)
-    const panHint = document.createElement('div')
+    const panHint: HTMLDivElement = document.createElement('div')
     panHint.textContent = 'Click and drag the image to move the visible area inside the frame.'
-    Object.assign(panHint.style, { fontSize: '10px', color: '#9b92b8', lineHeight: '1.35', maxWidth: '100%' })
+    Object.assign(panHint.style, {
+      fontSize: '10px',
+      color: '#9b92b8',
+      lineHeight: '1.35',
+      maxWidth: '100%',
+    })
     Object.assign(bar.style, {
       flexDirection: 'column',
       alignItems: 'stretch',
       maxWidth: 'min(420px, calc(100vw - 24px))',
       gap: '10px',
     })
-    const imgAiPanel = document.createElement('div')
+    const imgAiPanel: HTMLDivElement = document.createElement('div')
     Object.assign(imgAiPanel.style, {
       display: 'none',
       flexDirection: 'column',
       gap: '10px',
     })
-    const imgTa = document.createElement('textarea')
+    const imgTa: HTMLTextAreaElement = document.createElement('textarea')
     imgTa.rows = 2
     imgTa.placeholder = 'Describe styling (shadow, radius, size…)…'
     Object.assign(imgTa.style, {
@@ -546,10 +594,10 @@
       resize: 'vertical',
       minHeight: '44px',
     })
-    const imgEnhance = btn('Apply', true)
+    const imgEnhance: HTMLButtonElement = btn('Apply', true)
     aiEnhanceBtn = imgEnhance
     imgEnhance.addEventListener('click', () => {
-      const instruction = imgTa.value.trim()
+      const instruction: string = imgTa.value.trim()
       if (!instruction || !activeInlineEl) return
       pendingStyleAiId = 'sty-' + Math.random().toString(36).slice(2) + Date.now()
       imgEnhance.disabled = true
@@ -562,7 +610,7 @@
     })
     imgAiPanel.appendChild(imgTa)
     imgAiPanel.appendChild(imgEnhance)
-    const imgAiToggle = document.createElement('button')
+    const imgAiToggle: HTMLButtonElement = document.createElement('button')
     imgAiToggle.type = 'button'
     imgAiToggle.setAttribute('aria-label', 'AI styling')
     imgAiToggle.setAttribute('title', 'AI styling')
@@ -582,12 +630,16 @@
       cursor: 'pointer',
       flexShrink: '0',
     })
-    let imgAiOpen = false
+    let imgAiOpen: boolean = false
     imgAiToggle.addEventListener('click', () => {
       imgAiOpen = !imgAiOpen
       imgAiPanel.style.display = imgAiOpen ? 'flex' : 'none'
-      imgAiToggle.style.background = imgAiOpen ? 'rgba(167, 139, 250, 0.22)' : 'rgba(124, 58, 237, 0.12)'
-      imgAiToggle.style.borderColor = imgAiOpen ? 'rgba(244, 114, 182, 0.45)' : 'rgba(124, 58, 237, 0.35)'
+      imgAiToggle.style.background = imgAiOpen
+        ? 'rgba(167, 139, 250, 0.22)'
+        : 'rgba(124, 58, 237, 0.12)'
+      imgAiToggle.style.borderColor = imgAiOpen
+        ? 'rgba(244, 114, 182, 0.45)'
+        : 'rgba(124, 58, 237, 0.35)'
       positionToolbarNear(activeInlineEl || el)
     })
     rowImg.appendChild(imgAiToggle)
@@ -597,12 +649,12 @@
     document.documentElement.appendChild(bar)
     el.style.outline = '2px solid rgba(167, 139, 250, 0.95)'
     el.style.outlineOffset = '3px'
-    const scrollFnImg = () => positionToolbarNear(activeInlineEl || el)
+    const scrollFnImg: EventListener = () => positionToolbarNear(activeInlineEl || el)
     bar._sfScroll = scrollFnImg
     window.addEventListener('scroll', scrollFnImg, true)
     positionToolbarNear(el)
     imgPanCleanup = attachImgPan(el)
-    const onImgLoad = () => {
+    const onImgLoad = (): void => {
       if (activeInlineEl !== el || !inlineToolbar) return
       stopImgPan()
       imgPanCleanup = attachImgPan(el)
@@ -612,13 +664,13 @@
     }
   }
 
-  function beginTextEdit(el) {
+  function beginTextEdit(el: Element): void {
     inlineSnapshot = el.outerHTML
     activeInlineEl = el
-    el.contentEditable = 'true'
-    el.style.outline = '2px solid rgba(167, 139, 250, 0.95)'
-    el.style.outlineOffset = '3px'
-    const bar = baseToolbar()
+    ;(el as HTMLElement).contentEditable = 'true'
+    ;(el as HTMLElement).style.outline = '2px solid rgba(167, 139, 250, 0.95)'
+    ;(el as HTMLElement).style.outlineOffset = '3px'
+    const bar: ToolbarElement = baseToolbar()
     inlineToolbar = bar
     Object.assign(bar.style, {
       flexDirection: 'column',
@@ -626,14 +678,19 @@
       maxWidth: 'min(420px, calc(100vw - 24px))',
       gap: '10px',
     })
-    const row1 = document.createElement('div')
-    Object.assign(row1.style, { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' })
-    const hint = document.createElement('span')
+    const row1: HTMLDivElement = document.createElement('div')
+    Object.assign(row1.style, {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      flexWrap: 'wrap',
+    })
+    const hint: HTMLSpanElement = document.createElement('span')
     hint.textContent = 'Edit text'
     Object.assign(hint.style, { marginRight: '6px', opacity: '0.85' })
-    const save = btn('Save', true)
+    const save: HTMLButtonElement = btn('Save', true)
     save.addEventListener('click', () => saveHomepageFromDom())
-    const cancel = btn('Cancel', false)
+    const cancel: HTMLButtonElement = btn('Cancel', false)
     cancel.addEventListener('click', () => {
       teardownInlineEdit(true)
       post({ type: 'SF_INLINE_EDIT_END' })
@@ -641,7 +698,7 @@
     row1.appendChild(hint)
     row1.appendChild(save)
     row1.appendChild(cancel)
-    const addSection = document.createElement('button')
+    const addSection: HTMLButtonElement = document.createElement('button')
     addSection.type = 'button'
     addSection.setAttribute('aria-label', 'Add section')
     addSection.setAttribute('title', 'Add section')
@@ -662,43 +719,44 @@
       flexShrink: '0',
     })
     addSection.addEventListener('click', () => {
-      const path = window.location && window.location.pathname ? window.location.pathname : '/'
+      const path: string =
+        window.location && window.location.pathname ? window.location.pathname : '/'
       post({ type: 'SF_ADD_COMPONENT_CLICK', route: path })
     })
     row1.appendChild(addSection)
 
-    const aiCfg = window.__SF_PREVIEW_AI__ || {}
-    const aiPanel = document.createElement('div')
+    const aiCfg: PreviewAIConfig = (window as WindowWithPreviewAI).__SF_PREVIEW_AI__ || {}
+    const aiPanel: HTMLDivElement = document.createElement('div')
     Object.assign(aiPanel.style, {
       display: 'none',
       flexDirection: 'column',
       gap: '10px',
     })
-    const modeRow = document.createElement('div')
+    const modeRow: HTMLDivElement = document.createElement('div')
     Object.assign(modeRow.style, {
       display: 'flex',
       gap: '12px',
       fontSize: '11px',
       color: '#b8b2d1',
     })
-    const rTextMode = document.createElement('input')
+    const rTextMode: HTMLInputElement = document.createElement('input')
     rTextMode.type = 'radio'
     rTextMode.name = 'sf-ai-text-or-appearance'
     rTextMode.checked = true
-    const labTextMode = document.createElement('label')
+    const labTextMode: HTMLLabelElement = document.createElement('label')
     labTextMode.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;'
     labTextMode.appendChild(rTextMode)
     labTextMode.appendChild(document.createTextNode('Text'))
-    const rAppMode = document.createElement('input')
+    const rAppMode: HTMLInputElement = document.createElement('input')
     rAppMode.type = 'radio'
     rAppMode.name = 'sf-ai-text-or-appearance'
-    const labAppMode = document.createElement('label')
+    const labAppMode: HTMLLabelElement = document.createElement('label')
     labAppMode.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;'
     labAppMode.appendChild(rAppMode)
     labAppMode.appendChild(document.createTextNode('Appearance'))
     modeRow.appendChild(labTextMode)
     modeRow.appendChild(labAppMode)
-    const ta = document.createElement('textarea')
+    const ta: HTMLTextAreaElement = document.createElement('textarea')
     ta.rows = 2
     ta.placeholder = 'Describe how you want this text to read…'
     Object.assign(ta.style, {
@@ -713,8 +771,8 @@
       resize: 'vertical',
       minHeight: '44px',
     })
-    let outLang = 'en'
-    const langRow = document.createElement('div')
+    let outLang: string = 'en'
+    const langRow: HTMLDivElement = document.createElement('div')
     Object.assign(langRow.style, {
       display: 'flex',
       flexDirection: 'column',
@@ -722,11 +780,11 @@
       fontSize: '11px',
       color: '#b8b2d1',
     })
-    const rEn = document.createElement('input')
+    const rEn: HTMLInputElement = document.createElement('input')
     rEn.type = 'radio'
     rEn.name = 'sf-ai-out-lang'
     rEn.checked = true
-    const labEn = document.createElement('label')
+    const labEn: HTMLLabelElement = document.createElement('label')
     labEn.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;'
     labEn.appendChild(rEn)
     labEn.appendChild(document.createTextNode('Output in English'))
@@ -735,10 +793,10 @@
     })
     langRow.appendChild(labEn)
     if (aiCfg.canIndian && aiCfg.indianLabel) {
-      const rIn = document.createElement('input')
+      const rIn: HTMLInputElement = document.createElement('input')
       rIn.type = 'radio'
       rIn.name = 'sf-ai-out-lang'
-      const labIn = document.createElement('label')
+      const labIn: HTMLLabelElement = document.createElement('label')
       labIn.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;'
       labIn.appendChild(rIn)
       labIn.appendChild(document.createTextNode('Output in ' + aiCfg.indianLabel))
@@ -747,8 +805,8 @@
       })
       langRow.appendChild(labIn)
     }
-    const syncTextAiModeUi = () => {
-      const appearance = rAppMode.checked
+    const syncTextAiModeUi = (): void => {
+      const appearance: boolean = rAppMode.checked
       langRow.style.display = appearance ? 'none' : 'flex'
       ta.placeholder = appearance
         ? 'Describe styling (spacing, colors, classes…)…'
@@ -756,10 +814,10 @@
     }
     rTextMode.addEventListener('change', syncTextAiModeUi)
     rAppMode.addEventListener('change', syncTextAiModeUi)
-    const enhance = btn('Apply', true)
+    const enhance: HTMLButtonElement = btn('Apply', true)
     aiEnhanceBtn = enhance
     enhance.addEventListener('click', () => {
-      const instruction = ta.value.trim()
+      const instruction: string = ta.value.trim()
       if (!instruction || !activeInlineEl) return
       if (rAppMode.checked) {
         pendingStyleAiId = 'sty-' + Math.random().toString(36).slice(2) + Date.now()
@@ -774,7 +832,7 @@
       }
       pendingTextAiId = 'ai-' + Math.random().toString(36).slice(2) + Date.now()
       enhance.disabled = true
-      const text = activeInlineEl.innerText || ''
+      const text: string = activeInlineEl.textContent || ''
       post({
         type: 'SF_PREVIEW_TEXT_AI_REQ',
         id: pendingTextAiId,
@@ -789,7 +847,7 @@
     aiPanel.appendChild(enhance)
     syncTextAiModeUi()
 
-    const aiToggle = document.createElement('button')
+    const aiToggle: HTMLButtonElement = document.createElement('button')
     aiToggle.type = 'button'
     aiToggle.setAttribute('aria-label', 'AI enhance')
     aiToggle.setAttribute('title', 'AI enhance')
@@ -809,7 +867,7 @@
       cursor: 'pointer',
       flexShrink: '0',
     })
-    let aiOpen = false
+    let aiOpen: boolean = false
     aiToggle.addEventListener('click', () => {
       aiOpen = !aiOpen
       aiPanel.style.display = aiOpen ? 'flex' : 'none'
@@ -822,30 +880,32 @@
     bar.appendChild(aiPanel)
 
     document.documentElement.appendChild(bar)
-    const scrollFnText = () => positionToolbarNear(activeInlineEl || el)
+    const scrollFnText: EventListener = () => positionToolbarNear(activeInlineEl || el)
     bar._sfScroll = scrollFnText
     window.addEventListener('scroll', scrollFnText, true)
     positionToolbarNear(el)
-    el.focus()
+    ;(el as HTMLElement).focus()
     try {
-      const r = document.createRange()
+      const r: Range = document.createRange()
       r.selectNodeContents(el)
-      const s = window.getSelection()
-      s.removeAllRanges()
-      s.addRange(r)
+      const s: Selection | null = window.getSelection()
+      if (s) {
+        s.removeAllRanges()
+        s.addRange(r)
+      }
     } catch {
       void 0
     }
   }
 
-  function beginInlineEdit(el) {
+  function beginInlineEdit(el: Element): void {
     if (!el || el === document.documentElement || el === document.body) return
     removeSelectUi()
     selectMode = false
     post({ type: 'SF_INLINE_EDIT_BEGIN' })
     teardownInlineEdit(false)
     if (el.tagName === 'IMG') {
-      beginImgEdit(el)
+      beginImgEdit(el as HTMLImageElement)
       return
     }
     if (canTextEdit(el)) {
@@ -855,38 +915,38 @@
     post({ type: 'SF_INLINE_EDIT_UNSUPPORTED' })
   }
 
-  function onSelectClick(ev) {
+  function onSelectClick(ev: MouseEvent): void {
     if (!selectMode) return
     ev.preventDefault()
     ev.stopPropagation()
     ev.stopImmediatePropagation()
-    const el = pickTarget(ev)
+    const el: Element | null = pickTarget(ev)
     if (!el || el === document.documentElement || el === document.body) return
     beginInlineEdit(el)
   }
 
-  function bindSelect() {
+  function bindSelect(): void {
     removeSelectUi()
     if (!selectMode) return
-    ensureVeil()
+    const v: HTMLElement = ensureVeil()
     ensureHighlight()
-    veil.addEventListener('mousemove', onSelectMove, true)
-    veil.addEventListener('click', onSelectClick, true)
+    v.addEventListener('mousemove', onSelectMove, true)
+    v.addEventListener('click', onSelectClick, true)
   }
 
-  function clearCanvas() {
+  function clearCanvas(): void {
     if (!canvas || !ctx) return
     resizeCanvas()
   }
 
-  function bindAnnotate() {
+  function bindAnnotate(): void {
     removeAnnotateUi()
     if (!annotateMode) return
-    const c = ensureCanvas()
+    const c: HTMLCanvasElement = ensureCanvas()
     clearCanvas()
-    const line = (ev) => {
-      const x = ev.clientX
-      const y = ev.clientY
+    const line = (ev: PointerEvent): void => {
+      const x: number = ev.clientX
+      const y: number = ev.clientY
       if (!drawing) {
         last = { x, y }
         return
@@ -902,7 +962,7 @@
       ctx.stroke()
       last = { x, y }
     }
-    c.addEventListener('pointerdown', (ev) => {
+    c.addEventListener('pointerdown', (ev: PointerEvent) => {
       drawing = true
       last = { x: ev.clientX, y: ev.clientY }
       c.setPointerCapture(ev.pointerId)
@@ -918,14 +978,14 @@
     })
   }
 
-  function applyModes() {
+  function applyModes(): void {
     if (!selectMode) removeSelectUi()
     else bindSelect()
     if (!annotateMode) removeAnnotateUi()
     else bindAnnotate()
   }
 
-  window.addEventListener('keydown', (e) => {
+  window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key !== 'Escape') return
     if (activeInlineEl || inlineToolbar) {
       e.preventDefault()
@@ -936,8 +996,8 @@
     post({ type: 'SF_PREVIEW_TOOLS_ESCAPE' })
   })
 
-  window.addEventListener('message', (ev) => {
-    const d = ev.data || {}
+  window.addEventListener('message', (ev: MessageEvent<unknown>) => {
+    const d: MessageData = (ev.data || {}) as MessageData
     if (d.type === 'SF_PREVIEW_TEXT_AI_RES' && d.id === pendingTextAiId) {
       pendingTextAiId = null
       if (aiEnhanceBtn) aiEnhanceBtn.disabled = false
@@ -958,7 +1018,7 @@
         return
       }
       if (d.html != null && activeInlineEl) {
-        const ok = applyStyleHtmlToActive(String(d.html))
+        const ok: boolean = applyStyleHtmlToActive(String(d.html))
         if (!ok) window.alert('Could not apply styled HTML')
       }
       return
@@ -975,7 +1035,7 @@
     }
   })
 
-  window.addEventListener('load', () => {
+  window.addEventListener('load', (): void => {
     post({ type: 'SF_PREVIEW_TOOLS_READY', route: location.pathname || '/' })
   })
   if (document.readyState === 'complete') {

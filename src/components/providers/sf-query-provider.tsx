@@ -5,7 +5,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 
 declare global {
   interface Window {
-    __sfQueryClient?: QueryClient
+    __sfQueryClient: QueryClient | undefined
   }
 }
 

@@ -1,2158 +1,2689 @@
-if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
-  history.scrollRestoration = 'manual'
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// node_modules/n-gram/index.js
+function nGram(n) {
+  if (typeof n !== "number" || Number.isNaN(n) || n < 1 || n === Number.POSITIVE_INFINITY) {
+    throw new Error("`" + n + "` is not a valid argument for `n-gram`");
+  }
+  return grams;
+  function grams(value) {
+    const nGrams = [];
+    if (value === null || value === void 0) {
+      return nGrams;
+    }
+    const source = typeof value.slice === "function" ? value : String(value);
+    let index = source.length - n + 1;
+    if (index < 1) {
+      return nGrams;
+    }
+    while (index--) {
+      nGrams[index] = source.slice(index, index + n);
+    }
+    return nGrams;
+  }
 }
+var bigram, trigram;
+var init_n_gram = __esm({
+  "node_modules/n-gram/index.js"() {
+    bigram = nGram(2);
+    trigram = nGram(3);
+  }
+});
 
-import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from './content-policy.js'
-import { preferMixedEnglishBcp47FromSnippet } from './mixed-english-hints.js'
-import { INDIAN_SAMPLE_PROMPTS } from './indian-sample-prompts.js'
-import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed.js'
-
-let currentUser = null
-let authResolved = false
-let hasSessionResizeListener = false
-
-const openAuthOverlay = () => {
-  window.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
+// node_modules/collapse-white-space/index.js
+function collapseWhiteSpace(value, options) {
+  if (!options) {
+    options = {};
+  } else if (typeof options === "string") {
+    options = { style: options };
+  }
+  const replace = options.preserveLineEndings ? replaceLineEnding : replaceSpace;
+  return String(value).replace(
+    options.style === "html" ? html : js,
+    options.trim ? trimFactory(replace) : replace
+  );
 }
+function replaceLineEnding(value) {
+  const match = /\r?\n|\r/.exec(value);
+  return match ? match[0] : " ";
+}
+function replaceSpace() {
+  return " ";
+}
+function trimFactory(replace) {
+  return dropOrReplace;
+  function dropOrReplace(value, index, all) {
+    return index === 0 || index + value.length === all.length ? "" : replace(value);
+  }
+}
+var js, html;
+var init_collapse_white_space = __esm({
+  "node_modules/collapse-white-space/index.js"() {
+    js = /\s+/g;
+    html = /[\t\n\v\f\r ]+/g;
+  }
+});
 
+// node_modules/trigram-utils/index.js
+function clean(value) {
+  if (value === null || value === void 0) {
+    return "";
+  }
+  return collapseWhiteSpace(String(value).replace(/[\u0021-\u0040]+/g, " ")).trim().toLowerCase();
+}
+function trigrams(value) {
+  return trigram(" " + clean(value) + " ");
+}
+function asDictionary(value) {
+  const values = trigrams(value);
+  const dictionary = {};
+  let index = -1;
+  while (++index < values.length) {
+    if (own.call(dictionary, values[index])) {
+      dictionary[values[index]]++;
+    } else {
+      dictionary[values[index]] = 1;
+    }
+  }
+  return dictionary;
+}
+function asTuples(value) {
+  const dictionary = asDictionary(value);
+  const tuples = [];
+  let trigram2;
+  for (trigram2 in dictionary) {
+    if (own.call(dictionary, trigram2)) {
+      tuples.push([trigram2, dictionary[trigram2]]);
+    }
+  }
+  tuples.sort(sort);
+  return tuples;
+}
+function sort(a, b) {
+  return a[1] - b[1];
+}
+var own;
+var init_trigram_utils = __esm({
+  "node_modules/trigram-utils/index.js"() {
+    init_n_gram();
+    init_collapse_white_space();
+    own = {}.hasOwnProperty;
+  }
+});
+
+// node_modules/franc-min/expressions.js
+var expressions;
+var init_expressions = __esm({
+  "node_modules/franc-min/expressions.js"() {
+    expressions = {
+      cmn: /[\u2E80-\u2E99\u2E9B-\u2EF3\u2F00-\u2FD5\u3005\u3007\u3021-\u3029\u3038-\u303B\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFA6D\uFA70-\uFAD9]|\uD81B[\uDFE2\uDFE3\uDFF0\uDFF1]|[\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883\uD885-\uD887][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF39\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A\uDF50-\uDFFF]|\uD888[\uDC00-\uDFAF]/g,
+      Latin: /[A-Za-z\u00AA\u00BA\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7CA\uA7D0\uA7D1\uA7D3\uA7D5-\uA7D9\uA7F2-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uAB66-\uAB69\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A]|\uD801[\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD837[\uDF00-\uDF1E\uDF25-\uDF2A]/g,
+      Cyrillic: /[\u0400-\u0484\u0487-\u052F\u1C80-\u1C88\u1D2B\u1D78\u2DE0-\u2DFF\uA640-\uA69F\uFE2E\uFE2F]|\uD838[\uDC30-\uDC6D\uDC8F]/g,
+      Arabic: /[\u0600-\u0604\u0606-\u060B\u060D-\u061A\u061C-\u061E\u0620-\u063F\u0641-\u064A\u0656-\u066F\u0671-\u06DC\u06DE-\u06FF\u0750-\u077F\u0870-\u088E\u0890\u0891\u0898-\u08E1\u08E3-\u08FF\uFB50-\uFBC2\uFBD3-\uFD3D\uFD40-\uFD8F\uFD92-\uFDC7\uFDCF\uFDF0-\uFDFF\uFE70-\uFE74\uFE76-\uFEFC]|\uD803[\uDE60-\uDE7E\uDEFD-\uDEFF]|\uD83B[\uDE00-\uDE03\uDE05-\uDE1F\uDE21\uDE22\uDE24\uDE27\uDE29-\uDE32\uDE34-\uDE37\uDE39\uDE3B\uDE42\uDE47\uDE49\uDE4B\uDE4D-\uDE4F\uDE51\uDE52\uDE54\uDE57\uDE59\uDE5B\uDE5D\uDE5F\uDE61\uDE62\uDE64\uDE67-\uDE6A\uDE6C-\uDE72\uDE74-\uDE77\uDE79-\uDE7C\uDE7E\uDE80-\uDE89\uDE8B-\uDE9B\uDEA1-\uDEA3\uDEA5-\uDEA9\uDEAB-\uDEBB\uDEF0\uDEF1]/g,
+      ben: /[\u0980-\u0983\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BC-\u09C4\u09C7\u09C8\u09CB-\u09CE\u09D7\u09DC\u09DD\u09DF-\u09E3\u09E6-\u09FE]/g,
+      Devanagari: /[\u0900-\u0950\u0955-\u0963\u0966-\u097F\uA8E0-\uA8FF]|\uD806[\uDF00-\uDF09]/g,
+      jpn: /[\u3041-\u3096\u309D-\u309F]|\uD82C[\uDC01-\uDD1F\uDD32\uDD50-\uDD52]|\uD83C\uDE00|[\u30A1-\u30FA\u30FD-\u30FF\u31F0-\u31FF\u32D0-\u32FE\u3300-\u3357\uFF66-\uFF6F\uFF71-\uFF9D]|\uD82B[\uDFF0-\uDFF3\uDFF5-\uDFFB\uDFFD\uDFFE]|\uD82C[\uDC00\uDD20-\uDD22\uDD55\uDD64-\uDD67]|[\u3400-\u4DB5\u4E00-\u9FAF]/g,
+      jav: /[\uA980-\uA9CD\uA9D0-\uA9D9\uA9DE\uA9DF]/g,
+      kor: /[\u1100-\u11FF\u302E\u302F\u3131-\u318E\u3200-\u321E\u3260-\u327E\uA960-\uA97C\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uFFA0-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/g,
+      tel: /[\u0C00-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3C-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C58-\u0C5A\u0C5D\u0C60-\u0C63\u0C66-\u0C6F\u0C77-\u0C7F]/g,
+      tam: /[\u0B82\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD0\u0BD7\u0BE6-\u0BFA]|\uD807[\uDFC0-\uDFF1\uDFFF]/g,
+      guj: /[\u0A81-\u0A83\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABC-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AD0\u0AE0-\u0AE3\u0AE6-\u0AF1\u0AF9-\u0AFF]/g,
+      kan: /[\u0C80-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBC-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CDD\u0CDE\u0CE0-\u0CE3\u0CE6-\u0CEF\u0CF1-\u0CF3]/g,
+      mal: /[\u0D00-\u0D0C\u0D0E-\u0D10\u0D12-\u0D44\u0D46-\u0D48\u0D4A-\u0D4F\u0D54-\u0D63\u0D66-\u0D7F]/g,
+      mya: /[\u1000-\u109F\uA9E0-\uA9FE\uAA60-\uAA7F]/g,
+      pan: /[\u0A01-\u0A03\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A59-\u0A5C\u0A5E\u0A66-\u0A76]/g,
+      amh: /[\u1200-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u135D-\u137C\u1380-\u1399\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|\uD839[\uDFE0-\uDFE6\uDFE8-\uDFEB\uDFED\uDFEE\uDFF0-\uDFFE]/g,
+      tha: /[\u0E01-\u0E3A\u0E40-\u0E5B]/g,
+      sin: /[\u0D81-\u0D83\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2-\u0DF4]|\uD804[\uDDE1-\uDDF4]/g,
+      ell: /[\u0370-\u0373\u0375-\u0377\u037A-\u037D\u037F\u0384\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03E1\u03F0-\u03FF\u1D26-\u1D2A\u1D5D-\u1D61\u1D66-\u1D6A\u1DBF\u1F00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FC4\u1FC6-\u1FD3\u1FD6-\u1FDB\u1FDD-\u1FEF\u1FF2-\u1FF4\u1FF6-\u1FFE\u2126\uAB65]|\uD800[\uDD40-\uDD8E\uDDA0]|\uD834[\uDE00-\uDE45]/g
+    };
+  }
+});
+
+// node_modules/franc-min/data.js
+var data;
+var init_data = __esm({
+  "node_modules/franc-min/data.js"() {
+    data = {
+      Latin: {
+        spa: " de|de |os | la| a |la | y |\xF3n |i\xF3n|es |ere|rec|ien|o a|der|ci\xF3|cho|ech|en |a p|ent|a l|aci|el |na |ona|e d| co|as |da | to|al |ene| en|tod| pe|e l| el|ho |nte| su|per|a t|ad | ti|ers|tie| se|rso|son|e s| pr|o d|oda|te |cia|n d| es|dad|ida| in|ne |est|ion|cio|s d|con|a e| po|men| li|n e|nci|res|su |to |tra| re| lo|tad| na|los|a s| o |ia |que| pa|r\xE1 |pro| un|s y|ual|s e|lib|nac|do |ra |er |a d|ue | qu|e e|sta|nal|ar |nes|ica|a c|ser|or |ter|se |por|cci|io |del|l d|des|ado|les|one|a a|ndi| so| cu|s p|ale|s n|ame|par|ici|oci|una|ber|s t|rta|com| di|dos|e a|imi|o s|e c|ert|las|o p|ant|dic|nto| al|ara|ibe|enc|o e|s l|cas| as|e p|ten|ali|o t|soc|y l|n c|nta|so |tos|y a|ria|n t|die|a u| fu|no |l p|ial|qui|dis|s o|hos|gua|igu| ig| ca|sar|l t| ma|l e|pre| ac|tiv|s a|re |nad|vid|era| tr|ier|cua|n p|ta |cla|ade|bre|s s|esa|ntr|ecc|a i| le|lid|das|d d|ido|ari|ind|ada|nda|fun|mie|ca |tic|eli|y d|nid|e i|odo|ios|o y|esp|iva|y e|mat|bli|r a|dr\xE1|tri|cti|tal|rim|ont|er\xE1|us |sus|end|pen|tor|ito|ond|ori|uie|lig|n a|ist|rac|lar|rse|tar|mo |omo|ibr|n l|edi|med| me|nio|a y|eda|isf|lo |aso|l m|ias|ico|lic|ple|ste|act|tec|ote|rot|ele|ura| ni|ie |adi|u p|seg|s i|un |und|a n|lqu|alq|o i|inc|sti| si|n s|ern",
+        eng: "the| th| an|he |nd |ion|and| to|to |tio| of|on |of | in|al |ati|or |ght|igh|rig| ri|ne |ent|one|ll |is |as |ver|ed | be|e r|in |t t|all|eve|ht | or|ery|s t|ty | ev|e h|yon| ha|ryo|e a|be |his| fr|ng |d t|has| sh|ing| hi|sha| pr| co| re|hal|nal|y a|s a|n t|ce |men|ree|fre|e s|l b|nat|for|ts |nt |n a|ity|ry |her|nce|ect|d i| pe|pro|n o|cti| fo|e e|ly |es | no|ona|ny |any|er |re |f t|e o| de|s o| wi|ter|nte|e i|ons| en| ar|res|ers|y t|per|d f| a | on|ith|l a|e t|oci|soc|lit| as| se|dom|edo|eed|nti|s e|t o|oth|wit| di|equ|t a|ted|st |y o|int|e p| ma| so| na|l o|e c|ch |d a|enc|th |are|ns |ic | un| fu|tat|ial|cia| ac|hts|nit|qua| eq| al|om |e w|d o|f h|ali|ote|n e| wh|r t|sta|ge |thi|o a|tit|ual|an |te |ess| ch|le |ary|e f|by | by|y i|tec|uni|o t|o o| li|no | la|s r| su|inc|led|rot|con| pu| he|ere|imi|r a|ntr| st| ot|eli|age|dis|s d|tle|itl|hou|son|duc|edu| wo|ate|ble|ces|at | at| fa|com|ive|o s|eme|o e|aw |law|tra|und|pen|nde|unt|oun|n s|s f|f a|tho|ms | is|act|cie|cat|uca| ed|anc|wor|ral|t i| me|o f|ily|pri|ren|ose|s c|en |d n|l c|ful|rar|nta|nst| ag|l p|min|din|sec|y e| tr|rso|ich|hic|whi|cou|ern|uri|r o|tic|iti|igi|lig|rat|rth|t f|oms|rit|d r|ee |e b|era|rou|se |ay |rs | ho|abl|e u",
+        por: "de | de| se|\xE3o |os |to |em | e |do |o d| di|er |ito|eit|ser|ent|\xE7\xE3o| a |dir|ire|rei|o s|ade|dad|uma|as |no |e d| to|nte| co|o t|tod| ou|men|que|s e|man| pr| in| qu|es | te|hum|odo|e a|da | hu|ano|te |al |tem|o e|s d|ida|m d| pe| re|o a|ou |r h|e s|cia|a e| li|o p| es|res| do| da| \xE0 |ual| em| su|a\xE7\xE3|dos|a p|tra|est|ia |con|pro|ar |e p|is | na|r\xE1 |qua|a d| pa|com|ais|o c|ame|er\xE1| po|uer|sta|ber|ter| o |ess|ra |e e|das|o \xE0|nto|nal|o o|a c|ido|rda|erd| as|nci|sua|ona|des|ibe|lib|e t|ado|s n|ua |s t|ue | so|ica|ma |lqu|alq|tos|m s|a l|per|ada|oci|soc|cio|a n|par|aci|s a|pre|ont|m o|ura|a s| um|ion|e o|or |e r|pel|nta|ntr|a i|io |nac|\xEAnc|str|ali|ria|nst| tr|a q|int|o n|a o|ca |ela|u\xE7\xE3|lid|e l| at|sen|ese|r d|s p|egu|seg|vid|pri|sso|\xE9m |ime|tic|dis|ra\xE7|eci|ara| ca|nid|tru|\xF5es|ass|seu|por|a a|m p| ex|so |r i|e\xE7\xE3|te\xE7|ote|rot| le| ma|ing|a t|ran|era|rio|l d|eli|\xE7a |sti| ne|cid|ern|utr|out|r e|e c|tad|gua|igu| ig| os|s o|ru\xE7|ins|\xE7\xF5e|ios| fa|e n|sse| no|re |art|r p|rar|u p|inc|lei|cas|ico|u\xE9m|gu\xE9|ngu|nin| ni|gur|la |pen|n\xE7a|na |i\xE7\xE3|i\xE3o|cie|ist|sem|ta |ele|e f|om |tro| ao|rel|m a|s s|tar|eda|ied|uni|e m|s i|a f|ias| cu| ac|r a|\xE1 a|rem|ei |omo|rec|for|s f|esc|ant|\xE0 s| vi|o q|ver|a u|nda|und|fun",
+        ind: "an |ang|ng | da|ak | pe|ata| se| ke| me|dan| di| be|ber|kan|ran|hak|per|yan| ya|nga|nya|gan| at|ara| ha|eng|asa|ora|men|n p|n k|erh|rha|n d|ya |ap |at |as |tan|n b|ala|a d| or|a s|san|tas|eti|uk |pen|g b|set|ntu|n y|tia|iap|k m|eba|aan| un|n s|tuk|k a|p o|am |lam| ma|unt| de|ter|bas|beb|dak|end|i d|pun|mem|tau|dal|ama|keb|aka|ika|n m| ba|di |ma | sa|den|au |nda|n h|eri| ti|ela|k d|un |n a|ebe|ana|ah |ra |ida|uka| te|al |ada|ri |ole|tid|ngg|lak|leh|dap|a p|dil|g d|ena|eh |gar|na |ert|apa|um |tu |atu|a m|sam|ila|har|n t|asi|ban|erl|t d|bat|uat|ta |lan|adi|h d|neg| ne|kum|mas|nan|pat|aha| in|l d|emp|sem|rus|sua|ser|uan|era|ari|erb|kat|man|a b|g s|rta|ai |nny|n u|ung|ndi|han|uku|huk| hu|sa |ers|in | la|ka | su|ann|car|kes|aku|dip|i s|a a|erk|n i|lai|rga|aru|k h|i m|rka|a u|us |nak|emb|gga|nta|iba| pu|ind|s p|ent|mel|ina|min|ian|dar|ni |rma|lua|rik|ndu|lin|sia|rbu|g p|k s|da |aya|ese|u d|ega|nas|ar |ipe|yar|sya|ik |aga| ta|ain|ua |arg|uar|iny|pem|ut |si |dun|eor|seo|rak|ngs|ami|kel|ini|g t|dik|mer|emu|aks|rat|uru|ewa|il |enu|any|kep|pel|asu|rli|ia |dir|jam|mba|mat|pan|g m|ses|sar|das|kuk|bol|ili|u k|gsa|u p|a k|ern|ant|raa|t p|ema|mua|idi|did|t s|i k|rin|erm|esu|ger|elu|nja|enj|ga |dit",
+        fra: " de|es |de |ion|nt |tio|et |ne |on | et|ent|le |oit|e d| la|e p|la |it | \xE0 |t d|roi|dro| dr| le|t\xE9 |e s|ati|te |re | to|s d|men|tou|e l|ns | pe| co|son|que| au| so|e a|onn|out| un| qu| sa| pr|ute|eme| l\u2019|t \xE0| a |e e|con|des| pa|ue |ers|e c| li|a d|per|ont|s e|t l|les|ts |tre|s l|ant| ou|cti|rso|ou |ce |ux |\xE0 l|nne|ons|it\xE9|en |un | en|er |une|n d|sa |lle| in|nte|e t| se|lib|res|a l|ire| d\u2019| re|\xE9 d|nat|iqu|ur |r l|t a|s s|aux|par|nal|a p|ans|dan|qui|t p| d\xE9|pro|s p|air| ne| fo|ert|s a|nce|au |ui |ect|du |ond|ale|lit| po|san| ch|\xE9s | na|us |com|our|ali|tra| ce|al |e o|e n|rt\xE9|ber|ibe|tes|r d|e r|its| di|\xEAtr|pou|\xE9t\xE9|s c|\xE0 u|ell|int|fon|oci|soc|ut |ter| da|aut|ien|rai| do|iss|s n| ma|bli|ge |est|s o| du|ona|n p|pri|rs |\xE9ga| \xEAt|ous|ens|ar |age|s t| su|cia|u d|cun|rat| es|ir |n c|e m| \xE9t|t \xEA|a c| ac|ote|n t|ein| tr|a s|ndi|e q|sur|\xE9e |ser|l n| pl|anc|lig|t s|n e|s i|t e| \xE9g|ain|omm|act|ntr|tec|gal|ul | nu| vi|me |nda|ind|soi|st | te|pay|tat|era|il |rel|n a|dis|n s|pr\xE9|peu|rit|\xE9 e|t \xE9|bre|sen|ill|l\u2019a|d\u2019a| mo|ass|lic|art| pu|abl|nta|t c|rot| on| lo|ure|l\u2019e|ava|ten|nul|ivi|t i|ess|ys |ays| fa|ine|eur|r\xE9s|cla|t\xE9s|oir|eut|e f|utr|doi|ibr|ais|ins|\xE9ra|\u2019en|i\xE9t|l e|s \xE9|nt\xE9| r\xE9|ssi| as|nse|ces|\xE9 a",
+        deu: "en |er |der|ein| un|nd |und|ung|cht|ich| de|sch|ng | ge|ine|ech|gen|rec|che|ie | re|eit| au|ht |die| di| ha|ch | da|ver| zu|lic|t d|in |auf| ei| in| be|hen|nde|n d|uf |ede| ve|it |ten|n s|sei|at |jed| je| se|and|rei|s r|den|ter|ne |hat|t a|r h|zu |das|ode| od|as |es | an|fre|nge| we|n u|run| fr|ere|e u|lle|ner|nte|hei|ese| so|rde|wer|ige| al|ers|n g|hte|d d| st|n j|lei|all|n a|nen|ege|ent|bei|g d|erd|t u|ren|nsc|chu| gr|kei|ens|le |ben|aft|haf|cha|tli|ges|e s| si|men| vo|lun|em |r s|ion|te |len|gru|gun|tig|unt|uch|spr|n e|ft |ei |e f| wi| sc|r d|n n|geh|r g|dar|sta|erk| er|r e|sen|eic|gle| gl|lie|e e|tz |fen|n i|nie|f g|t w|des|chl|ite|ihe|eih|ies|ruc|st |ist|n w|h a|n z|e a| ni|ang|rf |arf|gem|ale|ati|on |he |t s|ach| na|end|n o|pru|ans|sse|ern|aat|taa|ehe|e d|hli|hre|int|tio|her|nsp|de |mei| ar|r a|ffe|e b|wie|erf|abe|hab|ndl|n v|sic|t i|han|ema|nat|ber|ied|geg|d s|nun|d f|ind| me|gke|igk|ie\xDF| fa|igu|hul|r v|dig|rch|urc|dur| du|utz|hut|tra|aus|alt|bes|str|ell|ste|ger|r o|esc|e g|rbe|arb|ohn|r b|mit|d g|r w|ntl|sow|n h|nne|etz|raf|dlu| ih|lte|man|iem|erh|eru| is|dem|lan|rt |son|isc|eli|rel|n r|e i|rli|r i| mi|e m|ild|bil| bi|eme| en|ins|f\xFCr| f\xFC|gel|\xF6ff| \xF6f|owi|ill|wil|e v|ric|f e",
+        jav: "ng |an | ka|ang|ing|kan| sa|ak |lan| la|hak| pa| ha|ara|ne |abe| in|n k|ngg|ong|ane|nga|ant|won|uwo| an| uw|nin|ata|n u|en |ra |tan| da|ran|ana| ma|nth|ake|ben|beb|hi |ke |sab|nda| ng|adi|thi|nan|a k| ba|san|asa|ni |e h|e k|g k| ut|pan|awa| be|eba|gan|g p|dan| wa|bas|aka|dha|yan|sa |arb|man| di|wa |g d| na|g n|ban| tu|n s|ung|wen|g s|rbe|dar|dak|di |g u|ora|aya|be |ah |a s|eni| or|han|as | pr|a n|na |iya|a a|kar|at |a l|mar|uwe|duw|uta|und|n p|asi|pa | si|ala|n n| un|kab|oni|ya |i h|gar|g b|yat|tum|ta |n m|i k|apa|taw| li|ani| ke|al |ka |kal|ngk|ega| ne|nal|n i|g a|ggo|ina|we |ena|dad|iba|awi|aga|a p| ta|sar|adh|awe|and|uju|ind|min|sin|ndu|uwa|gge|n l|ggu|ngs|n b|a b|pra|iji|n a|ha | bi|kat|go | ku|e p|ron|kak|ngu|a u|gsa|war|nya|g t|pad|bis|k b|i w|ae |wae| nd|ali|a m|er |sak|e s|ku |liy|ama|i l|eh |isa|arg|n t|a d|kap|i s|ayo|gay| pe|ndh|bad|pri|neg|tow|uto|eda|bed|il |ih | ik|ur |k k|rta|art|i p|rga|lak|ami|ro |aro|yom|r k|e d|a w|kon|rib|eng|ger|g l|ras|dil| ti|k l|rap|mra|uma| pi|k h|n d|gaw|wat|ga |k n|ar |per| we|oma|k p|jro|ajr|saj|ase|ini|ken|saw|ona|nas|kas|h k|i t| um|tin|wo | me|aba|rak|pag|yar|sya|t k| te| mu|ngl| ni|i b|men|ate|a i|aku|ebu|a t| du|g m|owo|mat| lu|amp",
+        vie: "ng |\u0323c |\u0301c | qu|a\u0300 | th|nh | ng|\u0323i |\u0300n |va\u0300| va| nh|uy\xEA| ph|quy| ca|\xEA\u0300n|y\xEA\u0300|\u0300nh|\u0300i |\u0323t | ch|o\u0301 | tr|ng\u01B0|i n| gi|g\u01B0\u01A1|\u01A1\u0300i|\u01B0\u01A1\u0300|\u0301t | co|\u01B0\u01A1\u0323| cu|a\u0301c|\u01B0\u0323 |\u01A1\u0323c| kh| \u0111\u01B0|\u0111\u01B0\u01A1| t\u01B0|co\u0301| ha|\xF4ng|c t| \u0111\xEA|n t|i \u0111|i\u0300n|\u0300u |ca\u0301|gia|\u0301i |o\u0323i|mo\u0323| mo|\xEA\u0300u|i\xEA\u0323|\u0111\xEA\u0300|u c|nh\u01B0|pha| ba| bi|\xE2\u0301t|\u0309a |u\u0309a|cu\u0309|h\xF4n| \u0111\xF4|g t|\u0301 q|\u0303ng| ti|t\u01B0\u0323|t c|\u0323n | la|n \u0111|n c|n n|hi\xEA|ch |ay |hay| vi|\xE2n | \u0111i| na|ba\u0309| ho|do | do| t\xF4| hi|\xF4\u0323i|ha\u0301|i\u0323 |na\u0300|\u0300 t|\u01A1\u0301i|h\xE2n| m\xF4|\u0301p |a\u0300n|\u0323 d|\u0301ch|\u0323p |\u0300o |a\u0300o|kh\xF4|\u0301n |\xF4\u0323t|m\xF4\u0323| h\xF4|ia |\xF4\u0301c|c h|h\u01B0\u0303|i v|g n|\u0301ng|u\xF4\u0301|qu\xF4|h t|\xF4n |\xEAn |n v|nh\xE2|\u0323 t| b\xE2|i c|g v|\u0309ng|i\xEA\u0301|c c|\xE2\u0323t|th\u01B0|h\u01B0 |\u01B0\u01A1\u0301|\u0309n | v\u01A1| c\xF4|c \u0111| \u0111o| s\u01B0|t t|\xF4\u0323c|\u01B0\u0303n|v\u01A1\u0301| v\xEA|a\u0309 |\u0323ng|g \u0111|\u0309o |a\u0309o|u\xE2\u0323| \u0111a|bi\u0323|la\u0300|s\u01B0\u0323|b\xE2\u0301|ha\u0300|h\xF4\u0323|i t|a\u0309n|h\u01B0\u01A1|\u0300ng|tro|\u0309m |o v| mi|\xEA\u0309 |u\u0323c|i h|\u01B0\u0301c|a\u0301p|g c|\u0303 h|ia\u0301|n b|\u0309i |a m|h c|c\xF4n|\xEA\u0323n|\u01A1\u0301c|ha\u0323|\u0111\xF4\u0323| du| c\u01B0|a c|n h|tha|a\u0303 | xa|\u0301o |a\u0301o|i\u0301n|\u0300y |g b| h\u01B0|g h|ong|ron|\u0300 c|cho|\u0300 n|mi\u0300|\u01B0\u0323c|h v|c b| lu|i b|\xEA\u0323 |ai |\xEA\u0301 |\u0323 c|xa\u0303|kha|c q|i\xEA\u0309|t\xF4\u0323|\xF4\u0301i|\u0111\xF4\u0301|a\u0301 |hoa|o h|h \u0111|ca\u0309|n l|ho\u0323|ti\xEA|y t|\u0309 c|a\u0323i|a\u0301n|\u0300 \u0111|oa\u0300|y \u0111|chi|\u0309 n|ph\xE2|\xEA\u0300 |thu|i\xEAn|du\u0323|o c|i m|lu\xE2|c p|\xF4\u0301n|c l|\u0301 c|u\u0303n|cu\u0303|c g|c n|qua|n g|c m|o n|a\u0309i|ha\u0309|\u0301 t|ho |v\xEA\u0300| t\xE2| h\u01A1|o t|\u01A1\u0309 |h\u01B0\u0301|hi\u0300|vi\xEA|\u0300m |\u0309 t|\u0111o\u0301|th\xF4|\u01B0\u0301 |c\u01B0\u0301|hi\u0301|\u0301nh|a\u0300y|\u01A1\u0309n|\u01B0\u01A1\u0309| b\u0103|tri| ta|m v|c v|\u01A1\u0323p|h\u01A1\u0323|h m| n\u01B0|\xEA\u0301t|thi|\u0103\u0323c|ngh|uy ",
+        ita: " di|to | in|ion|la | de|di |re |e d|ne | e |zio|rit|a d|one|o d|ni |le |lla|itt|ess| al|iri|dir|tto|ent|ell|i i|del|ndi|ere|ind|o a| co|te |t\xE0 |ti |a s|uo |e e|gni|azi| pr|idu|ivi|duo|vid|div|ogn| og| es|i e| ha|all|ale|nte|e a|men|ser| su| ne|e l|za |i d|per|a p|ha | pe| un|con|no |sse|li |e i| o | so| li| la|pro|ia |o i|e p|o s|i s|in |ato|o h|na |e s|a l|e o|nza|ali|tti|o p|ta |so |ber|ibe|lib|o e|un | a | ri|ua |il | il|nto|pri|el | po|una|are|ame| qu|a c|ro |oni|nel|e n| ad|ual|gli|sua|ond| re|a a|i c|ri |o o|sta|ita|i o| le|ad |i a|ers|enz|ssi|\xE0 e|it\xE0|gua|i p|e c|io | pa|ter|soc|nal|ona|naz|ist|cia|rso|ver|a e|i r|tat|lle|sia| si|rio|tra|che| se|rt\xE0|ert|anz|eri|tut|\xE0 d|he | da|al |ant|qua|on |ari|o c| st|oci|er |dis|tri|si |ed | ed|ono| tu|ei |dei|uzi|com|att|a n|opr|rop|par|nes|i l|zza|ese|res|ien|son| eg|n c|ont|nti|pos|int|ico|r\xE0 |sun|ial|lit|sen|pre|tta|dev|nit|era|eve|ll |l i| l |nda|ina|non| no|o n|ria|str|d a|art|se |ssu|ica|raz|ett|sci|gio|ati|egu| na|i u|utt|ve | ma|do |e r|ssa|sa |a f|n p|fon| ch|d u|rim| fo|a t| sc|tr\xE0|otr|pot|n i| cu|l p|ra |ezz|a o|ini|sso|dic|ltr|uni|cie| ra|i n|ruz|tru|ste| is|der|l m|a r|pie|lia|est|dal|nta| at|tal|ntr| pu|nno|ann|ten|vit|a v",
+        tur: " ve| ha|ve |ir |ler|hak| he|her|in |lar|r h|bir|ya |er |ak |kk\u0131|akk|eti| ka| bi|eya|an |eri|iye|yet|ara|ek | ol|de |vey|\u0131n |\u0131r |nda|ar\u0131|esi|\u0131n\u0131|d\u0131r| ta|tle|e h|as\u0131|etl|e k| va|\u0131 v|s\u0131n|ile|ne |rke|erk|ard|ine| sa|\u0131nd|ini|k h|k\u0131n|ama|le |tin|rd\u0131|var|a v| me|e m|na |sin|ere|k v| \u015Fa| bu|lan|kes|dir|rin|dan| ma|k\u0131 |mak|\u015Fah|da | te|mek| ge|n\u0131 | hi|nin|en |n h| se|lik|rle|ana|lma|e a|\u0131 h|r \u015F|ill|si | de|aya|zdi|izd|aiz|hai|ret|hi\xE7|\u0131na| i\u015F|e b| ba|kla|et | h\xFC|r\u0131n|n k|ola|nma|e t| ya|eme|riy|n v|e i|a h|li |mil|eli|ket|ik |kar|irl|h\xFCr|im |evl|mes|e d|ahs|ma |rak|ala|let|lle|un | ed|rri|\xFCrr|bu | mi|i v|dil| il| e\u015F|n i|la |el |mal| m\xFC| ko|e g|se | ki|mas|lek|mle|mem|n b|ili|e e|ser| i\xE7|n s|din| di|es |mel|eke|tir|\u015Fit|e\u015Fi|r b|akl|yla|n m|len| ke|edi|oru|nde|re |ele|ni |t\xFCr|a k|eye|\u0131k |ken|u\u011Fu| uy|eml|erd|ede|ame| g\xF6|e s|i m|tim|i b|rde|r\u015F\u0131|ar\u015F|a s|it |t v|siy|ar |rme|est|bes|rbe|erb|te |al\u0131| an|ndi|end|hs\u0131|unm|r\u0131 |kor|n\u0131n| ce|maz|mse|ims|kim|i\xE7 | ay|a m|lam|ri |s\u0131z|a b|ade|n t|nam|lme|ilm|k g|il |tme|etm|r v|e v|n e|\u011Fre|\xF6\u011Fr| \xF6\u011F|al |\u0131yl|olm|vle|\u015Fma|i s|ger|me | da|ind|lem|i o|may|cak|\xE7in|i\xE7i|nun|kan|ye |e y|r t|az |\xE7 k|ece|s\u0131 |eni| mu|ulu|und|den|lun| fa|\u015F\u0131 |ahi|l v|r a|san|kat| so|enm| ev|i\u015F ",
+        pol: " pr|nie|pra| i |nia|ie |go |ani|raw|ia | po|ego| do|wie|iek|awo| ni|owi|ch |ek |do | ma|wo |a p|\u015Bci|ci |ej | cz| za| w |ych|o\u015Bc|rze|prz| ka|wa |eni| na| je|a\u017Cd|ka\u017C|ma |z\u0142o|cz\u0142|no\u015B|o d|\u0142ow|y c|dy |\u017Cdy|i p|wol| lu|ny |oln| wy|stw| wo|ub |lub|lno|rod|k m|twa|dzi|na | sw|rzy|aj\u0105|ecz|czn|sta| sp|owa|o p|spo|i w|kie|a w|zys|obo|est|neg|a\u0107 |mi |cze|e w|nyc|nic|jak| ja|wsz| z |jeg|wan|\u0144st|o s|a i|awa|e p|yst|pos|pow| r\xF3|o o|j\u0105c|ony|nej|owo|dow|\xF3w | ko|kol|aki|bez|rac|sze|iej| in|zen|pod|i i|ni | ro|cy |o w|zan|e\u0144s|no |zne|a s|lwi|olw|ez |odn|r\xF3w|odz|o u|ne |i n|i k|czy| be|acj|wob|inn| ob|\xF3wn|zie| ws|aln|orz|nik|o n|icz|zyn|\u0142ec|o\u0142e|po\u0142|aro|nar|a j|i z|t\u0119p|st\u0119|ien|cza|o z|ym |zec|ron|i l|ami| os|kra| kr|owe| od|ji |cji|mie|a z|bod|swo|dni|zes|e\u0142n|pe\u0142|iu |edn|iko|a n|raj| st|odo|zna|wyc|em |lni|szy|wia|nym|\u0105 p|j\u0105 |ze\u0144|iec|pie|st |jes| to|sob|kt\xF3|ale|y w|ieg|och|du |ini|war|zaw|nny|roz|i o|wej|i\u0119 |si\u0119| si|nau| or|o r|kor|e s|pop|zas|niu|z p|owy|w k|ywa| ta|ymi|hro|chr| oc|jed|ki |o t|ogo|oby|ran|any|oso|a o|t\xF3r| kt|w z|dne|to |tan|h i|nan|ejs|ada|a k|iem|aw |h p|wni|ucz|ora|a d| w\u0142|ian| dz| mo|e m|awi|\u0107 s|gan|zez|mu |taw|dst|wi\u0105|w c|y p|kow|o j|i m|y s|bow|kog|by |j o|ier|mow|sza|b o|ju |yna",
+        swh: "a k| ya|na |wa |ya | ku|a m| na| ha|i y| wa|a h|a n|ana|aki|ki |la |hak| ka|kwa|tu | kw| ma|li |a a|ila|i k| ki|ni |a w|ali|a u| an| mt|ke |mtu|a y|ake|ati|kil|ka |ika|kat|ili|te |ote|we |a s|e k|ia |zi |u a|za |azi|ifa|ma |yak|yo |i n|ama| yo|au | au|e a|kut|amb|o y|ha |asi|fa |u w|hal|ara|sha|ish|ata|ayo| as|tik|u k| za|i z|ina|u n|mba|uhu|hi |hur|cha|yot|ru |uru|wat| ch|eri|ngi|e y|u y|i a|aif|tai| sh|nay|chi|ra |ani| bi| uh|sa | hi|i h|awa|iwa|a j|ti |mu |o k|ja |kan|uli|iwe|any|i w| am|e n|end|atu|kaz|o h|ria|her|she|shi|nch| nc|uta|ye |wak|ii |ele|ami|adh|eza| wo|iki|oja|moj|jam| ja|aka|bu |kam|kul|mat|fan|a l|agu|ind|ne |iri|lim|wen|da |kup|uto|i m|a b|ini|wan|bil| ta|sta|dha| sa| ni|ao | hu|e w|wot| zi|rik|kuf|aji|ta |wez|nya|har| ye|e m|si |lin| ut|ine|gin|ing| la|a t|zim|imu|ima|tak|e b|uni|ibu|azo|kos|yan|nye|uba|ari|ahi|nde|asa|ri |ham|dhi|eli|hir|ush|pat| nd|kus|maa|di |nda|oa |bar|bo |mbo|oka|tok|ndw|ala|wal| si|uzi|hii|tah|i s|o n|liw| el|upa|zin|hag|a c|ndi|ais|mai|eny|mwe|aa |ewe| al|ndo|e h|lo |umi|kuh|jib|osa|mam|a z|ufu|dwa|u i| in|iyo|nyi| ny|u m|sil|ang|o w|guz|zwa|uwa|kuw|hil|saw|uch|ufa|laz|und|aha|ua | mw|bal| lo|o l|a i|del|nun|anu|nji| ba|lik|le |uku|i i",
+        sun: "an |na |eun|ng | ka|ana| sa| di|ang|ung|un |nga|ak | ha|keu| ba|a b| an|nu |hak| bo|anu|ata|nan|a h|ina| je|aha|ga |ah |awa|jeu| na|ara|ing|oga|bog|gan| ng|asa|kan|a s|ha |ae |bae|n k|a k| pa|a p|sah|g s|sar| si|sin|a n|din|n s|ma | at|aga|a a|tan| ku| ma|n a|san|man|wa |lah|pan|taw|u d|ra |ari|eu | pi|gar| pe|kat| te|n p|sa |per|a d|a m|e b|aan|ban|ran|ala|ike|n n|kum| ti|ama|a j|pik|ima|n d|al |at | ja|ila|ta |nda|bas|rim|teu|n b|eba|beb|udu|aya|ika|ngg|nag|kab|rta|art| me|ola|k n|uma|atu|aba|g k|adi|aca| po|ngt|nar|una|ate|oh |boh|awe|di |tin|asi|uku|n h|dan|aka|iba|car|sac|gaw|are|ent|um |jen|abe|u s|dil|pol|ar |ku |kud|u m|upa|han| hu|ake|bar|ur |hna|aru|h s|a t|sak|wat|kaw| so|n t|pa |mpa|du |ngk|g d|ena|huk| mi|mas|ngs|ti |n j|ka |aku|ren|n m| ta|law|isa| tu|und|a u|h a|tay|ula|aja|ali|nte|gsa|en |gam| wa|ieu|ere|k h|jal|h b|il |dit|ngu|lan|asu|yun|ayu|gta|k d|a r|g n|mah|uda|dip|kas|rup|geu| be|ter|sej|min|ri |ern|u p|k k|amp|ura|kal|e a|k a|ut |g b|nak|bis| bi|k p|tes|end|we |h k|tun|uan| un| de|u n|h t|ksa|u k|ian|wil|u b|ona|nas|uka|rak|eje| se|ami| ke|war| ra| ie|k j|eh |ya |lma|alm|pen|tur|wan|lak|h j|g a|ean|up |rga|arg|r k|u t| ne|deu|gal|gke|e t|h p| ge|g t| da|i n",
+        ron: " de|re | \xEEn|\u0219i |are|de | \u0219i|te |ul | sa|rep|e d|ea |ept|dre|tul|e a| dr|ie |\xEEn |ptu|le |ate|la |e p| la| pe|ori| pr|ce |e s| or|au |tat| ar|ice|ii |or |a s| fi| a |ric|ale|per| co|n\u0103 |\u0103 a|rea|ers|i s| li|sau| ca|rso|ent|lor|a\u021Bi|al |a d|e o|men|l l|ei |e c|pri|an\u0103| ac| re|uri|ber|ibe|lib|a p|oan|soa| in|i l|ter| al| s\u0103|tea|l\u0103 |car|t\u0103\u021B|s\u0103 |tur|i a|i d|nal| ni|ri |ita|e \xEE|e \u0219|se |ilo|in |ia |\u021Bie|pre|fie|\u021Bii|\u0103\u021Bi|con|ere|e f|a o|eni|nte| nu| se|ace|ire|ici| cu|i \xEE|a c|i n|a l|pen|ui |nu |\u0103ri|al\u0103|ona|l d|r\u0103 |ert|ril| su|ntr|n c|rin| as|ni |i o|eri|t\u0103 |c\u0103 |ile|\u0103 d|i c|e n|ele|sa | mo|i p|fi |sal|tor|va |oci|soc|nic|pro| un| tr|est|in\u021B|a \xEE|uni|n m|a a| di|ecu|lui|sta|lit| po|tre|gal|ega|oat|ra |act|\u0103 \xEE|leg|u d|e l|nde|int|a f|n a| so|na\u021B|ara|i f|uie|iun| to|tar|ste|ces|rar|at | ce|eme|i \u0219|rec|dep| c\u0103| o | \xEEm|bui|ebu|reb| eg| na|m\xE2n|ntu|ili|v\u0103\u021B|\xE2nd|iei|r \u0219|bil|pli|od |mod|res|din|e e|c\u021Bi| au|ali|\u0103 p|\u0103 f|\xEEmp|ial|cia|ion|\u0103 c|dec|nta| om|it\u0103| fa|\u021B\u0103 |cu |tra|\u0103\u021B\u0103|nv\u0103|\xEEnv|\xE2t |ite|i i|lic| pu| ex|riv|tri|rot|\u021Ba |\u021Bi |l c|rta|imi|ulu|\u021Bio|ic\u0103|lig|rel|ta |cla|t \xEE|nt |nit|e m|\xE2nt|\u0103m\xE2|\u021B\u0103m|ger|n\u021Ba|ru |tru|gur|u c|bli|abi|at\u0103|art|par|ar |rim|iva|l \u0219| sc|ime|nim|era|sup|ind|u a|dic|ic | st| va|ini|igi|e r",
+        hau: "da | da|in |a k|ya |a d| ya|an |a a| ko| wa|na | a |sa | ha|kin|wan|ta | ba|a s| ta|a y|a h|wa |ko | na|n d|a t|ba |ma |n a| ma|iya|hak|asa| sa|ar |ata|yan| za|akk|a w|ama| ka|i d|iki|a m|owa|a b| ci| mu| sh|anc|nci|kow|a z|ai |nsa|a c|shi| \u0199a|cik|ne |ana|i k|ci |kki|e d|a \u0199| ku|su |n y|uma|ka |uwa|kum|hi |a n|utu| yi|ani| ga| ra|aka|ali|mut|\u2018ya|tar| do|\u0257an|ars| \u2018y|sam|\u0199as|nda|ane|man|tum|i a|yi |ni | du|ada| su|and|a g|cin| ad|a i|ke | \u0257a|n k|yin|um |e m| ab|ins|nan|ki |mi |ami|yar|min|oka|re |i b|kam|mas|i y|mat|za |ann|en |a\u0257a| ja|m n|li |duk|dai|e s|n s|ra |n w|n h|aik| ai|ida|ga |san|rsa|aba|sar|ce |nin| la|o n|ban|nna|kan|abi|una|dam|me |ara|i m|hal|a r|add|are|n j|abu| ne|zai|a \u0257|wat|ari| \u0199u|on |ans|wa\u0257|ame|ake|kar|din|zam| fa|a l|\u0199un|buw|r d| hu|oki|kok|a \u2018|u d|n t|abb|aur| id|rin|yak|dok|kiy|ray|jam|n b|ubu|bub|n m|i s| an|am |ili|bba|omi|dan|gam|ayu|ash|nce|tsa|ayi|har|yya|ika|bin|han|kko|rsu|aif|imi|fa | am|i i|dom| ki|yuw|dun|o a|fan|n \u0199|aya|fi |n r|she|uni|bay|riy|n \u2018|sab| iy|bat|tab|aga| ir|mar|o w|i w|sha|awa| ak|uns|unc|tun|u k| il|\u0257in|mfa|amf|aci|ewa|kas|lin|n n|don|n i|ure|ifi|lai|dda| ts|iri|aye|un |tan|wad|gwa|afi| ay|ace|mba|amb|aid|nta|ant|war|lim|kya| al|a\u0257i",
+        fuv: "de | e |e n| ha|nde|la | wa|ina| ka|akk| nd|\u0257o |na | in|e e|hak|al |di |i h|kke|ii |um |ko |ala|ndi| mu| ne|lla| jo|wal|e\u0257\u0257|ne\u0257|all|mum| fo|kal|jog|ke |aaw|taa| ko|eed|\u0257\u0257o|aa | le|ji |ade|aad|laa|o k| ng|e h| ta|re |ogi|a j|e w|e m|nnd|gii|e l|ley|awa|aag|ede|waa|e k|gu |e d| go|gal|\u0253e |ti |fot|aan|eyd|ydi|\u0257e |ee | re|ol |oto|i e|oti|m e|taw|nga|a i|kee|to |ann|eji|am |ni | wo|een|goo|eej|e f| he|enn|gol|agu|pot| po|dee|ay | fa|ka |a k|ond|oot| de|a f|o f|a n|wa |maa|ota|le |hay|i k|o n|ngo|e j|o t| ja|\xF1aa|hee|nka|i w|awi|a w|ngu|der| to|e t|dim|i n|fof|i f|e g|tee|naa|aak| do|too|a e|ndo|ren|dii|oor|er |o e|i m|of | sa| so|gaa|ani|kam| ma| \xF1a|o w|i l|u m|kaa|ima|dir| ba|igg|lig| li|aar| \u0253e|o i|e s| o |e r|so |ooj| nj| la|won|awo|dow|woo|faw|and|e i|ore|nge|nan|are|a t|tin|aam| mo|\u0257ee|ita|ira|aa\u0257|e p|nng|ma |ank|yan|nda|oo |e \u0253|njo|ude|nee|e y|e a|je | ya|en |ine|iin| di|ral| na|\u0257i |und| hu|inn|\u014Bde|a\u014Bd|ja\u014B|a d|den| fe| te|go | su|a h|haa|tal|e\u0257e|e b|y g|baa|tde| yi|\u0257\u0257a|o h|ii\u0257|ow | da|do |l n|alt| ho|l e|aga|mii| aa|a a|ama|nna|m t| ke|edd|oga|m w|l m|o j|a\u0257e|ree|oje|yee| no|ele|ne |ago| pa| al|guu|wi |ge |aa\u0253|daa|ind|dew|i j|jey| je|ent|tan|o \u0257|ge\u0257| ge|\xF1ee|a l| \u0257u|kko|mak|a s| ga",
+        bos: " pr| i |je |rav|na |ma |pra| na|ima| sv|a s|da |a p|vo |nje|ko |ako|anj|o i| po|avo|ja |e s|a i|ti | im| da| u |sva|no |ju | za|o n|va |i p|ili|vak|li | ko|ne | il|koj| ne|nja| dr|ost| sl|van|im |i s|u s|i i|a n|ava|ije|a u| bi|stv|se |a d|om |jed|bod|obo|lob|slo| se| ra|ih |sti| ob| je|pri|enj|dru|u i|o d|iti|voj|raz|ova|dje| os|e i|lo |e p| nj|uje|i d|bra|tre| tr| su|jeg|i n|u z|a k|og |u p|oje|cij|reb|a o|a b|lju|i u|ran|mij|ni |nos|jen|ba |edn|svo| iz|jel|pro|e d|\u017Eav|bit| ni|i o|sta|a z|avn|vje| ka|bil|ovo|a j|aju|ist|nih|tu |red|gov| od|e o|oji| sm|lje|o k|ilo|ji |aci|e u|e n|pre|o p|eba|u o|su |vim|i\u010Dn| sa|u n| dj|a t|ija|\u010Dno|jem|r\u017Ea|dr\u017E|elj|stu|dna|odn|eni|za |iva|olj|\u0161ti|nom|em |du |vno|smi|jer|e b|de |pos|m i| do|u d|nak|a r|obr| mo|lja|nim|ego| kr|tit|kri|ve |nju|an |iko|nik|nu |i m|nog|eno|sno| st|e k|tup|rug|ka |oda|riv|vol|aln|m s|itu|a\u0161t|za\u0161|ani|sam|akv|ovi|osn|rod|aro| mi|tva|dno|nst|jan|ak |ite|vi\u010D|rad|u m| ta|dst|tiv|nac|rim|kon|ku |odu|\u017Eiv|amo|tvo|tel|pod|g p|nov|ina|nar| vj|o s|i b|oj | ov|ave|vu |ans|oja|zov|azo|ude|bud| bu|e t|i v|din|edi|nic|tan|nap|mje| is|jal|slu|pun|eds|o o|zak|jav|i k|m p|tno|ivo|ere|ni\u010D|m n|jim|kak|ada|vni|ugi| ro|mov|ven|pol|to |te | vr",
+        hrv: " pr| i |ma |rav|ima|pra|je |na | sv|ti | na|a p|vo |vat|ko |a s|nje| po|anj|avo|o i|tko| im|a i|sva|no |i p|e s|ja |o n| za|ju |ili| u |va |li | bi|ne |i s|atk| il|iti|da | ne| ko| dr| sl|van|nja|koj|ije| ra|ova| os|u s|i i|ost|bod|obo|lob|slo|pri|a n|om |jed|ati|ih |im |voj|ava| ob|stv|se | mo|i u|bit|dru| je| se|dje|i o|enj| ka|i n|sti|lo |u i|svo|mij|ni |e i|raz|a o|e n|bra|o p| su|a b|u p|ran|a k|og |i d|bil|ako|e p|a d|edn|aju|mor|eni| nj|iva|jel|\u017Eav| ni|a z|avn|ovi|eno|ra |oje|a j| da|a u|ora|jeg| iz|nih|r\u017Ea|dr\u017E|oji|sno|nit|jen|vje|ilo|cij|oda|nim| dj|pro|tit|u z|e d|red|nom|jem| od|nos|sta|nov|osn| sm|lje|o s|ji |ovo|stu|pos|vim| do|odn|rad|ist| sa|e o|tu |nju|em |gov|o d|rod|i m|jer|aci|oj |pre|m i|nak|dna|a r|lju|uje|e m|obr|za |olj|ve |o o|m s|an |nu |du |aro|vno|smi|aln|e k|o k|i b|e u|tva|u u|tup|rug|dno|u o|su |u d|ka |vol| ta|ija|itu|\u0161ti|a\u0161t|za\u0161|itk|\u017Eiv|ani|sam|elj| st|sob|oso|nar|akv|ada| mi|te |ona|nst|jan|lja|i v|ite|ego|elo|rim|ku |odu|amo|tvo|tel|jim|pod|nog|vi |ina| vj|to |e b|ans|zov|azo|ak | sk|edi|tan|oju|pun|pot|oti|kon|zak|i k|m p|tno|ivo|ere|ni\u010D|kak|vni|ugi| ro|mov|ven|\u0161tv| be|ara|kla|ave|u b|avi|oja|jal|u m|dni|mje|rak|din|\u0107i |ju\u010D|klj|nic|u k|nap|obi|atn",
+        nld: "en |an |de | de| he|ing|cht| en|der|van| va|ng |een|et |ech| ge| ee|n e|rec| re|n v|n d|nde|ver| be|er |ede|den| op|het|n i| te|lij|gen|zij| zi|ht |ijk|eli| in|t o| ve|op |and|ten|ke |ijn|e v|jn |ied| on|eft| ie|sch|n z|n o|aan|ft |eid|te |oor| we|ond|eef|ere|hee|id |in |rde|n w|t r|aar|rij|ord|wor|ens|of | of|hei|n g| vr| vo| aa|r h|hte| wo|n h|al |nd |vri|e o|ren|le |or |n a|jke|lle|eni|n b|ij |e e|g v| st|ige|die|e g|men|nge|t h|e b| za|e s|om |t e|ati|wel|erk|sta|ers| al| om|n t|zal|dig| me|ste|voo|ter|gin|re |ege|ge |g e|bes|nat| na|eke|che|ig |gel|nie|nst|e a|nig|est|e w|erw|r d|end|ona|d v|jhe|ijh|d e|ele| di|ie | do|del|n n|at |it | da|tie|e r|elk|ich|jk |vol|ijd|tel|min|len|str|lin|n s|per|t d|han| zo|hap|cha|wet| to|ven| ni|aat|ion|tio|taa|lke|eze|met|ard|waa|uit|sti|e n|doo|pen|eve|el |toe|ale|ien|ach|st |ns | wa|eme|nin|e d|bij| gr|n m|p v|esc|t w|ont|ite|man|ema| ma|nal|g o|rin|hed|t a|t v|beg|all|ijs|wij|rwi|e h| bi|gro|p d|rmi|erm|her|oon| pe|eit|kin|t z|iet|iem|e i|gem|igi| an|d o|r e|ete|e m|js | hu|oep|g z|edi|arb|zen|tin|ron|daa|teg|g t|raf|tra|eri|soo|nsc|t b| er|lan| la|ern|ar |lit|zon|d z|ze |dez|eho|d m|tig|loo|mee|ger|ali|gev|ije|ezi|gez|nli|l v|tij|eer| ar",
+        srp: " pr| i |rav|na |pra| na|ma | sv|ima|da |ja |a p|vo |je |ko |ti |avo| po|a i|ako|a s| za| u |ju |o i| im|nje|i p|va |sva|anj|vak| da|o n|nja|e s|ost| ko|a n|li |ili|ne |om | ne|i s| sl| il| dr|no |koj|u s|ava| ra|og |slo|im |enj|sti|bod|obo|lob|iti|a o|stv|i u|a d|ni |jed|u p|pri|edn| bi|i i|a k|o d|sta|ih |dru|a u| je| os| ni|nos|pro|aju|i o|ran| de| su|u i|se |van|ova|i d|cij| ob|uje|red|\u017Eav|e i|i n|voj|e p|a j|dna| se| od|ve | ka|eni|r\u017Ea|dr\u017E|a z|avn|aci|ovo|u u|m i|oja| iz|lja| nj|ija|u z|e o|rod|jen|lje|e b|raz|jan|lju|svo|za |gov|i\u010Dn| st|nov|sno|osn|du |ji |pre| tr|su |vu |odn|a b|jeg|nim|nih|tu |tit|\u0161ti|ku |nom|bit|e d|me |iko|\u010Dno|oji|lo |vno|nik|e n|\u0111en|ika|bez|ara|de |u o|vim|nak| sa|u n|riv|ave|an |olj|vol| kr|o p|sme|e k|nog| ov|e u|tva|bra|rug|reb|tre|u d|oda| mo| vr|vlj|avl|ego|jav|del|m s|kri|o k|a\u0161t|za\u0161|nju| sm|ani| li|dno|e\u0111u|aln|la |akv|oj |\u0161en|kom|stu|ugi|avi|a r|ka |rad|oju|tan|odi|vi\u010D|tav|itu|ude|bud| bu|pot|odu|\u017Eiv|ere|m n|tvo|ilo|bil|aro|ovi|por|eno|\u0161tv|nac|ove|m p|tup|pos|rem|dni|ba |nst|a t|ast|iva|e m|vre|nu |be\u0111|ist|pun|en |te |dst|rot|zak|ao |kao|i k|ju\u0107|o s|st |sam|ter|nar| me|i m|kol|e r|u\u0161t|ru\u0161|ver|kak| be|i b|kla|ada|eba|ena|ona| on|tvu|ans| do|rak|slu",
+        ckb: " he| \xFB |\xEAn | bi| ma|na |in |maf| di|an |xwe| xw|ku | ku|kes| de| ji|her|kir|iya|ya |rin|iri|ji |bi |es | ne|ye |y\xEAn|e b|er |af\xEA|tin|ke | an|iy\xEA|eye|rke|erk|we | be|e h|de | we|hey|f\xEA |i b|y\xEA |ina| b\xEA| li|diy|ber|li |re |\xEE \xFB|n\xEA |\xEA d| se| ci|eke|di |w\xEE | na|\xEE y|af |ete|hem| w\xEE|sti| ki|r\xEE |k\xEE |\xEE a|yek|n d|kar| te|ne |y\xEE |i h|e k|t\xEE |t\xEA |a w|e d|\xEE b|s m|ast|n b|be |yan|ser|tew|net| tu| ew|hev|aza|ara|\xFB b|n k|adi|ev |zad| az|ras|est|an\xEA| ya|n h|n \xFB|wed| t\xEA|wek|bat|bo | bo| y\xEA|st |n n|\xEA k|dan|\xEA h|ema|\xEA b|iye|\xEE h|din|b\xFBn|r k|ek\xEE| me|par|\xFBna|ta |wle|ewl|\xEE m| ke|nav|ewe|man|\xEA t|d\xEE |\xFB m|m\xFB |em\xFB|a m|ika|e \xFB|n w|a x|\xEA m|e n| ta|ela|n j|ey\xEA|n x|civ|wey|ana| re|khe|ekh|bik|k\xEA |j\xEE |f h|er\xEE| pa|\xEEna|bin|erb|vak|iva|a s| ni|cih|v\xEA |e j|ari| p\xEA|\xEE d|n\xEAn|ike|e t|a k|\xEA x| ye|n a|ey\xEE|n e|ama|b\xEA |ar |ewa|at\xEA|bes|rbe|av |ibe|ist|m\xEE |tem|awa|are|h\xEE |geh|nge|ing|nek|n\xFBn|an\xFB|qan| qa|v\xEE |rti|uke|tuk| \u015Fe|eza| da|u d|\xFB a|f \xFB|edi| ra|tu |tiy|t\xEAn| mi|xeb| ge|h\xEEn| h\xEE|et\xEA|\xEE j|st\xEE|mal|bib|ra |i d|e m|mam|i a|nik|i m|\xEE k| wi|\xFBn | ko|a \u015F|\xEA j|riy|lat|wel|e e|ine|ane|\xFB h|\xEEn |a d|siy|end|aye| za|ija|a n|\xEE n|ek |tek|yet|mbe|emb|\xFB d|rov|iro|mir|eba| xe|m\xEAn| \xEAn| hu|n\xEEn|an\xEE|t \xFB|ten|n m|dem|\xEA \xFB|en\xEA|te |art|i r| j\xEE|u j|ek\xEA|dew",
+        yor: " n\xED|ti |\u1ECD\u0301 |n\xED | l\xE1| \u1EB9\u0300|\xE0n |\u1EB9\u0301 |kan|t\xED | t\xED|an |\u1EB9\u0300 |t\u1ECD\u0301|\u1ECD\u0300 | \u1EB9n|\u1ECDn |w\u1ECDn|\xED \u1EB9|b\xED |\xE1ti|l\xE1t|\u0300t\u1ECD|\u1EB9\u0300t| gb| \xE0t| \xE0w|n l|\xE0ti| a |l\u1EB9\u0300|\u1EB9n\xEC| \xF3 |k\u1ECD\u0300| l\xF3|\xEC k|s\xED |\u1ECD\u0300k| k\u1ECD|ra |ni |\xE0b\xED|t\xE0b| t\xE0|n\xEC | s\xED|\u0300ka|\u1ECD\u0300\u1ECD|n \u1EB9|\xE0w\u1ECD|n t|\xF3 n|\u0300\u1ECD\u0300|\xEDl\u1EB9|or\xED|l\xF3 | w\u1ECD|t\xF3 |d\xE8 |\xECy\xE0|\xFAn | t\xF3| or|\xED \xEC|\xE8d\xE8|k\xF2 |\u2010\xE8d|\u0300\u2010\xE8|\u1EB9\u0300\u2010|r\xEDl|\xED \xF3|r\u1EB9\u0300|\xED \xE0| s\xEC|y\xE0n|gbo|\u1E63e | k\xF2|\xED a| r\u1EB9| j\u1EB9|s\xEC | b\xE1|r\xE0n| \u1E63e|w\u1ECD\u0301|n\xECy|f\xFAn| f\xFA|n \xE0|ba |n n|gb\xE0|gb\u1ECD|j\u1EB9\u0301|un |\xEC\xED | k\xED|gba|\xE8n\xEC| \xE8n|b\xE1 |\u0301 l|a k| ka|d\u1ECD\u0300|k\xED | \xF2m|in | fi|b\xF2 |fi |b\u1EB9\u0301|\u1ECDd\u1ECD|b\u1ECDd|\u0301 s|hun|n\xFA |n\xEDn|w\xE0 |ira|nir|\xF2m\xEC|\xECgb| \xECg|\u0301 t|\u1EB9ni|\xEDn\xFA|i l|\xECni|m\xECn|b\xE0 |\xE1\xE0 |i \xEC|ohu| oh|\xED i|ara| ti|bo |\xF2 l| p\xE9|r\xFA |\xEDr\xE0| \u1ECD\u0300|\xED \xF2|ogb|k\u1ECD\u0301|p\u1ECD\u0300|\xF3 b|\xE0 t|i n|l\u1ECD\u0301|\u1EB9\u0301n| \xECb|y\xEC\xED|gb\xE9|g\u1EB9\u0301|bog|\xF3\xF2 |y\xF3\xF2| y\xF3|n k|p\xE9 |d\xE1 |\u0301w\u1ECD|\u1ECD\u0301w|\xE0 l|\xED k| w\xE0|n o|j\u1ECD | ir|\u1ECD\u0300r|\xFA \xEC|\u0301 \xE0|\xF3 s|i t|\u1E63\u1EB9\u0301|\u0300k\u1ECD|\xED t|y\xE9 |l\xE8 | l\xE8|fin|\xE0b\xF2| l\u1ECD|\xE0 n|\xF9j\u1ECD|w\xF9j|ir\xFA|\xF3 j| ar|\xED w|a w| \xECm|\xFA \xE0|\u0300 t|\xF2fi| \xF2f| \xE0\xE0|f\u1EB9\u0301|\xE0w\xF9|\u0301ni|w\xF9 |\xEC\xEDr|m\xEC\xED| m\xEC|l\xE1\xEC| y\xEC|\xED g|\u1ECD\u0301n|n s|i \u1EB9|\u1EB9\u0300k|\xE0gb|\xEDgb|n\xEDg|a n| k\xFA|l\xE1\xE0|\xED o|n\xE1\xE0| n\xE1|k\u1EB9\u0301|\xEDpa|n\xEDp|\xECn | \xECk|b\xE9 |i g|\u1ECDm\u1ECD| \u1ECDm|i \xE0|i\u1E63\u1EB9|\u0300 \xE0|\xECm\u1ECD|n a|n f|j\u1EB9 |y\xED |\u0301 \u1ECD|\xF3 d|\u0301 \xF2| d\xE1| m\xFA|\xE0\xE0b|\xE1b\u1EB9|l\xE1b|\xECb\xE1|\xF2 g|j\xFA |i o|l\xFA | \xE8t|\u0300 \u1EB9|t\u1ECD\u0300|de |\u0300 n|i \xF2| \xECy|k\xE0n|\u0301n | b\xED| i\u1E63|m\u1ECD\u0300|e \u1EB9|\u0300 l| f\xE0|\xE8y\xED| \xE8y| \xECd|m\u1ECD\u0301|d\xE9 |\u0300 k|\u0301 p|\xF2 t|m\xFA | f\u1EB9| \xECj|r\xED |\xECk\u1EB9|n\xECk|\xECn\xED|n \xEC|n \xE8|s\xECn|\xE8 \u1EB9| i |r\u1ECD\u0300| \xE0n|\u0301 b|\xF9n |\u0301gb|\u1ECD\u0301g|d\u1ECD\u0301| d\u1ECD|\xED n|rin|\u0300 j",
+        uzn: "ish|an |lar|ga |ir | bi|ar | va|da |iga| hu|va |bir|sh |uqu|quq|huq| ha|shi| bo|r b|gan|a e|ida| ta|ini|lis|adi|ng |dir|lik|iy |ili|o\u02BBl|har|ari| o\u02BB|uqi|ins|lan|hi |ing|dan|nin|kin| yo|son|nso| in| mu|on |qig| ma|ega|r i|bo\u02BB| eg|o\u02BBz|ni |gad|ash|i b|ki |oki|ila|yok|a b|n b|osh|ala|at |in |r h|erk| er|lga| qa|rki|h h| sh|i h|ara|n m| ba|nis|ik |igi|lig|bos|ri |qil|a t|bil|las|eti| et|n o|ani|nli|kla|i v|a q|a h|a o|yat| qo|im |a s|i m|iya|atl|oli|osi|siy|qla|cha|til| ol|ati|a y|mas|qar|inl|lat| qi|ta\u02BC|ham|gi |ib |\u02BBli|mla|h v|\u02BBz |hun|n e|mum| da| bu| to|un |mki|umk|sha|tla|ris|iro|ha |rch|bar|iri|oya|ali| be|i o|asi|aro| ke|i t|rla| te|arc|hda|shu|tis|n h|tga| sa| xa|rak|lin|ada|ola|imo|hqa|shq|li | tu|aml|lla|sid| as|nid|a i| ki|ch |n t|nda|k b|era|siz|or |hla|a m|r v|eng|ten|mat|mda|amd|lim|miy|y t|ayo|i a|ino|ilg|tni| is|ana|as |ema| em|ech|a a|tar|kat|aka|ak |rat| de|aza|ill| si| so|g\u02BBi|uql|n q|oda|\u02BCli|a\u02BCl|nik| ni|tda|uch|gin|a u|him|uni|sit|ay |qon| ja|atn|kim|h k|hec| he|\u02BBzi|lak|ker|ikl| ch|liy|lli|chi|ur |zar|shl|rig|irl|dam|koh|iko|a d|am |n v|rti|tib|yot|tal|chu| uc|sla|rin|sos|aso| un|na | ka|muh|dig|asl|lma|ra |bu |ush|xal|\u02BBlg|i k|ekl|r d|qat|aga|i q|oiy|mil| mi|qa |i s|jin",
+        zlm: "an |ang| ke|ng | se| da|ada|ara|dan| pe|ran| be|ak |ber|hak|ata|ala|a s|ah |nya| me|da |per|n s|ya | di|kan|lah|n k|aan|gan|dal|pad|kep|a p|n d|erh|eba|nga|yan|rha| ya|nda|ora|tia|asa| ha|ama|epa| or|iap|ap |a b| at| ma|eti|ra |tau|n a|set|au | ba|pa | ad|n p|tan|p o|eng|a d|men|apa|h b|h d|dak|man|a a|ter| te|k k| sa|n b|ana|g a|end|leh|ole|a k|am |n y|aka|eh |lam|bas|beb|n m| un|pen|sa |keb|sam|n t| ti|ela|san|car|uan|ma |di |han|ega|ban|eri|at |sia|a m|ika|kes|ian|gar|seb|ta |mas|und|neg|nan|ngs|i d|erl|na |epe|emb|bar| la|atu|kla|pem|mem|emu|eca|sec|ngg|nny|any|bol|al |aha|gsa|ebe|ind|akl|n h|erk|ung|ena| bo|a t| ap|ers| de|in |tu |pun|as |agi|ann|g b|bag| ne|ain|hen| he|era|rat|sem| su|adi|lan|g s|dia|mat|ses|iad| ta|iha|g t|tin|k m|k h|i k|gi |i s|ing|uka|enu|den|lai|k d|ert|ti |rka|aja|rga|lua|ker|mel|dun|ndu|lin|rli|nak|ntu|esi|aya|un |uat|jua| in|rma|erm|ai |emp|kem|ri |dil|ua |uk |h m|l d|g m|mba|kat|ese|tik|ni |ini| an|mpu|ka |dar|mar|rja|erj|arg|u k|sua| ol|esa|dap|ar |g u|si |ent|g d| pu|awa|iri|dir|sal|gam|mbe|n i|har|a h|raa|ema|tar|i a|saa|ira|ari|pel|jar|laj|uju|tuj|rak|ura|uar|elu|t d|unt|il |wen|asi|gga|ipa|ksa|tuk|ula|sek|sas|ibu|rta|sep|rsa|nta|ati|ila|mua|yar",
+        ibo: "a n|e n|ke | na| \u1ECD |na | b\u1EE5|\u1ECD b|nwe|nye|ere|re | n |ya |la | nk|ye | nw| ma|e \u1ECD| ya| ik|a o|a \u1ECD|ma |\u1EE5la|b\u1EE5l|ike| on|nke|e i|a m|ony|\u1EE5 n|kik|iki|b\u1EE5 | a |ka |wer|ta |i n|do |di | nd| ga|a a|e a|a i|he |kwa| ok| ob|e o|hi |any|ga\u2010|ha |d\u1EE5 | mm|ndi|\u1ECD n|wa |r\u1EE5 |e m|che|a e|oke|wu |aka|ite|o n|a g|odo|bod|obo| d\u1ECB| ez|ara|we | ih|a\u2010e|h\u1ECB |ri |n o|zi |mma|chi|d\u1ECB |ghi|\u1EE5ta|iri|ihe| an| oh|a y|gba|\u1EE5 \u1ECD| \u1ECDz| ak| iw|nya|te |iwu| nt|ro |oro|e \u1ECB|z\u1ECD |ezi|me |e e|u n|her|ohe| si|a\u2010a|i m|ala|\u1EE5 i| ka|akw| in|gh\u1ECB|kpe|n e|p\u1EE5t| e |i i|i o|ide|inw|\u1EE5 o|h\u1EE5 |ah\u1EE5|weg|ra |o i|kpa|ad\u1EE5|mad|si |sit|a s| me|sor|i \u1ECD|gid|edo|u o|e y|n a| en|tar|ozu|toz|bi |be |\u1EE5 m|\u1EE5r\u1EE5|\u1ECDr\u1EE5| \u1ECDr|mak|uso|ama|de |\u1ECB o| \u1ECDn|\u1ECDz\u1ECD|ch\u1ECB|egh|enw|ap\u1EE5|ru | to|i a|a \u1EE5|osi|r\u1ECB |wet|hed|nch| nc| eb| al|n\u1ECDd|\u1ECDn\u1ECD|uru|sir| kw|yer|ji |eny| mk|\u1ECBr\u1ECB|eta| us|tu |\u1ECD d|u \u1ECD| o |ba | mb|\u1ECDd\u1EE5|\u1ECBch| ch|a d|pa | ag|kwe| ha|a u|e s|mkp|n u|nta|ebe|n \u1ECD|o m|kwu|nkw|nwa|obi| \u1ECBk|esi|i e|nha| nh|le |ile|nil| ni|eme| og|e k|n i|ch\u1ECD|o y|as\u1ECB|otu| ot|ram|u m|\u1ECBgh|d\u1ECBg|zu |n\u1ECD |mba| gb|e g|\u1ECB m|\u1ECDch|ich|pe |agb|i \u1ECB|uch|z\u1EE5z|uny|wun|\u1ECDr\u1ECD| nn|na\u2010| di|ge |oge|iji| ij|\u1ECDha| \u1ECDh|ikp|egi|meg|o o|\u1EE5h\u1EE5|h\u1EE5h|mah|n \u1EE5|\u1ECD g|\u1ECDta|ek\u1ECD|\u1ECB n|kw\u1EE5|agh|\u1EE5m\u1EE5|ban|kpu|okp| ah|\u1ECBkp|a k|ime| im|z\u1EE5 |\u1EE5z\u1EE5|\u1ECDz\u1EE5| \u1EE5z|lit|ali|nat",
+        ceb: "sa | sa|ng |ang| ka| pa|an |ga |nga| ma|pag| ng|on |a p|od |kat|ay | an|g m|a k|ug |ana| ug|ung|ata|ngo|atu|n s|ala|san|d s|tun|ag |a m|god|g s|a a|a s|g k|g p|yon|n u|ong|tag|usa|pan|ing|una|mat|g u|mga| mg|y k| us|ali|syo| o |aga|tan|iya|kin|dun|nay|man|nan|a i| na|ina|nsa|isa|bis|a b|adu| ad|n n| bi|asy|asa|lay|awa|lan|non|a n|nas|o s|al |agp|lin|nal|wal| wa|ili|was|gaw|han| iy| ki|nah|ban|nag|yan|ahi|n k|gan| gi|him| di|a u| ba| un|ini|ama|ya |kas|asu|n a|g a|gka|agk|kan|ags|agt|l n|a g|kag| ta|imo|uns|sam| su|g n|n o|gal|kal|og |taw|aho|uka|gpa|ipo|ika|o p|a t| og| si|gsa|g t|aba|ano|gla|y s|o a|aki|hat|kau|sud|gpi|a w|g i|aha|ot |ran|i s|n m|bal|lip|gon|ud | ga|li |uba|ig |ara|g d|na |kab|aka|gba|ngl|ayo| la| hu|a h|ati|d a|d n| pu| in|uga|ok |ihi|d u|ma |may|awo|agb|ami|say|apa|pod|uha|t n|agh|buh|ins|ad | ub| bu|at |iin|a d|ip |uta|sal|hon|wo |ho |tra|lak|iko|as |aod|bah|mo |aug|ona|dil|gik|sos|lih|pin| pi|k s|nin|oon|abu|la |rab|hun| ti|mah|tar|t s|ngb|uma|hin|bat|lao|mak|it | at|s s|sno|asn|ni |aan|ahu| hi|agi|n p|inu|ulo|y p| ni|iha|mag|o n|duk|edu| ed|a e|til|ura|tin|kip|agl|gay|g h|g b|ato|ghi|nab|kon|in |ter|o u|o o|yal|sya|osy| so|tik| re| tr|hig|a o|ha |but|pak|aya",
+        tgl: "ng |ang| pa|an |sa | ka| sa|at | ma| ng|apa|ala|ata|g p|pan|pag|ay | an| na|ara| at|tan|a p|pat|n a| ba|ga |awa|rap|kar|g k|aya|lan|g m|n n|g b|nga|mga| mg|a k|na |ama|n s|a a|gan|yan|gka| ta|may|tao|agk|asa|man|aka|ao |y m|ana|g a|nan|aha|kan|y k|baw|kal|a m|g n|ing|wat| y |t t|pam|a n|o y|ban| la|ali|san|wal|mag| o |g i|aga|lay|any|g s|in |nya|yon|kas|a s|isa|una|ong|aan|kat|t p| wa|ina|tay|ya |on |o m|ila|ag |nta|t n|aba|ili| ay|o a| ga|no |a i|gal|ant|han|t s|kap|kak|lah|ari|agt|agp|ran|g l|lin|as |lal|gaw|ans|to |ito| it|hay|wa |t m| is|pap|mam|nsa|ahi|nag|bat|lip|gta| di|gay|gpa|pin| si|ngk|ung|aki|y n|iti|tat|ano|yaa|y s|mal|hat|kai|sal|hin|uma|mak|di |agi|pun|ihi|a l|i a|ira|gga|nah|s n|ap | ha|usa|nin|o p|gin|ipu|ika|ngi|i n|lag|la |y p|ini|g t|uka|nap| tu|a g|tas|aru|ipa| ip|li |al |n o|a o|t k|alo| pi|sin|syo|asy|ita|aho|nar|par|o s|pak|t a|uha|sas|gsa|ags|kin|a h|iba|lit|ula|o n|nak|a t| bu|duk|kab|sam|g e|ain|ami|mas|lab|ani|kil|it | al|agb|buh|a b|g g|ba | ib|iyo|ri |yag|ad | da|edu| ed|anl|ma |ais|iga|mba|tun|ipi| ki|od |ayu| li|lih|sar|gi |g w|pah|wir|oob|loo|agg|nli|bay|map|git|mil|ok |hon|ngg|sah|iya|pas|g h|agl|tar|ngu|amb|uku|ayo|s a|p n|n m|rus|i m|l a|abu| aa",
+        hun: "en | sz| va| a |\xE9s |min|ek | \xE9s| mi|jog| jo|an |ind|nek|sze|s\xE1g|nde|a v|den|oga|sza|val|ga |m\xE9l|ala|em\xE9|gy |n a|van|zem|ele| me|egy|\xE9ly| eg|zab|t\xE1s| az|n s|bad|aba|ni |az |gye| el|ak | se|meg|sen|\xE9ny|s\xE9g|k j|yne|lyn| ne|ben|lam|tt |t a|et |agy|oz |hoz|vag|zet| te|n m|ez |nak|int|re |et\xE9|tet|mel|tel|s a|em |ely|let|hez| al|s s| ki|ete|at\xE1|z a| le|yen|es |ra |t\xE9s|ell|nt |sem|t s|len|nem|a s|ese|nki|enk|a m|\xE1s\xE1|i m|ban|kin|k m|szt| \xE1l|ame|k\xF6z|k a|ds\xE1|ads|l\xF3 | k\xF6|\xE1s |ly |on |\xE9be|tat|a t|n v|\xE1ll|m\xE9n| v\xE9|nye|k\xFCl|l\u0151 |a n| cs|i \xE9|ok |\xE9sz|\xE9rt|lla|lap|\xE1go|gok|nyi|tek| ke|nd |\xE9te|ami|z\xE9s|yes|szo|t m|a a|het|fel|lat|lem|lle|el |z e|s e|k \xE9|mbe|emb|el\xE9|ot |lis|vet|kor|\xE1g |olg| am|sz\xE1|ehe|leh|ogo|ott|\xFCl |nte|\xE9le|i v|ogy|hog| ho|kel|n k|tes|nl\u0151|enl|ss\xE1|\xE1za|h\xE1z|\xE9g |vel|\xE1ba|lek|\xE9ge| ha|a h|r\xE9s| fe|\xE1ny|del|el\u0151|\xE1t |al\xE1|art|tar|zto|z\xE1s|t\u0151 |yil|koz|tko|al\xF3|s k|i e|\xE1rs|t\xE1r|mze|emz| ny|m\xE1s|ett|ny |fej|ass|zas| h\xE1|d a|t \xE9|is |\xE9s\xE9|ez\xE9|t\xE9b| mu|\xE1so|s\xEDt|lye|elm|\xE9de|v\xE9d|ine|t k|os |it |izt|biz| bi|y a|m l|tot|a j|atk|n\xE9l|t n|ti | m\xE1|ai |l\xE1s|eve|nev|zte| b\xE1|sel|ll |al |ere|n e|unk|mun|t e| ak|ife|kif|ako|s \xE9| \xE9r|\xE1na| es|s t|got|s\xFCl| be|v\xE1l|csa|se |\xE9se|ad |ges|tos|ja | gy|asz|ten|lm\xE9| t\xE1|eze|\xE1rm|b\xE1r|ess|l s|\xFCle",
+        azj: " v\u0259|v\u0259 |\u0259r |ir | h\u0259| bi| h\xFC| ol|\xFCqu|h\xFCq|quq|na |in |lar|h\u0259r|d\u0259 | \u015F\u0259|bir|l\u0259r|lik|mal|r b|lma|r h| t\u0259|\u0259xs|\u015F\u0259x|\u0259n |dir|uqu|una|an |ali|a m| ma|ikd|ini|r \u015F|d\u0259n|ar |il\u0259|qun|aq |as\u0131| ya|m\u0259k|y\u0259t| m\u0259| m\xFC|kdi|\u0259si|\u0259k |ilm|nin|nd\u0259|olm|\u0259ti|\u0259 y|sin|xs |nda|lm\u0259|yy\u0259|i v| qa| az|olu|iyy|ya |ind|zad|qla|\xFCn |ni |l\u0259 |tin|n m|aza|ar\u0131|\u0259t |n t|maq|lun|l\u0131q|\u0259 b|un |nun|q v|n h|dan|\u0131n | et|tm\u0259|\u0259r\u0259| \xF6z|da |\u0259 v| on|\u0259 a|\u0131na|\u0131n\u0131|bil|a b|s\u0131 |il |\u0259mi|ara|si | di|\u0259 m|\u0259ri|rl\u0259| va|\u0259 h|etm|\u0131\u011F\u0131|ama|dl\u0131|adl|rin|b\u0259r|r\u0131n|n i|m\xFCd|n\u0131n| he|mas|ik |n a|dil|al\u0131|irl|\u0259l\u0259|\xFCda|s\u0131n|\u0131nd|xsi|li |\u0259 d|n\u0259 | b\u0259|\u0259ya| in|\u0259 i|l\u0259t| s\u0259|n\u0131 | i\u015F|an\u0131|e\xE7 |he\xE7|q h|eyn|\u0259 e|d\u0131r| da|asi|r\u0131 |i\u015F |ifa|l\u0131\u011F|i s|fi\u0259|afi|daf| ed|m\u0259z|u v|kil| ha|ola|n v|\u0259ni|\u0131r |uq |unm| bu| as|sia|osi|sos|ili|\u0131d\u0131|l\u0131d|nma|\u0131q |in\u0259|\u0259ra|sil|xil|axi|dax|ad\u0259|man|a h|\u0259 o|onu|a q|\u0259z | ki|se\xE7| se|\u0131 h|min|lan|\u0259d\u0259|bu |raq|l\u0131 |\u0131l\u0131|al |\u0259 q|r v|nla|hsi|\u0259hs|t\u0259h|\xF6z |ist| is|m\u0259s| \u0259s|ina|\u0259 t|\u0259tl|a v|i\u0259 |n b|t\u0259r| ta| c\u0259|edi|ala|kim|qu |i t|ulm|m\u0259h|n o|aya|\u0131 o|ial| so|ill|siy| d\u0259|var|ins|mi |\u011F\u0131 |nik|r i|aql|k h|t\u0259m|tam|\xE7\xFCn|\xFC\xE7\xFC| \xFC\xE7|\u011F\u0131n|sas|\u0259sa|z h|\u0259m\u0259|zam| za|sti|r\u0259f|n e|r a|ild|h\u0259m|\u0131ql|yan|may|n \u0259|m\u0259n|mil| mi|\u0259qi|din|n d|t\xFCn| d\xF6|miy|kah|ika| ni|fad|tif|l o|s\u0259r|yni| ey|ana|l\u0259n|am |ril|ay\u0259|a\u015F\u0131",
+        ces: " pr|n\xED | a | ne|pr\xE1|r\xE1v|na |ost| po|ho | sv|o n| na|vo |neb|\xE1vo|bo |ebo|nos|m\xE1 | m\xE1|a\u017Ed|ka\u017E| ka| ro|ch |d\xFD |\u017Ed\xFD|ti |ou |a s| p\u0159| za|\xE1n\xED|\xE1 p| je| v |svo|\xE9ho| st|\xFD m|sti|n\u011B | by|obo|vob|ter|pro|en\xED|bod| z\xE1| sp|\xED a|rod|kte|by |mu |u p|o p| n\xE1|v\xE1n|jak| ja|a p|o v|\xED n|ov\xE1|oli|v\xED |spo|roz| kt|mi |\xED p|ny | ma|\xEDm |i a|do | so|odn|\xE1ro|n\xE1r|li |n\xE9 |tv\xED|at |\xFDch|a z| vy|byl|vol|en |\xFDt |b\xFDt| b\xFD|t s|tn\xED|stn|o s|\xED b|to | do|sv\xE9|v\xE9 |ran|ejn|z\xE1k|eho|jeh|nes|p\u0159\xED|m\xED |\u010Din|kol|aj\xED|sou| v\u0161|\xEDch|it |n\xFDm|\xFDm |nu |hra|nou|u s|\xE9mu| k |du |\u017Een|pod| ze|kla|a v|stv|pol|dn\xED|er\xE9|m p|st\xE1|je |ci |e\u010Dn| ni|n\xE9h|a n|ak\xE9|\xE1va|maj|em |rov|\xED m|k\xE9 |ole|n\xFDc|ova| ve|ako| ta|i k|chr|och| oc|kon|i p|\xED v|sm\xED|esm|kdo|st |i n|o z|ave|odu|bez| to|sta|ech|j\xED |o d|sob|se | se|\xED s|\xFDmi|i s| i |i v| vz|n\xEDm|pra|ln\u011B|p\u0159i|t\xE1t|ste|a j|aby| ab| s |oln|a o|m n|\u010Den|slu|\u0159\xEDs| os|zem|mez| \u010Di|ln\xED|\xE1ln|oci|jin| ji|y b|\xED z|y s|va |v\u0161e|t v|ovn|chn|d\u011Bl|n\xEDc|le\u010D| pl|vat| vo|vin|rav|vou|lad|inn|\xE9 v|anu|tej|u k|stu|est| tr|ky |ikd|nik|ivo|nit|zen|u o|n\xE9m|nez|i\xE1l|\xEDho|len|ens|o\u017Ee|oko|k\xE9h|rac|ven|\xED k|e s|l\xE1n|\u011Bl\xE1|zd\u011B|vzd|t k|din|odi|t\xED | od|r\xE9 |tup|pov|pln|\u0161t\u011B|\xE1kl|nno|tak|er\xE1|\u0159ed|o a|a t|res|j\xEDc| mu|u z|rok| ob|\u010Dno|u a|y k|i j|\xE9 n|lu\u0161|\xEDsl|oso|ci\xE1|soc|n\xEDh|o j|ck\xE9",
+        run: "ra |we |wa |e a| mu|a k|se | n | um| ku|ira|ash|tu |ntu|a i|mu |umu|mun|unt|ere|zwa|ege|ye |ora|teg|a n|a a|ing|ko | bi|sho|iri| ar| we|shi|aba|e n|ese|go |a m|o a|gu |uba|ngo|nga|hir| ca|ugu|obo|hob|za |ndi|ish|gih| at|ara|wes| kw|ger|ate|a b| ba| gu|e k|can|ama|ung|bor|u w|mwe|di | ab|nke|ke |kwi|ka |ank|yo |ezw|n u|na |iwe|e m|rez|ri |a g|gir| am|igi|e i|ro |a u|ngi|e b|ban| ak| in|ari|n i|hug|ihu|e u|riz|ang|nta| vy|ata| ub|and|aka|rwa| nt|kur|ta |iki|kan|iza|u b|ran|sha|o n|i n| ig|ivy| iv|ahi|bah|u n|ana| bu| as|aku|ga |uko|o u|ho | ka|ose|ubu|ako|guk|ite|o y|ba |i b|any|kir|o k|aho|iye|kub|amw|nye|aha| ng|o m|nya| it|re | im|o b|izw|kun|hin|e c|vyo|o i|vyi|ngu|uri|imi|imw|gin|ene|u m|zi |ha |kug|bur|uru|jwe| zi|u g|era|aga|ron|abi| y |e y| uk|gek|ani| gi|eye|ind|wo |u a|i a| ib|i i|ras|bat|gan|amb|n a|onk|rik|ne |ihe|agi|kor| ic|ze |tun|ibi|wub|nge|o z|tse|nka|he |rek|twa|gen|eko|mat|ber| ah|ni |ush|umw| bw|mak|bik|ury|yiw|bwo| nk|ma |no |kiz|uro|gis|aro|ika| ya|gus|y i|wir|ugi|uki| ki|a c|ryo|bir| ma| yi|iro|bwa|mur|eng|ukw|hat|tan|utu|wit|w i| mw|y a|mbe| ha|uza|ham|rah| is|irw|o v|umv|ura|eny|him|eka|bak|bun| ny|bo |yig|kuv|wab|key|eke|yer|vye|i y|ita|ya |a r| ko|kwa|o c",
+        plt: "ny |na |ana| ny|a n|sy |y f|a a|aha|ra | ma|nan|n n|any|y n|a m|y m|y a| fi|an |tra|han|ara| fa| am|ka | ts| na|in |ami| mi|a t|olo|min|man|iza|lon| iz|fan| ol| ha| sy|aka|a i|reh|ay |ian|tsy|ina| ar|on |o a|etr|het|ona|y o|o h|zan|y t|a h|ala| hi|a f|y h|ehe|ira|a s|zo |y i|ndr|jo | jo|n j| an| az|ran|dia| dr|y s|fah|ena|ire|tan|dre| zo|mba| ka|m p|afa| di|n d|and|azo|zy |amp|ia |ren|iny|rah|y z|ry |ika|oan|ao |amb|lal|ho | ho|isy|ony|tsa|asa|a d|ha |fia|mis|ava|ray| pi|am |dra| to|rin| ta|ant|eo |zay|rai|tsi|itr|sa | fo| ra|van|ova|nen|azy| vo|mpi|ari|o f|tok|a k| ir|kan|oto|mah|ly |sia| la|n i|voa|haf|a r|ito|y k|oka|y r|y l|ano|ita|ene|its|ial|zon|aza|ain| re| as|fot|aro|fit|nat|nin|aly|har| ko|ham| no|fa |ary|atr|ila|ata|iha|nam|kon|oko| sa|elo|nja|anj|ive|isa|oa |dy |y d|o m|nto|ank|o n|otr|pan|fir|air|sir|ty |a v|sam|o s|tov|mit|rak|reo|o t|pia|tao| ao|no |y v|iar|a e|a z|hit|hoa| it|to |za |ton|eha|end|vy |idi|tin|ati|adi|lna|aln|rov|ban| za|nga|hah|oni|osi|sos|vah|ino|ity| at|hia|pir|ifa|omb|ame|era|vel|kar|va |tso|jak|fid|ifi|ais|o i|idy|la |ama|ba | pa|tot|ani|rar|mpa|haz|kam| eo| il|iva|aho|nao|n k|ato|lah|ovy| te|dro|lan|ela| mo| si|fin|miv|san|koa| he|aso| mb|sak|kav",
+        qug: "ta | ka|ka |na |una|cha|ash|ari|a k|ana|pak|ish|ach|hka|shk|mi |kta|hay|man| ch|apa|ak |rin|ata|kun|har|akt|ita| ha|ami|lla| pa|ama|pas|shp| ma|tak|ay\xF1|y\xF1i|in |sh |ina|uku|nka|chi|aka|a c|yta|kuy|all|tap|a h|kan| tu|\xF1it|tuk| ru|run|chu|an |pay|ayt|ris| ki|aku|hpa|ank|a p|kam| sh|nam|a s|uy |i k|ayp|nak|pi |nta|a m| li|ay |lia|hin|kaw|nap|ant|tam|a t|iri|nat| wa|y r|kay|aws| ya|n t|ypa|wsa|pa |lak|shi|a a|lli|iku|hu |n k|iak|yay|kis| al|shu|a w|ipa| sa| il|api|kas|yku|yac|kat|a r|huk|i c|wan|hik|a i|ill|ush| ti|ayk|hpi| ku|kac|say|hun|uya|ila|ika|yuy|pir|ich|mac|ima|a y|yll|ayl|i p|kin|a l| wi|kus| yu|lan|tan|llu|kpi| ta| pi|aya|la |yan|awa| ni|kak|lat|rik|war|ull|kll|li |ink|nch|un |akp|n s|may| ay|uch|i s|nac|sha|iki|kik|h m|ukt|pip|tin|n p|iya|nal|aki| ri|ura|tik|mak|ypi|i m|i w|n m|his|k i|riy|iwa|y h| hu|han|akl|k t|mas|pik|kap| \xF1a|u t|nmi|nis|k a|i y|k l|kar| im|i i|wil|yma|aym|ksi|iks|uma| su|h k|has| ak|unk|huc|kir|anc|k m|pal|k k|ik |i\xF1i| i\xF1|ma |n y|mun| mu|mam|tac|a n|i t|k r|sam|ian|asi|k h|was|ywa|iyt|llp|san|sum|ray|si |pan|nki|tar| ii|u k|\xF1ik|uk |i\xF1a|kuk|wpa|awp|akk|a u|wat|uri| mi|yar|uyk|ayw|h c|ha |tay|rmi|arm|uta|las|yka|llk|kul|wi\xF1|ati|ska| ll|kit|n h|uti|kic|mat",
+        mad: "an |eng|ng |ban| sa| ka|dha|ren| se| ba|ak | ha|adh|hak| dh|ang|se | pa|aba|a s|na |aga|ha | or|n s|ore|ara| ag|gad|are|ana|n o|ngg|ale|gan|a k|ala|dhu|tab|sar|ota|asa|eba| ot| ke|sab|ba |wi |uwi|abb|i h|huw|aan|n k|a b|bba| ta| ma|pan|hal|bas|ako|dhi|ra |kab|em |beb|ka |lak|gi |lem|g a|eka|n b|ama|nga|san|at |ong|ran|nge|a o|ggu|sa |a d|ane|n p|ken|par|aja|man|gar|ata|nek|apa| na|agi|abe| ga|e e|sal|a a|tan|g s|al |kal|gen|ta |i s|aka|e a|a p|a e| la| pe|nan| an|era|e d| e | be|n a| al|ena|uy |guy|n n|ate| bi|mas|e k|kat|uan|oan|kon|k k|a m|i d|g e|n t|g k|ada|koa|lan|ela| da|bad|ma |ne |as |lab|ega| mo|ar |car|one|i p|bi |kaa|bat|ri |on |pon| so|e b|le |ah |abi|ase|adi|epa| ep|k h|and|pam|te |ok |ste|aon|om |oko|aha|ari|ona|asi|ter| di|di |pad|e s|sad|yar|neg|ton|set|rga|ost|mos|gap|nda|a l|har|i k|ina| a | ng|kom|isa|si |a t|a h| kl|jan|daj|iga|hig|idh|hid|ndh|n m|ngs|tto|ett|arg|la |k b|ler|k d|nna| to|nao|n d|mat| ca|tad|bis|aya|epo|aen| po|bin|nya|kas|k s|n h|sya|nta|gsa|en |ant|n g|kar|i e|das|e t|e p|iba| pr|g p| ho| el|i a|hi |os |sao|uwa|tes| ja|nag|nas|lae|sia|t s|k o|nto|int|yat|arn|m p|duw|adu|eta| ko|i b|ni |g n|kla|rak|ame|mpo|jua|sok|aso|ggi|eja|pel|jam|ele| et|dil",
+        nya: "ali|ndi|a m|a k| nd|wa |na | al|yen| ku|nth|ra |di |se |nse| mu|a n|thu|hu |nga| wa|la |mun|u a|unt|iye| ka|ce |ace| lo|a l|ang|e a| la| pa|liy|a u|ens| ma|idw|ons|dwa|e m|i n|ala|kha|lo |li |ira|era|ene|ga |ana|za |o m| mo|yo |o w| ci|we |dzi|ko |o l|and|dan|hal|zik|chi|oyo|pa |ner|ulu|ena|moy| um|a p| da|ape|kap|ka |iko| an|pen|a c|to |ito|hit|nch| nc|iri|lir|wac|umo|e k|lu |a a|aye| dz|kuk|a z|dwe|tha|mal| za|ing|ufu|mu |ro |ful| uf|o c|i d|lin|e l|zo |edw| zo|o a|mwa|u w|iro|o n|lan|amu|ere| mw|nzi|dza|alo|ri | li|fun|lid|gan|so | ca|kul|ofu|nso|o z|ulo|unz|o k|mul|lam|i c|san|a b|kwa| na|a d| a |una|u k|i l|nkh|ant|aku|ca |cit|oli|ipo|dip|ama|lac|wir|han|yan|osa|uli|tsa|i m|pon|kup|u d|ti |gwi|ukh|ung|hun|lon|ank|nda|iki|ina| ko|ao |diz|phu|ati|oma|i a|tsi|pat|iya|siy|kut| ya|zid|eze|ma |i k|mer|ome|mol|u n|u o|aph|ogw|izo|mba|sid|ku |sam|awi|adz| ad|izi|ula|say|e n|khu| kh|rez|vom|bvo|okh|lok|win|akh|o o| am| on|zir|map| zi|eza|ja |go |ngo|ika|its|ats|osi|gwe| co|isa|ya |haw|ani|o p|zi |ndu|kho|ezo|kir|uni|i u| ay|lal|gal|sa |bom| bo|ola|amb|wak|ha |ba |nja|anj|ban| ba|iza| bu|udz|ngw|bun|oye|o d|nal|kus|i p|i o|i y|wi | nt|e p| si|aka|ne |men|jir|nji|sed|ets|end|eka|uma|du ",
+        zyb: "bou|iz |aeu|enz|eng|uz | bo|ih |oux|nz | di|ing|z g|ux |uq |dih|ngh| ca|ng |gen|ung|z c| mi|miz|ij |cae|z d| gi| de| ge|euq|you| ci|ngz|ouj|aen|uj | yi|ien|gya| gu|ngj|mbo| mb|zli|dae|gij|cin|ang|j d|nae| se| ba|z y|euz| cu|de |x m|oz |j g|ouz|x b|li |z b|h g| da| yo|nj |xna|oxn|rox| ro|h c|nzl|vei|yau|wz |z m|ix | si|i c|iq |gh |j b| cw|nda|yin| hi| nd|dan|vun|inh| ga|can|ei |cun|yie|q g|hoz|bau| li| gy|wyo|cwy|z h|gue|gz |gun|faz|unz|yen|uh |den|ciz| go|q c|gj | bi|ej |aej| fa|hin|zci| wn|j n|goz|gai|au |z s|q d| vu|h m|gva|hu |auj|ouq|az |h d|ya |uek|ci |nh |u d|ou |sou|jso|gjs|din|awz|enj| do|h s|eve|sev|z r|nq |sin|nhy|g g|g b|liz|kgy|ekg|sen|eix|wng|lij|ngq|bin|i d|ghc| ha|bae|hix|h y|j c|ghg|i b|ouh|en |n d|h f|j s|z v|j y|law|hci|anh|inz|q y|nei|anj|ozc|ez |enh|q s|aiq|uen|zsi|zda|hye|ujc|e c|siz|eiz|anz|g y|i g|q n|bie| ne| ae|giz|u c|hgy|g d|gda|ngd|cou| la|z l|auy|ai |in |iuz|zdi|jhu|ujh|yuz| du|j m| fu|cuz|eiq|g c|gzd| co|uyu|coz|zbi|biu| dw|i s|i n|aw |dun|yun|izy|daw| he|nho| ho|enq|x l|cie|q b|cij|uzl|x d|iuj|awj| ya|eij|dei|nde|sae|izc|wnq|wnh|sei|h b|aih|gzs|bwn|a d|u g|ngg|jca|e b|ran| ra|hcu| me|iet|van| bu|guh|hen|si |wnj| ve|u b|azl|inj|gak|gan|ozg|siu|yaw|i m",
+        kin: "ra | ku|se | mu|a k|ntu|tu |nga|umu|ye | um|unt|mun|e n| gu|we |ira|a n| n |wa |ere|mu |ko |gom|a b|e a| ab|li |e k|mba|a a|e b|aba|ga |e u|ba |omb|o k| ba|a u|ose|u b|o a| cy|ash|eng| ag|kwi| bu|za |gih|ren|ndi| ub|ang|yo |aka|gu |igi| ib|a g|a m| nt|uli|o b|ama|ihu|e i|nta| ak|ago|ro |ora| ka|ugu|hug|di |iye|ban| am|cya|ku |ta | bw|and|sha|re | ig|gan|ubu|na | kw|obo| by| bi|a i|yan|ka |sho|kub|era|ese| we|kan|aga|hob|bor|ana|byo|ura|uru|ibi|rwa|wes|u w|no |uko|i m|mo |u a|ure|ili|uba|o n|uha|uga|n a| im|ish|bwa|bwo|wiy|ali|ber|ze |ne |ush|are|o i|u m|ger|bur|ran| ki| no|ane|bye| y |ege|teg|guh| uk|n i|rag|i a|ya |u g|e m|anz|bo |abo|gar|wo |y i|ho |age|ind|o m|eke|a s|ara|zir|ite|kug|kim|aci| as|u n|ani|kir|mbe| gi|yos|kur|ugo|gir|e c|iza|aho|i b|tur|ata|o u| se|u u|zo |i i|aha|nge|mwe|iro|akw|any|eza|uki|imi|o y|ate|u k|iki|atu|bat| in|go |tan|n u|bos| bo| na|hak|iby| at|ihe|ung|ha |bul|kar|eye|eko|gek|nya|o g|shy|e y|awe|ngo|bit|mul|nzi|rer|bag|ge |imw|bah|cir|gac|bak|je |gez|imu|eze|tse|ets|mat| ru|irw|he | ni| ur| yi|ako|ngi| ng|i n|rez|ubi|gus|fit|afi|ugi|uka|amb|o c|utu|ufa|ruk|mug|bas|bis|uku|hin|e g|ige|amo|ing| af|yem|ni | ry|a r|gaz|te |erw|bwe|ubw|hwa|iko| al|ant|zi ",
+        zul: "nge|oku| ng|a n|lo |ung|nga|la |le | no|elo|lun| um|e n|wa |we |gel|e u|ele|nel|thi|ke |nom|ezi|ma |ntu|oma|hi |o n|ngo|tu |nke|onk|o l|uth|ni |a u|lek|unt| wo|o e| lo|mun|umu|pha| ku|ang|ho |kwe|ulu| ne|won|une|lul|elu| un|a i|gok|kul|ath|hla|lok|khe|eni|tho|ela|zwe|akh|kel|a k|enz|ana|ban|aka|u u|ing|ule|elw|kho|uku|ala|lwa|gen| uk|wen|ama|na |e k|ko |gan|a e|he |zin|enk|o y| ez|kat| kw|lan|eth|het|o o| ok|okw|i n|nzi|aba|e a|hak|lel|lwe|eko|ane|ka |so |yo |ayo|o a|uhl|nku|nye| na|thu|mph|do |ben|ise|kut|ike|kun| is| im|hol|obu|fan|i k|e w|nhl|nok|ini|and|kuh|ukh|kuk| ak|e i|isi|aph|zi |ile|eki|ekh| ba|eka|the|a a| le| ye|kwa|e e|fut| fu|za |mal| ab|ebe|isa| em|o w|kub|mth|i w|ndl|emp|any|olo|ga | ko|nen|nis|alu|ith|eli|ndo|seb|nda| ya|i i|eke|vik|ake|uba|abe|ezw|yok|ba |ale|zo |olu|ume|ye |esi|kil|khu|yen|emi|nez|hlo|a l|ase|ula|kek|a o|iph|o u|no |azw|kan|mel|uny|ne |ufa|ahl|lin|hul|ant|und|sa |enh|kus|kuv|lak| in|o i|din|kom|amb|zis|ind|ola|uph|wez|eng|yez|phe|phi|mba|nya|han|kuf|nem|isw|ani|iyo| iy|fun| yo|uvi|i a|ene|izi| el|cal|i e|eze|ano|nay|hwe|kup|lal|uyo|ubu|kol|oko|ulo| la|e l|tha|nan|mfu|hon|nza|hin| ey|omp|da |bo |ilu|wak|lon|iso|kug|nka|ink|i l|sek|eku| ek|thw|gez",
+        swe: "ar |er |tt |ch |och| oc|ing|\xE4tt|ill|r\xE4t|en | ti|til|f\xF6r|ll | r\xE4|nde| f\xF6|var|et |and| en|ell| ha|om |het|lle|lig|de |nin| de|ng | in| fr|as |ler| el|gen|nva|und|att|env|r h| i |r r|ska|fri| so|har|der| at|\xF6r |ter|all|t t| ut|den|ka |lla|som|av |sam|ghe|ga | sk| vi| av|ete|la |ens|t a| si|r s|iga|igh|tig| va|ig |a s| st|ion|ra |tti|a o| \xE4r|ten|ns |t e|na | be|han| un| an| sa|a f| la| gr| m\xE5|nge|n s|vis|lan|m\xE5 |ati|nat| \xE5t|an |nna| li| al|t f|ans|nsk|sni|gru|\xE4ll|tio|ad | me|isk|kli|s f|t i|st\xE4|t s|ri |med|sta|h r|lik|da |dig|ta |r o|run|on | re|lag|tta|\xE4r |kap|a i|a r|\xE4nd|erv|n e|kte|n f|rvi|nom|itt|id | mo|sky|r e|ver|\xE4ns|vil|gt |igt| na|tan|uta|dra|t o|ro |isn| fa|kal|ihe|rih|erk|r u|e s|per|l v|vid|one|rel|ber|ran|ot |mot|ndl|d f|ed |ika|m\xE4n|l s|bet|t b|dd |ydd|kyd|n o|s s|str|n m|tet|sin|r f| om|rna|int|r i|end|nad|l a|ap |ers|nda|t v|ent|rbe|arb| h\xE4|ets|h\xE4l|amh|ckl|gar|nga|r m|je |rje|arj|n i|s e|lin|r t|i s|r\xE4n| pe|ilk|t l|ern|p\xE5 | p\xE5|t\xE4l|d e|dom|ege|g e|tni|r a|lit|ras| s\xE5|lln|kil|ski|enn|i o|a d|er\xE4|n a|ara| ge|\xE4ro|a m| ar|t d|ilj|els|yck| ve|g o|fr\xE5|nas|tra|ess|del|m s|liv|l l|in |v s|g a|ast|e e|val|son|rso|e t|age|nd | eg|ial|cia|oci|soc|upp|igi|eli|g s|rkl|gad|ndr|nte|\xF6ra",
+        lin: "na | na| ya|ya |a m| mo|to | ko|li |a b| li|o n| bo|i n|a y|a n|ki |a l|kok|la | ma|zal|i y|oki| pe|ngo|ali|pe |so |nso|oto|ons| ba|ala|mot|a k|eng|nyo|eko|o e|nge|yon| ny|kol|lik|iko|a e|o y|ang|ye | ye|oko|ma |o a|go | ek|ko |e m|aza|te |olo|sal|ama|si | az|mak|e b|lo | te|ta |isa|ako|amb|sen|ong|e n|ela|oyo|i k|ani| es|o m|ni |osa| to|ban|bat|a t|mba|ing|yo | oy|eli|a p|mbo|o p|mi | mi| nd|ba |i m|bok|i p|isi|mok|lis|nga|ge |nde|koz|bo |gel|ato|o t|mos|aka|oba|ese|lam|kop| ez|lon|den|omb|o b|ota|sa |ga |e a|e y|eza|kos|lin|esa|e e|kob|e k|sam|kot|kan|bot|ika|ngi|kam|ka | po|gom|oli|ope|yan|elo| lo|ata| el|bon|oka|po |bik|ate| bi|a s|i t|i b|omi|pes|wa | se|oza|lok|bom|oke|som|zwa|mis|i e|bek|iki| at|ola|ti |ozw|lib|o l|osu|oso|e t|nda|ase|ele|kel|omo|bos|su |usu|sus|bal|i l|ami|o o|bak| nz|pon|tel|mob|mu | ep|nza|asi|mbi|ati|kat|le |gi |ana|oti|ndi|tan|a o|wan|obe|kum|nya|mab|bis|nis|opo|tal|mat| ka|bol|and|aye|baz|u y|eta| ta|ne |ene|emb|sem|e l|gis|ben| ak| en|mal|obo|gob|ike|se |ibo|\u2019te| \u2019t|umb| so|mik|oku|be |mbe|bi |i a|eni|i o| mb|tey|san| et|abo|ebe|geb|eba|yeb|bu | as|ote|sik|ema|eya|ibe|mib|ai |pai|mwa|kes|da |may|boz|amu|a a|kom|mel|ona|ebi|ia |ina|tin| ti|bwa|sol|son",
+        som: " ka|ka |ay |uu |an |yo |oo |aan|aha| wa|da | qo| in| u |sha| xa|a i|ada|iyo| iy|ma |ama| ah| la|qof|aa |hay|ga |a a|a w|ah | dh|a s| da|in |xaq| oo|a d|aad|yah|eey| le|isa|lee|u l|q u|aq | si|taa|eya|ast|la |of |iya|sa |y i|u x|sta|kas|xuu|uxu|wux| wu|iis|nuu|inu|ro | am| ma|a q|wax|dha|ala|kal|nay|f k|a k|le |ku | ku| sh|o i|a l|ta |maa|a u|dii|loo| lo|o a|ale|ara|ana|iga|o d| uu|ha |lo |o m|o x|doo|aro|kar|yaa|gu |si |ima|na | xo| fa|adk|do |a x|ad |aas| qa| so|a o| ba|lag| aa| he|dka|adi|soo|o k|aqa| is|ash|u d|had| ga|eed|san|u k|a m|iin|i k| ca|u s|n l|yad|rka|axa|elo|hel|aga|hii|o h|o q| ha|id |n k| mi|baa| xu|har|xor|aar|ax |mad|add|nta|mid|aal|waa|haa|ina|qaa|daa|agu|ark|o w|nka|u h|dad|ihi| bu| ho|naa|n a|ays|haq|a h|o l| gu|o s|aya|saa|lka| ee| sa|dda|ab |nim|quu|gga|ank|kii|rci|arc|n s|a g| ji|gel| ge|eli|ysa|a f|siy|int|laa|uuq|uqu|xuq| mu|i a|uur|mar|ra |iri|o u| ci|riy|ya |ado|alk|dal|ee |al |rri|ayn|asa| di|ooc|aam|ofk|oon|to |ayo|dar| xi|dhi|jee|a c| ay|yih|a j|ban|caa|lad|sho|d k|ida|uqd|agg|sag|ras|bar|ar | ko| ra|o f|gaa|gal|fal|u a| de| ya|o c|ii |xay|eel|aab|sig|aba|orr|hoo|u q|y d|ed |ho |sad|qda|h q|fka|n i|xag|n x|qay|lsh|uls|bul|u w|jin| do|raa| ug|ido|ood",
+        hms: "ang|gd |ngd|ib | na|nan|ex | ji|eb |id |d n|b n|ud | li|nl |ad | le|jid|leb|l l| ga|ot | me|x n|anl|aot|mex|d g|b l|d d|ob |gs |ngs|jan| ne|ul | ni|nja| nj|lib|ong|nd | zh|jex| je|b j| sh|ngb| gh|gb | gu|gao|l n|han| ad|gan| da|t n| wu|il |x g|nb |b m| nh|she|is |l j|d l|nha|l g|d j|b g|el |end|wud|nex|gho|d s|d z|oul|hob|ub |nis| ch| ya|it |b y|eib| gi|s g|lie| yo| zi|oud|s j|d b|nx | de|es |d y| hu|uel|gue|ies|aob|you| ba|d m|chu|gia|dao|b d|s n|zib| go|zha|eit|hei|al |hud| do|nt |ol | fa|t g|hen|ut |gx |ngx|ab |fal|x j|b z|ian|d h|don|b w|t j|iad|nen| xi|gou|d c|b h|hao|x z|nib|anx|ant|gua| mi|s z|dan|ox |inl|hib|lil|uan|and| xa|b x| se|x m|uib|hui|d x|anb|enl| we|od |enb| du|at |ix |s m|bao| ho|hub| ng|zhi|jil|l s|yad|t m|t l|yan| ze| ju|heb|had|os |aos|t h|l d|nga| he|b a|xan|b s|sen|xin|dud|jul|d a|lou| lo|dei|d w| bi|b c| di|zhe|gt |ngt|x l|bad|x b| ja|hon|zho|blo| bl|d k| ma|deb|l z|wei| yi| qi|b b|x d|d p|eud| ge|x a|can| ca|t w|lol| si|hol|s w|aod|pao| pa|ren| re|x s|eut|pud| pu|aox|mis|gl |ngl|x w|zei|gon|enx|gha|s a|b f|l y|oub|eab|hea| to|did| ko|unb|ghu|t p|x c|geu|t s|x x|jao|ed |t c|l m|l h|jib|ax |l c|d f|nia| pi|eul|d r| no|min|l t|heu|ux |tou|ns |s y|iel|s l|hun",
+        hnj: "it | zh| ni|ab |at |ang| sh|nit| do|uat|os |ax |ox |ol |nx |ob | nd|t d|zhi|nf |x n|if |uax| mu|d n|tab| ta| cu|mua|cua|as |ad |ef |uf |id |dos|gd |ngd|hit|ib |us |enx|f n|she|s d|t l|nb |ux |x z|ed |inf|b n|l n|t n|aob|b z| lo|ong|ix |dol| go|zhe|f g| ho| yi|t z|d z|b d| le|euf|d s|ut |yao| yo| zi|gb |ngb|ndo|enb|len| dr|zha|uab|dro|hox| ge|nen| ne|han| ja|das|x d|x c|x j|f z|shi|f h|il | da|oux|nda|s n|nd |s z|b g| ny|heu| de|gf |ngf| du|od |gox| na|uad| gu|inx|b c| ya|uef| xa| ji|ous| ua| hu|xan|hen|zhu|nil|jai|rou|t g|f d| la|enf|ged|ik | bu|nya|you|f y|lob|af |bua|uk |is |yin|out|of |l m|ud |hua| qi|ot |t s| ba|ait| kh|s s|nad| di|aib|x l|lol| id|dou|ex |aod|bao| re| ga|d d|b y|las|hed|b h|b s|f b|t y|jua| ju| dl|x s|hue|b l| xi|zif|dus|b b|x g|hif|x y|hai| nz|sha| li|x t| be|d j|und|hun|ren|d y|hef|xin| ib|b t|l d|aos|s l| ha|gai|nzh|gx |ngx| ao|s b|s x|el |gt |ngt|hik|aid|s t|x m|f l|f t| pi|aof|t r|eb | gh|s y|d l|gua| bi| za| fu|t h| zu|hou|deu|lb | lb|d g| mo|b k| bo|iao|ros|gon|eut|x h|al |uaf|hab|t t|k n|f x|hix|pin|yua| no|t b|ak | zo|s m| nb| we|d b|gha|f s|mol|euk|dax|l b|nof| ko|lou|guk|end|uas|t k|dis|dan|yol|uan|d t|x b|lan|t m| ch|jix|x x| hl|aox|zis|x i|et | ro",
+        ilo: "ti |iti|an |nga|ga | ng| it| pa|en | ma| ka| a | ke| ti|ana|pan|ken|ang|a n|agi|a k|n a|gan|a m|a a|lin|ali|aya|man|int|teg|n t|i p|nte| na|awa|a p|na |kal|ng |dag|git|ega|sa |da |add|way|n i|n n|no |ysa|al |dda|n k|ada|aba|nag|nna|ngg|eys| me|a i|i a|mey|ann|pag|wen|i k|gal|gga| tu|enn| da| sa|nno| we|ung| ad|tun|mai| ba|l m| ag|ya |i s|i n|yan|nan|ata|nak| si|aka|kad|aan|kas|asa|wan|ami|aki|ay |li |i m|apa|yaw|a t|mak| an|i t|g k|a s|ina|eng|ala|ika|ama|ong|ara|ili|dad| aw|gpa|nai|et |yon|ani|aik|on |at |oma|sin|bal|ipa|n d|uma|g i|ket|ag |in |aen|n p|ram|sab|aga|nom|ino|lya|ily|syo|i b| ki|nia|agp|gim|kab|asi|kin|iam|ags|bab|oy |toy|n m|agt| ta|bag|sia|g a|gil|mil| um|o p|ngi|n w|i i|pad|pap|daa|iwa|naa|eg |ias|ed |nat|bae|o k|saa|san|pam|gsa|ta |kit|ma |dum|yto|tan|i e|t n|uka|t k|apu|lan|sta|sal| li|a b|ari|g n|den|mid|ad |o i|y a|ida|ar |aar|y n|dey| de| wa|a d|ak |bia|ao |tao|min|asy|mon|imo| gi|maa|sap|abi|i u|aib|kni|i l|gin|ged|o a| ar|kap|pul|eyt|abs|ibi| am|akn|i g|kip|isu|g t|bas|nay|ing|i d|kar|ban|iba|nib|t i|as |d n|y i|ura|a w|nal|aad|i w|lak|adu|kai|bsa|duk|edu| ed|may|agb|agk|tra|gge|sol|aso|agr|ngs|ian|ila|dde|edd|tal|aip|kua|umi|pay|sas|ita|pak|g d|ulo|inn|aw "
+      },
+      Cyrillic: {
+        rus: " \u043F\u0440| \u0438 |\u0440\u0430\u0432| \u043D\u0430|\u043F\u0440\u0430|\u0441\u0442\u0432|\u0433\u043E |\u0435\u043D\u0438|\u0432\u043E |\u043E\u0432\u0435| \u043A\u0430|\u043D\u0430 |\u0442\u044C | \u043F\u043E|\u0438\u044F |\u043E \u043D| \u043E\u0431|\u0435\u0442 | \u0432 |\u0441\u0432\u043E| \u0441\u0432|\u0430\u0432\u043E|\u0430\u043D\u0438|\u043E\u0441\u0442|\u043E\u0433\u043E|\u044B\u0439 |\u0430\u0436\u0434|\u043B\u043E\u0432|\u0442 \u043F| \u0438\u043C|\u043D\u0438\u044F| \u0447\u0435| \u0441\u043E|\u0435\u043B\u043E|\u0438\u043C\u0435| \u043D\u0435|\u043B\u044C\u043D|\u043B\u0438 |\u0447\u0435\u043B|\u043A\u0430\u0436|\u0435\u0441\u0442|\u0432\u0435\u043A|\u0430\u0442\u044C|\u043E\u0432\u0430|\u0438\u043B\u0438| \u0440\u0430|\u0435\u043A |\u0439 \u0447|\u0434\u044B\u0439|\u0436\u0434\u044B| \u0434\u043E|\u0438\u0435 |\u0435\u0435\u0442|\u043C\u0435\u0435|\u043D\u043E | \u0438\u043B|\u0438\u0438 |\u0441\u044F |\u0435\u0433\u043E|\u043E\u0431\u043E|\u0438 \u043F|\u043D\u0438\u0435|\u043A \u0438| \u0431\u044B|\u0438 \u0441|\u0438 \u0438|\u043C\u0438 |\u0431\u043E\u0434|\u0432\u043E\u0431|\u0432\u0430\u043D| \u0437\u0430|\u043E\u0439 |\u044B\u0445 |\u043E\u043C |\u043B\u0435\u043D|\u0430\u0446\u0438|\u0435\u043D\u043D|\u043E \u0441|\u043E \u043F|\u044C\u043D\u043E|\u0442\u0432\u0430|\u0442\u0432\u043E|\u043F\u0440\u0438|\u043D\u043E\u0433|\u0430\u043B\u044C|\u0430\u043A\u043E|\u0432\u0430 |\u0438 \u043D|\u0441\u0442\u0438|\u043D\u044B\u0445|\u0442\u043E |\u0431\u0440\u0430|\u043E\u043B\u0436|\u0434\u043E\u043B|\u0441\u0442\u043E|\u0438 \u0432|\u043D\u044B\u043C|\u043E\u0435 | \u0435\u0433|\u043D\u043E\u0432|\u0438\u0445 |\u0435\u043B\u044C|\u0442\u0435\u043B|\u0442\u0438 |\u043D\u043E\u0441|\u043D\u0435 |\u043F\u043E\u043B|\u0440\u0430\u0437| \u0432\u0441|\u0438 \u043E| \u043B\u0438|\u0438 \u0440|\u044B\u0442\u044C|\u0431\u044B\u0442|\u0432\u043B\u0435|\u0440\u0435\u0434|\u0438\u044E |\u0442\u043E\u0440| \u043E\u0441|\u044C\u0441\u044F|\u0442\u044C\u0441|\u043E\u0434\u0438|\u0449\u0435\u0441|\u044F \u0438|\u043A\u0430\u043A|\u043F\u0440\u043E|\u0436\u0435\u043D|\u044B\u043C |\u043F\u0440\u0435|\u0430 \u0441|\u0441\u043D\u043E|\u0435 \u0434|\u043D\u043D\u043E|\u043E \u0438|\u0438\u0439 | \u043A\u043E|\u043E \u0432| \u043D\u0438| \u0434\u0435|\u0441\u0442\u0443|\u043B\u0436\u043D|\u0441\u043E\u0432|\u0435 \u0432|\u043D\u043E\u043C|\u043E\u043B\u044C|\u0440\u0430\u043D|\u043E\u0436\u0435|\u0438\u0447\u0435|\u0435\u0439 |\u0430\u0441\u0442|\u043D\u043D\u044B| \u043E\u0442|\u0442\u0443\u043F|\u043C \u0438|\u043E\u0434\u043D|\u0437\u043E\u0432|\u0440\u0435\u0441| \u043C\u043E|\u043E\u0441\u0443|\u043B\u044F |\u043E\u0441\u043D|\u0430 \u043E|\u0432\u0435\u043D| \u0442\u043E|\u043E \u0431|\u0448\u0435\u043D|\u0442\u0432\u0435|\u043E\u0431\u0449|\u0430 \u0438|\u0435 \u043C|\u044C\u043D\u044B|\u043E\u0431\u0440|\u0432\u0435\u0440|\u0447\u0435\u043D|\u044F \u043D|\u0436\u043D\u043E|\u0447\u0435\u0441|\u0430\u043A |\u043B\u0438\u0447|\u043D\u0438\u0438|\u0435 \u0438|\u0432\u0441\u0435|\u0431\u0449\u0435|\u0432\u0430\u0442|\u0435\u0441\u043F|\u043C\u043E\u0436|\u0439 \u0438|\u043D\u043E\u0435|\u043E \u0434|\u0431\u0435\u0441| \u0432\u043E|\u044F \u0432|\u0434\u0443 | \u0441\u0442|\u0434\u043D\u043E|\u043E\u043D\u0430|\u043D\u0430\u0446|\u0434\u0435\u043D|\u0435\u0436\u0434|\u0445 \u0438| \u0431\u0435|\u0438 \u0434|\u043D\u044B |\u0434\u043E\u0441|\u0434\u043B\u044F| \u0434\u043B| \u0442\u0430|\u043B\u044C\u0441|\u0430\u0442\u0435|\u0446\u0438\u0438|\u044F \u043F|\u0443\u044E |\u0438\u0442\u0435|\u0435 \u043E|\u043D\u043E\u0439|\u043F\u043E\u0434|\u043E\u0442\u043E|\u0441\u0442\u0440|\u0441\u0442\u0430| \u043C\u0435|\u0435\u043B\u0438| \u0440\u0435|\u044F \u043A|\u0442\u043E\u044F|\u0430\u043C\u0438|\u0435\u043D |\u044C \u0432|\u044E \u0438|\u0430\u0437\u043E|\u0433\u043E\u0441|\u043C \u043F|\u044C \u043F|\u0442 \u0431|\u0436\u0435\u0442|\u0443\u0447\u0430|\u0441\u0443\u0434|\u044C\u0441\u0442|\u0434\u0441\u0442|\u0449\u0438\u0442|\u0430\u0449\u0438|\u0437\u0430\u0449|\u043A\u043E\u043D|\u043D\u0438\u044E|\u0430\u043C |\u043E\u0434\u0443|\u0435\u0440\u0435|\u0433\u0440\u0430|\u043F\u0435\u0447|\u043E \u043E|\u043E\u0440\u043E|\u043A\u043E\u0442|\u0438 \u043A|\u0442\u0440\u0430|\u043D\u0438\u043A|\u0443\u0449\u0435|\u0446\u0438\u0430|\u043E\u0446\u0438|\u0441\u043E\u0446|\u043D\u0430\u043B|\u0435\u0441\u043A|\u043E \u0440|\u043A\u043E\u0433|\u0434\u0440\u0443| \u0434\u0440|\u043D\u0438 |\u0430\u0432\u0430|\u043D\u0441\u0442|\u0435\u043C |\u0430\u0432\u043D|\u044B\u043C\u0438|\u0435\u0434\u0441|\u0434\u0438\u043D|\u0434\u043E\u0432| \u0433\u043E| \u0432\u044B|\u0432 \u043A|\u044B\u0435 |\u043E\u0431\u0435|\u043C\u0443 |\u044F \u0435|\u0441\u043B\u0443|\u0443\u0434\u0430|\u0442\u0430\u043A|\u043A\u043E\u0439|\u0442\u0443 |\u0438\u0442\u0443|\u0437\u0430\u043A|\u0445\u043E\u0434|\u0432\u043E\u043B|\u0440\u0430\u0431|\u043A\u0442\u043E|\u0438\u043A\u0442|\u0438\u0447\u043D|\u043D\u0438\u0447|\u043E\u0442 |\u0438\u043D\u0430| \u043A |\u0442\u0435\u0440|\u0440\u043E\u0434|\u043D\u0430\u0440",
+        ukr: "\u043D\u0430 | \u043F\u0440|\u043F\u0440\u0430| \u0456 |\u0440\u0430\u0432| \u043D\u0430| \u043F\u043E|\u043D\u044F |\u043D\u043D\u044F| \u0437\u0430|\u043E\u0433\u043E|\u0442\u0438 |\u0432\u043E |\u0433\u043E | \u043A\u043E|\u0430\u0432\u043E| \u043C\u0430|\u043B\u044E\u0434|\u043E \u043D| \u043D\u0435| \u043B\u044E|\u044E\u0434\u0438|\u043E\u0436\u043D|\u043A\u043E\u0436|\u043B\u044C\u043D|\u0436\u043D\u0430|\u0434\u0438\u043D|\u0430\u0442\u0438|\u0430\u0454 |\u0438\u0445 |\u0438\u043D\u0430|\u043F\u043E\u0432|\u0441\u0432\u043E| \u0441\u0432|\u0430\u043D\u043D|\u0454 \u043F|\u043C\u0430\u0454|\u0430\u0431\u043E|\u0430 \u043B| \u0431\u0443|\u043D\u0435 |\u0435\u043D\u043D|\u0431\u043E | \u0430\u0431|\u0430 \u043C|\u043E\u0432\u0438|\u043D\u0456 | \u0432\u0438| \u043E\u0441|\u0430\u0446\u0456|\u0432\u0438\u043D| \u0442\u0430|\u0431\u0435\u0437|\u043E\u0431\u043E| \u0432\u0456| \u044F\u043A|\u0435\u0440\u0435| \u0434\u043E|\u0456 \u043F|\u0443\u0432\u0430|\u043E \u043F|\u0430\u043B\u044C|\u043D\u0438\u0445|\u043E\u043C |\u043C\u0438 |\u0456\u043B\u044C|\u043D\u043E\u0433|\u0442\u0430 |\u0438\u0439 |\u043F\u0440\u0438|\u043E\u044E |\u0442\u044C |\u0441\u0442\u0430| \u043E\u0431|\u0432\u0430\u043D|\u0438\u043D\u043D|\u0442\u0456 |\u043E\u0441\u0442| \u0443 |\u0441\u044F |\u0432\u0430\u0442|\u0431\u0443\u0442|\u0438\u0441\u0442| \u043C\u043E|\u0435\u0437\u043F|\u0443\u0442\u0438|\u043D\u043E\u0432|\u043F\u0435\u0440|\u0456\u0457 |\u0438 \u043F|\u0431\u043E\u0434|\u0432\u043E\u0431|\u0441\u0442\u0432| \u0432 |\u043E \u0432|\u0432\u0456\u0434| \u0431\u0435|\u0430\u043A\u043E|\u043F\u0456\u0434|\u0442\u0438\u0441|\u043A\u043E\u043D|\u043D\u043E |\u0432\u0430 |\u043D\u043D\u0456|\u0456 \u0441|\u0430 \u043F|\u0441\u0442\u0456| \u0441\u043F|\u043D\u0438\u0439|\u0434\u0443 |\u044C\u043D\u043E|\u043E\u043D\u0430| \u0456\u043D|\u0434\u043D\u043E|\u043D\u0438\u043C|\u0456\u0439 |\u0430 \u0437|\u043D\u0443 |\u043C\u043E\u0436|\u0457\u0457 | \u0457\u0457|\u043B\u044F |\u0441\u043E\u0431|\u043C\u0443 |\u043E\u0457 |\u044F\u043A\u043E| \u043F\u0435| \u0440\u0430|\u0456\u0434 | \u0434\u0435|\u0456 \u0432|\u0438 \u0456|\u0447\u0438\u043D|\u0432\u043D\u043E|\u043E\u043C\u0443|\u043D\u043E\u043C|\u0443 \u043F|\u0456 \u043D|\u0430 \u0441| \u0441\u0443|\u0430 \u043E|\u043D\u0435\u043D|\u0438\u0441\u044F|\u043E\u0432\u043E|\u043D\u0430\u043D|\u043E\u0434\u043D|\u0443 \u0432|\u0456 \u0434|\u0430\u0432\u0430|\u0456\u0434\u043D|\u0440\u0456\u0432| \u0440\u0456|\u0456 \u0440|\u0438\u043C\u0438|\u0432\u0456\u043B|\u0438\u043C |\u0446\u0456\u0457|\u043E \u0434|\u0430 \u0432|\u0441\u0442\u0443|\u043E\u0434\u0443|\u0431\u0443\u0434|\u043E\u0432\u0430| \u043F\u0456| \u043D\u0456|\u044F \u043D|\u0435 \u043F|\u043D\u0430\u0446|\u0438 \u0441|\u043D\u043D\u0430| \u043E\u0434| \u0440\u043E|\u043D\u043E\u0441|\u044C\u043D\u0438|\u044E\u0442\u044C|\u0438 \u0437|\u043A\u0438 |\u0456 \u0437|\u0430 \u0431|\u0441\u043F\u0440|\u0447\u0435\u043D|\u0436\u0435 |\u043E\u0436\u0435|\u0435 \u043C|\u043E\u0432\u043D|\u0440\u0438\u043C|\u0435 \u0431|\u0442\u043E |\u043D\u0456\u0445|\u043E\u0441\u043E|\u0443\u0434\u044C|\u0432\u0456 | \u0440\u0435| \u0441\u0442|\u0440\u0430\u0446|\u0434\u043E | \u0441\u043E|\u0440\u043E\u0437|\u043B\u0435\u043D|\u0432\u043D\u0438|\u0456\u0432\u043D|\u0440\u043E\u0434| \u0432\u0441|\u0441\u043F\u0456|\u043A\u043E\u0432|\u0437\u043F\u0435|\u0456\u0432 |\u0434\u043B\u044F| \u0434\u043B|\u0457 \u043E|\u0445\u0438\u0441|\u0430\u0445\u0438|\u0437\u0430\u0445|\u2010\u044F\u043A|\u044C\u2010\u044F|\u0434\u044C\u2010|\u044F \u0456|\u0442\u0430\u043A|\u0437\u043D\u0430|\u0437\u0430\u0431|\u0441\u0442\u044C|\u0442\u0443 |\u043D\u043E\u044E|\u0430 \u043D|\u0442\u043E\u0440|\u0441\u043D\u043E|\u043E \u0441|\u0436\u0435\u043D|\u0446\u0456\u0430|\u043E\u0446\u0456|\u0441\u043E\u0446|\u0456\u043D\u0448|\u0456 \u043C|\u043A\u043B\u0430|\u0438 \u0432|\u0442\u0435\u0440| \u0434\u0456|\u0456\u0441\u0442|\u043E\u0432\u0456|\u0443 \u0441|\u044F \u0432|\u0430\u0440\u043E|\u0441\u0456 |\u0432\u0456\u0442|\u0441\u0432\u0456|\u043E\u0441\u0432|\u0440\u043E\u0431|\u043F\u0456\u043B|\u0440\u0435\u0441|\u0437\u0430 |\u043F\u0435\u0447|\u0430\u0431\u0435|\u043A\u0443 |\u043B\u0438\u0432|\u0435\u0440\u0436|\u0434\u0435\u0440|\u0432 \u0456|\u0430\u0432\u043D|\u0442\u0430\u0432|\u0430\u0432 |\u0430\u043C\u0438|\u043A\u043E\u043C|\u0432\u043B\u0435|\u043E \u0431|\u044C \u043F| \u0449\u043E|\u0457\u0445 |\u0442\u0432\u043E|\u0445\u0442\u043E|\u0456\u0445\u0442|\u043A\u043E\u0433| \u043A\u0440|\u0430\u043D\u043E|\u0442\u0430\u043D|\u0456\u0430\u043B|\u043D\u0430\u043B|\u043D\u044C |\u0445 \u043F|\u0436\u043D\u043E|\u043B\u0435\u0436|\u0430\u043B\u0435|\u043F\u0440\u043E|\u0442\u0432\u0430|\u0440\u0430\u0442|\u043E \u043E|\u0445 \u0432|\u043D\u0430\u0440|\u043B\u044C\u0441|\u0446\u0456\u0439|\u043A\u043E\u0440|\u0447\u0430\u0441|\u0440\u0436\u0430|\u0457 \u0441|\u0438\u043D\u0443|\u0434\u0441\u0442|\u043E \u0437|\u0440\u0430\u0437|\u043C\u0456\u043D|\u0430 \u0440|\u0437\u0430\u043A",
+        bos: " \u043F\u0440| \u0438 |\u0440\u0430\u0432|\u043D\u0430 |\u043C\u0430 |\u043F\u0440\u0430| \u043D\u0430|\u0438\u043C\u0430| \u0441\u0432|\u0430 \u0441|\u0434\u0430 |\u0430 \u043F|\u0432\u043E |\u0458\u0435 |\u043A\u043E |\u0430\u043A\u043E|\u043E \u0438| \u043F\u043E|\u0430\u0432\u043E|\u0435 \u0441|\u0430 \u0438|\u0442\u0438 | \u0438\u043C| \u0434\u0430| \u0443 |\u0441\u0432\u0430|\u043D\u043E | \u0437\u0430|\u043E \u043D|\u0432\u0430 |\u0438 \u043F|\u0438\u043B\u0438|\u0432\u0430\u043A|\u043B\u0438 | \u043A\u043E|\u043D\u0435 | \u0438\u043B|\u043A\u043E\u0458| \u043D\u0435| \u0434\u0440|\u043E\u0441\u0442| \u0441\u043B|\u045A\u0430 |\u0438\u043C |\u0438 \u0441|\u0443 \u0441|\u0438 \u0438|\u0430\u0432\u0430|\u0438\u0458\u0435|\u0430 \u0443| \u0431\u0438|\u0441\u0442\u0432|\u0441\u0435 |\u0432\u0430\u045A|\u0430 \u0434|\u043E\u043C |\u0458\u0435\u0434|\u0431\u043E\u0434|\u043E\u0431\u043E|\u043B\u043E\u0431|\u0441\u043B\u043E| \u0441\u0435| \u0440\u0430|\u0438\u0445 |\u0441\u0442\u0438|\u0430 \u043D|\u045A\u0435 | \u043E\u0431| \u0458\u0435|\u043F\u0440\u0438|\u0434\u0440\u0443|\u0443 \u0438|\u0458\u0443 |\u043E \u0434|\u0438\u0442\u0438|\u0432\u043E\u0458|\u0440\u0430\u0437|\u0430\u045A\u0435|\u043E\u0432\u0430|\u0434\u0458\u0435| \u043E\u0441|\u0435 \u0438|\u043B\u043E |\u0435 \u043F|\u0430\u045A\u0430|\u0443\u0458\u0435|\u0438 \u0434|\u0431\u0440\u0430|\u0442\u0440\u0435| \u0442\u0440| \u0441\u0443|\u0443 \u0437|\u0430 \u043A|\u043E\u0433 |\u0443 \u043F|\u043E\u0458\u0435|\u0446\u0438\u0458|\u0440\u0435\u0431|\u0430 \u043E|\u0430 \u0431| \u045A\u0435|\u0438 \u0443|\u043C\u0438\u0458|\u043D\u0438 |\u043D\u043E\u0441|\u0431\u0430 |\u0435\u0434\u043D|\u0441\u0432\u043E|\u045A\u0435\u0433| \u0438\u0437|\u043F\u0440\u043E|\u0435 \u0434|\u0436\u0430\u0432|\u0431\u0438\u0442| \u043D\u0438|\u0438 \u043E|\u0441\u0442\u0430|\u0430 \u0437|\u0430\u0432\u043D|\u0432\u0458\u0435| \u043A\u0430|\u0431\u0438\u043B|\u043E\u0432\u043E|\u0430 \u0458|\u0430\u0458\u0443|\u0438\u0441\u0442|\u0438 \u043D|\u043D\u0438\u0445|\u0458\u0435\u043B|\u0442\u0443 |\u0440\u0435\u0434|\u0433\u043E\u0432| \u043E\u0434|\u0435 \u043E|\u043E\u0458\u0438| \u0441\u043C|\u0458\u0430 |\u043E \u043A|\u0438\u043B\u043E|\u0430\u0446\u0438|\u0435 \u0443|\u043F\u0440\u0435|\u043E \u043F|\u0435\u0431\u0430|\u0443 \u043E|\u0441\u0443 |\u0432\u0438\u043C|\u0438\u0447\u043D| \u0441\u0430| \u0434\u0458|\u0430 \u0442|\u0438\u0458\u0430|\u0448\u0442\u0438|\u0447\u043D\u043E|\u0440\u0436\u0430|\u0434\u0440\u0436|\u0441\u0442\u0443|\u0434\u043D\u0430|\u043E\u0434\u043D|\u0435\u043D\u0438|\u0437\u0430 |\u0438\u0432\u0430|\u043D\u043E\u043C|\u0435\u043C |\u0434\u0443 |\u0440\u0430\u043D|\u0432\u043D\u043E|\u0441\u043C\u0438|\u0458\u0435\u0440|\u0435 \u0431|\u0435 \u043D|\u0434\u0435 |\u043F\u043E\u0441|\u043C \u0438| \u0434\u043E|\u0443 \u0434|\u043D\u0430\u043A|\u0430 \u0440|\u043E\u0431\u0440| \u043C\u043E|\u043D\u0438\u043C|\u0435\u0433\u043E| \u043A\u0440|\u0442\u0438\u0442|\u043A\u0440\u0438|\u0432\u0435 |\u0430\u043D |\u0438\u043A\u043E|\u043D\u0438\u043A|\u043D\u0443 |\u0438 \u043C|\u043D\u043E\u0433|\u0435\u043D\u043E|\u0441\u043D\u043E|\u0435 \u043A|\u0442\u0443\u043F|\u0440\u0443\u0433|\u043A\u0430 |\u043E\u0434\u0430|\u0440\u0438\u0432|\u0432\u043E\u0459|\u0430\u043B\u043D|\u043C \u0441|\u0438\u0442\u0443|\u0430\u0448\u0442|\u0437\u0430\u0448|\u0430\u043D\u0438|\u0441\u0430\u043C| \u0441\u0442|\u0430\u043A\u0432|\u043E\u0432\u0438|\u043E\u0441\u043D|\u0440\u043E\u0434|\u0430\u0440\u043E| \u043C\u0438|\u0458\u0438 |\u0442\u0432\u0430|\u0434\u043D\u043E|\u043D\u0441\u0442|\u0430\u043A |\u0438\u0442\u0435|\u0459\u0443 |\u0432\u0438\u0447|\u0440\u0430\u0434|\u0443 \u043D|\u0443 \u043C| \u0442\u0430|\u0434\u0441\u0442|\u0442\u0438\u0432|\u043D\u0430\u0446|\u0440\u0438\u043C|\u043A\u043E\u043D|\u043A\u0443 |\u045A\u0443 |\u043E\u0434\u0443|\u0436\u0438\u0432|\u0430\u043C\u043E|\u0442\u0432\u043E|\u0442\u0435\u0459|\u043F\u043E\u0434|\u0435\u045B\u0443|\u0433 \u043F|\u043D\u043E\u0432|\u0438\u043D\u0430|\u043D\u0430\u0440| \u0432\u0458|\u0438 \u0431|\u043E\u0458 | \u043E\u0432|\u0430\u0432\u0435|\u0432\u0443 |\u0430\u043D\u0441|\u043E\u0458\u0430|\u0437\u043E\u0432|\u0430\u0437\u043E|\u0443\u0434\u0435|\u0431\u0443\u0434| \u0431\u0443|\u0435 \u0442|\u0438 \u0432|\u0435\u045A\u0430|\u0435\u0434\u0438|\u043D\u0438\u0446|\u043D\u0430\u043F|\u043C\u0458\u0435| \u0438\u0441|\u0441\u043B\u0443|\u0435\u0434\u0441|\u043E \u043E|\u0437\u0430\u043A|\u0438 \u043A|\u043C \u043F|\u0442\u043D\u043E|\u0438\u0432\u043E|\u0435\u0440\u0435|\u043D\u0438\u0447|\u043A\u0430\u043A|\u0430\u0434\u0430|\u0432\u043D\u0438|\u0443\u0433\u0438| \u0440\u043E|\u043C\u043E\u0432|\u0432\u0435\u043D|\u043E \u0441|\u0442\u043E |\u0442\u0435 | \u0432\u0440| \u0431\u0435|\u0430\u0440\u0430|\u043A\u043B\u0430| \u0431\u0440|\u0443 \u0431|\u0443 \u0443|\u0438 \u0442|\u043E\u043D\u0430| \u043E\u043D|\u0430\u0432\u0438|\u0458\u0430\u043B|\u0434\u043D\u0438| \u0441\u043A",
+        srp: " \u043F\u0440| \u0438 |\u0440\u0430\u0432|\u043D\u0430 |\u043F\u0440\u0430| \u043D\u0430|\u043C\u0430 | \u0441\u0432|\u0438\u043C\u0430|\u0434\u0430 |\u0430 \u043F|\u0432\u043E |\u043A\u043E |\u0442\u0438 |\u0430\u0432\u043E| \u043F\u043E|\u0430 \u0438|\u0430\u043A\u043E|\u0430 \u0441| \u0437\u0430| \u0443 |\u043E \u0438| \u0438\u043C|\u0438 \u043F|\u0432\u0430 |\u0441\u0432\u0430|\u0432\u0430\u043A| \u0434\u0430|\u043E \u043D|\u0435 \u0441|\u043E\u0441\u0442| \u043A\u043E|\u045A\u0430 |\u043B\u0438 |\u0438\u043B\u0438|\u043D\u0435 |\u043E\u043C | \u043D\u0435|\u0430 \u043D| \u0441\u043B| \u0438\u043B|\u0458\u0435 | \u0434\u0440|\u0438 \u0441|\u043D\u043E |\u043A\u043E\u0458|\u0443 \u0441|\u0430\u0432\u0430| \u0440\u0430|\u043E\u0433 |\u0441\u043B\u043E|\u0458\u0443 |\u0438\u043C |\u0441\u0442\u0438|\u0431\u043E\u0434|\u043E\u0431\u043E|\u043B\u043E\u0431|\u0438\u0442\u0438|\u0430 \u043E|\u0441\u0442\u0432|\u0438 \u0443|\u0430 \u0434|\u043D\u0438 |\u0458\u0435\u0434|\u0443 \u043F|\u043F\u0440\u0438|\u0435\u0434\u043D| \u0431\u0438|\u0438 \u0438|\u0430 \u043A|\u043E \u0434|\u0441\u0442\u0430|\u0438\u0445 |\u0434\u0440\u0443|\u0430 \u0443| \u0458\u0435|\u0430\u045A\u0430| \u043E\u0441| \u043D\u0438|\u043D\u043E\u0441|\u043F\u0440\u043E|\u0430\u0458\u0443|\u0438 \u043E| \u0434\u0435| \u0441\u0443|\u0443 \u0438|\u0441\u0435 |\u045A\u0435 |\u0458\u0430 |\u043E\u0432\u0430|\u0438 \u0434|\u0446\u0438\u0458| \u043E\u0431|\u0443\u0458\u0435|\u0440\u0435\u0434|\u0436\u0430\u0432|\u0435 \u0438|\u0435 \u043F|\u0430 \u0458|\u0434\u043D\u0430| \u0441\u0435| \u043E\u0434|\u0432\u0435 | \u043A\u0430|\u0435\u043D\u0438|\u0440\u0436\u0430|\u0434\u0440\u0436|\u0430 \u0437|\u0430\u0432\u043D|\u0435\u045A\u0430|\u0430\u0446\u0438|\u0432\u043E\u0458|\u043E\u0432\u043E|\u0443 \u0443|\u043C \u0438|\u043E\u0458\u0430|\u0432\u0430\u045A| \u0438\u0437|\u0438\u0458\u0430|\u0443 \u0437|\u0430\u045A\u0435|\u0440\u0430\u043D|\u0435 \u043E|\u0440\u043E\u0434|\u0438 \u043D|\u0435 \u0431|\u0440\u0430\u0437|\u0437\u0430 | \u045A\u0435|\u0433\u043E\u0432|\u0438\u0447\u043D| \u0441\u0442|\u043D\u043E\u0432|\u0441\u043D\u043E|\u043E\u0441\u043D|\u0434\u0443 |\u043F\u0440\u0435| \u0442\u0440|\u0441\u0443 |\u0432\u0443 |\u043E\u0434\u043D|\u0430 \u0431|\u0441\u0432\u043E|\u045A\u0435\u0433|\u043D\u0438\u043C|\u043D\u0438\u0445|\u0442\u0443 |\u0442\u0438\u0442|\u0448\u0442\u0438|\u043A\u0443 |\u043D\u043E\u043C|\u0431\u0438\u0442|\u0435 \u0434|\u043C\u0435 |\u0438\u043A\u043E|\u0447\u043D\u043E|\u043E\u0458\u0438|\u043B\u043E |\u0432\u043D\u043E|\u043D\u0438\u043A|\u0438\u043A\u0430|\u0431\u0435\u0437|\u0430\u0440\u0430|\u0434\u0435 |\u0443 \u043E|\u0432\u0438\u043C|\u043D\u0430\u043A| \u0441\u0430|\u0440\u0438\u0432|\u0430\u0432\u0435|\u0430\u043D |\u0432\u043E\u0459| \u043A\u0440|\u043E \u043F|\u0441\u043C\u0435|\u0435 \u043A|\u043D\u043E\u0433|\u0458\u0438 | \u043E\u0432|\u0435 \u0443|\u0442\u0432\u0430|\u0431\u0440\u0430|\u0440\u0443\u0433|\u0440\u0435\u0431|\u0442\u0440\u0435|\u0443 \u0434|\u043E\u0434\u0430| \u043C\u043E| \u0432\u0440|\u0430\u0432\u0459|\u0443 \u043D|\u0435\u0433\u043E|\u0434\u0435\u043B|\u043C \u0441|\u043A\u0440\u0438|\u043E \u043A|\u0430\u0448\u0442|\u0437\u0430\u0448|\u045A\u0443 | \u0441\u043C|\u0430\u043D\u0438| \u043B\u0438|\u0434\u043D\u043E|\u0435\u0452\u0443|\u0430\u043B\u043D|\u043B\u0430 |\u0430\u043A\u0432|\u043E\u0458 |\u043A\u043E\u043C|\u0441\u0442\u0443|\u0443\u0433\u0438|\u0430\u0432\u0438|\u0430 \u0440|\u043A\u0430 |\u0440\u0430\u0434|\u043E\u0434\u0438|\u0432\u0438\u0447|\u0442\u0430\u0432|\u0438\u0442\u0443|\u0443\u0434\u0435|\u0431\u0443\u0434| \u0431\u0443|\u043F\u043E\u0442|\u043E\u0434\u0443|\u0436\u0438\u0432|\u0435\u0440\u0435|\u0442\u0432\u043E|\u0438\u043B\u043E|\u0431\u0438\u043B|\u0430\u0440\u043E|\u0435 \u043D|\u043E\u0432\u0438|\u043F\u043E\u0440|\u0435\u043D\u043E|\u0448\u0442\u0432|\u043D\u0430\u0446|\u043E\u0432\u0435|\u043C \u043F|\u0442\u0443\u043F|\u043F\u043E\u0441|\u0440\u0435\u043C|\u0434\u043D\u0438|\u0431\u0430 |\u043D\u0441\u0442|\u0430 \u0442|\u043E\u0458\u0443|\u0430\u0441\u0442|\u0438\u0432\u0430|\u0435 \u043C|\u0432\u0440\u0435|\u0432\u0459\u0430|\u043D\u0443 |\u0431\u0435\u0452|\u0438\u0441\u0442|\u0435\u043D |\u0442\u0435 |\u0434\u0441\u0442|\u0440\u043E\u0442|\u0437\u0430\u043A|\u0430\u043E |\u043A\u0430\u043E|\u0438 \u043A|\u0458\u0443\u045B|\u043E \u0441|\u0441\u0442 |\u0441\u0430\u043C|\u043C \u043D|\u0442\u0435\u0440|\u043D\u0430\u0440| \u043C\u0435|\u0438 \u043C|\u043A\u043E\u043B|\u0435 \u0440|\u0443\u0448\u0442|\u0440\u0443\u0448|\u0432\u0435\u0440|\u043A\u0430\u043A| \u0431\u0435|\u0438 \u0431|\u043A\u043B\u0430|\u0430\u0434\u0430|\u0435\u0431\u0430|\u0435\u043D\u0430|\u043E\u043D\u0430| \u043E\u043D|\u0442\u0432\u0443|\u0430\u043D\u0441| \u0434\u043E|\u0440\u0430\u043A|\u0441\u043B\u0443|\u0438 \u0432|\u043D\u0438\u0446|\u0443 \u043A|\u043C\u0435\u043D|\u0432\u0440\u0448|\u0435\u043C\u0435|\u0435\u0434\u0441|\u0438\u0432\u0438|\u043E \u043E|\u0458\u0430\u0432",
+        uzn: "\u0430\u043D |\u043B\u0430\u0440|\u0433\u0430 |\u0438\u0440 | \u0431\u0438|\u0430\u0440 | \u0432\u0430|\u0434\u0430 |\u0438\u0433\u0430| \u04B3\u0443|\u0432\u0430 |\u0431\u0438\u0440|\u0443\u049B\u0443|\u049B\u0443\u049B|\u04B3\u0443\u049B| \u04B3\u0430|\u0440 \u0431|\u0433\u0430\u043D|\u0438\u0448 |\u0438\u0434\u0430| \u0442\u0430|\u0430 \u044D|\u0438\u043D\u0438|\u0430\u0434\u0438|\u043D\u0433 |\u0434\u0438\u0440|\u0438\u0448\u0438|\u043B\u0438\u043A|\u043B\u0438\u0448|\u0438\u0439 |\u0438\u043B\u0438|\u0430\u0440\u0438|\u0443\u049B\u0438|\u04B3\u0430\u0440|\u043B\u0430\u043D|\u0438\u043D\u0433|\u0448\u0438 |\u0434\u0430\u043D|\u043D\u0438\u043D|\u0438\u043D\u0441|\u043A\u0438\u043D|\u0441\u043E\u043D|\u043D\u0441\u043E| \u0438\u043D| \u043C\u0443|\u049B\u0438\u0433| \u043C\u0430|\u043E\u043D |\u0440 \u0438| \u0431\u045E|\u044D\u0433\u0430| \u044D\u0433| \u045E\u0437|\u043D\u0438 |\u0431\u045E\u043B|\u0433\u0430\u0434|\u0438 \u0431|\u043A\u0438 |\u0438\u043B\u0430|\u0451\u043A\u0438| \u0451\u043A|\u0430 \u0431|\u043D \u0431|\u0438\u043D |\u0440 \u04B3|\u0430\u043B\u0430|\u044D\u0440\u043A| \u044D\u0440|\u043B\u0433\u0430| \u049B\u0430|\u0440\u043A\u0438|\u0448 \u04B3|\u0438 \u04B3|\u043D \u043C| \u0431\u043E| \u0431\u0430|\u0438\u043A |\u0430\u0440\u0430|\u0438\u0433\u0438|\u043B\u0438\u0433|\u0440\u0438 |\u049B\u0438\u043B|\u0430 \u0442|\u0431\u0438\u043B| \u044D\u0442|\u043D\u0438\u0448|\u043D\u043B\u0438|\u043A\u043B\u0430|\u0438 \u0432|\u0431\u043E\u0448|\u044D\u0442\u0438|\u0430\u043D\u0438|\u0438\u043C |\u0438 \u043C|\u043E\u043B\u0438|\u049B\u043B\u0430|\u0430 \u04B3|\u043B\u0430\u0448|\u0430\u0442\u043B|\u0442\u0438\u043B|\u0430 \u049B| \u043E\u043B|\u043E\u0441\u0438|\u043C\u0430\u0441|\u049B\u0430\u0440|\u0438\u043D\u043B|\u043B\u0430\u0442| \u049B\u0438|\u0442\u0430\u044A|\u04B3\u0430\u043C|\u0433\u0438 |\u0438\u0431 |\u043C\u043B\u0430|\u045E\u0437 |\u043D \u044D|\u043C\u0443\u043C| \u0434\u0430| \u0431\u0443|\u0430\u0442 |\u0448 \u0432|\u0443\u043D |\u0430\u0442\u0438|\u043C\u043A\u0438|\u0443\u043C\u043A|\u0442\u043B\u0430|\u0438\u0440\u043E|\u045E\u043B\u0438|\u0431\u0430\u0440|\u0438\u0440\u0438|\u0440\u0438\u0448|\u0438\u044F\u0442|\u0430\u043B\u0438| \u0431\u0435| \u049B\u043E|\u0430 \u0448|\u0430\u0440\u043E| \u043A\u0435|\u0438 \u0442|\u0440\u043B\u0430| \u0442\u0435|\u0447\u0430 |\u0440\u0447\u0430|\u0430\u0440\u0447|\u0430 \u045E| \u0448\u0443|\u0442\u0438\u0448|\u043D \u04B3|\u0442\u0433\u0430| \u0441\u0430|\u0430\u0441\u0438| \u0445\u0430|\u0440\u0430\u043A|\u043B\u0438\u043D|\u043E\u043B\u0430|\u0438\u043C\u043E|\u0448\u049B\u0430|\u043B\u0438 | \u0442\u0443|\u0430\u043C\u043B|\u043B\u043B\u0430|\u0441\u0438\u0434|\u043D \u045E| \u0430\u0441|\u043D\u0438\u0434|\u0430 \u0438| \u043A\u0438|\u043D \u0442|\u043D\u0434\u0430|\u043A \u0431|\u0435\u0440\u0430|\u043E\u0448\u049B|\u0441\u0438\u0437|\u043E\u0440 |\u0430 \u043C|\u0440 \u0432|\u0435\u043D\u0433|\u0442\u0435\u043D|\u043C\u0430\u0442|\u043C\u0434\u0430|\u0430\u043C\u0434|\u043B\u0438\u043C|\u0439 \u0442|\u044F\u0442 |\u0438 \u0430|\u0438\u043D\u043E|\u0438\u043B\u0433| \u0442\u043E|\u0442\u043D\u0438|\u0430\u043D\u0430|\u0430\u0441 |\u044D\u043C\u0430| \u044D\u043C|\u0430 \u0451| \u0448\u0430|\u0430\u0448 |\u0430 \u0430|\u0442\u0430\u0440|\u043A\u0430\u0442|\u0430\u043A\u0430|\u0430\u043A | \u0434\u0435|\u0430\u0437\u0430|\u0438\u043B\u043B|\u0441\u0438\u0439| \u0441\u0438| \u0441\u043E|\u0443\u049B\u043B|\u043D \u049B|\u043E\u0434\u0430|\u044A\u043B\u0438|\u0430\u044A\u043B|\u043D\u0438\u043A|\u0430\u0434\u0430| \u043D\u0438|\u0442\u0434\u0430|\u0433\u0438\u043D|\u0443\u043D\u0438|\u0441\u0438\u0442|\u0430\u0439 |\u049B\u043E\u043D|\u043D \u043E| \u0436\u0430|\u043A\u0438\u043C|\u0435\u0447 |\u04B3\u0435\u0447| \u04B3\u0435|\u045E\u0437\u0438|\u043B\u0430\u043A|\u043A\u0435\u0440|\u0438\u043A\u043B|\u043B\u043B\u0438|\u0443\u0440 |\u0437\u0430\u0440|\u0448\u043B\u0430|\u0440\u0438\u0433|\u0438\u0440\u043B|\u0434\u0430\u043C|\u043A\u043E\u04B3|\u0438\u043A\u043E|\u0430 \u0434|\u0430\u043C |\u043D \u0432|\u0440\u0442\u0438|\u0442\u0438\u0431|\u0442\u0430\u043B| \u0438\u0448|\u0447\u0443\u043D|\u0443\u0447\u0443| \u0443\u0447|\u0441\u043B\u0430|\u0430 \u0443|\u0440\u0438\u043D|\u0441\u043E\u0441|\u0430\u0441\u043E| \u0443\u043D|\u043D\u0430 | \u043A\u0430|\u043C\u0443\u04B3|\u0434\u0438\u0433|\u0447 \u043A|\u0430\u0441\u043B|\u043B\u043C\u0430|\u0440\u0430 |\u0431\u0443 |\u0445\u0430\u043B|\u045E\u043B\u0433|\u0438 \u043A|\u0435\u043A\u043B|\u0440 \u0434|\u049B\u0430\u0442|\u0430\u0433\u0430|\u0438 \u049B|\u043E\u0438\u0439|\u043C\u0438\u043B| \u043C\u0438|\u049B\u0430 |\u0438 \u0441|\u0436\u0438\u043D| \u0436\u0438|\u0441\u0438\u043D|\u0440\u043E\u0440|\u0430 \u0432|\u043B\u0430\u0434|\u0430 \u043E|\u0442\u043B\u0438|\u043C\u0438\u044F|\u043D \u0438|\u0430\u0431 |\u0442\u0438\u0440|\u0437 \u043C|\u0434\u0430\u0432|\u0440\u0433\u0430|\u0430\u0433\u0438|\u0430 \u043A|\u043D\u043B\u0430|\u0430\u049B\u0442|\u0432\u0430\u049B|\u0430\u0440\u0442|\u0430\u0451\u0442|\u043B\u0430\u0431",
+        azj: " \u0432\u04D9|\u0432\u04D9 |\u04D9\u0440 |\u0438\u0440 | \u04BB\u04D9| \u0431\u0438| \u04BB\u04AF| \u043E\u043B|\u04AF\u0433\u0443|\u04BB\u04AF\u0433|\u0433\u0443\u0433|\u043D\u0430 |\u0438\u043D |\u043B\u0430\u0440|\u04BB\u04D9\u0440|\u0434\u04D9 | \u0448\u04D9|\u0431\u0438\u0440|\u043B\u04D9\u0440|\u043B\u0438\u043A|\u043C\u0430\u043B|\u0440 \u0431|\u043B\u043C\u0430|\u0440 \u04BB| \u0442\u04D9|\u04D9\u0445\u0441|\u0448\u04D9\u0445|\u04D9\u043D |\u0434\u0438\u0440|\u0443\u0433\u0443|\u0443\u043D\u0430|\u0430\u043D |\u0430\u043B\u0438|\u0430 \u043C| \u043C\u0430|\u0438\u043A\u0434|\u0438\u043D\u0438|\u0440 \u0448|\u0434\u04D9\u043D|\u0430\u0440 |\u0438\u043B\u04D9|\u0433\u0443\u043D|\u0430\u0433 |\u0430\u0441\u044B| \u0458\u0430|\u043C\u04D9\u043A|\u0458\u04D9\u0442| \u043C\u04D9| \u043C\u04AF|\u043A\u0434\u0438|\u04D9\u0441\u0438|\u04D9\u043A |\u0438\u043B\u043C|\u043D\u0438\u043D|\u043D\u0434\u04D9|\u043E\u043B\u043C|\u04D9\u0442\u0438|\u04D9 \u0458|\u0441\u0438\u043D|\u0445\u0441 |\u043D\u0434\u0430|\u043B\u043C\u04D9|\u0458\u0458\u04D9|\u0438 \u0432| \u0433\u0430| \u0430\u0437|\u043E\u043B\u0443|\u0438\u0458\u0458|\u0458\u0430 |\u0438\u043D\u0434|\u0437\u0430\u0434|\u0433\u043B\u0430|\u04AF\u043D |\u043D\u0438 |\u043B\u04D9 |\u0442\u0438\u043D|\u043D \u043C|\u0430\u0437\u0430|\u0430\u0440\u044B|\u04D9\u0442 |\u043D \u0442|\u043C\u0430\u0433|\u043B\u0443\u043D|\u043B\u044B\u0433|\u04D9 \u0431|\u0443\u043D |\u043D\u0443\u043D|\u0433 \u0432|\u043D \u04BB|\u0434\u0430\u043D|\u044B\u043D | \u0435\u0442|\u0442\u043C\u04D9|\u04D9\u0440\u04D9| \u04E9\u0437|\u0434\u0430 |\u04D9 \u0432| \u043E\u043D|\u04D9 \u0430|\u044B\u043D\u0430|\u044B\u043D\u044B|\u0431\u0438\u043B|\u0430 \u0431|\u0441\u044B |\u0438\u043B |\u04D9\u043C\u0438|\u0430\u0440\u0430|\u0441\u0438 | \u0434\u0438|\u04D9 \u043C|\u04D9\u0440\u0438|\u0440\u043B\u04D9| \u0432\u0430|\u04D9 \u04BB|\u0435\u0442\u043C|\u044B\u0493\u044B|\u0430\u043C\u0430|\u0434\u043B\u044B|\u0430\u0434\u043B|\u0440\u0438\u043D|\u0431\u04D9\u0440|\u0440\u044B\u043D|\u043D \u0438|\u043C\u04AF\u0434|\u043D\u044B\u043D| \u04BB\u0435|\u043C\u0430\u0441|\u0438\u043A |\u043D \u0430|\u0434\u0438\u043B|\u0430\u043B\u044B|\u0438\u0440\u043B|\u04D9\u043B\u04D9|\u04AF\u0434\u0430|\u0441\u044B\u043D|\u044B\u043D\u0434|\u0445\u0441\u0438|\u043B\u0438 |\u04D9 \u0434|\u043D\u04D9 | \u0431\u04D9|\u04D9\u0458\u0430| \u0438\u043D|\u04D9 \u0438|\u043B\u04D9\u0442| \u0441\u04D9|\u043D\u044B | \u0438\u0448|\u0430\u043D\u044B|\u0435\u0447 |\u04BB\u0435\u0447|\u0433 \u04BB|\u0435\u0458\u043D|\u04D9 \u0435|\u0434\u044B\u0440| \u0434\u0430|\u0430\u0441\u0438|\u0440\u044B |\u0438\u0448 |\u0438\u0444\u0430|\u043B\u044B\u0493|\u0438 \u0441|\u0444\u0438\u04D9|\u0430\u0444\u0438|\u0434\u0430\u0444| \u0435\u0434|\u043C\u04D9\u0437|\u0443 \u0432|\u043A\u0438\u043B| \u04BB\u0430|\u043E\u043B\u0430|\u043D \u0432|\u04D9\u043D\u0438|\u044B\u0440 |\u0443\u0433 |\u0443\u043D\u043C| \u0431\u0443| \u0430\u0441|\u0441\u0438\u0430|\u043E\u0441\u0438|\u0441\u043E\u0441|\u0438\u043B\u0438|\u044B\u0434\u044B|\u043B\u044B\u0434|\u043D\u043C\u0430|\u044B\u0433 |\u0438\u043D\u04D9|\u04D9\u0440\u0430|\u0441\u0438\u043B|\u0445\u0438\u043B|\u0430\u0445\u0438|\u0434\u0430\u0445|\u0430\u0434\u04D9|\u043C\u0430\u043D|\u0430 \u04BB|\u04D9 \u043E|\u043E\u043D\u0443|\u0430 \u0433|\u04D9\u0437 | \u043A\u0438|\u0441\u0435\u0447| \u0441\u0435|\u044B \u04BB|\u043C\u0438\u043D|\u043B\u0430\u043D|\u04D9\u0434\u04D9|\u0431\u0443 |\u0440\u0430\u0433|\u043B\u044B |\u044B\u043B\u044B|\u0430\u043B |\u04D9 \u0433|\u0440 \u0432|\u043D\u043B\u0430|\u04BB\u0441\u0438|\u04D9\u04BB\u0441|\u0442\u04D9\u04BB|\u04E9\u0437 |\u0438\u0441\u0442| \u0438\u0441|\u043C\u04D9\u0441| \u04D9\u0441|\u0438\u043D\u0430|\u04D9 \u0442|\u04D9\u0442\u043B|\u0430 \u0432|\u0438\u04D9 |\u043D \u0431|\u0442\u04D9\u0440| \u0442\u0430| \u04B9\u04D9|\u0435\u0434\u0438|\u0430\u043B\u0430|\u043A\u0438\u043C|\u0433\u0443 |\u0438 \u0442|\u0443\u043B\u043C|\u043C\u04D9\u04BB|\u043D \u043E|\u0430\u0458\u0430|\u044B \u043E|\u0438\u0430\u043B| \u0441\u043E|\u0438\u043B\u043B|\u0441\u0438\u0458| \u0434\u04D9|\u0432\u0430\u0440|\u0438\u043D\u0441|\u043C\u0438 |\u0493\u044B |\u043D\u0438\u043A|\u0440 \u0438|\u0430\u0433\u043B|\u043A \u04BB|\u0442\u04D9\u043C|\u0442\u0430\u043C|\u0447\u04AF\u043D|\u04AF\u0447\u04AF| \u04AF\u0447|\u0493\u044B\u043D|\u0441\u0430\u0441|\u04D9\u0441\u0430|\u0437 \u04BB|\u04D9\u043C\u04D9|\u0437\u0430\u043C| \u0437\u0430|\u0441\u0442\u0438|\u0440\u04D9\u0444|\u043D \u0435|\u0440 \u0430|\u0438\u043B\u0434|\u04BB\u04D9\u043C|\u044B\u0433\u043B|\u0458\u0430\u043D|\u043C\u0430\u0458|\u043D \u04D9|\u043C\u04D9\u043D|\u043C\u0438\u043B| \u043C\u0438|\u04D9\u0433\u0438|\u0434\u0438\u043D|\u043D \u0434|\u0442\u04AF\u043D| \u0434\u04E9|\u043C\u0438\u0458|\u043A\u0430\u04BB|\u0438\u043A\u0430| \u043D\u0438|\u0444\u0430\u0434|\u0442\u0438\u0444|\u043B \u043E|\u0441\u04D9\u0440|\u0458\u043D\u0438| \u0435\u0458|\u0430\u043D\u0430|\u043B\u04D9\u043D|\u0430\u043C |\u0440\u0438\u043B|\u0430\u0458\u04D9|\u0430\u0448\u044B",
+        koi: "\u043D\u044B |\u04E7\u043D | \u0431\u044B|\u0434\u0430 | \u043F\u0440|\u043B\u04E7\u043D|\u0440\u0430\u0432| \u043C\u043E|\u043F\u0440\u0430| \u0434\u0430|\u0431\u044B\u0434| \u0432\u0435|\u043E\u0440\u0442|\u043B\u04E7 |\u04E7\u0439 |\u043C\u043E\u0440|\u04E7\u043C |\u0430\u0432\u043E| \u043D\u0435|\u0432\u043E |\u044B\u0434 |\u044B\u0441 |\u043D\u04E7\u0439|\u044B\u043D |\u043C \u043F|\u0434 \u043C|\u044B\u043D\u044B|\u0442\u043D\u044B| \u0430\u0441|\u0442\u04E7\u043C|\u043B\u044C\u043D| \u044D\u043C|\u0432\u0435\u0440|\u0441\u044C |\u044C\u043D\u04E7|\u044D\u043C |\u043D \u044D|\u0442\u043B\u04E7| \u043A\u044B|\u0441\u04E7 | \u043F\u043E|\u0435\u0440\u043C|\u0441\u044C\u04E7|\u0440\u0442\u043B|\u0430\u043B\u044C| \u043A\u04E7|\u044D\u0437 | \u04E7\u0442|\u04E7 \u0432|\u0442\u043E |\u0435\u0442\u043E|\u043D\u0435\u0442|\u044B\u043B\u04E7| \u043A\u043E|\u0442\u0448\u04E7| \u043E\u0442| \u0438 |\u044B \u0441|\u0431\u044B |\u04E7 \u0431|\u0441\u0442\u0432|\u043A\u04E7\u0440| \u0432\u04E7|\u0448\u04E7\u043C|\u043A\u044B\u0442|\u0442\u0430 |\u043D\u0430 |\u0437 \u0432| \u0441\u0435| \u0434\u043E|\u0432\u043E\u043B|\u04E7\u0441 | \u0441\u044B|\u044B \u0430|\u043E\u043B\u0430|\u0440\u043C\u04E7|\u0430\u0441 |\u043E\u0437 | \u043E\u0437| \u0441\u0456|\u0430 \u0441|\u0442\u0432\u043E|\u0441 \u043E| \u0432\u044B|\u043B\u0456\u0441|\u04E7 \u043A|\u044B\u0442\u0448|\u04E7 \u0434|\u0438\u0441 |\u0456\u0441\u044C|\u04E7\u0442\u043D|\u0430\u0441\u044C| \u043E\u043B| \u043D\u0430|\u0430\u0446\u0438| \u044D\u0442|\u0430 \u0432|\u0437\u043B\u04E7|\u0441\u0435\u0442| \u0432\u043E| \u0447\u0443|\u043B\u0430\u0441|\u043B\u0430\u043D|\u043C\u04E7 |\u0442\u044B\u0441|\u0440\u0442\u044B|\u04E7\u0440\u0442|\u044B \u043F|\u04E7\u0442\u043B|\u043E \u0441|\u044D\u0442\u0430|\u0434\u0437 |\u043A\u04E7\u0442|\u04E7\u0434\u043D|\u0432\u043D\u044B| \u043C\u044B|\u043D \u043D|\u0443\u0434\u0436| \u0443\u0434|\u0432\u044B\u043B|\u04E7 \u043C|\u0440\u0442\u0456|\u043E\u0440\u0439|\u0438\u0441\u044C| \u0441\u043E|\u0432\u043E\u044D|\u044B\u0434\u04E7|\u0439 \u043E|\u043A\u043E\u043B| \u0433\u043E|\u0441 \u0441|\u0441\u0441\u0438|\u0441\u044B\u043B|\u044B\u0441\u043B|\u0439\u044B\u043D|\u043A\u0438\u043D|\u043E\u043B\u04E7|\u0442\u04E7\u043D| \u0441\u044C|\u0430\u043D\u0430|\u04E7\u0440 |\u0446\u0438\u044F|\u0430 \u0434|\u04E7\u043C\u04E7| \u0432\u0438|\u0437 \u043A| \u044D\u0437|\u044B \u0431|\u0442\u04E7\u0433|\u04E7\u0442 |\u043C\u04E7\u0434|\u0435\u0441\u0442|\u043E\u0441\u0442|\u04E7\u043D\u044B|\u0442\u0438\u0440|\u043E\u0442\u0438|\u0443\u043A\u04E7|\u0447\u0443\u043A|\u043D \u043F|\u043E\u043D\u0434|\u043F\u043E\u043D|\u0441\u043B\u04E7|\u043A\u0435\u0440| \u043A\u0435| \u043E\u0431|\u0441\u0438\u0441|\u0441\u0443\u0434|\u0430 \u043D|\u0434\u043E\u0440|\u043A\u043E\u043D|\u043D\u0435\u043A|\u043D \u0431|\u043B\u04E7\u0442|\u0441 \u0432|\u0442\u0456 |\u044C\u04E7\u0440|\u0442\u0440\u0430| \u0441\u0442|\u043D\u0430\u043B|\u043E\u043D\u0430|\u043D\u0430\u0446|\u043D \u043A|\u043A\u04E7\u0434|\u04E7\u0433 |\u0441\u043A\u04E7|\u0442\u044C |\u0435\u0442\u04E7|\u0434\u04E7\u0441|\u0431\u044B\u0442|\u0440\u043D\u044B|\u04E7 \u043D|\u0442\u0441\u04E7|\u0440\u0440\u0435|\u0430 \u0431|\u043D\u0434\u0430|\u0441 \u0434|\u0430\u0441\u0441|\u044B \u043A|\u0430\u0441\u043B| \u043B\u043E|\u044C\u043D\u044B|\u0441\u044C\u043D|\u044B \u043C|\u0435\u043A\u0438|\u044B \u0434| \u043C\u04E7|\u044C \u043C|\u044B \u043D|\u044B\u0442\u04E7| \u043C\u0435|\u0440\u0439\u04E7|\u0438\u0430\u043B|\u0439 \u0434|\u0438\u0442\u04E7|\u0430 \u043A|\u04E7\u0441\u044C|\u043C\u04E7\u0441|\u043E\u0432\u043D|\u0437\u044B\u043D|\u0430 \u043F|\u043E\u0442\u0441| \u043B\u0438|\u043E\u043B\u044F|\u04E7 \u0430|\u043E\u0441\u0443|\u04E7\u044F |\u043D\u04E7\u044F|\u0435\u0437\u043B|\u0440\u0435\u0437|\u043C\u0435\u0434|\u0441 \u043C| \u0441\u044D|\u044C \u043A|\u0440\u0439\u044B|\u0430\u043A\u043E|\u0437\u0430\u043A| \u0437\u0430|\u044C\u044B\u043D|\u043D\u043D\u0451|\u043C\u04E7\u043B|\u0443\u043C\u04E7| \u0443\u043C|\u044B \u0443|\u043D \u0432|\u043C \u0434|\u043D \u0441| \u0434\u0437|\u043D \u043E|\u0440\u0430\u043D|\u0441\u0442\u0440|\u043E\u0437\u044C|\u043F\u043E\u0437|\u0437 \u043F|\u043E \u0434|\u0446\u0438\u0430|\u043E\u0446\u0438|\u0441\u043E\u0446|\u0438\u043E\u043D|\u0430 \u043C|\u0435\u0441\u043A|\u0447\u0435\u0441|\u043D\u04E7 |\u0437 \u0434|\u0442\u0441\u044C|\u0431\u04E7\u0440| \u0431\u04E7| \u043E\u0432|\u0432\u0435\u0441|\u043A\u044B\u0434|\u04E7 \u0441|\u0432\u043E\u044B|\u043A\u043E\u0434|\u0442\u043A\u043E|\u04E7\u0442\u043A|\u043E\u043B\u044C|\u0434\u0431\u044B|\u0435\u0434\u0431|\u0441\u044C\u044B|\u0447\u044B\u043D|\u0442\u0447\u044B|\u04E7\u0442\u0447|\u0442\u043B\u0430|\u043C\u04E7\u043D|\u0441\u043B\u0430|\u0439\u04E7\u0437| \u0439\u04E7|\u0442 \u0432|\u044B \u0438|\u0435\u0437 |\u043E \u0432|\u043E\u043D\u044B|\u0439\u04E7 |\u0430\u043D\u043D|\u04E7\u043B\u044C| \u043F\u044B|\u0430\u043D |\u043D\u04E7\u0441|\u043D\u0438\u0442| \u0441\u0443|\u043C \u0441",
+        bel: " \u043F\u0440|\u043F\u0440\u0430| \u0456 |\u0430\u0432\u0430|\u043D\u0430 |\u0440\u0430\u0432| \u043D\u0430| \u043F\u0430|\u043D\u044B |\u0432\u0430 |\u0430\u0431\u043E|\u0446\u044C | \u0430\u0431|\u0430\u0435 | \u043C\u0430|\u0430\u0432\u0435|\u0430\u043D\u043D|\u0430\u0446\u044B|\u0441\u0432\u0430| \u0441\u0432|\u0435 \u043F|\u043B\u044C\u043D| \u0447\u0430|\u043D\u0435 |\u043D\u043D\u044F|\u0430\u043B\u0430|\u0430 \u043D|\u0430\u0439 |\u043B\u0430\u0432|\u0447\u0430\u043B| \u043A\u043E| \u0430\u0434| \u043D\u0435|\u0433\u0430 |\u043E\u0436\u043D|\u043A\u043E\u0436|\u0432\u0435\u043A|\u043D\u044F | \u044F\u043A|\u0436\u043D\u044B|\u044B \u0447|\u043C\u0430\u0435|\u0430 \u043F|\u0430\u0433\u0430|\u0431\u043E |\u0435\u043A |\u0430 \u0430|\u0446\u0430 |\u0446\u0446\u0430| \u045E | \u0437\u0430|\u044B\u0445 |\u043F\u0430\u0432|\u0430 \u0441|\u0433\u043E |\u0432\u0456\u043D|\u0434\u043D\u0430|\u0431\u043E\u0434|\u043C\u0456 |\u0432\u0430\u0431|\u0432\u0430\u043D|\u0430\u043C | \u0432\u044B| \u0441\u0430| \u0434\u0430|\u0441\u0442\u0430|\u0430\u0432\u0456|\u043D\u043D\u0435|\u0430\u0441\u0446|\u043D\u0430\u0439|\u0446\u044B\u044F|\u043D\u0430\u0433|\u0430\u0440\u0430|\u0456 \u043D|\u043A \u043C|\u044F\u0433\u043E| \u044F\u0433|\u044C\u043D\u0430|\u043F\u0440\u044B|\u0430\u0446\u044C|\u0456 \u043F|\u043E\u0434\u043D|\u0441\u0442\u0432|\u0430\u043C\u0430|\u043D\u044B\u0445| \u0431\u044B|\u0442\u0432\u0430|\u0434\u0437\u0435|\u0430\u043B\u044C| \u0440\u0430|\u043D\u0456 |\u0456 \u0441|\u0456 \u0430|\u044B\u0446\u044C|\u0430 \u0431|\u0435\u043D\u043D|\u043B\u0435\u043D|\u0446\u0456 |\u043E\u045E\u043D|\u044B\u043C |\u0440\u0430\u0446|\u0456\u043D\u043D|\u0456\u0445 | \u0430\u0441| \u0442\u0430|\u0442\u043E |\u043D\u0430\u0441|\u044F\u043A\u0456| \u0434\u0437|\u0447\u044B\u043D|\u043E\u043B\u044C|\u0456 \u0434|\u0430\u0432\u043E|\u0430\u0434 | \u043D\u0456|\u0441\u0446\u0456|\u044B\u043C\u0456|\u043D\u044B\u043C|\u0431\u044B\u0446|\u044F \u043F|\u044C\u043D\u044B|\u044B\u044F |\u0430\u0440\u043E|\u0430\u043D\u0430|\u0456\u043D\u0430|\u0456 \u0456|\u0440\u0430\u0434| \u0433\u0440|\u043B\u044F |\u045E\u043B\u0435|\u043E \u043F|\u0430 \u045E|\u0440\u044B\u043C|\u043F\u0430\u0434|\u044B\u0456 | \u0456\u043D|\u0430\u043C\u0456|\u0434\u0437\u044F|\u0440\u0430\u043C|\u0446\u044B\u0456|\u0430\u0431\u0430|\u0430 \u0456|\u0434\u0443 |\u0436\u043D\u0430|\u045E\u043D\u0430|\u043D\u0430\u043B|\u043D\u0430\u0446|\u0440\u044B |\u044D\u0442\u0430|\u0433\u044D\u0442| \u0433\u044D|\u043D\u0435\u043D|\u0434\u0430 |\u0430\u0445 |\u0433\u0440\u0430|\u043A\u0430\u0446|\u0443\u043A\u0430|\u0430 \u0437|\u043A\u0456 |\u0430\u0434\u0441|\u045E \u0456|\u043D\u0441\u0442|\u044D\u043D\u043D|\u044F \u0430|\u043D\u043D\u0456|\u043E\u0434\u0443|\u0430 \u0440|\u043D\u043D\u0430|\u0445\u043E\u0434|\u043D\u0430\u043D|\u043F\u0435\u0440|\u0445 \u043F| \u0443 |\u0430\u0434\u0437|\u0456 \u0440|\u043C\u0430\u0434|\u043C \u043F|\u0435 \u043C|\u0430\u0434\u0443|\u0434\u0441\u0442|\u0434\u043B\u044F| \u0434\u043B|\u043E\u045E |\u043D\u0430\u0435|\u0456 \u043C|\u0430\u043A\u043E| \u043A\u0430|\u044B \u045E|\u0431\u0430\u0440|\u0435 \u0430|\u0430\u0446\u0446|\u0443\u044E |\u044B\u0446\u0446|\u0441\u0430\u043C|\u044F\u045E\u043B|\u0430\u043B\u0435|\u0440\u043E\u0434|\u0440\u0430\u0431| \u043F\u0435|\u0448\u0442\u043E| \u045E\u0441|\u0430\u0434\u043D| \u0441\u0443|\u0440\u043E\u045E| \u0440\u043E|\u0434\u0443\u043A|\u043B\u044E\u0431|\u044C \u0441| \u0448\u043B|\u0440\u0430\u0437|\u043D\u0430\u0432|\u0437\u043D\u0430|\u0432\u043E\u043B|\u0443\u0434\u0437|\u0430\u0434\u0430|\u0436\u044B\u0446|\u0447\u043D\u0430|\u0432\u0435 |\u0430 \u0442|\u0430\u0441\u043D|\u0441\u0430\u0446|\u0435\u0440\u0430| \u0440\u044D|\u044F\u043A\u043E|\u043A\u043B\u0430|\u0430\u043D\u044B| \u0448\u0442|\u044C \u0443|\u0430\u044E\u0446|\u043D\u0430\u0440| \u0443\u0441|\u0441\u043E\u0431|\u0430\u0441\u043E|\u043F\u0430\u043C|\u044F \u045E|\u0430\u0432\u044F|\u0447\u044D\u043D|\u0432\u043E\u045E|\u0442\u0430\u043A|\u043D\u0443 |\u044E \u0430|\u044C \u043F|\u0437\u0430\u043A|\u043A\u0430\u0440|\u0435 \u0456|\u044C \u0430|\u0431\u0435\u0441|\u0456\u044F |\u043A\u0456\u044F|\u0445 \u0456|\u0437\u0430\u0431|\u0430\u0441\u0430|\u0456\u043C |\u0436\u0430\u0432|\u0456 \u0437|\u043B\u0435\u0436|\u0442\u0430\u043D|\u0430\u0445\u043E|\u044F\u043B\u044C|\u044B\u044F\u043B|\u043E \u0441|\u044F\u043D\u0430|\u043A\u0430\u043D|\u0430\u043A\u0430|\u0456\u043D\u0448|\u0430\u043B\u0456|\u0432\u044B | \u043C\u043E|\u043D\u0430\u0445|\u044F \u044F|\u043C \u043D|\u043E\u0433\u0430| \u0431\u0435|\u0439 \u0434|\u043E \u0430| \u0441\u0442|\u0435\u043D\u044B|\u0456 \u045E|\u0430 \u0434|\u0435\u0441\u043F|\u0448\u043B\u044E|\u0446\u0446\u044F|\u044B \u0456|\u044B\u0441\u0442|\u0440\u044B\u0441|\u043B\u044E\u0447|\u043A\u043B\u044E|\u0442\u0430\u0446|\u0443\u043B\u044C|\u044B\u043D\u0441|\u0430\u0447\u044B|\u0441\u043F\u0440| \u0441\u043F|\u0430\u045E |\u044B\u043C\u0430|\u0430\u0440\u044B|\u043A\u0430\u043C|\u0435 \u045E|\u0456 \u043A|\u043A\u043E\u043D",
+        bul: " \u043D\u0430|\u043D\u0430 | \u043F\u0440|\u0442\u043E | \u0438 |\u0440\u0430\u0432|\u0434\u0430 | \u0434\u0430|\u043F\u0440\u0430|\u0441\u0442\u0432|\u0432\u0430 |\u0430 \u0441|\u0430 \u043F|\u0432\u043E |\u043D\u043E |\u0438\u0442\u0435|\u0442\u0430 |\u043E \u0438|\u0435\u043D\u0438| \u0437\u0430|\u043D\u0435 | \u043D\u0435|\u0430 \u043D| \u0432\u0441|\u0432\u0430\u043D|\u0430\u0432\u043E|\u043E\u0442\u043E|\u0435 \u043D|\u043E \u043D|\u0430 \u0438|\u043A\u0438 |\u0438\u0435 |\u0442\u0435 |\u043D\u0438 |\u0438\u043C\u0430| \u0438\u043C|\u043B\u0438 |\u0438\u043B\u0438|\u0438\u044F | \u043F\u043E|\u043E\u0432\u0435|\u0430\u043D\u0435|\u0447\u043E\u0432|\u043C\u0430 | \u0447\u043E|\u0438 \u0447|\u0430 \u0434|\u043D\u0438\u0435|\u0438 \u0434|\u0435\u0441\u0442| \u0438\u043B|\u0430\u043D\u0438|\u0432\u0435\u043A|\u0432\u0441\u0435| \u043E\u0431|\u0435\u043A |\u0435\u043A\u0438|\u0441\u0435\u043A|\u0430\u0432\u0430|\u0442\u0432\u043E|\u0441\u0432\u043E| \u0441\u0432|\u0432\u043E\u0442|\u0430 \u0432|\u0438 \u0441|\u043E\u0441\u0442| \u0440\u0430|\u043E\u0432\u0430|\u0430 \u043E|\u0435 \u0438|\u0432\u0430\u0442|\u0438 \u043D|\u0435 \u043F|\u043A \u0438|\u0430 \u0431| \u0432 |\u0438 \u043F|\u043B\u043D\u043E|\u043E \u0434| \u0441\u0435|\u0440\u0430\u0437|\u0435\u0442\u043E|\u044A\u0434\u0435|\u0431\u044A\u0434| \u0431\u044A|\u043F\u0440\u0438|\u0430\u0442\u0430| \u043A\u043E| \u0442\u0440| \u043E\u0441| \u0441\u044A|\u0431\u043E\u0434|\u043E\u0431\u043E|\u0432\u043E\u0431|\u0430\u0442 |\u0437\u0430 |\u0442\u0435\u043B| \u0435 |\u0430\u0446\u0438|\u043E \u0441|\u0434\u0435 |\u043E \u043F|\u0435\u043D |\u0431\u0440\u0430|\u0438 \u0432| \u043E\u0442|\u0441\u0435 |\u043D\u0438\u044F|\u0430\u043B\u043D| \u0434\u0435|\u0435\u0433\u043E|\u043D\u0435\u0433| \u0438\u0437|\u043E\u0442 |\u0440\u0430\u043D|\u044F\u0442\u0430|\u043A\u0430\u043A|\u043E\u0434\u0438|\u0435 \u0441|\u0438 \u0438|\u0434\u0435\u043D|\u043F\u0440\u0435|\u0431\u0432\u0430|\u044F\u0431\u0432|\u0440\u044F\u0431|\u0442\u0440\u044F|\u043D\u0438\u0442| \u043A\u0430|\u044F\u0432\u0430|\u043F\u0440\u043E|\u0441\u0442 |\u0430 \u0437|\u0433\u043E\u0432|\u0432\u0435\u043D|\u0442\u0432\u0435|\u043E \u043E|\u0430 \u0440|\u0430\u043A\u0432|\u043E \u0432|\u0438 \u0437|\u0440\u0435\u0434|\u043D\u043E\u0441|\u0438\u044F\u0442|\u0435 \u0434|\u0449\u0435\u0441|\u043D\u043E\u0432| \u043D\u0438|\u0446\u0438\u044F| \u0434\u043E|\u0439\u0441\u0442|\u043E \u0442|\u0435 \u0442|\u0440\u0436\u0430|\u044A\u0440\u0436|\u0434\u044A\u0440|\u0435\u043D\u043E|\u043F\u043E\u043B| \u0441 |\u043E\u0431\u0440|\u0442\u0432\u0430|\u043D\u043E\u0442|\u0440\u0435\u0441|\u0435\u0439\u0441|\u0438 \u043E|\u0435 \u0432|\u043A\u043E\u0439|\u043E\u0431\u0449|\u043B\u0435\u043D|\u043E\u043D\u0430|\u043D\u0430\u0446|\u0438\u0447\u0435|\u0435\u0437 |\u0431\u0435\u0437| \u0431\u0435|\u0435\u0436\u0434|\u0443\u0432\u0430|\u0432\u0438\u0442|\u0440\u0438 |\u0437\u0430\u043A|\u0438 \u043A| \u043B\u0438|\u0430 \u0435|\u043F\u043E\u0434|\u0435\u043B\u0438|\u043D\u0438\u043A|\u0441\u0438 |\u0435 \u043E|\u0430 \u0442|\u0430\u0432\u043D|\u0438 \u0440|\u0442 \u0441|\u043A\u0430 |\u043E\u0435\u0442|\u0435\u043B\u043D|\u043D\u0435\u043D|\u043E\u0439 |\u0433\u0440\u0430|\u0436\u0435\u043D|\u0434\u0440\u0443| \u0440\u0435|\u0430 \u043A|\u0441\u043D\u043E|\u043E\u0441\u043D|\u043B\u0438\u0447|\u0437\u0438 | \u0442\u0430|\u0441\u0430 |\u043D\u0441\u0442|\u0432\u043D\u0438|\u0447\u043A\u0438|\u0438\u0447\u043A|\u0441\u0438\u0447|\u0432\u0441\u0438|\u043B\u044E\u0447|\u043A\u043B\u044E|\u0434\u043D\u043E| \u043C\u043E|\u0435\u043C\u0435|\u0430 \u0443|\u0438\u0437\u0432|\u0442\u0432\u0438|\u0434\u0435\u0439|\u044F \u043D|\u043A\u0440\u0438|\u0430\u0442\u043E|\u043E \u0440|\u0439 \u043D|\u0438\u043A\u043E|\u0438\u0447\u043D|\u0436\u0430\u0432| \u0434\u044A| \u0442\u043E|\u0431\u0449\u0435|\u0438\u0430\u043B| \u0441\u043E|\u043B\u0438\u0442|\u0442 \u043D| \u0441\u0438|\u0442 \u0438|\u043E\u0434\u043D|\u0436\u0434\u0430|\u0437\u043E\u0432|\u0430\u0437\u043E|\u0443\u0447\u0430| \u0433\u0440|\u043A\u043E\u0435|\u0442\u044A\u043F|\u0441\u0442\u044A|\u0432\u043E\u043B|\u043B\u043D\u0438|\u0441\u0440\u0435| \u0441\u0440|\u043A\u0432\u0430|\u043A\u043E\u043D|\u0442\u043D\u043E|\u0430\u043A\u0430|\u0438 \u0443|\u043A\u043E |\u0433\u0430\u043D|\u043E\u0434\u0430|\u0447\u0435\u043D|\u043B\u0441\u0442|\u0435\u043B\u0441|\u0441\u0442\u0440| \u043A\u044A|\u0441\u0442\u0430|\u0440\u043E\u0434|\u043D\u0430\u0440|\u0438 \u043C|\u043D\u0430\u043B|\u0440\u0443\u0433| \u0434\u0440|\u0447\u0435\u0441|\u0432\u044A\u0437|\u0434\u0438 | \u0441\u0430| \u0442\u0435|\u0441\u0442\u043E|\u0434\u043E\u0441|\u0440\u0430\u0436|\u0440\u0435\u0437|\u0447\u0440\u0435|\u0433\u0430\u0442|\u0435\u043E\u0431|\u0430 \u043C|\u043E \u0435|\u0438\u043D\u0435|\u0430\u0441\u0442|\u043E\u0432\u043E|\u0447\u043D\u043E|\u0430\u0432\u0435|\u043C\u0443 | \u043C\u0443|\u0430\u043D\u043E|\u0438\u0442\u0430|\u0438\u043C\u0438|\u0430\u043A\u043E|\u043D\u0430\u043A|\u043B\u0430\u0433|\u043E\u0432\u0438",
+        kaz: "\u043D\u0435 | \u049B\u04B1|\u0435\u043D |\u04B1\u049B\u044B| \u0431\u0430| \u049B\u0430|\u049B\u04B1\u049B|\u044B\u049B |\u0493\u0430 | \u0436\u04D9|\u04D9\u043D\u0435|\u0436\u04D9\u043D| \u043D\u0435| \u0431\u043E|\u0434\u0435 |\u0434\u0430\u043C|\u0430\u0434\u0430|\u0430 \u049B|\u0442\u0430\u0440|\u044B\u043D\u0430| \u0430\u0434|\u044B\u043B\u044B| \u04D9\u0440|\u044B\u04A3 |\u0430\u043D |\u0456\u043D |\u049B\u044B\u043B|\u0430\u0440 |\u0435\u043C\u0435|\u043D\u0430 |\u0440 \u0430|\u043B\u044B\u049B|\u0443\u0493\u0430|\u0430\u043B\u0430|\u044B\u049B\u0442| \u04E9\u0437|\u043C\u0435\u0441|\u04D9\u0440 | \u0436\u0430|\u043C\u0435\u043D|\u044B\u0493\u044B|\u043B\u044B | \u0434\u0435|\u049B\u0442\u0430|\u043D\u044B\u04A3|\u043D \u049B|\u0493\u0430\u043D|\u0456\u043D\u0435|\u0431\u0430\u0441|\u0430\u0440\u044B| \u043C\u0435| \u049B\u043E|\u0435\u043A\u0435|\u044B\u043D |\u0434\u0430 |\u0435 \u049B|\u0434\u044B |\u0430\u0441\u044B|\u0441\u0435 |\u0435\u0441\u0435|\u0430\u043C |\u0431\u043E\u043B|\u0430\u043D\u0434|\u043D\u0435\u043C| \u0431\u0456|\u0430\u0440\u0430|\u044B \u0431|\u0441\u0442\u0430|\u0442\u0430\u043D|\u043D\u0434\u044B|\u043D \u0431|\u0456\u04A3 |\u0435 \u0431|\u0456\u043B\u0456|\u0442\u0438\u0456| \u0442\u0438|\u0431\u0430\u0440|\u0493\u044B |\u043D\u0434\u0435|\u0435\u0442\u0442|\u0438\u0456\u0441|\u049B\u044B\u0493|\u0456\u0441 |\u043B\u0430\u0440|\u0433\u0435 |\u044B \u0442|\u0456\u043D\u0434|\u0456\u043A |\u0431\u0456\u0440| \u0431\u0435| \u043A\u0435|\u0430\u043B\u0443|\u0435 \u0430|\u0430\u043B\u044B|\u043B\u0443\u044B|\u0430 \u0436|\u0435\u0440\u0456|\u043E\u043B\u044B| \u0442\u0435|\u049B\u044B\u049B|\u043D \u043A| \u0442\u0430|\u043D \u0436|\u0493\u044B\u043D|\u0442\u0442\u0456|\u0456\u043D\u0456|\u0442\u044B\u043D| \u0435\u0440|\u043D\u0434\u0430|\u0456\u043C | \u0441\u0430|\u0435 \u0436|\u0430\u0442\u044B| \u0430\u0440|\u0440\u0493\u0430|\u0435\u0442\u0456|\u0430\u043D\u0430|\u044B \u04D9|\u0443\u044B\u043D|\u043B\u0493\u0430|\u04E9\u0437\u0456|\u043E\u0441\u0442|\u0435\u0433\u0456|\u0442\u0456\u043A|\u049B\u0430 |\u0441\u049B\u0430|\u0440\u044B\u043D|\u043A\u0456\u043D|\u043B\u0443\u0493|\u04A3 \u049B|\u043D\u0456\u04A3|\u0443\u044B |\u0431\u043E\u0441|\u0430\u0441\u049B|\u049B\u0430\u0440|\u0434\u044B\u049B|\u043D\u0430\u043D|\u043C\u044B\u0441|\u043C\u043D\u044B|\u0430\u043C\u043D|\u044B \u043C|\u0430\u0439\u0434|\u043A\u0435 | \u0436\u0435|\u0437\u0456\u043D|\u0440\u0434\u0435|\u0440\u0456\u043D|\u0435 \u0442|\u0433\u0435\u043D|\u044B\u043F |\u0440\u044B |\u0442\u0456 |\u0441\u044B\u043D|\u049B\u0430\u043C|\u0434\u0435\u043D|\u0456 \u0431|\u0433\u0456\u0437|\u0440\u0430\u043B|\u0435 \u04E9|\u043B\u0430\u043D|\u0441\u044B |\u0430\u043C\u0430|\u0442\u0442\u0430|\u0442\u044B\u049B|\u0431\u0435\u0440|\u0434\u0456 |\u0431\u0456\u043B|\u0440\u043A\u0456|\u04E9\u0437 |\u0437\u0434\u0435|\u043A\u0435\u0442|\u049B\u043E\u0440|\u0434\u0430\u0439|\u0443\u0433\u0435|\u044B \u0435|\u044B\u043D\u0434|\u043D\u0435\u0433|\u043E\u043D\u044B|\u0435\u0439 |\u043C\u0435\u0442|\u0430\u043D\u044B|\u0430 \u0442|\u0436\u0430\u0441|\u0430\u0443\u044B|\u043B\u0433\u0435|\u0430\u0441\u0430|\u0435\u0433\u0435|\u0434\u0430\u0440|\u0440\u0443 |\u0430\u0443 |\u0435\u0440\u043A|\u044B \u0436|\u0440\u044B\u043B| \u0442\u043E|\u043D \u043D|\u0435 \u043D|\u0442\u0456\u043D|\u0456\u0440 |\u0441\u0456\u0437|\u0442\u0435\u0440|\u043B\u043C\u0430|\u0456 \u0442|\u043A\u0456\u043C| \u0430\u043B|\u0440 \u043C|\u043B\u0456\u043A| \u043C\u04AF|\u0435 \u043C|\u0442\u04AF\u0440| \u0442\u04AF|\u043A\u0435\u043B|\u043B\u044B\u043F|\u0435\u04A3 |\u0442\u0435\u04A3|\u0440\u043B\u044B|\u043B\u0456\u043C|\u0440\u0434\u044B|\u0430\u0440\u0434|\u0430\u0442\u0442|\u0441 \u0431|\u044B\u0440\u044B|\u0441\u044B\u0437|\u044B\u0441 |\u0435\u043B\u0433|\u0434\u0430\u043B|\u0439\u0434\u0430|\u043E\u0440\u0493|\u0440\u049B\u044B|\u0430\u0440\u049B| \u0436\u04AF|\u0442\u0430\u043B|\u044B\u043B\u043C|\u0430 \u0431|\u0456\u0433\u0456|\u043B\u0434\u0435|\u0456\u0437 |\u049B\u0442\u044B| \u0435\u0448|\u0434\u0435\u0439|\u0430\u0439 |\u0436\u0430\u0493|\u043A\u0442\u0456|\u0456\u043A\u0442|\u0433\u0456\u043D| \u04D9\u043B|\u0442\u0442\u044B|\u04B1\u043B\u0442| \u04B1\u043B|\u0435 \u0434|\u044B\u043D\u044B|\u043B\u0456\u043D|\u0440 \u0431|\u0435\u043B\u0435|\u043A\u04B1\u049B| \u043A\u04B1|\u0430\u043C\u0434|\u043C \u0431| \u0435\u0442|\u043E\u0493\u0430|\u049B\u04B1\u0440| \u043A\u04E9|\u0430\u0493\u0430|\u0442\u043E\u043B|\u0448\u0456\u043D|\u0430\u0439\u044B| \u049B\u044B|\u049B\u0430\u043B|\u0436\u0435\u043A|\u0456 \u043D|\u0435\u0441 |\u0430\u0493\u044B|\u0435 \u043E|\u0435\u043B\u0456| \u0435\u043B|\u043D \u0435|\u0437\u0456 |\u0448\u043A\u0456|\u0435\u0448\u043A|\u043E\u043B\u0443|\u0446\u0438\u044F|\u043C\u0430\u0441|\u0493\u0434\u0430|\u0430\u0493\u0434|\u043B\u0442\u0442|\u0456\u043C\u0434|\u043D\u044B\u043C| \u0434\u0430|\u0430 \u0434|\u04D9\u0441\u0456|\u0441 \u04D9|\u049B\u0430\u0442|\u0456\u0440\u0456| \u0441\u043E|\u04A3 \u0431|\u0430\u0437\u0430|\u043C\u0434\u0430|\u0430\u0439\u043B| \u0430\u0441|\u0493\u0430\u043C|\u049B\u043E\u0493"
+      },
+      Arabic: {
+        arb: " \u0627\u0644|\u064A\u0629 |\u0641\u064A | \u0641\u064A|\u0627\u0644\u062D| \u0623\u0648|\u0623\u0648 | \u0648\u0627|\u0648\u0627\u0644|\u062D\u0642 |\u0629 \u0627|\u0644\u062D\u0642|\u0627\u0644\u062A|\u0643\u0644 |\u0627\u0644\u0645|\u0644\u0643\u0644| \u0644\u0643|\u0644\u0649 |\u0642 \u0641|\u062A\u0647 |\u0648 \u0627|\u0629 \u0648|\u0634\u062E\u0635|\u0629 \u0644|\u0627\u062A |\u0627\u0644\u0623|\u064A \u0623|\u0648\u0646 | \u0634\u062E|\u0645 \u0627|\u0623\u064A | \u0623\u064A|\u0627\u0646 |\u0623\u0646 |\u0645\u0629 |\u064A \u0627|\u0627\u0644\u0627|\u0644\u0627 |\u0647\u0627 |\u0627\u0621 | \u0623\u0646| \u0639\u0644|\u062E\u0635 |\u0646 \u0627| \u0644\u0644|\u062F \u0627|\u0645\u0646 |\u0641\u0631\u062F|\u0645\u0627 |\u0627\u0644\u0639|\u062A \u0627|\u062D\u0631\u064A|\u0639\u0644\u0649|\u0644 \u0641|\u0631\u062F |\u0644 \u0634| \u0644\u0627|\u0631\u064A\u0629| \u0625\u0644|\u0629 \u0623|\u0627 \u0627|\u0646 \u064A| \u0648\u0644|\u0627 \u0644|\u0627 \u064A| \u0641\u0631| \u0645\u0646|\u0629 \u0645|\u0627\u0644\u0642|\u062C\u062A\u0645|\u0646 \u0623|\u0642 \u0627|\u0627\u0644\u0625| \u062D\u0631|\u0644\u0647 |\u0647 \u0644|\u0627\u064A\u0629|\u0644\u0643 |\u0647 \u0627| \u062F\u0648|\u062F\u0629 |\u0627\u064B |\u064A\u0646 |\u0647 \u0648|\u0644\u0629 |\u064A \u062D| \u0639\u0646|\u0645\u0627\u0639|\u064A \u062A|\u0630\u0627 | \u062D\u0642|\u0642\u0648\u0642|\u062D\u0642\u0648|\u060C \u0648|\u0646 \u062A|\u0645\u0639 |\u0635 \u0627|\u0627\u0645 |\u062F \u0623| \u0643\u0627|\u0647\u0630\u0627|\u0627\u0644\u0648| \u0625\u0646|\u0645\u0644 |\u0627\u0645\u0629|\u0639 \u0627|\u0625\u0644\u0649|\u0629 \u0639|\u0645\u0627\u064A|\u062D\u0645\u0627|\u0646 \u0648|\u0644\u062A\u0639| \u0648\u064A|\u064A\u0631 |\u0646\u0648\u0646|\u064A \u0648|\u0627\u0633\u064A|\u0627\u0644\u062C| \u0647\u0630|\u0646\u0633\u0627|\u0648\u0642 |\u062A\u0631\u0627|\u0639\u064A\u0629|\u0647 \u0623| \u0644\u0647|\u0633\u064A\u0629| \u064A\u062C| \u0628\u0627|\u062F\u0648\u0644|\u0627\u0646\u0648|\u0642\u0627\u0646|\u0644\u0642\u0627|\u0629 \u0628|\u0629 \u062A|\u062A\u0645\u0627|\u0627\u0644\u062F|\u064A\u0627\u062A|\u0639 \u0628|\u0633\u0627\u0646|\u0625\u0646\u0633|\u0647\u0645 |\u0639\u0644\u064A| \u0645\u062A|\u0644\u0645\u062C|\u0630\u0644\u0643|\u0639\u0645\u0644|\u0644\u0623\u0633|\u0648\u0632 |\u062C\u0648\u0632|\u064A\u062C\u0648|\u0628\u0627\u0644|\u063A\u064A\u0631|\u0643 \u0627|\u0643\u0627\u0646|\u0633\u0627\u0633|\u0623\u0633\u0627|\u062F\u0645 |\u0644\u0627\u062F|\u0627\u0639\u064A|\u0627\u0644\u0631|\u062A\u0645\u064A|\u062F\u0648\u0646|\u062A\u0645\u062A|\u0644\u062A\u0645| \u064A\u0639|\u0644\u064A\u0647|\u0633\u0627\u0648|\u0627\u062C\u062A|\u064A \u0645|\u0644\u0639\u0627|\u0644\u062C\u0645|\u062A\u0639\u0644|\u0631 \u0648|\u062A\u0645\u0639|\u0645\u062C\u062A| \u0645\u0639|\u064A\u0647 |\u0649 \u0623|\u0641\u064A\u0647|\u0649 \u0627| \u0643\u0644|\u0644\u0627\u062A|\u0645\u0644\u0627|\u0648\u062F |\u0627\u0646\u062A|\u0627\u0644\u0641|\u064A\u0647\u0627|\u064A \u0625|\u062A\u064A |\u0627\u0644\u0628|\u0644\u064A |\u0642\u062F\u0645|\u0627\u0644 |\u0627\u062F |\u0644 \u0627|\u064A\u0632 |\u064A\u064A\u0632|\u0645\u064A\u064A| \u062A\u0645|\u0644\u062D\u0631|\u062A\u0639 |\u0645\u062A\u0639|\u0627 \u0628|\u0639\u0627\u0645|\u0627 \u0648|\u0642 \u0648|\u0631\u0627\u0645|\u0644 \u0644|\u0644\u0627\u062C|\u0631\u0627 |\u0627\u0644\u0634| \u0648\u0625|\u064A\u0645 |\u0644\u064A\u0645|\u0634\u062A\u0631|\u0627 \u062D|\u0648\u0627\u062C|\u0644\u0632\u0648|\u0648\u0644 |\u0627 \u0641|\u0648\u0644\u0629|\u0644\u062D\u0645|\u0623\u0633\u0631| \u0630\u0644|\u0647 \u0641|\u0627\u062A\u0647|\u0645\u0633\u0627|\u0644\u0645\u0633| \u062A\u0639|\u0639\u0646 |\u0647 \u0639|\u0648\u0644\u0647|\u064A\u062A\u0647|\u0646 \u0644|\u0631\u0629 | \u0648\u0633|\u0627\u0629 |\u064A\u062F | \u062A\u062D| \u0645\u0633|\u064A \u064A|\u0644\u062A\u064A|\u0639\u0629 |\u0648\u0644\u064A|\u0644\u062F\u0648| \u0623\u0633| \u0648\u0641|\u0644 \u0648|\u0623\u064A\u0629|\u0646\u064A |\u0627\u0644\u0633|\u0644\u0627\u0646|\u0644\u0625\u0639|\u0629 \u0641|\u0631\u064A\u0627|\u0644 \u0625|\u0645 \u0628|\u0627\u0645\u0644|\u0643\u0631\u0627|\u062A\u0633\u0627|\u0645\u064A\u0639|\u062C\u0645\u064A| \u062C\u0645|\u0623\u0648\u0644|\u0628\u064A\u0629|\u0639\u064A\u0634|\u062A\u062D\u0642|\u0627\u062F\u0629|\u0633 \u0627| \u0645\u0645|\u0645\u0639\u064A|\u062C\u0645\u0627|\u0639\u0627\u062A|\u0627\u0639\u0627|\u0627\u0631\u0633|\u0645\u0627\u0631|\u0645\u0645\u0627|\u0645 \u0648|\u0631\u0627\u0643|\u0627\u0634\u062A|\u0627\u0644\u0637|\u0627\u062C |\u0632\u0648\u0627|\u0627\u0644\u0632| \u0648\u0645|\u062D\u062F\u0629|\u062A\u062D\u062F|\u0644\u0645\u062A|\u0645\u0645 |\u0644\u0623\u0645|\u062F\u0647 |\u0628\u0644\u0627| \u0628\u0644|\u0627\u0631 |\u064A\u0627\u0631|\u062A\u064A\u0627|\u062E\u062A\u064A|\u0627\u062E\u062A|\u0646 \u0645| \u0645\u0631",
+        urd: "\u0648\u0631 | \u0627\u0648|\u0627\u0648\u0631|\u06A9\u06D2 | \u06A9\u06D2| \u06A9\u06CC| \u06A9\u0627|\u06CC\u06BA | \u062D\u0642|\u06A9\u06CC |\u06A9\u0627 | \u06A9\u0648|\u0626\u06D2 |\u06D2 \u06A9|\u06CC\u0627 |\u0633\u06D2 |\u06A9\u0648 |\u0634\u062E\u0635| \u0634\u062E|\u0646\u06D2 | \u0627\u0633| \u06C1\u06D2|\u0645\u06CC\u06BA|\u062D\u0642 | \u06C1\u0648| \u0645\u06CC|\u062E\u0635 |\u06D2 \u0627| \u062C\u0627|\u0627\u0633 | \u0633\u06D2| \u06CC\u0627|\u06C1\u0631 |\u06CC \u0627| \u06A9\u0631| \u06C1\u0631|\u06D2\u06D4 |\u0633\u06CC |\u06C1\u06CC\u06BA|\u0627 \u062D|\u0635 \u06A9|\u0648\u06BA |\u06D2 \u0645| \u0627\u0646|\u0631 \u0634|\u06D4 \u06C1|\u0627\u0626\u06D2|\u0632\u0627\u062F|\u0622\u0632\u0627| \u0622\u0632|\u0627\u0645 |\u0631 \u0627|\u0642 \u06C1|\u0627\u062F\u06CC|\u062C\u0627\u0626|\u06BA \u06A9|\u06C1\u06D2\u06D4|\u0645 \u06A9| \u06A9\u0633|\u0627 \u062C|\u06CC \u06A9|\u0633 \u06A9|\u06A9\u0633\u06CC| \u067E\u0631|\u06D2 \u06AF|\u06C1\u06D2 |\u0627\u0631 |\u062A \u06A9|\u062F\u06CC |\u067E\u0631 |\u0648 \u0627| \u062D\u0627| \u062C\u0648| \u06C1\u06CC|\u0627\u0646 |\u06CC \u062C|\u0631\u06CC | \u0646\u06C1| \u0645\u0639|\u062C\u0648 |\u0644 \u06A9|\u06CC \u062A|\u0646 \u06A9|\u06A9\u0631\u0646|\u0626\u06CC |\u0644 \u06C1|\u062A\u06CC |\u06C1\u0648 |\u06C1 \u0627| \u0627\u06CC|\u0635\u0644 |\u0627\u0635\u0644|\u062D\u0627\u0635|\u0631\u0646\u06D2|\u06CC \u0634|\u0646\u06C1 |\u06D4 \u0627|\u06BA\u06D4 |\u06CC\u06BA\u06D4|\u0631 \u06A9|\u0631 \u0645| \u0645\u0644|\u0648\u06C1 |\u0645\u0639\u0627|\u0631\u06D2 |\u06BA \u0627|\u0646\u06C1\u06CC|\u06D2 \u06C1|\u06D2 \u0628|\u0627\u06CC\u0633|\u06D2 \u0644| \u062A\u0639| \u06AF\u0627|\u06CC\u062A |\u06CC \u062D|\u0627 \u0627|\u06CC \u0645|\u0627\u067E\u0646| \u0627\u067E|\u06A9\u06CC\u0627|\u0645\u06CC |\u06CC \u0633| \u062C\u0633|\u06C1 \u06A9|\u0646\u06CC |\u0627\u0634\u0631|\u0639\u0627\u0634| \u062F\u0648|\u0644\u0626\u06D2| \u0644\u0626|\u0627\u0646\u06C1|\u0648\u0642 |\u0642\u0648\u0642|\u062D\u0642\u0648|\u0645\u0644 | \u0642\u0627|\u06A9\u06C1 | \u06AF\u06CC|\u0631 \u0628|\u06C1 \u0645| \u0648\u06C1| \u0628\u0646|\u06CC \u0628|\u0645\u0644\u06A9|\u062C\u0633 |\u0627\u06D4 |\u0631\u06CC\u0642|\u0631 \u0646|\u06D2 \u062C|\u0627\u062F |\u0627\u062A |\u06AF\u06CC |\u062F \u06A9|\u06D2 \u062D|\u062F\u0627\u0631|\u0631 \u06C1|\u06AF\u0627\u06D4|\u0642\u0648\u0645| \u0642\u0648|\u06D2\u060C |\u0627 \u0633|\u062F\u0648\u0633|\u0631 \u067E| \u0648 | \u0634\u0627|\u06CC \u0622|\u06BA \u0645|\u0642 \u062D| \u067E\u0648| \u0628\u0627|\u062E\u0644\u0627|\u0627\u0646\u06D2|\u06CC\u0645 |\u0644\u06CC\u0645|\u0648 \u062A|\u0648\u0646 | \u06A9\u06C1|\u06CC\u060C |\u06D4 \u06A9|\u0627 \u067E|\u0646 \u0627|\u0644\u06A9 |\u0639\u0644\u0627|\u0627 \u0645|\u0642 \u06A9|\u0627\u0626\u06CC|\u0648\u0633\u0631|\u06CC \u06C1|\u0648\u0626\u06CC|\u06CC\u0631 |\u0627 \u06C1|\u0639\u0644\u06CC|\u0648 \u06AF|\u0648\u0631\u06CC|\u062F\u06AF\u06CC|\u0646\u062F\u06AF|\u0648 \u06A9|\u06CC\u0633\u06D2| \u0645\u0646|\u0627\u0626\u062F|\u0631\u0627\u0626| \u0645\u0631|\u067E\u0648\u0631| \u0637\u0631|\u0648\u0645\u06CC|\u06D2 \u062E|\u0633\u0628 |\u0646\u0648\u0646|\u0627\u0646\u0648|\u0642\u0627\u0646| \u0633\u06A9|\u0648\u0627\u0645|\u06CC\u0646 | \u0631\u06A9|\u062A\u0639\u0644|\u0644\u0627\u0642|\u063A\u06CC\u0631|\u062F\u0627\u0646|\u060C \u0627| \u0628\u06CC| \u0645\u0633|\u06CC\u0648\u06BA|\u0646\u0627 | \u0628\u06BE| \u0628\u0631|\u0631\u062A\u06CC|\u0627\u062F\u0627|\u0627\u0645\u0644|\u06CC\u06C1 | \u06CC\u06C1|\u06C1 \u0648| \u0639\u0627|\u06CC \u067E| \u0628\u0686|\u0627\u0641 |\u0644\u0627\u0641| \u062E\u0644|\u06CC\u06D4 |\u06AF\u06CC\u06D4| \u062F\u06CC|\u06BE\u06CC |\u0628\u06BE\u06CC|\u062F\u06C1 |\u062C\u0627 |\u067E\u0646\u06CC|\u0642\u0648\u0627|\u0627\u0642\u0648|\u0631\u06A9\u06BE|\u06D2 \u06CC| \u0639\u0644|\u06A9\u0648\u0626|\u060C \u0645| \u0686\u0627|\u06D2 \u0633|\u0631 \u0639| \u067E\u06CC|\u0628\u0631\u0627|\u0631 \u0633|\u0631 \u062D|\u0633\u0627\u0646|\u0645 \u0627|\u06A9\u0627\u0645|\u0634\u0631\u062A| \u0631\u0627|\u0634\u0627\u0645|\u0645\u0646 |\u0632\u0646\u062F| \u0632\u0646|\u0628 \u06A9|\u062A \u0645|\u0627\u06C1 |\u0627\u0631\u06CC|\u0633 \u0645|\u0631 \u062C| \u0645\u062D|\u0648\u0631\u0627|\u06D2 \u067E|\u0637\u0631\u06CC|\u06C1\u0648\u06BA|\u0627\u0644 |\u06BA \u0633|\u06CC \u0646|\u06A9\u0631\u06D2| \u0645\u0642|\u062A \u0633|\u062A\u062D\u0641| \u062A\u062D|\u0648\u06D4 |\u06C1\u0648\u06D4|\u0628\u0646\u062F| \u0627\u0642|\u062F \u06C1| \u0627\u0645|\u0627\u0645\u06CC|\u0627\u0644\u0627|\u0644\u062A |\u0634\u0631\u06D2|\u06D2 \u0639|\u0627 \u06A9|\u0641\u0631\u06CC",
+        pes: " \u0648 | \u062D\u0642| \u0628\u0627|\u0646\u062F |\u0631\u062F |\u062F\u0627\u0631| \u062F\u0627|\u06A9\u0647 |\u0647\u0631 | \u062F\u0631| \u06A9\u0647|\u062F\u0631 | \u0647\u0631|\u0631 \u06A9|\u062D\u0642 |\u062F \u0647|\u0627\u0632 |\u06CC\u062A | \u0627\u0632|\u06CC\u0627 |\u06A9\u0633 |\u0648\u062F |\u0627\u0631\u062F| \u06CC\u0627| \u06A9\u0633|\u0627\u06CC |\u062F \u0648| \u0628\u0631| \u062E\u0648|\u0642 \u062F|\u0628\u0627\u0634|\u0634\u062F |\u062F \u06A9|\u0627\u0631 |\u062F \u0628| \u0631\u0627|\u0647 \u0628|\u0627\u0646 |\u0622\u0632\u0627| \u0622\u0632|\u0631\u0627 |\u0627\u0634\u062F|\u06CC \u0648|\u0647 \u0627|\u06CC\u0646 |\u06CC\u062F |\u0632\u0627\u062F|\u0633 \u062D|\u062E\u0648\u062F|\u06CC \u0628| \u0627\u0633|\u062F\u0647 |\u062F\u06CC |\u0648\u0631 |\u0627\u06CC\u062F|\u0647 \u062F|\u0631\u06CC |\u0648 \u0627|\u062A\u0645\u0627|\u0627\u062A | \u0646\u0645|\u06CC \u06A9|\u0627\u062F\u06CC|\u0646\u0647 |\u0631\u0627\u06CC|\u062F \u0627| \u0622\u0646|\u0627\u0633\u062A|\u0631 \u0627|\u0631 \u0645| \u0627\u062C|\u0645\u0627\u06CC|\u0648\u0646 |\u0642\u0648\u0642|\u062D\u0642\u0648|\u0648 \u0645| \u0627\u0646|\u0627\u0646\u0647| \u0647\u0645|\u0648\u0642 |\u0627\u06CC\u062A| \u0634\u0648|\u06CC \u0627| \u0645\u0648| \u0628\u06CC|\u0628\u0627 | \u062A\u0627|\u0648\u0631\u062F|\u0627\u0646\u0648|\u0633\u062A |\u0648\u0627\u0646|\u0628\u0631\u0627|\u0627\u0645 |\u0634\u0648\u062F|\u0622\u0646 |\u062C\u062A\u0645|\u06CC \u06CC| \u06A9\u0646|\u0631 \u0628|\u06A9\u0646\u062F| \u0645\u0631|\u062A \u0645|\u0647\u0627\u06CC|\u062A \u0627| \u0645\u0633|\u06CC\u060C |\u0645\u0627\u0639|\u0627\u062C\u062A|\u062A\u0648\u0627|\u06CC\u06AF\u0631|\u0648 \u0628|\u062F\u0627\u0646|\u062A \u0648|\u0627 \u0645| \u0628\u062F|\u0639\u06CC |\u06A9\u0627\u0631| \u0645\u0646|\u0645\u0648\u0631| \u0645\u0642|\u06CC \u062F| \u0632\u0646|\u06CC \u0645|\u0646 \u0628|\u0631 \u062E|\u0627\u0647 |\u0627 \u0628|\u0627\u0631\u06CC|\u062F \u0622|\u0645\u0644 | \u0628\u0647|\u0627\u0639\u06CC|\u062F\u060C |\u062F\u06CC\u06AF|\u062A \u0628|\u0628\u0627\u06CC|\u0627\u06CC\u0646| \u0645\u06CC|\u0646 \u0648|\u0642 \u0645| \u0639\u0645| \u06A9\u0627|\u0646 \u0627|\u0648 \u0622| \u062D\u0645|\u0646\u0648\u0646|\u0647 \u0648|\u0648 \u062F|\u062F \u0634| \u0627\u06CC|\u0634\u0648\u0631|\u06A9\u0634\u0648| \u06A9\u0634|\u0644\u06CC |\u0646\u06CC |\u0647 \u0645|\u0628\u0639\u06CC|\u0631 \u0634|\u06CC\u0647 | \u0645\u0644|\u0645\u06CC\u062A|\u06CC \u0631|\u0631\u0646\u062F| \u0634\u0631|\u0645\u06CC |\u0648\u06CC |\u0633\u0627\u0648|\u0642\u0627\u0646| \u0642\u0627|\u0645\u0642\u0627|\u0627\u0648 | \u0627\u0648|\u062F \u0645|\u06AF\u06CC |\u0646\u0645\u06CC| \u0627\u062D| \u0645\u062D|\u0645\u06CC\u0646|\u0626\u06CC |\u0627\u062F\u0627| \u0622\u0645|\u062E\u0648\u0627|\u06AF\u0631\u062F| \u06AF\u0631|\u0645\u0646\u062F| \u0634\u062F|\u0627\u0626\u06CC| \u062F\u06CC|\u0632 \u062D|\u0647\u06CC\u0686| \u0647\u06CC|\u0627\u062F\u0647| \u0645\u062A|\u0646\u0645\u0627|\u062A \u06A9|\u0631\u0627\u0646| \u0628\u0645|\u0646 \u062D|\u0631 \u062A|\u062D\u0645\u0627|\u0627\u0631\u0646|\u0645\u0633\u0627|\u062F\u06AF\u06CC|\u0648\u0645\u06CC|\u0646 \u062A|\u0645\u0644\u0644|\u0628\u0631 |\u0647\u062F |\u0648\u0627\u0647|\u0628\u0647\u0631| \u0627\u0639|\u200C\u0647\u0627|\u0642 \u0648|\u060C \u0627|\u0639\u06CC\u062A|\u06CC\u062A\u0648|\u0627 \u0631|\u0646 \u0645| \u0639\u0642|\u0647\u0645\u0647|\u0627 \u0647|\u0632\u0634 |\u0648\u0632\u0634|\u0645\u0648\u0632|\u0622\u0645\u0648|\u0627\u0646\u062A|\u062A\u06CC |\u062C\u0627\u0645|\u0645\u0648\u0645|\u0639\u0645\u0648|\u062A\u062E\u0627| \u0641\u0631|\u0637\u0648\u0631|\u062F \u062F|\u0647 \u062D|\u0631\u062F\u0627|\u0627\u0648\u06CC|\u0646\u0648\u0627|\u0627\u0646\u06CC|\u0631\u0627\u0631| \u0645\u062C|\u06CC \u0646|\u062D\u062F\u06CC|\u0627\u062D\u062F|\u0646\u062F\u06AF|\u0632\u0646\u062F|\u0634\u062E\u0635| \u0634\u062E|\u200C\u0645\u0646|\u0647\u200C\u0645|\u0631\u0647\u200C|\u0647\u0631\u0647|\u0634\u062F\u0647|\u0639 \u0627|\u0648 \u0647|\u0627\u0633\u06CC|\u0647\u0654 |\u06CC\u062F\u0647|\u0639\u0642\u06CC|\u0627 \u0627|\u0645\u0647 | \u0628\u0634|\u0627\u062F |\u062F\u06CC\u0647|\u0627 \u062F|\u062F\u0648\u0627|\u06CC \u062D|\u0627\u0628\u0639|\u06CC \u062A|\u062E\u0627\u0628|\u0646\u062A\u062E|\u0631\u0648\u0631|\u0648 \u0631|\u0634\u0631\u0627| \u062E\u0627|\u0654\u0645\u06CC|\u0627\u0654\u0645|\u062A\u0627\u0654|\u0627\u064B |\u0627\u0645\u0644|\u0644\u0647 |\u062F \u0631|\u0627\u0633\u0627|\u062E\u0648\u0631|\u0628\u0644 |\u0627\u0628\u0644|\u0642\u0627\u0628|\u06CC\u06A9 |\u0633\u0627\u0646|\u0642\u0631\u0627|\u0627 \u0646|\u062E\u0635\u06CC| \u0627\u0645| \u0628\u0648|\u06CC\u0631 |\u0627\u0644\u0645|\u0628\u06CC\u0646|\u0627\u0647\u062F|\u062A\u0628\u0639| \u062A\u0628",
+        zlm: " \u062F\u0627|\u0627\u0646 |\u062F\u0627\u0646| \u0628\u0631| \u0627\u0648|\u0646 \u0633|\u0631\u06A0 |\u062F\u0627\u0644| \u06A4\u0631|\u0644\u0647 |\u0643\u0646 | \u0643\u06A4|\u0646 \u0627|\u0646 \u0643|\u0646 \u062F|\u064A\u06A0 | \u064A\u06A0|\u06A4\u062F |\u062D\u0642 |\u0648\u0631\u06A0|\u062A\u064A\u0627|\u064A\u0627\u06A4|\u0627\u0631\u0627|\u0643\u06A4\u062F|\u0627\u0648\u0631|\u0631\u062D\u0642|\u0628\u0631\u062D|\u0627\u0644\u0647|\u0623\u0646 |\u0648\u0644\u064A| \u0627\u062A|\u0627\u062A\u0627|\u06A0\u0646 |\u062A\u0627\u0648|\u0627\u06A4 |\u0633\u062A\u064A|\u0644\u064A\u0647|\u0627\u0648 | \u0633\u062A|\u06A4 \u0627|\u064A\u0647 |\u0631\u0627 |\u0647 \u0628|\u0647 \u062F|\u0639\u062F\u0627| \u0639\u062F|\u0646 \u06A4|\u0646 \u0628|\u064A\u0646 | \u062A\u0631|\u0642 \u0643|\u0646 \u064A|\u064A\u0628\u0633|\u0628\u064A\u0628| \u062A\u064A| \u0633\u0648| \u0643\u0628| \u0633\u0627|\u0646 \u0645|\u0646 \u062A|\u0644\u0645 |\u0627\u0644\u0645|\u062F \u0633|\u06A0 \u0639| \u0645\u0646|\u0686\u0627\u0631|\u062F \u06A4|\u0631\u0646 |\u0633\u0627\u0645| \u0645\u0627|\u06BD \u0633|\u0646\u060C | \u0628\u0648| \u0627\u064A|\u0646\u062F\u0642| \u062D\u0642|\u06AC\u0627\u0631|\u0646\u06AC\u0627|\u0628\u0648\u0644|\u0633\u0628\u0627| \u0633\u0628|\u0627\u062A\u0648|\u0627 \u0633|\u0642\u0644\u0647| \u06A4\u0645| \u0645\u0645|\u0648\u0627\u0646|\u0633\u0686\u0627| \u0633\u0686| \u0643\u0633|\u0627 \u0628|\u0633\u0646 | \u0633\u0645|\u06A4\u0631\u0644|\u0627\u0648\u0646|\u0646\u06BD |\u062A\u0646 | \u0628\u0627|\u0647\u0646 |\u0633\u064A\u0627|\u0627 \u06A4|\u0627\u0631\u06A0|\u0628\u0627\u0631|\u06A4\u0627 |\u0628\u0633\u0646|\u0643\u0628\u064A|\u0627\u0645 |\u064A\u0646\u062F|\u064A \u062F|\u0627\u06AC\u064A|\u06A0 \u0628|\u0628\u0627\u06AC|\u064A \u0627|\u0645\u0627\u0646| \u0644\u0627| \u062F |\u062F\u0642\u0644|\u0647\u0646\u062F| \u0647\u0646|\u062A \u062F|\u0627\u062F\u064A|\u0648\u064A\u0646|\u064A\u0643\u0646| \u0646\u06AC|\u060C \u0643|\u0646\u0662 | \u06A4\u0648|\u0628\u06A0\u0633|\u0642\u0662 |\u0627\u062A |\u0627\u0648\u0644|\u0627\u0643\u0646|\u0627\u06BD | \u0633\u0633|\u0648\u0646 |\u0627\u062F | \u0643\u0648|\u0627\u064A\u0646|\u062F\u06A0\u0646| \u062F\u06A0|\u0627\u0626\u0646|\u062A\u0648 |\u062A\u064A |\u0646 \u0647|\u06AC\u064A |\u0633\u064A |\u0642 \u0645|\u0648\u06A0\u0646|\u062F\u0648\u06A0|\u0646\u062F\u0648|\u0644\u064A\u0646|\u0631\u0644\u064A|\u0646\u062A\u0648|\u06A4\u0648\u0646|\u0648\u0627\u062A|\u064A\u0627\u062F|\u062A\u064A\u0643|\u06A0\u0633\u0627|\u06A4\u0645\u0628|\u062A\u0631\u0645|\u0662 \u062F|\u062D\u0642\u0662|\u0648\u0627 |\u0644\u0648\u0627|\u0645\u0627\u0633|\u0648\u0642 |\u0647 \u0645|\u0644 \u062F| \u0645\u0644|\u0648\u0646\u062F| \u06A4\u06A0|\u0627\u060C |\u060C \u062A|\u0644\u0627\u0626|\u0627\u064A |\u0645\u06A4\u0648|\u064A\u0643 |\u064A \u0643|\u0631\u0627\u062A|\u0645\u0631\u0627| \u0628\u064A|\u0633\u0645\u0648|\u0648 \u0643|\u060C \u062F|\u0633\u0648\u0627|\u06A0 \u0645|\u06A0 \u0633|\u06A0\u0662 |\u06A4\u0631\u064A|\u064A\u0631\u064A|\u062F\u064A\u0631|\u0627 \u0627|\u0627\u0633\u0627|\u06A4\u0662 |\u062A\u0627 |\u0633\u0648\u0633|\u060C \u0633|\u062C\u0648\u0627|\u06A0 \u062A|\u0631\u0623\u0646| \u0627\u0646|\u0633\u0623\u0646|\u0631\u064A\u0643|\u064A\u0623\u0646|\u0631\u064A | \u062F\u0631|\u0627\u0645\u0631|\u0643\u0631\u062C| \u06A4\u0644|\u0627 \u062F|\u062C\u0631\u0646|\u0627\u062C\u0631|\u0627\u0631\u0643|\u0644\u0627\u062C|\u062F \u0643|\u0648\u0627\u0631|\u0628\u0631\u0633|\u0648\u0646\u062A|\u0645\u0646\u0648|\u0633\u0627\u0644|\u064A\u0646\u06A0|\u062F\u06A0\u0662|\u0646\u062F\u06A0| \u0645\u06A0|\u0627\u06A4\u0627|\u0633\u0633\u064A|\u0633\u0627\u0633|\u0646\u0646 |\u06A4\u0648\u0644|\u0627\u06AC\u0627| \u0628\u06A0| \u0633\u06A4|\u0645\u0628\u064A| \u0627\u06A4|\u06A0 \u0627|\u0627\u0631\u0623|\u06A4\u0631\u0627|\u064A \u0633|\u0628\u0633 | \u062F\u0644|\u0627 \u0645|\u0645\u0648\u0627|\u06A4\u0644\u0627|\u0645\u0644\u0627|\u06A4\u0631\u0643|\u0643\u0648\u0631|\u0648\u0628\u0648| \u0643\u0623|\u0648\u0643\u0646|\u0623\u0646\u06BD|\u0643\u0633\u0627|\u06A0\u06AC\u0648|\u0627\u062F\u06A4|\u0647\u0627\u062F|\u0631\u0647\u0627|\u062A\u0631\u0647|\u0643\u0648\u0645|\u062A\u0648\u0642|\u0645 \u0633|\u06A0 \u062F|\u062F\u064A | \u062F\u064A|\u0662 \u0633|\u0646\u062F\u064A|\u0627\u0633 |\u0627\u062F\u0627|\u0628\u0648\u0627| \u062F\u0628|\u06A0 \u06A4|\u06BD\u060C |\u0627\u06A4\u0662|\u0631\u062A\u0627|\u0627\u0644 |\u064A\u0627\u0644|\u0648\u0633\u064A| \u0643\u062A|\u0623\u0646\u060C|\u0646\u06A4\u0627|\u062A\u0646\u06A4| \u062A\u0646|\u0645 \u06A4|\u0631\u0633\u0627|\u0645\u0645\u06A4| \u0645\u0631|\u0646 \u062D| \u0643\u0645|\u0646\u0633\u064A|\u062C\u0623\u0646|\u0624\u064A |\u0644\u0624\u064A|\u0627\u0644\u0624|\u0644\u0627\u0644|\u0643\u06A4\u0631|\u0643\u062A |\u0631\u0643\u062A|\u0634\u0627\u0631|\u0645\u0634\u0627| \u0645\u0634|\u062C\u0627\u062F|\u0631\u06AC\u0627",
+        skr: "\u062A\u06D2 |\u0627\u06BA |\u062F\u06CC |\u062F\u06D2 | \u06D4 |\u0648\u06BA | \u062A\u06D2| \u062F\u0627| \u06A9\u0648|\u06A9\u0648\u06BA| \u062D\u0642|\u062F\u0627 | \u062F\u06CC|\u06CC\u0627\u06BA| \u062F\u06D2|\u06CC\u06BA |\u06D2 \u0627|\u0634\u062E\u0635| \u0634\u062E|\u06C1\u0631 |\u06D2 \u06D4|\u0627\u0635\u0644| \u062D\u0627|\u062D\u0642 |\u062E\u0635 | \u06C1\u0631|\u0635\u0644 |\u062D\u0627\u0635|\u06C1\u06D2 | \u06C1\u06D2|\u0627\u0644 |\u0642 \u062D|\u0644 \u06C1| \u0646\u0627| \u06A9\u06CC| \u0648\u0686|\u06D4 \u06C1|\u06CC\u0627 |\u0633\u06CC |\u06D2 \u0645| \u0627\u0648|\u0648\u0686 |\u0627\u062A\u06D2|\u06A9\u06CC\u062A|\u0627 \u062D|\u0627\u062F\u06CC|\u0646\u0627\u0644|\u0635 \u06A9| \u0627\u062A|\u0631 \u0634|\u06C1\u06CC\u06BA| \u06CC\u0627|\u06BA \u062F| \u0627\u06CC|\u06CC\u0633\u06CC| \u0645\u0644|\u0648\u0646\u062F|\u06A9\u06C1\u06CC| \u06A9\u06C1|\u06CC \u062A|\u0632\u0627\u062F|\u0627\u0632\u0627| \u0627\u0632|\u0646\u062F\u06D2|\u06BA \u06A9|\u0627\u0631 | \u0648\u06CC|\u06D2 \u06A9|\u0626\u06D2 | \u0627\u0646|\u06BB \u062F|\u0646\u06C1 | \u06A9\u0631|\u0627\u0648\u0646|\u06D2 \u0648|\u062F\u06CC\u0627|\u06CC \u062F|\u06BA \u0627|\u06D2 \u0628|\u0648\u06CC\u0633|\u0648\u06BB |\u06CC \u0646| \u06C1\u0648|\u062A\u06CC |\u06CC \u06D4| \u0646\u06C1|\u06CC \u0627|\u06CC\u0646\u062F|\u0648 \u0684|\u0622\u067E\u06BB| \u0622\u067E|\u0627 \u0648|\u06D2 \u062C| \u06A9\u0646|\u06D2 \u0646|\u0646\u062F\u06CC|\u062A \u062F|\u06D2 \u062D|\u06CC \u06A9|\u0626\u06CC |\u0645\u0644\u06A9|\u06CC\u062A\u06D2|\u0646 \u06D4|\u062A\u06BE\u06CC| \u062A\u06BE|\u0648\u0646 |\u06BA \u0645| \u0628\u0686|\u06D4 \u0627|\u0646\u0648\u06BA|\u06A9\u0646\u0648|\u06BB\u06D2 |\u0627\u0631\u06CC|\u0627 \u0627|\u06D2 \u06C1|\u0644 \u062A| \u0684\u0626|\u0648\u0642 |\u0642\u0648\u0642|\u062D\u0642\u0648|\u0644 \u06A9|\u062E\u0644\u0627| \u062C\u06CC|\u0644\u06A9 |\u062F\u0627\u0631|\u06CC\u062A |\u06A9\u0631\u06BB|\u0627\u0646\u06C1|\u06A9\u0648 |\u06C1\u06A9\u0648| \u06C1\u06A9|\u0646 \u0627|\u0645\u0644 | \u0648\u0633|\u06BA \u0648|\u067E\u06BB\u06D2| \u062A\u0639|\u06CC \u0645|\u0627\u0641 |\u06D2 \u062E|\u0646\u0648\u0646|\u0642\u0646\u0648| \u0642\u0646| \u0644\u0648|\u06D4 \u06A9|\u0631\u06CC |\u0644\u06D2 |\u062A\u0627 |\u06CC\u062A\u0627| \u0642\u0648| \u0686\u0627|\u06C1\u0627\u06BA|\u0684\u0626\u06D2|\u0642 \u062A|\u0627\u06CC\u06C1|\u0631\u06BB |\u06D2 \u062F|\u0631 \u06A9| \u0648 |\u0644\u0627\u0641| \u062E\u0644| \u062C\u0648|\u06CC \u0648|\u0627\u0648 |\u06C1\u0648 |\u0626\u0648 |\u0686\u0626\u0648|\u0628\u0686\u0626|\u06CC\u0631 |\u06C1\u0648\u0648|\u0627 \u0645|\u06CC \u062C|\u0627\u0644\u0627|\u06CC\u0646 | \u062C\u0627|\u0645\u06CC |\u0646\u06C1\u0627|\u0627\u0646 |\u0627\u062A |\u0633\u06B1\u062F| \u0633\u06B1|\u06CC\u0628 |\u0633\u06CC\u0628|\u0648\u0633\u06CC| \u0634\u0627|\u0628 \u062F|\u06CC\u0648\u06BB|\u0627\u0645 |\u0627\u0648\u06BB|\u06D2 \u062A|\u06BB \u06A9| \u0645\u0637|\u06BA \u062A| \u0648\u0646| \u06A9\u0645|\u0646 \u062F|\u0631\u06A9\u06BE| \u0631\u06A9|\u06BB\u06CC |\u06BA \u0622|\u0631\u06CC\u0627|\u06CC \u06C1|\u0627\u062F |\u06CC\u0627\u062F|\u0639\u0644\u0627|\u0631 \u06C1|\u06BA \u0633|\u06CC \u062D|\u062C\u06BE\u06CC|\u0627\u0626\u062F|\u06C1\u06CC |\u0644\u0648\u06A9| \u068B\u0648| \u0633\u0645| \u0633\u0627| \u0645\u0646| \u0645\u0639|\u0628\u0642 |\u0627\u0628\u0642|\u0637\u0627\u0628|\u0645\u0637\u0627|\u06BE\u06CC\u0648|\u06BA \u0641|\u06C1\u0646 | \u06C1\u0646|\u062C\u0648 |\u0648 \u06A9|\u06BA \u0634|\u0631 \u062A|\u06A9\u0627\u0631|\u0645 \u062F|\u06BE\u06CC\u0627| \u067B\u0627|\u063A\u06CC\u0631|\u0648 \u0644|\u0648\u0626\u06CC|\u062C\u06CC\u0627|\u0648\u0627\u0645|\u0642\u0648\u0627|\u06CC \u0633| \u062C\u06BE|\u0644 \u0627|\u0642\u0648\u0645| \u0633\u06CC|\u0630\u06C1\u0628|\u0645\u0630\u06C1| \u0645\u0630|\u0627\u06D2 | \u0627\u06D2|\u062F\u0646 |\u0627 \u062A|\u0633\u0627\u0646|\u0646\u0633\u0627|\u0627\u0646\u0633|\u0631\u06D2 |\u0644\u06CC\u0645|\u0639\u0644\u06CC|\u062A\u0639\u0644|\u0627\u0645\u0644|\u06C1 \u062F|\u06D2 \u0631|\u062F \u0627|\u06A9\u0645 |\u06CC\u06C1\u0648|\u0641\u0627\u0626|\u0686 \u0627| \u06A9\u06BE|\u0645 \u062A|\u0631\u0627 |\u0648\u0631\u0627|\u067E\u0648\u0631|\u06BA \u0628|\u0642 \u062F|\u06D2 \u0642|\u0648\u06A9\u0648|\u06A9\u06BE\u06CC|\u0627 \u06A9|\u0648 \u062F|\u06D2 \u0630|\u067E\u06BB\u06CC|\u0628\u0646\u062F| \u0641\u0631|\u06A9\u0648\u0626|\u0627\u0645\u06CC|\u06CC \u06CC|\u0627\u0626\u06CC|\u0644\u0627\u0642|\u0627\u06CC\u06BA|\u06C1 \u0627| \u0646\u0638|\u0633\u0645\u0627|\u0648\u0645\u06CC|\u06CC\u060C |\u06D2 \u0633|\u062A \u0648|\u06BE\u06CC\u0646|\u06D2 \u0639|\u06CC\u0645 |\u0633\u06C1\u0648| \u0633\u06C1",
+        pbu: " \u062F | \u0627\u0648|\u0627\u0648 |\u067E\u0647 | \u067E\u0647|\u064A\u06D4 | \u062D\u0642|\u0686\u06D0 | \u0686\u06D0|\u0631\u0647 |\u064A \u0627|\u06D0 \u062F| \u0647\u0631|\u0646\u0647 |\u0647\u0631 |\u062D\u0642 | \u0685\u0648|\u0648\u06A9 |\u0685\u0648\u06A9|\u0648 \u0627|\u0647 \u062F|\u0647 \u0627|\u06D4 \u0647|\u0647 \u0648| \u0634\u064A| \u0644\u0631|\u064A \u0686|\u0648 \u062F|\u0631\u064A |\u0644\u0631\u064A|\u0642 \u0644| \u06A9\u069A|\u0648\u064A |\u069A\u06D0 |\u06A9\u069A\u06D0|\u0647 \u06A9|\u063A\u0647 |\u0644\u0648 |\u0631 \u0685|\u0633\u0631\u0647| \u0633\u0631|\u0647 \u067E| \u067C\u0648|\u0648 \u067E|\u0644\u0647 |\u064A\u062A |\u067C\u0648\u0644|\u064A\u0627 |\u06A9\u0693\u064A| \u06A9\u0648|\u062E\u0647 |\u064A\u060C |\u062F\u064A | \u0644\u0647| \u0627\u0632|\u062F \u0645| \u0647\u064A| \u0648\u0627| \u064A\u0627| \u0685\u062E|\u0627\u0632\u0627|\u062F \u0627|\u0648\u0644\u0648|\u0647 \u062A|\u0685\u062E\u0647| \u06A9\u0693|\u0648\u0644 |\u0647\u063A\u0647|\u0647 \u0634|\u064A \u062F| \u0647\u063A|\u06A9\u0648\u0644|\u0632\u0627\u062F|\u0646\u0648 | \u0648\u064A|\u0648 \u064A|\u0647 \u0628|\u0634\u064A\u06D4|\u062F\u06D0 |\u064A\u0648 | \u062F\u064A|\u062A\u0647 |\u062E\u067E\u0644| \u067E\u0631|\u0627\u062F |\u062F \u062F|\u06A9 \u062D| \u062A\u0648|\u0647 \u0645|\u06AB\u0647 |\u0647 \u0647|\u0642\u0648\u0642|\u062D\u0642\u0648|\u0648 \u0645|\u0647 \u062D|\u062F \u0647| \u062A\u0631| \u0645\u0633|\u0634\u064A | \u0646\u0647|\u0693\u064A\u06D4|\u0646\u064A |\u062F \u067E|\u0648\u0627\u062F|\u06D0 \u067E|\u0627\u062F\u064A|\u0648\u0644\u0646| \u064A\u0648|\u062F \u062A|\u0648\u0646\u0648|\u0648\u06AB\u0647|\u064A \u0648|\u0644\u064A | \u062F\u0627|\u064A\u062F | \u0628\u0627|\u062A\u0648\u0646| \u062E\u067E|\u064A \u067E|\u062A\u0648\u06AB|\u0627\u0631 |\u0627\u0646\u062F|\u064A\u0648\u0627|\u06D0 \u0648|\u062F\u0627\u0646| \u0628\u0631|\u0693\u064A | \u0639\u0645|\u0627\u0646\u0647| \u062F\u0647|\u064A\u0685 |\u0647\u064A\u0685|\u0627\u0645\u064A|\u0644\u0646\u064A|\u0628\u0639\u064A|\u0689\u0648\u0644| \u0689\u0648|\u0647 \u0644|\u0627\u064A\u062F|\u0628\u0627\u064A|\u0627\u062A\u0648|\u0647 \u06AB| \u062A\u0627|\u067E\u0644 | \u0645\u0644|\u0627\u064A\u062A|\u0648\u0645 |\u0648\u0646 | \u0644\u0627|\u0647\u064A\u0648| \u0634\u0648| \u062F\u063A|\u0645 \u062F|\u062F\u0647 |\u06D0 \u0627|\u0627\u0646 | \u062A\u0647|\u06A9\u0627\u0631|\u062A\u0648 |\u0645\u064A |\u0627\u0631\u0647|\u0627\u0648\u064A|\u0633\u0627\u0648|\u0645\u0633\u0627|\u0646\u0648\u0646|\u062F\u0647\u063A|\u0648 \u062A|\u064A \u0634|\u0627\u0646\u0648| \u0645\u062D|\u064A\u0646 |\u0627\u062E\u0644| \u06AB\u067C|\u0634\u0648\u064A|\u062F\u063A\u0647|\u0648 \u062D|\u0648\u064A\u060C|\u0646\u064A\u0632|\u0633\u064A |\u0627\u0633\u064A|\u0648\u0646\u062F|\u0642\u0648 |\u0648\u0642\u0648|\u0648 \u06A9|\u0648\u0646\u0647|\u0648\u0645\u064A| \u0648\u06A9|\u064A \u062A| \u0627\u0646|\u0642\u0627\u0646|\u0646\u062F\u06D0|\u0648 \u0631|\u06A9 \u062F|\u0647 \u064A|\u0645\u064A\u0646|\u067E\u0631 |\u067C\u0647 |\u0644\u0627\u0645|\u063A\u0648 |\u0647\u063A\u0648|\u062F \u067C|\u0648 \u0647|\u0644 \u062A|\u0644\u06D2 |\u0648\u0644\u06D2|\u0648\u0648\u0646|\u06A9\u064A |\u0631\u0648 |\u0646 \u06A9|\u0645\u0648\u0645|\u0648\u06A9\u0693|\u067E\u0627\u0631|\u0646 \u0634|\u0645\u0646 | \u0646\u0648| \u0648\u0693| \u0642\u0627|\u06D0 \u0686| \u0648\u0633|\u0685 \u0685|\u0634\u062E\u0635| \u0634\u062E|\u0698\u0648\u0646| \u0698\u0648|\u062A\u0631 |\u06AB\u067C\u0647|\u0648 \u0685|\u0647\u0645 |\u0639\u0642\u064A|\u0631\u062A\u0647| \u0648\u0631|\u0628\u0644 | \u0628\u0644|\u0648 \u0628|\u0647 \u0633|\u069A\u0648\u0648| \u069A\u0648| \u06A9\u0627|\u06D0 \u06A9|\u0648 \u0633|\u0627\u062F\u0647|\u0648\u0646\u06A9| \u063A\u0648|\u062F\u0648 |\u0648 \u0646|\u062A \u06A9|\u0645\u0644 |\u0639\u0645\u0648|\u0644 \u0647| \u067E\u064A|\u0648\u0633\u064A|\u0693\u0627\u0646|\u0648\u0693\u0627|\u064A\u0632 |\u062E\u0635\u064A|\u064A \u0645|\u0627 \u0628|\u0627\u062F\u0627|\u0647 \u0646|\u062E\u0644\u064A|\u0648\u0627\u062E|\u062F\u064A\u0648|\u060C \u062F|\u062F \u0642| \u0647\u0645|\u0627 \u062F| \u0628\u064A|\u062A\u0628\u0639| \u062A\u0628|\u0647 \u0686| \u0639\u0642|\u067E\u0644\u0648|\u0648 \u0644| \u0631\u0627|\u062F \u0628|\u0631\u0627\u064A| \u062F\u062E|\u0646\u06D0 |\u0646\u06A9\u064A|\u062A \u062F|\u0627\u0628\u0639| \u0645\u0642|\u062F \u062E|\u0648\u0631\u0647|\u0634\u0631\u0627| \u0634\u0631|\u0631 \u0645|\u0631\u0633\u0631|\u062A\u0627\u0645|\u0647 \u067C| \u0645\u0646|\u0637\u0647 |\u0633\u0637\u0647|\u0627\u0633\u0637|\u0648\u0627\u0633|\u0644\u06D0 | \u0627\u0633|\u06D4 \u062F|\u0628\u0631\u062E|\u06D0 \u0646"
+      },
+      Devanagari: {
+        hin: "\u0915\u0947 |\u092A\u094D\u0930| \u092A\u094D| \u0915\u093E| \u0915\u0947| \u0964 |\u0914\u0930 | \u0914\u0930|\u0915\u093E | \u0915\u094B|\u0915\u093E\u0930|\u093E\u0930 |\u0924\u093F |\u092F\u093E |\u0915\u094B |\u0928\u0947 |\u094B\u0902 |\u093F\u0915\u093E|\u094D\u0930\u0924| \u0939\u0948| \u0915\u093F|\u0902 \u0915|\u0939\u0948 |\u0927\u093F\u0915|\u0935\u094D\u092F|\u0905\u0927\u093F| \u0905\u0927|\u094D\u0924\u093F| \u0938\u092E|\u094D\u092F\u0915|\u093F \u0915|\u0915\u094D\u0924|\u093E \u0905|\u0915\u0940 |\u093E \u0915| \u0935\u094D|\u0947\u0902 | \u0939\u094B|\u092F\u0915\u094D|\u0938\u0940 |\u0938\u0947 |\u0947 \u0915| \u092F\u093E| \u0915\u0940|\u092E\u0947\u0902|\u0928\u094D\u0924| \u092E\u0947|\u0924\u094D\u092F|\u0948 \u0964|\u0924\u093E |\u0930\u0924\u094D|\u0915\u094D\u0937|\u0947\u0915 |\u092F\u0947\u0915|\u094D\u092F\u0947|\u093F\u0915 |\u0930 \u0939|\u092D\u0940 |\u0915\u093F\u0938| \u091C\u093E| \u0938\u094D|\u0915 \u0935|\u093E \u091C|\u093F\u0938\u0940|\u092E\u093E\u0928| \u0935\u093F|\u0930 \u0938|\u0924\u094D\u0930|\u0940 \u0938|\u0964 \u092A| \u0915\u0930|\u094D\u0930\u093E|\u0917\u093E |\u093F\u0924 | \u0905\u092A| \u092A\u0930|\u0938\u094D\u0935|\u0940 \u0915| \u0938\u0947|\u093E \u0938|\u094D\u092F | \u0905\u0928|\u094D\u0924\u094D|\u093F\u092F\u093E|\u093E \u0939| \u0938\u093E|\u0928\u093E |\u094D\u0924 |\u092A\u094D\u0924|\u0938\u092E\u093E|\u093E\u0928 |\u0930 \u0915|\u093E\u092A\u094D|\u0924\u0928\u094D| \u092D\u0940| \u0909\u0938|\u0930\u093E\u092A|\u0935\u0924\u0928|\u094D\u0935\u0924|\u0930\u094B\u0902|\u0935\u093E\u0930|\u0947 \u0938|\u0925\u093E |\u0939\u094B |\u0947 \u0905|\u093E \u0964|\u0928 \u0915| \u0928 |\u0926\u0947\u0936| \u0930\u093E|\u0937\u093E |\u0905\u0928\u094D|\u0924 \u0939|\u094D\u0937\u093E|\u094D\u0935\u093E|\u091C\u093E\u090F|\u0940 \u092A|\u0915\u0930\u0928|\u093E \u092A|\u0905\u092A\u0928|\u0937\u094D\u091F| \u0938\u0902|\u0947 \u0935|\u0939\u094B\u0917|\u093F\u0935\u093E|\u091F\u094D\u0930|\u094D\u091F\u094D|\u093E\u0937\u094D|\u0930\u093E\u0937|\u0938\u0915\u0947| \u092E\u093E|\u0913\u0902 |\u093E\u0913\u0902|\u0930\u0940 |\u0915 \u0938|\u0947 \u092A| \u0928\u093F|\u0940\u092F |\u0930\u0915\u094D|\u094B \u0938|\u093E\u090F\u0917|\u0930\u0928\u0947| \u0907\u0938|\u0935 \u0915|\u092A\u0930 |\u0930\u0924\u093E|\u0930 \u0905| \u0938\u092D|\u0924\u0925\u093E| \u0924\u0925| \u0910\u0938|\u0930\u093E |\u092A\u0928\u0947|\u094D\u0930\u0940|\u093F\u0915\u094D|\u0915\u093F\u092F|\u093E \u0935|\u092E\u093E\u091C|\u0902 \u0914|\u0930 \u0909|\u0926\u094D\u0927|\u0938\u092D\u0940|\u0936\u094D\u092F| \u091C\u093F|\u093E\u0928\u0947|\u093E\u0930\u094D|\u093E\u0930\u093E|\u0926\u094D\u0935| \u0926\u094D|\u090F\u0917\u093E|\u0938\u092E\u094D|\u0947\u0936 |\u093F\u090F |\u093E\u0935 |\u0930 \u092A| \u0926\u0947|\u094D\u0924\u0930|\u093E \u0914|\u093E\u0930\u094B|\u092F\u094B\u0902|\u092A\u0930\u093E|\u092A\u0942\u0930|\u091A\u093F\u0924|\u094D\u0927 |\u0930\u0942\u092A| \u0930\u0942| \u0938\u0941| \u0932\u093F|\u0924 \u0915|\u094B \u092A|\u0902 \u0938|\u0947 \u0932|\u0936\u093F\u0915| \u0936\u093F|\u0935\u093E\u0939|\u0947 \u0914|\u091C\u094B |\u0930\u093E\u0927|\u091C\u093F\u0938|\u0942\u0930\u094D|\u0940 \u092D|\u0942\u092A |\u094B\u0917\u093E|\u0938\u094D\u0925|\u0930\u0940\u092F|\u0924\u093F\u0915|\u094D\u0930 |\u0964 \u0907|\u0907\u0938 | \u0909\u0928|\u0932\u0947 |\u0947 \u092E|\u0932\u093F\u090F|\u092E \u0915|\u0915\u0924\u093E|\u0947 \u092F| \u091C\u094B|\u0928 \u092E|\u0905\u092A\u0930| \u092A\u0942|\u094B \u0915|\u093E \u0909|\u093E\u0939 |\u0928\u0942\u0928|\u093E\u0928\u0942|\u0917\u0940 |\u0926\u0940 |\u093E\u0930\u0940|\u0902 \u092E|\u0964 \u0915|\u0924\u0930\u094D|\u0940 \u0930|\u0936 \u0915|\u092A\u0930\u093F|\u0938\u094D\u0924|\u094B\u0908 |\u0915\u094B\u0908|\u0930\u094D\u092F|\u0940 \u0905|\u0939\u093F\u0924|\u092D\u093E\u0935| \u092D\u093E|\u0924\u093E\u0913|\u093E\u0938 |\u0938\u093E\u092E|\u0935\u093F\u0915|\u0935\u093F\u0935|\u092E\u094D\u092E| \u0938\u0915|\u0915\u0930 |\u093E\u0928\u093E|\u0927 \u0915|\u0928\u093F\u0915|\u092F \u0915|\u0909\u0938\u0915|\u0915\u0943\u0924| \u0958\u093E|\u0928 \u0938|\u091C\u0940\u0935|\u094D\u092F\u093E|\u0930\u0915\u093E|\u094D\u0930\u0915|\u093E\u091C |\u0928\u094D\u092F|\u094D\u092E |\u0930\u094D\u0923|\u0958 \u0939|\u0939\u0958 | \u0939\u0958|\u0940 \u092E|\u091C\u093F\u0915|\u093E\u091C\u093F|\u093E\u092E\u093E|\u0915 \u0914|\u092E\u093F\u0932|\u0947\u0928\u0947|\u0932\u0947\u0928| \u0932\u0947|\u092F\u0947 |\u094B \u0905|\u0947 \u091C|\u0930\u093F\u0935|\u092E\u092F |\u0938\u092E\u092F|\u0935\u0936\u094D|\u0906\u0935\u0936| \u0906\u0935|\u0910\u0938\u0940|\u093E\u0927 |\u0930 \u0926|\u0930\u094D\u0935|\u0938\u093E\u0930|\u092A \u0938|\u092C\u0928\u094D| \u0938\u0939|\u093F\u0927\u093E|\u0935\u093F\u0927|\u0940 \u0928|\u0942\u0928 |\u0958\u093E\u0928",
+        mar: "\u094D\u092F\u093E|\u092F\u093E |\u0924\u094D\u092F|\u092F\u093E\u091A|\u091A\u093E |\u0923\u094D\u092F|\u093E\u091A\u093E| \u0935 |\u0915\u093E\u0930|\u092A\u094D\u0930| \u092A\u094D|\u093F\u0915\u093E|\u0927\u093F\u0915|\u093E\u0930 | \u0905\u0927|\u0905\u0927\u093F|\u091A\u094D\u092F|\u0906\u0939\u0947| \u0906\u0939|\u093E \u0905|\u0939\u0947 |\u093E \u0915|\u093E\u0938 |\u0935\u093E |\u094D\u092F\u0947|\u094D\u0930\u0924| \u0938\u094D|\u0924\u093E |\u093E \u0938| \u0905\u0938| \u0915\u0930|\u0938\u094D\u0935| \u0915\u093E|\u0932\u094D\u092F|\u0930\u0924\u094D|\u093E\u0939\u093F|\u0915\u094B\u0923| \u0915\u094B|\u093F\u0915 |\u092F\u0947\u0915|\u094D\u0935\u093E|\u093E \u0935| \u0924\u094D|\u0930 \u0906|\u094D\u092F |\u0924\u094D\u0930|\u0947\u0915\u093E|\u0915\u094D\u0937|\u093E \u0928| \u0938\u0902|\u093E\u092E\u093E|\u093E\u091A\u094D|\u0902\u0935\u093E|\u093F\u0902\u0935|\u0915\u093F\u0902| \u0915\u093F|\u093E\u0924 |\u0937\u094D\u091F|\u0915\u093E\u0938| \u092F\u093E|\u092F\u093E\u0902|\u093E\u0902\u091A|\u0930\u094D\u092F|\u092E\u093F\u0933| \u092E\u093F| \u0938\u093E|\u0935\u094D\u092F|\u094B\u0923\u0924|\u0928\u0947 |\u0947 \u092A|\u0915\u093E\u092E| \u0938\u092E|\u0902\u0924\u094D|\u092F\u0947 | \u0930\u093E|\u0938\u092E\u093E|\u0924\u0902\u0924|\u0915\u0930\u0923|\u093E \u0906|\u0947 \u0915|\u0939\u093F |\u0947 \u0938|\u0928\u093E |\u093F\u0933\u0923|\u0942\u0928 |\u093E \u092A|\u091F\u094D\u0930|\u094D\u091F\u094D|\u093E\u0937\u094D|\u0930\u093E\u0937|\u0940\u092F |\u0935 \u0938|\u0915\u094D\u0924|\u092E\u093E\u0928|\u0930\u094D\u0935| \u0906\u092A|\u0933\u0923\u094D|\u094D\u0930\u094D|\u093E\u0924\u0902|\u0935\u093E\u0924|\u091A\u0947 | \u0935\u093F|\u094D\u0937\u0923|\u0930\u0923\u094D| \u0926\u0947| \u0935\u094D|\u0906\u092A\u0932|\u0939\u0940 |\u093E\u0930\u094D|\u0928\u092F\u0947| \u0928\u092F|\u092E\u093E |\u092F\u093E\u0938| \u091C\u093E|\u0932\u0947\u0932| \u0928\u093F|\u0947 \u0905| \u092A\u093E|\u093E \u092E|\u0932\u0947 |\u093E\u0939\u0940|\u092C\u0902\u0927|\u0947 \u0935|\u094D\u092F\u0915| \u092E\u093E|\u0936\u093F\u0915| \u0936\u093F|\u0926\u0947\u0936|\u093E \u0926|\u092E\u093E\u091C|\u094D\u0930\u0940|\u0932\u0940 |\u093E\u0928 |\u093E\u0902\u0928|\u092A\u0932\u094D| \u0939\u094B|\u093E \u0939|\u0937\u0923 |\u091C\u0947 |\u093F\u091C\u0947|\u0939\u093F\u091C|\u092A\u093E\u0939|\u093E\u0930\u093E|\u092F\u093E\u0924|\u0938\u0930\u094D| \u0938\u0930|\u0930\u093E\u0902|\u0905\u0938\u0932|\u0902\u092C\u0902|\u0938\u0902\u092C|\u093F\u0915\u094D|\u0940 \u092A|\u0902\u091A\u094D|\u0930\u0915\u094D|\u0923\u0924\u094D| \u0906\u0923|\u0932\u093E |\u0938\u094D\u0925|\u0930\u0940\u092F|\u0940\u0924 |\u0902\u0928\u093E|\u0924 \u0935|\u094D\u0935 |\u0915 \u0935|\u0923\u0947 |\u093E\u091A\u0947|\u0928 \u0915|\u0924 \u0915|\u0930\u0924\u093E|\u094D\u0930\u093E|\u092F\u093E\u0939|\u094D\u0924 |\u091A\u0940 |\u092F \u0915|\u0926\u094D\u0927|\u094D\u0935\u0924|\u092F\u0915\u094D|\u0923\u093F |\u0906\u0923\u093F|\u0938 \u0938|\u0902\u0927\u093E|\u0915 \u0938|\u091A\u094D\u091B|\u092F \u0905|\u0924 \u0938|\u0940\u0928\u0947|\u094B\u0923\u093E|\u0915\u0930\u0924|\u0924\u094D\u0935|\u0940\u0932 |\u0940 \u0905|\u0938\u093E\u0930|\u0930 \u0935|\u092D\u093E\u0935|\u0935 \u0924|\u0925\u0935\u093E|\u0905\u0925\u0935| \u0905\u0925|\u0947 \u0924|\u0947 \u091C|\u092F\u093E\u092F|\u0902\u091A\u093E|\u0947\u0932\u094D|\u093E\u0928\u0947|\u0947\u0923\u094D|\u0915 \u0906|\u0915\u094D\u0915|\u0939\u0915\u094D| \u0939\u0915|\u0923 \u092E|\u0902\u0930\u0915|\u0938\u0902\u0930|\u0928\u094D\u092F|\u093E\u092F\u0926|\u093E \u0924|\u0924 \u0906| \u0909\u092A|\u0935\u0938\u094D|\u093F\u0935\u093E|\u0947\u0936\u093E|\u0938\u093E\u092E|\u0947 \u092F|\u0947 \u0906|\u0940 \u0935|\u0935 \u092E|\u0924\u0940\u0928|\u0935 \u0906|\u0927\u094D\u092F| \u0905\u0936|\u0927\u093E\u0924|\u0915\u0943\u0924|\u094D\u0915 |\u0926\u094D\u092F|\u093F\u0924 |\u0938\u0932\u0947|\u0947\u0936 |\u0924\u094B |\u0947\u0932 |\u0924\u0940 |\u094D\u0924\u0940|\u0905\u0938\u0947|\u0907\u0924\u0930| \u0907\u0924|\u0938\u094D\u0924|\u0930\u094D\u0923|\u093E \u092C|\u0947\u0932\u0947| \u0915\u0947|\u0939\u0940\u0930|\u091C\u093E\u0939|\u093E \u091C|\u0947\u0924 |\u0942\u0930\u094D|\u092A\u0942\u0930|\u0947\u091A | \u0935\u093E|\u093E\u091C\u093E|\u0940 \u0938|\u0936\u093E |\u092F \u0935| \u0928\u094D|\u092F\u093E\u0935|\u0926\u094D\u0926|\u094D\u0927 |\u0930\u0942\u0928|\u092F\u0926\u094D|\u0915\u093E\u092F|\u093E \u0936|\u0917\u0923\u094D|\u0915 \u0915|\u0930\u093E\u0927| \u0936\u093E|\u092F\u0924\u094D|\u0932 \u0905|\u094D\u092F\u0935|\u0940 \u0915|\u093E\u0935 |\u093E \u092F|\u0924\u094D\u0924|\u091C\u093F\u0915|\u093E\u091C\u093F|\u0930\u0923\u093E| \u0927\u0930|\u093E \u0927|\u092D\u0947\u0926| \u092C\u093E|\u0930\u0915\u093E|\u094D\u0930\u0915|\u0915\u0947\u0932|\u093F \u0935|\u093F\u0937\u094D|\u0924\u0940\u0932|\u092F\u094B\u0917|\u0938\u093E\u0927|\u093E\u0902\u0924|\u0935\u093F\u0935|\u0936\u094D\u0930| \u0927\u0947| \u092E\u0941|\u0935\u0924\u0903",
+        mai: "\u093E\u0915 |\u092A\u094D\u0930|\u0915\u093E\u0930| \u092A\u094D|\u093E\u0930 |\u093F\u0915\u093E|\u094D\u092F\u0915|\u0927\u093F\u0915|\u0915 \u0905|\u094D\u0930\u0924|\u094D\u0924\u093F|\u0935\u094D\u092F| \u0905\u0927|\u0947\u0901 |\u0905\u0927\u093F|\u093F\u0915 | \u0935\u094D|\u0906\u02BC | \u0906\u02BC|\u0915\u094D\u0924|\u092F\u0915\u094D|\u0924\u093F\u0915|\u0915\u0947\u0901|\u0915 \u0935|\u092C\u093E\u0915|\u0915 \u0938|\u091B\u0948\u0915| \u091B\u0948|\u0924\u094D\u092F|\u092E\u0947 |\u0947\u0915 | \u0938\u092E|\u0915\u094D\u0937|\u0939\u093F |\u0930\u0924\u094D|\u0930 \u091B|\u092F\u0947\u0915|\u094D\u092F\u0947|\u0928\u094D\u0924|\u0935\u093E |\u093F\u0915\u0947|\u0915\u0964 |\u0948\u0915\u0964|\u0964 \u092A| \u0905\u092A| \u0938\u094D| \u0935\u093F| \u091C\u093E|\u093F\u0924 |\u0938\u0901 | \u0939\u094B|\u0915\u094B\u0928| \u0915\u094B|\u0924\u094D\u0930|\u0938\u094D\u0935| \u0935\u093E|\u0915 \u0906|\u0937\u094D\u091F| \u0915\u0930|\u0905\u092A\u0928|\u092E\u093E\u0928| \u0915\u093E| \u0905\u0928|\u0924\u093F |\u094D\u0924\u094D|\u0928\u094B |\u0928\u0939\u093F| \u092A\u0930|\u091F\u094D\u0930|\u094D\u092F | \u090F\u0939|\u093F \u0915|\u094D\u091F\u094D|\u093E\u0937\u094D|\u0930\u093E\u0937| \u0930\u093E|\u0938\u092E\u093E|\u094B\u0928\u094B|\u0932 \u091C| \u0928\u0939|\u0924\u093E\u0915|\u093E\u0930\u094D|\u092A\u0928 |\u0924\u0928\u094D|\u0935\u0924\u0928|\u094D\u0935\u0924|\u094D\u0937\u093E| \u0915\u090F| \u0938\u093E|\u094D\u0930\u0940| \u0928\u093F|\u093E \u0906|\u093F\u0935\u093E| \u0938\u0902| \u0926\u0947|\u091C\u093E\u090F|\u0940\u092F |\u0915\u0930\u092C|\u0925\u093E |\u090F\u092C\u093E|\u093E \u092A|\u0928\u093E |\u094D\u0935\u093E|\u0926\u0947\u0936|\u0924\u0964 |\u0930\u0915 |\u0915 \u0939|\u0901 \u0905| \u0938\u092D| \u0906 |\u0924 \u0915|\u091A\u093F\u0924|\u094D\u0924 |\u0935\u093E\u0930|\u0924\u093E |\u093E\u0930\u0915|\u092E\u093E\u091C|\u093E \u0938|\u0930\u0940\u092F|\u0928\u094D\u092F|\u0930\u0924\u093E|\u093E\u0928 |\u094D\u0930\u093E|\u094D\u092F\u093E|\u0930\u0915\u094D|\u093E\u0930\u0923|\u092A\u0930\u093F|\u090F\u0932 |\u0915\u090F\u0932|\u0905\u0928\u094D|\u0930\u092C\u093E|\u0915 \u092A|\u0913\u0930 |\u0906\u0913\u0930| \u0906\u0913|\u0905\u091B\u093F| \u0905\u091B|\u093F\u0930\u094D|\u093E\u0928\u094D|\u0928\u0915 |\u0939\u094B\u090F|\u0915\u0930 |\u0927\u093E\u0930|\u0938\u094D\u0925|\u093E \u0905|\u093F\u092E\u0947|\u0930 \u0906|\u090F\u0939\u093F| \u090F\u0915|\u0947 \u0938|\u0924\u0925\u093E| \u0924\u0925| \u092E\u093E|\u093F\u0915\u094D|\u0936\u093F\u0915| \u0936\u093F|\u092A\u094D\u0924|\u0930\u094D\u0935|\u0928\u093F\u0930|\u091A\u094D\u091B|\u0930\u094D\u092F|\u0901 \u0938|\u0915 \u0915|\u0939\u094B |\u093E\u0939\u093F|\u090F\u0924\u0964|\u0930 \u092A|\u093E\u092E\u093E|\u0938\u093E\u092E|\u0937\u093E |\u02BC \u0938|\u0901 \u090F|\u0948\u0915 |\u0926\u094D\u0927|\u0930 \u0905|\u0915 \u091C|\u0938\u094D\u0924|\u093E\u092A\u094D|\u0901 \u0915| \u0938\u0915|\u092F\u0915 |\u0915\u093E\u0928|\u0939\u0928 |\u090F\u0939\u0928|\u0947\u0932 |\u094B\u090F\u0924|\u0924 \u0906|\u093E \u0935|\u0964 \u0915|\u094D\u0924\u0930|\u093E\u090F\u0924|\u094D\u0930\u0915|\u0939\u0941 |\u0915 \u0909|\u092A\u0942\u0930|\u0935\u093F\u0935|\u02BC \u0905|\u091B\u093F | \u0932\u0947|\u0928 \u092A|\u093E\u0938 |\u0930\u093E\u092A|\u0927\u0915 |\u092A\u090F\u092C| \u092A\u090F|\u0930\u093E |\u092F\u0924\u093E|\u0930\u0942\u092A|\u0928 \u0935| \u0915\u0947|\u0937\u093E\u0915|\u092F \u092A|\u0924 \u0939|\u091C\u093E\u0939| \u0913 |\u092D\u093E\u0935|\u092A\u0930 |\u0925\u0935\u093E|\u0905\u0925\u0935| \u0905\u0925|\u0938\u092E\u094D|\u091C\u093F\u0915|\u093E\u091C\u093F|\u0942\u0930\u094D|\u0930\u0924\u093F| \u0926\u094B|\u0938\u092D\u0915|\u0964 \u0938| \u091C\u0928|\u0938\u092D |\u092C\u093E\u0927|\u0905\u0928\u0941|\u093F\u0938\u0901| \u0938\u0939|\u0901 \u0935|\u090F \u0938|\u0930\u093F\u0935|\u0924\u0941 |\u0947\u0924\u0941|\u0939\u0947\u0924| \u0939\u0947|\u093E\u0927 |\u0947\u092C\u093E|\u0928 \u0938|\u093F\u0937\u094D|\u0930\u093E\u0927| \u0905\u0935|\u093F\u0924\u094D|\u0935\u093E\u0938|\u091A\u093E\u0930| \u0909\u091A|\u093E\u0930\u093E|\u0928 \u0915|\u0935\u0915 |\u093E \u0915|\u0928\u0942\u0928|\u093E\u0928\u0942|\u090F\u0924 |\u0930\u0940 |\u0947\u0913 |\u0915\u0947\u0913|\u0930\u0923 |\u094D\u0930\u0938|\u093F \u0926|\u0913 \u0935| \u092D\u0947|\u0928\u0939\u0941|\u094B\u0928\u0939|\u094D\u0925\u093F|\u092A\u0924\u094D|\u092E\u094D\u092A|\u0930\u093E\u091C| \u092D\u093E|\u0939\u093F\u092E| \u0939\u0915|\u093E\u092E\u0947|\u094D\u0923 |\u0930\u094D\u0923|\u0939\u093E\u0930|\u093F \u0938|\u0915 \u0926|\u0928 \u0905|\u0924 \u0905|\u0932\u0947\u092C| \u0905\u092D|\u093F\u0936\u094D|\u091C\u0915 |\u093E\u091C\u0915|\u0928 \u0906|\u0935\u093E\u0939|\u0915\u093E\u091C|\u0936\u094D\u092F|\u0935\u0938\u094D|\u0913\u0939\u093F| \u0913\u0939|\u092F\u094B\u0917|\u0964 \u090F|\u0915\u090F |\u0947 \u0913|\u0905\u092A\u0930",
+        bho: " \u0915\u0947|\u0915\u0947 |\u0947 \u0915|\u093E\u0930 |\u0915\u093E\u0930|\u093F\u0915\u093E|\u0927\u093F\u0915|\u0905\u0927\u093F| \u0905\u0927|\u0913\u0930 |\u0906\u0913\u0930| \u0906\u0913|\u0947 \u0905|\u0947 \u0938|\u093E \u0915| \u0938\u0902|\u093F\u0915 |\u0930 \u0939|\u093E \u0938| \u0939\u094B|\u0930 \u0938|\u0947\u0902 |\u092E\u0947\u0902| \u092E\u0947| \u0915\u0930| \u0938\u0947|\u0928\u094B |\u0915\u094D\u0937|\u0938\u0947 | \u0915\u093E|\u0964 \u0938|\u0916\u0947 |\u093E\u0964 |\u0930\u093E | \u0938\u092E| \u0938\u092C|\u094D\u0930\u093E| \u0938\u0915|\u0930 \u0915|\u0928 \u0915|\u0935\u0947 |\u094C\u0928\u094B|\u0915\u094C\u0928| \u0915\u094C|\u091A\u093E\u0939| \u091A\u093E| \u092C\u093E|\u092A\u094D\u0930| \u092A\u094D|\u0925\u093E |\u093F \u0915|\u0924\u093F | \u091C\u093E| \u0938\u093E|\u0947 \u0906|\u092A\u0928 |\u0915\u0930\u0947|\u0924\u093E |\u0939\u094B\u0916|\u0924 \u0915|\u0947\u0964 |\u0947 \u092C|\u0924\u0925\u093E| \u0924\u0925| \u0906\u092A|\u0915\u0947\u0932|\u0938\u0915\u0947| \u0938\u094D|\u0930\u0947 |\u0938\u092C\u0939|\u0915\u0930 |\u0906\u092A\u0928|\u0947 \u0913|\u091C\u093E | \u092A\u0930|\u0937\u094D\u091F| \u0930\u093E|\u0928\u093E |\u0939\u0935\u0947| \u0939\u0935|\u0932\u093E |\u0947\u0932\u093E|\u092C\u0939\u093F| \u0913\u0915|\u094B\u0916\u0947|\u0930 \u092C|\u0939\u0964 | \u0939\u0964|\u0928 \u0938|\u093E\u0937\u094D|\u0930\u093E\u0937|\u094D\u0924 | \u0914\u0930|\u0947 \u091A|\u0964 \u0915|\u0938\u0902\u0917|\u0930 \u0906|\u091F\u094D\u0930|\u094D\u091F\u094D|\u0937\u093E |\u092E\u093E\u0928|\u093E \u0906|\u0902 \u0915|\u093E \u092A|\u094D\u0937\u093E|\u0930\u0915\u094D|\u0939\u0947 |\u093E\u0939\u0947|\u093E\u0924\u093F|\u093E\u0935\u0947| \u091C\u0947|\u0939\u0940 |\u0913\u0915\u0930|\u092E\u093F\u0932|\u093F\u0924 |\u094B \u0938|\u0932 \u091C|\u0907\u0916\u0947|\u0928\u0907\u0916| \u0928\u0907|\u0924\u094D\u0930|\u092E\u093E\u091C| \u092C\u093F|\u0935\u0947\u0964|\u0947 \u091C|\u0915 \u0938|\u093F\u0902 |\u0939\u093F\u0902|\u0915\u0930\u093E|\u0914\u0930 |\u0947 \u092E|\u0938\u092E\u093E|\u0939\u0941 | \u0913 |\u092A\u0930 |\u0947 \u0928|\u0938\u094D\u0925|\u0930\u0940\u092F|\u094D\u0930\u0940|\u0932\u093E\u0964|\u093E\u091C |\u093E\u0928 |\u0915\u093E\u0928|\u0947 \u0924|\u093F\u0930 |\u0924\u093F\u0930|\u0916\u093E\u0924| \u0916\u093E|\u0947 \u0909|\u0928\u0942\u0928|\u093E\u0928\u0942|\u093E\u092E | \u0938\u0941| \u0926\u0947|\u0940 \u0915| \u092E\u093E|\u0930 \u092E|\u092A\u094D\u0924|\u093F\u092F\u093E|\u093E\u0939\u0940|\u092C\u093E\u0964|\u092F\u094B\u0917|\u0940 \u0938|\u0932 \u0939|\u0942\u0928 |\u0935\u094D\u092F|\u0941 \u0915|\u090F \u0915|\u0947 \u0935|\u0902\u0924\u094D|\u0938\u094D\u0935|\u0915\u0947\u0939|\u0940\u092F |\u0916\u0932 |\u0938\u093E\u092E|\u092F\u0924\u093E|\u0924\u093F\u0915|\u0947 \u0939|\u093E\u092A\u094D|\u0930\u093E\u092A|\u0930 \u092A|\u0930 \u0905| \u0932\u094B| \u0938\u0939|\u091C\u0947 |\u094B\u0917 |\u092E \u0915|\u0932\u0947 | \u0928\u093F|\u0947\u0915\u0930|\u093E \u0939|\u092A\u0942\u0930|\u0930 \u0928|\u0947\u0939\u0941|\u094D\u092F |\u092F\u093E | \u092F\u093E|\u0926\u0947\u0936|\u0926\u0940 |\u093E \u092E|\u093E\u0935 | \u0926\u094B|\u0947 \u0926| \u092A\u093E|\u0939\u093F |\u093F\u0915\u094D|\u0936\u093F\u0915| \u0936\u093F|\u092C\u093E |\u093F\u0932 | \u0909\u092A|\u094D\u0930\u0924| \u0935\u093F| \u0939\u0940| \u0932\u0947|\u0930\u094B |\u0947 \u0916|\u0920\u0928 |\u0917\u0920\u0928|\u0902\u0917\u0920| \u092E\u093F|\u0937\u0923 |\u094D\u0937\u0923|\u0902\u0930\u0915|\u0938\u0902\u0930| \u0906\u0926| \u090F\u0915|\u0928\u0947 | \u0905\u092A|\u0924\u0902\u0924|\u0935\u0924\u0902|\u094D\u0935\u0924|\u094D\u0924\u0930|\u094D\u092F\u093E|\u0947\u0936 |\u093E\u0926\u0940|\u094D\u0924\u093F|\u091C\u093F\u0915|\u093E\u091C\u093F|\u0915 \u0906|\u094D\u092E |\u091A\u093E\u0930| \u0909\u091A| \u0936\u093E|\u0930\u0940 |\u093E\u0939 |\u092F\u093E\u0939|\u092C\u093F\u092F|\u091A\u093F\u0924|\u0915\u094D\u0924|\u092A\u092F\u094B|\u0909\u092A\u092F|\u0930\u0924\u093E|\u0930 \u0935|\u0928 \u092E|\u0932\u094B\u0917|\u0939 \u0915|\u0928 \u092A|\u0915\u093E\u092E| \u092A\u0942| \u0907 |\u0906\u0926\u093F|\u0908\u0932 | \u0915\u0908| \u0935\u094D|\u092E\u0940 |\u0941\u0930\u0915|\u0938\u0941\u0930| \u091C\u0940|\u0927\u093E\u0930|\u092F \u0938|\u0924\u0930\u094D|\u092D\u0947 |\u0938\u092D\u0947| \u0938\u092D|\u092D\u093E\u0935|\u094D\u0925\u093F|\u093E\u092E\u093E|\u0938\u0930 |\u0930\u094D\u092E| \u0915\u094B| \u092C\u0947|\u094B\u0938\u0930|\u0926\u094B\u0938|\u0923 \u0915|\u093E\u0938 |\u0947 \u092A|\u091C\u093E\u0926|\u0906\u091C\u093E| \u0906\u091C|\u0909\u091A\u093F|\u0917 \u0915|\u093E\u0930\u0940| \u091C\u0930|\u0917\u0947 |\u091C \u0915|\u0940 \u092C|\u0938\u0928 |\u0939\u094B |\u093E \u0924",
+        npi: "\u0915\u094B |\u0928\u0947 | \u0930 |\u093E\u0930 |\u0915\u094D\u0924|\u0915\u093E\u0930|\u092A\u094D\u0930| \u092A\u094D|\u094D\u092F\u0915|\u0935\u094D\u092F| \u0917\u0930|\u093F\u0915\u093E| \u0935\u094D|\u094D\u0930\u0924|\u0927\u093F\u0915|\u094D\u0924\u093F|\u092F\u0915\u094D|\u0905\u0927\u093F| \u0905\u0927|\u093E\u0908 |\u092E\u093E |\u0932\u093E\u0908|\u0924\u094D\u092F|\u093F\u0915 | \u0964 | \u0938\u092E|\u0935\u093E | \u0935\u093E|\u0915 \u0935|\u094D\u0928\u0947|\u0930\u094D\u0928|\u0917\u0930\u094D|\u0928\u094D\u0924|\u091B \u0964|\u0924\u093F\u0932|\u0930\u0924\u094D|\u0924\u094D\u0930|\u0947\u0915 |\u092F\u0947\u0915|\u094D\u092F\u0947|\u093F\u0932\u093E|\u0930 \u0938|\u094B \u0938| \u0938\u094D|\u092E\u093E\u0928|\u0915\u094D\u0937| \u0935\u093F|\u0939\u0941\u0928|\u093E \u0938| \u0939\u0941| \u091B |\u0930 \u091B|\u094D\u0924\u094D|\u0938\u092E\u093E|\u0938\u094D\u0935|\u0964 \u092A| \u0938\u0902|\u0928\u0947\u091B|\u0941\u0928\u0947|\u0939\u0930\u0941|\u0924\u0928\u094D|\u0935\u0924\u0928|\u0947 \u0905|\u093F\u0928\u0947|\u094B \u0905|\u094D\u0935\u0924| \u0915\u093E|\u0947 \u091B|\u0917\u0930\u093F| \u0930\u093E|\u094D\u0930 |\u0924\u093F |\u093E\u0915\u094B| \u0915\u0941|\u0937\u094D\u091F|\u0928\u093E |\u0938\u094D\u0924|\u0915 \u0938|\u0941\u0928\u0948|\u0915\u0941\u0928|\u091F\u094D\u0930|\u0932\u0947 | \u0928\u093F|\u093E\u0928 |\u091B\u0948\u0928| \u091B\u0948|\u094D\u091F\u094D|\u093E\u0937\u094D|\u0930\u093E\u0937|\u0924\u093F\u0915|\u091B\u0964 |\u093E\u0930\u094D|\u0924\u093E |\u093F\u0924 |\u0928\u0948 |\u093E \u0905| \u0938\u093E|\u093E \u0935|\u0930\u0941 | \u092E\u093E| \u0905\u0928|\u093E \u0930|\u0930\u0924\u093E|\u0930 \u0930|\u0939\u0930\u0942|\u0947\u091B |\u093E \u092A|\u0930\u0915\u094D|\u094D\u0924 | \u092A\u0930|\u0925\u093E | \u0932\u093E|\u092A\u0930\u093F|\u0926\u0947\u0936|\u0938\u0915\u094B| \u092F\u0938|\u092E\u093E\u091C|\u093E\u092E\u093E|\u094D\u0930\u093E|\u093F\u0935\u093E|\u093E\u0939\u0930|\u094B \u092A|\u094D\u092F |\u0935\u093E\u0930|\u0928 \u0938|\u0964 \u0915|\u0928\u093F |\u094D\u0937\u093E| \u0924\u094D|\u0926\u094D\u0927|\u0930 \u0939|\u0924\u0925\u093E| \u0924\u0925|\u092F\u0938\u094D|\u094D\u092F\u0938|\u0930\u0940 |\u0930 \u0935|\u092A\u0928\u093F|\u0930\u093F\u0928|\u0902\u0930\u0915|\u0938\u0902\u0930|\u092D\u093E\u0935|\u0948 \u0935|\u0938\u092C\u0948| \u0938\u092C| \u0936\u093F| \u0938\u0939|\u0924\u093E\u0915|\u0947 \u0930|\u0924 \u0930|\u0932\u093E\u0917| \u0938\u0941|\u094D\u0937\u0923|\u0926\u094D\u0926| \u0905\u092A|\u0948\u0928 |\u094B \u0935|\u093F\u0915\u094D|\u093E\u0935 |\u0927\u093E\u0930|\u094D\u092F\u093E|\u094D\u0930\u093F|\u093E \u092D|\u090F\u0915\u094B|\u0930 \u092E|\u0928 \u0905|\u094B \u0932| \u0909\u0938|\u0936\u093F\u0915|\u093E\u0924\u094D|\u0938\u094D\u0925|\u0935\u093E\u0939|\u0942\u0930\u094D|\u0936\u094D\u092F|\u093F\u0924\u094D|\u0930\u0915\u094B|\u093E\u0930\u0915|\u0941\u0926\u094D|\u0924\u094B |\u094D\u0924\u094B|\u093E\u0909\u0928|\u0915\u093E\u0928|\u093F\u090F\u0915|\u093E \u0928| \u092A\u0928|\u0928\u0964 |\u0948\u0928\u0964|\u0915\u093E |\u0947\u091B\u0964| \u092D\u0947|\u0930\u094D\u092F|\u0938\u092E\u094D|\u0924\u094D\u092A|\u0938\u093E\u092E|\u0930\u093F\u092F|\u091A\u093E\u0930|\u0928\u093F\u091C|\u0941\u0928 |\u0917\u093F |\u093E\u0917\u093F|\u0909\u0938\u0915| \u092E\u0924| \u0905\u092D|\u092A\u0942\u0930|\u0930 \u0924| \u0938\u0915|\u0938\u093E\u0930|\u0930\u093E\u0927|\u092A\u0930\u093E|\u0905\u092A\u0930|\u0941\u0915\u094D|\u091C\u0915\u094B| \u0909\u092A|\u0930\u093E |\u093E\u0930\u093E|\u094D\u0935\u093E|\u0935\u093F\u0927|\u094D\u0928 |\u093E \u0924|\u0928 \u0917|\u0923\u0915\u094B| \u092A\u093E| \u0926\u093F|\u0915 \u0930|\u0930 \u092A|\u0905\u0928\u094D|\u092D\u0947\u0926|\u093E\u0930\u092E|\u094B \u0906| \u0905\u0930|\u091C\u093F\u0915|\u093E\u091C\u093F|\u093F\u092F |\u0937\u093E |\u093E\u091F |\u092C\u093E\u091F| \u092C\u093E|\u093F \u0930| \u091B\u0964|\u0924\u094D\u0935|\u0924 \u0938|\u0930\u0942 |\u091B \u0930|\u0930\u0915\u093E|\u0935\u093F\u0915|\u0930 \u0909|\u094B\u0917 |\u094D\u0926\u0947|\u0930\u093F\u0935|\u0938\u0915\u093F|\u0948 \u092A|\u0930\u0924\u093F|\u0905\u0928\u0941| \u0906\u0935|\u092F\u0941\u0915|\u093E \u0917|\u0928\u092E\u093E|\u092F\u094B\u0917|\u0917 \u0917|\u0915 \u0905|\u0926\u094D\u0935|\u094D\u0927 |\u0930\u0941\u0926| \u092C\u093F|\u0964 \u0938|\u0909\u0928\u0947|\u093E\u0928\u094D|\u093E \u092E|\u093F\u0915\u094B|\u0930\u094D\u0926|\u093E\u0930\u0940|\u094D\u0924\u0930|\u094B \u0939|\u0939\u093F\u0924| \u0926\u0947|\u0930\u093F\u0915|\u093E \u0915| \u0906\u0927|\u0930\u093E\u091C|\u0930\u094D\u092E|\u094D\u0923 |\u0930\u094D\u0923|\u093F \u0935|\u094D\u092F\u0935|\u0935\u093F\u091A|\u092C\u0948 |\u0938\u0939\u093F|\u0930\u094B\u091C|\u0930\u094D\u0938|\u0908 \u0909|\u094D\u092A |\u0930\u093E\u0924|\u0928\u093F\u0915|\u092E\u093F\u0915|\u091A\u094D\u091B|\u094D\u0925\u093E|\u0935\u093F\u0935|\u0915\u0924\u093E|\u0905\u092D\u093F|\u094D\u0927\u093E",
+        mag: " \u0915\u0947|\u0915\u0947 |\u093E\u0930 | \u0939\u0908|\u0915\u093E\u0930|\u0908\u0964 |\u0939\u0908\u0964|\u093F\u0915\u093E|\u0947 \u0905|\u0927\u093F\u0915|\u0905\u0927\u093F| \u0905\u0927|\u0930 \u0939|\u0947 \u0915|\u0914\u0930 | \u0914\u0930|\u093E \u0915|\u0947 \u0938|\u0938\u092C | \u0938\u092C| \u0915\u0930|\u0947\u0902 |\u0925\u093E |\u092E\u0947\u0902| \u092E\u0947|\u0924\u0925\u093E| \u0924\u0925|\u093F\u0915 | \u0939\u094B| \u0938\u092E|\u0915\u094D\u0937|\u0928\u093E |\u092C \u0915|\u0930 \u0938| \u0938\u0902|\u093E \u0938|\u0915\u0930 | \u092D\u0940|\u0964 \u0938| \u0938\u093E| \u0938\u0947| \u0915\u093E| \u0905\u092A|\u094D\u0930\u093E|\u092A\u094D\u0930| \u092A\u094D|\u0938\u0947 |\u092D\u0940 | \u0915\u094B|\u0924 \u0915| \u092A\u0930|\u0930\u093E |\u0915 \u0939|\u092A\u0928 |\u0905\u092A\u0928| \u0938\u0915|\u092F\u093E |\u0924\u093F |\u0930 \u0915|\u0940 \u0915| \u092F\u093E|\u0915\u0930\u0947| \u091C\u093E|\u0930\u0947 | \u0913\u0915|\u094D\u0924 |\u0938\u0915 |\u0928\u094B |\u093E\u0928 |\u092E\u093E\u0928|\u0913\u0915\u0930|\u093E \u092A|\u0928 \u0915|\u0947\u0932 | \u0928\u093E|\u0964 \u0915|\u0930\u0915\u094D| \u0938\u094D|\u0939\u0940 |\u0939\u094B\u090F| \u090F\u0915|\u092A\u0930 |\u0926\u0940 |\u091F\u094D\u0930|\u0924\u093E |\u0935\u094D\u092F|\u0939\u0908 | \u0936\u093E|\u0947 \u0909| \u0926\u0947|\u0924\u094D\u0930|\u093E\u0926\u0940| \u0930\u093E| \u0939\u0940|\u0915\u093E\u0928|\u093F\u0924 |\u092E \u0915|\u0932 \u091C|\u093E\u092E |\u0940 \u0938|\u0947 \u092D|\u0928 \u0938|\u092E\u093E\u091C|\u0937\u094D\u091F|\u0937\u093E | \u0932\u0947|\u0915 \u0938|\u092C\u0947 |\u0935\u0947 |\u093E\u0935\u0947|\u092E\u093F\u0932|\u0930 \u092E|\u094D\u092F |\u093E \u0939|\u0932\u093E |\u092A\u094D\u0924|\u0928\u0942\u0928|\u093E\u0928\u0942|\u091C\u093E |\u0947\u0915\u0930|\u094D\u0937\u093E|\u094D\u0930\u0924|\u0902\u0924\u094D|\u0930 \u0914|\u094B\u0908 |\u0915\u094B\u0908|\u094D\u091F\u094D|\u093E\u0937\u094D|\u0930\u093E\u0937| \u092E\u093E|\u0930\u094B | \u091C\u0947|\u0915\u0930\u093E|\u094B\u090F |\u093E\u092A\u094D|\u0930\u093E\u092A|\u0938\u092E\u093E|\u0942\u0928 |\u094B \u0938|\u0938\u094D\u0935|\u094D\u0924\u093F|\u0938\u093E\u092E|\u094B\u0928\u094B|\u0915\u094B\u0928| \u0935\u094D|\u0930 \u0905|\u094D\u092E | \u0935\u093F| \u0938\u0939|\u0947 \u092E|\u0915\u094D\u0924|\u092F\u094B\u0917|\u0930 \u0935|\u0915\u093E\u092E|\u0932 \u0939| \u0928\u093F|\u0926\u0947\u0936|\u092A\u0942\u0930|\u0935\u093E\u0930| \u0907 |\u0902\u0930\u0915|\u0938\u0902\u0930|\u090F \u0915|\u0930 \u092A| \u0938\u0941|\u0924\u0902\u0924|\u0935\u0924\u0902|\u094D\u0935\u0924|\u093E \u092E|\u0935 \u0915|\u0947 \u0935|\u093E\u0925 |\u0938\u093E\u0925| \u0926\u094B|\u0939\u094B\u092C| \u092A\u093E|\u094B \u0915|\u0947 \u092C|\u094B\u0917 | \u0909\u092A|\u0938\u094D\u0924|\u092A\u0930\u093F|\u0928 \u092A|\u0947 \u0924|\u094D\u0924\u0930|\u0932\u0947\u0932|\u0947 \u0913|\u091A\u093E\u0939| \u091A\u093E|\u092F \u0915|\u0935\u093E |\u0947\u0936 |\u092F \u0938|\u0928 \u0939|\u0937\u0923 |\u093E \u092C|\u0964 \u0924|\u090F\u0915 |\u090F\u0932 |\u0940\u092F |\u0915\u0947\u0915|\u0947 \u0939|\u0930 \u0906|\u093F \u0915|\u0938\u094D\u0925|\u091C\u093F\u0915|\u093E\u091C\u093F|\u093E\u092E\u093E|\u0930\u0940\u092F|\u094D\u0930\u0940|\u0924\u093F\u0915|\u093E\u0924\u093F| \u092C\u093F|\u091A\u093E\u0930|\u0947 \u0906|\u093E\u0938 | \u0909\u091A|\u093E \u0924|\u092F\u0915\u094D|\u094D\u092F\u0915|\u093F\u0932 |\u092E\u092F |\u0938\u092E\u092F|\u0936\u093E\u0926|\u092A\u092F\u094B|\u0909\u092A\u092F|\u0947 \u0916|\u0930\u093F\u0935| \u092A\u0942|\u0947 \u0932|\u0947 \u091A|\u094C\u0928\u094B|\u0915\u094C\u0928| \u0915\u094C|\u0902 \u0915|\u0938\u0902\u0917|\u0928 \u0926|\u0902 \u0938|\u0923 \u092A|\u094D\u0937\u0923|\u0930 \u0928|\u0947 \u0928|\u094B \u092D|\u0915\u0930\u094B|\u093E \u0914|\u0930\u0924\u093E|\u093E\u0935 |\u092D\u093E\u0935|\u0915 \u0914|\u0930\u094D\u092E|\u094B\u0938\u0930|\u0926\u094B\u0938|\u0923 \u0915|\u0947 \u092A|\u0928 \u0914|\u092C \u0939|\u093F\u0915\u094D|\u0936\u093F\u0915| \u0936\u093F|\u093E\u092C\u0947|\u0928\u093F\u092F|\u091A\u093F\u0924|\u0909\u091A\u093F|\u093F\u0924\u094D|\u0917 \u0915|\u0947\u0964 |\u0924 \u0938|\u0940 \u0936|\u0902 \u0936|\u090F\u0915\u0930|\u0964 \u090F|\u0924\u0928 | \u0913 |\u0930\u0940 |\u094D\u0930 |\u091C\u0947 |\u0915 \u0915| \u0938\u0940|\u0938\u0928 |\u093F\u0935\u093E| \u0905\u0928|\u0942\u0930\u093E| \u092C\u091A|\u090F\u0964 | \u092C\u0947|\u0924 \u0939| \u0924\u0915| \u092E\u093F|\u0927\u093E\u0930|\u0925\u0935\u093E|\u0905\u0925\u0935| \u0905\u0925|\u093F\u0932\u093E|\u094D\u0935\u093E|\u093F \u092E| \u0906\u0926|\u0928\u0947 |\u0915\u090F\u0932| \u0915\u090F|\u094D\u092F\u093E"
+      }
+    };
+  }
+});
+
+// node_modules/franc-min/index.js
+var franc_min_exports = {};
+__export(franc_min_exports, {
+  franc: () => franc,
+  francAll: () => francAll
+});
+function franc(value, options) {
+  return francAll(value, options)[0][0];
+}
+function francAll(value, options = {}) {
+  const only = [...options.whitelist || [], ...options.only || []];
+  const ignore = [...options.blacklist || [], ...options.ignore || []];
+  const minLength = options.minLength !== null && options.minLength !== void 0 ? options.minLength : MIN_LENGTH;
+  if (!value || value.length < minLength) {
+    return und();
+  }
+  value = value.slice(0, MAX_LENGTH);
+  const script2 = getTopScript(value, expressions);
+  if (!script2[0] || !(script2[0] in numericData)) {
+    if (!script2[0] || script2[1] === 0 || !allow(script2[0], only, ignore)) {
+      return und();
+    }
+    return singleLanguageTuples(script2[0]);
+  }
+  return normalize(
+    value,
+    getDistances(asTuples(value), numericData[script2[0]], only, ignore)
+  );
+}
+function normalize(value, distances) {
+  const min = distances[0][1];
+  const max = value.length * MAX_DIFFERENCE - min;
+  let index = -1;
+  while (++index < distances.length) {
+    distances[index][1] = 1 - (distances[index][1] - min) / max || 0;
+  }
+  return distances;
+}
+function getTopScript(value, scripts) {
+  let topCount = -1;
+  let topScript;
+  let script2;
+  for (script2 in scripts) {
+    if (own2.call(scripts, script2)) {
+      const count = getOccurrence(value, scripts[script2]);
+      if (count > topCount) {
+        topCount = count;
+        topScript = script2;
+      }
+    }
+  }
+  return [topScript, topCount];
+}
+function getOccurrence(value, expression) {
+  const count = value.match(expression);
+  return (count ? count.length : 0) / value.length || 0;
+}
+function getDistances(trigrams2, languages, only, ignore) {
+  languages = filterLanguages(languages, only, ignore);
+  const distances = [];
+  let language;
+  if (languages) {
+    for (language in languages) {
+      if (own2.call(languages, language)) {
+        distances.push([language, getDistance(trigrams2, languages[language])]);
+      }
+    }
+  }
+  return distances.length === 0 ? und() : distances.sort(sort2);
+}
+function getDistance(trigrams2, model) {
+  let distance = 0;
+  let index = -1;
+  while (++index < trigrams2.length) {
+    const trigram2 = trigrams2[index];
+    let difference = MAX_DIFFERENCE;
+    if (trigram2[0] in model) {
+      difference = trigram2[1] - model[trigram2[0]] - 1;
+      if (difference < 0) {
+        difference = -difference;
+      }
+    }
+    distance += difference;
+  }
+  return distance;
+}
+function filterLanguages(languages, only, ignore) {
+  if (only.length === 0 && ignore.length === 0) {
+    return languages;
+  }
+  const filteredLanguages = {};
+  let language;
+  for (language in languages) {
+    if (allow(language, only, ignore)) {
+      filteredLanguages[language] = languages[language];
+    }
+  }
+  return filteredLanguages;
+}
+function allow(language, only, ignore) {
+  if (only.length === 0 && ignore.length === 0) {
+    return true;
+  }
+  return (only.length === 0 || only.includes(language)) && !ignore.includes(language);
+}
+function und() {
+  return singleLanguageTuples("und");
+}
+function singleLanguageTuples(language) {
+  return [[language, 1]];
+}
+function sort2(a, b) {
+  return a[1] - b[1];
+}
+var MAX_LENGTH, MIN_LENGTH, MAX_DIFFERENCE, own2, script, numericData;
+var init_franc_min = __esm({
+  "node_modules/franc-min/index.js"() {
+    init_trigram_utils();
+    init_expressions();
+    init_data();
+    MAX_LENGTH = 2048;
+    MIN_LENGTH = 10;
+    MAX_DIFFERENCE = 300;
+    own2 = {}.hasOwnProperty;
+    numericData = {};
+    for (script in data) {
+      if (own2.call(data, script)) {
+        const languages = data[script];
+        let name;
+        numericData[script] = {};
+        for (name in languages) {
+          if (own2.call(languages, name)) {
+            const model = languages[name].split("|");
+            const trigrams2 = {};
+            let weight = model.length;
+            while (weight--) {
+              trigrams2[model[weight]] = weight;
+            }
+            numericData[script][name] = trigrams2;
+          }
+        }
+      }
+    }
+  }
+});
+
+// src/lib/content-policy.ts
+var ZW_RE = /[\u200B-\u200D\uFEFF\u2060-\u2064]/g;
+var CONTENT_POLICY_CLIENT_MESSAGE = `STOP. Your request was blocked under our zero-tolerance rules for sexual content involving minors, non-consensual sexual material, graphic violence, terrorism, self-harm instructions, and related illegal activity.
+
+This attempt is logged with technical identifiers tied to your session. Repeated or egregious abuse can result in a permanent ban and disclosure to law enforcement where required.
+
+Do not submit this type of content again.`;
+var LEET_MAP = /* @__PURE__ */ new Map([
+  ["0", "o"],
+  ["1", "i"],
+  ["3", "e"],
+  ["4", "a"],
+  ["5", "s"],
+  ["7", "t"],
+  ["8", "b"],
+  ["9", "g"],
+  ["@", "a"],
+  ["$", "s"],
+  ["!", "i"]
+]);
+var BLOCKED_PHRASES = [
+  "child porn",
+  "childporn",
+  "child porno",
+  "kid porn",
+  "kids porn",
+  "minor porn",
+  "teen porn",
+  "preteen porn",
+  "underage porn",
+  "underage sex",
+  "underage nude",
+  "underage naked",
+  "jailbait",
+  "pedo porn",
+  "pedoph",
+  "paedoph",
+  "lolicon",
+  "shotacon",
+  "toddler porn",
+  "baby porn",
+  "elementary porn",
+  "schoolgirl porn",
+  "school boy porn",
+  "incest porn",
+  "rape porn",
+  "rape video",
+  "snuff film",
+  "snuff video",
+  "gore porn",
+  "necroph",
+  "bestiality",
+  "zoophil",
+  "animal sex",
+  "deepfake nude",
+  "deepfake porn",
+  "revenge porn",
+  "non-consensual porn",
+  "sex trafficking",
+  "human trafficking site",
+  "buy sex slave",
+  "how to bomb",
+  "make a bomb",
+  "bomb tutorial",
+  "how to make explosives",
+  "ricin recipe",
+  "anthrax how",
+  "suicide method",
+  "how to kill yourself",
+  "self harm tutorial",
+  "fentanyl synthesis",
+  "how to make meth",
+  "cp site",
+  "pornhub clone",
+  "onlyfans clone porn",
+  "xxx tube",
+  "hardcore porn site",
+  "live sex cam site",
+  "webcam sex site",
+  "escort trafficking",
+  "chloroform abduct",
+  "chloroform kidnap"
+];
+var BLOCKED_COLLAPSED = [
+  "childporn",
+  "kidporn",
+  "pedoporn",
+  "jailbait",
+  "lolicon",
+  "shotacon",
+  "snuffporn",
+  "zoophil",
+  "bestiality",
+  "incestporn",
+  "rapeporn"
+];
+var BLOCKED_REGEX = [
+  /\b(child|kid|kids|minor|minors|toddler|infant|preteen|underage|schoolkid)s?\b[\s\S]{0,48}\b(porn|xxx|nude|naked|fuck|sexual|erotic\s*content)\b/i,
+  /\b(porn|xxx|nude|erotic)\b[\s\S]{0,48}\b(child|kid|kids|minor|minors|toddler|infant|preteen|underage)\b/i,
+  /\b(rape|raping)\b[\s\S]{0,32}\b(site|video|stream|gallery|tube)\b/i,
+  /\b(how\s+to)\b[\s\S]{0,64}\b(kidnap|abduct|murder|torture|waterboard)\b/i,
+  /\b(hitman|contract\s+killing)\b/i,
+  /\b(beheading|decapitat)\b[\s\S]{0,24}\b(video|site|live)\b/i,
+  /\bisis\b[\s\S]{0,48}\b(recruit|fighter|extremist|terror|bomb)\b/i,
+  /\b(plan|commit|carry\s+out)\b[\s\S]{0,40}\b(mass\s+shooting|bombing)\b/i,
+  /\b(mass\s+shooting|school\s+shooting)\b[\s\S]{0,40}\b(plan|guide|tutorial|how\s+to)\b/i,
+  /\bn[i1]gg+[a3]r[s]?\b/i,
+  /\bk[i1]k[e2]s?\b/i,
+  /\bc[h][i1]nk[s]?\b/i
+];
+var applyLeet = (s) => {
+  let out = "";
+  for (const ch of s) {
+    const low = ch.toLowerCase();
+    out += LEET_MAP.get(low) ?? low;
+  }
+  return out;
+};
+var normalizePolicyText = (raw) => {
+  const t = String(raw ?? "").normalize("NFKC").toLowerCase().replace(ZW_RE, "");
+  const spaced = t.replace(/\s+/g, " ").trim();
+  const leetSpaced = applyLeet(spaced);
+  const collapsed = leetSpaced.replace(/[^a-z0-9]+/g, "");
+  return { spaced, leetSpaced, collapsed };
+};
+var checkPromptContentPolicy = (raw) => {
+  const text = typeof raw === "string" ? raw.trim() : "";
+  if (!text) return { ok: true };
+  const { spaced, leetSpaced, collapsed } = normalizePolicyText(text);
+  const haystacks = [spaced, leetSpaced, collapsed];
+  for (const phrase of BLOCKED_PHRASES) {
+    const p = phrase.toLowerCase().trim();
+    for (const h of haystacks) {
+      if (h.includes(p)) return { ok: false, code: "CONTENT_POLICY" };
+    }
+  }
+  for (const frag of BLOCKED_COLLAPSED) {
+    if (collapsed.includes(frag)) return { ok: false, code: "CONTENT_POLICY" };
+  }
+  for (const re of BLOCKED_REGEX) {
+    re.lastIndex = 0;
+    if (re.test(spaced) || re.test(leetSpaced))
+      return { ok: false, code: "CONTENT_POLICY" };
+  }
+  return { ok: true };
+};
+
+// src/lib/home/mixed-english-hints.ts
+var MIXED_ENGLISH_SLANG_KEYWORDS = {
+  ta: ["tanglish", "tanglish website", "in tanglish"],
+  te: ["tenglish", "teluglish", "telugu english mix"],
+  kn: ["kanglish", "kanglish website"],
+  ml: ["manglish", "manglish website", "in manglish"],
+  bn: ["benglish", "banglish", "bengali english mix"],
+  mr: ["marathi english mix"],
+  gu: ["gunglish", "gujarati english mix"],
+  pa: ["punglish", "punjabi english mix"],
+  or: ["odia english mix", "oriya english mix"],
+  as: ["assamese english mix"],
+  ur: ["urdu english mix"],
+  mai: ["maithili english mix"],
+  kok: ["konkani english mix"],
+  mni: ["manipuri english mix"],
+  sat: ["santali english mix"],
+  ks: ["kashmiri english mix"],
+  doi: ["dogri english mix"],
+  brx: ["bodo english mix"],
+  sd: ["sindhi english mix"],
+  sa: ["sanskrit english mix"],
+  ne: ["nepali english mix"]
+};
+var preferMixedEnglishBcp47FromSnippet = (snippet) => {
+  const pl = String(snippet || "").toLowerCase();
+  if (/\bhinglish\b/.test(pl)) return "hinglish";
+  if (/\bmanglish\b/.test(pl)) return "ml-en";
+  if (/\btanglish\b/.test(pl)) return "ta-en";
+  if (/\b(tenglish|teluglish)\b/.test(pl)) return "te-en";
+  if (/\bkanglish\b/.test(pl)) return "kn-en";
+  if (/\b(benglish|banglish)\b/.test(pl)) return "bn-en";
+  if (/\bgunglish\b/.test(pl)) return "gu-en";
+  if (/\bpunglish\b/.test(pl)) return "pa-en";
+  for (const [pureCode, words] of Object.entries(MIXED_ENGLISH_SLANG_KEYWORDS)) {
+    for (const w of words) {
+      if (pl.includes(w.toLowerCase())) return `${pureCode}-en`;
+    }
+  }
+  return null;
+};
+
+// src/lib/home/indian-sample-prompts.ts
+var INDIAN_SAMPLE_PROMPTS = [
+  "An award-level editorial landing page for a premium Indian D2C brand with split hero, bento feature grid, glassmorphism cards, Fraunces or Syne display typography, aurora gradient bands, and subtle CSS motion on scroll.",
+  "A cinematic fintech landing page for Indian founders with asymmetric layout, oversized numerals in the background, gradient mesh behind the hero, ring-glow CTAs, and monthly versus yearly pricing toggle with animated counters.",
+  "A luxury hospitality landing page for a boutique Indian hotel chain with full-bleed atmospheric sections, pull-quote editorial blocks, testimonial carousel, and depth through layered blur panels \u2014 not a generic template.",
+  "A Bharatanatyam academy landing page in mixed English\u2013Tamil tone with guru profiles, beginner to arangetram tracks, rehearsal calendar, and fee structure for Chennai and online students.",
+  "A Kathak dance school website with gharana lineage story, tabla and tatkar-focused batches, exam and certification pathway, and winter intensive workshop booking for North Indian cities.",
+  "An Odissi dance foundation landing page highlighting temple sculpture inspiration, live orchestra collaborations, costume and jewellery notes, and residency applications for international learners.",
+  "A Kuchipudi ensemble and summer intensive landing page with male and female repertoire highlights, story-based items, guest choreographers, and tiered passes for Hyderabad and Bengaluru.",
+  "A Kathakali repertory company landing page with evening performance schedule, make-up and costume explainers, Kerala tourism tie-ups, and corporate and school show inquiry forms.",
+  "A Mohiniyattam academy landing page with lasya-focused pedagogy, percussion ensemble details, Kerala festival calendar, and scholarship audition slots for young dancers.",
+  "A Manipuri classical dance institution landing page with Ras Lila context, indigenous costume care, Imphal campus and outreach tours, and donor and CSR partnership blurbs.",
+  "A Sattriya dance and neo-Vaishnavite culture centre landing page with monastery heritage framing, youth and adult batches, Assamese\u2013English copy options, and grant and residency FAQs.",
+  "A multi-style Indian classical dance festival landing page with Bharatanatyam Kathak Odissi showcase nights, masterclass tickets, volunteer signup, and sponsor deck download.",
+  "A Navratri Garba and Dandiya event organiser landing page with city-wise venues, live dhol and DJ packages, group booking tiers, and safety and crowd management assurances.",
+  "A Bhangra academy and college competition crew landing page with Punjab folk roots story, fitness-forward training tracks, costume rental add-ons, and corporate flash-mob packages.",
+  "A Lavani and Maharashtrian folk performance collective landing page with rural outreach shows, urban theatre tie-ins, costume authenticity notes, and booking for weddings and corporate days.",
+  "A Bihu and Assamese folk culture festival landing page with traditional dance and music slots, local food partner highlights, tourist itinerary hooks, and volunteer and vendor applications.",
+  "A national handicrafts and handloom marketplace landing page with GI-tagged clusters, artisan stories, khadi and natural dye filters, and bulk order and export documentation help.",
+  "A Madhubani and Mithila art gallery landing page with artist residency programmes, certificate courses, corporate gifting tiers, and international shipping and customs guidance.",
+  "A Warli and tribal art tourism cooperative landing page with village homestay loops, painting workshop weekends, fair-trade pricing transparency, and guide and translator add-ons.",
+  "A Carnatic music sabha season landing page with monthly kutcheri schedule, season passes, livestream add-on, parking and accessibility notes, and donor and patron circles.",
+  "A Hindustani classical vocal and instrumental gurukul landing page with khayal and dhrupad tracks, tabla and harmonium faculty, examination pathway, and online riyaaz cohorts.",
+  "A Jaipur Literature Festival\u2013style literary conference landing page with author line-up grid, regional language tracks, student day passes, and sponsor and media kit downloads.",
+  "A heritage walking tours operator landing page for Old Delhi Agra and Jaipur circuits with licensed guides, monument combo tickets, wheelchair-friendly route flags, and group charter pricing.",
+  "A classical yoga and Natya Shastra\u2013informed movement retreat landing page with abhinaya and rhythm modules, Ayurveda add-ons, ashram stay tiers, and silent-day policy copy.",
+  "A trustworthy mixed Hindi-English landing page for a chartered accountant practice offering GST return filing, income tax, and ROC compliance with fees and appointment booking.",
+  "A crisp company registration and startup India landing page for CS-led incorporation, MSME registration, and trademark filing with clear packages and timelines.",
+  "A professional legal services website for contracts, IP filings, and litigation intake with lawyer profiles, practice areas, and a secure consultation request form.",
+  "A B2B HR and payroll compliance landing page for Indian SMBs covering PF, ESI, PT, and payslip automation with pricing tiers and onboarding checklist.",
+  "A manufacturing supplier directory style landing page for industrial components with RFQ flow, certifications, and tier-2 city logistics reassurance.",
+  "An import-export and customs brokerage landing page with service lanes, documentation checklist, and shipment tracking CTA for Indian exporters.",
+  "A facility management and security services landing page with AMC plans, guard deployment regions, and SLA-backed response times.",
+  "A premium wedding and corporate event planner landing page with portfolio galleries, vendor coordination packages, and city-wise availability.",
+  "A RERA-forward real estate brokerage landing page with project listings, virtual tours, and EMI calculator for Indian metro and tier-2 buyers.",
+  "A co-living and PG operator landing page with room types, meal plans, house rules, and UPI-ready rent payment positioning.",
+  "An interior design and modular kitchen studio landing page with 3D mood boards, material palettes, and city site-visit booking.",
+  "A neighbourhood kirana going online landing page with daily essentials, slot delivery, and UPI QR trust cues for Bharat audiences.",
+  "A regional FMCG snacks and spices brand landing page with festive bundles, nutrition callouts, and distributor inquiry for tier-2 retail.",
+  "An ethnic wear and bridal boutique landing page with lookbook, made-to-measure appointments, and festival shipping timelines.",
+  "A hallmarked jewellery showroom landing page with gold rate ticker, exchange policy, and store locator across Indian cities.",
+  "A multi-brand electronics retail and authorised service landing page with warranty lookup, spare parts, and pickup repair slots.",
+  "An EV dealership and charging solutions landing page with test-ride booking, subsidy FAQs, and service packages for Indian buyers.",
+  "A fine-dine and family restaurant landing page with chef story, regional menu highlights, table reservation, and catering upsell.",
+  "A cloud kitchen and delivery brand landing page with live order areas, combo meals, hygiene badges, and partner rider recruitment.",
+  "A wedding and banquet catering landing page with per-plate tiers, live counters, tasting session booking, and city coverage map.",
+  "A mithai and bakery chain landing page with sugar-free options, corporate gifting, and same-day delivery corridors.",
+  "A specialty tea and filter coffee brand landing page with origin stories, subscription tins, and caf\xE9 franchise inquiry.",
+  "A boutique hotel and homestay landing page with room stories, local experiences, seasonal tariffs, and direct booking incentives.",
+  "A domestic pilgrimage and long-weekend travel landing page with curated itineraries, reviews, and fast flexible booking.",
+  "A regional bus and intercity cab operator landing page with routes, live seat maps, safety checklist, and agent login hints.",
+  "An FPO and farmer collective landing page with crop plans, mandi connect, transparent pricing charts, and member onboarding.",
+  "An agri input dealer landing page with crop-wise catalogues, soil testing partners, and last-mile delivery to villages.",
+  "A dairy and milk cooperative landing page with cold chain assurance, subscription milk plans, and quality lab highlights.",
+  "A farm equipment rental landing page with tractor hourly rates, attachment catalogue, and operator safety training notes.",
+  "An organic and natural farmer brand landing page with traceability QR story, certification badges, and metro delivery slots.",
+  "A JEE NEET and state PSC coaching landing page with faculty panel, batch schedules, scholarship test, and parent dashboard teaser.",
+  "A regional language edtech landing page with micro-courses, mobile-first lessons, and affordable annual plans for Bharat students.",
+  "A vocational ITI and NSDC-aligned skilling landing page with placement partners, lab photos, and employer hiring day calendar.",
+  "A study abroad and visa consulting landing page with university shortlists, SOP review, and loan partner pathways for Indian families.",
+  "A multi-speciality hospital landing page with departments, insurance tie-ups, OT availability, and emergency contact strip.",
+  "A diagnostics lab chain landing page with home collection slots, NABL highlights, and report download UX for patients.",
+  "An ethical pharma distributor landing page with cold chain compliance, stockist locator, and doctor education webinar invites.",
+  "An Ayurveda and integrative wellness clinic landing page with panchakarma packages, doctor credentials, and seasonal detox plans.",
+  "A premium fitness studio landing page with class packs, trainer bios, body assessment booking, and nutrition add-ons.",
+  "An NBFC gold loan and MSME lending landing page with transparent APR, branch locator, and minimal documentation promise.",
+  "A health and term insurance comparison landing page with IRDAI disclaimers, premium illustrations, and claim assistance highlights.",
+  "A mutual fund distributor and RIA landing page with goal calculators, risk questionnaire, and SIP mandate education for Indians.",
+  "A stock broking and research landing page with margin FAQ, platform screenshots, and referral rewards tuned for retail traders.",
+  "A UPI-first fintech landing page for bill pay, rewards, and credit-line waitlist with bank-grade security messaging.",
+  "An NGO and CSR programme landing page with impact metrics, volunteer signup, donation transparency, and 80G note placeholders.",
+  "A public health awareness microsite landing page with multilingual toggles, symptom checker caution, and helpline prominence.",
+  "A regional digital news publication landing page with editor picks, newsletter signup, and membership wall for long-form.",
+  "An indie podcast and creator network landing page with show tiles, sponsor kits, and RSS subscription guidance.",
+  "A regional language book publisher landing page with author submissions, distributor map, and festival launch calendar.",
+  "An independent film production landing page with slate teaser, casting note, festival laurels, and investor deck request.",
+  "An offshore-ready IT services studio landing page with case studies, stack expertise, and timezone overlap chart for US EU clients.",
+  "A GST payroll and inventory SaaS for Indian SMBs landing page with CA partner programme, demo video, and pricing in rupees.",
+  "A cybersecurity and GRC consulting landing page with audit offerings, breach response retainer, and compliance checklist downloads.",
+  "A solar EPC and rooftop landing page with subsidy steps, generation calculator, and O&M warranty table for homes and SMEs.",
+  "A logistics and 3PL landing page with pincode SLA map, freight calculator, and COD reconciliation highlights for ecommerce brands.",
+  "A civil construction and contracting landing page with project portfolio, RERA mention, safety record, and tender inquiry form.",
+  "A community-focused matrimony landing page with verification layers, family-friendly copy, and privacy controls emphasis.",
+  "A temple trust and donation landing page with darshan timings, seva booking, 80G transparency, and festival crowd management info.",
+  "A sports academy landing page with coaching levels, turf booking, nutrition partners, and parent progress portal teaser.",
+  "A parenting and kids activity centre landing page with age bands, weekend workshops, and trial class booking flow.",
+  "A tier-3 city coaching centre landing page with hostel tie-ups, daily test series, and scholarship stories in Hinglish tone.",
+  "A seafood and poultry integrated brand landing page with cold chain badges, cut options, and metro morning delivery promise.",
+  "A warehouse and cold storage operator landing page with pallet pricing, CCTV assurance, and FMCH client logos.",
+  "A college placement cell microsite landing page with recruiter timeline, student achievement wall, and training partner list.",
+  "A boutique law firm for startups landing page with flat-fee bundles, cap table clinic, and founder office hours booking.",
+  "A mobile wallet and recharge super-app landing page with rewards, bill categories, and KYC upgrade journey for India users."
+];
+
+// src/scripts/home-session-embed.ts
+var STATE_KEY = "sfEmbeddedSession";
+var shell = null;
+var frame = null;
+var listenersBound = false;
+var isMarketingHomePath = () => {
+  const p = location.pathname;
+  return p === "/" || p === "";
+};
+var setMainInert = (on) => {
+  if (!shell) return;
+  for (const el of Array.from(document.body.children)) {
+    if (el === shell) continue;
+    if (on) el.setAttribute("inert", "");
+    else el.removeAttribute("inert");
+  }
+};
+var hideShell = () => {
+  if (!shell) return;
+  shell.hidden = true;
+  setMainInert(false);
+};
+var clearStrayEmbedInert = () => {
+  const el = document.getElementById("sf-home-session-shell");
+  if (el && !el.hidden) return;
+  document.querySelectorAll("body > [inert]").forEach((node) => {
+    if (node.id !== "sf-home-session-shell") node.removeAttribute("inert");
+  });
+};
+var bindListeners = () => {
+  if (listenersBound) return;
+  listenersBound = true;
+  window.addEventListener("pageshow", clearStrayEmbedInert);
+  window.addEventListener("popstate", (ev) => {
+    const state = ev.state;
+    const id = state && state[STATE_KEY];
+    if (id) {
+      showShellForSession(String(id));
+      try {
+        frame?.focus();
+      } catch {
+      }
+    } else {
+      hideShell();
+    }
+  });
+  window.addEventListener("message", (ev) => {
+    if (ev.origin !== location.origin) return;
+    if (ev.data?.type !== "sf-close-embedded-session") return;
+    if (!shell || shell.hidden) return;
+    if (history.state?.[STATE_KEY]) {
+      history.back();
+    } else {
+      history.replaceState(null, "", "/");
+      hideShell();
+    }
+  });
+};
+var ensureShell = () => {
+  if (shell && frame) {
+    bindListeners();
+    return;
+  }
+  shell = document.createElement("div");
+  shell.id = "sf-home-session-shell";
+  shell.className = "sf-home-session-shell";
+  shell.hidden = true;
+  shell.setAttribute("role", "dialog");
+  shell.setAttribute("aria-modal", "true");
+  shell.setAttribute("aria-label", "Live session dashboard");
+  frame = document.createElement("iframe");
+  frame.className = "sf-home-session-frame";
+  frame.setAttribute("title", "Live session dashboard");
+  document.body.appendChild(shell);
+  shell.appendChild(frame);
+  bindListeners();
+};
+var showShellForSession = (sessionId) => {
+  ensureShell();
+  const idStr = String(sessionId);
+  const path = `/session/${encodeURIComponent(idStr)}?embed=1`;
+  const wasHidden = !!shell?.hidden;
+  if (frame && (frame.dataset.sfSessionId !== idStr || wasHidden)) {
+    frame.dataset.sfSessionId = idStr;
+    frame.src = path;
+  }
+  if (shell) {
+    shell.hidden = false;
+  }
+  setMainInert(true);
+};
+var openEmbeddedSession = (sessionId) => {
+  const idStr = String(sessionId);
+  if (!isMarketingHomePath()) {
+    location.href = `/session/${idStr}`;
+    return;
+  }
+  ensureShell();
+  history.pushState({ [STATE_KEY]: idStr }, "", `/session/${idStr}`);
+  showShellForSession(idStr);
+  try {
+    frame?.focus();
+  } catch {
+  }
+};
+
+// src/scripts/homepage.ts
+if (typeof history !== "undefined" && "scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+var getTypedElement = (id) => document.getElementById(id);
+var currentUser = null;
+var authResolved = false;
+var hasSessionResizeListener = false;
+var openAuthOverlay = () => {
+  window.dispatchEvent(new CustomEvent("sf-request-auth-overlay"));
+};
 async function authFetch(url, options = {}) {
-  const bridge = window.__sfAuthFetch
-  if (bridge) return bridge(url, options)
-  const headers = { ...(options.headers || {}) }
-  return fetch(url, { ...options, headers })
+  const bridge = window.__sfAuthFetch;
+  if (bridge) return bridge(url, options);
+  const headers = { ...options.headers || {} };
+  return fetch(url, { ...options, headers });
 }
-
 async function showAnonymousApp() {
   if (getGenerationCount() >= GENERATION_LIMIT) {
     try {
-      const resp = await fetch('/api/share-bonus')
+      const resp = await fetch("/api/share-bonus");
       if (resp.ok) {
-        const data = await resp.json()
-        if (data.claimed) shareBonusClaimed = true
+        const data2 = await resp.json();
+        if (data2.claimed) shareBonusClaimed = true;
       }
     } catch {
-      /* ignore */
     }
   }
-  updateGenerationCounter()
-  syncSubmitButtonState()
-  publicGalleryPage = 1
-  userGalleryPage = 1
-  await hydrateAnonymousOrPublicGallery()
+  updateGenerationCounter();
+  syncSubmitButtonState();
+  publicGalleryPage = 1;
+  userGalleryPage = 1;
+  await hydrateAnonymousOrPublicGallery();
 }
-
 async function showApp() {
-  updateGenerationCounter()
-  syncSubmitButtonState()
-  loadSessions()
+  updateGenerationCounter();
+  syncSubmitButtonState();
+  loadSessions();
 }
-
-const form = document.getElementById('prompt-form')
-const input = document.getElementById('prompt-input')
-const languageSelect = document.getElementById('prompt-language')
-const promptLanguageRow = document.getElementById('prompt-language-row')
-const submitButton = document.getElementById('submit-btn')
-const submitButtonLabel = submitButton?.querySelector('.btn-label')
-const logoTagline = document.getElementById('logo-tagline')
-const SUBMIT_BTN_DEFAULT_LABEL = 'Generate'
-const generationCounter = document.getElementById('gen-counter')
-const promptPlaceholder = document.getElementById('prompt-placeholder')
-const promptPlaceholderText = document.getElementById('prompt-placeholder-text')
-const promptSuggestions = document.getElementById('prompt-suggestions')
-const promptSuggestionsList = document.getElementById('prompt-suggestions-list')
-const privateGenRow = document.getElementById('private-gen-row')
-const privateGenCheckbox = document.getElementById('private-gen-checkbox')
-const privateGenModal = document.getElementById('private-gen-modal')
-const policyBlock = document.getElementById('prompt-policy-block')
-const sessionPagination = document.getElementById('session-pagination')
-const sessionPaginationActions = document.getElementById('session-pagination-actions')
-const sessionPagePrev = document.getElementById('session-page-prev')
-const sessionPageNext = document.getElementById('session-page-next')
-const sessionPageStatus = document.getElementById('session-page-status')
-const GALLERY_PAGE_SIZE = 12
-const GALLERY_RESTORE_PAGE_KEY = 'sf_gallery_restore_page'
-const GALLERY_RESTORE_SOURCE_KEY = 'sf_gallery_restore_source'
-let publicGalleryPage = 1
-let userGalleryPage = 1
-let gallerySource = 'public'
-let galleryMeta = null
-let anonSessionEntriesCacheT = 0
-let anonSessionEntriesCacheV = null
-const ANON_SESSION_ENTRIES_TTL_MS = 45_000
-const SF_PUBLIC_GALLERY_STALE_MS = 90_000
-
+var form = getTypedElement("prompt-form");
+var input = getTypedElement("prompt-input");
+var languageSelect = getTypedElement("prompt-language");
+var promptLanguageRow = getTypedElement("prompt-language-row");
+var submitButton = getTypedElement("submit-btn");
+var submitButtonLabel = submitButton?.querySelector(".btn-label");
+var logoTagline = getTypedElement("logo-tagline");
+var SUBMIT_BTN_DEFAULT_LABEL = "Generate";
+var generationCounter = getTypedElement("gen-counter");
+var promptPlaceholder = getTypedElement("prompt-placeholder");
+var promptPlaceholderText = getTypedElement("prompt-placeholder-text");
+var promptSuggestions = getTypedElement("prompt-suggestions");
+var promptSuggestionsList = getTypedElement("prompt-suggestions-list");
+var privateGenRow = getTypedElement("private-gen-row");
+var privateGenCheckbox = getTypedElement("private-gen-checkbox");
+var privateGenModal = getTypedElement("private-gen-modal");
+var policyBlock = getTypedElement("prompt-policy-block");
+var sessionPagination = getTypedElement("session-pagination");
+var sessionPaginationActions = getTypedElement("session-pagination-actions");
+var sessionPagePrev = getTypedElement("session-page-prev");
+var sessionPageNext = getTypedElement("session-page-next");
+var sessionPageStatus = getTypedElement("session-page-status");
+var GALLERY_PAGE_SIZE = 12;
+var GALLERY_RESTORE_PAGE_KEY = "sf_gallery_restore_page";
+var GALLERY_RESTORE_SOURCE_KEY = "sf_gallery_restore_source";
+var publicGalleryPage = 1;
+var userGalleryPage = 1;
+var gallerySource = "public";
+var galleryMeta = null;
+var anonSessionEntriesCacheT = 0;
+var anonSessionEntriesCacheV = null;
+var ANON_SESSION_ENTRIES_TTL_MS = 45e3;
+var SF_PUBLIC_GALLERY_STALE_MS = 9e4;
 function consumeGalleryRestore() {
-  const pageRaw = sessionStorage.getItem(GALLERY_RESTORE_PAGE_KEY)
-  const sourceRaw = sessionStorage.getItem(GALLERY_RESTORE_SOURCE_KEY)
-  if (pageRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_PAGE_KEY)
-  if (sourceRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_SOURCE_KEY)
-  const page = pageRaw != null ? Math.max(1, parseInt(pageRaw, 10) || 1) : 1
-  const source = sourceRaw === 'user' || sourceRaw === 'public' ? sourceRaw : null
-  return { page, source }
+  const pageRaw = sessionStorage.getItem(GALLERY_RESTORE_PAGE_KEY);
+  const sourceRaw = sessionStorage.getItem(GALLERY_RESTORE_SOURCE_KEY);
+  if (pageRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_PAGE_KEY);
+  if (sourceRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_SOURCE_KEY);
+  const page = pageRaw != null ? Math.max(1, parseInt(pageRaw, 10) || 1) : 1;
+  const source = sourceRaw === "user" || sourceRaw === "public" ? sourceRaw : null;
+  return { page, source };
 }
-const GENERATION_LIMIT = 2
-const GENERATION_LIMIT_WITH_BONUS = 3
-const MIN_PROMPT_LENGTH = 15
-const PROMPT_LANG_DETECT_MIN_CHARS = 65
-const PROMPT_LANG_DETECT_DEBOUNCE_MS = 400
-const PROMPT_LANG_DETECT_SNIPPET_MAX = 800
-const PROMPT_SUGGEST_MIN_CHARS = 2
-const PROMPT_SUGGEST_MAX_SHOW = 4
-const PROMPT_SUGGEST_DEBOUNCE_MS = 380
-const PREFERRED_LANGUAGE_KEY = 'sf_preferred_language'
-
-const FRANC_ISO639_3_TO_BCP47 = {
-  eng: 'en',
-  fra: 'fr',
-  ita: 'it',
-  spa: 'es',
-  deu: 'de',
-  nld: 'nl',
-  por: 'pt',
-  rus: 'ru',
-  pol: 'pl',
-  tur: 'tr',
-  hun: 'hu',
-  ces: 'cs',
-  slk: 'sk',
-  ron: 'ro',
-  ell: 'el',
-  swe: 'sv',
-  dan: 'da',
-  fin: 'fi',
-  nor: 'no',
-  nob: 'nb',
-  nno: 'nn',
-  ind: 'id',
-  jpn: 'ja',
-  kor: 'ko',
-  zho: 'zh',
-  arb: 'ar',
-  ara: 'ar',
-  pes: 'fa',
-  hin: 'hi',
-  tam: 'ta',
-  tel: 'te',
-  kan: 'kn',
-  mal: 'ml',
-  ben: 'bn',
-  mar: 'mr',
-  guj: 'gu',
-  pan: 'pa',
-  ori: 'or',
-  asm: 'as',
-  urd: 'ur',
-  mai: 'mai',
-  kok: 'kok',
-  mni: 'mni',
-  sat: 'sat',
-  kas: 'ks',
-  doi: 'doi',
-  brx: 'brx',
-  snd: 'sd',
-  san: 'sa',
-  nep: 'ne',
-}
-
-const PROMPT_DETECT_INDIAN_FRANC = new Set([
-  'hin',
-  'tam',
-  'tel',
-  'kan',
-  'mal',
-  'ben',
-  'mar',
-  'guj',
-  'pan',
-  'ori',
-  'asm',
-  'urd',
-  'mai',
-  'kok',
-  'mni',
-  'sat',
-  'kas',
-  'doi',
-  'brx',
-  'snd',
-  'san',
-  'nep',
-])
-
-const GENERATE_CTA_BY_LANG = {
-  en: 'Generate',
-  hinglish: 'बनाओ',
-  hi: 'बनाएं',
-  ta: 'உருவாக்கு',
-  te: 'సృష్టించు',
-  kn: 'ರಚಿಸಿ',
-  ml: 'സൃഷ്ടിക്കുക',
-  bn: 'তৈরি করুন',
-  mr: 'तयार करा',
-  gu: 'બનાવો',
-  pa: 'ਬਣਾਓ',
-  or: 'ତିଆରି କରନ୍ତୁ',
-  as: 'সৃষ্টি কৰক',
-  ur: 'پیدا کریں',
-  mai: 'बनाब',
-  kok: 'तयार करात',
-  mni: 'Generate',
-  sat: 'ᱛᱮᱭᱟᱨ ᱢᱮ',
-  ks: 'تیار کٔرِو',
-  doi: 'बनाओ',
-  brx: 'सोलोंथाइ',
-  sd: 'تيار ڪريو',
-  sa: 'जनयतु',
-  ne: 'सिर्जना गर्नुहोस्',
-  fr: 'Générer',
-  it: 'Genera',
-  es: 'Generar',
-  de: 'Generieren',
-  nl: 'Genereren',
-  pt: 'Gerar',
-  ru: 'Создать',
-  pl: 'Generuj',
-  tr: 'Oluştur',
-  hu: 'Generálás',
-  cs: 'Vygenerovat',
-  sk: 'Vygenerovať',
-  ro: 'Generează',
-  el: 'Δημιούργησε',
-  sv: 'Generera',
-  da: 'Generer',
-  fi: 'Luo',
-  no: 'Generer',
-  nb: 'Generer',
-  nn: 'Generer',
-  id: 'Hasilkan',
-  ja: '生成',
-  ko: '생성',
-  zh: '生成',
-  ar: 'توليد',
-  fa: 'تولید',
-}
-
-const SHIPFAST_TAGLINE_BY_LANG = {
-  hinglish: 'तेज़ शिप',
-  hi: 'तेज़ भेजें',
-  ta: 'விரைவாக அனுப்பு',
-  te: 'వేగంగా పంపు',
-  kn: 'ವೇಗವಾಗಿ ರವಾನಿಸಿ',
-  ml: 'വേഗത്തിൽ അയയ്ക്കുക',
-  bn: 'দ্রুত পাঠান',
-  mr: 'पटकन पाठवा',
-  gu: 'ઝડપથી મોકલો',
-  pa: 'ਤੇਜ਼ੀ ਨਾਲ ਭੇਜੋ',
-  or: 'ଶୀଘ୍ର ପଠାନ୍ତୁ',
-  as: 'দ্ৰুততেৰে পঠাওক',
-  ur: 'تیز بھیجیں',
-  mai: 'तेजी सँ पठाब',
-  kok: 'वेगान पाठयात',
-  mni: 'Ship Fast',
-  sat: 'ᱞᱚᱜᱚᱱ ᱯᱚᱛᱟᱹᱣ',
-  ks: 'ژٕ تٲزیٖ پٲٹٲیو',
-  doi: 'तेजी साँ पेजॊ',
-  brx: 'थांखो थांफाय',
-  sd: 'تڪي سان موڪليو',
-  sa: 'शीघ्रं प्रेषय',
-  ne: 'छिटो पठाउनुहोस्',
-  fr: 'Livraison rapide',
-  it: 'Spedizione veloce',
-  es: 'Envío veloz',
-  de: 'Schnell liefern',
-  nl: 'Snel verzenden',
-  pt: 'Envio rápido',
-  ru: 'Быстрая отправка',
-  pl: 'Szybka wysyłka',
-  tr: 'Hızlı gönder',
-  hu: 'Gyors szállítás',
-  cs: 'Rychlé odeslání',
-  sk: 'Rýchle odoslanie',
-  ro: 'Livrare rapidă',
-  el: 'Γρήγορη αποστολή',
-  sv: 'Snabb leverans',
-  da: 'Hurtig forsendelse',
-  fi: 'Nopea toimitus',
-  no: 'Rask forsendelse',
-  nb: 'Rask forsendelse',
-  nn: 'Rask forsendelse',
-  id: 'Kirim cepat',
-  ja: '迅速発送',
-  ko: '빠른 배송',
-  zh: '极速发货',
-  ar: 'شحن سريع',
-  fa: 'ارسال سریع',
-}
-
-const PROMPT_HINGLISH_LATIN = new Set(
+var GENERATION_LIMIT = 2;
+var GENERATION_LIMIT_WITH_BONUS = 3;
+var MIN_PROMPT_LENGTH = 15;
+var PROMPT_LANG_DETECT_MIN_CHARS = 65;
+var PROMPT_LANG_DETECT_DEBOUNCE_MS = 400;
+var PROMPT_LANG_DETECT_SNIPPET_MAX = 800;
+var PROMPT_SUGGEST_MIN_CHARS = 2;
+var PROMPT_SUGGEST_MAX_SHOW = 4;
+var PROMPT_SUGGEST_DEBOUNCE_MS = 380;
+var PREFERRED_LANGUAGE_KEY = "sf_preferred_language";
+var FRANC_ISO639_3_TO_BCP47 = {
+  eng: "en",
+  fra: "fr",
+  ita: "it",
+  spa: "es",
+  deu: "de",
+  nld: "nl",
+  por: "pt",
+  rus: "ru",
+  pol: "pl",
+  tur: "tr",
+  hun: "hu",
+  ces: "cs",
+  slk: "sk",
+  ron: "ro",
+  ell: "el",
+  swe: "sv",
+  dan: "da",
+  fin: "fi",
+  nor: "no",
+  nob: "nb",
+  nno: "nn",
+  ind: "id",
+  jpn: "ja",
+  kor: "ko",
+  zho: "zh",
+  arb: "ar",
+  ara: "ar",
+  pes: "fa",
+  hin: "hi",
+  tam: "ta",
+  tel: "te",
+  kan: "kn",
+  mal: "ml",
+  ben: "bn",
+  mar: "mr",
+  guj: "gu",
+  pan: "pa",
+  ori: "or",
+  asm: "as",
+  urd: "ur",
+  mai: "mai",
+  kok: "kok",
+  mni: "mni",
+  sat: "sat",
+  kas: "ks",
+  doi: "doi",
+  brx: "brx",
+  snd: "sd",
+  san: "sa",
+  nep: "ne"
+};
+var PROMPT_DETECT_INDIAN_FRANC = /* @__PURE__ */ new Set([
+  "hin",
+  "tam",
+  "tel",
+  "kan",
+  "mal",
+  "ben",
+  "mar",
+  "guj",
+  "pan",
+  "ori",
+  "asm",
+  "urd",
+  "mai",
+  "kok",
+  "mni",
+  "sat",
+  "kas",
+  "doi",
+  "brx",
+  "snd",
+  "san",
+  "nep"
+]);
+var GENERATE_CTA_BY_LANG = {
+  en: "Generate",
+  hinglish: "\u092C\u0928\u093E\u0913",
+  hi: "\u092C\u0928\u093E\u090F\u0902",
+  ta: "\u0B89\u0BB0\u0BC1\u0BB5\u0BBE\u0B95\u0BCD\u0B95\u0BC1",
+  te: "\u0C38\u0C43\u0C37\u0C4D\u0C1F\u0C3F\u0C02\u0C1A\u0C41",
+  kn: "\u0CB0\u0C9A\u0CBF\u0CB8\u0CBF",
+  ml: "\u0D38\u0D43\u0D37\u0D4D\u0D1F\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15",
+  bn: "\u09A4\u09C8\u09B0\u09BF \u0995\u09B0\u09C1\u09A8",
+  mr: "\u0924\u092F\u093E\u0930 \u0915\u0930\u093E",
+  gu: "\u0AAC\u0AA8\u0ABE\u0AB5\u0ACB",
+  pa: "\u0A2C\u0A23\u0A3E\u0A13",
+  or: "\u0B24\u0B3F\u0B06\u0B30\u0B3F \u0B15\u0B30\u0B28\u0B4D\u0B24\u0B41",
+  as: "\u09B8\u09C3\u09B7\u09CD\u099F\u09BF \u0995\u09F0\u0995",
+  ur: "\u067E\u06CC\u062F\u0627 \u06A9\u0631\u06CC\u06BA",
+  mai: "\u092C\u0928\u093E\u092C",
+  kok: "\u0924\u092F\u093E\u0930 \u0915\u0930\u093E\u0924",
+  mni: "Generate",
+  sat: "\u1C5B\u1C6E\u1C6D\u1C5F\u1C68 \u1C62\u1C6E",
+  ks: "\u062A\u06CC\u0627\u0631 \u06A9\u0654\u0631\u0650\u0648",
+  doi: "\u092C\u0928\u093E\u0913",
+  brx: "\u0938\u094B\u0932\u094B\u0902\u0925\u093E\u0907",
+  sd: "\u062A\u064A\u0627\u0631 \u06AA\u0631\u064A\u0648",
+  sa: "\u091C\u0928\u092F\u0924\u0941",
+  ne: "\u0938\u093F\u0930\u094D\u091C\u0928\u093E \u0917\u0930\u094D\u0928\u0941\u0939\u094B\u0938\u094D",
+  fr: "G\xE9n\xE9rer",
+  it: "Genera",
+  es: "Generar",
+  de: "Generieren",
+  nl: "Genereren",
+  pt: "Gerar",
+  ru: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C",
+  pl: "Generuj",
+  tr: "Olu\u015Ftur",
+  hu: "Gener\xE1l\xE1s",
+  cs: "Vygenerovat",
+  sk: "Vygenerova\u0165",
+  ro: "Genereaz\u0103",
+  el: "\u0394\u03B7\u03BC\u03B9\u03BF\u03CD\u03C1\u03B3\u03B7\u03C3\u03B5",
+  sv: "Generera",
+  da: "Generer",
+  fi: "Luo",
+  no: "Generer",
+  nb: "Generer",
+  nn: "Generer",
+  id: "Hasilkan",
+  ja: "\u751F\u6210",
+  ko: "\uC0DD\uC131",
+  zh: "\u751F\u6210",
+  ar: "\u062A\u0648\u0644\u064A\u062F",
+  fa: "\u062A\u0648\u0644\u06CC\u062F"
+};
+var SHIPFAST_TAGLINE_BY_LANG = {
+  hinglish: "\u0924\u0947\u091C\u093C \u0936\u093F\u092A",
+  hi: "\u0924\u0947\u091C\u093C \u092D\u0947\u091C\u0947\u0902",
+  ta: "\u0BB5\u0BBF\u0BB0\u0BC8\u0BB5\u0BBE\u0B95 \u0B85\u0BA9\u0BC1\u0BAA\u0BCD\u0BAA\u0BC1",
+  te: "\u0C35\u0C47\u0C17\u0C02\u0C17\u0C3E \u0C2A\u0C02\u0C2A\u0C41",
+  kn: "\u0CB5\u0CC7\u0C97\u0CB5\u0CBE\u0C97\u0CBF \u0CB0\u0CB5\u0CBE\u0CA8\u0CBF\u0CB8\u0CBF",
+  ml: "\u0D35\u0D47\u0D17\u0D24\u0D4D\u0D24\u0D3F\u0D7D \u0D05\u0D2F\u0D2F\u0D4D\u0D15\u0D4D\u0D15\u0D41\u0D15",
+  bn: "\u09A6\u09CD\u09B0\u09C1\u09A4 \u09AA\u09BE\u09A0\u09BE\u09A8",
+  mr: "\u092A\u091F\u0915\u0928 \u092A\u093E\u0920\u0935\u093E",
+  gu: "\u0A9D\u0AA1\u0AAA\u0AA5\u0AC0 \u0AAE\u0ACB\u0A95\u0AB2\u0ACB",
+  pa: "\u0A24\u0A47\u0A1C\u0A3C\u0A40 \u0A28\u0A3E\u0A32 \u0A2D\u0A47\u0A1C\u0A4B",
+  or: "\u0B36\u0B40\u0B18\u0B4D\u0B30 \u0B2A\u0B20\u0B3E\u0B28\u0B4D\u0B24\u0B41",
+  as: "\u09A6\u09CD\u09F0\u09C1\u09A4\u09A4\u09C7\u09F0\u09C7 \u09AA\u09A0\u09BE\u0993\u0995",
+  ur: "\u062A\u06CC\u0632 \u0628\u06BE\u06CC\u062C\u06CC\u06BA",
+  mai: "\u0924\u0947\u091C\u0940 \u0938\u0901 \u092A\u0920\u093E\u092C",
+  kok: "\u0935\u0947\u0917\u093E\u0928 \u092A\u093E\u0920\u092F\u093E\u0924",
+  mni: "Ship Fast",
+  sat: "\u1C5E\u1C5A\u1C5C\u1C5A\u1C71 \u1C6F\u1C5A\u1C5B\u1C5F\u1C79\u1C63",
+  ks: "\u0698\u0655 \u062A\u0672\u0632\u06CC\u0656 \u067E\u0672\u0679\u0672\u06CC\u0648",
+  doi: "\u0924\u0947\u091C\u0940 \u0938\u093E\u0901 \u092A\u0947\u091C\u094A",
+  brx: "\u0925\u093E\u0902\u0916\u094B \u0925\u093E\u0902\u092B\u093E\u092F",
+  sd: "\u062A\u06AA\u064A \u0633\u0627\u0646 \u0645\u0648\u06AA\u0644\u064A\u0648",
+  sa: "\u0936\u0940\u0918\u094D\u0930\u0902 \u092A\u094D\u0930\u0947\u0937\u092F",
+  ne: "\u091B\u093F\u091F\u094B \u092A\u0920\u093E\u0909\u0928\u0941\u0939\u094B\u0938\u094D",
+  fr: "Livraison rapide",
+  it: "Spedizione veloce",
+  es: "Env\xEDo veloz",
+  de: "Schnell liefern",
+  nl: "Snel verzenden",
+  pt: "Envio r\xE1pido",
+  ru: "\u0411\u044B\u0441\u0442\u0440\u0430\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430",
+  pl: "Szybka wysy\u0142ka",
+  tr: "H\u0131zl\u0131 g\xF6nder",
+  hu: "Gyors sz\xE1ll\xEDt\xE1s",
+  cs: "Rychl\xE9 odesl\xE1n\xED",
+  sk: "R\xFDchle odoslanie",
+  ro: "Livrare rapid\u0103",
+  el: "\u0393\u03C1\u03AE\u03B3\u03BF\u03C1\u03B7 \u03B1\u03C0\u03BF\u03C3\u03C4\u03BF\u03BB\u03AE",
+  sv: "Snabb leverans",
+  da: "Hurtig forsendelse",
+  fi: "Nopea toimitus",
+  no: "Rask forsendelse",
+  nb: "Rask forsendelse",
+  nn: "Rask forsendelse",
+  id: "Kirim cepat",
+  ja: "\u8FC5\u901F\u767A\u9001",
+  ko: "\uBE60\uB978 \uBC30\uC1A1",
+  zh: "\u6781\u901F\u53D1\u8D27",
+  ar: "\u0634\u062D\u0646 \u0633\u0631\u064A\u0639",
+  fa: "\u0627\u0631\u0633\u0627\u0644 \u0633\u0631\u06CC\u0639"
+};
+var PROMPT_HINGLISH_LATIN = new Set(
   `ke liye kaa ki ka ko se par pe aur ya phir bhi ho hai hain hoon hun main tum aap ham hum aapka aapki mere meri apna apni apne kuch sab koi kuchh kitna kab kahan kaise kyun kyo kyon bas fir tab jab banao banaye bana karo karein chahiye chahie milega milegi dekho dekhe suno samjho samajh wala wale wali accha achha achhi theek thik bahut zyada thoda kam sahi galat nahi nahin nhi haan haanji na mat jaldi jald jisse apne apni bas fir woh wo yeh ye koi kabhi kabhi sirf sirf bass reh reho rehi karenge karunga karungi hona honi hoga hogi`.split(
-    /\s+/,
-  ),
-)
-
-const PROMPT_ENGLISH_LEXICON = new Set(
+    /\s+/
+  )
+);
+var PROMPT_ENGLISH_LEXICON = new Set(
   `the and for with from into about over under this that these those your our their its was were been being have has had do does did will would could should may might can must shall need want like make made makes making take took give gave go went come came see saw know think say said get got use used work worked call called try tried help helped show showed look looked find found keep kept let put set run ran move add added open opened close closed save saved load loaded click tapped type types typed enter enter submit cancel delete edit update create created build built design designed ship fast page home landing site web website internet online digital product products service services customer customers user users client clients team teams member members account accounts login sign signup signin register password email phone contact contacts pricing price plan plans paid free pro premium trial subscribe feature features faq help support docs doc api blog news story stories video image photo photos gallery map maps list lists search filter sort menu nav header footer sidebar modal popover popup button link links form forms field fields input inputs select checkbox radio toggle slider range progress loading spinner toast alert badge pill tag tags label labels chart charts graph graphs stats stat analytics dashboard panel admin profile settings billing payment pay invoice cart checkout order orders shipping delivery pickup return refund coupon discount offer sale deal gift promo subscription monthly yearly gym fitness fit trainer trainers train class classes schedule schedules booking book session sessions ladies women men kids family kid friendly safe safely security secure private public modern clean minimal bold premium luxury brand brands mission vision value values trust trusted review reviews rating ratings hero banner card cards grid layout layouts responsive mobile tablet desktop animation scroll slide gallery tour faq question answer answers step steps guide guides tutorial resource resources download upload share shared invite join community forum chat message messages notify notification notifications push sms otp verify account`.split(
-    /\s+/,
-  ),
-)
-
+    /\s+/
+  )
+);
 function promptLatinEnglishLean(text) {
-  const words = String(text || '')
-    .toLowerCase()
-    .match(/\b[a-z]{2,}\b/g)
-  if (!words || words.length === 0) return { lean: 0, en: 0, hi: 0, n: 0 }
-  let en = 0
-  let hi = 0
+  const words = String(text || "").toLowerCase().match(/\b[a-z]{2,}\b/g);
+  if (!words || words.length === 0) return { lean: 0, en: 0, hi: 0, n: 0 };
+  let en = 0;
+  let hi = 0;
   for (const word of words) {
-    if (PROMPT_HINGLISH_LATIN.has(word)) hi += 1
-    else if (PROMPT_ENGLISH_LEXICON.has(word)) en += 1
+    if (PROMPT_HINGLISH_LATIN.has(word)) hi += 1;
+    else if (PROMPT_ENGLISH_LEXICON.has(word)) en += 1;
   }
-  const rest = words.length - en - hi
-  const lean = (en + rest * 0.22) / words.length
-  return { lean, en, hi, n: words.length }
+  const rest = words.length - en - hi;
+  const lean = (en + rest * 0.22) / words.length;
+  return { lean, en, hi, n: words.length };
 }
-
 function resolveFrancCode3ForPrompt(snippet, code3) {
-  if (!code3 || code3 === 'und') return code3
-  if (code3 === 'eng' || PROMPT_DETECT_INDIAN_FRANC.has(code3)) return code3
-  const { lean, en, hi, n } = promptLatinEnglishLean(snippet)
-  if (n < 4) return code3
-  if (lean >= 0.36 && en > hi && en >= 4) return 'eng'
-  return code3
+  if (!code3 || code3 === "und") return code3;
+  if (code3 === "eng" || PROMPT_DETECT_INDIAN_FRANC.has(code3)) return code3;
+  const { lean, en, hi, n } = promptLatinEnglishLean(snippet);
+  if (n < 4) return code3;
+  if (lean >= 0.36 && en > hi && en >= 4) return "eng";
+  return code3;
 }
-
 function resolveFrancCode3HinglishPreference(snippet, code3) {
-  if (!code3 || code3 === 'und') return code3
-  if (code3 === 'urd') return code3
-  if (PROMPT_DETECT_INDIAN_FRANC.has(code3) && code3 !== 'hin') return code3
-  const lower = String(snippet || '').toLowerCase()
-  const { hi, en, n } = promptLatinEnglishLean(snippet)
-  const hasKeLiye = /\bke\s+liye\b/.test(lower)
-  const hasBanao = /\bbanao\b/.test(lower)
-  const hinglishStrong =
-    hasKeLiye || hi >= 2 || (hi >= 1 && hasBanao) || (n >= 6 && hi >= 2 && hi >= en * 0.35)
-  if (hinglishStrong) return 'hinglish'
-  if (code3 === 'hin') return 'hin'
-  return code3
+  if (!code3 || code3 === "und") return code3;
+  if (code3 === "urd") return code3;
+  if (PROMPT_DETECT_INDIAN_FRANC.has(code3) && code3 !== "hin") return code3;
+  const lower = String(snippet || "").toLowerCase();
+  const { hi, en, n } = promptLatinEnglishLean(snippet);
+  const hasKeLiye = /\bke\s+liye\b/.test(lower);
+  const hasBanao = /\bbanao\b/.test(lower);
+  const hinglishStrong = hasKeLiye || hi >= 2 || hi >= 1 && hasBanao || n >= 6 && hi >= 2 && hi >= en * 0.35;
+  if (hinglishStrong) return "hinglish";
+  if (code3 === "hin") return "hin";
+  return code3;
 }
-
-let francLoadPromise = null
-let promptLangDetectTimer = null
-let promptLangDetectToken = 0
-let lastPromptTrimLen = 0
-let promptLanguageRowUnlocked = false
-const isLocalDevHost =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1' ||
-    window.location.hostname === '::1')
-const LOCAL_DEV_PROMPT_SHORTCUTS = [
-  'Mere local gym ke liye ek powerful modern website banao with membership plans',
-  'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
-  'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
-  'A trustworthy mixed Hindi-English landing page for a chartered accountant practice offering GST return filing, income tax, and ROC compliance with fees and appointment booking.',
-  'A fine-dine and family restaurant landing page with chef story, regional menu highlights, table reservation, and catering upsell.',
-  'A regional language edtech landing page with micro-courses, mobile-first lessons, and affordable annual plans for Bharat students.',
-  'An FPO and farmer collective landing page with crop plans, mandi connect, transparent pricing charts, and member onboarding.',
-  'A multi-speciality hospital landing page with departments, insurance tie-ups, OT availability, and emergency contact strip.',
-  'A solar EPC and rooftop landing page with subsidy steps, generation calculator, and O&M warranty table for homes and SMEs.',
-]
-const SAMPLE_PROMPTS = [
-  'A cinematic travel landing page for curated weekend escapes with reviews and fast booking.',
-  'A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.',
-  'A premium architecture studio site with immersive case studies, awards, and inquiry scheduling.',
-  'A bold ecommerce homepage for handcrafted coffee gear with bundles and subscriptions.',
-  'A sleek fintech landing page for founders tracking runway, burn, and investor updates.',
-  'A modern fitness club website with class schedules, trainer profiles, and membership plans.',
-  ...INDIAN_SAMPLE_PROMPTS,
-]
-
+var francLoadPromise = null;
+var promptLangDetectTimer = null;
+var promptLangDetectToken = 0;
+var lastPromptTrimLen = 0;
+var promptLanguageRowUnlocked = false;
+var isLocalDevHost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "::1");
+var LOCAL_DEV_PROMPT_SHORTCUTS = [
+  "Mere local gym ke liye ek powerful modern website banao with membership plans",
+  "Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.",
+  "Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.",
+  "A trustworthy mixed Hindi-English landing page for a chartered accountant practice offering GST return filing, income tax, and ROC compliance with fees and appointment booking.",
+  "A fine-dine and family restaurant landing page with chef story, regional menu highlights, table reservation, and catering upsell.",
+  "A regional language edtech landing page with micro-courses, mobile-first lessons, and affordable annual plans for Bharat students.",
+  "An FPO and farmer collective landing page with crop plans, mandi connect, transparent pricing charts, and member onboarding.",
+  "A multi-speciality hospital landing page with departments, insurance tie-ups, OT availability, and emergency contact strip.",
+  "A solar EPC and rooftop landing page with subsidy steps, generation calculator, and O&M warranty table for homes and SMEs."
+];
+var SAMPLE_PROMPTS = [
+  "A cinematic travel landing page for curated weekend escapes with reviews and fast booking.",
+  "A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.",
+  "A premium architecture studio site with immersive case studies, awards, and inquiry scheduling.",
+  "A bold ecommerce homepage for handcrafted coffee gear with bundles and subscriptions.",
+  "A sleek fintech landing page for founders tracking runway, burn, and investor updates.",
+  "A modern fitness club website with class schedules, trainer profiles, and membership plans.",
+  ...INDIAN_SAMPLE_PROMPTS
+];
 function normalizeLanguageCode(value) {
-  const v = String(value || '')
-    .trim()
-    .toLowerCase()
-  if (!v) return ''
-  if (v === 'hinglish') return 'hinglish'
-  if (/^[a-z]{2,8}-en$/.test(v)) return v
-  return v.split(/[-_]/)[0]
+  const v = String(value || "").trim().toLowerCase();
+  if (!v) return "";
+  if (v === "hinglish") return "hinglish";
+  if (/^[a-z]{2,8}-en$/.test(v)) return v;
+  return v.split(/[-_]/)[0];
 }
-
 function getBrowserLanguageCandidates() {
-  const navigatorLanguages = Array.isArray(navigator.languages) ? navigator.languages : []
-  const candidates =
-    navigatorLanguages.length > 0 ? navigatorLanguages : [navigator.language].filter(Boolean)
-  const normalized = candidates
-    .map((entry) => normalizeLanguageCode(entry))
-    .filter(Boolean)
-    .filter((value, index, self) => self.indexOf(value) === index)
-
-  return normalized
+  const navigatorLanguages = Array.isArray(navigator.languages) ? navigator.languages : [];
+  const candidates = navigatorLanguages.length > 0 ? navigatorLanguages : [navigator.language].filter(Boolean);
+  const normalized = candidates.map((entry) => normalizeLanguageCode(entry)).filter(Boolean).filter((value, index, self) => self.indexOf(value) === index);
+  return normalized;
 }
-
 function getLanguageDisplayName(code) {
-  const normalized = normalizeLanguageCode(code)
-  if (!normalized) return 'Language'
-  if (typeof Intl === 'undefined' || typeof Intl.DisplayNames === 'undefined') {
-    return normalized
+  const normalized = normalizeLanguageCode(code);
+  if (!normalized) return "Language";
+  if (typeof Intl === "undefined" || typeof Intl.DisplayNames === "undefined") {
+    return normalized;
   }
   try {
-    const display = new Intl.DisplayNames(undefined, { type: 'language' })
-    return display.of(normalized) || normalized
+    const display = new Intl.DisplayNames(void 0, { type: "language" });
+    return display.of(normalized) || normalized;
   } catch {
-    return normalized
+    return normalized;
   }
 }
-
 function getSavedPreferredLanguage() {
-  if (!languageSelect) return null
-  const preferred = localStorage.getItem(PREFERRED_LANGUAGE_KEY)
-  const normalized = normalizeLanguageCode(preferred)
-  if (!normalized) return null
-  return Array.from(languageSelect.options).some((option) => option.value === normalized)
-    ? normalized
-    : null
+  if (!languageSelect) return null;
+  const preferred = localStorage.getItem(PREFERRED_LANGUAGE_KEY);
+  const normalized = normalizeLanguageCode(preferred);
+  if (!normalized) return null;
+  return Array.from(languageSelect.options).some((option) => option.value === normalized) ? normalized : null;
 }
-
 function savePreferredLanguage(language) {
-  const normalized = normalizeLanguageCode(language)
-  if (!normalized) return
-  if (!languageSelect) return
-  if (!Array.from(languageSelect.options).some((option) => option.value === normalized)) return
-  localStorage.setItem(PREFERRED_LANGUAGE_KEY, normalized)
+  const normalized = normalizeLanguageCode(language);
+  if (!normalized) return;
+  if (!languageSelect) return;
+  if (!Array.from(languageSelect.options).some((option) => option.value === normalized)) return;
+  localStorage.setItem(PREFERRED_LANGUAGE_KEY, normalized);
 }
-
 function detectBrowserLanguage() {
-  if (!languageSelect) return 'en'
-  const available = new Set(Array.from(languageSelect.options).map((option) => option.value))
-  const storedLanguage = getSavedPreferredLanguage()
-  if (storedLanguage && storedLanguage !== 'en') return storedLanguage
-  const normalizedCandidates = getBrowserLanguageCandidates()
-
+  if (!languageSelect) return "en";
+  const available = new Set(Array.from(languageSelect.options).map((option) => option.value));
+  const storedLanguage = getSavedPreferredLanguage();
+  if (storedLanguage && storedLanguage !== "en") return storedLanguage;
+  const normalizedCandidates = getBrowserLanguageCandidates();
   const supportedNonEnglishMatch = normalizedCandidates.find(
-    (language) => language !== 'en' && available.has(language),
-  )
-  if (supportedNonEnglishMatch) return supportedNonEnglishMatch
-
-  const browserNonEnglish = normalizedCandidates.find((language) => language !== 'en')
-  if (browserNonEnglish) return browserNonEnglish
-
-  if (available.has('en')) return 'en'
-  if (Array.from(available).length > 0) return Array.from(available)[0]
-  return available.values().next().value || 'en'
+    (language) => language !== "en" && available.has(language)
+  );
+  if (supportedNonEnglishMatch) return supportedNonEnglishMatch;
+  const browserNonEnglish = normalizedCandidates.find((language) => language !== "en");
+  if (browserNonEnglish) return browserNonEnglish;
+  if (available.has("en")) return "en";
+  if (Array.from(available).length > 0) return Array.from(available)[0];
+  return available.values().next().value || "en";
 }
-
 function focusLanguageOptions(preferredLanguage) {
-  if (!languageSelect) return
-  const options = Array.from(languageSelect.options)
-  const englishOption = options.find((option) => option.value === 'en')
-  const preferredOption = options.find((option) => option.value === preferredLanguage)
-  if (!englishOption) return
-
-  const normalizedPreferred = normalizeLanguageCode(preferredLanguage)
-  const preferredToShow =
-    normalizedPreferred && preferredOption && normalizedPreferred !== 'en' ? preferredOption : null
-  const customPreferredToShow =
-    normalizedPreferred && normalizedPreferred !== 'en' && !preferredOption
-      ? new Option(getLanguageDisplayName(normalizedPreferred), normalizedPreferred)
-      : null
-
-  languageSelect.innerHTML = ''
-  languageSelect.appendChild(englishOption.cloneNode(true))
-  if (preferredToShow) languageSelect.appendChild(preferredToShow.cloneNode(true))
-  if (customPreferredToShow) languageSelect.appendChild(customPreferredToShow)
-
-  languageSelect.value = normalizedPreferred || 'en'
+  if (!languageSelect) return;
+  const options = Array.from(languageSelect.options);
+  const englishOption = options.find((option) => option.value === "en");
+  const preferredOption = options.find((option) => option.value === preferredLanguage);
+  if (!englishOption) return;
+  const normalizedPreferred = normalizeLanguageCode(preferredLanguage);
+  const preferredToShow = normalizedPreferred && preferredOption && normalizedPreferred !== "en" ? preferredOption : null;
+  const customPreferredToShow = normalizedPreferred && normalizedPreferred !== "en" && !preferredOption ? new Option(getLanguageDisplayName(normalizedPreferred), normalizedPreferred) : null;
+  languageSelect.innerHTML = "";
+  languageSelect.appendChild(englishOption.cloneNode(true));
+  if (preferredToShow) languageSelect.appendChild(preferredToShow.cloneNode(true));
+  if (customPreferredToShow) languageSelect.appendChild(customPreferredToShow);
+  languageSelect.value = normalizedPreferred || "en";
 }
-
 function mergeLanguageOptionsSelect(selectedCode) {
-  if (!languageSelect) return
-  const normalized = normalizeLanguageCode(selectedCode) || 'en'
-  const existing = Array.from(languageSelect.options)
-  const englishOpt = existing.find((option) => option.value === 'en')
-  if (!englishOpt) return
-
-  const extras = []
-  const seen = new Set()
+  if (!languageSelect) return;
+  const normalized = normalizeLanguageCode(selectedCode) || "en";
+  const existing = Array.from(languageSelect.options);
+  const englishOpt = existing.find((option) => option.value === "en");
+  if (!englishOpt) return;
+  const extras = [];
+  const seen = /* @__PURE__ */ new Set();
   for (const option of existing) {
-    if (option.value === 'en') continue
-    if (seen.has(option.value)) continue
-    seen.add(option.value)
-    extras.push(option)
+    if (option.value === "en") continue;
+    if (seen.has(option.value)) continue;
+    seen.add(option.value);
+    extras.push(option);
   }
-  if (normalized !== 'en' && !seen.has(normalized)) {
-    seen.add(normalized)
-    extras.push(new Option(getLanguageDisplayName(normalized), normalized))
+  if (normalized !== "en" && !seen.has(normalized)) {
+    seen.add(normalized);
+    extras.push(new Option(getLanguageDisplayName(normalized), normalized));
   }
-
-  languageSelect.innerHTML = ''
-  languageSelect.appendChild(englishOpt.cloneNode(true))
+  languageSelect.innerHTML = "";
+  languageSelect.appendChild(englishOpt.cloneNode(true));
   for (const option of extras) {
-    languageSelect.appendChild(option.cloneNode(true))
+    languageSelect.appendChild(option.cloneNode(true));
   }
-  languageSelect.value = normalized
+  languageSelect.value = normalized;
 }
-
 function applyBrowserPreferredLanguage() {
-  const nextLanguage = detectBrowserLanguage()
-  focusLanguageOptions(nextLanguage)
-  languageSelect.value = nextLanguage
+  const nextLanguage = detectBrowserLanguage();
+  focusLanguageOptions(nextLanguage);
+  if (!languageSelect) return;
+  languageSelect.value = nextLanguage;
 }
-
 function resetSubmitCtaLabel() {
-  if (!submitButtonLabel) return
-  submitButtonLabel.textContent = SUBMIT_BTN_DEFAULT_LABEL
-  submitButton?.classList.remove('submit-btn--cta-shake')
+  if (!submitButtonLabel) return;
+  submitButtonLabel.textContent = SUBMIT_BTN_DEFAULT_LABEL;
+  submitButton?.classList.remove("submit-btn--cta-shake");
 }
-
 function getLogoTaglineText(bcp47) {
-  const key = normalizeLanguageCode(bcp47)
-  if (!key || key === 'en') return ''
-  const direct = SHIPFAST_TAGLINE_BY_LANG[key]
-  if (direct) return direct
-  const base = /^([a-z]{2,8})-en$/.exec(key)?.[1]
-  return (base && SHIPFAST_TAGLINE_BY_LANG[base]) || ''
+  const key = normalizeLanguageCode(bcp47);
+  if (!key || key === "en") return "";
+  const direct = SHIPFAST_TAGLINE_BY_LANG[key];
+  if (direct) return direct;
+  const base = /^([a-z]{2,8})-en$/.exec(key)?.[1];
+  return base && SHIPFAST_TAGLINE_BY_LANG[base] || "";
 }
-
 function resetLogoTagline() {
-  if (!logoTagline) return
-  logoTagline.textContent = ''
-  logoTagline.setAttribute('aria-hidden', 'true')
-  logoTagline.classList.remove('logo-tagline--in', 'logo-tagline--settled')
+  if (!logoTagline) return;
+  logoTagline.textContent = "";
+  logoTagline.setAttribute("aria-hidden", "true");
+  logoTagline.classList.remove("logo-tagline--in", "logo-tagline--settled");
 }
-
 function playLogoTaglineIn(text) {
-  if (!logoTagline) return
-  logoTagline.textContent = text
-  logoTagline.setAttribute('aria-hidden', 'false')
-  logoTagline.classList.remove('logo-tagline--settled', 'logo-tagline--in')
-  void logoTagline.offsetWidth
-  logoTagline.classList.add('logo-tagline--in')
+  if (!logoTagline) return;
+  logoTagline.textContent = text;
+  logoTagline.setAttribute("aria-hidden", "false");
+  logoTagline.classList.remove("logo-tagline--settled", "logo-tagline--in");
+  void logoTagline.offsetWidth;
+  logoTagline.classList.add("logo-tagline--in");
 }
-
 function getGenerateCtaLabel(bcp47) {
-  const key = normalizeLanguageCode(bcp47)
-  if (!key) return SUBMIT_BTN_DEFAULT_LABEL
-  const direct = GENERATE_CTA_BY_LANG[key]
-  if (direct) return direct
-  const base = /^([a-z]{2,8})-en$/.exec(key)?.[1]
-  return (base && GENERATE_CTA_BY_LANG[base]) || SUBMIT_BTN_DEFAULT_LABEL
+  const key = normalizeLanguageCode(bcp47);
+  if (!key) return SUBMIT_BTN_DEFAULT_LABEL;
+  const direct = GENERATE_CTA_BY_LANG[key];
+  if (direct) return direct;
+  const base = /^([a-z]{2,8})-en$/.exec(key)?.[1];
+  return base && GENERATE_CTA_BY_LANG[base] || SUBMIT_BTN_DEFAULT_LABEL;
 }
-
 function syncPreferredLanguageUi() {
-  if (!languageSelect || !promptLanguageRow || !promptLanguageRowUnlocked) return
-  if (promptLanguageRow.classList.contains('is-hidden')) return
-  if (submitButtonLabel) submitButtonLabel.textContent = getGenerateCtaLabel(languageSelect.value)
-  const tag = getLogoTaglineText(languageSelect.value)
-  if (tag) playLogoTaglineIn(tag)
-  else resetLogoTagline()
+  if (!languageSelect || !promptLanguageRow || !promptLanguageRowUnlocked) return;
+  if (promptLanguageRow.classList.contains("is-hidden")) return;
+  if (submitButtonLabel) submitButtonLabel.textContent = getGenerateCtaLabel(languageSelect.value);
+  const tag = getLogoTaglineText(languageSelect.value);
+  if (tag) playLogoTaglineIn(tag);
+  else resetLogoTagline();
 }
-
 function playSubmitCtaShake() {
-  if (!submitButton) return
-  submitButton.classList.remove('submit-btn--cta-shake')
-  void submitButton.offsetWidth
-  submitButton.classList.add('submit-btn--cta-shake')
+  if (!submitButton) return;
+  submitButton.classList.remove("submit-btn--cta-shake");
+  void submitButton.offsetWidth;
+  submitButton.classList.add("submit-btn--cta-shake");
 }
-
 function syncPromptLanguageRowVisibility() {
-  if (!promptLanguageRow || !languageSelect) return
-  const show = input.value.trim().length >= PROMPT_LANG_DETECT_MIN_CHARS
-  promptLanguageRow.classList.toggle('is-hidden', !show)
+  if (!promptLanguageRow || !languageSelect) return;
+  const show = input.value.trim().length >= PROMPT_LANG_DETECT_MIN_CHARS;
+  promptLanguageRow.classList.toggle("is-hidden", !show);
   if (!show) {
-    resetSubmitCtaLabel()
-    resetLogoTagline()
+    resetSubmitCtaLabel();
+    resetLogoTagline();
     if (promptLanguageRowUnlocked) {
-      focusLanguageOptions('en')
-      languageSelect.value = 'en'
-      savePreferredLanguage('en')
+      focusLanguageOptions("en");
+      languageSelect.value = "en";
+      savePreferredLanguage("en");
     }
-    promptLanguageRowUnlocked = false
-    return
+    promptLanguageRowUnlocked = false;
+    return;
   }
   if (!promptLanguageRowUnlocked) {
-    applyBrowserPreferredLanguage()
-    promptLanguageRowUnlocked = true
-    syncPreferredLanguageUi()
+    applyBrowserPreferredLanguage();
+    promptLanguageRowUnlocked = true;
+    syncPreferredLanguageUi();
   }
 }
-
 function loadFranc() {
-  francLoadPromise =
-    francLoadPromise ||
-    import('https://esm.sh/franc-min@6.2.0').then((mod) => mod.franc ?? mod.default)
-  return francLoadPromise
+  francLoadPromise = francLoadPromise || Promise.resolve().then(() => (init_franc_min(), franc_min_exports)).then((mod) => mod.franc ?? mod.default);
+  return francLoadPromise;
 }
-
 async function detectSnippetLanguageBcp47(fullText) {
-  const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText)
-  if (fromMixedHint) return fromMixedHint
-  const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
-  let franc
+  const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText);
+  if (fromMixedHint) return fromMixedHint;
+  const snippet = String(fullText || "").slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX);
+  let franc2;
   try {
-    franc = await loadFranc()
+    franc2 = await loadFranc();
   } catch {
-    return null
+    return null;
   }
-  if (typeof franc !== 'function') return null
-  let code3 = franc(snippet, { minLength: 10 }) || 'und'
-  if (code3 !== 'und') {
-    code3 = resolveFrancCode3ForPrompt(snippet, code3)
-    if (code3 === 'und') code3 = 'eng'
+  if (typeof franc2 !== "function") return null;
+  let code3 = franc2(snippet, { minLength: 10 }) || "und";
+  if (code3 !== "und") {
+    code3 = resolveFrancCode3ForPrompt(snippet, code3) ?? "und";
+    if (code3 === "und") code3 = "eng";
   } else {
-    code3 = 'eng'
+    code3 = "eng";
   }
-  code3 = resolveFrancCode3HinglishPreference(snippet, code3)
-  if (!code3 || code3 === 'und') return null
-  const toBcp47 = (resolved) =>
-    resolved === 'hinglish' ? 'hinglish' : FRANC_ISO639_3_TO_BCP47[resolved]
-  return toBcp47(code3) || null
+  code3 = resolveFrancCode3HinglishPreference(snippet, code3) ?? code3;
+  if (!code3 || code3 === "und") return null;
+  const toBcp47 = (resolved) => resolved === "hinglish" ? "hinglish" : FRANC_ISO639_3_TO_BCP47[resolved];
+  return toBcp47(code3) || null;
 }
-
 function runPromptLangDetectAsync(runToken, options) {
   void (async () => {
-    if (!languageSelect) return
-    if (runToken !== promptLangDetectToken) return
-    const currentText = input.value.trim()
-    if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-    if (runToken !== promptLangDetectToken) return
+    if (!languageSelect) return;
+    if (runToken !== promptLangDetectToken) return;
+    const currentText = input.value.trim();
+    if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return;
+    if (runToken !== promptLangDetectToken) return;
     const bcp47 = await detectSnippetLanguageBcp47(
-      currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
-    )
-    if (!bcp47) return
-    if (runToken !== promptLangDetectToken) return
-    if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
+      currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
+    );
+    if (!bcp47) return;
+    if (runToken !== promptLangDetectToken) return;
+    if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return;
     if (options?.skipIfUnchanged) {
-      const hasOption = Array.from(languageSelect.options).some((option) => option.value === bcp47)
-      if (languageSelect.value === bcp47 && hasOption) return
+      const hasOption = Array.from(languageSelect.options).some(
+        (option) => option.value === bcp47
+      );
+      if (languageSelect.value === bcp47 && hasOption) return;
     }
-    mergeLanguageOptionsSelect(bcp47)
-    savePreferredLanguage(bcp47)
+    mergeLanguageOptionsSelect(bcp47);
+    savePreferredLanguage(bcp47);
     if (submitButtonLabel) {
-      submitButtonLabel.textContent = getGenerateCtaLabel(bcp47)
-      playSubmitCtaShake()
+      submitButtonLabel.textContent = getGenerateCtaLabel(bcp47);
+      playSubmitCtaShake();
     }
-    const tag = getLogoTaglineText(bcp47)
-    if (tag) playLogoTaglineIn(tag)
-    else resetLogoTagline()
-  })()
+    const tag = getLogoTaglineText(bcp47);
+    if (tag) playLogoTaglineIn(tag);
+    else resetLogoTagline();
+  })();
 }
-
 function schedulePromptLanguageDetect() {
-  if (!languageSelect) return
-  const text = input.value.trim()
+  if (!languageSelect) return;
+  const text = input.value.trim();
   if (text.length < PROMPT_LANG_DETECT_MIN_CHARS) {
     if (promptLangDetectTimer !== null) {
-      clearTimeout(promptLangDetectTimer)
-      promptLangDetectTimer = null
+      clearTimeout(promptLangDetectTimer);
+      promptLangDetectTimer = null;
     }
-    promptLangDetectToken += 1
-    return
+    promptLangDetectToken += 1;
+    return;
   }
   if (promptLangDetectTimer !== null) {
-    clearTimeout(promptLangDetectTimer)
-    promptLangDetectTimer = null
+    clearTimeout(promptLangDetectTimer);
+    promptLangDetectTimer = null;
   }
-  const runToken = ++promptLangDetectToken
-  promptLangDetectTimer = setTimeout(() => {
-    promptLangDetectTimer = null
-    runPromptLangDetectAsync(runToken, { skipIfUnchanged: true })
-  }, PROMPT_LANG_DETECT_DEBOUNCE_MS)
+  const runToken = ++promptLangDetectToken;
+  promptLangDetectTimer = window.setTimeout(() => {
+    promptLangDetectTimer = null;
+    runPromptLangDetectAsync(runToken, { skipIfUnchanged: true });
+  }, PROMPT_LANG_DETECT_DEBOUNCE_MS);
 }
-
-let promptSuggestTimer = null
-let promptSuggestToken = 0
-let promptSuggestAbort = null
-let promptSuggestActive = -1
-let promptSuggestRows = []
-let promptSuggestOpen = false
-
+var promptSuggestTimer = null;
+var promptSuggestToken = 0;
+var promptSuggestAbort = null;
+var promptSuggestActive = -1;
+var promptSuggestRows = [];
+var promptSuggestOpen = false;
 function escapeSuggestHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
-
 function formatSuggestRowHtml(full, qLen) {
-  return `${escapeSuggestHtml(full.slice(0, qLen))}<mark>${escapeSuggestHtml(full.slice(qLen))}</mark>`
+  return `${escapeSuggestHtml(full.slice(0, qLen))}<mark>${escapeSuggestHtml(full.slice(qLen))}</mark>`;
 }
-
 function setPromptSuggestActive(next) {
-  if (!promptSuggestionsList) return
-  const items = promptSuggestionsList.querySelectorAll('.prompt-suggestions-item')
-  const n = items.length
-  if (n === 0) return
-  const idx = ((next % n) + n) % n
-  promptSuggestActive = idx
-  items.forEach((el, i) => el.classList.toggle('is-active', i === idx))
-  input.setAttribute('aria-activedescendant', `prompt-suggest-${idx}`)
+  if (!promptSuggestionsList) return;
+  const items = promptSuggestionsList.querySelectorAll(".prompt-suggestions-item");
+  const n = items.length;
+  if (n === 0) return;
+  const idx = (next % n + n) % n;
+  promptSuggestActive = idx;
+  items.forEach((el, i) => el.classList.toggle("is-active", i === idx));
+  input.setAttribute("aria-activedescendant", `prompt-suggest-${idx}`);
 }
-
 function closePromptSuggestions() {
-  promptSuggestOpen = false
-  promptSuggestActive = -1
-  promptSuggestRows = []
+  promptSuggestOpen = false;
+  promptSuggestActive = -1;
+  promptSuggestRows = [];
   if (promptSuggestions) {
-    promptSuggestions.classList.remove('is-open')
-    promptSuggestions.hidden = true
+    promptSuggestions.classList.remove("is-open");
+    promptSuggestions.hidden = true;
   }
-  if (promptSuggestionsList) promptSuggestionsList.innerHTML = ''
-  input.removeAttribute('aria-activedescendant')
+  if (promptSuggestionsList) promptSuggestionsList.innerHTML = "";
+  input.removeAttribute("aria-activedescendant");
 }
-
 function renderPromptSuggestions(rows, queryLen) {
-  if (!promptSuggestions || !promptSuggestionsList) return
+  if (!promptSuggestions || !promptSuggestionsList) return;
   if (rows.length === 0) {
-    closePromptSuggestions()
-    return
+    closePromptSuggestions();
+    return;
   }
-  promptSuggestRows = rows
-  promptSuggestOpen = true
-  promptSuggestions.hidden = false
-  promptSuggestionsList.innerHTML = ''
+  promptSuggestRows = rows;
+  promptSuggestOpen = true;
+  promptSuggestions.hidden = false;
+  promptSuggestionsList.innerHTML = "";
   rows.forEach((text, i) => {
-    const li = document.createElement('li')
-    li.className = 'prompt-suggestions-item'
-    li.setAttribute('role', 'option')
-    li.id = `prompt-suggest-${i}`
-    li.innerHTML = formatSuggestRowHtml(text, queryLen)
-    li.addEventListener('mousedown', (event) => {
-      event.preventDefault()
-      applyPromptSuggestion(text)
-    })
-    promptSuggestionsList.appendChild(li)
-  })
-  setPromptSuggestActive(0)
-  requestAnimationFrame(() => promptSuggestions.classList.add('is-open'))
+    const li = document.createElement("li");
+    li.className = "prompt-suggestions-item";
+    li.setAttribute("role", "option");
+    li.id = `prompt-suggest-${i}`;
+    li.innerHTML = formatSuggestRowHtml(text, queryLen);
+    li.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      applyPromptSuggestion(text);
+    });
+    promptSuggestionsList.appendChild(li);
+  });
+  setPromptSuggestActive(0);
+  requestAnimationFrame(() => promptSuggestions.classList.add("is-open"));
 }
-
 function applyPromptSuggestion(fullText) {
-  closePromptSuggestions()
-  input.value = fullText
-  hidePolicyViolation()
-  validatePrompt(false)
-  syncSamplePromptVisibility()
-  syncSubmitButtonState()
-  const prev = lastPromptTrimLen
-  const t = input.value.trim()
-  const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS
-  lastPromptTrimLen = t.length
-  syncPromptLanguageRowVisibility()
+  closePromptSuggestions();
+  input.value = fullText;
+  hidePolicyViolation();
+  validatePrompt(false);
+  syncSamplePromptVisibility();
+  syncSubmitButtonState();
+  const prev = lastPromptTrimLen;
+  const t = input.value.trim();
+  const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS;
+  lastPromptTrimLen = t.length;
+  syncPromptLanguageRowVisibility();
   if (crossed) {
     if (promptLangDetectTimer !== null) {
-      clearTimeout(promptLangDetectTimer)
-      promptLangDetectTimer = null
+      clearTimeout(promptLangDetectTimer);
+      promptLangDetectTimer = null;
     }
-    const runToken = ++promptLangDetectToken
-    requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }))
+    const runToken = ++promptLangDetectToken;
+    requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }));
   } else {
-    schedulePromptLanguageDetect()
+    schedulePromptLanguageDetect();
   }
-  input.focus()
+  input.focus();
 }
-
 async function fetchPromptSuggestionsFromApi(raw, runToken, signal) {
-  const q = raw.trim()
-  const qLen = q.length
+  const q = raw.trim();
+  const qLen = q.length;
   if (qLen < PROMPT_SUGGEST_MIN_CHARS) {
-    closePromptSuggestions()
-    return
+    closePromptSuggestions();
+    return;
   }
   if (document.activeElement !== input) {
-    closePromptSuggestions()
-    return
+    closePromptSuggestions();
+    return;
   }
   try {
-    const resp = await authFetch('/api/prompt-suggestions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const resp = await authFetch("/api/prompt-suggestions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ partial: q }),
-      signal,
-    })
-    if (runToken !== promptSuggestToken) return
+      signal
+    });
+    if (runToken !== promptSuggestToken) return;
     if (!resp.ok) {
-      closePromptSuggestions()
-      return
+      closePromptSuggestions();
+      return;
     }
-    const data = await resp.json()
-    if (runToken !== promptSuggestToken) return
-    const rows = Array.isArray(data.suggestions)
-      ? data.suggestions.filter((x) => typeof x === 'string').slice(0, PROMPT_SUGGEST_MAX_SHOW)
-      : []
-    renderPromptSuggestions(rows, qLen)
+    const data2 = await resp.json();
+    if (runToken !== promptSuggestToken) return;
+    const rows = Array.isArray(data2.suggestions) ? data2.suggestions.filter((x) => typeof x === "string").slice(0, PROMPT_SUGGEST_MAX_SHOW) : [];
+    renderPromptSuggestions(rows, qLen);
   } catch (err) {
-    if (err?.name === 'AbortError') return
-    if (runToken !== promptSuggestToken) return
-    closePromptSuggestions()
+    if (err?.name === "AbortError") return;
+    if (runToken !== promptSuggestToken) return;
+    closePromptSuggestions();
   }
 }
-
 function schedulePromptSuggestUpdate() {
   if (promptSuggestTimer !== null) {
-    clearTimeout(promptSuggestTimer)
-    promptSuggestTimer = null
+    clearTimeout(promptSuggestTimer);
+    promptSuggestTimer = null;
   }
   if (promptSuggestAbort) {
-    promptSuggestAbort.abort()
-    promptSuggestAbort = null
+    promptSuggestAbort.abort();
+    promptSuggestAbort = null;
   }
-  const runToken = ++promptSuggestToken
-  const ac = new AbortController()
-  promptSuggestAbort = ac
-  promptSuggestTimer = setTimeout(() => {
-    promptSuggestTimer = null
-    if (runToken !== promptSuggestToken) return
+  const runToken = ++promptSuggestToken;
+  const ac = new AbortController();
+  promptSuggestAbort = ac;
+  promptSuggestTimer = window.setTimeout(() => {
+    promptSuggestTimer = null;
+    if (runToken !== promptSuggestToken) return;
     if (document.activeElement !== input) {
-      closePromptSuggestions()
-      return
+      closePromptSuggestions();
+      return;
     }
-    const raw = input.value
-    const q = raw.trim()
+    const raw = input.value;
+    const q = raw.trim();
     if (q.length < PROMPT_SUGGEST_MIN_CHARS) {
-      closePromptSuggestions()
-      return
+      closePromptSuggestions();
+      return;
     }
-    void fetchPromptSuggestionsFromApi(raw, runToken, ac.signal)
-  }, PROMPT_SUGGEST_DEBOUNCE_MS)
+    void fetchPromptSuggestionsFromApi(raw, runToken, ac.signal);
+  }, PROMPT_SUGGEST_DEBOUNCE_MS);
 }
-
-let samplePromptIndex = 0
-let samplePromptLength = 0
-let samplePromptMode = 'typing'
-let samplePromptTimer = null
-
+var samplePromptIndex = 0;
+var samplePromptLength = 0;
+var samplePromptMode = "typing";
+var samplePromptTimer = null;
 function randomDelay(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 function renderSamplePrompt() {
-  promptPlaceholderText.textContent = SAMPLE_PROMPTS[samplePromptIndex].slice(0, samplePromptLength)
+  promptPlaceholderText.textContent = SAMPLE_PROMPTS[samplePromptIndex].slice(0, samplePromptLength);
 }
-
 function stopSamplePromptAnimation() {
   if (samplePromptTimer !== null) {
-    window.clearTimeout(samplePromptTimer)
-    samplePromptTimer = null
+    window.clearTimeout(samplePromptTimer);
+    samplePromptTimer = null;
   }
 }
-
 function scheduleSamplePromptStep(delay) {
-  stopSamplePromptAnimation()
-  samplePromptTimer = window.setTimeout(stepSamplePromptAnimation, delay)
+  stopSamplePromptAnimation();
+  samplePromptTimer = window.setTimeout(stepSamplePromptAnimation, delay);
 }
-
 function syncSamplePromptVisibility() {
-  const hasValue = input.value.length > 0
-  promptPlaceholder.classList.toggle('is-hidden', hasValue)
-
+  const hasValue = input.value.length > 0;
+  promptPlaceholder.classList.toggle("is-hidden", hasValue);
   if (hasValue) {
-    stopSamplePromptAnimation()
-    return
+    stopSamplePromptAnimation();
+    return;
   }
-
   if (samplePromptTimer === null) {
-    scheduleSamplePromptStep(samplePromptLength === 0 ? 320 : 80)
+    scheduleSamplePromptStep(samplePromptLength === 0 ? 320 : 80);
   }
 }
-
 function stepSamplePromptAnimation() {
-  samplePromptTimer = null
-
+  samplePromptTimer = null;
   if (input.value.length > 0) {
-    syncSamplePromptVisibility()
-    return
+    syncSamplePromptVisibility();
+    return;
   }
-
-  const currentPrompt = SAMPLE_PROMPTS[samplePromptIndex]
-
-  if (samplePromptMode === 'typing') {
-    samplePromptLength += 1
-    renderSamplePrompt()
-
+  const currentPrompt = SAMPLE_PROMPTS[samplePromptIndex];
+  if (samplePromptMode === "typing") {
+    samplePromptLength += 1;
+    renderSamplePrompt();
     if (samplePromptLength < currentPrompt.length) {
-      scheduleSamplePromptStep(randomDelay(16, 30))
-      return
+      scheduleSamplePromptStep(randomDelay(16, 30));
+      return;
     }
-
-    samplePromptMode = 'holding'
-    scheduleSamplePromptStep(1800)
-    return
+    samplePromptMode = "holding";
+    scheduleSamplePromptStep(1800);
+    return;
   }
-
-  if (samplePromptMode === 'holding') {
-    samplePromptMode = 'deleting'
-    scheduleSamplePromptStep(640)
-    return
+  if (samplePromptMode === "holding") {
+    samplePromptMode = "deleting";
+    scheduleSamplePromptStep(640);
+    return;
   }
-
-  samplePromptLength = Math.max(0, samplePromptLength - 1)
-  renderSamplePrompt()
-
+  samplePromptLength = Math.max(0, samplePromptLength - 1);
+  renderSamplePrompt();
   if (samplePromptLength > 0) {
-    scheduleSamplePromptStep(randomDelay(10, 18))
-    return
+    scheduleSamplePromptStep(randomDelay(10, 18));
+    return;
   }
-
-  samplePromptIndex = (samplePromptIndex + 1) % SAMPLE_PROMPTS.length
-  samplePromptMode = 'typing'
-  scheduleSamplePromptStep(260)
+  samplePromptIndex = (samplePromptIndex + 1) % SAMPLE_PROMPTS.length;
+  samplePromptMode = "typing";
+  scheduleSamplePromptStep(260);
 }
-
-const showPolicyViolation = (message) => {
-  if (!policyBlock) return
-  policyBlock.textContent = message || CONTENT_POLICY_CLIENT_MESSAGE
-  policyBlock.hidden = false
-  policyBlock.classList.add('is-visible')
-  policyBlock.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-}
-
-const hidePolicyViolation = () => {
-  if (!policyBlock) return
-  policyBlock.textContent = ''
-  policyBlock.hidden = true
-  policyBlock.classList.remove('is-visible')
-}
-
+var showPolicyViolation = (message) => {
+  if (!policyBlock) return;
+  policyBlock.textContent = message || CONTENT_POLICY_CLIENT_MESSAGE;
+  policyBlock.hidden = false;
+  policyBlock.classList.add("is-visible");
+  policyBlock.scrollIntoView({ block: "nearest", behavior: "smooth" });
+};
+var hidePolicyViolation = () => {
+  if (!policyBlock) return;
+  policyBlock.textContent = "";
+  policyBlock.hidden = true;
+  policyBlock.classList.remove("is-visible");
+};
 function validatePrompt(showError = false) {
-  const promptLength = input.value.trim().length
-
+  const promptLength = input.value.trim().length;
   if (showError && promptLength < MIN_PROMPT_LENGTH) {
-    input.setAttribute('aria-invalid', 'true')
-    return false
+    input.setAttribute("aria-invalid", "true");
+    return false;
   }
-
-  input.removeAttribute('aria-invalid')
-  return promptLength >= MIN_PROMPT_LENGTH
+  input.removeAttribute("aria-invalid");
+  return promptLength >= MIN_PROMPT_LENGTH;
 }
-
-let shareBonusClaimed = false
-
+var shareBonusClaimed = false;
 function hasShareBonus() {
-  return shareBonusClaimed
+  return shareBonusClaimed;
 }
-
 function getEffectiveLimit() {
-  return shareBonusClaimed ? GENERATION_LIMIT_WITH_BONUS : GENERATION_LIMIT
+  return shareBonusClaimed ? GENERATION_LIMIT_WITH_BONUS : GENERATION_LIMIT;
 }
-
 async function claimShareBonus() {
-  if (shareBonusClaimed) return
+  if (shareBonusClaimed) return;
   try {
-    const resp = await fetch('/api/share-bonus', { method: 'POST' })
-    if (resp.ok) shareBonusClaimed = true
+    const resp = await fetch("/api/share-bonus", { method: "POST" });
+    if (resp.ok) shareBonusClaimed = true;
   } catch {
-    /* ignore network errors */
   }
-  updateGenerationCounter()
-  syncSubmitButtonState()
+  updateGenerationCounter();
+  syncSubmitButtonState();
 }
-
 function isGenerationLimitReached() {
-  if (isLocalDevHost) return false
-  if (authResolved && currentUser) return false
-  if (!authResolved) return false
-  return getGenerationCount() >= getEffectiveLimit()
+  if (isLocalDevHost) return false;
+  if (authResolved && currentUser) return false;
+  if (!authResolved) return false;
+  return getGenerationCount() >= getEffectiveLimit();
 }
-
 function syncSubmitButtonState() {
-  if (!submitButton) return
-  submitButton.disabled =
-    submitButton.classList.contains('loading') ||
-    isGenerationLimitReached() ||
-    input.value.trim().length < MIN_PROMPT_LENGTH
+  if (!submitButton) return;
+  submitButton.disabled = submitButton.classList.contains("loading") || isGenerationLimitReached() || input.value.trim().length < MIN_PROMPT_LENGTH;
 }
-
 function getGenerationCount() {
-  return parseInt(localStorage.getItem('sf_generation_count') || '0', 10)
+  return parseInt(localStorage.getItem("sf_generation_count") || "0", 10);
 }
-
 function updateGenerationCounter() {
-  const shareBonusPanel = document.getElementById('share-bonus-panel')
+  const shareBonusPanel = getTypedElement("share-bonus-panel");
   const hideAll = () => {
-    generationCounter.style.display = 'none'
-    privateGenRow.style.display = 'none'
-    if (shareBonusPanel) shareBonusPanel.style.display = 'none'
-  }
+    generationCounter.style.display = "none";
+    privateGenRow.style.display = "none";
+    if (shareBonusPanel) shareBonusPanel.style.display = "none";
+  };
   if (isLocalDevHost || !authResolved || currentUser) {
-    hideAll()
-    syncSubmitButtonState()
-    return
+    hideAll();
+    syncSubmitButtonState();
+    return;
   }
-
-  const count = getGenerationCount()
+  const count = getGenerationCount();
   if (count === 0) {
-    hideAll()
-    syncSubmitButtonState()
-    return
+    hideAll();
+    syncSubmitButtonState();
+    return;
   }
-
-  const limit = getEffectiveLimit()
-  generationCounter.style.display = 'block'
-  privateGenRow.style.display = 'none'
-
+  const limit = getEffectiveLimit();
+  generationCounter.style.display = "block";
+  privateGenRow.style.display = "none";
   if (isGenerationLimitReached()) {
     if (!hasShareBonus()) {
-      // Show share-for-credit option
-      generationCounter.innerHTML = `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used`
-      generationCounter.classList.add('limit-reached')
+      generationCounter.innerHTML = `${GENERATION_LIMIT}/${GENERATION_LIMIT} free previews used`;
+      generationCounter.classList.add("limit-reached");
       if (shareBonusPanel) {
-        shareBonusPanel.style.display = 'flex'
-        initShareBonusPanel()
+        shareBonusPanel.style.display = "flex";
+        initShareBonusPanel();
       }
     } else {
-      // Bonus already used — only sign-up remains
-      generationCounter.innerHTML = `${limit}/${limit} free previews used — <a href="#" id="gen-signup-link" style="color:inherit;text-decoration:underline;">sign up instead</a>`
-      generationCounter.classList.add('limit-reached')
-      if (shareBonusPanel) shareBonusPanel.style.display = 'none'
-      document.getElementById('gen-signup-link')?.addEventListener('click', (e) => {
-        e.preventDefault()
-        openAuthOverlay()
-      })
+      generationCounter.innerHTML = `${limit}/${limit} free previews used \u2014 <a href="#" id="gen-signup-link" style="color:inherit;text-decoration:underline;">sign up instead</a>`;
+      generationCounter.classList.add("limit-reached");
+      if (shareBonusPanel) shareBonusPanel.style.display = "none";
+      getTypedElement("gen-signup-link")?.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          openAuthOverlay();
+        }
+      );
     }
   } else {
-    generationCounter.textContent = `${count} / ${limit} free previews used`
-    generationCounter.classList.remove('limit-reached')
-    if (shareBonusPanel) shareBonusPanel.style.display = 'none'
+    generationCounter.textContent = `${count} / ${limit} free previews used`;
+    generationCounter.classList.remove("limit-reached");
+    if (shareBonusPanel) shareBonusPanel.style.display = "none";
   }
-
-  syncSubmitButtonState()
+  syncSubmitButtonState();
 }
-
-let shareBonusPanelInitialized = false
+var shareBonusPanelInitialized = false;
 function initShareBonusPanel() {
-  if (shareBonusPanelInitialized) return
-  shareBonusPanelInitialized = true
-
-  const siteUrl = 'https://ship-fast.io'
+  if (shareBonusPanelInitialized) return;
+  shareBonusPanelInitialized = true;
+  const siteUrl = "https://ship-fast.io";
   const byLang = {
-    en: `I just built a site in minutes with Ship Fast — try it free: ${siteUrl}`,
-    hi: `मैंने Ship Fast से मिनटों में साइट बनाई — आप भी बनाएं: ${siteUrl}`,
-    ta: `Ship Fast மூலம் நிமிடங்களில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${siteUrl}`,
-    te: `Ship Fast తో నిమిషాల్లో సైట్ చేశాను — మీరూ ట్రై చేయండి: ${siteUrl}`,
-    bn: `Ship Fast দিয়ে মিনিটে সাইট বানিয়েছি — আপনিও চেষ্টা করুন: ${siteUrl}`,
-    mr: `Ship Fast ने मिनिटांत साइट बनवली — तुम्हीही बनवा: ${siteUrl}`,
-    kn: `Ship Fast ನಿಂದ ನಿಮಿಷಗಳಲ್ಲಿ ಸೈಟ್ ಮಾಡಿದೆ — ನೀವೂ ಮಾಡಿ: ${siteUrl}`,
-    ml: `Ship Fast ഉപയോഗിച്ച് മിനിറ്റുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${siteUrl}`,
-    pa: `Ship Fast ਨਾਲ ਮਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${siteUrl}`,
-    gu: `Ship Fast વડે મિનિટોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${siteUrl}`,
-  }
-  const langs = navigator.languages?.length ? navigator.languages : [navigator.language]
-  let locale = 'en'
+    en: `I just built a site in minutes with Ship Fast \u2014 try it free: ${siteUrl}`,
+    hi: `\u092E\u0948\u0902\u0928\u0947 Ship Fast \u0938\u0947 \u092E\u093F\u0928\u091F\u094B\u0902 \u092E\u0947\u0902 \u0938\u093E\u0907\u091F \u092C\u0928\u093E\u0908 \u2014 \u0906\u092A \u092D\u0940 \u092C\u0928\u093E\u090F\u0902: ${siteUrl}`,
+    ta: `Ship Fast \u0BAE\u0BC2\u0BB2\u0BAE\u0BCD \u0BA8\u0BBF\u0BAE\u0BBF\u0B9F\u0B99\u0BCD\u0B95\u0BB3\u0BBF\u0BB2\u0BCD \u0BA4\u0BB3\u0BAE\u0BCD \u0B89\u0BB0\u0BC1\u0BB5\u0BBE\u0B95\u0BCD\u0B95\u0BBF\u0BA9\u0BC7\u0BA9\u0BCD \u2014 \u0BA8\u0BC0\u0B99\u0BCD\u0B95\u0BB3\u0BC1\u0BAE\u0BCD \u0BAE\u0BC1\u0BAF\u0BB1\u0BCD\u0B9A\u0BBF\u0B95\u0BCD\u0B95\u0BB5\u0BC1\u0BAE\u0BCD: ${siteUrl}`,
+    te: `Ship Fast \u0C24\u0C4B \u0C28\u0C3F\u0C2E\u0C3F\u0C37\u0C3E\u0C32\u0C4D\u0C32\u0C4B \u0C38\u0C48\u0C1F\u0C4D \u0C1A\u0C47\u0C36\u0C3E\u0C28\u0C41 \u2014 \u0C2E\u0C40\u0C30\u0C42 \u0C1F\u0C4D\u0C30\u0C48 \u0C1A\u0C47\u0C2F\u0C02\u0C21\u0C3F: ${siteUrl}`,
+    bn: `Ship Fast \u09A6\u09BF\u09AF\u09BC\u09C7 \u09AE\u09BF\u09A8\u09BF\u099F\u09C7 \u09B8\u09BE\u0987\u099F \u09AC\u09BE\u09A8\u09BF\u09AF\u09BC\u09C7\u099B\u09BF \u2014 \u0986\u09AA\u09A8\u09BF\u0993 \u099A\u09C7\u09B7\u09CD\u099F\u09BE \u0995\u09B0\u09C1\u09A8: ${siteUrl}`,
+    mr: `Ship Fast \u0928\u0947 \u092E\u093F\u0928\u093F\u091F\u093E\u0902\u0924 \u0938\u093E\u0907\u091F \u092C\u0928\u0935\u0932\u0940 \u2014 \u0924\u0941\u092E\u094D\u0939\u0940\u0939\u0940 \u092C\u0928\u0935\u093E: ${siteUrl}`,
+    kn: `Ship Fast \u0CA8\u0CBF\u0C82\u0CA6 \u0CA8\u0CBF\u0CAE\u0CBF\u0CB7\u0C97\u0CB3\u0CB2\u0CCD\u0CB2\u0CBF \u0CB8\u0CC8\u0C9F\u0CCD \u0CAE\u0CBE\u0CA1\u0CBF\u0CA6\u0CC6 \u2014 \u0CA8\u0CC0\u0CB5\u0CC2 \u0CAE\u0CBE\u0CA1\u0CBF: ${siteUrl}`,
+    ml: `Ship Fast \u0D09\u0D2A\u0D2F\u0D4B\u0D17\u0D3F\u0D1A\u0D4D\u0D1A\u0D4D \u0D2E\u0D3F\u0D28\u0D3F\u0D31\u0D4D\u0D31\u0D41\u0D15\u0D33\u0D3F\u0D7D \u0D38\u0D48\u0D31\u0D4D\u0D31\u0D4D \u0D09\u0D23\u0D4D\u0D1F\u0D3E\u0D15\u0D4D\u0D15\u0D3F \u2014 \u0D28\u0D3F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D1A\u0D46\u0D2F\u0D4D\u0D2F\u0D42: ${siteUrl}`,
+    pa: `Ship Fast \u0A28\u0A3E\u0A32 \u0A2E\u0A3F\u0A70\u0A1F\u0A3E\u0A02 '\u0A1A \u0A38\u0A3E\u0A08\u0A1F \u0A2C\u0A23\u0A3E\u0A08 \u2014 \u0A24\u0A41\u0A38\u0A40\u0A02 \u0A35\u0A40 \u0A2C\u0A23\u0A3E\u0A13: ${siteUrl}`,
+    gu: `Ship Fast \u0AB5\u0AA1\u0AC7 \u0AAE\u0ABF\u0AA8\u0ABF\u0A9F\u0ACB\u0AAE\u0ABE\u0A82 \u0AB8\u0ABE\u0A87\u0A9F \u0AAC\u0AA8\u0ABE\u0AB5\u0AC0 \u2014 \u0AA4\u0AAE\u0AC7 \u0AAA\u0AA3 \u0AAC\u0AA8\u0ABE\u0AB5\u0ACB: ${siteUrl}`
+  };
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+  let locale = "en";
   for (const L of langs) {
-    const c = String(L || '')
-      .toLowerCase()
-      .split('-')[0]
-    if (c && c !== 'en' && byLang[c]) {
-      locale = c
-      break
+    const c = String(L || "").toLowerCase().split("-")[0];
+    if (c && c !== "en" && byLang[c]) {
+      locale = c;
+      break;
     }
   }
-  const msg = byLang[locale] || byLang.en
-  const encUrl = encodeURIComponent(siteUrl)
-  const encMsg = encodeURIComponent(msg)
-
+  const msg = byLang[locale] || byLang.en;
+  const encUrl = encodeURIComponent(siteUrl);
+  const encMsg = encodeURIComponent(msg);
   const targets = {
-    'bonus-share-wa': `https://api.whatsapp.com/send?text=${encMsg}`,
-    'bonus-share-fb': `https://www.facebook.com/sharer/sharer.php?u=${encUrl}`,
-    'bonus-share-tw': `https://twitter.com/intent/tweet?text=${encMsg}`,
-    'bonus-share-tg': `https://t.me/share/url?url=${encUrl}&text=${encMsg}`,
-    'bonus-share-li': `https://www.linkedin.com/sharing/share-offsite/?url=${encUrl}`,
-  }
+    "bonus-share-wa": `https://api.whatsapp.com/send?text=${encMsg}`,
+    "bonus-share-fb": `https://www.facebook.com/sharer/sharer.php?u=${encUrl}`,
+    "bonus-share-tw": `https://twitter.com/intent/tweet?text=${encMsg}`,
+    "bonus-share-tg": `https://t.me/share/url?url=${encUrl}&text=${encMsg}`,
+    "bonus-share-li": `https://www.linkedin.com/sharing/share-offsite/?url=${encUrl}`
+  };
   for (const [id, href] of Object.entries(targets)) {
-    const el = document.getElementById(id)
-    if (!el) continue
-    el.href = href
-    el.addEventListener('click', () => claimShareBonus())
+    const el = getTypedElement(id);
+    if (!el) continue;
+    el.href = href;
+    el.addEventListener("click", () => claimShareBonus());
   }
-
-  const nativeBtn = document.getElementById('bonus-share-native')
+  const nativeBtn = getTypedElement("bonus-share-native");
   if (nativeBtn) {
-    nativeBtn.hidden = typeof navigator.share !== 'function'
-    nativeBtn.addEventListener('click', () => {
-      claimShareBonus()
-      navigator.share({ title: 'Ship Fast', text: msg, url: siteUrl }).catch(() => {})
-    })
+    nativeBtn.hidden = typeof navigator.share !== "function";
+    nativeBtn.addEventListener("click", () => {
+      claimShareBonus();
+      navigator.share({ title: "Ship Fast", text: msg, url: siteUrl }).catch(() => {
+      });
+    });
   }
-
-  const signupLink = document.getElementById('share-bonus-signup-link')
+  const signupLink = getTypedElement("share-bonus-signup-link");
   if (signupLink) {
-    signupLink.addEventListener('click', (e) => {
-      e.preventDefault()
-      openAuthOverlay()
-    })
+    signupLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      openAuthOverlay();
+    });
   }
 }
-
 function openPrivateGenModal() {
-  privateGenCheckbox.checked = false
-  privateGenModal.classList.add('is-open')
-  privateGenModal.setAttribute('aria-hidden', 'false')
+  privateGenCheckbox.checked = false;
+  privateGenModal.classList.add("is-open");
+  privateGenModal.setAttribute("aria-hidden", "false");
 }
-
 function closePrivateGenModal() {
-  privateGenModal.classList.remove('is-open')
-  privateGenModal.setAttribute('aria-hidden', 'true')
+  privateGenModal.classList.remove("is-open");
+  privateGenModal.setAttribute("aria-hidden", "true");
 }
-
-privateGenCheckbox.addEventListener('change', () => {
-  if (privateGenCheckbox.checked) openPrivateGenModal()
-})
-
-document.getElementById('private-gen-modal-close').addEventListener('click', closePrivateGenModal)
-document
-  .getElementById('private-gen-modal-backdrop')
-  .addEventListener('click', closePrivateGenModal)
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && privateGenModal.classList.contains('is-open')) closePrivateGenModal()
-})
-
-syncPromptLanguageRowVisibility()
-updateGenerationCounter()
-renderSamplePrompt()
-syncSamplePromptVisibility()
-syncSubmitButtonState()
-
+privateGenCheckbox.addEventListener("change", () => {
+  if (privateGenCheckbox.checked) openPrivateGenModal();
+});
+getTypedElement("private-gen-modal-close")?.addEventListener(
+  "click",
+  closePrivateGenModal
+);
+getTypedElement("private-gen-modal-backdrop")?.addEventListener(
+  "click",
+  closePrivateGenModal
+);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && privateGenModal.classList.contains("is-open")) closePrivateGenModal();
+});
+syncPromptLanguageRowVisibility();
+updateGenerationCounter();
+renderSamplePrompt();
+syncSamplePromptVisibility();
+syncSubmitButtonState();
 if (isLocalDevHost) {
   document.addEventListener(
-    'keydown',
+    "keydown",
     (event) => {
-      if (!event.metaKey && !event.ctrlKey) return
-      if (!/^[1-9]$/.test(event.key)) return
-      const text = LOCAL_DEV_PROMPT_SHORTCUTS[Number(event.key) - 1]
-      if (!text) return
-      event.preventDefault()
-      event.stopPropagation()
-      input.value = text
-      validatePrompt(false)
-      syncSamplePromptVisibility()
-      syncSubmitButtonState()
-      lastPromptTrimLen = input.value.trim().length
-      syncPromptLanguageRowVisibility()
-      schedulePromptLanguageDetect()
-      input.focus()
+      if (!event.metaKey && !event.ctrlKey) return;
+      if (!/^[1-9]$/.test(event.key)) return;
+      const text = LOCAL_DEV_PROMPT_SHORTCUTS[Number(event.key) - 1];
+      if (!text) return;
+      event.preventDefault();
+      event.stopPropagation();
+      input.value = text;
+      validatePrompt(false);
+      syncSamplePromptVisibility();
+      syncSubmitButtonState();
+      lastPromptTrimLen = input.value.trim().length;
+      syncPromptLanguageRowVisibility();
+      schedulePromptLanguageDetect();
+      input.focus();
     },
-    true,
-  )
+    true
+  );
 }
-
-input.addEventListener('input', () => {
-  hidePolicyViolation()
-  validatePrompt(false)
-  syncSamplePromptVisibility()
-  syncSubmitButtonState()
-  const prev = lastPromptTrimLen
-  const t = input.value.trim()
-  const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS
-  lastPromptTrimLen = t.length
-  syncPromptLanguageRowVisibility()
+input.addEventListener("input", () => {
+  hidePolicyViolation();
+  validatePrompt(false);
+  syncSamplePromptVisibility();
+  syncSubmitButtonState();
+  const prev = lastPromptTrimLen;
+  const t = input.value.trim();
+  const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS;
+  lastPromptTrimLen = t.length;
+  syncPromptLanguageRowVisibility();
   if (crossed) {
     if (promptLangDetectTimer !== null) {
-      clearTimeout(promptLangDetectTimer)
-      promptLangDetectTimer = null
+      clearTimeout(promptLangDetectTimer);
+      promptLangDetectTimer = null;
     }
-    const runToken = ++promptLangDetectToken
-    requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }))
+    const runToken = ++promptLangDetectToken;
+    requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }));
   } else {
-    schedulePromptLanguageDetect()
+    schedulePromptLanguageDetect();
   }
-  schedulePromptSuggestUpdate()
-})
-
-input.addEventListener('blur', () => {
+  schedulePromptSuggestUpdate();
+});
+input.addEventListener("blur", () => {
   window.setTimeout(() => {
-    if (document.activeElement === input) return
-    closePromptSuggestions()
-  }, 120)
-})
-
-logoTagline?.addEventListener('animationend', (event) => {
-  if (event.animationName !== 'logo-tagline-scale-in') return
-  logoTagline.classList.remove('logo-tagline--in')
-  logoTagline.classList.add('logo-tagline--settled')
-})
-
-submitButton?.addEventListener('animationend', (event) => {
-  if (event.animationName !== 'submit-cta-wiggle') return
-  submitButton.classList.remove('submit-btn--cta-shake')
-})
-
-languageSelect?.addEventListener('change', () => {
-  if (languageSelect) savePreferredLanguage(languageSelect.value)
-  syncPreferredLanguageUi()
-})
-
-input.addEventListener('keydown', (event) => {
+    if (document.activeElement === input) return;
+    closePromptSuggestions();
+  }, 120);
+});
+logoTagline?.addEventListener("animationend", (event) => {
+  if (event.animationName !== "logo-tagline-scale-in") return;
+  logoTagline.classList.remove("logo-tagline--in");
+  logoTagline.classList.add("logo-tagline--settled");
+});
+submitButton?.addEventListener("animationend", (event) => {
+  if (event.animationName !== "submit-cta-wiggle") return;
+  submitButton.classList.remove("submit-btn--cta-shake");
+});
+languageSelect?.addEventListener("change", () => {
+  if (languageSelect) savePreferredLanguage(languageSelect.value);
+  syncPreferredLanguageUi();
+});
+input.addEventListener("keydown", (event) => {
   if (promptSuggestOpen && promptSuggestRows.length > 0) {
-    if (event.key === 'ArrowDown') {
-      event.preventDefault()
-      setPromptSuggestActive(promptSuggestActive + 1)
-      return
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setPromptSuggestActive(promptSuggestActive + 1);
+      return;
     }
-    if (event.key === 'ArrowUp') {
-      event.preventDefault()
-      setPromptSuggestActive(promptSuggestActive - 1)
-      return
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setPromptSuggestActive(promptSuggestActive - 1);
+      return;
     }
-    if (event.key === 'Escape') {
-      event.preventDefault()
-      closePromptSuggestions()
-      return
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closePromptSuggestions();
+      return;
     }
-    if (event.key === 'Tab' && !event.shiftKey) {
-      event.preventDefault()
-      applyPromptSuggestion(promptSuggestRows[promptSuggestActive])
-      return
+    if (event.key === "Tab" && !event.shiftKey) {
+      event.preventDefault();
+      applyPromptSuggestion(promptSuggestRows[promptSuggestActive]);
+      return;
     }
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-      applyPromptSuggestion(promptSuggestRows[promptSuggestActive])
-      return
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      applyPromptSuggestion(promptSuggestRows[promptSuggestActive]);
+      return;
     }
   }
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault()
-    form.requestSubmit()
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    form.requestSubmit();
   }
-})
-
-form.addEventListener('submit', async (event) => {
-  event.preventDefault()
-  if (!submitButton) return
+});
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!submitButton) return;
   if (!validatePrompt(true)) {
-    syncSubmitButtonState()
-    return
+    syncSubmitButtonState();
+    return;
   }
-  const prompt = input.value.trim()
+  const prompt = input.value.trim();
   if (!checkPromptContentPolicy(prompt).ok) {
-    showPolicyViolation(CONTENT_POLICY_CLIENT_MESSAGE)
-    syncSubmitButtonState()
-    return
+    showPolicyViolation(CONTENT_POLICY_CLIENT_MESSAGE);
+    syncSubmitButtonState();
+    return;
   }
-  const preferredLanguage = languageSelect?.value || 'en'
-  savePreferredLanguage(preferredLanguage)
-
+  const preferredLanguage = languageSelect?.value || "en";
+  savePreferredLanguage(preferredLanguage);
   if (isGenerationLimitReached()) {
-    openAuthOverlay()
-    return
+    openAuthOverlay();
+    return;
   }
-
-  submitButton.classList.add('loading')
-  syncSubmitButtonState()
-
-  const ref1 = document.getElementById('design-ref-url-1')?.value?.trim() || ''
-  const ref2 = document.getElementById('design-ref-url-2')?.value?.trim() || ''
-  const designReferenceUrls = [ref1, ref2].filter(Boolean)
-  const designReferenceNotes = document.getElementById('design-ref-notes')?.value?.trim() || ''
-
+  submitButton.classList.add("loading");
+  syncSubmitButtonState();
+  const ref1 = getTypedElement("design-ref-url-1")?.value?.trim() || "";
+  const ref2 = getTypedElement("design-ref-url-2")?.value?.trim() || "";
+  const designReferenceUrls = [ref1, ref2].filter(Boolean);
+  const designReferenceNotes = getTypedElement("design-ref-notes")?.value?.trim() || "";
   try {
-    const response = await authFetch('/api/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await authFetch("/api/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prompt,
         preferredLanguage,
-        ...(designReferenceUrls.length
-          ? {
-              designReferenceUrls,
-              ...(designReferenceNotes ? { designReferenceNotes } : {}),
-            }
-          : {}),
-      }),
-    })
-    const data = await response.json().catch(() => ({}))
-
-    if (data.id) {
-      if (!currentUser) saveAnonSession(data.id, prompt, data.anonOwnerSecret)
-      localStorage.setItem('sf_generation_count', String(getGenerationCount() + 1))
+        ...designReferenceUrls.length ? {
+          designReferenceUrls,
+          ...designReferenceNotes ? { designReferenceNotes } : {}
+        } : {}
+      })
+    });
+    const data2 = await response.json().catch(() => ({}));
+    if (data2.id) {
+      if (!currentUser) saveAnonSession(data2.id, prompt, data2.anonOwnerSecret);
+      localStorage.setItem("sf_generation_count", String(getGenerationCount() + 1));
       if (isMarketingHomePath()) {
-        openEmbeddedSession(data.id)
-        submitButton.classList.remove('loading')
-        syncSubmitButtonState()
-        return
+        openEmbeddedSession(data2.id);
+        submitButton.classList.remove("loading");
+        syncSubmitButtonState();
+        return;
       }
-      sessionStorage.setItem('sf_return_home', '1')
-      window.location.href = `/session/${data.id}`
-      return
+      sessionStorage.setItem("sf_return_home", "1");
+      window.location.href = `/session/${data2.id}`;
+      return;
     }
-
-    if (data.code === 'CONTENT_POLICY' || response.status === 422) {
-      showPolicyViolation(data.error || CONTENT_POLICY_CLIENT_MESSAGE)
+    if (data2.code === "CONTENT_POLICY" || response.status === 422) {
+      showPolicyViolation(data2.error || CONTENT_POLICY_CLIENT_MESSAGE);
     } else if (!currentUser && response.status === 429) {
-      if (data.shareBonusClaimed !== undefined) shareBonusClaimed = data.shareBonusClaimed
-      updateGenerationCounter()
+      if (data2.shareBonusClaimed !== void 0) shareBonusClaimed = data2.shareBonusClaimed;
+      updateGenerationCounter();
       if (shareBonusClaimed) {
-        openAuthOverlay()
+        openAuthOverlay();
       }
     } else {
-      alert(data.error || 'Failed to create session')
+      alert(data2.error || "Failed to create session");
     }
   } catch (error) {
-    alert(`Connection error: ${error.message}`)
+    alert(`Connection error: ${error.message}`);
   }
-
-  submitButton.classList.remove('loading')
-  syncSubmitButtonState()
-})
-
-const ANON_SESSIONS_KEY = 'sf_anon_sessions'
-
+  submitButton.classList.remove("loading");
+  syncSubmitButtonState();
+});
+var ANON_SESSIONS_KEY = "sf_anon_sessions";
 function invalidateAnonSessionEntriesCache() {
-  anonSessionEntriesCacheT = 0
-  anonSessionEntriesCacheV = null
+  anonSessionEntriesCacheT = 0;
+  anonSessionEntriesCacheV = null;
 }
-
 function saveAnonSession(id, prompt, ownerSecret) {
-  const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
-  const entry = { id, prompt }
-  if (ownerSecret) entry.secret = String(ownerSecret)
-  stored.unshift(entry)
-  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)))
-  invalidateAnonSessionEntriesCache()
+  const stored = JSON.parse(
+    localStorage.getItem(ANON_SESSIONS_KEY) || "[]"
+  );
+  const entry = { id, prompt };
+  if (ownerSecret) entry.secret = String(ownerSecret);
+  stored.unshift(entry);
+  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)));
+  invalidateAnonSessionEntriesCache();
 }
-
 function removeAnonSession(id) {
-  const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
-  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.filter((s) => s.id !== id)))
-  invalidateAnonSessionEntriesCache()
+  const stored = JSON.parse(
+    localStorage.getItem(ANON_SESSIONS_KEY) || "[]"
+  );
+  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.filter((s) => s.id !== id)));
+  invalidateAnonSessionEntriesCache();
 }
-
 function clearAnonSessions() {
-  localStorage.removeItem(ANON_SESSIONS_KEY)
-  invalidateAnonSessionEntriesCache()
+  localStorage.removeItem(ANON_SESSIONS_KEY);
+  invalidateAnonSessionEntriesCache();
 }
-
 function getAnonOwnerSecretForSession(sessionId) {
   try {
-    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
-    if (!Array.isArray(stored)) return ''
-    const hit = stored.find((s) => s && s.id === sessionId)
-    return hit?.secret ? String(hit.secret) : ''
+    const stored = JSON.parse(
+      localStorage.getItem(ANON_SESSIONS_KEY) || "[]"
+    );
+    if (!Array.isArray(stored)) return "";
+    const hit = stored.find((s) => s && s.id === sessionId);
+    return hit?.secret ? String(hit.secret) : "";
   } catch {
-    return ''
+    return "";
   }
 }
-
-let sessionItemPointerDown = null
-let sessionListNavTimer = null
-const SESSION_OPEN_DRAG_THRESHOLD_SQ = 64
-
-const selectionSpansSessionItem = (item) => {
-  const sel = window.getSelection()
-  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false
-  if (!sel.toString().trim()) return false
-  return item.contains(sel.anchorNode) && item.contains(sel.focusNode)
-}
-
-const openSessionFromList = (id) => {
-  sessionStorage.setItem(GALLERY_RESTORE_PAGE_KEY, String(publicGalleryPage))
-  sessionStorage.setItem(GALLERY_RESTORE_SOURCE_KEY, gallerySource)
+var sessionItemPointerDown = null;
+var sessionListNavTimer = null;
+var SESSION_OPEN_DRAG_THRESHOLD_SQ = 64;
+var selectionSpansSessionItem = (item) => {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
+  if (!sel.toString().trim()) return false;
+  return item.contains(sel.anchorNode) && item.contains(sel.focusNode);
+};
+var openSessionFromList = (id) => {
+  sessionStorage.setItem(GALLERY_RESTORE_PAGE_KEY, String(publicGalleryPage));
+  sessionStorage.setItem(GALLERY_RESTORE_SOURCE_KEY, gallerySource);
   if (isMarketingHomePath()) {
-    openEmbeddedSession(id)
-    return
+    openEmbeddedSession(id);
+    return;
   }
-  sessionStorage.setItem('sf_return_home', '1')
-  location.href = `/session/${id}`
-}
-
-const hideGalleryPagination = () => {
-  galleryMeta = null
-  if (sessionPagination) sessionPagination.hidden = true
-  if (sessionPageStatus) sessionPageStatus.textContent = ''
+  sessionStorage.setItem("sf_return_home", "1");
+  location.href = `/session/${id}`;
+};
+var hideGalleryPagination = () => {
+  galleryMeta = null;
+  if (sessionPagination) sessionPagination.hidden = true;
+  if (sessionPageStatus) sessionPageStatus.textContent = "";
   if (sessionPagePrev) {
-    sessionPagePrev.hidden = true
-    sessionPagePrev.disabled = true
+    sessionPagePrev.hidden = true;
+    sessionPagePrev.disabled = true;
   }
   if (sessionPageNext) {
-    sessionPageNext.hidden = true
-    sessionPageNext.disabled = true
+    sessionPageNext.hidden = true;
+    sessionPageNext.disabled = true;
   }
-  if (sessionPaginationActions) sessionPaginationActions.hidden = true
-}
-
-const updateGalleryPagination = (meta) => {
-  if (!sessionPagination || !sessionPagePrev || !sessionPageNext || !sessionPageStatus) return
+  if (sessionPaginationActions) sessionPaginationActions.hidden = true;
+};
+var updateGalleryPagination = (meta) => {
+  if (!sessionPagination || !sessionPagePrev || !sessionPageNext || !sessionPageStatus) return;
   if (!meta || meta.total === 0) {
-    sessionPagination.hidden = true
-    sessionPageStatus.textContent = ''
-    return
+    sessionPagination.hidden = true;
+    sessionPageStatus.textContent = "";
+    return;
   }
-  const showPrev = Boolean(meta.hasPrev)
-  const showNext = Boolean(meta.hasNext)
+  const showPrev = Boolean(meta.hasPrev);
+  const showNext = Boolean(meta.hasNext);
   if (!showPrev && !showNext) {
-    sessionPagination.hidden = true
-    sessionPageStatus.textContent = ''
-    sessionPagePrev.hidden = true
-    sessionPageNext.hidden = true
-    sessionPagePrev.disabled = true
-    sessionPageNext.disabled = true
-    if (sessionPaginationActions) sessionPaginationActions.hidden = true
-    return
+    sessionPagination.hidden = true;
+    sessionPageStatus.textContent = "";
+    sessionPagePrev.hidden = true;
+    sessionPageNext.hidden = true;
+    sessionPagePrev.disabled = true;
+    sessionPageNext.disabled = true;
+    if (sessionPaginationActions) sessionPaginationActions.hidden = true;
+    return;
   }
-  sessionPagination.hidden = false
-  if (sessionPaginationActions) sessionPaginationActions.hidden = false
-  const from = (meta.page - 1) * meta.limit + 1
-  const to = Math.min(meta.page * meta.limit, meta.total)
-  sessionPageStatus.textContent = `Page ${meta.page} of ${meta.totalPages} \u00B7 ${from}\u2013${to} of ${meta.total}`
-  sessionPagePrev.hidden = !showPrev
-  sessionPageNext.hidden = !showNext
-  sessionPagePrev.disabled = !showPrev
-  sessionPageNext.disabled = !showNext
-}
-
-sessionPagePrev?.addEventListener('click', async () => {
-  if (!galleryMeta?.hasPrev) return
-  const cur = Number(galleryMeta.page) || 1
-  const p = cur - 1
-  if (gallerySource === 'public') await loadRecentPublicSessions(p)
-  else if (gallerySource === 'user') {
-    userGalleryPage = p
-    await loadUserSessionsPage()
+  sessionPagination.hidden = false;
+  if (sessionPaginationActions) sessionPaginationActions.hidden = false;
+  const from = (meta.page - 1) * meta.limit + 1;
+  const to = Math.min(meta.page * meta.limit, meta.total);
+  sessionPageStatus.textContent = `Page ${meta.page} of ${meta.totalPages} \xB7 ${from}\u2013${to} of ${meta.total}`;
+  sessionPagePrev.hidden = !showPrev;
+  sessionPageNext.hidden = !showNext;
+  sessionPagePrev.disabled = !showPrev;
+  sessionPageNext.disabled = !showNext;
+};
+sessionPagePrev?.addEventListener("click", async () => {
+  if (!galleryMeta?.hasPrev) return;
+  const cur = Number(galleryMeta.page) || 1;
+  const p = cur - 1;
+  if (gallerySource === "public") await loadRecentPublicSessions(p);
+  else if (gallerySource === "user") {
+    userGalleryPage = p;
+    await loadUserSessionsPage();
   }
-})
-
-sessionPageNext?.addEventListener('click', async () => {
-  if (!galleryMeta?.hasNext) return
-  const cur = Number(galleryMeta.page) || 1
-  const p = cur + 1
-  if (gallerySource === 'public') await loadRecentPublicSessions(p)
-  else if (gallerySource === 'user') {
-    userGalleryPage = p
-    await loadUserSessionsPage()
+});
+sessionPageNext?.addEventListener("click", async () => {
+  if (!galleryMeta?.hasNext) return;
+  const cur = Number(galleryMeta.page) || 1;
+  const p = cur + 1;
+  if (gallerySource === "public") await loadRecentPublicSessions(p);
+  else if (gallerySource === "user") {
+    userGalleryPage = p;
+    await loadUserSessionsPage();
   }
-})
-
-document.getElementById('session-list')?.addEventListener('pointerdown', (event) => {
-  if (event.button !== 0) return
-  const item = event.target.closest('.session-item')
-  sessionItemPointerDown = item ? { id: item.dataset.id, x: event.clientX, y: event.clientY } : null
-})
-
-document.getElementById('session-list')?.addEventListener('click', (event) => {
-  window.clearTimeout(sessionListNavTimer)
-  sessionListNavTimer = null
-  const item = event.target.closest('.session-item')
-  if (!item) return
-  const id = item.dataset.id
-  if (!id) return
+});
+getTypedElement("session-list")?.addEventListener(
+  "pointerdown",
+  (event) => {
+    if (event.button !== 0) return;
+    const item = event.target?.closest(
+      ".session-item"
+    );
+    sessionItemPointerDown = item ? { id: item.dataset.id, x: event.clientX, y: event.clientY } : null;
+  }
+);
+getTypedElement("session-list")?.addEventListener("click", (event) => {
+  if (sessionListNavTimer !== null) window.clearTimeout(sessionListNavTimer);
+  sessionListNavTimer = null;
+  const item = event.target?.closest(".session-item");
+  if (!item) return;
+  const id = item.dataset.id;
+  if (!id) return;
   if (event.metaKey || event.ctrlKey || event.shiftKey) {
-    window.open(`/session/${id}`, '_blank', 'noopener,noreferrer')
-    return
+    window.open(`/session/${id}`, "_blank", "noopener,noreferrer");
+    return;
   }
-  if (event.target.closest('a[href]')) return
-  if (event.target.closest('button')) return
-  if (selectionSpansSessionItem(item)) return
-  if (
-    sessionItemPointerDown?.id === id &&
-    (event.clientX - sessionItemPointerDown.x) ** 2 +
-      (event.clientY - sessionItemPointerDown.y) ** 2 >
-      SESSION_OPEN_DRAG_THRESHOLD_SQ
-  ) {
-    return
+  if (event.target?.closest("a[href]")) return;
+  if (event.target?.closest("button")) return;
+  if (selectionSpansSessionItem(item)) return;
+  if (sessionItemPointerDown?.id === id && (event.clientX - sessionItemPointerDown.x) ** 2 + (event.clientY - sessionItemPointerDown.y) ** 2 > SESSION_OPEN_DRAG_THRESHOLD_SQ) {
+    return;
   }
-  if (event.target.closest('.session-info')) {
+  if (event.target?.closest(".session-info")) {
     sessionListNavTimer = window.setTimeout(() => {
-      sessionListNavTimer = null
-      const live = document.querySelector(`.session-item[data-id="${id}"]`)
-      if (!live) return
-      if (selectionSpansSessionItem(live)) return
-      openSessionFromList(id)
-    }, 320)
-    return
+      sessionListNavTimer = null;
+      const live = document.querySelector(`.session-item[data-id="${id}"]`);
+      if (!live) return;
+      if (selectionSpansSessionItem(live)) return;
+      openSessionFromList(id);
+    }, 320);
+    return;
   }
-  openSessionFromList(id)
-})
-
+  openSessionFromList(id);
+});
 function renderSessions(sessions) {
-  const section = document.getElementById('sessions-section')
-  const list = document.getElementById('session-list')
-
+  const section = getTypedElement("sessions-section");
+  const list = getTypedElement("session-list");
   if (sessions.length === 0) {
-    list.innerHTML = ''
-    section.style.display = 'none'
-    document.body.classList.remove('has-sessions')
-    list.classList.remove('single-col', 'two-col')
-    return
+    list.innerHTML = "";
+    section.style.display = "none";
+    document.body.classList.remove("has-sessions");
+    list.classList.remove("single-col", "two-col");
+    return;
   }
-
-  document.body.classList.add('has-sessions')
-
-  list.classList.remove('single-col', 'two-col')
-  if (sessions.length === 1) list.classList.add('single-col')
-  else if (sessions.length === 2) list.classList.add('two-col')
-
-  const placeholderSvg =
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>'
-
-  const eagerThumbnailCount = 6
-
-  list.innerHTML = sessions
-    .map(
-      (session, index) => `
+  document.body.classList.add("has-sessions");
+  list.classList.remove("single-col", "two-col");
+  if (sessions.length === 1) list.classList.add("single-col");
+  else if (sessions.length === 2) list.classList.add("two-col");
+  const placeholderSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
+  const eagerThumbnailCount = 6;
+  list.innerHTML = sessions.map(
+    (session, index) => `
         <li class="session-item" data-id="${session.id}">
           <div class="session-thumbnail">
-            ${
-              session.homepageReady
-                ? index < eagerThumbnailCount
-                  ? `<iframe src="/preview/${session.id}/" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                  : `<iframe data-src="/preview/${session.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                : `<div class="session-placeholder">${placeholderSvg}</div>`
-            }
+            ${session.homepageReady ? index < eagerThumbnailCount ? `<iframe src="/preview/${session.id}/" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>` : `<iframe data-src="/preview/${session.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>` : `<div class="session-placeholder">${placeholderSvg}</div>`}
             <div class="session-badges">
-              ${
-                session.elapsed
-                  ? `<span class="session-badge badge-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${session.elapsed}s</span>`
-                  : ''
-              }
-              ${
-                session.cost != null
-                  ? `<span class="session-badge badge-cost session-cost" style="display:none">$${session.cost.toFixed(4)}</span>`
-                  : ''
-              }
+              ${session.elapsed ? `<span class="session-badge badge-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${session.elapsed}s</span>` : ""}
+              ${session.cost != null ? `<span class="session-badge badge-cost session-cost" style="display:none">$${session.cost.toFixed(4)}</span>` : ""}
             </div>
           </div>
           <div class="session-info">
-            <span class="session-prompt">${session.prompt.replace(/</g, '&lt;')}</span>
+            <span class="session-prompt">${session.prompt.replace(/</g, "&lt;")}</span>
           </div>
         </li>
-      `,
-    )
-    .join('')
-
-  section.style.display = 'block'
-
+      `
+  ).join("");
+  section.style.display = "block";
   const scaleIframes = () => {
-    list.querySelectorAll('.session-thumbnail iframe').forEach((iframe) => {
-      const containerWidth = iframe.parentElement.offsetWidth
-      if (!containerWidth) return
-      const scale = containerWidth / 1280
-      iframe.style.transform = `scale(${scale})`
-    })
-  }
-
+    list.querySelectorAll(".session-thumbnail iframe").forEach((iframe) => {
+      const parent = iframe.parentElement;
+      const containerWidth = parent?.offsetWidth || 0;
+      if (!containerWidth) return;
+      const scale = containerWidth / 1280;
+      iframe.style.transform = `scale(${scale})`;
+    });
+  };
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      scaleIframes()
-    })
-  })
+      scaleIframes();
+    });
+  });
   if (!hasSessionResizeListener) {
-    window.addEventListener('resize', scaleIframes)
-    hasSessionResizeListener = true
+    window.addEventListener("resize", scaleIframes);
+    hasSessionResizeListener = true;
   }
-
-  const iframes = list.querySelectorAll('iframe[data-src]')
-  if (iframes.length > 0 && 'IntersectionObserver' in window) {
+  const iframes = list.querySelectorAll("iframe[data-src]");
+  if (iframes.length > 0 && "IntersectionObserver" in window) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const iframe = entry.target
-            iframe.src = iframe.dataset.src
-            iframe.addEventListener('load', scaleIframes, { once: true })
-            observer.unobserve(iframe)
-            requestAnimationFrame(scaleIframes)
+            const iframe = entry.target;
+            const src = iframe.dataset.src;
+            if (!src) return;
+            iframe.src = src;
+            iframe.addEventListener("load", scaleIframes, { once: true });
+            observer.unobserve(iframe);
+            requestAnimationFrame(scaleIframes);
           }
-        })
+        });
       },
-      { rootMargin: '200px' },
-    )
-    iframes.forEach((iframe) => observer.observe(iframe))
+      { rootMargin: "200px" }
+    );
+    iframes.forEach((iframe) => observer.observe(iframe));
   } else {
     iframes.forEach((iframe) => {
-      iframe.src = iframe.dataset.src
-      iframe.addEventListener('load', scaleIframes, { once: true })
-    })
-    requestAnimationFrame(scaleIframes)
+      const src = iframe.dataset.src;
+      if (!src) return;
+      iframe.src = src;
+      iframe.addEventListener("load", scaleIframes, { once: true });
+    });
+    requestAnimationFrame(scaleIframes);
   }
-
-  list.querySelectorAll('.session-thumbnail iframe[src]:not([data-src])').forEach((iframe) => {
-    iframe.addEventListener('load', scaleIframes, { once: true })
-  })
-
-  if (localStorage.getItem('sf_show_cost') === '1') {
-    list.querySelectorAll('.session-cost').forEach((element) => {
-      element.style.display = 'flex'
-    })
+  list.querySelectorAll(".session-thumbnail iframe[src]:not([data-src])").forEach((iframe) => {
+    iframe.addEventListener("load", scaleIframes, { once: true });
+  });
+  if (localStorage.getItem("sf_show_cost") === "1") {
+    list.querySelectorAll(".session-cost").forEach((element) => {
+      ;
+      element.style.display = "flex";
+    });
   }
 }
-
 async function fetchPublicGalleryPageFromNetwork(page) {
-  const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
-  if (!r.ok) throw new Error('recent-sessions')
-  const data = await r.json()
-  return { ok: true, items: Array.isArray(data.items) ? data.items : [], data }
+  const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`);
+  if (!r.ok) throw new Error("recent-sessions");
+  const data2 = await r.json();
+  return { ok: true, items: Array.isArray(data2.items) ? data2.items : [], data: data2 };
 }
-
 async function fetchPublicGalleryPage(page) {
-  const qc = window.__sfQueryClient
+  const qc = window.__sfQueryClient;
   if (qc) {
     try {
       return await qc.fetchQuery({
-        queryKey: ['sf-public-gallery', page, GALLERY_PAGE_SIZE],
+        queryKey: ["sf-public-gallery", page, GALLERY_PAGE_SIZE],
         queryFn: () => fetchPublicGalleryPageFromNetwork(page),
-        staleTime: SF_PUBLIC_GALLERY_STALE_MS,
-      })
+        staleTime: SF_PUBLIC_GALLERY_STALE_MS
+      });
     } catch {
-      return { ok: false, items: [], data: null }
+      return { ok: false, items: [], data: null };
     }
   }
   try {
-    return await fetchPublicGalleryPageFromNetwork(page)
+    return await fetchPublicGalleryPageFromNetwork(page);
   } catch {
-    return { ok: false, items: [], data: null }
+    return { ok: false, items: [], data: null };
   }
 }
-
 async function loadAnonymousSessionEntries() {
-  const now = Date.now()
+  const now = Date.now();
   if (anonSessionEntriesCacheV && now - anonSessionEntriesCacheT < ANON_SESSION_ENTRIES_TTL_MS) {
-    return anonSessionEntriesCacheV
+    return anonSessionEntriesCacheV;
   }
   try {
-    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || "[]");
     if (stored.length === 0) {
-      anonSessionEntriesCacheT = now
-      anonSessionEntriesCacheV = []
-      return []
+      anonSessionEntriesCacheT = now;
+      anonSessionEntriesCacheV = [];
+      return [];
     }
-
     const results = await Promise.all(
       stored.map(async ({ id, prompt }) => {
         try {
-          const res = await fetch(`/api/sessions/${id}`)
-          if (!res.ok) return null
-          const data = await res.json()
+          const res = await fetch(`/api/sessions/${id}`);
+          if (!res.ok) return null;
+          const data2 = await res.json();
           return {
-            id: data.id,
-            prompt: data.prompt || prompt,
-            homepageReady: data.homepageReady,
-            elapsed: data.elapsed,
-            cost: data.cost,
-          }
+            id: data2.id,
+            prompt: data2.prompt || prompt,
+            homepageReady: data2.homepageReady,
+            elapsed: data2.elapsed,
+            cost: data2.cost
+          };
         } catch {
-          return { id, prompt, homepageReady: false, elapsed: null, cost: null }
+          return { id, prompt, homepageReady: false, elapsed: null, cost: null };
         }
-      }),
-    )
-
-    const valid = results.filter(Boolean)
-    const validIds = new Set(valid.map((s) => s.id))
-    const pruned = stored.filter((s) => validIds.has(s.id))
+      })
+    );
+    const valid = results.filter((x) => Boolean(x));
+    const validIds = new Set(valid.map((s) => s.id));
+    const pruned = stored.filter((s) => validIds.has(s.id));
     if (pruned.length !== stored.length) {
-      localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(pruned))
+      localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(pruned));
     }
-    anonSessionEntriesCacheT = Date.now()
-    anonSessionEntriesCacheV = valid
-    return valid
+    anonSessionEntriesCacheT = Date.now();
+    anonSessionEntriesCacheV = valid;
+    return valid;
   } catch {
-    return []
+    return [];
   }
 }
-
 async function loadRecentPublicSessions(page = 1) {
-  gallerySource = 'public'
-  publicGalleryPage = page
+  gallerySource = "public";
+  publicGalleryPage = page;
   try {
-    const [anonExtras, { ok, items, data }] = await Promise.all([
+    const [anonExtras, { ok, items, data: data2 }] = await Promise.all([
       page === 1 ? loadAnonymousSessionEntries() : Promise.resolve([]),
-      fetchPublicGalleryPage(page),
-    ])
+      fetchPublicGalleryPage(page)
+    ]);
     if (!ok) {
-      renderSessions([])
-      hideGalleryPagination()
-      return
+      renderSessions([]);
+      hideGalleryPagination();
+      return;
     }
-    galleryMeta = data
-    const ids = new Set(items.map((s) => s.id))
-    const merged = page === 1 ? [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items] : items
+    galleryMeta = data2;
+    const ids = new Set(items.map((s) => s.id));
+    const merged = page === 1 ? [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items] : items;
     if (merged.length === 0) {
-      renderSessions([])
-      hideGalleryPagination()
-      return
+      renderSessions([]);
+      hideGalleryPagination();
+      return;
     }
-    renderSessions(merged)
-    updateGalleryPagination(data)
+    renderSessions(merged);
+    updateGalleryPagination(data2);
   } catch {
-    renderSessions([])
-    hideGalleryPagination()
+    renderSessions([]);
+    hideGalleryPagination();
   }
 }
-
 async function loadUserSessionsPage() {
-  gallerySource = 'user'
+  gallerySource = "user";
   try {
     const response = await authFetch(
-      `/api/sessions?page=${userGalleryPage}&limit=${GALLERY_PAGE_SIZE}`,
-    )
-    if (!response.ok) return false
-    const raw = await response.json()
-    if (!raw.items || !Array.isArray(raw.items)) return false
-    galleryMeta = raw
-    renderSessions(raw.items)
-    updateGalleryPagination(raw)
-    return true
+      `/api/sessions?page=${userGalleryPage}&limit=${GALLERY_PAGE_SIZE}`
+    );
+    if (!response.ok) return false;
+    const raw = await response.json();
+    if (!raw.items || !Array.isArray(raw.items)) return false;
+    galleryMeta = raw;
+    renderSessions(raw.items);
+    updateGalleryPagination(raw);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
-
 async function loadSessions() {
-  const { page, source } = consumeGalleryRestore()
-  if (source === 'user' && currentUser) {
-    gallerySource = 'user'
-    userGalleryPage = page
-    publicGalleryPage = 1
-    await loadUserSessionsPage()
-    return
+  const { page, source } = consumeGalleryRestore();
+  if (source === "user" && currentUser) {
+    gallerySource = "user";
+    userGalleryPage = page;
+    publicGalleryPage = 1;
+    await loadUserSessionsPage();
+    return;
   }
-  if (source === 'public' && page > 1) {
-    gallerySource = 'public'
-    publicGalleryPage = page
-    userGalleryPage = 1
-    await loadRecentPublicSessions(page)
-    return
+  if (source === "public" && page > 1) {
+    gallerySource = "public";
+    publicGalleryPage = page;
+    userGalleryPage = 1;
+    await loadRecentPublicSessions(page);
+    return;
   }
-  userGalleryPage = 1
-  publicGalleryPage = 1
-  gallerySource = 'public'
-  await loadRecentPublicSessions(1)
+  userGalleryPage = 1;
+  publicGalleryPage = 1;
+  gallerySource = "public";
+  await loadRecentPublicSessions(1);
 }
-
 async function hydrateAnonymousOrPublicGallery() {
-  const { page, source } = consumeGalleryRestore()
-  if (source === 'public' && page > 1) {
-    gallerySource = 'public'
-    publicGalleryPage = page
-    await loadRecentPublicSessions(page)
-    return
+  const { page, source } = consumeGalleryRestore();
+  if (source === "public" && page > 1) {
+    gallerySource = "public";
+    publicGalleryPage = page;
+    await loadRecentPublicSessions(page);
+    return;
   }
-  if (source === 'user' && currentUser) {
-    gallerySource = 'user'
-    userGalleryPage = page
-    await loadUserSessionsPage()
-    return
+  if (source === "user" && currentUser) {
+    gallerySource = "user";
+    userGalleryPage = page;
+    await loadUserSessionsPage();
+    return;
   }
-  publicGalleryPage = 1
-  gallerySource = 'public'
+  publicGalleryPage = 1;
+  gallerySource = "public";
   try {
-    const [{ ok, items, data }, anonExtras] = await Promise.all([
+    const [{ ok, items, data: data2 }, anonExtras] = await Promise.all([
       fetchPublicGalleryPage(1),
-      loadAnonymousSessionEntries(),
-    ])
+      loadAnonymousSessionEntries()
+    ]);
     if (!ok) {
       if (anonExtras.length === 0) {
-        renderSessions([])
-        hideGalleryPagination()
-        return
+        renderSessions([]);
+        hideGalleryPagination();
+        return;
       }
-      renderSessions(anonExtras)
-      hideGalleryPagination()
-      return
+      renderSessions(anonExtras);
+      hideGalleryPagination();
+      return;
     }
-    const ids = new Set(items.map((s) => s.id))
-    const merged = [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items]
-    galleryMeta = data
+    const ids = new Set(items.map((s) => s.id));
+    const merged = [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items];
+    galleryMeta = data2;
     if (merged.length === 0) {
-      renderSessions([])
-      hideGalleryPagination()
-      return
+      renderSessions([]);
+      hideGalleryPagination();
+      return;
     }
-    renderSessions(merged)
-    updateGalleryPagination(data)
+    renderSessions(merged);
+    updateGalleryPagination(data2);
   } catch {
-    renderSessions([])
-    hideGalleryPagination()
+    renderSessions([]);
+    hideGalleryPagination();
   }
 }
-
-const reloadHomeGalleryIfReady = () => {
-  if (!authResolved) return
-  if (currentUser) void loadSessions()
-  else void hydrateAnonymousOrPublicGallery()
-}
-
+var reloadHomeGalleryIfReady = () => {
+  if (!authResolved) return;
+  if (currentUser) void loadSessions();
+  else void hydrateAnonymousOrPublicGallery();
+};
 function activeElementIsTextEntry() {
-  const tagName = document.activeElement?.tagName
-  return tagName === 'TEXTAREA' || tagName === 'INPUT'
+  const tagName = document.activeElement?.tagName;
+  return tagName === "TEXTAREA" || tagName === "INPUT";
 }
-
-const galleryDeleteTargetId = () =>
-  document.querySelector('.session-item:hover')?.dataset?.id || null
-
-document.addEventListener('keydown', async (event) => {
-  if (event.repeat) return
-  if (event.code !== 'KeyD' && event.code !== 'PageDown') return
-  const id = galleryDeleteTargetId()
-  if (!id) return
-  if (activeElementIsTextEntry()) event.preventDefault()
-  if (event.code === 'PageDown') event.preventDefault()
-  const card = document.querySelector(`.session-item[data-id="${id}"]`)
-  if (card) card.style.opacity = '0.3'
-
+var galleryDeleteTargetId = () => document.querySelector(".session-item:hover")?.dataset?.id || null;
+document.addEventListener("keydown", async (event) => {
+  if (event.repeat) return;
+  if (event.code !== "KeyD" && event.code !== "PageDown") return;
+  const id = galleryDeleteTargetId();
+  if (!id) return;
+  if (activeElementIsTextEntry()) event.preventDefault();
+  if (event.code === "PageDown") event.preventDefault();
+  const card = document.querySelector(
+    `.session-item[data-id="${id}"]`
+  );
+  if (card) card.style.opacity = "0.3";
   if (currentUser) {
-    const r = await authFetch(`/api/sessions/${id}`, { method: 'DELETE' })
+    const r = await authFetch(`/api/sessions/${id}`, { method: "DELETE" });
     if (!r.ok) {
-      if (card) card.style.opacity = ''
-      return
+      if (card) card.style.opacity = "";
+      return;
     }
   } else {
-    const secret = getAnonOwnerSecretForSession(id)
+    const secret = getAnonOwnerSecretForSession(id);
     const r = await fetch(`/api/sessions/${id}`, {
-      method: 'DELETE',
-      headers: secret ? { 'x-ship-fast-anon-owner': secret } : {},
-    })
+      method: "DELETE",
+      headers: secret ? { "x-ship-fast-anon-owner": secret } : {}
+    });
     if (!r.ok) {
-      if (card) card.style.opacity = ''
-      return
+      if (card) card.style.opacity = "";
+      return;
     }
-    removeAnonSession(id)
+    removeAnonSession(id);
   }
-  if (card) card.remove()
-
-  const remaining = document.querySelectorAll('.session-item')
+  if (card) card.remove();
+  const remaining = document.querySelectorAll(".session-item");
   if (remaining.length === 0) {
-    document.getElementById('sessions-section').style.display = 'none'
-    document.body.classList.remove('has-sessions')
-    return
+    getTypedElement("sessions-section").style.display = "none";
+    document.body.classList.remove("has-sessions");
+    return;
   }
-
-  const list = document.getElementById('session-list')
-  list.classList.remove('single-col', 'two-col')
-  if (remaining.length === 1) list.classList.add('single-col')
-  else if (remaining.length === 2) list.classList.add('two-col')
-})
-
-document.addEventListener('keydown', (event) => {
-  if (event.key !== 'p' || activeElementIsTextEntry()) return
-  const visible = localStorage.getItem('sf_show_cost') === '1'
-  localStorage.setItem('sf_show_cost', visible ? '0' : '1')
-  document.querySelectorAll('.session-cost').forEach((element) => {
-    element.style.display = visible ? 'none' : 'flex'
-  })
-})
-
-let deletePresses = []
-document.addEventListener('keydown', async (event) => {
-  if (event.code !== 'KeyD' || activeElementIsTextEntry()) return
-  const now = Date.now()
-  deletePresses.push(now)
-  deletePresses = deletePresses.filter((timestamp) => now - timestamp < 1500)
-
-  if (deletePresses.length < 5) return
-
-  deletePresses = []
-  document.querySelectorAll('.session-item').forEach((card) => {
-    card.style.opacity = '0.3'
-  })
-
+  const list = document.getElementById("session-list");
+  list.classList.remove("single-col", "two-col");
+  if (remaining.length === 1) list.classList.add("single-col");
+  else if (remaining.length === 2) list.classList.add("two-col");
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "p" || activeElementIsTextEntry()) return;
+  const visible = localStorage.getItem("sf_show_cost") === "1";
+  localStorage.setItem("sf_show_cost", visible ? "0" : "1");
+  document.querySelectorAll(".session-cost").forEach((element) => {
+    element.style.display = visible ? "none" : "flex";
+  });
+});
+var deletePresses = [];
+document.addEventListener("keydown", async (event) => {
+  if (event.code !== "KeyD" || activeElementIsTextEntry()) return;
+  const now = Date.now();
+  deletePresses.push(now);
+  deletePresses = deletePresses.filter((timestamp) => now - timestamp < 1500);
+  if (deletePresses.length < 5) return;
+  deletePresses = [];
+  document.querySelectorAll(".session-item").forEach((card) => {
+    ;
+    card.style.opacity = "0.3";
+  });
   if (currentUser) {
-    const r = await authFetch('/api/sessions', { method: 'DELETE' })
+    const r = await authFetch("/api/sessions", { method: "DELETE" });
     if (!r.ok) {
-      document.querySelectorAll('.session-item').forEach((c) => {
-        c.style.opacity = ''
-      })
-      return
+      document.querySelectorAll(".session-item").forEach((c) => {
+        ;
+        c.style.opacity = "";
+      });
+      return;
     }
   } else {
     try {
-      const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+      const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || "[]");
       if (Array.isArray(stored)) {
         await Promise.all(
           stored.map((s) => {
-            if (!s?.id || !s?.secret) return Promise.resolve()
+            if (!s?.id || !s?.secret) return Promise.resolve();
             return fetch(`/api/sessions/${s.id}`, {
-              method: 'DELETE',
-              headers: { 'x-ship-fast-anon-owner': String(s.secret) },
-            })
-          }),
-        )
+              method: "DELETE",
+              headers: { "x-ship-fast-anon-owner": String(s.secret) }
+            });
+          })
+        );
       }
     } catch {
-      void 0
     }
-    clearAnonSessions()
+    clearAnonSessions();
   }
-  document.getElementById('session-list').innerHTML = ''
-  document.getElementById('sessions-section').style.display = 'none'
-  document.body.classList.remove('has-sessions')
-})
-
-const stitchGrid = document.getElementById('stitch-grid')
-const stitchGridLit = document.getElementById('stitch-grid-lit')
-const prefersReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
+  getTypedElement("session-list").innerHTML = "";
+  getTypedElement("sessions-section").style.display = "none";
+  document.body.classList.remove("has-sessions");
+});
+var stitchGrid = getTypedElement("stitch-grid");
+var stitchGridLit = getTypedElement("stitch-grid-lit");
+var prefersReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 if (!prefersReduceMotion && stitchGrid && stitchGridLit) {
-  let glowState = null
-  let glowRaf = 0
-
+  let glowState = null;
+  let glowRaf = 0;
   const clearGlow = () => {
-    stitchGridLit.style.maskImage = 'linear-gradient(transparent, transparent)'
-    stitchGridLit.style.webkitMaskImage = 'linear-gradient(transparent, transparent)'
-    stitchGridLit.style.opacity = '0'
-  }
-
+    stitchGridLit.style.maskImage = "linear-gradient(transparent, transparent)";
+    stitchGridLit.style.webkitMaskImage = "linear-gradient(transparent, transparent)";
+    stitchGridLit.style.opacity = "0";
+  };
   const paintGlow = () => {
     if (!glowState || glowState.alpha <= 0.01) {
-      clearGlow()
-      return
+      clearGlow();
+      return;
     }
-    const alpha = Math.min(glowState.alpha, 1)
-    const radius = getComputedStyle(document.documentElement)
-      .getPropertyValue('--stitch-glow-radius')
-      .trim()
-    const mask = `radial-gradient(circle ${radius} at ${glowState.x}px ${glowState.y}px, rgba(0,0,0,${alpha}) 0%, rgba(0,0,0,${alpha * 0.8}) 25%, rgba(0,0,0,${alpha * 0.4}) 55%, transparent 100%)`
-    stitchGridLit.style.opacity = '1'
-    stitchGridLit.style.maskImage = mask
-    stitchGridLit.style.webkitMaskImage = mask
-  }
-
+    const alpha = Math.min(glowState.alpha, 1);
+    const radius = getComputedStyle(document.documentElement).getPropertyValue("--stitch-glow-radius").trim();
+    const mask = `radial-gradient(circle ${radius} at ${glowState.x}px ${glowState.y}px, rgba(0,0,0,${alpha}) 0%, rgba(0,0,0,${alpha * 0.8}) 25%, rgba(0,0,0,${alpha * 0.4}) 55%, transparent 100%)`;
+    stitchGridLit.style.opacity = "1";
+    stitchGridLit.style.maskImage = mask;
+    stitchGridLit.style.webkitMaskImage = mask;
+  };
   const fadeGlow = () => {
     if (!glowState) {
-      glowRaf = 0
-      return
+      glowRaf = 0;
+      return;
     }
     const fadeMs = Number(
-      getComputedStyle(document.documentElement).getPropertyValue('--stitch-glow-fade-ms').trim(),
-    )
-    const elapsed = performance.now() - glowState.lastMoveTime
-    glowState.alpha = 1 - Math.min(elapsed / fadeMs, 1)
-    paintGlow()
+      getComputedStyle(document.documentElement).getPropertyValue("--stitch-glow-fade-ms").trim()
+    );
+    const elapsed = performance.now() - glowState.lastMoveTime;
+    glowState.alpha = 1 - Math.min(elapsed / fadeMs, 1);
+    paintGlow();
     if (glowState.alpha > 0.01) {
-      glowRaf = requestAnimationFrame(fadeGlow)
-      return
+      glowRaf = requestAnimationFrame(fadeGlow);
+      return;
     }
-    glowState = null
-    glowRaf = 0
-    clearGlow()
-  }
-
+    glowState = null;
+    glowRaf = 0;
+    clearGlow();
+  };
   const queueFade = () => {
-    if (!glowRaf) glowRaf = requestAnimationFrame(fadeGlow)
-  }
-
-  window.addEventListener('mousemove', (event) => {
-    const rect = stitchGrid.getBoundingClientRect()
-    if (
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom
-    )
-      return
+    if (!glowRaf) glowRaf = requestAnimationFrame(fadeGlow);
+  };
+  window.addEventListener("mousemove", (event) => {
+    const rect = stitchGrid.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)
+      return;
     glowState = {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top,
       alpha: 1,
-      lastMoveTime: performance.now(),
-    }
-    queueFade()
-  })
+      lastMoveTime: performance.now()
+    };
+    queueFade();
+  });
 }
-
-const designRefToggle = document.getElementById('design-ref-toggle')
-const designRefPanel = document.getElementById('design-ref-panel')
-const designRefSearch = document.getElementById('design-ref-search')
-const designRefPreview = document.getElementById('design-ref-preview')
-const designRefPreviewFavicon = document.getElementById('design-ref-preview-favicon')
-const designRefPreviewTitle = document.getElementById('design-ref-preview-title')
-const designRefPreviewUrl = document.getElementById('design-ref-preview-url')
-const designRefPreviewRemove = document.getElementById('design-ref-preview-remove')
-const designRefUrl1 = document.getElementById('design-ref-url-1')
-
-const SITE_SEARCH_DB = [
-  { k: 'stripe', u: 'https://stripe.com', t: 'Stripe' },
-  { k: 'linear', u: 'https://linear.app', t: 'Linear' },
-  { k: 'vercel', u: 'https://vercel.com', t: 'Vercel' },
-  { k: 'notion', u: 'https://notion.so', t: 'Notion' },
-  { k: 'figma', u: 'https://figma.com', t: 'Figma' },
-  { k: 'github', u: 'https://github.com', t: 'GitHub' },
-  { k: 'slack', u: 'https://slack.com', t: 'Slack' },
-  { k: 'discord', u: 'https://discord.com', t: 'Discord' },
-  { k: 'spotify', u: 'https://spotify.com', t: 'Spotify' },
-  { k: 'airbnb', u: 'https://airbnb.com', t: 'Airbnb' },
-  { k: 'shopify', u: 'https://shopify.com', t: 'Shopify' },
-  { k: 'apple', u: 'https://apple.com', t: 'Apple' },
-  { k: 'tesla', u: 'https://tesla.com', t: 'Tesla' },
-  { k: 'netflix', u: 'https://netflix.com', t: 'Netflix' },
-  { k: 'dribbble', u: 'https://dribbble.com', t: 'Dribbble' },
-  { k: 'behance', u: 'https://behance.net', t: 'Behance' },
-  { k: 'twitch', u: 'https://twitch.tv', t: 'Twitch' },
-  { k: 'supabase', u: 'https://supabase.com', t: 'Supabase' },
-  { k: 'tailwind', u: 'https://tailwindcss.com', t: 'Tailwind CSS' },
-  { k: 'nextjs', u: 'https://nextjs.org', t: 'Next.js' },
-  { k: 'next', u: 'https://nextjs.org', t: 'Next.js' },
-  { k: 'framer', u: 'https://framer.com', t: 'Framer' },
-  { k: 'raycast', u: 'https://raycast.com', t: 'Raycast' },
-  { k: 'cal', u: 'https://cal.com', t: 'Cal.com' },
-  { k: 'resend', u: 'https://resend.com', t: 'Resend' },
-  { k: 'openai', u: 'https://openai.com', t: 'OpenAI' },
-  { k: 'anthropic', u: 'https://anthropic.com', t: 'Anthropic' },
-  { k: 'midjourney', u: 'https://midjourney.com', t: 'Midjourney' },
-  { k: 'uber', u: 'https://uber.com', t: 'Uber' },
-  { k: 'google', u: 'https://google.com', t: 'Google' },
-  { k: 'twitter', u: 'https://x.com', t: 'X (Twitter)' },
-  { k: 'instagram', u: 'https://instagram.com', t: 'Instagram' },
-  { k: 'youtube', u: 'https://youtube.com', t: 'YouTube' },
-  { k: 'amazon', u: 'https://amazon.com', t: 'Amazon' },
-  { k: 'dropbox', u: 'https://dropbox.com', t: 'Dropbox' },
-  { k: 'intercom', u: 'https://intercom.com', t: 'Intercom' },
-  { k: 'loom', u: 'https://loom.com', t: 'Loom' },
-  { k: 'arc', u: 'https://arc.net', t: 'Arc Browser' },
-  { k: 'revolut', u: 'https://revolut.com', t: 'Revolut' },
-  { k: 'monzo', u: 'https://monzo.com', t: 'Monzo' },
-  { k: 'wise', u: 'https://wise.com', t: 'Wise' },
-]
-
-const setDesignRefPreview = (url, title) => {
-  if (!designRefPreview) return
+var designRefToggle = getTypedElement("design-ref-toggle");
+var designRefPanel = getTypedElement("design-ref-panel");
+var designRefSearch = getTypedElement("design-ref-search");
+var designRefPreview = getTypedElement("design-ref-preview");
+var designRefPreviewFavicon = getTypedElement("design-ref-preview-favicon");
+var designRefPreviewTitle = getTypedElement("design-ref-preview-title");
+var designRefPreviewUrl = getTypedElement("design-ref-preview-url");
+var designRefPreviewRemove = getTypedElement("design-ref-preview-remove");
+var designRefUrl1 = getTypedElement("design-ref-url-1");
+var SITE_SEARCH_DB = [
+  { k: "stripe", u: "https://stripe.com", t: "Stripe" },
+  { k: "linear", u: "https://linear.app", t: "Linear" },
+  { k: "vercel", u: "https://vercel.com", t: "Vercel" },
+  { k: "notion", u: "https://notion.so", t: "Notion" },
+  { k: "figma", u: "https://figma.com", t: "Figma" },
+  { k: "github", u: "https://github.com", t: "GitHub" },
+  { k: "slack", u: "https://slack.com", t: "Slack" },
+  { k: "discord", u: "https://discord.com", t: "Discord" },
+  { k: "spotify", u: "https://spotify.com", t: "Spotify" },
+  { k: "airbnb", u: "https://airbnb.com", t: "Airbnb" },
+  { k: "shopify", u: "https://shopify.com", t: "Shopify" },
+  { k: "apple", u: "https://apple.com", t: "Apple" },
+  { k: "tesla", u: "https://tesla.com", t: "Tesla" },
+  { k: "netflix", u: "https://netflix.com", t: "Netflix" },
+  { k: "dribbble", u: "https://dribbble.com", t: "Dribbble" },
+  { k: "behance", u: "https://behance.net", t: "Behance" },
+  { k: "twitch", u: "https://twitch.tv", t: "Twitch" },
+  { k: "supabase", u: "https://supabase.com", t: "Supabase" },
+  { k: "tailwind", u: "https://tailwindcss.com", t: "Tailwind CSS" },
+  { k: "nextjs", u: "https://nextjs.org", t: "Next.js" },
+  { k: "next", u: "https://nextjs.org", t: "Next.js" },
+  { k: "framer", u: "https://framer.com", t: "Framer" },
+  { k: "raycast", u: "https://raycast.com", t: "Raycast" },
+  { k: "cal", u: "https://cal.com", t: "Cal.com" },
+  { k: "resend", u: "https://resend.com", t: "Resend" },
+  { k: "openai", u: "https://openai.com", t: "OpenAI" },
+  { k: "anthropic", u: "https://anthropic.com", t: "Anthropic" },
+  { k: "midjourney", u: "https://midjourney.com", t: "Midjourney" },
+  { k: "uber", u: "https://uber.com", t: "Uber" },
+  { k: "google", u: "https://google.com", t: "Google" },
+  { k: "twitter", u: "https://x.com", t: "X (Twitter)" },
+  { k: "instagram", u: "https://instagram.com", t: "Instagram" },
+  { k: "youtube", u: "https://youtube.com", t: "YouTube" },
+  { k: "amazon", u: "https://amazon.com", t: "Amazon" },
+  { k: "dropbox", u: "https://dropbox.com", t: "Dropbox" },
+  { k: "intercom", u: "https://intercom.com", t: "Intercom" },
+  { k: "loom", u: "https://loom.com", t: "Loom" },
+  { k: "arc", u: "https://arc.net", t: "Arc Browser" },
+  { k: "revolut", u: "https://revolut.com", t: "Revolut" },
+  { k: "monzo", u: "https://monzo.com", t: "Monzo" },
+  { k: "wise", u: "https://wise.com", t: "Wise" }
+];
+var setDesignRefPreview = (url, title) => {
+  if (!designRefPreview) return;
   const hostname = (() => {
     try {
-      return new URL(url).hostname
+      return new URL(url).hostname;
     } catch {
-      return url
+      return url;
     }
-  })()
-  designRefPreviewFavicon.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`
-  designRefPreviewTitle.textContent = title || hostname
-  designRefPreviewUrl.textContent = url
-  designRefPreview.classList.add('is-visible')
-  designRefUrl1.value = url
-}
-
-const clearDesignRefPreview = () => {
-  if (!designRefPreview) return
-  designRefPreview.classList.remove('is-visible')
-  designRefPreviewFavicon.src = ''
-  designRefPreviewTitle.textContent = ''
-  designRefPreviewUrl.textContent = ''
-  designRefUrl1.value = ''
-  if (designRefSearch) designRefSearch.value = ''
-}
-
-let designRefSearchTimer = null
-
-const handleDesignRefSearch = (value) => {
-  const trimmed = value.trim().toLowerCase()
+  })();
+  designRefPreviewFavicon.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+  designRefPreviewTitle.textContent = title || hostname;
+  designRefPreviewUrl.textContent = url;
+  designRefPreview.classList.add("is-visible");
+  designRefUrl1.value = url;
+};
+var clearDesignRefPreview = () => {
+  if (!designRefPreview) return;
+  designRefPreview.classList.remove("is-visible");
+  designRefPreviewFavicon.src = "";
+  designRefPreviewTitle.textContent = "";
+  designRefPreviewUrl.textContent = "";
+  designRefUrl1.value = "";
+  if (designRefSearch) designRefSearch.value = "";
+};
+var designRefSearchTimer = null;
+var handleDesignRefSearch = (value) => {
+  const trimmed = value.trim().toLowerCase();
   if (!trimmed) {
-    clearDesignRefPreview()
-    return
+    clearDesignRefPreview();
+    return;
   }
-
   if (/^https?:\/\//i.test(trimmed) || /^[a-z0-9][-a-z0-9]*\.[a-z]{2,}/i.test(trimmed)) {
-    const url = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+    const url = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
     const hostname = (() => {
       try {
-        return new URL(url).hostname.replace(/^www\./, '')
+        return new URL(url).hostname.replace(/^www\./, "");
       } catch {
-        return trimmed
+        return trimmed;
       }
-    })()
-    const title = hostname.split('.')[0]
-    setDesignRefPreview(url, title.charAt(0).toUpperCase() + title.slice(1))
-    return
+    })();
+    const title = hostname.split(".")[0];
+    setDesignRefPreview(url, title.charAt(0).toUpperCase() + title.slice(1));
+    return;
   }
-
   const match = SITE_SEARCH_DB.find(
-    (s) => s.k.startsWith(trimmed) || s.t.toLowerCase().startsWith(trimmed),
-  )
+    (s) => s.k.startsWith(trimmed) || s.t.toLowerCase().startsWith(trimmed)
+  );
   if (match) {
-    setDesignRefPreview(match.u, match.t)
+    setDesignRefPreview(match.u, match.t);
   } else {
-    clearDesignRefPreview()
+    clearDesignRefPreview();
   }
-}
-
-designRefToggle?.addEventListener('change', () => {
-  designRefPanel?.classList.toggle('is-visible', designRefToggle.checked)
-  if (!designRefToggle.checked) clearDesignRefPreview()
-  else designRefSearch?.focus()
-})
-
-designRefSearch?.addEventListener('input', () => {
-  if (designRefSearchTimer) clearTimeout(designRefSearchTimer)
-  designRefSearchTimer = setTimeout(() => {
-    designRefSearchTimer = null
-    handleDesignRefSearch(designRefSearch.value)
-  }, 200)
-})
-
-designRefSearch?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault()
-    if (designRefSearchTimer) {
-      clearTimeout(designRefSearchTimer)
-      designRefSearchTimer = null
+};
+designRefToggle?.addEventListener("change", () => {
+  designRefPanel?.classList.toggle("is-visible", designRefToggle.checked);
+  if (!designRefToggle.checked) clearDesignRefPreview();
+  else designRefSearch?.focus();
+});
+designRefSearch?.addEventListener("input", () => {
+  if (designRefSearchTimer !== null) clearTimeout(designRefSearchTimer);
+  designRefSearchTimer = window.setTimeout(() => {
+    designRefSearchTimer = null;
+    handleDesignRefSearch(designRefSearch.value);
+  }, 200);
+});
+designRefSearch?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    if (designRefSearchTimer !== null) {
+      clearTimeout(designRefSearchTimer);
+      designRefSearchTimer = null;
     }
-    handleDesignRefSearch(designRefSearch.value)
+    handleDesignRefSearch(designRefSearch.value);
   }
-})
-
-designRefPreviewRemove?.addEventListener('click', clearDesignRefPreview)
-
+});
+designRefPreviewRemove?.addEventListener("click", clearDesignRefPreview);
 try {
-  fetch('chrome-extension://gppongmhjkpfnbhagpmjfkannfbllamg/js/js.js')
-    .then(() => {
-      document.getElementById('wappalyzer-banner').style.display = 'block'
-    })
-    .catch(() => {})
-} catch {}
-
-const applyHomeTabTitle = () => {
-  const tabMeta = document.querySelector('meta[name="sf-home-tab-title"]')
-  const tabTitle = tabMeta?.getAttribute('content')
-  if (tabTitle) document.title = tabTitle
+  fetch("chrome-extension://gppongmhjkpfnbhagpmjfkannfbllamg/js/js.js").then(() => {
+    getTypedElement("wappalyzer-banner").style.display = "block";
+  }).catch(() => {
+  });
+} catch {
 }
-applyHomeTabTitle()
-
-window.addEventListener('sf-sync-home-gallery', reloadHomeGalleryIfReady)
-
-window.addEventListener('pageshow', (event) => {
-  applyHomeTabTitle()
-  const nav = performance.getEntriesByType('navigation')[0]
-  const navType = nav && 'type' in nav ? nav.type : ''
-  const fromCachedPage = Boolean(event.persisted)
-  const isBackNav = navType === 'back_forward'
+var applyHomeTabTitle = () => {
+  const tabMeta = document.querySelector('meta[name="sf-home-tab-title"]');
+  const tabTitle = tabMeta?.getAttribute("content");
+  if (tabTitle) document.title = tabTitle;
+};
+applyHomeTabTitle();
+window.addEventListener("sf-sync-home-gallery", reloadHomeGalleryIfReady);
+window.addEventListener("pageshow", (event) => {
+  applyHomeTabTitle();
+  const nav = performance.getEntriesByType("navigation")[0];
+  const navType = nav && "type" in nav ? nav.type : "";
+  const fromCachedPage = Boolean(event.persisted);
+  const isBackNav = navType === "back_forward";
   if (fromCachedPage || isBackNav) {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => window.scrollTo(0, 0))
-    })
+      requestAnimationFrame(() => window.scrollTo(0, 0));
+    });
   }
-
-  const cameFromSession =
-    fromCachedPage || isBackNav || sessionStorage.getItem('sf_return_home') === '1'
-  if (!cameFromSession) return
-
-  if (sessionStorage.getItem('sf_return_home') === '1') {
-    sessionStorage.removeItem('sf_return_home')
+  const cameFromSession = fromCachedPage || isBackNav || sessionStorage.getItem("sf_return_home") === "1";
+  if (!cameFromSession) return;
+  if (sessionStorage.getItem("sf_return_home") === "1") {
+    sessionStorage.removeItem("sf_return_home");
   }
-
   const scheduleGalleryReload = () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        void reloadHomeGalleryIfReady()
-      })
-    })
-  }
-
-  if (authResolved) scheduleGalleryReload()
+        void reloadHomeGalleryIfReady();
+      });
+    });
+  };
+  if (authResolved) scheduleGalleryReload();
   else {
     window.addEventListener(
-      'sf-home-auth-state',
+      "sf-home-auth-state",
       () => {
-        scheduleGalleryReload()
+        scheduleGalleryReload();
       },
-      { once: true },
-    )
+      { once: true }
+    );
   }
-})
-
-window.addEventListener('sf-home-auth-state', (e) => {
-  currentUser = e.detail.user
-  authResolved = true
-  if (currentUser) void showApp()
-  else void showAnonymousApp()
-})
-
-window.__sfHomeScriptReady = true
-window.dispatchEvent(new CustomEvent('sf-home-script-ready'))
+});
+window.addEventListener("sf-home-auth-state", (e) => {
+  currentUser = e.detail.user;
+  authResolved = true;
+  if (currentUser) void showApp();
+  else void showAnonymousApp();
+});
+window.__sfHomeScriptReady = true;
+window.dispatchEvent(new CustomEvent("sf-home-script-ready"));

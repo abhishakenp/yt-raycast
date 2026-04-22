@@ -2,7 +2,7 @@ import { PrivacyDocument } from '@/components/privacy/PrivacyDocument'
 import { PLAUSIBLE_DOMAIN, SITE_NAME, SITE_URL } from '@/lib/site-config'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import '../../../public/styles/privacy.css'
+import '@/styles/privacy.css'
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Privacy policy`,

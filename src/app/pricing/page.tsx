@@ -6,7 +6,7 @@ import { fetchSiteSettings } from '@/lib/sanity-site-settings'
 import { OG_IMAGE_PATH, PLAUSIBLE_DOMAIN, SITE_URL } from '@/lib/site-config'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import '../../../public/styles/pricing.css'
+import '@/styles/pricing.css'
 
 export const dynamic = 'force-dynamic'
 

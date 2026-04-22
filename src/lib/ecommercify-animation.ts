@@ -6,7 +6,7 @@
 
 const ECOMMERCIFY_STYLE_ID = 'ecommercify-animation-styles'
 
-function injectStyles() {
+function injectStyles(): void {
   if (document.getElementById(ECOMMERCIFY_STYLE_ID)) return
   const style = document.createElement('style')
   style.id = ECOMMERCIFY_STYLE_ID
@@ -201,9 +201,19 @@ const CARD_WIDTH = 180
 const CARD_HEIGHT = 240
 const CARD_GAP = 18
 
-class EcommercifyAnimation {
-  /** @param {HTMLElement} mountEl */
-  constructor(mountEl) {
+export class EcommercifyAnimation {
+  private _mount: HTMLElement
+  private _overlay: HTMLDivElement | null
+  private _statusEl: HTMLParagraphElement | null
+  private _fillEl: HTMLDivElement | null
+  private _statusIndex: number
+  private _statusInterval: number | null
+  private _progressRaf: number | null
+  private _progressStart: number | null
+  private _duration: number
+  private _running: boolean
+
+  constructor(mountEl: HTMLElement) {
     this._mount = mountEl
     this._overlay = null
     this._statusEl = null
@@ -216,36 +226,41 @@ class EcommercifyAnimation {
     this._running = false
   }
 
-  /** @param {number} estimatedDurationMs */
-  start(estimatedDurationMs = 60000) {
+  start(estimatedDurationMs: number = 60000): void {
     if (this._running) return
     this._running = true
     this._duration = estimatedDurationMs
 
     injectStyles()
     this._build()
-    this._mount.appendChild(this._overlay)
+    this._mount.appendChild(this._overlay as HTMLDivElement)
 
     // Kick off status cycling
     this._statusIndex = 0
     this._updateStatusText(STATUS_MESSAGES[0])
-    this._statusInterval = setInterval(() => this._cycleStatus(), 3000)
+    this._statusInterval = window.setInterval(() => this._cycleStatus(), 3000)
 
     // Kick off smooth progress
     this._progressStart = performance.now()
     this._tickProgress()
   }
 
-  stop() {
+  stop(): void {
     if (!this._running) return
     this._running = false
-    clearInterval(this._statusInterval)
-    cancelAnimationFrame(this._progressRaf)
+    if (this._statusInterval !== null) {
+      clearInterval(this._statusInterval)
+      this._statusInterval = null
+    }
+    if (this._progressRaf !== null) {
+      cancelAnimationFrame(this._progressRaf)
+      this._progressRaf = null
+    }
     if (this._overlay && this._overlay.parentNode) {
       // Fade out gracefully
       this._overlay.style.transition = 'opacity 0.5s ease'
       this._overlay.style.opacity = '0'
-      setTimeout(() => {
+      window.setTimeout(() => {
         if (this._overlay && this._overlay.parentNode) {
           this._overlay.parentNode.removeChild(this._overlay)
         }
@@ -253,14 +268,13 @@ class EcommercifyAnimation {
     }
   }
 
-  /** @param {string} message */
-  updateStatus(message) {
+  updateStatus(message: string): void {
     this._updateStatusText(message)
   }
 
   // ─── Private ───────────────────────────────────────────────────
 
-  _build() {
+  private _build(): void {
     const overlay = document.createElement('div')
     overlay.className = 'ecommercify-overlay'
 
@@ -316,8 +330,7 @@ class EcommercifyAnimation {
     this._overlay = overlay
   }
 
-  /** @param {number} index */
-  _makeCard(index) {
+  private _makeCard(index: number): HTMLDivElement {
     const card = document.createElement('div')
     card.className = 'ecommercify-card'
     // Stagger shimmer delay so cards don't sync
@@ -336,7 +349,7 @@ class EcommercifyAnimation {
     const img = document.createElement('div')
     img.className = 'ecommercify-card-img'
 
-    const lines = [{ width: '80%' }, { width: '60%' }, { width: '40%' }]
+    const lines: Array<{ width: string }> = [{ width: '80%' }, { width: '60%' }, { width: '40%' }]
 
     card.appendChild(img)
     lines.forEach(({ width }) => {
@@ -349,7 +362,7 @@ class EcommercifyAnimation {
     return card
   }
 
-  _ensureDelayRule(slot) {
+  private _ensureDelayRule(slot: number): void {
     const ruleId = `ecommercify-delay-rule-${slot}`
     if (document.getElementById(ruleId)) return
     const style = document.createElement('style')
@@ -358,27 +371,29 @@ class EcommercifyAnimation {
     document.head.appendChild(style)
   }
 
-  _cycleStatus() {
+  private _cycleStatus(): void {
     if (!this._statusEl) return
     this._statusEl.classList.add('ecommercify-fade')
-    setTimeout(() => {
+    window.setTimeout(() => {
       this._statusIndex = (this._statusIndex + 1) % STATUS_MESSAGES.length
+      if (!this._statusEl) return
       this._statusEl.textContent = STATUS_MESSAGES[this._statusIndex]
       this._statusEl.classList.remove('ecommercify-fade')
     }, 420)
   }
 
-  _updateStatusText(message) {
+  private _updateStatusText(message: string): void {
     if (!this._statusEl) return
     this._statusEl.classList.add('ecommercify-fade')
-    setTimeout(() => {
+    window.setTimeout(() => {
+      if (!this._statusEl) return
       this._statusEl.textContent = message
       this._statusEl.classList.remove('ecommercify-fade')
     }, 420)
   }
 
-  _tickProgress() {
-    if (!this._running) return
+  private _tickProgress(): void {
+    if (!this._running || this._progressStart === null) return
     const elapsed = performance.now() - this._progressStart
     // Ease into 95% over the duration, never reach 100% until stop()
     const raw = elapsed / this._duration
@@ -388,11 +403,8 @@ class EcommercifyAnimation {
     if (this._fillEl) this._fillEl.style.width = `${pct}%`
 
     // Schedule next tick ~every 500ms for smooth but not expensive updates
-    this._progressRaf = setTimeout(() => {
-      this._progressRaf = requestAnimationFrame(() => this._tickProgress())
+    this._progressRaf = window.setTimeout(() => {
+      this._progressRaf = window.requestAnimationFrame(() => this._tickProgress())
     }, 500)
   }
 }
-
-// Make available as global for inline script usage
-window.EcommercifyAnimation = EcommercifyAnimation

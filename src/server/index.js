@@ -667,15 +667,16 @@ export async function startServer(sessionsDir) {
   app.use(express.static(publicDir, { index: false }))
 
   // ─── Dashboard (session-scoped) ───────────────────────────
-  app.get('/session/:id', async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).send('Session not found')
-    setNoIndexHeaders(res)
-    const tpl = readFileSync(join(publicDir, 'dashboard.html'), 'utf8')
-    let wsHost = req.get('host') || `127.0.0.1:${DASHBOARD_PORT}`
-    if (/:3000$/.test(wsHost)) wsHost = `${req.hostname || '127.0.0.1'}:${DASHBOARD_PORT}`
-    res.type('html').send(tpl.replaceAll('__SF_WS_HOST__', wsHost))
-  })
+  // ─── Session route now handled by Next.js at /src/app/session/[id]/page.tsx ───
+  // app.get('/session/:id', async (req, res) => {
+  //   const session = getSession(req.params.id)
+  //   if (!session) return res.status(404).send('Session not found')
+  //   setNoIndexHeaders(res)
+  //   const tpl = readFileSync(join(publicDir, 'dashboard.html'), 'utf8')
+  //   let wsHost = req.get('host') || `127.0.0.1:${DASHBOARD_PORT}`
+  //   if (/:3000$/.test(wsHost)) wsHost = `${req.hostname || '127.0.0.1'}:${DASHBOARD_PORT}`
+  //   res.type('html').send(tpl.replaceAll('__SF_WS_HOST__', wsHost))
+  // })
 
   // ─── API: Create session + start generation ───────────────
   app.post('/api/sessions', optionalAuth, async (req, res) => {

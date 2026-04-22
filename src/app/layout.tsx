@@ -3,7 +3,7 @@ import './globals.css'
 import { SpaceBackdrop } from '@/components/marketing/SpaceBackdrop'
 import { SfGlassLensFilter } from '@/components/ui/sf-glass-lens-filter'
 import { SITE_NAME, SITE_URL } from '@/lib/site-config'
-import '../../public/styles/space-shell.css'
+import '@/styles/space-shell.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

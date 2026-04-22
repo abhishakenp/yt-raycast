@@ -15,7 +15,7 @@ import {
 } from '@/lib/site-config'
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import '../../public/styles/index.css'
+import '@/styles/index.css'
 
 export const dynamic = 'force-dynamic'
 
