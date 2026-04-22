@@ -1,0 +1,1481 @@
+<!doctype html>
+<html lang="ml">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Aurora · Daybreak — ASHA Workers Portal (Light Preview)</title>
+
+    <!-- ===== Fonts ===== -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Malayalam:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ===== Tokens ============================================================
+         Light-mode (Daybreak) adaptation of the Aurora system.
+         Surfaces flip to pale violet-tinted creams; ink inverts the Midnight
+         family; role colors keep their chromatic identity (Violet, Emerald,
+         Amber, Rose, Teal, Plum) — though Emerald/Amber/Teal/Rose deepen
+         slightly so they can still ignite against a near-white canvas while
+         meeting AA contrast for both numerals and 1px outlines.
+      ============================================================== */
+      :root {
+        /* Daybreak surfaces — derived light-mode counterparts of Midnight */
+        --daybreak-canvas: #f7f5ff;       /* analog of Midnight Canvas */
+        --daybreak-surface: #ffffff;      /* analog of Midnight Surface */
+        --daybreak-elevated: #fbfaff;     /* analog of Midnight Elevated */
+        --daybreak-inset: #ece8ff;        /* analog of Midnight Inset */
+
+        /* Hairlines — dark-on-light at very low opacity */
+        --hairline-04: rgba(15, 20, 40, 0.04);
+        --hairline-06: rgba(15, 20, 40, 0.06);
+        --hairline-08: rgba(15, 20, 40, 0.08);
+        --hairline-10: rgba(15, 20, 40, 0.10);
+        --hairline-12: rgba(15, 20, 40, 0.12);
+
+        /* Ink — primary→quaternary on light surfaces */
+        --ink-primary: #0f1428;           /* Midnight Surface inverted */
+        --ink-secondary: #3b4565;
+        --ink-tertiary: #64748b;
+        --ink-quaternary: #94a3b8;
+
+        /* Role colors (chromatic identity persists across light & dark) */
+        --aurora-violet-300: #a594ff;
+        --aurora-violet-500: #7c5cf5;
+        --aurora-violet-700: #5d4cf5;
+        --aurora-violet-900: #3b2db8;
+
+        --aurora-emerald-500: #16a34a;    /* deepened from #22c55e for AA */
+        --aurora-emerald-700: #15803d;
+
+        --aurora-amber-500: #d97706;      /* deepened from #facc15 for AA */
+        --aurora-amber-700: #92400e;
+
+        --aurora-rose-500: #dc2626;       /* deepened from #ef4444 for AA */
+        --aurora-rose-700: #b91c1c;
+
+        --aurora-teal-500: #0d9488;       /* deepened from #14b8a6 for AA */
+        --aurora-teal-700: #0f766e;
+
+        --aurora-lavender-500: #7c5cf5;   /* lavender role uses violet on light */
+        --aurora-plum-500: #9333ea;       /* slightly deeper plum for legibility */
+
+        /* Tinted fills (status pill backgrounds, badge tints) */
+        --violet-tint-10: rgba(124, 92, 245, 0.10);
+        --violet-tint-30: rgba(124, 92, 245, 0.30);
+
+        --emerald-tint-12: rgba(22, 163, 74, 0.12);
+        --emerald-tint-24: rgba(22, 163, 74, 0.24);
+        --amber-tint-12: rgba(217, 119, 6, 0.12);
+        --amber-tint-24: rgba(217, 119, 6, 0.24);
+        --rose-tint-12: rgba(220, 38, 38, 0.12);
+        --teal-tint-12: rgba(13, 148, 136, 0.12);
+        --plum-tint-12: rgba(147, 51, 234, 0.12);
+
+        /* Type stacks */
+        --font-sans: "Inter", "Noto Sans Malayalam", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+        /* Elevation — light mode benefits from a touch of micro-shadow alongside hairlines */
+        --shadow-card: 0 1px 2px rgba(15, 20, 40, 0.04);
+        --shadow-card-hover: 0 8px 24px rgba(15, 20, 40, 0.06);
+        --shadow-violet-lift: 0 8px 24px -8px rgba(124, 92, 245, 0.30);
+
+        /* Radii */
+        --radius-pill: 999px;
+        --radius-button: 8px;
+        --radius-tile: 10px;
+        --radius-card: 12px;
+        --radius-feature: 14px;
+      }
+
+      /* ===== Reset & Base ===================================================== */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--daybreak-canvas);
+        color: var(--ink-primary);
+        font-family: var(--font-sans);
+        font-feature-settings: "cv11", "ss01", "ss03";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font-family: inherit;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: inherit;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--aurora-violet-500);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+
+      /* ===== Top Preview Chrome ===============================================
+         Sticky strip mimicking Vercel's preview meta bar — route pill on the
+         left, export targets + subscribe + GitHub + Live on the right.
+      ============================================================== */
+      .preview-chrome {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        background: var(--daybreak-surface);
+        border-bottom: 1px solid var(--hairline-08);
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+      }
+
+      .chrome-left,
+      .chrome-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 28px;
+      }
+
+      .chrome-chevron {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        color: var(--ink-tertiary);
+        border-radius: 6px;
+        transition: background-color 160ms ease;
+      }
+
+      .chrome-chevron:hover {
+        background: var(--hairline-04);
+        color: var(--ink-primary);
+      }
+
+      .route-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        background: var(--daybreak-inset);
+        border: 1px solid var(--hairline-10);
+        border-radius: var(--radius-pill);
+        color: var(--ink-tertiary);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+
+      .export-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--ink-tertiary);
+      }
+
+      .export-stack {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--ink-tertiary);
+      }
+
+      .export-stack .sep {
+        color: var(--ink-quaternary);
+      }
+
+      .subscribe-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        background: var(--aurora-violet-500);
+        color: #ffffff;
+        border-radius: var(--radius-pill);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        transition: background-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      .subscribe-pill:hover {
+        background: var(--aurora-violet-300);
+        box-shadow: 0 4px 12px -4px rgba(124, 92, 245, 0.45);
+      }
+
+      .gh-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        color: var(--ink-tertiary);
+        border-radius: 6px;
+        transition: color 160ms ease, background-color 160ms ease;
+      }
+
+      .gh-link:hover {
+        color: var(--ink-primary);
+        background: var(--hairline-04);
+      }
+
+      .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--ink-secondary);
+      }
+
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--aurora-emerald-500);
+        position: relative;
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45);
+        animation: live-pulse 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+      }
+
+      @keyframes live-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.45); }
+        70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+      }
+
+      /* ===== Page Header ====================================================== */
+      .page-header {
+        background: var(--daybreak-canvas);
+        padding: 18px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        border-bottom: 1px solid var(--hairline-06);
+      }
+
+      .logo-lockup {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-tile {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: var(--aurora-violet-500);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        flex-shrink: 0;
+        box-shadow: 0 1px 2px rgba(15, 20, 40, 0.06);
+      }
+
+      .wordmark {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.15;
+      }
+
+      .wordmark-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--ink-primary);
+        letter-spacing: -0.005em;
+      }
+
+      .wordmark-sub {
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--ink-tertiary);
+        margin-top: 2px;
+      }
+
+      .header-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .icon-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        color: var(--ink-secondary);
+        transition: background-color 160ms ease, color 160ms ease;
+      }
+
+      .icon-button:hover {
+        background: var(--hairline-06);
+        color: var(--ink-primary);
+      }
+
+      .profile-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px 8px 12px;
+        border-radius: var(--radius-pill);
+        background: var(--aurora-violet-500);
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 160ms ease, box-shadow 160ms ease;
+      }
+
+      .profile-pill:hover {
+        background: var(--aurora-violet-300);
+        box-shadow: var(--shadow-violet-lift);
+      }
+
+      .profile-pill:active {
+        background: var(--aurora-violet-700);
+      }
+
+      /* ===== Hero ============================================================
+         Light-mode hero: Daybreak canvas + soft top violet vignette + Aurora
+         Grid (light variant) + liquid particle field + cursor halo. The
+         headline remains the centered manifesto.
+      ============================================================== */
+      .hero {
+        position: relative;
+        isolation: isolate;
+        background: var(--daybreak-canvas);
+        padding: 80px 32px 96px;
+        min-height: 580px;
+        overflow: hidden;
+        text-align: center;
+
+        /* Aurora Grid primitive — tuning knobs (exposed as CSS vars so
+           downstream generators can tune without rewriting JS). */
+        --mx: 50%;
+        --my: 50%;
+        --halo-opacity: 0;
+        --grid-cell: 32px;
+        --particle-base-radius: 1.5px;
+        --particle-hot-radius: 3.5px;
+        --particle-base-alpha: 0.20;
+        --particle-hot-alpha: 0.95;
+        --push-radius: 180px;
+        --hot-radius: 80px;
+        --link-distance: 42px;
+      }
+
+      /* Top-of-hero violet vignette — softer than dark mode but same shape */
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 800px 400px at 50% 0%, rgba(124, 92, 245, 0.08), transparent 70%);
+        pointer-events: none;
+        z-index: -3;
+      }
+
+      /* ===== Aurora Grid — Layer 1 (Static Lattice) =========================
+         Dashed mesh (inline SVG, 32px cells, 1px dashed lines at
+         rgba(15,20,40,0.06), stroke-dasharray 2 4). The "boxed" skeleton
+         that keeps the liquid motion legible. Pure CSS, no JS.
+      ============================================================== */
+      .aurora-grid {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M32 0H0V32' fill='none' stroke='rgba(15,20,40,0.06)' stroke-width='1' stroke-dasharray='2 4'/></svg>");
+        background-size: 32px 32px;
+      }
+
+      /* ===== Aurora Grid — Layer 2 (Liquid Particle Field, canvas) ========== */
+      .aurora-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        pointer-events: none;
+        display: block;
+      }
+
+      /* ===== Aurora Grid — Layer 3 (Cursor halo, CSS) ======================= */
+      .aurora-halo {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: var(--halo-opacity);
+        transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+        mix-blend-mode: multiply;
+        background: radial-gradient(
+          circle 220px at var(--mx) var(--my),
+          rgba(124, 92, 245, 0.16),
+          rgba(124, 92, 245, 0.06) 60%,
+          transparent 100%
+        );
+      }
+
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        max-width: 880px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 28px;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        background: var(--violet-tint-10);
+        border: 1px solid var(--violet-tint-30);
+        border-radius: var(--radius-pill);
+        color: var(--aurora-violet-700);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+      }
+
+      .hero-badge .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--aurora-emerald-500);
+        flex-shrink: 0;
+      }
+
+      .hero-headline {
+        font-size: 64px;
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        color: var(--ink-primary);
+        margin: 0;
+        max-width: 14ch;
+      }
+
+      .hero-sub {
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 1.6;
+        color: var(--ink-secondary);
+        max-width: 640px;
+        margin: 0;
+      }
+
+      .hero-cta-row {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        border-radius: var(--radius-button);
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0.005em;
+        transition: background-color 200ms ease, box-shadow 200ms ease, border-color 200ms ease, color 200ms ease, transform 200ms ease;
+        white-space: nowrap;
+      }
+
+      .btn-primary {
+        background: var(--aurora-violet-500);
+        color: #ffffff;
+        box-shadow: var(--shadow-violet-lift);
+      }
+
+      .btn-primary:hover {
+        background: var(--aurora-violet-300);
+        box-shadow: 0 12px 32px -8px rgba(124, 92, 245, 0.40);
+      }
+
+      .btn-primary:active {
+        background: var(--aurora-violet-700);
+        box-shadow: 0 4px 12px -4px rgba(124, 92, 245, 0.40);
+        transform: translateY(0.5px);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--ink-primary);
+        border: 1px solid var(--hairline-12);
+      }
+
+      .btn-ghost:hover {
+        background: var(--hairline-04);
+        border-color: var(--hairline-12);
+      }
+
+      /* ===== Stats Row ======================================================== */
+      .stats {
+        padding: 64px 32px;
+        background: var(--daybreak-canvas);
+      }
+
+      .stats-grid {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .stat-card {
+        background: var(--daybreak-surface);
+        border: 1px solid var(--hairline-08);
+        border-radius: var(--radius-card);
+        padding: 28px 32px;
+        text-align: center;
+        box-shadow: var(--shadow-card);
+        transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+      }
+
+      .stat-card:hover {
+        border-color: var(--hairline-12);
+        box-shadow: var(--shadow-card-hover);
+      }
+
+      .stat-num {
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.0;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ink-tertiary);
+        margin: 0;
+      }
+
+      .stat-violet { color: var(--aurora-violet-500); }
+      .stat-emerald { color: var(--aurora-emerald-500); }
+      .stat-amber { color: var(--aurora-amber-500); }
+      .stat-lavender { color: var(--aurora-lavender-500); }
+
+      /* ===== Section Headings ================================================= */
+      .section {
+        padding: 80px 32px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-head {
+        text-align: center;
+        margin-bottom: 48px;
+      }
+
+      .section-eyebrow {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--aurora-violet-700);
+        margin-bottom: 12px;
+      }
+
+      .section-title {
+        font-size: 40px;
+        font-weight: 600;
+        line-height: 1.15;
+        letter-spacing: -0.015em;
+        color: var(--ink-primary);
+        margin: 0 0 12px;
+      }
+
+      .section-sub {
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--ink-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      /* ===== Services (Role Color Cards) ====================================== */
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .service-card {
+        position: relative;
+        background: var(--daybreak-surface);
+        border: 1px solid var(--hairline-06);
+        border-radius: var(--radius-feature);
+        padding: 28px 32px;
+        box-shadow: var(--shadow-card);
+        transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+          border-color 200ms ease,
+          box-shadow 200ms ease;
+        overflow: hidden;
+      }
+
+      .service-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, var(--role-tint, rgba(124, 92, 245, 0.06)) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 200ms ease;
+        pointer-events: none;
+      }
+
+      .service-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--hairline-10);
+        box-shadow: 0 8px 24px var(--role-shadow, rgba(124, 92, 245, 0.10));
+      }
+
+      .service-card:hover::before {
+        opacity: 1;
+      }
+
+      .service-card > * {
+        position: relative;
+      }
+
+      .service-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-tile);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--role-bg, var(--aurora-violet-500));
+        color: #ffffff;
+        margin-bottom: 24px;
+        transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .service-card:hover .service-icon {
+        transform: scale(1.05);
+      }
+
+      .service-title {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.25;
+        color: var(--ink-primary);
+        margin: 0 0 8px;
+      }
+
+      .service-desc {
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--ink-secondary);
+        margin: 0 0 16px;
+      }
+
+      .service-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--role-cta, var(--aurora-violet-500));
+        transition: gap 160ms ease;
+      }
+
+      .service-card:hover .service-cta {
+        gap: 8px;
+      }
+
+      /* Role color modifiers — declared on each card */
+      .role-violet {
+        --role-bg: var(--aurora-violet-500);
+        --role-cta: var(--aurora-violet-700);
+        --role-tint: rgba(124, 92, 245, 0.06);
+        --role-shadow: rgba(124, 92, 245, 0.12);
+      }
+
+      .role-emerald {
+        --role-bg: var(--aurora-emerald-500);
+        --role-cta: var(--aurora-emerald-700);
+        --role-tint: rgba(22, 163, 74, 0.06);
+        --role-shadow: rgba(22, 163, 74, 0.12);
+      }
+
+      .role-amber {
+        --role-bg: var(--aurora-amber-500);
+        --role-cta: var(--aurora-amber-700);
+        --role-tint: rgba(217, 119, 6, 0.06);
+        --role-shadow: rgba(217, 119, 6, 0.12);
+      }
+
+      .role-plum {
+        --role-bg: var(--aurora-plum-500);
+        --role-cta: var(--aurora-plum-500);
+        --role-tint: rgba(147, 51, 234, 0.06);
+        --role-shadow: rgba(147, 51, 234, 0.12);
+      }
+
+      .role-rose {
+        --role-bg: var(--aurora-rose-500);
+        --role-cta: var(--aurora-rose-700);
+        --role-tint: rgba(220, 38, 38, 0.06);
+        --role-shadow: rgba(220, 38, 38, 0.12);
+      }
+
+      .role-teal {
+        --role-bg: var(--aurora-teal-500);
+        --role-cta: var(--aurora-teal-700);
+        --role-tint: rgba(13, 148, 136, 0.06);
+        --role-shadow: rgba(13, 148, 136, 0.12);
+      }
+
+      /* Amber tile uses dark glyph for AA contrast — amber is luminous */
+      .role-amber .service-icon {
+        color: #1f1b00;
+      }
+
+      /* ===== Updates Section ================================================== */
+      .updates-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .update-card {
+        background: var(--daybreak-surface);
+        border: 1px solid var(--hairline-06);
+        border-radius: var(--radius-feature);
+        padding: 28px;
+        box-shadow: var(--shadow-card);
+        transition: border-color 200ms ease, box-shadow 200ms ease;
+      }
+
+      .update-card:hover {
+        border-color: var(--hairline-10);
+        box-shadow: var(--shadow-card-hover);
+      }
+
+      .update-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 12px;
+      }
+
+      .update-when {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-tertiary);
+      }
+
+      .update-when .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+
+      .dot-emerald { background: var(--aurora-emerald-500); }
+      .dot-amber { background: var(--aurora-amber-500); }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: var(--radius-pill);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+      }
+
+      .status-pill.emerald {
+        background: var(--emerald-tint-12);
+        color: var(--aurora-emerald-700);
+        border: 1px solid var(--emerald-tint-24);
+      }
+
+      .status-pill.amber {
+        background: var(--amber-tint-12);
+        color: var(--aurora-amber-700);
+        border: 1px solid var(--amber-tint-24);
+      }
+
+      .update-title {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--ink-primary);
+        margin: 0 0 8px;
+      }
+
+      .update-body {
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.55;
+        color: var(--ink-secondary);
+        margin: 0;
+      }
+
+      /* ===== Footer ============================================================ */
+      .page-footer {
+        margin-top: 64px;
+        padding: 32px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--ink-tertiary);
+        border-top: 1px solid var(--hairline-06);
+        background: var(--daybreak-canvas);
+      }
+
+      /* ===== Responsive ======================================================= */
+      @media (max-width: 960px) {
+        .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .hero-headline { font-size: 52px; }
+      }
+
+      @media (max-width: 768px) {
+        .stats-grid,
+        .services-grid,
+        .updates-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding: 56px 20px 72px;
+          min-height: auto;
+        }
+
+        .hero-headline { font-size: 40px; }
+        .hero-sub { font-size: 16px; }
+        .section { padding: 56px 20px 32px; }
+        .section-title { font-size: 30px; }
+        .stats { padding: 40px 20px; }
+
+        .page-header { padding: 14px 20px; }
+        .wordmark-title { font-size: 16px; }
+        .wordmark-sub { font-size: 12px; }
+
+        .profile-pill .profile-label {
+          display: none;
+        }
+
+        .export-label,
+        .export-stack {
+          display: none;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .preview-chrome {
+          padding: 0 12px;
+        }
+        .chrome-chevron,
+        .gh-link,
+        .live-indicator {
+          display: none;
+        }
+
+        .hero-headline { font-size: 34px; }
+      }
+
+      /* ===== Reduced Motion ===================================================
+         Honor prefers-reduced-motion: collapse the pointer ripple to nothing,
+         keep the static dashed mesh in place, drop pulse and hover transforms.
+      ============================================================== */
+      @media (prefers-reduced-motion: reduce) {
+        /* Disable liquid particle field + cursor halo —
+           fall back to static dashed mesh + vignette only. */
+        .aurora-canvas,
+        .aurora-halo {
+          display: none !important;
+          opacity: 0 !important;
+        }
+        .live-dot {
+          animation: none;
+        }
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ===== Top Preview Chrome ============================================ -->
+    <div class="preview-chrome" role="banner" aria-label="Preview chrome">
+      <div class="chrome-left">
+        <a href="#" class="chrome-chevron" aria-label="Back">
+          <i data-lucide="chevron-left" aria-hidden="true"></i>
+        </a>
+        <span class="route-pill">/preview/db582f9453f0</span>
+      </div>
+
+      <div class="chrome-right">
+        <span class="export-label" aria-hidden="true">Export</span>
+        <span class="export-stack" aria-hidden="true">
+          <span>HTML</span>
+          <span class="sep">/</span>
+          <span>REACT</span>
+          <span class="sep">/</span>
+          <span>NEXT.JS</span>
+        </span>
+        <a href="#" class="subscribe-pill">SUBSCRIBE</a>
+        <a href="#" class="gh-link" aria-label="GitHub">
+          <i data-lucide="github" aria-hidden="true"></i>
+        </a>
+        <span class="live-indicator">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span>Live</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- ===== Page Header ================================================== -->
+    <header class="page-header">
+      <div class="logo-lockup">
+        <span class="logo-tile" aria-hidden="true">
+          <i data-lucide="heart" aria-hidden="true"></i>
+        </span>
+        <div class="wordmark">
+          <span class="wordmark-title">ആശാ വർക്കർസ് പോർട്ടൽ</span>
+          <span class="wordmark-sub">കേരള സർക്കാർ - ആരോഗ്യ വകുപ്പ്</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="icon-button" aria-label="Notifications">
+          <i data-lucide="bell" aria-hidden="true"></i>
+        </button>
+        <a href="#" class="profile-pill">
+          <i data-lucide="user" aria-hidden="true"></i>
+          <span class="profile-label">പരാഫൈൽ</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ===== Hero ========================================================= -->
+    <section class="hero" id="hero" aria-labelledby="hero-headline">
+      <!-- Aurora Grid — Layer 1: Static Lattice (CSS background on this div) -->
+      <div class="aurora-grid" aria-hidden="true"></div>
+      <!-- Aurora Grid — Layer 2: Liquid Particle Field (canvas) -->
+      <canvas class="aurora-canvas" id="aurora-grid-canvas" aria-hidden="true"></canvas>
+      <!-- Aurora Grid — Layer 3: Cursor Halo (CSS radial-gradient) -->
+      <div class="aurora-halo" aria-hidden="true"></div>
+
+      <div class="hero-inner">
+        <span class="hero-badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          സമൂഹ ആരോഗ്യ സേവനത്തിൽ നിറസാന്നിധ്യം
+        </span>
+
+        <h1 class="hero-headline" id="hero-headline">
+          ആശാ വർക്കർമാർക്കുള്ള ഔദ്യോഗിക പോർട്ടൽ
+        </h1>
+
+        <p class="hero-sub">
+          കേരളത്തിലെ ആരോഗ്യ പ്രവർത്തനത്തിന്റെ നട്ടെല്ലായി പ്രവർത്തിക്കുന്ന ആശാ വർക്കർമാർക്കായുള്ള ഏകീകൃത ഡിജിറ്റൽ വേദി — രജിസ്ട്രേഷൻ, പരിശീലനം, റിപ്പോർട്ടിംഗ്, വേതന വിവരങ്ങൾ, പിന്തുണ.
+        </p>
+
+        <div class="hero-cta-row">
+          <a href="#" class="btn btn-primary">ലോഗിൻ ചെയ്യുക</a>
+          <a href="#" class="btn btn-ghost">അറിയുക</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Stats Row =================================================== -->
+    <section class="stats" aria-label="Stats overview">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="stat-num stat-violet">26,000+</p>
+          <p class="stat-label">സജീവമായ ആശാ വർക്കർമാർ</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-num stat-emerald">14</p>
+          <p class="stat-label">ജില്ലകളിൽ പ്രവർത്തനം</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-num stat-amber">1.2Cr</p>
+          <p class="stat-label">വാർഷിക സന്ദർശനങ്ങൾ</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-num stat-lavender">24×7</p>
+          <p class="stat-label">സഹായ വാർത്താവിനിമയം</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Services ==================================================== -->
+    <section class="section" aria-labelledby="services-title">
+      <div class="section-head">
+        <div class="section-eyebrow">സേവനങ്ങൾ</div>
+        <h2 class="section-title" id="services-title">എല്ലാം ഒരേയൊരു സ്ഥലത്ത്</h2>
+        <p class="section-sub">
+          രജിസ്ട്രേഷൻ മുതൽ പരിശീലനം വരെ — ആശാ വർക്കർമാർക്കായുള്ള എല്ലാ ഡിജിറ്റൽ ഉപകരണങ്ങളും ഇവിടെ.
+        </p>
+      </div>
+
+      <div class="services-grid">
+        <article class="service-card role-violet">
+          <span class="service-icon" aria-hidden="true">
+            <i data-lucide="users-round" aria-hidden="true"></i>
+          </span>
+          <h3 class="service-title">അംഗത്വ രജിസ്ട്രേഷൻ</h3>
+          <p class="service-desc">പുതിയ ആശാ വർക്കർമാർക്കായി ഡിജിറ്റൽ രജിസ്ട്രേഷൻ — ഐഡി കാർഡ്, ബാങ്ക് വിശദാംശങ്ങൾ, പരിശീലന രേഖകൾ.</p>
+          <a href="#" class="service-cta">അറിയുക <span aria-hidden="true">→</span></a>
+        </article>
+
+        <article class="service-card role-emerald">
+          <span class="service-icon" aria-hidden="true">
+            <i data-lucide="activity" aria-hidden="true"></i>
+          </span>
+          <h3 class="service-title">പ്രവർത്തന റിപ്പോർട്ടിംഗ്</h3>
+          <p class="service-desc">പ്രതിമാസ പ്രവർത്തന റിപ്പോർട്ടുകൾ ഡിജിറ്റലായി സമർപ്പിക്കുക — സന്ദർശന കണക്കുകൾ, ആരോഗ്യ സർവേ ഫലങ്ങൾ.</p>
+          <a href="#" class="service-cta">അറിയുക <span aria-hidden="true">→</span></a>
+        </article>
+
+        <article class="service-card role-amber">
+          <span class="service-icon" aria-hidden="true">
+            <i data-lucide="book-open" aria-hidden="true"></i>
+          </span>
+          <h3 class="service-title">പരിശീലന പരിപാടികൾ</h3>
+          <p class="service-desc">ഓൺലൈൻ പരിശീലന കോഴ്സുകൾ, വർക്ക്ഷോപ്പ് കലണ്ടറുകൾ, സർട്ടിഫിക്കേഷൻ ട്രാക്കിംഗ്.</p>
+          <a href="#" class="service-cta">അറിയുക <span aria-hidden="true">→</span></a>
+        </article>
+
+        <article class="service-card role-plum">
+          <span class="service-icon" aria-hidden="true">
+            <i data-lucide="wallet" aria-hidden="true"></i>
+          </span>
+          <h3 class="service-title">വേതന വിവരങ്ങൾ</h3>
+          <p class="service-desc">പ്രതിമാസ വേതനം, ഇൻസെന്റീവുകൾ, പേയ്മെന്റ് ചരിത്രം — ഒറ്റ ക്ലിക്കിൽ ലഭ്യം.</p>
+          <a href="#" class="service-cta">അറിയുക <span aria-hidden="true">→</span></a>
+        </article>
+
+        <article class="service-card role-rose">
+          <span class="service-icon" aria-hidden="true">
+            <i data-lucide="message-circle" aria-hidden="true"></i>
+          </span>
+          <h3 class="service-title">സഹായം &amp; പിന്തുണ</h3>
+          <p class="service-desc">24×7 സഹായ കേന്ദ്രം, പരാതി പരിഹാരം, പ്രാദേശിക ആരോഗ്യ ഉദ്യോഗസ്ഥരുമായി നേരിട്ടുള്ള ബന്ധം.</p>
+          <a href="#" class="service-cta">അറിയുക <span aria-hidden="true">→</span></a>
+        </article>
+
+        <article class="service-card role-teal">
+          <span class="service-icon" aria-hidden="true">
+            <i data-lucide="award" aria-hidden="true"></i>
+          </span>
+          <h3 class="service-title">അവാർഡുകൾ &amp; അംഗീകാരങ്ങൾ</h3>
+          <p class="service-desc">മികച്ച പ്രവർത്തനത്തിനുള്ള അംഗീകാരങ്ങൾ, വാർഷിക അവാർഡ് നോമിനേഷനുകൾ.</p>
+          <a href="#" class="service-cta">അറിയുക <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== Updates ===================================================== -->
+    <section class="section" aria-labelledby="updates-title">
+      <div class="section-head">
+        <div class="section-eyebrow">പുതുക്കിയത്</div>
+        <h2 class="section-title" id="updates-title">പ്രധാന അറിയിപ്പുകൾ</h2>
+        <p class="section-sub">
+          ഏറ്റവും പുതിയ പ്രഖ്യാപനങ്ങളും പരിശീലന അവസരങ്ങളും.
+        </p>
+      </div>
+
+      <div class="updates-grid">
+        <article class="update-card">
+          <div class="update-meta-row">
+            <span class="update-when">
+              <span class="dot dot-emerald" aria-hidden="true"></span>
+              ഇന്ന്
+            </span>
+            <span class="status-pill emerald">പുതിയത്</span>
+          </div>
+          <h3 class="update-title">പുതിയ വേതന ഘടന പ്രഖ്യാപിച്ചു</h3>
+          <p class="update-body">
+            2026-27 സാമ്പത്തിക വർഷത്തേക്കുള്ള പുതുക്കിയ വേതന ഘടനയും ഇൻസെന്റീവ് സ്കീമും ഇന്ന് മുതൽ പ്രാബല്യത്തിൽ വന്നു. വിശദ വിവരങ്ങൾ പേയ്മെന്റ് വിഭാഗത്തിൽ.
+          </p>
+        </article>
+
+        <article class="update-card">
+          <div class="update-meta-row">
+            <span class="update-when">
+              <span class="dot dot-amber" aria-hidden="true"></span>
+              ഇന്നലെ
+            </span>
+            <span class="status-pill amber">പരിശീലനം</span>
+          </div>
+          <h3 class="update-title">മാതൃശിശു സംരക്ഷണ പരിശീലനം</h3>
+          <p class="update-body">
+            മാർച്ച് മാസത്തിൽ എല്ലാ ജില്ലകളിലും മാതൃശിശു സംരക്ഷണത്തിലെ പുതിയ ദേശീയ മാർഗ്ഗനിർദ്ദേശങ്ങളെക്കുറിച്ച് ഏകദിന ശില്പശാല. രജിസ്ട്രേഷൻ പരിശീലന വിഭാഗത്തിൽ ലഭ്യമാണ്.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <span>© 2026 കേരള സർക്കാർ · ആരോഗ്യ വകുപ്പ് · ASHA Workers Portal</span>
+    </footer>
+
+    <!-- ===== Lucide Icons ================================================ -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      // Render Lucide icon glyphs once DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
+      });
+    </script>
+
+    <!-- ===== Aurora Grid — Liquid Particle Field (light variant) ===========
+         See the dark-mode preview for the full primitive spec. This block
+         is the light-mode twin: violet particles on cream, violet links,
+         cursor halo uses mix-blend-mode: multiply so it darkens toward the
+         violet rather than screens toward white.
+    ==================================================================== -->
+    <script>
+      /** Aurora Grid — Liquid Particle Field (Daybreak)
+       *  ================================================
+       *  Three composited layers:
+       *
+       *    Layer 1 — Static Lattice (.aurora-grid div, CSS-only)
+       *      32px dashed crosshatch at rgba(15,20,40,0.06) on Daybreak
+       *      canvas. The "boxed" skeleton that makes the liquid motion
+       *      legible.
+       *
+       *    Layer 2 — Liquid Particle Field (.aurora-canvas, this block)
+       *      Pixel-ratio-aware canvas, one particle per 32x32 grid
+       *      intersection. Each particle has a home, live position, and
+       *      velocity. Pointer physics push with quadratic falloff inside
+       *      --push-radius (180px); inside --hot-radius (80px) particles
+       *      ignite — radius and alpha rise, and their color shifts from
+       *      baseline violet rgba(124,92,245,0.55) toward saturated
+       *      rgba(93,76,245,0.95). A web of short lines connects any two
+       *      particles closer than --link-distance (42px); stroke color
+       *      rgba(124,92,245,0.14) — 1px.
+       *
+       *    Layer 3 — Cursor Halo (.aurora-halo div, CSS)
+       *      Pointer-tracked radial gradient with mix-blend-mode: multiply
+       *      so it preserves the darken-on-light behavior that was in the
+       *      original ripple. Fades in/out over 400ms.
+       *
+       *  Ambient motion: two summed sines (~8s loop, ~1.5px amplitude)
+       *  push each particle on a per-particle phase — the field breathes
+       *  even when the cursor is elsewhere.
+       *
+       *  Reduced motion: prefers-reduced-motion short-circuits the rAF
+       *  loop and hides the canvas; the static dashed mesh + vignette
+       *  remain (via @media rule in the stylesheet).
+       *
+       *  Performance: rAF-driven; pointer writes are throttled; a
+       *  ResizeObserver (debounced 120ms) rebuilds the grid on resize.
+       *  Connecting-line rendering is skipped under 768px viewport.
+       */
+      (function auroraGridLiquid() {
+        const hero = document.getElementById('hero');
+        const canvas = document.getElementById('aurora-grid-canvas');
+        if (!hero || !canvas) return;
+
+        const reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        ).matches;
+        if (reduceMotion) return;
+
+        const ctx = canvas.getContext('2d', { alpha: true });
+        if (!ctx) return;
+
+        // ---------- Tuning (light-mode values) ----------
+        const GRID_CELL = 32;
+        const BASE_RADIUS = 1.5;
+        const HOT_RADIUS = 3.5;
+        const BASE_ALPHA = 0.55;      // violet dots read stronger on cream
+        const HOT_ALPHA = 0.95;
+        const PUSH_RADIUS = 180;
+        const PUSH_RADIUS_SQ = PUSH_RADIUS * PUSH_RADIUS;
+        const HOT_RADIUS_PX = 80;
+        const HOT_RADIUS_SQ = HOT_RADIUS_PX * HOT_RADIUS_PX;
+        const MAX_PUSH = 24;
+        const LINK_DIST = 42;
+        const LINK_DIST_SQ = LINK_DIST * LINK_DIST;
+        const SPRING = 0.06;          // home-spring stiffness
+        const DAMPING = 0.86;         // velocity damping per frame
+        const REST_EPSILON = 0.1;
+        // Baseline violet #7c5cf5 -> ignited deeper violet #5d4cf5.
+        const BASE_R = 124, BASE_G = 92, BASE_B = 245;
+        const HOT_R = 93, HOT_G = 76, HOT_B = 245;
+        const LINK_STROKE = 'rgba(124,92,245,0.14)';
+
+        // ---------- State ----------
+        let dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+        let width = 0;
+        let height = 0;
+        let particles = [];
+        let mouseX = -9999;
+        let mouseY = -9999;
+        let pointerInside = false;
+        let touchUntil = 0;
+        let touchStrength = 0;
+        const t0 = performance.now() + Math.random() * 1000;
+
+        // ---------- Grid construction ----------
+        function rebuildGrid() {
+          const rect = hero.getBoundingClientRect();
+          width = Math.max(1, Math.floor(rect.width));
+          height = Math.max(1, Math.floor(rect.height));
+          dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+
+          // Pixel-ratio-aware backing store for retina crispness.
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+          // One particle per 32x32 intersection, centered on the hero.
+          const cols = Math.max(2, Math.floor(width / GRID_CELL));
+          const rows = Math.max(2, Math.floor(height / GRID_CELL));
+          const offsetX = (width - (cols - 1) * GRID_CELL) / 2;
+          const offsetY = (height - (rows - 1) * GRID_CELL) / 2;
+
+          particles = new Array(cols * rows);
+          let i = 0;
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const hx = offsetX + c * GRID_CELL;
+              const hy = offsetY + r * GRID_CELL;
+              particles[i++] = {
+                hx, hy,
+                x: hx, y: hy,
+                vx: 0, vy: 0,
+                phase: (c * 12.9898 + r * 78.233) % (Math.PI * 2),
+                col: c, row: r
+              };
+            }
+          }
+        }
+
+        // ---------- Pointer tracking ----------
+        function updatePointer(clientX, clientY) {
+          const rect = hero.getBoundingClientRect();
+          mouseX = clientX - rect.left;
+          mouseY = clientY - rect.top;
+          hero.style.setProperty('--mx', mouseX + 'px');
+          hero.style.setProperty('--my', mouseY + 'px');
+        }
+
+        const onPointerMove = (e) => updatePointer(e.clientX, e.clientY);
+        const onPointerEnter = (e) => {
+          pointerInside = true;
+          updatePointer(e.clientX, e.clientY);
+          hero.style.setProperty('--halo-opacity', '1');
+        };
+        const onPointerLeave = () => {
+          pointerInside = false;
+          mouseX = -9999;
+          mouseY = -9999;
+          hero.style.setProperty('--halo-opacity', '0');
+        };
+        const onTouchStart = (e) => {
+          const touch = e.touches && e.touches[0];
+          if (!touch) return;
+          updatePointer(touch.clientX, touch.clientY);
+          touchUntil = performance.now() + 900;
+          touchStrength = 1;
+          hero.style.setProperty('--halo-opacity', '1');
+        };
+
+        hero.addEventListener('pointermove', onPointerMove, { passive: true });
+        hero.addEventListener('pointerenter', onPointerEnter);
+        hero.addEventListener('pointerleave', onPointerLeave);
+        hero.addEventListener('touchstart', onTouchStart, { passive: true });
+
+        // ---------- Resize (debounced 120ms) ----------
+        let resizeTimer = null;
+        const scheduleRebuild = () => {
+          if (resizeTimer) clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(rebuildGrid, 120);
+        };
+        if (typeof ResizeObserver !== 'undefined') {
+          new ResizeObserver(scheduleRebuild).observe(hero);
+        } else {
+          window.addEventListener('resize', scheduleRebuild);
+        }
+
+        // ---------- Frame loop ----------
+        let rafId = null;
+
+        function maybeLine(a, b) {
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          if (dx * dx + dy * dy < LINK_DIST_SQ) {
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+          }
+        }
+
+        function frame(now) {
+          const tSec = (now - t0) / 1000;
+          const drawLinks = width >= 768;
+
+          // Decay touch influence.
+          if (touchUntil && now > touchUntil) {
+            touchStrength = 0;
+            touchUntil = 0;
+            if (!pointerInside) {
+              hero.style.setProperty('--halo-opacity', '0');
+              mouseX = -9999;
+              mouseY = -9999;
+            }
+          } else if (touchUntil) {
+            touchStrength = Math.max(0, (touchUntil - now) / 900);
+          }
+
+          ctx.clearRect(0, 0, width, height);
+
+          // ---- Integrate physics ----
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+
+            // Ambient drift: two summed sines, ~8s loop, ~1.5px amp.
+            const ambX =
+              Math.sin(tSec * 0.78 + p.phase) * 0.9 +
+              Math.sin(tSec * 0.31 + p.phase * 1.7) * 0.6;
+            const ambY =
+              Math.cos(tSec * 0.62 + p.phase * 1.3) * 0.9 +
+              Math.cos(tSec * 0.27 + p.phase) * 0.6;
+            const targetHx = p.hx + ambX;
+            const targetHy = p.hy + ambY;
+
+            p.vx += (targetHx - p.x) * SPRING;
+            p.vy += (targetHy - p.y) * SPRING;
+
+            // Pointer push — quadratic falloff, capped at MAX_PUSH.
+            const dx = p.x - mouseX;
+            const dy = p.y - mouseY;
+            const distSq = dx * dx + dy * dy;
+            let heat = 0;
+            if (distSq < PUSH_RADIUS_SQ && distSq > 0.01) {
+              const dist = Math.sqrt(distSq);
+              const falloff = 1 - dist / PUSH_RADIUS;
+              const force = falloff * falloff;
+              const push = Math.min(MAX_PUSH, force * MAX_PUSH) * 0.22;
+              const nx = dx / dist;
+              const ny = dy / dist;
+              p.vx += nx * push;
+              p.vy += ny * push;
+
+              if (distSq < HOT_RADIUS_SQ) {
+                heat = 1 - dist / HOT_RADIUS_PX;
+                if (heat < 0) heat = 0;
+              }
+            }
+
+            p.vx *= DAMPING;
+            p.vy *= DAMPING;
+            p.x += p.vx;
+            p.y += p.vy;
+
+            p._heat = heat;
+          }
+
+          // ---- Paint connecting lines (Layer 2a) ----
+          if (drawLinks) {
+            ctx.strokeStyle = LINK_STROKE;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            // Column count = length of row 0.
+            let cols = 0;
+            while (cols < particles.length && particles[cols].row === 0) cols++;
+            for (let j = 0; j < particles.length; j++) {
+              const a = particles[j];
+              const rN = particles[j + 1];
+              if (rN && rN.row === a.row) maybeLine(a, rN);
+              const dN = particles[j + cols];
+              if (dN) maybeLine(a, dN);
+              const drN = particles[j + cols + 1];
+              if (drN && drN.row === a.row + 1) maybeLine(a, drN);
+            }
+            ctx.stroke();
+          }
+
+          // ---- Paint particles (Layer 2b) ----
+          for (let k = 0; k < particles.length; k++) {
+            const pp = particles[k];
+            const h = pp._heat || 0;
+            const radius = BASE_RADIUS + (HOT_RADIUS - BASE_RADIUS) * h;
+            const alpha = BASE_ALPHA + (HOT_ALPHA - BASE_ALPHA) * h;
+            const cr = Math.round(BASE_R + (HOT_R - BASE_R) * h);
+            const cg = Math.round(BASE_G + (HOT_G - BASE_G) * h);
+            const cb = Math.round(BASE_B + (HOT_B - BASE_B) * h);
+            ctx.fillStyle =
+              'rgba(' + cr + ',' + cg + ',' + cb + ',' + alpha + ')';
+            ctx.beginPath();
+            ctx.arc(pp.x, pp.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          rafId = requestAnimationFrame(frame);
+        }
+
+        rebuildGrid();
+        rafId = requestAnimationFrame(frame);
+      })();
+    </script>
+  </body>
+</html>
