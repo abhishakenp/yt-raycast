@@ -13,14 +13,8 @@ import {
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
 } from '../config.js'
-import { getMedusaAdminEmbedAndEcommerce } from './medusa-embed.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
-import {
-  syncProductsToMedusa,
-  isMedusaSyncConfigured,
-  fetchMedusaProductsForSiteSpec,
-} from './sync-medusa-catalog.js'
 import { provisionSanityForSession, isSanityProvisionable } from './sanity-provision.js'
 import { provisionMedusaForSession, isMedusaProvisionable } from './medusa-provision.js'
 import {
@@ -155,7 +149,7 @@ import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
 import {
   checkPromptContentPolicy,
   CONTENT_POLICY_CLIENT_MESSAGE,
-} from '../../public/scripts/content-policy.js'
+} from '../lib/content-policy'
 import {
   getNextPreviewSnapshot,
   isNextPreviewFeatureEnabled,
@@ -1101,7 +1095,6 @@ export async function startServer(sessionsDir) {
       ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
       headers: req.headers,
     })
-    const { ecommerce, medusaAdminEmbed } = getMedusaAdminEmbedAndEcommerce(session)
     res.json({
       id: session.id,
       prompt: session.prompt,
@@ -1117,8 +1110,8 @@ export async function startServer(sessionsDir) {
       taskCount: session.tasks.length,
       done: session.tasks.filter((t) => t.status === 'DONE').length,
       isAnonymous: !session.userId,
-      ecommerce,
-      medusaAdminEmbed,
+      ecommerce: false,
+      medusaAdminEmbed: { show: false, url: null },
     })
   })
 
@@ -1128,7 +1121,6 @@ export async function startServer(sessionsDir) {
     if (!ensureSessionArtifactAccess(req, res, session)) return
     const store = await readChatStoreAsync(session.workspace, session.id)
     const editable = canSessionRunEdit(session.workspace)
-    const { medusaAdminEmbed } = getMedusaAdminEmbedAndEcommerce(session)
     res.json({
       version: store.version,
       updatedAt: store.updatedAt,
@@ -1136,7 +1128,7 @@ export async function startServer(sessionsDir) {
       messages: store.messages,
       editable,
       mode: 'llm',
-      medusaAdminEmbed,
+      medusaAdminEmbed: { show: false, url: null },
     })
   })
 
@@ -2086,81 +2078,6 @@ export async function startServer(sessionsDir) {
     }
 
     res.json({ products, total: products.length })
-  })
-
-  app.options('/api/ecommercify/push-from-medusa', (_req, res) => {
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
-    )
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-    res.sendStatus(204)
-  })
-
-  app.post('/api/ecommercify/push-from-medusa', async (req, res) => {
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
-    )
-    const sessionId = String(req.body?.sessionId || '').trim()
-    if (!sessionId) {
-      return res.status(400).json({ ok: false, error: 'sessionId is required' })
-    }
-    if (!isMedusaSyncConfigured()) {
-      return res.status(503).json({
-        ok: false,
-        error:
-          'Ship Fast needs Medusa admin credentials: MEDUSA_ADMIN_API_TOKEN or MEDUSA_ADMIN_EMAIL + MEDUSA_ADMIN_PASSWORD',
-      })
-    }
-    const session = getSession(sessionId)
-    if (!session) {
-      return res.status(404).json({ ok: false, error: 'Session not found' })
-    }
-    let siteSpec = loadSiteSpec(session.workspace)
-    if (!siteSpec || siteSpec.siteType !== 'ecommerce') {
-      return res
-        .status(400)
-        .json({ ok: false, error: 'Not an ecommerce site spec for this session' })
-    }
-    try {
-      const products = await fetchMedusaProductsForSiteSpec()
-      siteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, session.workspace)
-      siteSpec.ecommerce = {
-        ...(siteSpec.ecommerce || {}),
-        products,
-      }
-      saveSiteSpec(session.workspace, siteSpec)
-      const themed = applyThemeOverrideToSiteSpec(
-        ensureCompatibleSiteSpec(session.workspace),
-        session.themeOverride,
-      )
-      renderPreviewToWorkspace(themed, session.workspace, session)
-      makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
-      return res.json({ ok: true, products: products.length })
-    } catch (e) {
-      return res.status(500).json({ ok: false, error: e instanceof Error ? e.message : String(e) })
-    }
-  })
-
-  // ─── API: Sync ecommerce catalog to Medusa ────────────────
-  app.post('/api/sessions/:id/sync-medusa-catalog', optionalAuth, async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).json({ error: 'Session not found' })
-
-    const siteSpec = loadSiteSpec(session.workspace)
-    const products = siteSpec?.ecommerce?.products
-    if (!Array.isArray(products) || products.length === 0) {
-      return res.status(400).json({ error: 'No ecommerce products found in this session.' })
-    }
-
-    try {
-      const result = await syncProductsToMedusa(products)
-      res.json({ ok: true, total: products.length, ...result })
-    } catch (e) {
-      res.status(500).json({ ok: false, error: e.message })
-    }
   })
 
   // ─── Catch-all 404 handler ──────────────────────────────
