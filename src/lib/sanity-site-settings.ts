@@ -1,6 +1,6 @@
-import { createClient, type SanityClient } from "@sanity/client"
-import { cache } from "react"
-import { SITE_URL } from "./site-config"
+import { createClient, type SanityClient } from '@sanity/client'
+import { cache } from 'react'
+import { SITE_URL } from './site-config'
 
 export type SiteSettings = {
   homeTitle?: string | null
@@ -16,24 +16,31 @@ export type SiteSettings = {
 
 let _client: SanityClient | null = null
 
-const sanityReadClient = (): SanityClient | null => {
-  const projectId = (process.env.SANITY_PROJECT_ID ?? "").trim()
-  const dataset = (process.env.SANITY_DATASET ?? "production").trim()
+type SanityConfig = {
+  projectId?: string
+  dataset?: string
+  token?: string
+}
+
+const sanityReadClient = (config: SanityConfig = {}): SanityClient | null => {
+  const projectId = (config.projectId ?? process.env.SANITY_PROJECT_ID ?? '').trim()
+  const dataset = (config.dataset ?? process.env.SANITY_DATASET ?? 'production').trim()
   if (!projectId || !dataset) return null
   if (!_client) {
+    const token = (config.token ?? process.env.SANITY_READ_TOKEN ?? '').trim()
     _client = createClient({
       projectId,
       dataset,
-      apiVersion: process.env.SANITY_API_VERSION ?? "2024-01-01",
+      apiVersion: process.env.SANITY_API_VERSION ?? '2024-01-01',
       useCdn: true,
-      ...(process.env.SANITY_READ_TOKEN ? { token: process.env.SANITY_READ_TOKEN } : {}),
+      ...(token ? { token } : {}),
     })
   }
   return _client
 }
 
-const fetchSiteSettingsInner = async (): Promise<SiteSettings> => {
-  const client = sanityReadClient()
+const getSiteSettingsInner = async (config: SanityConfig = {}): Promise<SiteSettings> => {
+  const client = sanityReadClient(config)
   if (!client) return null
   const query = `*[_type == "siteSettings"][0]{
     homeTitle,
@@ -61,11 +68,12 @@ const fetchSiteSettingsInner = async (): Promise<SiteSettings> => {
   }
 }
 
-export const fetchSiteSettings = cache(fetchSiteSettingsInner)
+export const getSiteSettings = cache(getSiteSettingsInner)
+export const fetchSiteSettings = getSiteSettings
 
 export const resolveSiteImageUrl = (raw: string | null | undefined) => {
-  const t = String(raw ?? "").trim()
-  if (!t) return ""
+  const t = String(raw ?? '').trim()
+  if (!t) return ''
   if (/^https?:\/\//i.test(t)) return t
-  return `${SITE_URL.replace(/\/+$/, "")}/${t.replace(/^\/+/, "")}`
+  return `${SITE_URL.replace(/\/+$/, '')}/${t.replace(/^\/+/, '')}`
 }

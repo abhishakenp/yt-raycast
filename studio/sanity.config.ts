@@ -7,12 +7,17 @@ import { seoMetaFields } from 'sanity-plugin-seo'
 import { schemaTypes } from './schemaTypes'
 import { structure } from './structure'
 
+const sessionConfig =
+  typeof window !== 'undefined' ? (window as any).__SANITY_SESSION_CONFIG__ : undefined
+
 const projectId = (
+  sessionConfig?.projectId ||
   process.env.SANITY_STUDIO_PROJECT_ID ||
   process.env.SANITY_PROJECT_ID ||
   ''
 ).trim()
 const dataset = (
+  sessionConfig?.dataset ||
   process.env.SANITY_STUDIO_DATASET ||
   process.env.SANITY_DATASET ||
   'production'
@@ -28,7 +33,7 @@ const studioToken = (
 ).trim()
 
 const authStore =
-  projectId && dataset && studioToken
+  !sessionConfig && projectId && dataset && studioToken
     ? createMockAuthStore({
         client: createClient({
           projectId,

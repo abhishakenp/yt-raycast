@@ -8,7 +8,7 @@ import { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 
 export { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 
-export function renderProject(siteSpec, target) {
+export function renderProject(siteSpec, target, session) {
   prepareSiteSpecForReliableRender(siteSpec)
   let rendered
   switch (target) {
@@ -16,10 +16,10 @@ export function renderProject(siteSpec, target) {
       rendered = renderHtmlProject(siteSpec)
       break
     case 'react':
-      rendered = renderReactProject(siteSpec)
+      rendered = renderReactProject(siteSpec, session)
       break
     case 'nextjs':
-      rendered = renderNextProject(siteSpec)
+      rendered = renderNextProject(siteSpec, session)
       break
     default:
       throw new Error(`Unsupported render target: ${target}`)
@@ -42,17 +42,17 @@ export function writeRenderedFiles(baseDir, files) {
   }
 }
 
-export function writeNextAppToWorkspace(siteSpec, workspace) {
+export function writeNextAppToWorkspace(siteSpec, workspace, session) {
   if (!siteSpec) return
-  const rendered = renderProject(siteSpec, 'nextjs')
+  const rendered = renderProject(siteSpec, 'nextjs', session)
   const root = join(workspace, 'next-app')
   writeRenderedFiles(root, rendered.files)
 }
 
-export function renderPreviewToWorkspace(siteSpec, workspace) {
+export function renderPreviewToWorkspace(siteSpec, workspace, session) {
   prepareSiteSpecForReliableRender(siteSpec)
   const { files } = renderHtmlProject(siteSpec)
   writeRenderedFiles(workspace, files)
-  writeNextAppToWorkspace(siteSpec, workspace)
+  writeNextAppToWorkspace(siteSpec, workspace, session)
   return { files }
 }

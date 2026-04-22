@@ -11,7 +11,8 @@ import {
 let _readishClient = null
 let _writeClient = null
 
-const chatDocId = (sessionId) => `shipFastChat.${String(sessionId || '').replace(/[^a-zA-Z0-9._-]/g, '')}`
+const chatDocId = (sessionId) =>
+  `shipFastChat.${String(sessionId || '').replace(/[^a-zA-Z0-9._-]/g, '')}`
 
 const getSanityFetchClient = () => {
   if (!isSanityConfigured()) return null
@@ -29,6 +30,41 @@ const getSanityFetchClient = () => {
   return _readishClient
 }
 
+const resolveSanityClientConfig = (sanityConfig = {}, fallbackToken = '') => {
+  const projectId = String(sanityConfig.projectId ?? SANITY_PROJECT_ID ?? '').trim()
+  const dataset = String(sanityConfig.dataset ?? SANITY_DATASET ?? '').trim()
+  const apiVersion =
+    String(sanityConfig.apiVersion ?? SANITY_API_VERSION ?? '').trim() || SANITY_API_VERSION
+  const token = String(sanityConfig.token ?? fallbackToken ?? '').trim()
+  if (!projectId || !dataset) return null
+  return {
+    projectId,
+    dataset,
+    apiVersion,
+    ...(token ? { token } : {}),
+  }
+}
+
+const createSanityFetchClient = (sanityConfig = {}) => {
+  if (!isSanityConfigured()) return null
+  const resolved = resolveSanityClientConfig(sanityConfig, SANITY_READ_TOKEN || SANITY_WRITE_TOKEN)
+  if (!resolved) return null
+  return createClient({
+    ...resolved,
+    useCdn: false,
+  })
+}
+
+const createSanityWriteClientForConfig = (sanityConfig = {}) => {
+  if (!isSanityConfigured()) return null
+  const resolved = resolveSanityClientConfig(sanityConfig, SANITY_WRITE_TOKEN)
+  if (!resolved) return null
+  return createClient({
+    ...resolved,
+    useCdn: false,
+  })
+}
+
 export const getSanityWriteClient = () => {
   if (!isSanityConfigured() || !SANITY_WRITE_TOKEN) return null
   if (!_writeClient) {
@@ -43,8 +79,8 @@ export const getSanityWriteClient = () => {
   return _writeClient
 }
 
-export async function loadChatFromSanity(sessionId) {
-  const client = getSanityFetchClient()
+export async function loadChatFromSanity(sessionId, sanityConfig) {
+  const client = sanityConfig ? createSanityFetchClient(sanityConfig) : getSanityFetchClient()
   if (!client || !sessionId) return null
   const _id = chatDocId(sessionId)
   try {
@@ -61,8 +97,10 @@ export async function loadChatFromSanity(sessionId) {
   }
 }
 
-export async function persistChatToSanity(sessionId, store) {
-  const client = getSanityWriteClient()
+export async function saveChatToSanity(sessionId, store, sanityConfig) {
+  const client = sanityConfig
+    ? createSanityWriteClientForConfig(sanityConfig)
+    : getSanityWriteClient()
   if (!client || !sessionId || !store) return
   const _id = chatDocId(sessionId)
   const doc = {
@@ -72,7 +110,10 @@ export async function persistChatToSanity(sessionId, store) {
     version: store.version ?? 1,
     summary: store.summary ?? '',
     messages: (store.messages || []).map((m, i) => ({
-      _key: typeof m.id === 'string' && m.id ? m.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32) || `m${i}` : `m${i}`,
+      _key:
+        typeof m.id === 'string' && m.id
+          ? m.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32) || `m${i}`
+          : `m${i}`,
       id: m.id,
       role: m.role,
       content: m.content,
@@ -87,8 +128,10 @@ export async function persistChatToSanity(sessionId, store) {
   }
 }
 
-export async function deleteChatFromSanity(sessionId) {
-  const client = getSanityWriteClient()
+export async function removeChatFromSanity(sessionId, sanityConfig) {
+  const client = sanityConfig
+    ? createSanityWriteClientForConfig(sanityConfig)
+    : getSanityWriteClient()
   if (!client || !sessionId) return
   const _id = chatDocId(sessionId)
   try {
@@ -97,3 +140,6 @@ export async function deleteChatFromSanity(sessionId) {
     void 0
   }
 }
+
+export const persistChatToSanity = saveChatToSanity
+export const deleteChatFromSanity = removeChatFromSanity

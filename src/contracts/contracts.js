@@ -142,6 +142,8 @@ export function normalizeSession(input = {}, options = {}) {
     lastStatus: input.lastStatus ?? null,
     wsClients: toSet(input.wsClients),
     deployment: input.deployment ?? null,
+    sanityConfig: input.sanityConfig || null,
+    medusaConfig: input.medusaConfig || null,
   }
 }
 

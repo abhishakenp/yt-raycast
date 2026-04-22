@@ -316,6 +316,16 @@ export function getSession(id) {
 
   const sessionMeta = readSessionMeta(workspace)
 
+  let sessionConfig = {}
+  try {
+    const metaPath = join(workspace, SESSION_META_FILE)
+    if (existsSync(metaPath)) {
+      sessionConfig = JSON.parse(readFileSync(metaPath, 'utf-8'))
+    }
+  } catch {
+    sessionConfig = {}
+  }
+
   // Reconstruct session from disk
   const baseSession = {
     id,
@@ -336,6 +346,8 @@ export function getSession(id) {
     deployment: null,
     lastStatus: null,
     wsClients: new Set(),
+    sanityConfig: sessionConfig.sanityConfig || null,
+    medusaConfig: sessionConfig.medusaConfig || null,
   }
 
   const session = normalizeSession(baseSession, { now: Date.now() })
@@ -491,8 +503,24 @@ export function findSessionByPrompt(
   return null
 }
 
-export function deleteSession(id) {
-  const session = sessions.get(id)
+export async function deleteSession(id) {
+  const session = sessions.get(id) || (await getSession(id))
+  if (session?.medusaConfig?.containerId) {
+    try {
+      const { deprovisionMedusaForSession } = await import('./medusa-provision.js')
+      await deprovisionMedusaForSession(id, session.medusaConfig)
+    } catch (e) {
+      console.warn(`[sessions] Failed to deprovision Medusa for ${id}:`, e.message)
+    }
+  }
+  if (session?.sanityConfig?.projectId) {
+    try {
+      const { deprovisionSanityForSession } = await import('./sanity-provision.js')
+      await deprovisionSanityForSession(id, session.sanityConfig)
+    } catch (e) {
+      console.warn(`[sessions] Failed to deprovision Sanity for ${id}:`, e.message)
+    }
+  }
   if (session?.workspace) {
     try {
       rmSync(session.workspace, { recursive: true, force: true })
@@ -517,6 +545,40 @@ export function setSessionPreferredLanguage(session, preferredLanguage) {
   const nextMeta = writeSessionMeta(session.workspace, { preferredLanguage })
   session.preferredLanguage = nextMeta.preferredLanguage
   return session.preferredLanguage
+}
+
+export async function setSanityConfig(sessionId, config) {
+  const session = getSession(sessionId)
+  if (!session?.workspace) return null
+  session.sanityConfig = config || null
+
+  const metaFile = join(session.workspace, SESSION_META_FILE)
+  let meta = {}
+  try {
+    if (existsSync(metaFile)) meta = JSON.parse(readFileSync(metaFile, 'utf-8'))
+  } catch {
+    /* */
+  }
+  meta.sanityConfig = session.sanityConfig
+  writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+  return session
+}
+
+export async function setMedusaConfig(sessionId, config) {
+  const session = getSession(sessionId)
+  if (!session?.workspace) return null
+  session.medusaConfig = config || null
+
+  const metaFile = join(session.workspace, SESSION_META_FILE)
+  let meta = {}
+  try {
+    if (existsSync(metaFile)) meta = JSON.parse(readFileSync(metaFile, 'utf-8'))
+  } catch {
+    /* */
+  }
+  meta.medusaConfig = session.medusaConfig
+  writeFileSync(metaFile, JSON.stringify(meta, null, 2))
+  return session
 }
 
 export function claimSession(sessionId, newUserId) {

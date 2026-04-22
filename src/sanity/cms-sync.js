@@ -1,5 +1,4 @@
-import { fetchSiteSettings } from './client.js'
-import { getSanityWriteClient } from './chat-sync.js'
+import { createSanityReadClient, createSanityWriteClient } from './client.js'
 
 const SITE_SETTINGS_STRING_KEYS = [
   'homeTitle',
@@ -36,6 +35,40 @@ export function pickSiteSettingsPatch(body) {
   return out
 }
 
+const getReadClient = (sanityConfig) =>
+  sanityConfig ? createSanityReadClient(sanityConfig) : createSanityReadClient()
+
+const getWriteClient = (sanityConfig) =>
+  sanityConfig ? createSanityWriteClient(sanityConfig) : createSanityWriteClient()
+
+const fetchSiteSettingsWithClient = async (client) => {
+  if (!client) return null
+  const query = `*[_type == "siteSettings"][0]{
+    homeTitle,
+    homeDescription,
+    pricingPageTitle,
+    pricingPageDescription,
+    pricingHeroHeadline,
+    shipChatHeadline,
+    shipChatSubheadline,
+    shipChatSyncedAt,
+    "ogImageAssetId": ogImage.asset._ref,
+    "ogImageAlt": ogImage.alt,
+    "homeHeroImageAssetId": homeHeroImage.asset._ref,
+    "homeHeroImageAlt": homeHeroImage.alt,
+    "ogImageUrl": coalesce(ogImage.asset->url, ogImageUrl),
+    "homeHeroImageUrl": coalesce(homeHeroImage.asset->url, homeHeroImageUrl),
+    "seoTitle": seo.metaTitle,
+    "seoDescription": seo.metaDescription
+  }`
+  try {
+    const fresh = client.withConfig({ useCdn: false })
+    return await fresh.fetch(query)
+  } catch {
+    return null
+  }
+}
+
 const URL_FIELD_KEYS = new Set(['ogImageUrl', 'homeHeroImageUrl'])
 
 function splitStringPatch(patch) {
@@ -53,8 +86,8 @@ function splitStringPatch(patch) {
   return { setFields, unsetFields }
 }
 
-export async function applySiteSettingsPatch(body) {
-  const client = getSanityWriteClient()
+export async function patchSiteSettings(body, sanityConfig) {
+  const client = getWriteClient(sanityConfig)
   if (!client) return { ok: false, error: 'Sanity write not configured' }
   const stringPatch = pickSiteSettingsPatch(body)
   const touchOg = body && 'ogImageAssetId' in body
@@ -102,7 +135,9 @@ export async function applySiteSettingsPatch(body) {
   }
 
   try {
-    const existing = await client.fetch(`*[_type == "siteSettings"] | order(_updatedAt desc) [0]{ _id }`)
+    const existing = await client.fetch(
+      `*[_type == "siteSettings"] | order(_updatedAt desc) [0]{ _id }`,
+    )
     const id = existing?._id
     if (!id) {
       if (!Object.keys(setFields).length) return { ok: false, error: 'No valid fields' }
@@ -113,7 +148,7 @@ export async function applySiteSettingsPatch(body) {
       if (unsetFields.length) builder = builder.unset(unsetFields)
       await builder.commit()
     }
-    const siteSettings = await fetchSiteSettings()
+    const siteSettings = await fetchSiteSettingsWithClient(getReadClient(sanityConfig))
     return { ok: true, siteSettings }
   } catch (e) {
     return { ok: false, error: e?.message ? String(e.message) : 'Patch failed' }
@@ -123,8 +158,7 @@ export async function applySiteSettingsPatch(body) {
 const findHomeHero = (siteSpec) => {
   const pages = siteSpec?.pages
   if (!Array.isArray(pages)) return { headline: '', subheadline: '', description: '' }
-  const home =
-    pages.find((p) => p.route === '/' || p.route === '') || pages[0] || null
+  const home = pages.find((p) => p.route === '/' || p.route === '') || pages[0] || null
   if (!home) return { headline: '', subheadline: '', description: '' }
   const seo = home.seo || {}
   const sections = home.sections || []
@@ -144,10 +178,8 @@ export function mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings) {
 
   const seoTitle = String(siteSettings.homeTitle ?? siteSettings.seoTitle ?? '').trim()
   const seoDesc = String(siteSettings.homeDescription ?? siteSettings.seoDescription ?? '').trim()
-  const heroHeadline =
-    String(siteSettings.shipChatHeadline ?? '').trim() || seoTitle
-  const heroSub =
-    String(siteSettings.shipChatSubheadline ?? '').trim() || seoDesc
+  const heroHeadline = String(siteSettings.shipChatHeadline ?? '').trim() || seoTitle
+  const heroSub = String(siteSettings.shipChatSubheadline ?? '').trim() || seoDesc
   const home = pages.find((p) => p.route === '/' || p.route === '') || pages[0]
   if (home && (seoTitle || seoDesc || heroHeadline || heroSub)) {
     home.seo = { ...(home.seo || {}) }
@@ -184,8 +216,8 @@ export function mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings) {
   return spec
 }
 
-export async function syncSiteSettingsFromSiteSpec(siteSpec) {
-  const client = getSanityWriteClient()
+export async function syncSiteSettingsToSanity(siteSpec, sanityConfig) {
+  const client = getWriteClient(sanityConfig)
   if (!client || !siteSpec) return
   const { headline, subheadline, description } = findHomeHero(siteSpec)
   const syncedAt = new Date().toISOString()
@@ -198,7 +230,9 @@ export async function syncSiteSettingsFromSiteSpec(siteSpec) {
     homeDescription: description || '',
   }
   try {
-    const existing = await client.fetch(`*[_type == "siteSettings"] | order(_updatedAt desc) [0]{ _id }`)
+    const existing = await client.fetch(
+      `*[_type == "siteSettings"] | order(_updatedAt desc) [0]{ _id }`,
+    )
     const id = existing?._id
     if (!id) {
       await client.create({
@@ -211,4 +245,12 @@ export async function syncSiteSettingsFromSiteSpec(siteSpec) {
   } catch {
     void 0
   }
+}
+
+export const applySiteSettingsPatch = patchSiteSettings
+export const syncSiteSettingsFromSiteSpec = syncSiteSettingsToSanity
+export async function mergeFromSanity(siteSpec, sanityConfig) {
+  if (!sanityConfig) return mergeSanitySiteSettingsIntoSiteSpec(siteSpec, null)
+  const siteSettings = await fetchSiteSettingsWithClient(getReadClient(sanityConfig))
+  return mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings)
 }

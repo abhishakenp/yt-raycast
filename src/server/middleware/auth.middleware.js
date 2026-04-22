@@ -35,3 +35,29 @@ export async function optionalAuth(req, res, next) {
   }
   next()
 }
+
+/**
+ * Requires either a valid Firebase Bearer token or the internal provision secret.
+ * Used by server-to-server provision routes that may also be called from the browser.
+ */
+export async function requireProvisionAuth(req, res, next) {
+  const internalSecret = process.env.INTERNAL_API_SECRET
+  const authHeader = req.headers.authorization
+  const internalHeader = req.headers['x-internal-secret']
+
+  if (internalSecret && internalHeader === internalSecret) {
+    return next()
+  }
+
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      const decoded = await verifyIdToken(authHeader.slice(7))
+      req.user = { uid: decoded.uid, email: decoded.email }
+      return next()
+    } catch (err) {
+      console.error('[auth] provision token verification failed:', err?.message ?? err)
+    }
+  }
+
+  res.status(401).json({ error: 'Unauthorized' })
+}

@@ -87,17 +87,28 @@ function renderNextPackageJson(projectName, extraDependencies = {}, extraScripts
   )
 }
 
-function renderMedusaExportFiles() {
+function renderMedusaExportFiles(session) {
+  const backendUrl =
+    String(session?.medusaConfig?.backendUrl || '').trim() || 'http://localhost:9000'
+  const publishableKey = String(session?.medusaConfig?.publishableKey || '').trim()
+  const prefilled = Boolean(
+    String(session?.medusaConfig?.backendUrl || '').trim() || publishableKey,
+  )
+
   return {
-    '.env.example.medusa': `# Medusa Store API (server + browser)
-MEDUSA_BACKEND_URL=http://localhost:9000
-NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
+    '.env.example.medusa': `${prefilled ? '# Pre-filled for this session when available.\n' : ''}# Medusa Store API (server + browser)
+MEDUSA_BACKEND_URL=${backendUrl}
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=${backendUrl}
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${publishableKey}
 # Optional: override default system payment provider id from Medusa Admin
 # NEXT_PUBLIC_MEDUSA_PAYMENT_PROVIDER_ID=pp_system_default
 # Razorpay (when configured in Medusa for the storefront)
 # NEXT_PUBLIC_RAZORPAY_KEY_ID=
 # On the Medusa server, set STORE_CORS to include this app origin (e.g. http://localhost:3000,http://localhost:7420). See infra/medusa/README.md in Ship Fast.
+`,
+    '.env.local': `MEDUSA_BACKEND_URL=${backendUrl}
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=${backendUrl}
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${publishableKey}
 `,
     'lib/medusa.js': `import Medusa from '@medusajs/js-sdk'
 
@@ -1140,16 +1151,32 @@ export default function CheckoutPage() {
   }
 }
 
-function renderSanityNextExportFiles(siteSpec) {
+function renderSanityNextExportFiles(siteSpec, session) {
   const siteUrl = normalizeSiteUrl(siteSpec?.seo?.siteUrl || '')
   const staticSitemapEntries = buildSitemapEntries(siteSpec)
   const embeddedSiteUrl = JSON.stringify(siteUrl)
   const embeddedStaticSitemap = JSON.stringify(staticSitemapEntries)
-  const sanityProjectId = String(siteSpec?.exportOptions?.sanityProjectId || '').trim()
-  const sanityDataset = String(siteSpec?.exportOptions?.sanityDataset || '').trim() || 'production'
+  const sanityProjectId =
+    String(session?.sanityConfig?.projectId || '').trim() ||
+    String(siteSpec?.exportOptions?.sanityProjectId || '').trim()
+  const sanityDataset =
+    String(session?.sanityConfig?.dataset || '').trim() ||
+    String(siteSpec?.exportOptions?.sanityDataset || '').trim() ||
+    'production'
+  const prefilled = Boolean(
+    String(session?.sanityConfig?.projectId || '').trim() ||
+    String(session?.sanityConfig?.dataset || '').trim(),
+  )
 
   return {
-    '.env.example': `NEXT_PUBLIC_SANITY_PROJECT_ID=${sanityProjectId}
+    '.env.example': `${prefilled ? '# Pre-filled for this session when available.\n' : ''}NEXT_PUBLIC_SANITY_PROJECT_ID=${sanityProjectId}
+NEXT_PUBLIC_SANITY_DATASET=${sanityDataset || 'production'}
+NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
+SANITY_READ_TOKEN=
+SANITY_STUDIO_PROJECT_ID=${sanityProjectId}
+SANITY_STUDIO_DATASET=${sanityDataset || 'production'}
+`,
+    '.env.local': `NEXT_PUBLIC_SANITY_PROJECT_ID=${sanityProjectId}
 NEXT_PUBLIC_SANITY_DATASET=${sanityDataset || 'production'}
 NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
 SANITY_READ_TOKEN=
@@ -2222,7 +2249,7 @@ export default function GeneratedPage() {
 `
 }
 
-export function renderNextProject(siteSpec) {
+export function renderNextProject(siteSpec, session) {
   const cmsType = (siteSpec.exportOptions?.cms || '').toLowerCase()
   const cmsSanity = cmsType === 'sanity'
   const embedSanityStudio = cmsSanity && siteSpec.exportOptions?.embedSanityStudio !== false
@@ -2468,7 +2495,7 @@ export default function SmartLink({ href = '#', children, ...props }) {
   }
 
   if (cmsSanity) {
-    Object.assign(files, renderSanityNextExportFiles(siteSpec))
+    Object.assign(files, renderSanityNextExportFiles(siteSpec, session))
     if (embedSanityStudio) {
       Object.assign(files, collectShipFastStudioFiles())
       files['app/studio/[[...tool]]/page.jsx'] = `import { NextStudio } from 'next-sanity/studio'
@@ -2488,7 +2515,7 @@ export default function StudioPage() {
   }
 
   if (isEcommerce) {
-    Object.assign(files, renderMedusaExportFiles())
+    Object.assign(files, renderMedusaExportFiles(session))
     Object.assign(files, renderEcommerceComponents(useSwiper))
     Object.assign(files, renderEcommerceAppShellFiles())
   }

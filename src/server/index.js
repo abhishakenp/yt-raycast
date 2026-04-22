@@ -21,6 +21,8 @@ import {
   isMedusaSyncConfigured,
   fetchMedusaProductsForSiteSpec,
 } from './sync-medusa-catalog.js'
+import { provisionSanityForSession, isSanityProvisionable } from './sanity-provision.js'
+import { provisionMedusaForSession, isMedusaProvisionable } from './medusa-provision.js'
 import {
   loadSiteSpec,
   saveSiteSpec,
@@ -56,6 +58,8 @@ import {
   broadcastToAllSessions,
   setSessionPreferredLanguage,
   readAnonOwnerSecret,
+  setSanityConfig,
+  setMedusaConfig,
 } from './sessions.js'
 import {
   generateSessionExport,
@@ -83,7 +87,7 @@ import {
   getSessionPaymentDetails,
 } from '../billing/payments.js'
 import { razorpayWebhookHandler } from './razorpay.js'
-import { applySiteSettingsPatch, getSanityWriteClient } from '../sanity/sync.js'
+import { applySiteSettingsPatch } from '../sanity/sync.js'
 import {
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
@@ -113,7 +117,11 @@ import {
   getAnonDailyLimit,
   cleanupMap,
 } from '../lib/rate-limit.ts'
-import { fetchSanityImageAssets, fetchSiteSettings } from '../sanity/client.js'
+import {
+  createSanityWriteClient,
+  fetchSanityImageAssets,
+  fetchSiteSettings,
+} from '../sanity/client.js'
 import { applyPricingPageOverrides } from './blog-pages.js'
 import { renderShipFastLlmsTxt } from '../renderers/llms-txt.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
@@ -489,7 +497,8 @@ export async function startServer(sessionsDir) {
 
   // ─── Auth middleware ──────────────────────────────────────
   // Extracted to src/server/middleware/auth.middleware.js
-  const { requireAuth, optionalAuth } = await import('./middleware/auth.middleware.js')
+  const { requireAuth, optionalAuth, requireProvisionAuth } =
+    await import('./middleware/auth.middleware.js')
 
   function ensureSessionArtifactAccess(req, res, session) {
     if (session?.userId) {
@@ -1134,10 +1143,11 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (!ensureSessionArtifactAccess(req, res, session)) return
-    if (!isSanityChatWriteConfigured()) {
+    const sanityConfig = session.sanityConfig || undefined
+    if (!sanityConfig && !isSanityChatWriteConfigured()) {
       return res.status(503).json({ error: 'Sanity CMS write is not configured on the server.' })
     }
-    const result = await applySiteSettingsPatch(req.body)
+    const result = await applySiteSettingsPatch(req.body, sanityConfig)
     if (!result.ok) {
       return res.status(400).json({ error: result.error || 'Update failed' })
     }
@@ -1157,12 +1167,13 @@ export async function startServer(sessionsDir) {
       const session = getSession(req.params.id)
       if (!session) return res.status(404).json({ error: 'Session not found' })
       if (!ensureSessionArtifactAccess(req, res, session)) return
-      if (!isSanityChatWriteConfigured()) {
+      const sanityConfig = session.sanityConfig || undefined
+      if (!sanityConfig && !isSanityChatWriteConfigured()) {
         return res.status(503).json({ error: 'Sanity CMS write is not configured on the server.' })
       }
       const file = req.file
       if (!file?.buffer) return res.status(400).json({ error: 'No image file' })
-      const client = getSanityWriteClient()
+      const client = createSanityWriteClient(sanityConfig)
       if (!client) return res.status(503).json({ error: 'Sanity write client unavailable.' })
       try {
         const asset = await client.assets.upload('image', file.buffer, {
@@ -1183,11 +1194,12 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (!ensureSessionArtifactAccess(req, res, session)) return
-    if (!isSanityConfigured()) {
+    const sanityConfig = session.sanityConfig || undefined
+    if (!sanityConfig && !isSanityConfigured()) {
       return res.status(503).json({ error: 'Sanity is not configured on the server.' })
     }
     const limit = Math.min(60, Math.max(1, parseInt(String(req.query.limit || '24'), 10) || 24))
-    const assets = await fetchSanityImageAssets(limit)
+    const assets = await fetchSanityImageAssets(limit, sanityConfig)
     res.json({ assets })
   })
 
@@ -1627,7 +1639,7 @@ export async function startServer(sessionsDir) {
     }
   })
 
-  app.post('/api/sessions/:id/sync-sanity-preview', async (req, res) => {
+  app.post('/api/sessions/:id/sync-sanity-preview', requireAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
@@ -1640,6 +1652,112 @@ export async function startServer(sessionsDir) {
     } catch (error) {
       res.status(400).json({ error: error.message })
     }
+  })
+
+  // Dashboard calls /api/provision/{type} with sessionId in body
+  app.post('/api/provision/sanity', async (req, res) => {
+    const id = req.body?.sessionId
+    if (!id) return res.status(400).json({ error: 'sessionId required' })
+    req.params = { id }
+    const session = getSession(id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (session.sanityConfig) {
+      const safeConfig = {
+        projectId: session.sanityConfig.projectId,
+        dataset: session.sanityConfig.dataset,
+        apiVersion: session.sanityConfig.apiVersion,
+        provisionedAt: session.sanityConfig.provisionedAt,
+      }
+      return res.json({ success: true, config: safeConfig, alreadyProvisioned: true })
+    }
+    if (!isSanityProvisionable()) {
+      return res.status(503).json({
+        error:
+          'Sanity provisioning not configured (missing SANITY_PROJECT_ID or SANITY_MANAGEMENT_TOKEN)',
+      })
+    }
+    const config = await provisionSanityForSession(id)
+    await setSanityConfig(id, config)
+    const safeConfig = {
+      projectId: config.projectId,
+      dataset: config.dataset,
+      apiVersion: config.apiVersion,
+      provisionedAt: config.provisionedAt,
+    }
+    res.json({ success: true, config: safeConfig })
+  })
+
+  app.post('/api/provision/medusa', async (req, res) => {
+    const id = req.body?.sessionId
+    if (!id) return res.status(400).json({ error: 'sessionId required' })
+    const session = getSession(id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (session.medusaConfig) {
+      return res.json({ success: true, config: session.medusaConfig, alreadyProvisioned: true })
+    }
+    if (!isMedusaProvisionable()) {
+      return res.status(503).json({ error: 'Medusa provisioning not configured' })
+    }
+    const config = await provisionMedusaForSession(id, session.prompt?.slice(0, 50))
+    await setMedusaConfig(id, config)
+    res.json({ success: true, config })
+  })
+
+  app.post('/api/sessions/:id/provision/sanity', requireProvisionAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    if (session.sanityConfig) {
+      const safeConfig = {
+        projectId: session.sanityConfig.projectId,
+        dataset: session.sanityConfig.dataset,
+        apiVersion: session.sanityConfig.apiVersion,
+        provisionedAt: session.sanityConfig.provisionedAt,
+      }
+      return res.json({ success: true, config: safeConfig, alreadyProvisioned: true })
+    }
+
+    if (!isSanityProvisionable()) {
+      return res.status(503).json({
+        error:
+          'Sanity provisioning not configured (missing SANITY_PROJECT_ID or SANITY_MANAGEMENT_TOKEN)',
+      })
+    }
+
+    const config = await provisionSanityForSession(req.params.id)
+    await setSanityConfig(req.params.id, config)
+
+    const safeConfig = {
+      projectId: config.projectId,
+      dataset: config.dataset,
+      apiVersion: config.apiVersion,
+      provisionedAt: config.provisionedAt,
+    }
+    res.json({ success: true, config: safeConfig })
+  })
+
+  app.post('/api/sessions/:id/provision/medusa', requireProvisionAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+
+    if (session.medusaConfig) {
+      return res.json({ success: true, config: session.medusaConfig, alreadyProvisioned: true })
+    }
+
+    if (!isMedusaProvisionable()) {
+      return res.status(503).json({ error: 'Medusa provisioning not configured' })
+    }
+
+    const config = await provisionMedusaForSession(req.params.id, session.prompt?.slice(0, 50))
+    await setMedusaConfig(req.params.id, config)
+
+    res.json({ success: true, config })
+  })
+
+  app.get('/api/sessions/:id/medusa-config', requireAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    res.json(session.medusaConfig || null)
   })
 
   app.get('/api/sessions/:id/next-preview', optionalAuth, async (req, res) => {
@@ -2017,7 +2135,7 @@ export async function startServer(sessionsDir) {
         ensureCompatibleSiteSpec(session.workspace),
         session.themeOverride,
       )
-      renderPreviewToWorkspace(themed, session.workspace)
+      renderPreviewToWorkspace(themed, session.workspace, session)
       makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
       return res.json({ ok: true, products: products.length })
     } catch (e) {

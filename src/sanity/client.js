@@ -5,26 +5,62 @@ import {
   SANITY_DATASET,
   SANITY_PROJECT_ID,
   SANITY_READ_TOKEN,
+  SANITY_WRITE_TOKEN,
 } from '../config.js'
 
 let _client = null
 
+const resolveClientConfig = (config = {}, tokenFallback = '') => {
+  const projectId = String(config.projectId ?? SANITY_PROJECT_ID ?? '').trim()
+  const dataset = String(config.dataset ?? SANITY_DATASET ?? '').trim()
+  const apiVersion =
+    String(config.apiVersion ?? SANITY_API_VERSION ?? '').trim() || SANITY_API_VERSION
+  const token = String(config.token ?? tokenFallback ?? '').trim()
+  if (!projectId || !dataset) return null
+  return {
+    projectId,
+    dataset,
+    apiVersion,
+    ...(token ? { token } : {}),
+  }
+}
+
+export const createSanityReadClient = (config = {}) => {
+  const hasOverrideConfig = Boolean(
+    config && (config.projectId || config.dataset || config.token || config.apiVersion),
+  )
+  if (!hasOverrideConfig && !isSanityConfigured()) return null
+  const resolved = resolveClientConfig(config, SANITY_READ_TOKEN)
+  if (!resolved) return null
+  return createClient({
+    ...resolved,
+    useCdn: true,
+  })
+}
+
+export const createSanityWriteClient = (config = {}) => {
+  const hasOverrideConfig = Boolean(
+    config && (config.projectId || config.dataset || config.token || config.apiVersion),
+  )
+  if (!hasOverrideConfig && !isSanityConfigured()) return null
+  const resolved = resolveClientConfig(config, SANITY_WRITE_TOKEN)
+  if (!resolved) return null
+  return createClient({
+    ...resolved,
+    useCdn: false,
+  })
+}
+
 export const getSanityClient = () => {
   if (!isSanityConfigured()) return null
   if (!_client) {
-    _client = createClient({
-      projectId: SANITY_PROJECT_ID,
-      dataset: SANITY_DATASET,
-      apiVersion: SANITY_API_VERSION,
-      useCdn: true,
-      ...(SANITY_READ_TOKEN ? { token: SANITY_READ_TOKEN } : {}),
-    })
+    _client = createSanityReadClient()
   }
   return _client
 }
 
-export async function fetchSiteSettings() {
-  const client = getSanityClient()
+export async function fetchSiteSettings(sanityConfig) {
+  const client = sanityConfig ? createSanityReadClient(sanityConfig) : getSanityClient()
   if (!client) return null
   const query = `*[_type == "siteSettings"][0]{
     homeTitle,
@@ -52,8 +88,8 @@ export async function fetchSiteSettings() {
   }
 }
 
-export async function fetchSanityImageAssets(limit = 24) {
-  const client = getSanityClient()
+export async function fetchSanityImageAssets(limit = 24, sanityConfig) {
+  const client = sanityConfig ? createSanityReadClient(sanityConfig) : getSanityClient()
   if (!client) return []
   const n = Math.min(60, Math.max(1, Number(limit) || 24))
   const query = `*[_type == "sanity.imageAsset"] | order(_createdAt desc) [0...${n}] { _id, url }`

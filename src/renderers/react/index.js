@@ -711,13 +711,16 @@ export default function SectionRenderer({ section, siteSpec }) {
 `
 }
 
-export function renderReactProject(siteSpec) {
+export function renderReactProject(siteSpec, session) {
   const useSwiper = shouldUseSwiper(siteSpec)
   const homePage = (siteSpec.pages || []).find((page) => page.route === '/') || siteSpec.pages?.[0]
   const homeSeo = resolvePageSeo(siteSpec, homePage)
   const homeStructuredData = homePage ? buildStructuredData(siteSpec, homePage) : []
   const files = {
-    'package.json': renderReactPackageJson(siteSpec.projectName, useSwiper ? { swiper: '^12.0.0' } : {}),
+    'package.json': renderReactPackageJson(
+      siteSpec.projectName,
+      useSwiper ? { swiper: '^12.0.0' } : {},
+    ),
     'index.html': `<!doctype html>
 <html lang="${homeSeo.htmlLang}">
   <head>
@@ -767,9 +770,13 @@ export default defineConfig({
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './styles.css'
-${useSwiper ? `import 'swiper/css'
+${
+  useSwiper
+    ? `import 'swiper/css'
 import 'swiper/css/pagination'
-` : ''}
+`
+    : ''
+}
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
@@ -1118,7 +1125,20 @@ export default function PageTemplate({ siteSpec, page }) {
     pkg.dependencies['@medusajs/js-sdk'] = '^2.13.5'
     files['package.json'] = JSON.stringify(pkg, null, 2)
 
-    files['src/lib/medusa.js'] = `const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || 'http://localhost:9000'
+    const backendUrl =
+      String(session?.medusaConfig?.backendUrl || '').trim() || 'http://localhost:9000'
+    const publishableKey = String(session?.medusaConfig?.publishableKey || '').trim()
+    const prefilled = Boolean(
+      String(session?.medusaConfig?.backendUrl || '').trim() || publishableKey,
+    )
+    const isSanityCms = siteSpec?.exportOptions?.cms === 'sanity'
+    const sanityProjectId = String(session?.sanityConfig?.projectId || '').trim()
+    const sanityDataset = String(session?.sanityConfig?.dataset || '').trim()
+    const sanityApiVersion = String(session?.sanityConfig?.apiVersion || '').trim()
+    const sanityPrefilled = Boolean(sanityProjectId || sanityDataset || sanityApiVersion)
+
+    files['src/lib/medusa.js'] =
+      `const backendUrl = import.meta.env.VITE_MEDUSA_BACKEND_URL || 'http://localhost:9000'
 const publishableKey = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || ''
 
 let sdk = null
@@ -1212,10 +1232,28 @@ export async function getRegions() {
 }
 `
 
-    files['.env.example.medusa'] = `# Medusa.js E-Commerce — optional
-VITE_MEDUSA_BACKEND_URL=http://localhost:9000
-VITE_MEDUSA_PUBLISHABLE_KEY=
+    files['.env.example.medusa'] =
+      `${prefilled ? '# Pre-filled for this session when available.\n' : ''}# Medusa.js E-Commerce — optional
+VITE_MEDUSA_BACKEND_URL=${backendUrl}
+VITE_MEDUSA_PUBLISHABLE_KEY=${publishableKey}
 `
+    files['.env.local'] = `VITE_MEDUSA_BACKEND_URL=${backendUrl}
+VITE_MEDUSA_PUBLISHABLE_KEY=${publishableKey}
+`
+
+    if (isSanityCms) {
+      files['.env.example.sanity'] =
+        `${sanityPrefilled ? '# Pre-filled for this session when available.\n' : ''}# Sanity CMS — optional
+VITE_SANITY_PROJECT_ID=${sanityProjectId || 'your-project-id'}
+VITE_SANITY_DATASET=${sanityDataset || 'production'}
+VITE_SANITY_API_VERSION=${sanityApiVersion || '2024-01-01'}
+`
+      files['.env.local'] =
+        `${files['.env.local'] || ''}VITE_SANITY_PROJECT_ID=${sanityProjectId || 'your-project-id'}
+VITE_SANITY_DATASET=${sanityDataset || 'production'}
+VITE_SANITY_API_VERSION=${sanityApiVersion || '2024-01-01'}
+`
+    }
   }
 
   return { files }

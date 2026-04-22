@@ -200,7 +200,7 @@ export const HomePageView = ({ siteSettings }: { siteSettings: SiteSettings }) =
                 <input type="hidden" id="design-ref-url-1" name="design-ref-url-1" value="" />
                 <input type="hidden" id="design-ref-url-2" name="design-ref-url-2" value="" />
                 <input type="hidden" id="design-ref-notes" name="design-ref-notes" value="" />
-                <SfGlassPillButton type="submit" className="submit-btn" id="submit-btn" disabled>
+                <button type="submit" className="submit-btn" id="submit-btn" disabled>
                   <svg
                     className="zap-icon"
                     viewBox="0 0 24 24"
@@ -214,8 +214,8 @@ export const HomePageView = ({ siteSettings }: { siteSettings: SiteSettings }) =
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                   </svg>
                   <span className="btn-label">Generate</span>
-                  <div className="spinner" />
-                </SfGlassPillButton>
+                  <div className="spinner"></div>
+                </button>
               </form>
               <div
                 className="prompt-policy-violation"

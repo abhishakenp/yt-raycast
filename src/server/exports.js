@@ -4,7 +4,12 @@ import { join } from 'node:path'
 import { isSanityConfigured } from '../config.js'
 import { fetchSiteSettings } from '../sanity/client.js'
 import { mergeSanitySiteSettingsIntoSiteSpec } from '../sanity/cms-sync.js'
-import { ensureCompatibleSiteSpec, loadSiteSpec, saveSiteSpec, SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
+import {
+  ensureCompatibleSiteSpec,
+  loadSiteSpec,
+  saveSiteSpec,
+  SUPPORTED_EXPORT_TARGETS,
+} from '../spec/index.js'
 import { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from '../renderers/index.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
 import { createZipBuffer } from './zip.js'
@@ -31,7 +36,8 @@ function getExactCloneStatus(workspace, siteSpec) {
     return {
       ready: false,
       degradedPages: [],
-      reason: 'The exact-clone export is not ready because no pages were found in the canonical site spec.',
+      reason:
+        'The exact-clone export is not ready because no pages were found in the canonical site spec.',
     }
   }
 
@@ -66,8 +72,8 @@ function getExactCloneStatus(workspace, siteSpec) {
 
   // Other pages missing = degraded but not blocking
   const degradedPages = [
-    ...missingHtmlFiles.filter(f => f !== homeFilename),
-    ...missingBlueprints.filter(f => f !== homeFilename),
+    ...missingHtmlFiles.filter((f) => f !== homeFilename),
+    ...missingBlueprints.filter((f) => f !== homeFilename),
   ]
 
   if (degradedPages.length > 0) {
@@ -92,7 +98,10 @@ function hashSiteSpec(siteSpec) {
 export function getSessionExportTargets(session) {
   const rawSiteSpec = loadSiteSpec(session.workspace)
   const siteSpec = rawSiteSpec
-    ? applyThemeOverrideToSiteSpec(ensureCompatibleSiteSpec(session.workspace), session.themeOverride)
+    ? applyThemeOverrideToSiteSpec(
+        ensureCompatibleSiteSpec(session.workspace),
+        session.themeOverride,
+      )
     : null
   const metadata = readExportMetadata(session.workspace)
   const currentSourceHash = siteSpec ? hashSiteSpec(siteSpec) : null
@@ -106,15 +115,18 @@ export function getSessionExportTargets(session) {
 
   return supported.map((target) => {
     const targetMeta = metadata.targets?.[target] || {}
-    const bundleExists = Boolean(targetMeta.bundlePath && existsSync(join(session.workspace, targetMeta.bundlePath)))
-    const sourceMatches = !siteSpec || (targetMeta.sourceHash && targetMeta.sourceHash === currentSourceHash)
+    const bundleExists = Boolean(
+      targetMeta.bundlePath && existsSync(join(session.workspace, targetMeta.bundlePath)),
+    )
+    const sourceMatches =
+      !siteSpec || (targetMeta.sourceHash && targetMeta.sourceHash === currentSourceHash)
     const ready = bundleExists && sourceMatches && (!siteSpec || exactCloneStatus.ready)
     return {
       target,
       ready,
       buildReady: siteSpec ? exactCloneStatus.ready : true,
       buildReason: siteSpec ? exactCloneStatus.reason : null,
-      degradedPages: siteSpec ? (exactCloneStatus.degradedPages || []) : [],
+      degradedPages: siteSpec ? exactCloneStatus.degradedPages || [] : [],
       generatedAt: targetMeta.generatedAt || null,
       fileCount: targetMeta.fileCount || 0,
       downloadPath: ready ? `/api/sessions/${session.id}/download/${target}` : null,
@@ -129,12 +141,13 @@ export function generateSessionExport(session, target) {
   )
   session.siteSpecReady = Boolean(siteSpec)
   if (!siteSpec) throw new Error('Unable to build a canonical site spec for this session')
-  if (!SUPPORTED_EXPORT_TARGETS.includes(target)) throw new Error(`Unsupported export target: ${target}`)
+  if (!SUPPORTED_EXPORT_TARGETS.includes(target))
+    throw new Error(`Unsupported export target: ${target}`)
   const exactCloneStatus = getExactCloneStatus(session.workspace, siteSpec)
   if (!exactCloneStatus.ready) throw new Error(exactCloneStatus.reason)
   const sourceHash = hashSiteSpec(siteSpec)
 
-  const { files } = renderProject(siteSpec, target)
+  const { files } = renderProject(siteSpec, target, session)
   const exportsDir = join(session.workspace, 'exports')
   const outputDir = join(exportsDir, target)
   mkdirSync(outputDir, { recursive: true })
@@ -204,8 +217,11 @@ export function rerenderPreviewFromSiteSpec(session) {
 
 export async function syncSessionPreviewFromSanity(session) {
   if (!session?.workspace) throw new Error('Invalid session')
-  if (!isSanityConfigured()) throw new Error('Sanity is not configured (SANITY_PROJECT_ID / dataset)')
-  const siteSettings = await fetchSiteSettings()
+  const sanityConfig = session.sanityConfig || undefined
+  if (!sanityConfig && !isSanityConfigured()) {
+    throw new Error('Sanity is not configured (SANITY_PROJECT_ID / dataset)')
+  }
+  const siteSettings = await fetchSiteSettings(sanityConfig)
   if (!siteSettings) throw new Error('Could not load site settings from Sanity')
   const siteSpec = applyThemeOverrideToSiteSpec(
     ensureCompatibleSiteSpec(session.workspace),
@@ -215,5 +231,5 @@ export async function syncSessionPreviewFromSanity(session) {
   const merged = mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings)
   saveSiteSpec(session.workspace, merged)
   session.siteSpecReady = true
-  return renderPreviewToWorkspace(merged, session.workspace)
+  return renderPreviewToWorkspace(merged, session.workspace, session)
 }
