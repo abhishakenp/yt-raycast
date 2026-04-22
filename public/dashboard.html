@@ -1494,11 +1494,10 @@
 
       function requirePremium() {
         if (isAnonymousSession) {
-          void window.shipFastDashboardAuth?.signInWithGoogle?.().catch((e) => {
-            if (e?.code !== 'auth/popup-closed-by-user' && e?.code !== 'auth/cancelled-popup-request') {
-              console.error('[auth] sign-in failed:', e?.message ?? e)
-            }
-          })
+          window.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
+          if (window.parent && window.parent !== window) {
+            window.parent.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
+          }
           return false
         }
         if (!isRailUnlocked()) {

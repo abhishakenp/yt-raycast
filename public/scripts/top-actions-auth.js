@@ -41,7 +41,10 @@ const main = async () => {
   })
 
   signinBtn?.addEventListener('click', () => {
-    window.location.href = '/'
+    window.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
+    if (window.parent && window.parent !== window) {
+      window.parent.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
+    }
   })
 }
 
