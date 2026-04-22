@@ -7,7 +7,6 @@ import {
   DASHBOARD_PORT,
   HOMEPAGE_MODEL,
   SITE_URL,
-  getMedusaAdminAppUrl,
   isSanityConfigured,
   isSanityChatWriteConfigured,
   LLM_CONFIG,
@@ -15,10 +14,8 @@ import {
   RUNPOD_API_URL,
 } from '../config.js'
 import { getMedusaAdminEmbedAndEcommerce } from './medusa-embed.js'
-import { createMedusaStoreRouter } from './medusa-store-routes.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
-import { brandfetchSearch, brandfetchBrandByDomain } from './brandfetch.js'
 import {
   syncProductsToMedusa,
   isMedusaSyncConfigured,
@@ -60,7 +57,6 @@ import {
   setSessionPreferredLanguage,
   readAnonOwnerSecret,
 } from './sessions.js'
-import { verifyIdToken } from '../auth/firebase-admin.js'
 import {
   generateSessionExport,
   getSessionExportBundle,
@@ -68,9 +64,10 @@ import {
   rerenderPreviewFromSiteSpec,
   syncSessionPreviewFromSanity,
 } from './exports.js'
-import { setupWebSocket } from './websocket.js'
+import { broadcastDevReload, setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
 import { existsSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
 import multer from 'multer'
 import {
   filePathForPreviewRequest,
@@ -78,38 +75,54 @@ import {
   stripPreviewArtifactsFromHtml,
 } from './preview-tools-serve.js'
 import {
-  consumeUserCredit,
-  decorateExportTargetsForRequest,
-  getDownloadAccessDecision,
-  getEarlyAdopterStatus,
-  getUserCredits,
-  getSessionPaymentDetails,
   hasActiveSubscription,
-  initPaymentStore,
-  startPaymentListeners,
-  setQuotaInfoGetter,
-} from './payments.js'
-import { razorpayStartHandler, razorpayWebhookHandler } from './razorpay.js'
-import { applySiteSettingsPatch } from '../sanity/cms-sync.js'
-import { getSanityWriteClient } from '../sanity/chat-sync.js'
+  getUserCredits,
+  consumeUserCredit,
+  getDownloadAccessDecision,
+  decorateExportTargetsForRequest as decorateExportTargets,
+  getSessionPaymentDetails,
+} from '../billing/payments.js'
+import { razorpayWebhookHandler } from './razorpay.js'
+import { applySiteSettingsPatch, getSanityWriteClient } from '../sanity/sync.js'
 import {
-  fetchJobOpenings,
-  fetchOfficialNoticeBySlug,
-  fetchOfficialNotices,
-  fetchPostBySlug,
-  fetchPosts,
-  fetchSanityImageAssets,
-  fetchSiteSettings,
-} from '../sanity/client.js'
-import { applyPricingPageOverrides, renderBlogIndex, renderBlogPost } from './blog-pages.js'
-import { applyPublicLocaleResponseHeaders, getLocaleFromRequest } from './locale.js'
-import { renderCareersPage, renderNoticeDetail, renderNoticesIndex } from './psu-pages.js'
+  MAX_FREE_PER_MONTH,
+  MAX_PAID_PER_MONTH,
+  MAX_ANON_PER_DAY,
+  MAX_PER_USER,
+  MAX_PER_IP,
+  MAX_PER_IP_AUTHED,
+  MAX_FREE_PER_IP_MONTHLY,
+  MAX_CONCURRENT_PER_USER,
+  RATE_WINDOW_MS,
+  MONTHLY_WINDOW_MS,
+  DAILY_WINDOW_MS,
+} from '../billing/constants'
+import {
+  userHits,
+  ipHits,
+  userMonthlyHits,
+  anonIpDailyHits,
+  exportHits,
+  ipMonthlyHits,
+  activeGenerations,
+  shareBonusIps,
+  promptSuggestIpHits,
+  checkRateLimit,
+  refundRateLimit,
+  hasIpShareBonus,
+  getAnonDailyLimit,
+  cleanupMap,
+} from '../lib/rate-limit.ts'
+import { fetchSanityImageAssets, fetchSiteSettings } from '../sanity/client.js'
+import { applyPricingPageOverrides } from './blog-pages.js'
 import { renderShipFastLlmsTxt } from '../renderers/llms-txt.js'
 import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-pages.js'
 import { ensureEmbeddedStudioBuilt } from './ensure-studio-build.js'
 import { mountEmbeddedSanityStudio } from './sanity-studio-static.js'
 import { renderPrivacyPage } from './privacy-page.js'
+import { renderPricingPage } from './pricing-page.js'
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
+import { getPublicGalleryList } from './public-gallery-cache.js'
 import { pushSessionToGitHub } from './github.js'
 import {
   getDeploymentBySlug,
@@ -118,6 +131,7 @@ import {
   registerDeployment,
 } from './deployments.js'
 import { generateSlug } from './slug-generator.js'
+import { getPartialPromptSuggestions } from './prompt-suggestions.js'
 import { normalizePromptText, requirePromptText } from '../prompt.js'
 import {
   appendAssistantMessage,
@@ -170,39 +184,17 @@ const sanitizeChatAttachmentPaths = (workspace, paths) => {
 let _sessionsDir = null
 let rateLimitFile = null
 
-// ─── Rate Limiting ────────────────────────────────────────
-const RATE_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
-const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000 // 24 hours
-const MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
-const MAX_PER_USER = 5 // per 10min window
-const MAX_PER_IP = 10 // per 10min window
-const MAX_FREE_PER_MONTH = 10 // hard monthly cap for free (no subscription) users
-const MAX_PAID_PER_MONTH = 30 // hard monthly cap for paid (subscribed) users
 const httpContractsPromise = import('../contracts/http-contracts.js')
-const MAX_PER_IP_AUTHED = 30
-const MAX_FREE_PER_IP_MONTHLY = 15
-
-const MAX_ANON_PER_DAY = 2 // per day for anonymous (unauthenticated) users — then auth wall
-const SHARE_BONUS_EXTRA = 1 // +1 daily generation granted when anon user shares on social
 
 // Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
 const WHITELISTED_IPS = new Set(
-  (process.env.WHITELIST_IPS || '31.165.224.115,49.37.65.246')
+  (process.env.WHITELIST_IPS || '')
     .split(',')
     .map((ip) => ip.trim())
     .filter(Boolean),
 )
-
-const userHits = new Map() // uid -> [timestamp, ...]
-const ipHits = new Map() // ip -> [timestamp, ...]
-const userMonthlyHits = new Map() // uid -> [timestamp, ...]
-const anonIpDailyHits = new Map() // ip -> [timestamp, ...] for anonymous users
-const exportHits = new Map() // uid -> [timestamp, ...] for export rate limiting
-const ipMonthlyHits = new Map() // ip -> [timestamp, ...] monthly cap for free users
-const activeGenerations = new Map() // uid/ip -> count of in-progress generations
-const shareBonusIps = new Map() // ip -> ISO date string (YYYY-MM-DD) — share-for-credit bonus
-const MAX_CONCURRENT_PER_USER = 2
-
+const PROMPT_SUGGEST_WINDOW_MS = 60 * 1000
+const PROMPT_SUGGEST_MAX_PER_IP = 40
 function isLocalDevelopmentRequest(req, clientIp) {
   if (process.env.NODE_ENV === 'production') return false
 
@@ -224,86 +216,6 @@ function setNoIndexHeaders(res) {
   // Keep preview URLs out of search while still allowing third-party image CDNs
   // to receive an origin referrer and serve assets inside the preview iframe.
   res.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-}
-
-function checkRateLimit(key, hitsMap, max, windowMs = RATE_WINDOW_MS) {
-  const now = Date.now()
-  const hits = (hitsMap.get(key) || []).filter((t) => now - t < windowMs)
-  if (hits.length >= max) {
-    hitsMap.set(key, hits)
-    return false
-  }
-  hits.push(now)
-  hitsMap.set(key, hits)
-  return true
-}
-
-function refundRateLimit(key, hitsMap) {
-  const hits = hitsMap.get(key)
-  if (hits?.length) hits.pop()
-}
-
-function hasIpShareBonus(ip) {
-  const stored = shareBonusIps.get(ip)
-  if (!stored) return false
-  return stored === new Date().toISOString().slice(0, 10)
-}
-
-function getAnonDailyLimit(ip) {
-  return MAX_ANON_PER_DAY + (hasIpShareBonus(ip) ? SHARE_BONUS_EXTRA : 0)
-}
-
-// Function to get user generation quota info
-async function getQuotaInfo(userId, clientIp) {
-  if (userId) {
-    // Authenticated user
-    const currentMonthly = (userMonthlyHits.get(userId) || []).filter(
-      (t) => Date.now() - t < MONTHLY_WINDOW_MS,
-    ).length
-    const isSubscribed = await hasActiveSubscription(userId)
-    const monthlyLimit = isSubscribed ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
-
-    return {
-      isSubscribed,
-      monthlyLimit,
-      monthlyUsed: currentMonthly,
-      monthlyRemaining: Math.max(0, monthlyLimit - currentMonthly),
-      isAnonymous: false,
-    }
-  } else if (clientIp) {
-    // Anonymous user
-    const effectiveLimit = getAnonDailyLimit(clientIp)
-    const currentDaily = (anonIpDailyHits.get(clientIp) || []).filter(
-      (t) => Date.now() - t < DAILY_WINDOW_MS,
-    ).length
-
-    return {
-      isSubscribed: false,
-      dailyLimit: effectiveLimit,
-      dailyUsed: currentDaily,
-      dailyRemaining: Math.max(0, effectiveLimit - currentDaily),
-      shareBonusClaimed: hasIpShareBonus(clientIp),
-      isAnonymous: true,
-    }
-  } else {
-    // No user or IP info
-    return {
-      isSubscribed: false,
-      monthlyLimit: MAX_FREE_PER_MONTH,
-      monthlyUsed: 0,
-      monthlyRemaining: MAX_FREE_PER_MONTH,
-      isAnonymous: true,
-    }
-  }
-}
-
-function cleanupMap(map, windowMs) {
-  const now = Date.now()
-  for (const [key, hits] of map) {
-    const valid = hits.filter((t) => now - t < windowMs)
-    if (valid.length === 0) map.delete(key)
-    else map.set(key, valid)
-  }
 }
 
 function isGibberishPrompt(text) {
@@ -356,6 +268,7 @@ setInterval(
     cleanupMap(anonIpDailyHits, DAILY_WINDOW_MS)
     cleanupMap(exportHits, RATE_WINDOW_MS)
     cleanupMap(ipMonthlyHits, MONTHLY_WINDOW_MS)
+    cleanupMap(promptSuggestIpHits, PROMPT_SUGGEST_WINDOW_MS)
     // Prune expired share bonuses (not today)
     const today = new Date().toISOString().slice(0, 10)
     for (const [ip, date] of shareBonusIps) {
@@ -369,7 +282,7 @@ setInterval(
           ipMonthly: Object.fromEntries(ipMonthlyHits),
           shareBonus: Object.fromEntries(shareBonusIps),
         }
-        writeFileSync(rateLimitFile, JSON.stringify(data))
+        writeFile(rateLimitFile, JSON.stringify(data)).catch(() => {})
       } catch {
         /* ignore write errors */
       }
@@ -380,10 +293,9 @@ setInterval(
 
 export async function startServer(sessionsDir) {
   _sessionsDir = sessionsDir
+
   initSessionDir(sessionsDir)
   initDeployments(sessionsDir)
-  initPaymentStore(sessionsDir)
-  startPaymentListeners()
 
   const stalePublicIndex = join(publicDir, 'index.html')
   try {
@@ -396,8 +308,6 @@ export async function startServer(sessionsDir) {
   }
 
   // Set up quota info getter for payments module
-  setQuotaInfoGetter(getQuotaInfo)
-
   rateLimitFile = join(sessionsDir, '.rate_limits.json')
   try {
     if (existsSync(rateLimitFile)) {
@@ -434,7 +344,8 @@ export async function startServer(sessionsDir) {
       reloadTimer = setTimeout(() => {
         reloadTimer = null
         broadcastToAllSessions({ type: 'client_reload' })
-      }, 120)
+        broadcastDevReload({ type: 'client_reload' })
+      }, 400)
     }
 
     const shouldReload = (filename) => {
@@ -454,6 +365,7 @@ export async function startServer(sessionsDir) {
       }
     }
 
+    watchTarget(join(__dir, '..', 'public', 'styles'))
     watchTarget(join(publicDir, 'dashboard.html'))
     watchTarget(join(publicDir, 'styles'))
     watchTarget(join(publicDir, 'scripts'))
@@ -518,33 +430,6 @@ export async function startServer(sessionsDir) {
     next(err)
   })
 
-  app.use('/api/storefront/medusa', createMedusaStoreRouter())
-
-  app.get('/api/brandfetch/search', async (req, res) => {
-    const q = String(req.query?.q || '').trim()
-    const limit = Number(req.query?.limit || 1) || 1
-    if (!q) return res.status(400).json({ ok: false, error: 'Missing q.' })
-    try {
-      const out = await brandfetchSearch({ query: q, limit, timeoutMs: 6500 })
-      if (!out.ok) return res.status(out.status || 502).json({ ok: false, error: out.error || 'Brandfetch error' })
-      res.json({ ok: true, data: out.data })
-    } catch (e) {
-      res.status(502).json({ ok: false, error: e?.message || 'Brandfetch error' })
-    }
-  })
-
-  app.get('/api/brandfetch/brand', async (req, res) => {
-    const domain = String(req.query?.domain || '').trim()
-    if (!domain) return res.status(400).json({ ok: false, error: 'Missing domain.' })
-    try {
-      const out = await brandfetchBrandByDomain({ domain, timeoutMs: 6500 })
-      if (!out.ok) return res.status(out.status || 502).json({ ok: false, error: out.error || 'Brandfetch error' })
-      res.json({ ok: true, data: out.data })
-    } catch (e) {
-      res.status(502).json({ ok: false, error: e?.message || 'Brandfetch error' })
-    }
-  })
-
   // ─── Plausible Analytics Proxy ──────────────────────────
   const plausibleHost = String(
     process.env.PLAUSIBLE_HOST || 'https://plausible.liviogama.com',
@@ -603,31 +488,8 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── Auth middleware ──────────────────────────────────────
-  async function requireAuth(req, res, next) {
-    const auth = req.headers.authorization
-    if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' })
-    try {
-      const decoded = await verifyIdToken(auth.slice(7))
-      req.user = { uid: decoded.uid, email: decoded.email }
-      next()
-    } catch (err) {
-      console.error('[auth] token verification failed:', err?.message ?? err)
-      res.status(401).json({ error: 'Unauthorized' })
-    }
-  }
-
-  async function optionalAuth(req, res, next) {
-    const auth = req.headers.authorization
-    if (auth?.startsWith('Bearer ')) {
-      try {
-        const decoded = await verifyIdToken(auth.slice(7))
-        req.user = { uid: decoded.uid, email: decoded.email }
-      } catch (err) {
-        console.error('[auth] optional token verification failed:', err?.message ?? err)
-      }
-    }
-    next()
-  }
+  // Extracted to src/server/middleware/auth.middleware.js
+  const { requireAuth, optionalAuth } = await import('./middleware/auth.middleware.js')
 
   function ensureSessionArtifactAccess(req, res, session) {
     if (session?.userId) {
@@ -692,16 +554,29 @@ export async function startServer(sessionsDir) {
     return deployment
   }
 
-  // ─── Public: Firebase client config ──────────────────────
-  app.get('/api/config', (_req, res) => {
-    const medusaUrl = getMedusaAdminAppUrl()
-    res.json({
-      apiKey: process.env.FIREBASE_API_KEY ?? '',
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
-      projectId: process.env.FIREBASE_PROJECT_ID ?? '',
-      appId: process.env.FIREBASE_APP_ID ?? '',
-      medusaAdminConfigured: Boolean(medusaUrl),
-    })
+  app.post('/api/prompt-suggestions', async (req, res) => {
+    const partial = typeof req.body?.partial === 'string' ? req.body.partial : ''
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || ''
+    const skipRl =
+      (clientIp && WHITELISTED_IPS.has(clientIp)) || isLocalDevelopmentRequest(req, clientIp)
+    if (!skipRl && clientIp) {
+      if (
+        !checkRateLimit(
+          `prompt-suggest:${clientIp}`,
+          promptSuggestIpHits,
+          PROMPT_SUGGEST_MAX_PER_IP,
+          PROMPT_SUGGEST_WINDOW_MS,
+        )
+      ) {
+        return res.status(429).json({ suggestions: [] })
+      }
+    }
+    try {
+      const suggestions = await getPartialPromptSuggestions(partial)
+      return res.json({ suggestions })
+    } catch {
+      return res.status(500).json({ suggestions: [] })
+    }
   })
 
   // ─── Share-for-credit: grant +1 anonymous generation ────
@@ -731,16 +606,7 @@ export async function startServer(sessionsDir) {
   })
 
   app.get('/llms.txt', (_req, res) => {
-    const sanity = isSanityConfigured()
-    res
-      .type('text/plain; charset=utf-8')
-      .send(
-        renderShipFastLlmsTxt({
-          siteUrl: SITE_URL,
-          includeBlog: sanity,
-          includeInstitutional: sanity,
-        }),
-      )
+    res.type('text/plain; charset=utf-8').send(renderShipFastLlmsTxt({ siteUrl: SITE_URL }))
   })
 
   app.get('/index.html', (_req, res) => {
@@ -766,134 +632,16 @@ export async function startServer(sessionsDir) {
   })
 
   app.get('/pricing', async (_req, res) => {
+    let html = renderPricingPage()
     if (isSanityConfigured()) {
       try {
         const siteSettings = await fetchSiteSettings()
-        if (
-          siteSettings &&
-          (siteSettings.pricingPageTitle ||
-            siteSettings.pricingPageDescription ||
-            siteSettings.pricingHeroHeadline)
-        ) {
-          const raw = readFileSync(join(publicDir, 'pricing.html'), 'utf8')
-          return res.type('html').send(applyPricingPageOverrides(raw, siteSettings))
-        }
+        html = applyPricingPageOverrides(html, siteSettings)
       } catch {
         /* fall through */
       }
     }
-    res.sendFile(join(publicDir, 'pricing.html'))
-  })
-
-  app.get('/blog', async (_req, res) => {
-    if (!isSanityConfigured()) {
-      return res.status(503).type('html').send(`<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"/><title>Blog</title></head>
-<body style="font-family:system-ui;padding:2rem;background:#05030d;color:#e4e4e7">
-<p>Blog is not configured. Set SANITY_PROJECT_ID and SANITY_DATASET in the server environment.</p>
-<p><a href="/" style="color:#a78bfa">Home</a></p>
-</body></html>`)
-    }
-    try {
-      const posts = await fetchPosts()
-      res.type('html').send(renderBlogIndex(posts))
-    } catch {
-      res
-        .status(500)
-        .type('html')
-        .send('<!doctype html><html><body>Error loading blog.</body></html>')
-    }
-  })
-
-  app.get('/blog/:slug', async (req, res) => {
-    if (!isSanityConfigured()) {
-      return res.status(503).type('html').send('Service unavailable')
-    }
-    const slug = String(req.params.slug || '').trim()
-    if (!slug) return res.status(404).type('html').send('Not found')
-    try {
-      const post = await fetchPostBySlug(slug)
-      if (!post)
-        return res
-          .status(404)
-          .type('html')
-          .send('<!doctype html><html><body>Post not found. <a href="/blog">Blog</a></body></html>')
-      res.type('html').send(renderBlogPost(post, slug))
-    } catch {
-      res.status(500).type('html').send('Error')
-    }
-  })
-
-  app.get('/notices', async (req, res) => {
-    if (!isSanityConfigured()) {
-      return res.status(503).type('html').send(`<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"/><title>Notices</title></head>
-<body style="font-family:system-ui;padding:2rem;background:#05030d;color:#e4e4e7">
-<p>Notices are not configured. Set SANITY_PROJECT_ID and SANITY_DATASET in the server environment.</p>
-<p><a href="/" style="color:#a78bfa">Home</a></p>
-</body></html>`)
-    }
-    try {
-      applyPublicLocaleResponseHeaders(res)
-      const locale = getLocaleFromRequest(req, res)
-      const kind = String(req.query?.kind || '').trim()
-      const notices = await fetchOfficialNotices({
-        noticeKind: kind || undefined,
-        limit: 100,
-      })
-      res.type('html').send(renderNoticesIndex(notices, locale, { filterKind: kind }))
-    } catch {
-      res
-        .status(500)
-        .type('html')
-        .send('<!doctype html><html><body>Error loading notices.</body></html>')
-    }
-  })
-
-  app.get('/notices/:slug', async (req, res) => {
-    if (!isSanityConfigured()) {
-      return res.status(503).type('html').send('Service unavailable')
-    }
-    const slug = String(req.params.slug || '').trim()
-    if (!slug) return res.status(404).type('html').send('Not found')
-    try {
-      applyPublicLocaleResponseHeaders(res)
-      const locale = getLocaleFromRequest(req, res)
-      const notice = await fetchOfficialNoticeBySlug(slug)
-      if (!notice) {
-        return res
-          .status(404)
-          .type('html')
-          .send(
-            '<!doctype html><html><body>Notice not found. <a href="/notices">Notices</a></body></html>',
-          )
-      }
-      res.type('html').send(renderNoticeDetail(notice, slug, locale))
-    } catch {
-      res.status(500).type('html').send('Error')
-    }
-  })
-
-  app.get('/careers', async (req, res) => {
-    if (!isSanityConfigured()) {
-      return res.status(503).type('html').send(`<!doctype html>
-<html lang="en"><head><meta charset="UTF-8"/><title>Careers</title></head>
-<body style="font-family:system-ui;padding:2rem;background:#05030d;color:#e4e4e7">
-<p>Careers are not configured. Set SANITY_PROJECT_ID and SANITY_DATASET in the server environment.</p>
-<p><a href="/" style="color:#a78bfa">Home</a></p>
-</body></html>`)
-    }
-    try {
-      applyPublicLocaleResponseHeaders(res)
-      const locale = getLocaleFromRequest(req, res)
-      const jobs = await fetchJobOpenings({ openOnly: true, limit: 100 })
-      res.type('html').send(renderCareersPage(jobs, locale))
-    } catch {
-      res
-        .status(500)
-        .type('html')
-        .send('<!doctype html><html><body>Error loading careers.</body></html>')
-    }
+    res.type('html').set('X-SF-Pricing-Source', 'ssr').send(html)
   })
 
   app.get('/privacy', (_req, res) => {
@@ -914,7 +662,10 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).send('Session not found')
     setNoIndexHeaders(res)
-    res.sendFile(join(publicDir, 'dashboard.html'))
+    const tpl = readFileSync(join(publicDir, 'dashboard.html'), 'utf8')
+    let wsHost = req.get('host') || `127.0.0.1:${DASHBOARD_PORT}`
+    if (/:3000$/.test(wsHost)) wsHost = `${req.hostname || '127.0.0.1'}:${DASHBOARD_PORT}`
+    res.type('html').send(tpl.replaceAll('__SF_WS_HOST__', wsHost))
   })
 
   // ─── API: Create session + start generation ───────────────
@@ -957,6 +708,7 @@ export async function startServer(sessionsDir) {
 
     if (req.user) {
       // ─── Authenticated flow ─────────────────────────────────
+      const isSubscriber = await hasActiveSubscription(req.user.uid)
       const userMonthly = (userMonthlyHits.get(req.user.uid) || []).filter(
         (t) => Date.now() - t < MONTHLY_WINDOW_MS,
       ).length
@@ -989,8 +741,7 @@ export async function startServer(sessionsDir) {
             }),
           }).catch(() => {})
         }
-        const isSubscriberCached = await hasActiveSubscription(req.user.uid)
-        const monthlyLimitCached = isSubscriberCached ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
+        const monthlyLimitCached = isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
         return res.json(
           sanitizeSessionCreateResponse(existing, {
             cached: true,
@@ -1005,7 +756,6 @@ export async function startServer(sessionsDir) {
       }
 
       // Determine subscription status and monthly limit
-      const isSubscriber = await hasActiveSubscription(req.user.uid)
       const monthlyLimit = isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
 
       if (!skipRateLimits) {
@@ -1085,11 +835,10 @@ export async function startServer(sessionsDir) {
         }
       }
 
-      // Non-subscribers get private sessions by default
       session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, {
         preferredExportTarget,
         preferredLanguage,
-        isPrivate: !isSubscriber,
+        isPrivate: false,
       })
 
       console.log(
@@ -1285,21 +1034,10 @@ export async function startServer(sessionsDir) {
 
   // ─── API: Recent public sessions gallery (no auth required) ──
   app.get('/api/sessions/recent', (req, res) => {
-    const all = getAllSessions().filter(
-      (s) => s.homepageReady && !s.isPrivate && s.cost > 0 && (s.previewUrl || s.deployUrl),
-    )
+    const all = getPublicGalleryList()
     const { limit, page } = parseGalleryPagination(req.query)
     const paginated = paginateGalleryList(all, page, limit)
-    paginated.items = paginated.items.map((s) => ({
-      id: s.id,
-      prompt: s.prompt ? s.prompt.substring(0, 100) : '',
-      deployUrl: s.deployUrl || '',
-      previewUrl: s.previewUrl || '',
-      generationTime: s.generationTime,
-      cost: s.cost,
-      createdAt: s.createdAt,
-      homepageReady: s.homepageReady,
-    }))
+    res.set('Cache-Control', 'public, max-age=20, stale-while-revalidate=120')
     res.json(paginated)
   })
 
@@ -1317,10 +1055,21 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Delete session ─────────────────────────────────
-  app.delete('/api/sessions/:id', requireAuth, async (req, res) => {
+  app.delete('/api/sessions/:id', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
+    const isDev = process.env.NODE_ENV === 'development'
+    if (session.userId) {
+      if (!isDev) {
+        if (!req.user) return res.status(401).json({ error: 'Unauthorized' })
+        if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
+      }
+    } else if (!isDev) {
+      const secret = readAnonOwnerSecret(session.workspace)
+      if (!secret) return res.status(403).json({ error: 'Forbidden' })
+      const header = String(req.headers['x-ship-fast-anon-owner'] || '').trim()
+      if (header !== secret) return res.status(403).json({ error: 'Forbidden' })
+    }
     deleteSession(req.params.id)
     res.json({ ok: true })
   })
@@ -1337,25 +1086,11 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
-    // Private sessions: only the owner sees full metadata
-    if (session.isPrivate === true) {
-      if (req.user?.uid !== session.userId) {
-        return res.json({
-          id: session.id,
-          createdAt: session.createdAt,
-          done: session.tasks.filter((t) => t.status === 'DONE').length,
-          isPrivate: true,
-          medusaAdminEmbed: { show: false, url: null },
-        })
-      }
-    }
-
-    const targets = await decorateExportTargetsForRequest(
-      session,
-      getSessionExportTargets(session),
-      req,
-    )
-    const payment = await getSessionPaymentDetails(session, req, targets[0]?.target || 'html')
+    const targets = await decorateExportTargets(session, getSessionExportTargets(session))
+    const payment = await getSessionPaymentDetails(session, {
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
+      headers: req.headers,
+    })
     const { ecommerce, medusaAdminEmbed } = getMedusaAdminEmbedAndEcommerce(session)
     res.json({
       id: session.id,
@@ -1383,26 +1118,15 @@ export async function startServer(sessionsDir) {
     if (!ensureSessionArtifactAccess(req, res, session)) return
     const store = await readChatStoreAsync(session.workspace, session.id)
     const editable = canSessionRunEdit(session.workspace)
-    const cmsMode = isSanityChatWriteConfigured()
     const { medusaAdminEmbed } = getMedusaAdminEmbedAndEcommerce(session)
-    const siteContentDock = cmsMode || medusaAdminEmbed.show
-    let siteSettings = null
-    if (cmsMode) {
-      try {
-        siteSettings = await fetchSiteSettings()
-      } catch {
-        siteSettings = null
-      }
-    }
     res.json({
       version: store.version,
       updatedAt: store.updatedAt,
       summary: store.summary,
       messages: store.messages,
       editable,
-      mode: siteContentDock ? 'cms' : 'llm',
+      mode: 'llm',
       medusaAdminEmbed,
-      ...(cmsMode ? { siteSettings } : {}),
     })
   })
 
@@ -1505,12 +1229,6 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (!ensureSessionArtifactAccess(req, res, session)) return
-    if (isSanityChatWriteConfigured()) {
-      return res.status(409).json({
-        error:
-          'LLM chat is disabled while CMS editing is enabled. Use Site content to edit Sanity, or remove SANITY_WRITE_TOKEN to use chat edits.',
-      })
-    }
 
     let raw = req.body?.text ?? req.body?.message ?? ''
     if (typeof raw !== 'string') raw = ''
@@ -1662,12 +1380,11 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id/export-targets', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    const targets = await decorateExportTargetsForRequest(
-      session,
-      getSessionExportTargets(session),
-      req,
-    )
-    const payment = await getSessionPaymentDetails(session, req, targets[0]?.target || 'html')
+    const targets = await decorateExportTargets(session, getSessionExportTargets(session))
+    const payment = await getSessionPaymentDetails(session, {
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
+      headers: req.headers,
+    })
     res.json({
       sessionId: session.id,
       siteSpecReady: session.siteSpecReady ?? false,
@@ -1846,22 +1563,6 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Early adopter status (public) ────────────────────
-  app.get('/api/early-adopter-status', async (_req, res) => {
-    res.json(await getEarlyAdopterStatus())
-  })
-
-  // ─── API: Subscription status ─────────────────────────────
-  app.get('/api/subscription-status', requireAuth, async (req, res) => {
-    try {
-      const active = await hasActiveSubscription(req.user.uid)
-      res.json({ active })
-    } catch (error) {
-      console.error('[subscription-status] error:', error?.message ?? error)
-      res.status(500).json({ error: 'Unable to check subscription status' })
-    }
-  })
-
-  app.post('/api/payments/razorpay/start', requireAuth, razorpayStartHandler)
 
   app.get('/api/credits', requireAuth, async (req, res) => {
     const credits = await getUserCredits(req.user.uid)
@@ -1886,7 +1587,7 @@ export async function startServer(sessionsDir) {
     }
 
     const target = String(req.params.target || '').toLowerCase()
-    const accessDecision = await getDownloadAccessDecision(session, target, req)
+    const accessDecision = await getDownloadAccessDecision(session, target)
     if (!accessDecision.allowed) {
       return res.status(402).json({
         error: accessDecision.error,
@@ -1896,7 +1597,7 @@ export async function startServer(sessionsDir) {
 
     // Consume a credit if using credit-based access (not subscription)
     if (accessDecision.useCredit && session.userId) {
-      consumeUserCredit(session.userId)
+      await consumeUserCredit(session.userId)
     }
 
     const bundle = getSessionExportBundle(session, target)
@@ -1982,7 +1683,7 @@ export async function startServer(sessionsDir) {
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
 
     const target = payload.data.target
-    const accessDecision = await getDownloadAccessDecision(session, target, req)
+    const accessDecision = await getDownloadAccessDecision(session, target)
     if (!accessDecision.allowed) {
       return res.status(402).json({
         error: accessDecision.error,
@@ -1992,7 +1693,7 @@ export async function startServer(sessionsDir) {
 
     // Consume a credit if using credit-based access (not subscription)
     if (accessDecision.useCredit && session.userId) {
-      consumeUserCredit(session.userId)
+      await consumeUserCredit(session.userId)
     }
 
     try {
@@ -2370,7 +2071,12 @@ export async function startServer(sessionsDir) {
           res
             .type('html')
             .send(
-              injectPreviewToolsHtml(html, req.params.sessionId, session.preferredLanguage, session.workspace),
+              injectPreviewToolsHtml(
+                html,
+                req.params.sessionId,
+                session.preferredLanguage,
+                session.workspace,
+              ),
             )
         } catch {
           express.static(session.workspace, { extensions: ['html'] })(req, res, next)

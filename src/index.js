@@ -1,12 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process'
 
-try {
-  execSync('kill $(lsof -t -i:7420) 2>/dev/null', { stdio: 'ignore' })
-} catch {
-  /* port cleanup is best-effort */
-}
-
 process.on('unhandledRejection', (err) =>
   console.error('  unhandled rejection:', err?.message ?? err),
 )
@@ -14,6 +8,14 @@ process.on('unhandledRejection', (err) =>
 import { existsSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { startServer, startCLISession } from './server/index.js'
+
+function cleanupPort7420() {
+  try {
+    execSync('kill $(lsof -t -i:7420) 2>/dev/null', { stdio: 'ignore' })
+  } catch {
+    /* port cleanup is best-effort */
+  }
+}
 
 if (!process.env.GROQ_API_KEY) {
   console.error('Error: GROQ_API_KEY not set')
@@ -32,6 +34,7 @@ for (const arg of args) {
 // Sessions directory for multi-session mode
 const sessionsDir = resolve(workspaceArg ?? process.cwd(), 'sessions')
 if (!existsSync(sessionsDir)) mkdirSync(sessionsDir, { recursive: true })
+process.env.SESSIONS_DIR = sessionsDir
 
 if (promptArg) {
   // ─── CLI mode: single session with explicit prompt ─────────
@@ -46,6 +49,7 @@ if (promptArg) {
   )
   console.log(`  workspace: ${workspace}\n`)
 
+  cleanupPort7420()
   await startServer(sessionsDir)
 
   const { generation } = await startCLISession(workspace, promptArg)
@@ -56,6 +60,7 @@ if (promptArg) {
   console.log('\n  ship-fast \u2500 server mode (multi-session)')
   console.log(`  sessions: ${sessionsDir}\n`)
 
+  cleanupPort7420()
   await startServer(sessionsDir)
 
   console.log('  Waiting for prompts at http://localhost:7420\n')

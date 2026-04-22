@@ -19,6 +19,7 @@ Use two payment rails.
 **Indian users → UPI gateway**
 
 **Reason:**
+
 - UPI is India's dominant payment system used by hundreds of millions of users.
 - Card-only checkout reduces conversion in India.
 - Stripe is the best API and works perfectly for global SaaS.
@@ -28,12 +29,14 @@ Use two payment rails.
 ### Stripe (primary global payments)
 
 Use Stripe for:
+
 - Cards
 - Apple Pay
 - Google Pay
 - Global subscriptions
 
 **Advantages:**
+
 - Fastest integration
 - Global compliance
 - Strong developer tooling
@@ -47,6 +50,7 @@ Stripe supports businesses in many countries including Switzerland and allows se
 Add a UPI-capable payment provider.
 
 **Options:**
+
 - Razorpay
 - Cashfree
 - PayU
@@ -67,6 +71,7 @@ else
 ```
 
 **Implementation methods:**
+
 - IP detection
 - Billing country selection
 - Payment selector
@@ -84,6 +89,7 @@ Launch with a simple SaaS structure.
 - No ZIP export
 
 **Goal:**
+
 - Viral adoption
 - SEO traffic
 - Product discovery
@@ -95,6 +101,7 @@ Launch with a simple SaaS structure.
 **₹399 / month ≈ $5**
 
 Includes:
+
 - Unlimited generation
 - Unlimited download
 - Template library
@@ -116,11 +123,13 @@ Displayed on landing page:
 **Early adopter price →** ₹199
 
 **Conditions:**
+
 - Valid for first 500–1000 users
 - Discount locked while subscription stays active
 - Cancel → lose discount
 
 **Purpose:**
+
 - Create urgency
 - Seed first users
 - Generate testimonials
@@ -131,10 +140,12 @@ Displayed on landing page:
 
 For non-subscription users.
 
-| Pack | Price |
-|------|-------|
-| 3 downloads | ₹199 |
-| 10 downloads | ₹399 |
+
+| Pack         | Price |
+| ------------ | ----- |
+| 3 downloads  | ₹199  |
+| 10 downloads | ₹399  |
+
 
 This captures revenue from casual users.
 
@@ -190,6 +201,7 @@ CTA: "Lock lifetime discount"
 ```
 
 **Key conversion triggers:**
+
 - "Most popular" badge
 - Lifetime discount
 - Limited seats
@@ -202,6 +214,7 @@ CTA: "Lock lifetime discount"
 Revenue will not depend primarily on payment methods. It will depend on **retention**.
 
 Ship regularly:
+
 - Monthly templates
 - Launch checklists
 - Growth tools
@@ -214,16 +227,35 @@ Otherwise users generate once and leave.
 
 ## 7. Final Complete Strategy
 
-| Area | Decision |
-|------|----------|
-| Payments | Stripe + UPI gateway |
-| Pricing | Free → ₹199 early adopter → ₹399 Pro |
-| Generation cost | ~$0.05/site — margins are strong |
-| Acquisition | SEO + dev communities |
+
+| Area            | Decision                             |
+| --------------- | ------------------------------------ |
+| Payments        | Stripe + UPI gateway                 |
+| Pricing         | Free → ₹199 early adopter → ₹399 Pro |
+| Generation cost | ~$0.05/site — margins are strong     |
+| Acquisition     | SEO + dev communities                |
+
 
 ---
 
 ## Implementation Notes
+
+### Liquid glass pill (shared UI control)
+
+The product is standardizing on a **liquid-glass pill button** for marketing and in-app chrome as the redesign rolls out. Do not copy the full layered markup by hand; use the shared assets.
+
+
+| Piece                    | Path                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| Styles                   | `public/styles/liquid-glass-button.css`                                                                                   |
+| Browser widget           | `public/scripts/liquid-glass-button.js` — registers `<sf-glass-pill>` (injects the SVG displacement filter once per page) |
+| Server-rendered HTML     | `src/server/liquid-glass-button.js` — `sfGlassPillSvgDefs()` once per document plus `sfGlassPillButton({ label, ... })`   |
+| Visual trial / reference | `public/liquid-glass-trials.html` (served as a static page; links the shared CSS and script)                              |
+
+
+**Static pages:** link the CSS, load the script as `type="module"`, use `<sf-glass-pill>Label</sf-glass-pill>` or `label="..."` on the element; optional attributes (`type`, `id`, `name`, `disabled`, `form`, ARIA, `data-pill-class`) are applied to the inner real `<button class="pill">`.
+
+**Server HTML:** emit `sfGlassPillSvgDefs()` near the start of `<body>` if the page does not load the client module (avoid duplicate `#sf-glass-lens` IDs).
 
 The dashboard now supports:
 
@@ -284,10 +316,12 @@ Free tool → Developers use it → They include it in projects → Product spre
 The generator should output code containing:
 
 **README.md in generated projects:**
+
 > Built with ShipFast
-> Generate your own SaaS starter: https://ship-fast.io
+> Generate your own SaaS starter: [https://ship-fast.io](https://ship-fast.io)
 
 **Footer in generated apps:**
+
 > "Built with ShipFast"
 
 Every GitHub repo becomes marketing.
@@ -310,6 +344,7 @@ https://ship-fast.io/templates/
 ```
 
 Each page contains:
+
 - Preview
 - Generated example
 - Prompt
@@ -332,6 +367,7 @@ Developer tools grow fastest when the founder becomes the marketing channel.
 **Channels:** Twitter, LinkedIn, YouTube, Reddit, Hacker News
 
 **Example content:**
+
 > "I built a SaaS starter generator that creates a product in 20 seconds"
 
 Developers love watching tools being built.
@@ -374,11 +410,13 @@ This single feature can drive continuous discovery. Code artifacts spread natura
 
 ### The $1M ARR Formula
 
-| Lever | Role |
-|-------|------|
-| SEO templates | Organic acquisition |
+
+| Lever               | Role                 |
+| ------------------- | -------------------- |
+| SEO templates       | Organic acquisition  |
 | GitHub distribution | Passive viral spread |
-| Founder content | Amplification |
-| Freemium product | Conversion engine |
+| Founder content     | Amplification        |
+| Freemium product    | Conversion engine    |
+
 
 That combination repeatedly appears in dev tools that scale.

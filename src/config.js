@@ -1,16 +1,16 @@
 import './env.js'
 import { ECOMMERCE_CURATED_STYLE_ANCHORS } from './config/ecommerce-inspiration.js'
 
-export const DASHBOARD_PORT = 7420
+export const DASHBOARD_PORT = parseInt(process.env.DASHBOARD_PORT ?? '7420', 10)
 export const SITE_NAME = 'Ship Fast'
-export const SITE_URL = (process.env.SITE_URL ?? 'https://ship-fast.devliv.io').replace(/\/+$/, '')
+export const SITE_URL = (process.env.SITE_URL ?? 'https://ship-fast.io').replace(/\/+$/, '')
 export const BASE_DOMAIN = process.env.BASE_DOMAIN ?? 'ship-fast.io'
 export const PLAUSIBLE_DOMAIN = process.env.PLAUSIBLE_DOMAIN ?? new URL(SITE_URL).hostname
 
 export const LEGAL_CONTROLLER_NAME = (process.env.LEGAL_CONTROLLER_NAME ?? 'Livio Gamassia').trim()
 export const LEGAL_CONTROLLER_ADDRESS = (process.env.LEGAL_CONTROLLER_ADDRESS ?? '').trim()
 export const PRIVACY_CONTACT_EMAIL = (
-  process.env.PRIVACY_CONTACT_EMAIL ?? 'liviogama@gmail.com'
+  process.env.PRIVACY_CONTACT_EMAIL ?? 'hello@ship-fast.io'
 ).trim()
 export const PRIVACY_POLICY_JURISDICTION = (process.env.PRIVACY_POLICY_JURISDICTION ?? '').trim()
 export const PRIVACY_POLICY_EFFECTIVE_DATE = (
@@ -20,7 +20,7 @@ export const PRIVACY_POLICY_EFFECTIVE_DATE = (
 export const GROQ_API_KEY = process.env.GROQ_API_KEY
 export const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'
 export const GROQ_MODEL = process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b'
-export const HOMEPAGE_MODEL = 'moonshotai/kimi-k2-instruct-0905'
+export const HOMEPAGE_MODEL = (process.env.HOMEPAGE_MODEL ?? '').trim() || 'openai/gpt-oss-120b'
 export const SITE_SPEC_MODEL = (process.env.SITE_SPEC_MODEL ?? '').trim() || HOMEPAGE_MODEL
 
 // ─── RunPod / hex-1 Configuration ───────────────────────
@@ -37,14 +37,16 @@ export const SANITY_READ_TOKEN = (process.env.SANITY_READ_TOKEN ?? '').trim()
 export const SANITY_WRITE_TOKEN = (process.env.SANITY_WRITE_TOKEN ?? '').trim()
 export const SANITY_MANAGEMENT_TOKEN = (process.env.SANITY_MANAGEMENT_TOKEN ?? '').trim()
 
-export const isSanityConfigured = () =>
-  Boolean(SANITY_PROJECT_ID && SANITY_DATASET)
+export const isSanityConfigured = () => Boolean(SANITY_PROJECT_ID && SANITY_DATASET)
 
-export const isSanityChatWriteConfigured = () =>
-  Boolean(isSanityConfigured() && SANITY_WRITE_TOKEN)
+export const isSanityChatWriteConfigured = () => Boolean(isSanityConfigured() && SANITY_WRITE_TOKEN)
 
 // ─── Language Configuration (re-exported from config/languages.js) ──
-export { KNOWN_LANGUAGES as SUPPORTED_INDIAN_LANGUAGES, INDIAN_DESIGN_TOKENS, INDIAN_LANGUAGE_CODES } from './config/languages.js'
+export {
+  KNOWN_LANGUAGES as SUPPORTED_INDIAN_LANGUAGES,
+  INDIAN_DESIGN_TOKENS,
+  INDIAN_LANGUAGE_CODES,
+} from './config/languages.js'
 
 // ─── LLM Configuration ──────────────────────────────────
 export const LLM_CONFIG = {
@@ -53,7 +55,7 @@ export const LLM_CONFIG = {
     maxTokens: 8000,
   },
   homepage: {
-    temperature: 0.32,
+    temperature: 0.62,
     maxTokens: 12000,
   },
   parallel: {
@@ -128,22 +130,21 @@ export const ECOMMERCE_REFERENCE_EXEMPLAR_URLS = Object.freeze([
   'https://www.apple.com/iphone/',
 ])
 
-export const ECOMMERCE_REFERENCE_EXEMPLARS_FOR_PROMPTS = ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join('\n')
+export const ECOMMERCE_REFERENCE_EXEMPLARS_FOR_PROMPTS =
+  ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join('\n')
 
 export const ECOMMERCE_EDITORIAL_CANVAS_PATTERN =
-  'Default luxury mid-market storefront composition (invent an original brand; do not copy third-party names or marks): ' +
-  'off-white or cream page ground, near-black primary text, one deep wine or burgundy accent for primary buttons, star ratings, and key highlights; ' +
-  'thin top promo strip in near-black with light text; ' +
+  'Premium storefront composition bar (invent an original brand; do not copy third-party names or marks). Derive page ground, ink, and accent from the user prompt, product category, and any verified brand colors—avoid repeating the same neutral+cream+wine look on unrelated shops: ' +
   'sticky header with wordmark left, three to five core nav links centered (shop, collections, about pattern), utilities right with small inline SVGs for search, account, and shopping bag cart plus item count or notification dot; ' +
-  'split hero: left column serif headline, supporting line, solid accent primary CTA (e.g. shop), secondary outline or ghost CTA (e.g. story); right column one tall product or lifestyle photo with rounded corners and soft shadow; in CSS include @media (max-width: 900px) for the hero so stacked layout centers headline, subcopy, and button row (justify-content center), not awkward flush-left; hero h1 uses a responsive clamp() so the title stays one or two balanced lines; ' +
+  'split hero: left column display headline (serif or sans—match the brief), supporting line, solid accent primary CTA (e.g. shop), secondary outline or ghost CTA (e.g. story); right column one tall product or lifestyle photo with rounded corners and soft shadow; in CSS include @media (max-width: 900px) for the hero so stacked layout centers headline, subcopy, and button row (justify-content center), not awkward flush-left; hero h1 uses a responsive clamp() so the title stays one or two balanced lines; ' +
   'shop-by-collection as a horizontal rail or carousel of image-forward tiles with bottom gradient scrim and light category titles; ' +
-  'featured products as a dense grid: large photo, optional corner badge, serif product name, short sans description, bold price, accent-colored star row, full-width solid accent add-to-cart button per card—each such button must include data-product="<exact same title as the product name on that card>" for Medusa line-item wiring; ' +
+  'featured products as a dense grid: large photo, optional corner badge, product name in a display or strong sans face, short description, bold price, accent-colored star row, full-width solid accent add-to-cart button per card—each such button must include data-product="<exact same title as the product name on that card>" for Medusa line-item wiring; ' +
   'curated sets as two equal editorial panels or one carousel with clear dots and two visible offers; ' +
   'materials and craft as two columns—copy with short checklist and one large supporting image; ' +
   'reviews as three light cards in a row with stars, quote, name or locale, verified buyer cue; ' +
-  'newsletter as a full-width inverted band (charcoal or black), serif-style headline, email field, light high-contrast submit button; ' +
+  'newsletter as a full-width band with strong contrast (palette-appropriate, not always charcoal-on-cream); ' +
   'footer four columns of links plus compact social icons as inline SVGs. ' +
-  'This pattern is the internal quality bar for generated luxury DTC homepages.'
+  'This checklist is depth and merchandising quality—not a single fixed visual skin.'
 
 export const ECOMMERCE_DRIBBBLE_VISUAL_LANGUAGE =
   `Contemporary ecommerce UI direction (${ECOMMERCE_DRIBBBLE_TAG_URL} — use for layout and craft patterns only; do not copy specific shots, logos, or proprietary artwork): ` +
@@ -180,15 +181,13 @@ export const ECOMMERCE_GROWTH_UX_PRINCIPLES =
   `Copy tone: premium, concise, specific; avoid hypey clichés and generic AI phrasing. ` +
   `CTAs: clear primary vs secondary on shop, cart, and checkout. When proposing headline or checkout copy variants, name one plausible target KPI (conversion, cart abandonment, AOV) and a one-line test hypothesis.`
 
-const ECOMMERCE_GUIDELINES_EXEMPLAR_LEAD =
-  `Exemplar URLs — study structure, nav depth, section count, and commerce patterns only. For the user's project, invent original naming, copy, and visuals; do not reproduce third-party trademarks, logos, or proprietary text from these pages:\n${ECOMMERCE_REFERENCE_EXEMPLARS_FOR_PROMPTS}\n`
+const ECOMMERCE_GUIDELINES_EXEMPLAR_LEAD = `Exemplar URLs — study structure, nav depth, section count, and commerce patterns only. For the user's project, invent original naming, copy, and visuals; do not reproduce third-party trademarks, logos, or proprietary text from these pages:\n${ECOMMERCE_REFERENCE_EXEMPLARS_FOR_PROMPTS}\n`
 
-const ECOMMERCE_GUIDELINES_USER_REFS_LEAD =
-  `When the prompt includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs and path hints, treat that block as primary for layout, header, hero emphasis, rhythm, and palette family—ahead of named retail exemplars. Invent original naming, copy, and visuals; do not reproduce third-party trademarks, logos, or proprietary text. `
+const ECOMMERCE_GUIDELINES_USER_REFS_LEAD = `When the prompt includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs and path hints, treat that block as primary for layout, header, hero emphasis, rhythm, and palette family—ahead of named retail exemplars. Invent original naming, copy, and visuals; do not reproduce third-party trademarks, logos, or proprietary text. `
 
 const ECOMMERCE_GUIDELINES_SHARED_BODY =
   `${ECOMMERCE_EDITORIAL_CANVAS_PATTERN} ` +
-  `When the user prompt omits layout or section specifics, still ship the full editorial luxury DTC canvas above—thin black promo strip; header with logo left, Shop / Collections / About centered, search + account + cart with badge right; split hero with serif headline, dual CTAs, large product photo; shop-by-collection rail with scrims; 6+ featured products with full-width add-to-cart; curated sets two-up; materials two-column with checklist; three review cards; dark newsletter band; four-column footer—in English unless the prompt requests another language. ` +
+  `When the user prompt omits layout or section specifics, still ship the full section stack above—promo or trust strip when it fits; header with logo left, Shop / Collections / About centered, search + account + cart with badge right; hero with display headline, dual CTAs, and strong product or lifestyle visual; shop-by-collection rail or grid with scrims; 6+ featured products with full-width add-to-cart; curated sets two-up; materials or story two-column with checklist; three review cards; newsletter band; four-column footer—in English unless the prompt requests another language. Vary serif vs sans, light vs dark ground, and accent hue from the brief so storefronts do not all look like the same template. ` +
   `Pattern mix to emulate (abstractly): lifestyle / accessories storefront density; security-hardware style mega-nav with ecosystem and compare paths; long-form product-line page with chaptered features, lineup, education, and support — adapted to the prompt's industry. ` +
   `Also scan: premium web templates (${ECOMMERCE_ENVATO_TEMPLATES_URL}), storefront gallery (${ECOMMERCE_AWWWARDS_GALLERY_URL}), ecommerce UI tag (${ECOMMERCE_DRIBBBLE_TAG_URL}). ` +
   `${ECOMMERCE_DRIBBBLE_VISUAL_LANGUAGE} ` +
@@ -206,7 +205,9 @@ export const getEcommerceGenerationGuidelines = ({ hasUserDesignReferences = fal
     ? ECOMMERCE_GUIDELINES_USER_REFS_LEAD + ECOMMERCE_GUIDELINES_SHARED_BODY
     : ECOMMERCE_GUIDELINES_EXEMPLAR_LEAD + ECOMMERCE_GUIDELINES_SHARED_BODY
 
-export const ECOMMERCE_GENERATION_GUIDELINES = getEcommerceGenerationGuidelines({ hasUserDesignReferences: false })
+export const ECOMMERCE_GENERATION_GUIDELINES = getEcommerceGenerationGuidelines({
+  hasUserDesignReferences: false,
+})
 
 export const ECOMMERCE_SITE_TYPE_MEDUSA_SUFFIX = ` Premium Medusa-backed storefront (lib/medusa.js): getProducts(), getProductByHandle(), getCategories(), createCart(), addLineItem(), getCart(). Flow: editorial hero with bold headline, subtitle, primary shop CTA, and hero product frame \u2192 category grid with lifestyle or product photography \u2192 featured products as a dense grid or horizontal rail with hover on imagery, clear prices, stock or badge cues, and add-to-cart as real buttons \u2192 PDP with gallery, variants, and add-to-cart \u2192 cart with line items, quantity controls as buttons, subtotal, checkout CTA \u2192 checkout \u2192 trust and reviews \u2192 newsletter \u2192 footer.`
 
