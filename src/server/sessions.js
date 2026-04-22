@@ -1,3 +1,4 @@
+// @ts-check
 import { randomBytes } from 'node:crypto'
 import {
   mkdirSync,
@@ -16,6 +17,7 @@ import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deployments.js'
 import { normalizeSession, validateSession } from '../contracts/contracts.js'
 import { readDesignReferenceFingerprintFromWorkspace } from '../pipeline/ecommerce-design-references.js'
+import { invalidatePublicGallery } from './public-gallery-cache.js'
 
 const sessions = new Map()
 let _sessionsDir = null
@@ -67,7 +69,7 @@ function readSessionMeta(workspace) {
     return {
       preferredExportTarget: normalizePreferredExportTarget(data?.preferredExportTarget),
       preferredLanguage: normalizePreferredLanguage(data?.preferredLanguage),
-      isPrivate: Boolean(data?.isPrivate),
+      isPrivate: false,
     }
   } catch {
     return {
@@ -78,14 +80,34 @@ function readSessionMeta(workspace) {
   }
 }
 
-function writeSessionMeta(workspace, meta = {}) {
-  const payload = {
-    preferredExportTarget: normalizePreferredExportTarget(meta.preferredExportTarget),
-    preferredLanguage: normalizePreferredLanguage(meta.preferredLanguage),
-    isPrivate: Boolean(meta.isPrivate),
+function writeSessionMeta(workspace, metaPatch = {}) {
+  const metaPath = join(workspace, SESSION_META_FILE)
+  let raw = {}
+  try {
+    if (existsSync(metaPath)) raw = JSON.parse(readFileSync(metaPath, 'utf-8'))
+  } catch {
+    raw = {}
   }
-  writeFileSync(join(workspace, SESSION_META_FILE), JSON.stringify(payload, null, 2))
-  return payload
+  const next = {
+    ...raw,
+    preferredExportTarget: normalizePreferredExportTarget(
+      metaPatch.preferredExportTarget !== undefined
+        ? metaPatch.preferredExportTarget
+        : raw.preferredExportTarget,
+    ),
+    preferredLanguage: normalizePreferredLanguage(
+      metaPatch.preferredLanguage !== undefined
+        ? metaPatch.preferredLanguage
+        : raw.preferredLanguage,
+    ),
+    isPrivate: false,
+  }
+  writeFileSync(metaPath, JSON.stringify(next, null, 2))
+  return {
+    preferredExportTarget: next.preferredExportTarget,
+    preferredLanguage: next.preferredLanguage,
+    isPrivate: false,
+  }
 }
 
 export function getWorkspacePreferredLanguage(workspace) {
@@ -115,7 +137,6 @@ export function createSession(baseDir, prompt, userId, options = {}) {
   const sessionMeta = writeSessionMeta(workspace, {
     preferredExportTarget: options?.preferredExportTarget,
     preferredLanguage: options?.preferredLanguage,
-    isPrivate: Boolean(options?.isPrivate),
   })
 
   // Persist userId to disk
@@ -184,6 +205,7 @@ function syncSessionFlagsFromDisk(session) {
   if (!session?.workspace) return
   session.homepageReady = existsSync(join(session.workspace, 'index.html'))
   session.siteSpecReady = existsSync(join(session.workspace, 'site-spec.json'))
+  session.isPrivate = readSessionMeta(session.workspace).isPrivate
 }
 
 export function getSession(id) {
@@ -367,6 +389,7 @@ export function getAllSessions(userId) {
 
   const validSessions = []
   for (const s of sessions.values()) {
+    syncSessionFlagsFromDisk(s)
     if (!s.prompt || s.prompt.trim() === '') {
       // Delete empty session
       try {
@@ -479,6 +502,7 @@ export function deleteSession(id) {
   }
   removeDeploymentBySessionId(id)
   sessions.delete(id)
+  invalidatePublicGallery()
 }
 
 export function setSessionPreferredExportTarget(session, preferredExportTarget) {
@@ -613,6 +637,7 @@ export function makeSessionState(session) {
 
   const signalHomepageReady = () => {
     session.homepageReady = true
+    invalidatePublicGallery()
     broadcast({ type: 'homepage_ready' })
   }
 

@@ -1,11 +1,7 @@
 import Razorpay from 'razorpay'
 import { FieldValue } from 'firebase-admin/firestore'
 import { db } from '../auth/firebase-admin.js'
-import {
-  addUserCredits,
-  incrementEarlyAdopterCount,
-  zeroUserCredits,
-} from './payments.js'
+import { addUserCredits, incrementEarlyAdopterCount, zeroUserCredits } from '../billing/payments.js'
 
 const keyId = process.env.RAZORPAY_KEY_ID || ''
 const keySecret = process.env.RAZORPAY_KEY_SECRET || ''
@@ -110,8 +106,7 @@ export async function razorpayStartHandler(req, res) {
   try {
     if (mode === 'subscription') {
       const tier = String(req.body?.tier || 'pro')
-      const planId =
-        tier === 'early_adopter' ? earlyAdopterPlanId : proPlanId
+      const planId = tier === 'early_adopter' ? earlyAdopterPlanId : proPlanId
       if (!planId) return res.status(503).json({ error: 'Subscription plan is not configured' })
 
       const sub = await rzp.subscriptions.create({

@@ -1,16 +1,11 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { normalizeSlug } from '../lib/text-utils.js'
 
 const DEPLOYMENTS_FILE = '_deployments.json'
 let deploymentsDir
 const deploymentMap = new Map()
 const sessionMap = new Map()
-
-function normalizeSlug(slug) {
-  return String(slug || '')
-    .trim()
-    .toLowerCase()
-}
 
 function buildPayload() {
   const payload = {}
@@ -73,7 +68,9 @@ export function initDeployments(sessionsDir) {
 
 export function getDeploymentBySlug(slug) {
   const entry = deploymentMap.get(normalizeSlug(slug))
-  return entry ? { slug: normalizeSlug(slug), sessionId: entry.sessionId, deployedAt: entry.deployedAt } : null
+  return entry
+    ? { slug: normalizeSlug(slug), sessionId: entry.sessionId, deployedAt: entry.deployedAt }
+    : null
 }
 
 export function getDeploymentBySessionId(sessionId) {

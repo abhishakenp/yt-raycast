@@ -7,6 +7,7 @@ const MARK = 'data-sf-preview-tools="1"'
 
 export function stripPreviewArtifactsFromHtml(html) {
   return String(html)
+    .replace(/<base\b[^>]*href\s*=\s*["']\/preview\/[a-f0-9]{12,64}\/?["'][^>]*>\s*/gi, '')
     .replace(/<script>window\.__SF_PREVIEW_SESSION_ID__=[^<]*<\/script>\s*/gi, '')
     .replace(/<script>window\.__SF_PREVIEW_AI__=[^<]*<\/script>\s*/gi, '')
     .replace(/<script\b[^>]*data-sf-preview-tools="1"[^>]*><\/script>\s*/gi, '')
@@ -15,6 +16,11 @@ export function stripPreviewArtifactsFromHtml(html) {
 export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessionWorkspace) {
   if (typeof html !== 'string') return html
   html = injectStorefrontCartUi(html, sessionWorkspace ? { workspace: sessionWorkspace } : {})
+  const sid =
+    sessionId != null && /^[a-f0-9]{12,64}$/i.test(String(sessionId)) ? String(sessionId) : ''
+  if (sid && !/<base\b/i.test(html) && /<head\b[^>]*>/i.test(html)) {
+    html = html.replace(/<head\b[^>]*>/i, (open) => `${open}\n<base href="/preview/${sid}/">`)
+  }
   if (html.includes(MARK)) return html
   const mode = resolveLanguageModeFromPreference(preferredLanguage)
   const aiOpts = {

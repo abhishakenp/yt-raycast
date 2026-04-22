@@ -2,12 +2,25 @@ import { WebSocketServer } from 'ws'
 import { getSession } from './sessions.js'
 
 let _wss = null
+const devReloadClients = new Set()
+
+export const broadcastDevReload = (msg) => {
+  const data = JSON.stringify(msg)
+  for (const ws of devReloadClients) {
+    if (ws.readyState === 1) ws.send(data)
+  }
+}
 
 export function setupWebSocket(httpServer) {
   _wss = new WebSocketServer({ server: httpServer })
 
   _wss.on('connection', (ws, req) => {
     const url = new URL(req.url, 'http://localhost')
+    if (process.env.NODE_ENV !== 'production' && url.searchParams.get('devReload') === '1') {
+      devReloadClients.add(ws)
+      ws.on('close', () => devReloadClients.delete(ws))
+      return
+    }
     const sessionId = url.searchParams.get('session')
     const session = sessionId ? getSession(sessionId) : null
 
@@ -20,7 +33,16 @@ export function setupWebSocket(httpServer) {
     session.wsClients.add(ws)
 
     // Send current state to newly connected client
-    const { prompt, lastStatus, tasks, homepageReady, siteSpecReady, alternativeDesign, themeOverride, deployment } = {
+    const {
+      prompt,
+      lastStatus,
+      tasks,
+      homepageReady,
+      siteSpecReady,
+      alternativeDesign,
+      themeOverride,
+      deployment,
+    } = {
       prompt: session.prompt,
       lastStatus: session.lastStatus,
       tasks: session.tasks,
@@ -37,8 +59,10 @@ export function setupWebSocket(httpServer) {
     if (homepageReady) ws.send(JSON.stringify({ type: 'homepage_ready' }))
     if (alternativeDesign)
       ws.send(JSON.stringify({ type: 'alternative_design_ready', design: alternativeDesign }))
-    if (themeOverride) ws.send(JSON.stringify({ type: 'theme_override_loaded', theme: themeOverride }))
-    if (deployment?.url) ws.send(JSON.stringify({ type: 'deployed', slug: deployment.slug, url: deployment.url }))
+    if (themeOverride)
+      ws.send(JSON.stringify({ type: 'theme_override_loaded', theme: themeOverride }))
+    if (deployment?.url)
+      ws.send(JSON.stringify({ type: 'deployed', slug: deployment.slug, url: deployment.url }))
 
     ws.on('close', () => {
       session.wsClients.delete(ws)
