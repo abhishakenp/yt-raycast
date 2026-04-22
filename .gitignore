@@ -21,6 +21,8 @@ ship.log
 sessions/
 
 groq-model-benchmark/
+.aurora-quality-tmp/
+.ab-compare/
 
 .storyrun/
 .next/
