@@ -95,6 +95,24 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   const words = visibleTextFromHtmlFragment(body).split(/\s+/).filter(Boolean)
   const wc = words.length
   const rawLen = String(html).length
+  const usesTailwindCdn = /cdn\.tailwindcss\.com/i.test(html)
+  const sectionCount = (body.match(/<section\b/gi) || []).length
+
+  if (
+    usesTailwindCdn &&
+    hasMarketingStructure(body) &&
+    (wc >= 42 || (sectionCount >= 2 && wc >= 32))
+  ) {
+    return false
+  }
+
+  if (
+    String(siteSpec?.siteType || '').toLowerCase() === 'dashboard' &&
+    usesTailwindCdn &&
+    wc >= 42
+  ) {
+    return false
+  }
 
   if (rawLen >= 14000 && wc >= 42 && /<(header|main|footer|nav|section|article)\b/i.test(body))
     return false

@@ -1,4 +1,9 @@
 import { groqHomepage } from '../llm/groq.js'
+import { readDesignRefFromWorkspace } from '../prompts/design-refs.js'
+import {
+  VAGUE_MARKETING_HOMEPAGE_APPENDIX,
+  shouldExpandVagueMarketing,
+} from '../prompts/vague-marketing-brief.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
 import { translateHtml } from '../llm/translator.js'
@@ -11,9 +16,12 @@ import {
 } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { htmlLooksDegenerate } from './homepage-degeneracy.js'
+import { passesHomepagePublicDesignVerification } from './ralph-homepage-score.js'
+import { getPublicDesignExemplarPath } from '../prompts/public-design-exemplar-append.js'
+import { stripDestructiveEmptyDesignTheme } from './homepage-theme-sanitize.js'
 import { writeFile } from './workspace.js'
+import { buildHomepageSpecSliceJson } from '../spec/homepage-spec-slice.js'
 
-const SHIPFAST_FOOTER_STYLE_ID = 'sf-footer-branding-style'
 const SHIPFAST_FOOTER_MARKER = 'data-sf-footer-branding'
 
 export function injectShipFastFooterBranding(html, log = () => {}) {
@@ -22,99 +30,21 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   let next = html
   const hasBrandingMarkup = (value) => /<[^>]+\sdata-sf-footer-branding\b/i.test(value)
 
-  if (!next.includes(SHIPFAST_FOOTER_STYLE_ID)) {
-    const styleTag = `
-    <style id="${SHIPFAST_FOOTER_STYLE_ID}">
-      .sf-built-with-strip[${SHIPFAST_FOOTER_MARKER}] {
-        padding: 1.5rem 1rem 2rem;
-        text-align: center;
-        clear: both;
-        width: 100%;
-        box-sizing: border-box;
-        border-top: 1px solid rgba(63, 63, 70, 0.5);
-      }
-      [${SHIPFAST_FOOTER_MARKER}].footer-branding {
-        margin-top: 0;
-        display: inline-flex;
-        justify-content: center;
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.45rem 1rem 0.45rem 0.55rem;
-        border-radius: 999px;
-        border: 1px solid rgba(124, 58, 237, 0.45);
-        background: linear-gradient(145deg, rgba(20, 12, 36, 0.92) 0%, rgba(46, 26, 78, 0.88) 50%, rgba(30, 18, 52, 0.94) 100%);
-        box-shadow: 0 10px 32px rgba(124, 58, 237, 0.18), 0 2px 12px rgba(0, 0, 0, 0.35);
-        color: #f4f4f5;
-        text-decoration: none;
-        transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__link:hover {
-        transform: translateY(-1px);
-        border-color: rgba(167, 139, 250, 0.65);
-        box-shadow: 0 14px 40px rgba(124, 58, 237, 0.28), 0 4px 14px rgba(0, 0, 0, 0.4);
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__logo {
-        flex-shrink: 0;
-        width: 2rem;
-        height: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        filter: drop-shadow(0 2px 6px rgba(124, 58, 237, 0.45));
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__logo svg {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__text {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.06rem;
-        line-height: 1.1;
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__label {
-        font-size: 0.62rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(196, 181, 253, 0.9);
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__name {
-        font-size: 0.88rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: #fafafa;
-      }
-      [${SHIPFAST_FOOTER_MARKER}] .footer-branding__link::after {
-        content: '↗';
-        font-size: 0.85em;
-        color: #a78bfa;
-        align-self: center;
-        margin-left: 0.1rem;
-      }
-    </style>
-  `
-
-    next = /<\/head>/i.test(next)
-      ? next.replace(/<\/head>/i, `${styleTag}\n</head>`)
-      : `${styleTag}\n${next}`
-  }
-
   if (hasBrandingMarkup(next)) return next
 
+  const logoHtml = shipFastFooterLogoMarkup('sfhp').replace(
+    'class="footer-branding__logo"',
+    'class="footer-branding__logo inline-flex h-8 w-8 shrink-0 items-center justify-center drop-shadow-[0_2px_6px_rgba(124,58,237,0.45)] [&_svg]:block [&_svg]:h-full [&_svg]:w-full"',
+  )
   const brandingHtml = `
-    <div ${SHIPFAST_FOOTER_MARKER} class="footer-branding" aria-label="Built with Ship Fast">
-      <a class="footer-branding__link" href="${SHIP_FAST_SITE_URL}" target="_blank" rel="noreferrer">
-        ${shipFastFooterLogoMarkup('sfhp')}
-        <span class="footer-branding__text">
-          <span class="footer-branding__label">Built with</span>
-          <span class="footer-branding__name">Ship Fast</span>
+    <div ${SHIPFAST_FOOTER_MARKER} class="footer-branding mt-0 inline-flex justify-center" aria-label="Built with Ship Fast">
+      <a class="footer-branding__link group inline-flex items-center gap-3 rounded-full border border-violet-500/45 bg-gradient-to-br from-[#140c24]/92 via-[#2e1a4e]/88 to-[#1e1234]/94 px-4 py-2 text-zinc-100 no-underline shadow-[0_10px_32px_rgba(124,58,237,0.18),0_2px_12px_rgba(0,0,0,0.35)] transition duration-200 hover:-translate-y-px hover:border-violet-400/65 hover:shadow-[0_14px_40px_rgba(124,58,237,0.28),0_4px_14px_rgba(0,0,0,0.4)]" href="${SHIP_FAST_SITE_URL}" target="_blank" rel="noreferrer">
+        ${logoHtml}
+        <span class="footer-branding__text flex flex-col items-start gap-px leading-tight">
+          <span class="footer-branding__label text-[0.62rem] uppercase tracking-[0.14em] text-violet-200/90">Built with</span>
+          <span class="footer-branding__name text-[0.88rem] font-bold uppercase tracking-[0.08em] text-zinc-50">Ship Fast</span>
         </span>
+        <span class="text-[0.85em] text-violet-400" aria-hidden="true">↗</span>
       </a>
     </div>
   `
@@ -122,10 +52,10 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   if (/<\/body>/i.test(next)) {
     next = next.replace(
       /<\/body>/i,
-      `<footer class="sf-built-with-strip" style="padding: 1.5rem 1rem 2.5rem; text-align: center; clear: both; width: 100%; box-sizing: border-box;">${brandingHtml}</footer>\n</body>`,
+      `<footer class="sf-built-with-strip clear-both w-full border-t border-zinc-600/50 px-4 py-6 text-center box-border">${brandingHtml}</footer>\n</body>`,
     )
   } else {
-    next = `${next}\n<footer class="sf-built-with-strip">${brandingHtml}</footer>`
+    next = `${next}\n<footer class="sf-built-with-strip clear-both w-full border-t border-zinc-600/50 px-4 py-6 text-center box-border">${brandingHtml}</footer>`
   }
 
   if (next !== html) log('  ✓ Ship Fast footer branding appended')
@@ -140,31 +70,82 @@ export async function generateHomepage(
   indiaMode = null,
   imageHints = null,
   brandProfile = null,
+  businessProfile = null,
+  designRef = null,
+  contentPlanRef = null,
+  thinSiteSpec = null,
 ) {
   log('  homepage: generating from scratch (LLM)...')
 
   const hasDesignReferenceUrls = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
-  const result = await groqHomepage(
-    prompt,
-    imageHints,
-    indiaMode,
-    brandProfile,
-    hasDesignReferenceUrls,
-  )
+  const resolvedDesignRef = designRef ?? readDesignRefFromWorkspace(workspace)
+  if (resolvedDesignRef) log(`  homepage: using design ref "${resolvedDesignRef.name}"`)
+  const thinJson = thinSiteSpec ? buildHomepageSpecSliceJson(thinSiteSpec) : ''
+  const siteTypeForVague = thinSiteSpec?.siteType
+  const siteType = String(thinSiteSpec?.siteType || 'landing').toLowerCase()
+  const exemplarPath = getPublicDesignExemplarPath(siteType)
+  const ralphDisabled = process.env.SHIPFAST_HOMEPAGE_RALPH === '0'
+  const maxRalph =
+    siteType === 'game' || ralphDisabled || hasDesignReferenceUrls
+      ? 1
+      : Math.max(1, Math.min(14, parseInt(process.env.SHIPFAST_HOMEPAGE_RALPH_MAX || '12', 10) || 12))
+  const promptBase =
+    shouldExpandVagueMarketing(prompt, siteTypeForVague) ? `${prompt}\n\n${VAGUE_MARKETING_HOMEPAGE_APPENDIX}` : prompt
+  if (promptBase.length > (prompt || '').length)
+    log('  homepage: vague-prompt reference-tier expansion (density + anti-template)')
 
-  if (!result?.content || result.error) {
-    log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)
-    throw new Error(`Homepage generation failed: ${result?.error}`)
+  const shellAfterGroq = (raw) => {
+    let h = stripFences(raw)
+    h = stripDestructiveEmptyDesignTheme(h)
+    h = h
+      .replace(/const\s+\{[^}]*\}\s*=\s*require\([^)]*\);?\n?/g, '')
+      .replace(/<link[^>]*href="styles\.css"[^>]*>/g, '')
+      .replace(/<script[^>]*>\s*const\s+\{[^}]*\}\s*=\s*\{[^}]*\};\s*<\/script>\n?/g, '')
+    return injectShipFastFooterBranding(h, log)
   }
 
-  let html = stripFences(result.content)
+  let ralphFeedback = ''
+  let result = null
+  const tokenAgg = { inputTokens: 0, outputTokens: 0, cost: 0 }
+  let html = ''
 
-  html = html
-    .replace(/const\s+\{[^}]*\}\s*=\s*require\([^)]*\);?\n?/g, '')
-    .replace(/<link[^>]*href="styles\.css"[^>]*>/g, '')
-    .replace(/<script[^>]*>\s*const\s+\{[^}]*\}\s*=\s*\{[^}]*\};\s*<\/script>\n?/g, '')
-
-  html = injectShipFastFooterBranding(html, log)
+  for (let attempt = 1; attempt <= maxRalph; attempt++) {
+    const promptForModel = ralphFeedback
+      ? `${promptBase}\n\n── MANDATORY REVISION (failed reference-tier verification) ──\n${ralphFeedback}\n── END REVISION ──`
+      : promptBase
+    result = await groqHomepage(
+      promptForModel,
+      imageHints,
+      indiaMode,
+      brandProfile,
+      hasDesignReferenceUrls,
+      resolvedDesignRef,
+      businessProfile,
+      contentPlanRef,
+      thinJson,
+    )
+    if (!result?.content || result.error) {
+      log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)
+      throw new Error(`Homepage generation failed: ${result?.error}`)
+    }
+    tokenAgg.inputTokens += result.inputTokens ?? 0
+    tokenAgg.outputTokens += result.outputTokens ?? 0
+    tokenAgg.cost += result.cost ?? 0
+    html = shellAfterGroq(result.content)
+    const ver =
+      exemplarPath && !hasDesignReferenceUrls
+        ? passesHomepagePublicDesignVerification(html, prompt, exemplarPath, siteType)
+        : { ok: !htmlLooksDegenerate(html, { prompt }), feedback: 'Output failed degeneracy or marketing bar checks.' }
+    if (ver.ok) {
+      if (maxRalph > 1) log(`  homepage: reference-tier verification passed (attempt ${attempt}/${maxRalph})`)
+      break
+    }
+    ralphFeedback = ver.feedback || 'Match the public design exemplar for this site type in the system prompt.'
+    log(`  homepage: reference-tier verification failed — attempt ${attempt}/${maxRalph}`)
+    if (attempt === maxRalph) {
+      throw new Error(`Homepage failed reference-tier verification after ${maxRalph} attempts: ${ralphFeedback}`)
+    }
+  }
 
   if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation) {
     log(`  homepage: translating to ${indiaMode.name || indiaMode.language?.name} via Groq...`)
@@ -181,7 +162,7 @@ export async function generateHomepage(
     }
   }
 
-  if (htmlLooksDegenerate(html)) {
+  if (htmlLooksDegenerate(html, { prompt })) {
     log('  ❌ homepage: rejected — output looks degenerate before image pass')
     throw new Error('Homepage output failed quality check')
   }
@@ -192,7 +173,7 @@ export async function generateHomepage(
   html = injectEcommerceHeroResponsiveCss(html)
   html = ensureLucideIconRuntime(html, log)
 
-  if (htmlLooksDegenerate(html)) {
+  if (htmlLooksDegenerate(html, { prompt })) {
     log('  ❌ homepage: rejected — output looks degenerate (repetition or invalid HTML)')
     throw new Error('Homepage output failed quality check')
   }
@@ -203,84 +184,78 @@ export async function generateHomepage(
 
   return {
     html,
-    inputTokens: result.inputTokens ?? 0,
-    outputTokens: result.outputTokens ?? 0,
-    cost: result.cost ?? 0,
+    inputTokens: tokenAgg.inputTokens,
+    outputTokens: tokenAgg.outputTokens,
+    cost: tokenAgg.cost,
   }
 }
 
+const SF_THEME_INJECT_START = '<!-- sf-design-theme -->'
+const SF_THEME_INJECT_END = '<!-- /sf-design-theme -->'
+const LEGACY_THEME_STAR_TRANSITION = /\s*\*\s*\{\s*transition:\s*background-color\s+0\.6s\s+cubic-bezier\(0\.4,\s*0,\s*0\.2,\s*1\),[\s\S]*?stroke\s+0\.6s\s+cubic-bezier\(0\.4,\s*0,\s*0\.2,\s*1\);\s*\}\s*/g
+
+export const stripLegacyThemeStarTransition = (html) =>
+  !html || typeof html !== 'string' ? html : html.replace(LEGACY_THEME_STAR_TRANSITION, '\n')
+
 export function injectDesignIntoHomepage(html, designBrief, workspace, log) {
+  html = stripDestructiveEmptyDesignTheme(html)
   const configMatch = designBrief.match(/```json\s*(\{[\s\S]*?\})\s*```/)
   if (!configMatch) return html
 
   try {
     const configJson = JSON.parse(configMatch[1])
-    const colors = configJson.colors || {}
-
-    const cssVars = Object.entries(colors)
-      .map(([name, value]) => `        --color-${name}: ${value};`)
-      .join('\n')
-
+    const colors = configJson.colors && typeof configJson.colors === 'object' ? configJson.colors : {}
+    const fontFamily =
+      configJson.fontFamily && typeof configJson.fontFamily === 'object' ? configJson.fontFamily : {}
     const tailwindColors = Object.keys(colors).reduce((acc, name) => {
-      acc[name] = `var(--color-${name})`
+      acc[name] = colors[name]
       return acc
     }, {})
+    const colorKeys = Object.keys(tailwindColors)
+    const fontKeys = Object.keys(fontFamily)
+    if (!colorKeys.length && !fontKeys.length) {
+      log('  design inject: skipped (design brief JSON has no colors or fontFamily to merge)')
+      return html
+    }
 
-    const themeScript = `
-    <style>
-      :root {
-${cssVars}
-      }
-      * {
-        transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                    color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                    border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                    fill 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                    stroke 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-    </style>
-    <script>
-      (function () {
-        var cfg = {
-          theme: {
-            extend: {
-              colors: ${JSON.stringify(tailwindColors, null, 2)},
-              fontFamily: ${JSON.stringify(configJson.fontFamily || {}, null, 2)}
-            }
-          }
-        }
-        function applyCfg() {
-          if (typeof tailwind === 'undefined') return false
-          tailwind.config = cfg
-          return true
-        }
-        if (!applyCfg()) {
-          var n = 0
-          var id = setInterval(function () {
-            n++
-            if (applyCfg() || n > 80) clearInterval(id)
-          }, 50)
-        }
-        window.addEventListener('message', function (e) {
-          if (e.data.type === 'UPDATE_THEME') {
-            var theme = e.data.colors
-            for (var k in theme) {
-              if (Object.prototype.hasOwnProperty.call(theme, k)) {
-                document.documentElement.style.setProperty('--color-' + k, theme[k])
-              }
-            }
-          }
-        })
-      })()
-    </script>
+    html = html.replace(
+      new RegExp(`${SF_THEME_INJECT_START}[\\s\\S]*?${SF_THEME_INJECT_END}\\s*`, 'gi'),
+      '',
+    )
+    html = stripLegacyThemeStarTransition(html)
+
+    const themeScript = `${SF_THEME_INJECT_START}
+<script>
+(function () {
+  var patchColors = ${JSON.stringify(tailwindColors, null, 2)}
+  var patchFonts = ${JSON.stringify(fontFamily, null, 2)}
+  tailwind.config = tailwind.config || { theme: { extend: {} } }
+  var ex = tailwind.config.theme.extend = tailwind.config.theme.extend || {}
+  ex.colors = Object.assign({}, ex.colors || {}, patchColors)
+  ex.fontFamily = Object.assign({}, ex.fontFamily || {}, patchFonts)
+})()
+window.addEventListener('message', function (e) {
+  if (e.data.type === 'UPDATE_THEME' && e.data.colors && typeof tailwind !== 'undefined') {
+    tailwind.config = tailwind.config || { theme: { extend: {} } }
+    tailwind.config.theme.extend = tailwind.config.theme.extend || {}
+    tailwind.config.theme.extend.colors = Object.assign(
+      {},
+      tailwind.config.theme.extend.colors || {},
+      e.data.colors,
+    )
+  }
+})
+</script>
+${SF_THEME_INJECT_END}
   </head>`
 
     html = html.replace('</head>', themeScript)
-    log('  ✓ Design system injected into homepage')
+    log('  ✓ Design system merged into homepage tailwind.config')
   } catch {
     log('  warning: failed to inject tailwind config')
   }
 
+  html = stripDestructiveEmptyDesignTheme(html)
   html = ensureLucideIconRuntime(html, log)
   writeFile(workspace, 'index.html', html)
   return html
