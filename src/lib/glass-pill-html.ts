@@ -41,7 +41,7 @@ export const glassPillButtonHtml = ({
   const valueAttr = value !== '' && value != null ? ` value="${esc(String(value))}"` : ''
   const dis = disabled ? ' disabled' : ''
   const aria = ariaLabel ? ` aria-label="${esc(ariaLabel)}"` : ''
-  const inner = html != null && html !== '' ? esc(html) : esc(text ?? label ?? '')
+  const inner = html != null && html !== '' ? html : esc(text ?? label ?? '')
   return `<button type="${esc(type)}" class="${cls}"${idAttr}${nameAttr}${valueAttr}${dis}${aria}${extraAttrs}>${LAYERS}<span class="pill__body">${inner}</span></button>`
 }
 
@@ -69,6 +69,6 @@ export const glassPillAnchorHtml = ({
   const cls = `pill${className ? ` ${className}` : ''}`
   const idAttr = id ? ` id="${esc(id)}"` : ''
   const aria = ariaLabel ? ` aria-label="${esc(ariaLabel)}"` : ''
-  const inner = html != null && html !== '' ? esc(html) : esc(text ?? label ?? '')
+  const inner = html != null && html !== '' ? html : esc(text ?? label ?? '')
   return `<a href="${esc(href)}" class="${cls}"${idAttr}${aria}${extraAttrs}>${LAYERS}<span class="pill__body">${inner}</span></a>`
 }
