@@ -2,7 +2,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebas
 import {
   getAuth,
   onAuthStateChanged,
+  GoogleAuthProvider,
   GithubAuthProvider,
+  signInWithPopup,
   linkWithPopup,
   reauthenticateWithPopup,
 } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
@@ -125,7 +127,16 @@ window.shipFastDashboardGithub = {
   pushExportToGitHub,
 }
 
+async function signInWithGoogle() {
+  await ready
+  const provider = new GoogleAuthProvider()
+  const result = await signInWithPopup(auth, provider)
+  currentUser = result.user
+  return result.user
+}
+
 window.shipFastDashboardAuth = {
   ready,
   getCurrentIdToken,
+  signInWithGoogle,
 }

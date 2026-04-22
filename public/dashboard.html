@@ -12,17 +12,20 @@
     <meta name="theme-color" content="#050506" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <!-- Plausible Analytics (proxied) -->
-    <script
-      defer
-      data-domain="ship-fast.io"
-      data-api="/api/event"
-      src="/js/script.js"
-    ></script>
+    <script defer data-domain="ship-fast.io" data-api="/api/event" src="/js/script.js"></script>
     <link rel="stylesheet" href="/styles/dashboard.css" />
     <style>
       #intro-media-orbit .intro-media-thumb {
         transform: translate(-50%, -50%);
         animation-name: introMediaThumbOrbit;
+      }
+      .preview-site-rail-badge--new {
+        background: rgba(99, 102, 241, 0.14);
+        border: 1px solid rgba(99, 102, 241, 0.28);
+        color: #c7d2fe;
+      }
+      .preview-site-rail-row--provisioned .preview-site-rail-row-label {
+        opacity: 0.95;
       }
       @keyframes introMediaThumbOrbit {
         0% {
@@ -140,7 +143,13 @@
               title="Back to home"
               aria-label="Back to home"
             >
-              <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <svg
+                class="preview-tool-icon"
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              >
                 <path
                   fill="none"
                   stroke="currentColor"
@@ -172,7 +181,13 @@
                 title="Reload preview"
                 aria-label="Reload preview"
               >
-                <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <svg
+                  class="preview-tool-icon"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                >
                   <path
                     fill="none"
                     stroke="currentColor"
@@ -192,7 +207,13 @@
                   aria-label="Desktop width"
                   aria-pressed="true"
                 >
-                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <svg
+                    class="preview-tool-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="none"
                       stroke="currentColor"
@@ -211,7 +232,13 @@
                   aria-label="Tablet width"
                   aria-pressed="false"
                 >
-                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <svg
+                    class="preview-tool-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="none"
                       stroke="currentColor"
@@ -230,7 +257,13 @@
                   aria-label="Mobile width"
                   aria-pressed="false"
                 >
-                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <svg
+                    class="preview-tool-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="none"
                       stroke="currentColor"
@@ -251,7 +284,13 @@
                   aria-label="Select component"
                   aria-pressed="false"
                 >
-                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <svg
+                    class="preview-tool-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="none"
                       stroke="currentColor"
@@ -270,7 +309,13 @@
                   aria-label="Annotate"
                   aria-pressed="false"
                 >
-                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <svg
+                    class="preview-tool-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="none"
                       stroke="currentColor"
@@ -304,7 +349,13 @@
                   title="Clear annotations"
                   aria-label="Clear annotations"
                 >
-                  <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <svg
+                    class="preview-tool-icon"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="none"
                       stroke="currentColor"
@@ -331,7 +382,13 @@
                 title="Open in new tab"
                 aria-label="Open preview in new tab"
               >
-                <svg class="preview-tool-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <svg
+                  class="preview-tool-icon"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                >
                   <path
                     fill="none"
                     stroke="currentColor"
@@ -381,7 +438,9 @@
                         Pick a target and Ship Fast will package the current generated UI for it.
                       </p>
                     </div>
-                    <span class="export-status-badge" id="export-status">Locking mission spec…</span>
+                    <span class="export-status-badge" id="export-status"
+                      >Locking mission spec…</span
+                    >
                   </div>
                   <div class="export-target-list" id="export-target-list"></div>
                   <div class="export-panel-actions">
@@ -390,7 +449,7 @@
                       style="
                         display: none;
                         font-size: 13px;
-                        color: #8A8F98;
+                        color: #8a8f98;
                         align-items: center;
                         gap: 6px;
                       "
@@ -462,390 +521,550 @@
           </div>
           <div class="browser-content">
             <div class="browser-content-main">
-            <div class="preview-stage sf-device-desktop" id="preview-stage">
-              <div class="preview-device-shell" id="preview-device-shell">
-                <iframe id="preview-iframe" src="about:blank"></iframe>
+              <div class="preview-stage sf-device-desktop" id="preview-stage">
+                <div class="preview-device-shell" id="preview-device-shell">
+                  <iframe id="preview-iframe" src="about:blank"></iframe>
+                </div>
               </div>
-            </div>
-            <div class="preview-loading" id="preview-loading">
-              <div class="preview-progress">
-                <div class="preview-progress-fill" id="preview-progress-fill"></div>
+              <div class="preview-loading" id="preview-loading">
+                <div class="preview-progress">
+                  <div class="preview-progress-fill" id="preview-progress-fill"></div>
+                </div>
               </div>
-            </div>
-            <div class="preview-chat-dock" id="preview-chat-dock" hidden>
-              <div class="preview-chat-panel" id="preview-chat-panel" hidden>
-                <div class="preview-chat-head">
-                  <span class="preview-chat-head-title" id="preview-chat-head-title">Chat</span>
-                  <div class="preview-chat-head-trail">
-                    <button
-                      type="button"
-                      class="preview-chat-add-section"
-                      id="preview-chat-add-section"
-                      aria-label="Add section"
-                      title="Add section"
-                    >
-                      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                        <rect
-                          x="3"
-                          y="3"
-                          width="18"
-                          height="18"
-                          rx="2"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        />
-                        <path d="M12 8v8M8 12h8" fill="none" stroke="currentColor" stroke-width="2" />
-                      </svg>
-                    </button>
-                    <button type="button" class="preview-chat-close" id="preview-chat-close" aria-label="Close">
-                      &times;
-                    </button>
-                  </div>
-                </div>
-                <div id="preview-chat-cms-block" class="preview-chat-cms-block" hidden>
-                  <div class="preview-chat-cms-tabs" role="tablist" aria-label="Site content mode">
-                    <button
-                      type="button"
-                      class="preview-chat-cms-tab is-active"
-                      id="preview-chat-cms-tab-studio"
-                      data-cms-tab="studio"
-                      role="tab"
-                      aria-selected="true"
-                      aria-controls="preview-chat-cms-studio-panel"
-                    >
-                      Sanity Studio
-                    </button>
-                    <button
-                      type="button"
-                      class="preview-chat-cms-tab"
-                      id="preview-chat-cms-tab-medusa"
-                      data-cms-tab="medusa"
-                      role="tab"
-                      aria-selected="false"
-                      aria-controls="preview-chat-cms-medusa-panel"
-                      hidden
-                    >
-                      Products (Medusa)
-                    </button>
-                    <button
-                      type="button"
-                      class="preview-chat-cms-tab"
-                      id="preview-chat-cms-tab-quick"
-                      data-cms-tab="quick"
-                      role="tab"
-                      aria-selected="false"
-                      aria-controls="preview-chat-cms-quick-panel"
-                    >
-                      Quick fields
-                    </button>
-                  </div>
-                  <div
-                    class="preview-chat-cms-studio-panel"
-                    id="preview-chat-cms-studio-panel"
-                    role="tabpanel"
-                    aria-labelledby="preview-chat-cms-tab-studio"
-                  >
-                    <div
-                      class="preview-chat-cms-studio-unbuilt"
-                      id="preview-chat-cms-studio-unbuilt"
-                      hidden
-                    >
-                      <p class="preview-chat-cms-studio-unbuilt-title">Embedded Sanity Studio is not available</p>
-                      <p class="preview-chat-cms-studio-unbuilt-body">
-                        Build it once from the Ship Fast repo root:
-                        <code class="preview-chat-cms-studio-unbuilt-code">bun run studio:build</code>
-                        (Sanity CLI needs <strong>Node ≥ 20.19</strong>). Restart the server after it succeeds. Until
-                        then, use <strong>Quick fields</strong> for site settings.
-                      </p>
-                    </div>
-                    <div class="preview-chat-cms-studio-toolbar" id="preview-chat-cms-studio-toolbar" hidden>
-                      <a
-                        class="preview-chat-cms-studio-open-link"
-                        id="preview-chat-cms-studio-open-link"
-                        href="/studio/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        >Open Sanity Studio in new tab</a>
-                      <button type="button" class="preview-chat-cms-studio-sync-btn" data-cms-sanity-sync>
-                        Apply Sanity to this preview
-                      </button>
-                      <span class="preview-chat-cms-studio-toolbar-hint"
-                        >If Studio was built with a write API token in env, you stay signed in here. Otherwise use
-                        <strong>Open in new tab</strong> for Sanity login. After publishing, use Apply to refresh this
-                        session’s generated pages.</span>
-                    </div>
-                    <iframe
-                      class="preview-chat-cms-studio-frame"
-                      id="preview-chat-cms-studio-frame"
-                      title="Sanity Studio"
-                      src="about:blank"
-                    ></iframe>
-                    <p class="preview-chat-cms-note preview-chat-cms-note--studio" id="preview-chat-cms-studio-footnote">
-                      Same project as your content lake. Token-based Studio skips OAuth; rebuild Studio after changing
-                      tokens. Then Apply to update this session’s preview HTML.
-                    </p>
-                  </div>
-                  <div
-                    class="preview-chat-cms-medusa-panel preview-chat-medusa-inline"
-                    id="preview-chat-cms-medusa-panel"
-                    role="tabpanel"
-                    aria-labelledby="preview-chat-cms-tab-medusa"
-                    hidden
-                  >
-                    <div class="preview-chat-medusa-toolbar">
-                      <span class="preview-chat-medusa-title">Products (Medusa)</span>
-                      <a
-                        class="preview-chat-medusa-open-link"
-                        id="preview-chat-medusa-open-link"
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        >Open in new tab</a
-                      >
-                    </div>
-                    <iframe
-                      class="preview-chat-medusa-frame"
-                      id="preview-chat-medusa-frame"
-                      title="Medusa products admin"
-                      src="about:blank"
-                    ></iframe>
-                    <p class="preview-chat-cms-note preview-chat-cms-note--medusa" id="preview-chat-medusa-footnote">
-                      Commerce API and admin UI are served by your Medusa process (
-                      <code class="preview-chat-cms-studio-unbuilt-code">bun run medusa:dev</code>
-                      in <code class="preview-chat-cms-studio-unbuilt-code">medusa-backend</code>). Ensure
-                      <code class="preview-chat-cms-studio-unbuilt-code">ADMIN_CORS</code> /
-                      <code class="preview-chat-cms-studio-unbuilt-code">AUTH_CORS</code> include this origin if login
-                      fails.
-                    </p>
-                  </div>
-                  <div
-                    class="preview-chat-cms-quick-panel"
-                    id="preview-chat-cms-quick-panel"
-                    role="tabpanel"
-                    aria-labelledby="preview-chat-cms-tab-quick"
-                    hidden
-                  >
-                  <p class="preview-chat-cms-note">
-                    Values sync from each generation into site settings (one shared document). The preview iframe shows this
-                    session’s workspace files; refresh the panel after a run if fields look stale.
-                  </p>
-                  <p class="preview-chat-cms-quick-sanity-row">
-                    <button type="button" class="preview-chat-cms-quick-sanity-sync-btn" data-cms-sanity-sync>
-                      Apply Sanity to this preview
-                    </button>
-                    <span class="preview-chat-cms-quick-sanity-hint">Pulls latest site settings from Sanity into this
-                      session and re-renders the preview.</span>
-                  </p>
-                  <form class="preview-chat-cms-form" id="preview-chat-cms-form">
-                    <label class="preview-chat-cms-label"
-                      >Homepage title override
-                      <input type="text" id="cms-homeTitle" name="homeTitle" autocomplete="off" />
-                    </label>
-                    <label class="preview-chat-cms-label"
-                      >Homepage meta description
-                      <textarea id="cms-homeDescription" name="homeDescription" rows="3"></textarea>
-                    </label>
-                    <label class="preview-chat-cms-label"
-                      >Pricing page title
-                      <input type="text" id="cms-pricingPageTitle" name="pricingPageTitle" autocomplete="off" />
-                    </label>
-                    <label class="preview-chat-cms-label"
-                      >Pricing page meta description
-                      <textarea id="cms-pricingPageDescription" name="pricingPageDescription" rows="2"></textarea>
-                    </label>
-                    <label class="preview-chat-cms-label"
-                      >Pricing hero headline
-                      <input type="text" id="cms-pricingHeroHeadline" name="pricingHeroHeadline" autocomplete="off" />
-                    </label>
-                    <label class="preview-chat-cms-label"
-                      >Chat-synced marketing headline
-                      <input type="text" id="cms-shipChatHeadline" name="shipChatHeadline" autocomplete="off" />
-                    </label>
-                    <label class="preview-chat-cms-label"
-                      >Chat-synced subheadline
-                      <textarea id="cms-shipChatSubheadline" name="shipChatSubheadline" rows="3"></textarea>
-                    </label>
-                    <p class="preview-chat-cms-images-hint">
-                      Use uploaded or library assets (with optional alt text), or paste a legacy image URL. Hotspot/crop
-                      is available in the separate content admin.
-                    </p>
-                    <input type="hidden" id="cms-ogImageAssetId" name="ogImageAssetId" value="" />
-                    <input type="hidden" id="cms-homeHeroImageAssetId" name="homeHeroImageAssetId" value="" />
-                    <div class="preview-chat-cms-image-block">
-                      <span class="preview-chat-cms-image-block-title">Open Graph / social image</span>
-                      <div class="preview-chat-cms-image-preview-wrap">
-                        <img
-                          class="preview-chat-cms-image-preview"
-                          id="cms-ogImage-preview"
-                          alt=""
-                          width="120"
-                          height="63"
-                          hidden
-                        />
-                      </div>
-                      <label class="preview-chat-cms-label preview-chat-cms-label--tight"
-                        >Alt text
-                        <input type="text" id="cms-ogImageAlt" name="ogImageAlt" autocomplete="off" />
-                      </label>
-                      <label class="preview-chat-cms-label"
-                        >Image URL (or use upload / library for a managed asset)
-                        <span class="preview-chat-cms-url-row">
-                          <input type="url" id="cms-ogImageUrl" name="ogImageUrl" placeholder="https://…" />
-                          <button type="button" class="preview-chat-cms-upload" data-cms-upload-slot="og">
-                            Upload
-                          </button>
-                          <button type="button" class="preview-chat-cms-secondary" data-cms-library-slot="og">
-                            Library
-                          </button>
-                          <button type="button" class="preview-chat-cms-secondary" data-cms-clear-slot="og">
-                            Clear asset
-                          </button>
-                        </span>
-                      </label>
-                    </div>
-                    <div class="preview-chat-cms-image-block">
-                      <span class="preview-chat-cms-image-block-title">Homepage hero image</span>
-                      <div class="preview-chat-cms-image-preview-wrap">
-                        <img
-                          class="preview-chat-cms-image-preview"
-                          id="cms-homeHeroImage-preview"
-                          alt=""
-                          width="120"
-                          height="80"
-                          hidden
-                        />
-                      </div>
-                      <label class="preview-chat-cms-label preview-chat-cms-label--tight"
-                        >Alt text
-                        <input type="text" id="cms-homeHeroImageAlt" name="homeHeroImageAlt" autocomplete="off" />
-                      </label>
-                      <label class="preview-chat-cms-label"
-                        >Image URL
-                        <span class="preview-chat-cms-url-row">
-                          <input type="url" id="cms-homeHeroImageUrl" name="homeHeroImageUrl" placeholder="https://…" />
-                          <button type="button" class="preview-chat-cms-upload" data-cms-upload-slot="hero">
-                            Upload
-                          </button>
-                          <button type="button" class="preview-chat-cms-secondary" data-cms-library-slot="hero">
-                            Library
-                          </button>
-                          <button type="button" class="preview-chat-cms-secondary" data-cms-clear-slot="hero">
-                            Clear asset
-                          </button>
-                        </span>
-                      </label>
-                    </div>
-                    <div
-                      class="preview-chat-cms-modal"
-                      id="cms-media-modal"
-                      hidden
-                      aria-hidden="true"
-                    >
-                      <div class="preview-chat-cms-modal-backdrop" id="cms-media-modal-backdrop"></div>
-                      <div
-                        class="preview-chat-cms-modal-card"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="cms-media-modal-title"
-                      >
-                        <div class="preview-chat-cms-modal-head">
-                          <span id="cms-media-modal-title">Media library</span>
-                          <button type="button" class="preview-chat-cms-modal-close" id="cms-media-modal-close" aria-label="Close">
-                            ×
-                          </button>
-                        </div>
-                        <div class="preview-chat-cms-media-grid" id="cms-media-grid"></div>
-                      </div>
-                    </div>
-                    <p class="preview-chat-cms-synced" id="preview-chat-cms-synced">
-                      Last chat sync (read-only): <span id="cms-shipChatSyncedAt">—</span>
-                    </p>
-                    <button type="submit" class="preview-chat-cms-save" id="preview-chat-cms-save">
-                      Save site content
-                    </button>
-                  </form>
-                  <p class="preview-chat-status" id="preview-chat-cms-status" role="status"></p>
-                  </div>
-                </div>
-                <div class="preview-chat-llm-wrap" id="preview-chat-llm-wrap">
-                <div class="preview-chat-scroll" id="preview-chat-scroll">
-                  <div class="preview-chat-messages" id="preview-chat-messages"></div>
-                  <div class="preview-chat-typing" id="preview-chat-typing" hidden aria-live="polite">
-                    <div class="preview-chat-row preview-chat-row--assistant">
-                      <div class="preview-chat-bubble preview-chat-bubble--assistant preview-chat-bubble--typing">
-                        <span class="preview-chat-typing-dots" aria-hidden="true"
-                          ><span></span><span></span><span></span
-                        ></span>
-                        <span class="preview-chat-typing-label">Updating your site…</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="preview-chat-composer">
-                  <form class="preview-chat-form" id="preview-chat-form">
-                    <div
-                      class="preview-chat-attachments"
-                      id="preview-chat-attachments"
-                      hidden
-                    ></div>
-                    <input
-                      type="file"
-                      id="preview-chat-file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      multiple
-                      hidden
-                    />
-                    <div class="preview-chat-input-shell">
+              <div class="preview-chat-dock" id="preview-chat-dock" hidden>
+                <div class="preview-chat-panel" id="preview-chat-panel" hidden>
+                  <div class="preview-chat-head">
+                    <span class="preview-chat-head-title" id="preview-chat-head-title">Chat</span>
+                    <div class="preview-chat-head-trail">
                       <button
                         type="button"
-                        class="preview-chat-attach"
-                        id="preview-chat-attach"
-                        aria-label="Attach images"
-                        title="Attach images"
+                        class="preview-chat-add-section"
+                        id="preview-chat-add-section"
+                        aria-label="Add section"
+                        title="Add section"
                       >
-                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                          <rect
+                            x="3"
+                            y="3"
+                            width="18"
+                            height="18"
+                            rx="2"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          />
                           <path
-                            fill="currentColor"
-                            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"
+                            d="M12 8v8M8 12h8"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
                           />
                         </svg>
                       </button>
-                      <textarea
-                        id="preview-chat-input"
-                        rows="1"
-                        maxlength="8000"
-                        placeholder="Message…"
-                        autocomplete="off"
-                      ></textarea>
-                      <button type="submit" class="preview-chat-send" id="preview-chat-send" aria-label="Send">
-                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                          <path
-                            fill="currentColor"
-                            d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z"
-                          />
-                        </svg>
+                      <button
+                        type="button"
+                        class="preview-chat-close"
+                        id="preview-chat-close"
+                        aria-label="Close"
+                      >
+                        &times;
                       </button>
                     </div>
-                  </form>
-                  <p class="preview-chat-status" id="preview-chat-status" role="status"></p>
-                  <p class="preview-chat-legal" id="preview-chat-legal">
-                    Images you attach must be yours to use. Ship Fast does not clone third-party brands or
-                    copyrighted artwork.
-                  </p>
+                  </div>
+                  <div id="preview-chat-cms-block" class="preview-chat-cms-block" hidden>
+                    <div
+                      class="preview-chat-cms-tabs"
+                      role="tablist"
+                      aria-label="Site content mode"
+                    >
+                      <button
+                        type="button"
+                        class="preview-chat-cms-tab is-active"
+                        id="preview-chat-cms-tab-studio"
+                        data-cms-tab="studio"
+                        role="tab"
+                        aria-selected="true"
+                        aria-controls="preview-chat-cms-studio-panel"
+                      >
+                        Sanity Studio
+                      </button>
+                      <button
+                        type="button"
+                        class="preview-chat-cms-tab"
+                        id="preview-chat-cms-tab-medusa"
+                        data-cms-tab="medusa"
+                        role="tab"
+                        aria-selected="false"
+                        aria-controls="preview-chat-cms-medusa-panel"
+                        hidden
+                      >
+                        Products (Medusa)
+                      </button>
+                      <button
+                        type="button"
+                        class="preview-chat-cms-tab"
+                        id="preview-chat-cms-tab-quick"
+                        data-cms-tab="quick"
+                        role="tab"
+                        aria-selected="false"
+                        aria-controls="preview-chat-cms-quick-panel"
+                      >
+                        Quick fields
+                      </button>
+                    </div>
+                    <div
+                      class="preview-chat-cms-studio-panel"
+                      id="preview-chat-cms-studio-panel"
+                      role="tabpanel"
+                      aria-labelledby="preview-chat-cms-tab-studio"
+                    >
+                      <div
+                        class="preview-chat-cms-studio-unbuilt"
+                        id="preview-chat-cms-studio-unbuilt"
+                        hidden
+                      >
+                        <p class="preview-chat-cms-studio-unbuilt-title">
+                          Embedded Sanity Studio is not available
+                        </p>
+                        <p class="preview-chat-cms-studio-unbuilt-body">
+                          Build it once from the Ship Fast repo root:
+                          <code class="preview-chat-cms-studio-unbuilt-code"
+                            >bun run studio:build</code
+                          >
+                          (Sanity CLI needs <strong>Node ≥ 20.19</strong>). Restart the server after
+                          it succeeds. Until then, use <strong>Quick fields</strong> for site
+                          settings.
+                        </p>
+                      </div>
+                      <div
+                        class="preview-chat-cms-studio-toolbar"
+                        id="preview-chat-cms-studio-toolbar"
+                        hidden
+                      >
+                        <a
+                          class="preview-chat-cms-studio-open-link"
+                          id="preview-chat-cms-studio-open-link"
+                          href="/studio/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >Open Sanity Studio in new tab</a
+                        >
+                        <button
+                          type="button"
+                          class="preview-chat-cms-studio-sync-btn"
+                          data-cms-sanity-sync
+                        >
+                          Apply Sanity to this preview
+                        </button>
+                        <span class="preview-chat-cms-studio-toolbar-hint"
+                          >If Studio was built with a write API token in env, you stay signed in
+                          here. Otherwise use <strong>Open in new tab</strong> for Sanity login.
+                          After publishing, use Apply to refresh this session’s generated
+                          pages.</span
+                        >
+                      </div>
+                      <iframe
+                        class="preview-chat-cms-studio-frame"
+                        id="preview-chat-cms-studio-frame"
+                        title="Sanity Studio"
+                        src="about:blank"
+                      ></iframe>
+                      <p
+                        class="preview-chat-cms-note preview-chat-cms-note--studio"
+                        id="preview-chat-cms-studio-footnote"
+                      >
+                        Same project as your content lake. Token-based Studio skips OAuth; rebuild
+                        Studio after changing tokens. Then Apply to update this session’s preview
+                        HTML.
+                      </p>
+                    </div>
+                    <div
+                      class="preview-chat-cms-medusa-panel preview-chat-medusa-inline"
+                      id="preview-chat-cms-medusa-panel"
+                      role="tabpanel"
+                      aria-labelledby="preview-chat-cms-tab-medusa"
+                      hidden
+                    >
+                      <div class="preview-chat-medusa-toolbar">
+                        <span class="preview-chat-medusa-title">Products (Medusa)</span>
+                        <a
+                          class="preview-chat-medusa-open-link"
+                          id="preview-chat-medusa-open-link"
+                          href="#"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >Open in new tab</a
+                        >
+                      </div>
+                      <iframe
+                        class="preview-chat-medusa-frame"
+                        id="preview-chat-medusa-frame"
+                        title="Medusa products admin"
+                        src="about:blank"
+                      ></iframe>
+                      <p
+                        class="preview-chat-cms-note preview-chat-cms-note--medusa"
+                        id="preview-chat-medusa-footnote"
+                      >
+                        Commerce API and admin UI are served by your Medusa process (
+                        <code class="preview-chat-cms-studio-unbuilt-code">bun run medusa:dev</code>
+                        in
+                        <code class="preview-chat-cms-studio-unbuilt-code">medusa-backend</code>).
+                        Ensure
+                        <code class="preview-chat-cms-studio-unbuilt-code">ADMIN_CORS</code> /
+                        <code class="preview-chat-cms-studio-unbuilt-code">AUTH_CORS</code> include
+                        this origin if login fails.
+                      </p>
+                    </div>
+                    <div
+                      class="preview-chat-cms-quick-panel"
+                      id="preview-chat-cms-quick-panel"
+                      role="tabpanel"
+                      aria-labelledby="preview-chat-cms-tab-quick"
+                      hidden
+                    >
+                      <p class="preview-chat-cms-note">
+                        Values sync from each generation into site settings (one shared document).
+                        The preview iframe shows this session’s workspace files; refresh the panel
+                        after a run if fields look stale.
+                      </p>
+                      <p class="preview-chat-cms-quick-sanity-row">
+                        <button
+                          type="button"
+                          class="preview-chat-cms-quick-sanity-sync-btn"
+                          data-cms-sanity-sync
+                        >
+                          Apply Sanity to this preview
+                        </button>
+                        <span class="preview-chat-cms-quick-sanity-hint"
+                          >Pulls latest site settings from Sanity into this session and re-renders
+                          the preview.</span
+                        >
+                      </p>
+                      <form class="preview-chat-cms-form" id="preview-chat-cms-form">
+                        <label class="preview-chat-cms-label"
+                          >Homepage title override
+                          <input
+                            type="text"
+                            id="cms-homeTitle"
+                            name="homeTitle"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="preview-chat-cms-label"
+                          >Homepage meta description
+                          <textarea
+                            id="cms-homeDescription"
+                            name="homeDescription"
+                            rows="3"
+                          ></textarea>
+                        </label>
+                        <label class="preview-chat-cms-label"
+                          >Pricing page title
+                          <input
+                            type="text"
+                            id="cms-pricingPageTitle"
+                            name="pricingPageTitle"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="preview-chat-cms-label"
+                          >Pricing page meta description
+                          <textarea
+                            id="cms-pricingPageDescription"
+                            name="pricingPageDescription"
+                            rows="2"
+                          ></textarea>
+                        </label>
+                        <label class="preview-chat-cms-label"
+                          >Pricing hero headline
+                          <input
+                            type="text"
+                            id="cms-pricingHeroHeadline"
+                            name="pricingHeroHeadline"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="preview-chat-cms-label"
+                          >Chat-synced marketing headline
+                          <input
+                            type="text"
+                            id="cms-shipChatHeadline"
+                            name="shipChatHeadline"
+                            autocomplete="off"
+                          />
+                        </label>
+                        <label class="preview-chat-cms-label"
+                          >Chat-synced subheadline
+                          <textarea
+                            id="cms-shipChatSubheadline"
+                            name="shipChatSubheadline"
+                            rows="3"
+                          ></textarea>
+                        </label>
+                        <p class="preview-chat-cms-images-hint">
+                          Use uploaded or library assets (with optional alt text), or paste a legacy
+                          image URL. Hotspot/crop is available in the separate content admin.
+                        </p>
+                        <input
+                          type="hidden"
+                          id="cms-ogImageAssetId"
+                          name="ogImageAssetId"
+                          value=""
+                        />
+                        <input
+                          type="hidden"
+                          id="cms-homeHeroImageAssetId"
+                          name="homeHeroImageAssetId"
+                          value=""
+                        />
+                        <div class="preview-chat-cms-image-block">
+                          <span class="preview-chat-cms-image-block-title"
+                            >Open Graph / social image</span
+                          >
+                          <div class="preview-chat-cms-image-preview-wrap">
+                            <img
+                              class="preview-chat-cms-image-preview"
+                              id="cms-ogImage-preview"
+                              alt=""
+                              width="120"
+                              height="63"
+                              hidden
+                            />
+                          </div>
+                          <label class="preview-chat-cms-label preview-chat-cms-label--tight"
+                            >Alt text
+                            <input
+                              type="text"
+                              id="cms-ogImageAlt"
+                              name="ogImageAlt"
+                              autocomplete="off"
+                            />
+                          </label>
+                          <label class="preview-chat-cms-label"
+                            >Image URL (or use upload / library for a managed asset)
+                            <span class="preview-chat-cms-url-row">
+                              <input
+                                type="url"
+                                id="cms-ogImageUrl"
+                                name="ogImageUrl"
+                                placeholder="https://…"
+                              />
+                              <button
+                                type="button"
+                                class="preview-chat-cms-upload"
+                                data-cms-upload-slot="og"
+                              >
+                                Upload
+                              </button>
+                              <button
+                                type="button"
+                                class="preview-chat-cms-secondary"
+                                data-cms-library-slot="og"
+                              >
+                                Library
+                              </button>
+                              <button
+                                type="button"
+                                class="preview-chat-cms-secondary"
+                                data-cms-clear-slot="og"
+                              >
+                                Clear asset
+                              </button>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="preview-chat-cms-image-block">
+                          <span class="preview-chat-cms-image-block-title"
+                            >Homepage hero image</span
+                          >
+                          <div class="preview-chat-cms-image-preview-wrap">
+                            <img
+                              class="preview-chat-cms-image-preview"
+                              id="cms-homeHeroImage-preview"
+                              alt=""
+                              width="120"
+                              height="80"
+                              hidden
+                            />
+                          </div>
+                          <label class="preview-chat-cms-label preview-chat-cms-label--tight"
+                            >Alt text
+                            <input
+                              type="text"
+                              id="cms-homeHeroImageAlt"
+                              name="homeHeroImageAlt"
+                              autocomplete="off"
+                            />
+                          </label>
+                          <label class="preview-chat-cms-label"
+                            >Image URL
+                            <span class="preview-chat-cms-url-row">
+                              <input
+                                type="url"
+                                id="cms-homeHeroImageUrl"
+                                name="homeHeroImageUrl"
+                                placeholder="https://…"
+                              />
+                              <button
+                                type="button"
+                                class="preview-chat-cms-upload"
+                                data-cms-upload-slot="hero"
+                              >
+                                Upload
+                              </button>
+                              <button
+                                type="button"
+                                class="preview-chat-cms-secondary"
+                                data-cms-library-slot="hero"
+                              >
+                                Library
+                              </button>
+                              <button
+                                type="button"
+                                class="preview-chat-cms-secondary"
+                                data-cms-clear-slot="hero"
+                              >
+                                Clear asset
+                              </button>
+                            </span>
+                          </label>
+                        </div>
+                        <div
+                          class="preview-chat-cms-modal"
+                          id="cms-media-modal"
+                          hidden
+                          aria-hidden="true"
+                        >
+                          <div
+                            class="preview-chat-cms-modal-backdrop"
+                            id="cms-media-modal-backdrop"
+                          ></div>
+                          <div
+                            class="preview-chat-cms-modal-card"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="cms-media-modal-title"
+                          >
+                            <div class="preview-chat-cms-modal-head">
+                              <span id="cms-media-modal-title">Media library</span>
+                              <button
+                                type="button"
+                                class="preview-chat-cms-modal-close"
+                                id="cms-media-modal-close"
+                                aria-label="Close"
+                              >
+                                ×
+                              </button>
+                            </div>
+                            <div class="preview-chat-cms-media-grid" id="cms-media-grid"></div>
+                          </div>
+                        </div>
+                        <p class="preview-chat-cms-synced" id="preview-chat-cms-synced">
+                          Last chat sync (read-only): <span id="cms-shipChatSyncedAt">—</span>
+                        </p>
+                        <button
+                          type="submit"
+                          class="preview-chat-cms-save"
+                          id="preview-chat-cms-save"
+                        >
+                          Save site content
+                        </button>
+                      </form>
+                      <p class="preview-chat-status" id="preview-chat-cms-status" role="status"></p>
+                    </div>
+                  </div>
+                  <div class="preview-chat-llm-wrap" id="preview-chat-llm-wrap">
+                    <div class="preview-chat-scroll" id="preview-chat-scroll">
+                      <div class="preview-chat-messages" id="preview-chat-messages"></div>
+                      <div
+                        class="preview-chat-typing"
+                        id="preview-chat-typing"
+                        hidden
+                        aria-live="polite"
+                      >
+                        <div class="preview-chat-row preview-chat-row--assistant">
+                          <div
+                            class="preview-chat-bubble preview-chat-bubble--assistant preview-chat-bubble--typing"
+                          >
+                            <span class="preview-chat-typing-dots" aria-hidden="true"
+                              ><span></span><span></span><span></span
+                            ></span>
+                            <span class="preview-chat-typing-label">Updating your site…</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="preview-chat-composer">
+                      <form class="preview-chat-form" id="preview-chat-form">
+                        <div
+                          class="preview-chat-attachments"
+                          id="preview-chat-attachments"
+                          hidden
+                        ></div>
+                        <input
+                          type="file"
+                          id="preview-chat-file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          multiple
+                          hidden
+                        />
+                        <div class="preview-chat-input-shell">
+                          <button
+                            type="button"
+                            class="preview-chat-attach"
+                            id="preview-chat-attach"
+                            aria-label="Attach images"
+                            title="Attach images"
+                          >
+                            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                              <path
+                                fill="currentColor"
+                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"
+                              />
+                            </svg>
+                          </button>
+                          <textarea
+                            id="preview-chat-input"
+                            rows="1"
+                            maxlength="8000"
+                            placeholder="Message…"
+                            autocomplete="off"
+                          ></textarea>
+                          <button
+                            type="submit"
+                            class="preview-chat-send"
+                            id="preview-chat-send"
+                            aria-label="Send"
+                          >
+                            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                              <path
+                                fill="currentColor"
+                                d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </form>
+                      <p class="preview-chat-status" id="preview-chat-status" role="status"></p>
+                      <p class="preview-chat-legal" id="preview-chat-legal">
+                        Images you attach must be yours to use. Ship Fast does not clone third-party
+                        brands or copyrighted artwork.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                </div>
+                <button
+                  type="button"
+                  class="preview-chat-fab"
+                  id="preview-chat-fab"
+                  aria-expanded="false"
+                  aria-controls="preview-chat-panel"
+                >
+                  Chat
+                </button>
               </div>
-              <button
-                type="button"
-                class="preview-chat-fab"
-                id="preview-chat-fab"
-                aria-expanded="false"
-                aria-controls="preview-chat-panel"
-              >
-                Chat
-              </button>
-            </div>
             </div>
             <aside class="preview-site-rail" id="preview-site-rail" hidden aria-label="Site tools">
               <div class="preview-site-rail-inner">
@@ -853,13 +1072,27 @@
                   <div class="preview-site-rail-section-label">Manage content</div>
                   <button type="button" class="preview-site-rail-row" data-rail-action="cms-studio">
                     <span class="preview-site-rail-row-label">Edit content (Sanity)</span>
-                    <span class="preview-site-rail-badge preview-site-rail-badge--premium" data-rail-badge="premium"
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--new"
+                      data-rail-provision-indicator="sanity"
+                      >NEW</span
+                    >
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--premium"
+                      data-rail-badge="premium"
                       >PREMIUM</span
                     >
                   </button>
                   <button type="button" class="preview-site-rail-row" data-rail-action="ecommerce">
                     <span class="preview-site-rail-row-label">E-commerce</span>
-                    <span class="preview-site-rail-badge preview-site-rail-badge--premium" data-rail-badge="premium"
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--new"
+                      data-rail-provision-indicator="medusa"
+                      >NEW</span
+                    >
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--premium"
+                      data-rail-badge="premium"
                       >PREMIUM</span
                     >
                   </button>
@@ -868,32 +1101,45 @@
                   <div class="preview-site-rail-section-label">Design</div>
                   <button type="button" class="preview-site-rail-row" data-rail-action="palette">
                     <span class="preview-site-rail-row-label">Color palette</span>
-                    <span class="preview-site-rail-badge preview-site-rail-badge--premium" data-rail-badge="premium"
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--premium"
+                      data-rail-badge="premium"
                       >PREMIUM</span
                     >
                   </button>
                   <button type="button" class="preview-site-rail-row" data-rail-action="github">
                     <span class="preview-site-rail-row-label">GitHub</span>
-                    <span class="preview-site-rail-badge preview-site-rail-badge--premium" data-rail-badge="premium"
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--premium"
+                      data-rail-badge="premium"
                       >PREMIUM</span
                     >
                   </button>
                   <button type="button" class="preview-site-rail-row" data-rail-action="export">
                     <span class="preview-site-rail-row-label">Export</span>
-                    <span class="preview-site-rail-badge preview-site-rail-badge--premium" data-rail-badge="premium"
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--premium"
+                      data-rail-badge="premium"
                       >PREMIUM</span
                     >
                   </button>
                   <button type="button" class="preview-site-rail-row" data-rail-action="domain">
                     <span class="preview-site-rail-row-label">Assign custom domain</span>
-                    <span class="preview-site-rail-badge preview-site-rail-badge--premium" data-rail-badge="premium"
+                    <span
+                      class="preview-site-rail-badge preview-site-rail-badge--premium"
+                      data-rail-badge="premium"
                       >PREMIUM</span
                     >
                   </button>
                 </div>
                 <div class="preview-site-rail-section">
                   <div class="preview-site-rail-section-label">Three JS</div>
-                  <button type="button" class="preview-site-rail-row preview-site-rail-row--soon" disabled data-rail-action="3d">
+                  <button
+                    type="button"
+                    class="preview-site-rail-row preview-site-rail-row--soon"
+                    disabled
+                    data-rail-action="3d"
+                  >
                     <span class="preview-site-rail-row-label">3D</span>
                     <span class="preview-site-rail-badge preview-site-rail-badge--soon">SOON</span>
                   </button>
@@ -946,13 +1192,18 @@
           autocomplete="off"
         ></textarea>
         <details class="new-prompt-design-ref">
-          <summary class="new-prompt-design-ref-summary">Optional layout inspiration (HTTPS links)</summary>
+          <summary class="new-prompt-design-ref-summary">
+            Optional layout inspiration (HTTPS links)
+          </summary>
           <p class="new-prompt-design-ref-disclaimer">
-            Ship Fast creates original UI. Only add links you have rights to use for inspiration. The generator does
-            not load or screenshot pages—it uses your description, optional notes below, and hints from each URL path
-            only (not live content). References guide structure and mood—not pixel-perfect copies.
+            Ship Fast creates original UI. Only add links you have rights to use for inspiration.
+            The generator does not load or screenshot pages—it uses your description, optional notes
+            below, and hints from each URL path only (not live content). References guide structure
+            and mood—not pixel-perfect copies.
           </p>
-          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-1">Reference URL 1</label>
+          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-1"
+            >Reference URL 1</label
+          >
           <input
             class="new-prompt-design-ref-input"
             type="url"
@@ -961,7 +1212,9 @@
             autocomplete="off"
             placeholder="https://"
           />
-          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-2">Reference URL 2</label>
+          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-2"
+            >Reference URL 2</label
+          >
           <input
             class="new-prompt-design-ref-input"
             type="url"
@@ -1059,6 +1312,98 @@
       </div>
     </div>
 
+    <div class="payment-modal" id="provision-modal" aria-hidden="true">
+      <div class="payment-modal-backdrop" data-close-provision="1"></div>
+      <div
+        class="payment-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="provision-modal-title"
+      >
+        <button
+          class="payment-modal-close"
+          id="provision-modal-close"
+          type="button"
+          aria-label="Close"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+        <div class="payment-modal-accent" aria-hidden="true"></div>
+        <div class="payment-modal-header">
+          <span class="payment-eyebrow" id="provision-modal-eyebrow">On-demand setup</span>
+          <h2 id="provision-modal-title">Set up CMS</h2>
+          <p class="payment-copy" id="provision-modal-copy">
+            Create the session-specific CMS connection before opening the studio.
+          </p>
+        </div>
+        <div class="payment-note" id="provision-modal-note">
+          This only takes a moment. We’ll provision the service for this session and then open it
+          for you.
+        </div>
+        <div class="payment-error" id="provision-modal-error"></div>
+        <div class="payment-actions">
+          <button class="secondary" id="provision-cancel-btn" type="button">Not now</button>
+          <button class="primary" id="provision-confirm-btn" type="button">Set Up Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="payment-modal" id="auth-wall-modal" aria-hidden="true">
+      <div class="payment-modal-backdrop" data-close-auth-wall="1"></div>
+      <div
+        class="payment-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-wall-modal-title"
+      >
+        <button
+          class="payment-modal-close"
+          id="auth-wall-modal-close"
+          type="button"
+          aria-label="Close"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+        <div class="payment-modal-accent" aria-hidden="true"></div>
+        <div class="payment-modal-header">
+          <span class="payment-eyebrow">Ship Fast Pro</span>
+          <h2 id="auth-wall-modal-title">Sign in to unlock</h2>
+          <p class="payment-copy" id="auth-wall-modal-copy">
+            Create a free account to access premium features like CMS, e-commerce, custom domains,
+            and more.
+          </p>
+        </div>
+        <div class="payment-actions">
+          <button class="secondary" id="auth-wall-cancel-btn" type="button">Not now</button>
+          <button class="primary" id="auth-wall-signin-btn" type="button">Sign in</button>
+        </div>
+      </div>
+    </div>
+
     <canvas class="particles-canvas" id="particles-canvas"></canvas>
 
     <!-- ─── Debug Panel (visible only in debug mode: ?debug=1) ─── -->
@@ -1072,6 +1417,8 @@
     </div>
 
     <script type="module" src="/scripts/dashboard-auth.js"></script>
+    <script src="/js/cmsiffy-animation.js"></script>
+    <script src="/scripts/ecommercify-animation.js"></script>
     <script>
       // ─── Config ────────────────────────────────────────────────
       const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
@@ -1145,6 +1492,18 @@
         return Boolean(paymentState?.access?.targetUnlocked)
       }
 
+      function requirePremium() {
+        if (isAnonymousSession) {
+          openAuthWall()
+          return false
+        }
+        if (!isRailUnlocked()) {
+          openPaymentModal(railPaywallEntry())
+          return false
+        }
+        return true
+      }
+
       function syncToastGenerateAnotherVisibility() {
         const cta = document.getElementById('toast-cta')
         if (cta) cta.hidden = isRailUnlocked()
@@ -1157,6 +1516,37 @@
         })
       }
 
+      function syncProvisionRailIndicators() {
+        document.querySelectorAll('[data-rail-provision-indicator]').forEach((el) => {
+          const type = el.getAttribute('data-rail-provision-indicator')
+          const provisioned =
+            type === 'sanity' ? sanityProvisioned : type === 'medusa' ? medusaProvisioned : false
+          el.hidden = provisioned
+          const row = el.closest('[data-rail-action]')
+          if (row) row.classList.toggle('preview-site-rail-row--provisioned', provisioned)
+        })
+      }
+
+      function updateRailButton(action, state) {
+        const isActive = state === 'active' || state === true
+        if (action === 'cms-studio') sanityProvisioned = isActive
+        if (action === 'ecommerce') medusaProvisioned = isActive
+        syncProvisionRailIndicators()
+      }
+
+      function syncProvisionStateFromSession(session) {
+        if (!session || typeof session !== 'object') return
+        if (session.sanityConfig) {
+          sanityProvisioned = true
+          sanityConfig = session.sanityConfig
+        }
+        if (session.medusaConfig) {
+          medusaProvisioned = true
+          medusaConfig = session.medusaConfig
+        }
+        syncProvisionRailIndicators()
+      }
+
       function syncPreviewSiteRail() {
         const rail = document.getElementById('preview-site-rail')
         const bc = document.querySelector('.browser-content')
@@ -1165,7 +1555,153 @@
         rail.hidden = !show
         bc.classList.toggle('browser-content--has-site-rail', show)
         if (show) syncRailPremiumBadges()
+        syncProvisionRailIndicators()
         syncToastGenerateAnotherVisibility()
+      }
+
+      function setProvisionBusyState(isBusy) {
+        provisionBusy = Boolean(isBusy)
+        const btn = document.getElementById('provision-confirm-btn')
+        const cancel = document.getElementById('provision-cancel-btn')
+        const close = document.getElementById('provision-modal-close')
+        if (btn) {
+          btn.disabled = provisionBusy
+          btn.textContent = provisionBusy ? 'Setting up…' : 'Set Up Now'
+        }
+        if (cancel) cancel.disabled = provisionBusy
+        if (close) close.disabled = provisionBusy
+      }
+
+      function showProvisionError(message) {
+        const el = document.getElementById('provision-modal-error')
+        if (el) el.textContent = message ? String(message) : ''
+      }
+
+      function hideProvisionDialog() {
+        provisionDialogType = null
+        setProvisionBusyState(false)
+        showProvisionError('')
+        const modal = document.getElementById('provision-modal')
+        if (modal) {
+          modal.classList.remove('is-open')
+          modal.setAttribute('aria-hidden', 'true')
+        }
+      }
+
+      function showProvisionDialog(type) {
+        provisionDialogType = type === 'medusa' ? 'medusa' : 'sanity'
+        const modal = document.getElementById('provision-modal')
+        const title = document.getElementById('provision-modal-title')
+        const copy = document.getElementById('provision-modal-copy')
+        const note = document.getElementById('provision-modal-note')
+        const eyebrow = document.getElementById('provision-modal-eyebrow')
+        if (!modal || !title || !copy || !note || !eyebrow) return
+        const isSanity = provisionDialogType === 'sanity'
+        title.textContent = isSanity ? 'Set up CMS' : 'Set up Online Store'
+        eyebrow.textContent = isSanity ? 'Sanity CMS' : 'Medusa ecommerce'
+        copy.textContent = isSanity
+          ? 'Create the session-specific Sanity Studio connection before opening the content editor.'
+          : 'Create the session-specific Medusa connection before opening the store admin.'
+        note.textContent = isSanity
+          ? 'We’ll provision the CMS for this session and then open the studio in a new tab.'
+          : 'We’ll provision the commerce backend for this session and make the admin available right away.'
+        showProvisionError('')
+        setProvisionBusyState(false)
+        modal.classList.add('is-open')
+        modal.setAttribute('aria-hidden', 'false')
+      }
+
+      // Tracks the active CmsifyAnimation instance (Sanity provisioning only)
+      let _cmsifyAnim = null
+      function _startCmsifyAnimation() {
+        try {
+          const stage = document.getElementById('preview-stage')
+          const iframe = document.getElementById('preview-iframe')
+          if (!stage || !iframe || typeof CmsifyAnimation === 'undefined') return
+          _cmsifyAnim = new CmsifyAnimation(stage, iframe)
+          _cmsifyAnim.start()
+        } catch (_) {
+          /* animation is non-critical */
+        }
+      }
+      function _stopCmsifyAnimation() {
+        try {
+          if (_cmsifyAnim) {
+            _cmsifyAnim.stop()
+            _cmsifyAnim = null
+          }
+        } catch (_) {}
+      }
+
+      // Tracks the active EcommercifyAnimation instance (Medusa provisioning only)
+      let _ecommercifyAnim = null
+      function _startEcommercifyAnimation() {
+        try {
+          const stage = document.getElementById('preview-stage')
+          if (!stage || typeof EcommercifyAnimation === 'undefined') return
+          _ecommercifyAnim = new EcommercifyAnimation(stage)
+          _ecommercifyAnim.start()
+        } catch (_) {
+          /* animation is non-critical */
+        }
+      }
+      function _stopEcommercifyAnimation() {
+        try {
+          if (_ecommercifyAnim) {
+            _ecommercifyAnim.stop()
+            _ecommercifyAnim = null
+          }
+        } catch (_) {}
+      }
+
+      async function provisionService(type) {
+        if (!SESSION_ID || provisionBusy) return
+        const normalizedType = type === 'medusa' ? 'medusa' : 'sanity'
+        const popup = window.open('', '_blank')
+        setProvisionBusyState(true)
+        showProvisionError('')
+        if (normalizedType === 'sanity') _startCmsifyAnimation()
+        if (normalizedType === 'medusa') _startEcommercifyAnimation()
+        try {
+          const res = await apiFetch(`/api/provision/${normalizedType}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: SESSION_ID }),
+          })
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok || !data.success) throw new Error(data.error || 'Provisioning failed')
+          if (normalizedType === 'sanity') {
+            sanityProvisioned = true
+            sanityConfig = data.config || sanityConfig
+            updateRailButton('cms-studio', 'active')
+            _stopCmsifyAnimation()
+            hideProvisionDialog()
+            const studioUrl = `/studio/?session=${SESSION_ID}`
+            if (popup) popup.location.href = studioUrl
+            else window.open(studioUrl, '_blank')
+          } else {
+            _stopEcommercifyAnimation()
+            medusaProvisioned = true
+            medusaConfig = data.config || medusaConfig
+            updateRailButton('ecommerce', 'active')
+            hideProvisionDialog()
+            const adminUrl = medusaConfig?.backendUrl
+              ? `${String(medusaConfig.backendUrl).replace(/\/$/, '')}/app`
+              : ''
+            if (adminUrl) {
+              if (popup) popup.location.href = adminUrl
+              else window.open(adminUrl, '_blank')
+            } else if (popup) {
+              popup.close()
+            }
+          }
+        } catch (error) {
+          _stopCmsifyAnimation()
+          _stopEcommercifyAnimation()
+          if (popup) popup.close()
+          showProvisionError(error?.message || 'Provisioning failed')
+          setProvisionBusyState(false)
+        }
       }
 
       function renderDeploymentState(deployment) {
@@ -1315,6 +1851,8 @@
       let paymentModalTarget = null
       let selectedPaymentMode = 'subscription'
       let paymentBusy = false
+      let provisionDialogType = null
+      let provisionBusy = false
       let githubPushBusy = false
       let githubMenuOpen = false
       let lastGithubPush = null
@@ -1327,6 +1865,10 @@
       let previewChatRequestAddSection = null
       let chatPanelMode = 'llm'
       let hasAutoOpenedCmsPanel = false
+      let sanityProvisioned = false
+      let medusaProvisioned = false
+      let sanityConfig = null
+      let medusaConfig = null
       let medusaAdminEmbedState = { show: false, url: null }
 
       function applyMedusaAdminControls() {
@@ -1378,7 +1920,8 @@
         const chatDock = document.getElementById('preview-chat-dock')
         const chatPanelEl = document.getElementById('preview-chat-panel')
         const useSidebar = chatPanelMode === 'cms' && chatPanelEl && !chatPanelEl.hidden
-        if (browserContent) browserContent.classList.toggle('browser-content--cms-sidebar', useSidebar)
+        if (browserContent)
+          browserContent.classList.toggle('browser-content--cms-sidebar', useSidebar)
         if (chatDock) chatDock.classList.toggle('preview-chat-dock--cms-sidebar', useSidebar)
       }
 
@@ -1650,7 +2193,8 @@
               } catch {
                 urlText.textContent = nextPreviewBase
               }
-            } else if (previewLoaded || homepageReady) urlText.textContent = new URL(PREVIEW_BASE).pathname
+            } else if (previewLoaded || homepageReady)
+              urlText.textContent = new URL(PREVIEW_BASE).pathname
             else urlText.textContent = window.location.host
           }
         }
@@ -1934,6 +2478,16 @@
         document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
       }
 
+      function openAuthWall() {
+        document.getElementById('auth-wall-modal').classList.add('is-open')
+        document.getElementById('auth-wall-modal').setAttribute('aria-hidden', 'false')
+      }
+
+      function closeAuthWall() {
+        document.getElementById('auth-wall-modal').classList.remove('is-open')
+        document.getElementById('auth-wall-modal').setAttribute('aria-hidden', 'true')
+      }
+
       function loadRazorpayScript() {
         return new Promise((resolve, reject) => {
           if (window.Razorpay) {
@@ -2025,23 +2579,24 @@
           if (!row || row.disabled) return
           const action = row.getAttribute('data-rail-action')
           if (action === '3d') return
-          if (action === 'domain' && isRailUnlocked()) return
-          if (!isRailUnlocked()) {
-            openPaymentModal(railPaywallEntry())
-            return
-          }
+          if (!requirePremium()) return
           if (action === 'cms-studio') {
-            applyChatPanelMode('cms')
-            openPreviewChatPanel()
-            document.getElementById('preview-chat-cms-tab-studio')?.click()
+            if (!sanityProvisioned) {
+              showProvisionDialog('sanity')
+              return
+            }
+            window.open(`/studio/?session=${SESSION_ID}`, '_blank')
             return
           }
           if (action === 'ecommerce') {
-            applyChatPanelMode('cms')
-            openPreviewChatPanel()
-            const medusaTab = document.getElementById('preview-chat-cms-tab-medusa')
-            if (medusaTab && !medusaTab.hidden) medusaTab.click()
-            else document.getElementById('preview-chat-cms-tab-quick')?.click()
+            if (!medusaProvisioned) {
+              showProvisionDialog('medusa')
+              return
+            }
+            const adminUrl = medusaConfig?.backendUrl
+              ? `${String(medusaConfig.backendUrl).replace(/\/$/, '')}/app`
+              : ''
+            if (adminUrl) window.open(adminUrl, '_blank')
             return
           }
           if (action === 'palette') {
@@ -3515,7 +4070,9 @@
             if (!data.autostart) return
             if (data.running && data.url) return
             if (!data.ecommerce) return
-            const st = await apiFetch(`/api/sessions/${SESSION_ID}/next-preview/start`, { method: 'POST' })
+            const st = await apiFetch(`/api/sessions/${SESSION_ID}/next-preview/start`, {
+              method: 'POST',
+            })
             const out = await st.json().catch(() => ({}))
             if (!st.ok) return
             if (out.starting) {
@@ -3619,9 +4176,11 @@
           previewAnnotatorActive = !previewAnnotatorActive
           syncPreviewInspectTools()
         })
-        document.querySelector('[data-preview-tool="clear-annotate"]')?.addEventListener('click', () => {
-          postAnnotatorClearToPreview()
-        })
+        document
+          .querySelector('[data-preview-tool="clear-annotate"]')
+          ?.addEventListener('click', () => {
+            postAnnotatorClearToPreview()
+          })
       }
 
       initPreviewFrameTools()
@@ -3672,7 +4231,8 @@
             'preview-chat-row preview-chat-row--' + (m.role === 'assistant' ? 'assistant' : 'user')
           const bubble = document.createElement('div')
           bubble.className =
-            'preview-chat-bubble preview-chat-bubble--' + (m.role === 'assistant' ? 'assistant' : 'user')
+            'preview-chat-bubble preview-chat-bubble--' +
+            (m.role === 'assistant' ? 'assistant' : 'user')
           bubble.textContent = m.content || ''
           row.appendChild(bubble)
           el.appendChild(row)
@@ -3701,7 +4261,8 @@
             const stat = document.getElementById('preview-chat-status')
             const cmsStat = document.getElementById('preview-chat-cms-status')
             const err =
-              data.error || (r.status === 404 ? 'Session not found.' : `Chat unavailable (${r.status}).`)
+              data.error ||
+              (r.status === 404 ? 'Session not found.' : `Chat unavailable (${r.status}).`)
             if (stat) stat.textContent = err
             if (cmsStat) cmsStat.textContent = err
             applyMedusaAdminControls()
@@ -3781,9 +4342,8 @@
           const paths = Array.isArray(attachmentPaths) ? attachmentPaths : []
           if ((!raw && paths.length === 0) || !SESSION_ID || chatSending) return false
           if (raw) {
-            const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } = await import(
-              '/scripts/content-policy.js'
-            )
+            const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } =
+              await import('/scripts/content-policy.js')
             if (!checkPromptContentPolicy(raw).ok) {
               const st = document.getElementById('preview-chat-status')
               if (st) st.textContent = CONTENT_POLICY_CLIENT_MESSAGE
@@ -3854,7 +4414,10 @@
           const stat = document.getElementById('preview-chat-status')
           if (stat) stat.textContent = 'Uploading…'
           try {
-            const res = await apiFetch(`/api/sessions/${SESSION_ID}/uploads`, { method: 'POST', body: fd })
+            const res = await apiFetch(`/api/sessions/${SESSION_ID}/uploads`, {
+              method: 'POST',
+              body: fd,
+            })
             const data = await res.json().catch(() => ({}))
             if (!res.ok) {
               if (stat) stat.textContent = data.error || res.statusText || 'Upload failed'
@@ -3989,7 +4552,9 @@
               b.disabled = true
             })
             try {
-              const res = await apiFetch(`/api/sessions/${SESSION_ID}/sync-sanity-preview`, { method: 'POST' })
+              const res = await apiFetch(`/api/sessions/${SESSION_ID}/sync-sanity-preview`, {
+                method: 'POST',
+              })
               const j = await res.json().catch(() => ({}))
               if (!res.ok) throw new Error(j.error || `Request failed (${res.status})`)
             } catch (err) {
@@ -4092,8 +4657,12 @@
           }
           cmsLibraryTargetSlot = null
         }
-        document.getElementById('cms-media-modal-close')?.addEventListener('click', closeCmsMediaModal)
-        document.getElementById('cms-media-modal-backdrop')?.addEventListener('click', closeCmsMediaModal)
+        document
+          .getElementById('cms-media-modal-close')
+          ?.addEventListener('click', closeCmsMediaModal)
+        document
+          .getElementById('cms-media-modal-backdrop')
+          ?.addEventListener('click', closeCmsMediaModal)
         document.getElementById('cms-media-grid')?.addEventListener('click', (ev) => {
           const tile = ev.target.closest('.preview-chat-cms-media-tile')
           if (!tile || !cmsLibraryTargetSlot) return
@@ -4158,7 +4727,8 @@
             homeTitle: document.getElementById('cms-homeTitle')?.value ?? '',
             homeDescription: document.getElementById('cms-homeDescription')?.value ?? '',
             pricingPageTitle: document.getElementById('cms-pricingPageTitle')?.value ?? '',
-            pricingPageDescription: document.getElementById('cms-pricingPageDescription')?.value ?? '',
+            pricingPageDescription:
+              document.getElementById('cms-pricingPageDescription')?.value ?? '',
             pricingHeroHeadline: document.getElementById('cms-pricingHeroHeadline')?.value ?? '',
             shipChatHeadline: document.getElementById('cms-shipChatHeadline')?.value ?? '',
             shipChatSubheadline: document.getElementById('cms-shipChatSubheadline')?.value ?? '',
@@ -4340,6 +4910,7 @@
               refreshExportTargets()
               if (siteSpecReady && homepageReady) void maybeWarmNextDevServerInBackground()
               if (siteSpecReady) void refreshChatHistory()
+              syncProvisionStateFromSession(ev.session || ev)
               break
 
             case 'alternative_design_ready':
@@ -4495,6 +5066,32 @@
       document.getElementById('payment-modal').addEventListener('click', (event) => {
         if (event.target.closest('[data-close-payment="1"]')) closePaymentModal()
       })
+      document.getElementById('auth-wall-modal-close').addEventListener('click', closeAuthWall)
+      document.getElementById('auth-wall-cancel-btn').addEventListener('click', closeAuthWall)
+      document.getElementById('auth-wall-signin-btn').addEventListener('click', async () => {
+        closeAuthWall()
+        try {
+          await window.shipFastDashboardAuth?.signInWithGoogle?.()
+        } catch (e) {
+          if (e?.code !== 'auth/popup-closed-by-user' && e?.code !== 'auth/cancelled-popup-request') {
+            console.error('[auth-wall] sign-in failed:', e?.message ?? e)
+          }
+        }
+      })
+      document.getElementById('auth-wall-modal').addEventListener('click', (event) => {
+        if (event.target.closest('[data-close-auth-wall="1"]')) closeAuthWall()
+      })
+      document
+        .getElementById('provision-modal-close')
+        .addEventListener('click', hideProvisionDialog)
+      document.getElementById('provision-cancel-btn').addEventListener('click', hideProvisionDialog)
+      document.getElementById('provision-confirm-btn').addEventListener('click', () => {
+        if (provisionDialogType) void provisionService(provisionDialogType)
+      })
+      document.getElementById('provision-modal').addEventListener('click', (event) => {
+        if (event.target.closest('[data-close-provision="1"]')) hideProvisionDialog()
+      })
+      syncProvisionRailIndicators()
       document.getElementById('payment-option-list').addEventListener('click', (event) => {
         const option = event.target.closest('[data-payment-mode]')
         if (!option || paymentBusy) return
@@ -4767,6 +5364,7 @@
         }
         homepageReady = Boolean(session.homepageReady) || homepageReady
         siteSpecReady = Boolean(session.siteSpecReady) || siteSpecReady
+        syncProvisionStateFromSession(session)
         if (session.medusaAdminEmbed) medusaAdminEmbedState = session.medusaAdminEmbed
         applyMedusaAdminControls()
         sessionPreferredLanguage = String(session.preferredLanguage || 'en')
@@ -4811,7 +5409,9 @@
         overlay.classList.add('visible')
         setTimeout(() => document.getElementById('new-prompt-input').focus(), 400)
       })
-      document.getElementById('toast-back-home')?.addEventListener('click', (ev) => navigateHome(ev))
+      document
+        .getElementById('toast-back-home')
+        ?.addEventListener('click', (ev) => navigateHome(ev))
       document.getElementById('new-prompt-cancel').addEventListener('click', () => {
         document.getElementById('new-prompt-overlay').classList.remove('visible')
         // Re-show toast
@@ -4839,9 +5439,8 @@
         const prompt = input.value.trim()
         if (!prompt) return
 
-        const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } = await import(
-          '/scripts/content-policy.js'
-        )
+        const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } =
+          await import('/scripts/content-policy.js')
         if (!checkPromptContentPolicy(prompt).ok) {
           showNewPromptPolicy(CONTENT_POLICY_CLIENT_MESSAGE)
           return
@@ -4854,7 +5453,8 @@
         const nr1 = document.getElementById('new-prompt-ref-url-1')?.value?.trim() || ''
         const nr2 = document.getElementById('new-prompt-ref-url-2')?.value?.trim() || ''
         const designReferenceUrls = [nr1, nr2].filter(Boolean)
-        const designReferenceNotes = document.getElementById('new-prompt-design-ref-notes')?.value?.trim() || ''
+        const designReferenceNotes =
+          document.getElementById('new-prompt-design-ref-notes')?.value?.trim() || ''
 
         try {
           const res = await apiFetch('/api/sessions', {
@@ -4904,7 +5504,6 @@
           btn.textContent = 'Generate'
         }
       })
-
     </script>
   </body>
 </html>
