@@ -29,6 +29,7 @@ groq-model-benchmark/
 *.tsbuildinfo
 
 # Build artifacts
+public/scripts/
 public/styles/*.css
 !public/styles/liquid-glass-button.css
 
@@ -37,4 +38,3 @@ public/styles/*.css
 *.swp
 *.swo
 *~
-
