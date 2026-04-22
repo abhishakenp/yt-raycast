@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liquid glass — pill trials</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles/liquid-glass-button.css" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        height: 100%;
+      }
+
+      body {
+        min-height: 100%;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+        color: rgba(255, 255, 255, 0.96);
+        background: #000;
+      }
+
+      .wallpaper {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        background: #000;
+      }
+
+      .wallpaper__art {
+        position: absolute;
+        inset: -5%;
+        width: 110%;
+        height: 110%;
+        background-color: #020204;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 1400' preserveAspectRatio='xMidYMid slice'%3E%3Crect fill='%23030306' width='900' height='1400'/%3E%3Cpath fill='rgba%2870,150,255,0.34%29' d='M0 300 L240 255 Q170 720 40 1180 L0 1200 Z'/%3E%3Cg fill='none' stroke='%23f3f4f8' stroke-linecap='round'%3E%3Cpath d='M-80 200 C140 40 360 160 520 280 S800 100 980 260' stroke-width='82' opacity='0.96'/%3E%3Cpath d='M-50 480 C190 360 430 600 700 500 S920 440 990 600' stroke-width='58' opacity='0.9'/%3E%3Cpath d='M60 820 C310 680 540 920 780 780 S950 720 1000 880' stroke-width='66' opacity='0.92'/%3E%3Cpath d='M20 1080 C260 940 500 1180 780 1060' stroke-width='52' opacity='0.84'/%3E%3Cpath d='M-30 1320 C220 1180 480 1380 760 1280' stroke-width='44' opacity='0.78'/%3E%3C/g%3E%3C/svg%3E");
+        background-size: cover;
+        background-position: 48% 32%;
+        animation: wp-pan 22s ease-in-out infinite alternate;
+        will-change: background-position;
+      }
+
+      @keyframes wp-pan {
+        0% {
+          background-position: 44% 28%;
+          transform: scale(1);
+        }
+        100% {
+          background-position: 56% 40%;
+          transform: scale(1.04);
+        }
+      }
+
+      .wallpaper__vignette {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(ellipse 88% 80% at 50% 42%, transparent 38%, rgba(0, 0, 0, 0.38) 100%);
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 20vh min(12vw, 160px) 1.5rem;
+      }
+
+      .trial {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        align-items: center;
+      }
+
+      .trial-label {
+        font-size: 0.66rem;
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        opacity: 0.48;
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wallpaper" aria-hidden="true">
+      <div class="wallpaper__art"></div>
+      <div class="wallpaper__vignette"></div>
+    </div>
+
+    <main>
+      <section class="trial">
+        <span class="trial-label">Pill controls — shared lens recipe</span>
+        <div class="row">
+          <sf-glass-pill>Photos</sf-glass-pill>
+          <sf-glass-pill>Notes</sf-glass-pill>
+          <sf-glass-pill>Settings</sf-glass-pill>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/scripts/liquid-glass-button.js"></script>
+  </body>
+</html>

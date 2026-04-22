@@ -1,11 +1,13 @@
 import {
-  isSanityConfigured,
+  DASHBOARD_PORT,
   PLAUSIBLE_DOMAIN,
   SITE_NAME,
   SITE_URL,
   SUPPORTED_INDIAN_LANGUAGES,
 } from '../config.js'
 import { escapeHtml } from '../renderers/shared.js'
+import { sfGlassPillBody, sfGlassPillSvgDefs } from './liquid-glass-button.js'
+import { SPACE_BACKDROP_HTML, renderTopActions } from './marketing-shell.js'
 
 const HOME_TITLE = `${SITE_NAME} - AI Website Generator`
 const HOME_DESCRIPTION =
@@ -19,6 +21,59 @@ const HOME_KEYWORDS = [
   'nextjs website generator',
 ].join(', ')
 const OG_IMAGE_URL = `${SITE_URL}/og-image.png`
+
+const DEV_HOME_HOT_RELOAD_SNIPPET =
+  process.env.NODE_ENV === 'production' ||
+  String(process.env.SF_HOME_WS_RELOAD || '').trim() === '0'
+    ? ''
+    : `<script>
+(function () {
+  var k = 'sf_dev_last_ws_reload'
+  var debounceMs = 750
+  var cooldownMs = 8000
+  function withinCooldown() {
+    try {
+      var t = Number(sessionStorage.getItem(k))
+      return t && Date.now() - t < cooldownMs
+    } catch (_) {
+      return false
+    }
+  }
+  var reloadTimer
+  function scheduleReload() {
+    if (withinCooldown()) return
+    if (reloadTimer) clearTimeout(reloadTimer)
+    reloadTimer = setTimeout(function () {
+      reloadTimer = null
+      if (withinCooldown()) return
+      try {
+        sessionStorage.setItem(k, String(Date.now()))
+      } catch (_) {}
+      location.reload()
+    }, debounceMs)
+  }
+  var wsHost = location.host
+  if (location.port === '3000') wsHost = location.hostname + ':${DASHBOARD_PORT}'
+  var u = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + wsHost + '?devReload=1'
+  function connect() {
+    try {
+      var ws = new WebSocket(u)
+      ws.onmessage = function (e) {
+        try {
+          var d = JSON.parse(e.data)
+          if (d && d.type === 'client_reload') scheduleReload()
+        } catch (_) {}
+      }
+      ws.onclose = function () {
+        setTimeout(connect, 1500)
+      }
+    } catch (_) {
+      setTimeout(connect, 1500)
+    }
+  }
+  connect()
+})()
+</script>`
 
 function resolveSiteImageUrl(raw) {
   const t = String(raw || '').trim()
@@ -56,12 +111,22 @@ function renderLogo() {
     <div class="logo">
       <div class="logo-icon">
         <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="#ffffff" opacity="0.9" />
-          <path d="M14 22L14 40L22 36V24L14 22Z" fill="#dddddd" opacity="0.8" />
-          <path d="M38 22L38 40L30 36V24L38 22Z" fill="#dddddd" opacity="0.8" />
-          <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="#ffffff" />
-          <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#cccccc" opacity="0.7" />
-          <circle cx="26" cy="16" r="2" fill="#999999" />
+          <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#sfHomeRocketG1)" opacity="0.9" />
+          <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#sfHomeRocketG2)" opacity="0.8" />
+          <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#sfHomeRocketG2)" opacity="0.8" />
+          <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#sfHomeRocketG1)" />
+          <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7" />
+          <circle cx="26" cy="16" r="2" fill="#c4b5fd" />
+          <defs>
+            <linearGradient id="sfHomeRocketG1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#7c3aed" />
+              <stop offset="1" stop-color="#a78bfa" />
+            </linearGradient>
+            <linearGradient id="sfHomeRocketG2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#6d28d9" />
+              <stop offset="1" stop-color="#7c3aed" />
+            </linearGradient>
+          </defs>
         </svg>
       </div>
       <span class="logo-text">SHIP FAST</span>
@@ -83,43 +148,28 @@ function renderAuthOverlay() {
     <div class="auth-box">
       <div class="auth-logo">SHIP FAST</div>
       <p class="auth-title">Sign in to continue</p>
-      <button class="auth-btn" id="google-signin-btn" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Sign in with Google
-      </button>
-      <button class="auth-btn" id="github-signin-btn" type="button">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-        Sign in with GitHub
-      </button>
+      ${sfGlassPillBody({
+        className: 'auth-btn',
+        id: 'google-signin-btn',
+        bodyHtml:
+          '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>\n        Sign in with Google',
+      })}
+      ${sfGlassPillBody({
+        className: 'auth-btn',
+        id: 'github-signin-btn',
+        bodyHtml:
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>\n        Sign in with GitHub',
+      })}
       <div class="auth-divider">or</div>
       <input class="auth-input" type="email" id="auth-email" placeholder="Email" autocomplete="email" />
       <input class="auth-input" type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
       <div class="auth-email-row">
-        <button class="auth-btn" id="email-signin-btn" type="button">Sign in</button>
-        <button class="auth-btn" id="email-signup-btn" type="button">Create account</button>
+        ${sfGlassPillBody({ className: 'auth-btn', id: 'email-signin-btn', bodyHtml: 'Sign in' })}
+        ${sfGlassPillBody({ className: 'auth-btn', id: 'email-signup-btn', bodyHtml: 'Create account' })}
       </div>
       <div class="auth-error" id="auth-error"></div>
     </div>
   </div>`
-}
-
-function renderTopActions() {
-  const institutionalLinks = isSanityConfigured()
-    ? '<a class="top-action-link" href="/notices">Notices</a><a class="top-action-link" href="/careers">Careers</a>'
-    : ''
-  const blogLink = isSanityConfigured() ? '<a class="top-action-link" href="/blog">Blog</a>' : ''
-  return `<nav class="top-actions" aria-label="Primary">
-    ${institutionalLinks}
-    ${blogLink}
-    <a class="top-action-link" href="/pricing">Pricing</a>
-    <div class="top-actions-auth-slot">
-      <button id="signin-btn" type="button">Sign in</button>
-      <button id="signout-btn" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Sign out
-      </button>
-    </div>
-  </nav>`
 }
 
 export function renderHomePage(siteSettings = null) {
@@ -173,20 +223,28 @@ export function renderHomePage(siteSettings = null) {
     <link rel="stylesheet" href="/styles/index.css" />
   </head>
   <body>
+    ${sfGlassPillSvgDefs()}
     <script>
       try {
         var __sfAnon = JSON.parse(localStorage.getItem('sf_anon_sessions') || '[]')
         if (__sfAnon.length) document.body.classList.add('has-sessions')
       } catch (e) {}
     </script>
+
+    ${SPACE_BACKDROP_HTML}
+
     ${renderAuthOverlay()}
 
     <div class="private-gen-modal" id="private-gen-modal" aria-hidden="true">
       <div class="private-gen-modal-backdrop" id="private-gen-modal-backdrop"></div>
       <div class="private-gen-modal-card" role="dialog" aria-modal="true" aria-labelledby="private-gen-modal-title">
-        <button class="private-gen-modal-close" id="private-gen-modal-close" type="button" aria-label="Close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+        ${sfGlassPillBody({
+          className: 'private-gen-modal-close pill--modal-close',
+          id: 'private-gen-modal-close',
+          ariaLabel: 'Close',
+          bodyHtml:
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+        })}
         <div class="private-gen-modal-icon">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
@@ -200,25 +258,16 @@ export function renderHomePage(siteSettings = null) {
     ${renderTopActions()}
 
     <div class="wappalyzer-banner" id="wappalyzer-banner">Sorry, Wappalyzer won't help you this time</div>
-    <div class="bg-glow"></div>
 
     <div class="page-layout">
-      <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
-        <h2>See what other speedsters generated</h2>
-        <ul class="session-list" id="session-list"></ul>
-        <nav class="session-pagination" id="session-pagination" aria-label="Gallery pages" hidden>
-          <p class="session-page-status" id="session-page-status" aria-live="polite"></p>
-          <div class="session-pagination-actions" id="session-pagination-actions">
-            <button type="button" class="session-page-btn" id="session-page-prev">Previous</button>
-            <button type="button" class="session-page-btn" id="session-page-next">Next</button>
-          </div>
-        </nav>
-      </section>
       <div class="container sidebar-panel">
         <h1 class="sr-only">${escapeHtml(SITE_NAME)} AI website generator</h1>
       ${renderLogo()}
       ${heroBlock}
-      <form id="prompt-form" class="input-group">
+
+      <div class="hero-card" id="hero-card">
+        <div class="hero-card-inner">
+          <form id="prompt-form" class="input-group">
         <label class="sr-only" for="prompt-input">Describe the website you want to build</label>
         <div class="prompt-field">
           <textarea
@@ -238,6 +287,9 @@ export function renderHomePage(siteSettings = null) {
               <span class="prompt-placeholder-caret"></span>
             </span>
           </div>
+          <div class="prompt-suggestions" id="prompt-suggestions" hidden>
+            <ul class="prompt-suggestions-list" id="prompt-suggestions-list" role="listbox" aria-label="Prompt ideas"></ul>
+          </div>
           <div class="prompt-language-row is-hidden" id="prompt-language-row">
             <label class="sr-only" for="prompt-language">Preferred generation language</label>
             <select
@@ -249,47 +301,48 @@ export function renderHomePage(siteSettings = null) {
               ${renderLanguageOptions()}
             </select>
           </div>
-          <details class="design-ref-details">
-            <summary class="design-ref-summary">Optional layout inspiration (HTTPS links)</summary>
-            <p class="design-ref-disclaimer">
-              Ship Fast creates original UI. Only add links you have rights to use for inspiration. The generator does
-              not load or screenshot pages—it uses your description, optional notes, and path-only hints from each URL.
-              References guide structure and mood—not pixel-perfect copies.
-            </p>
-            <label class="design-ref-label" for="design-ref-url-1">Reference URL 1</label>
-            <input
-              class="design-ref-input"
-              type="url"
-              id="design-ref-url-1"
-              name="design-ref-url-1"
-              inputmode="url"
-              autocomplete="off"
-              placeholder="https://"
-            />
-            <label class="design-ref-label" for="design-ref-url-2">Reference URL 2</label>
-            <input
-              class="design-ref-input"
-              type="url"
-              id="design-ref-url-2"
-              name="design-ref-url-2"
-              inputmode="url"
-              autocomplete="off"
-              placeholder="https://"
-            />
-            <label class="design-ref-label" for="design-ref-notes">What to borrow (optional)</label>
-            <textarea
-              class="design-ref-input"
-              id="design-ref-notes"
-              name="design-ref-notes"
-              rows="2"
-              maxlength="800"
-              autocomplete="off"
-              placeholder="e.g. split hero, dense header, editorial grid…"
-            ></textarea>
-          </details>
         </div>
-        <button type="submit" class="submit-btn" id="submit-btn" disabled>
-          <svg
+        <div class="design-ref-toggle-row">
+          <input type="checkbox" class="design-ref-toggle" id="design-ref-toggle" />
+          <label class="design-ref-toggle-label" for="design-ref-toggle">Layout inspiration</label>
+        </div>
+        <div class="design-ref-panel" id="design-ref-panel">
+          <div class="design-ref-search-wrap">
+            <svg class="design-ref-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input
+              class="design-ref-search"
+              type="text"
+              id="design-ref-search"
+              name="design-ref-search"
+              autocomplete="off"
+              placeholder="Search a website or paste a URL…"
+            />
+          </div>
+          <div class="design-ref-preview" id="design-ref-preview">
+            <img class="design-ref-preview-favicon" id="design-ref-preview-favicon" alt="" />
+            <div class="design-ref-preview-info">
+              <div class="design-ref-preview-title" id="design-ref-preview-title"></div>
+              <div class="design-ref-preview-url" id="design-ref-preview-url"></div>
+            </div>
+            ${sfGlassPillBody({
+              className: 'design-ref-preview-remove pill--icon-ghost',
+              id: 'design-ref-preview-remove',
+              ariaLabel: 'Remove',
+              bodyHtml:
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+            })}
+          </div>
+          <p class="design-ref-hint">Type a keyword like "stripe" or "linear" to find a site, or paste any URL directly.</p>
+        </div>
+        <input type="hidden" id="design-ref-url-1" name="design-ref-url-1" value="" />
+        <input type="hidden" id="design-ref-url-2" name="design-ref-url-2" value="" />
+        <input type="hidden" id="design-ref-notes" name="design-ref-notes" value="" />
+        ${sfGlassPillBody({
+          type: 'submit',
+          className: 'submit-btn',
+          id: 'submit-btn',
+          disabled: true,
+          bodyHtml: `<svg
             class="zap-icon"
             viewBox="0 0 24 24"
             fill="none"
@@ -302,8 +355,8 @@ export function renderHomePage(siteSettings = null) {
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
           <span class="btn-label">Generate</span>
-          <div class="spinner"></div>
-        </button>
+          <div class="spinner"></div>`,
+        })}
       </form>
       <div
         class="prompt-policy-violation"
@@ -321,7 +374,14 @@ export function renderHomePage(siteSettings = null) {
           <a class="share-icon share-icon-x" id="bonus-share-tw" href="#" target="_blank" rel="noopener noreferrer" title="X" aria-label="Share on X"><svg class="share-icon-svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
           <a class="share-icon share-icon-tg" id="bonus-share-tg" href="#" target="_blank" rel="noopener noreferrer" title="Telegram" aria-label="Share on Telegram"><svg class="share-icon-svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
           <a class="share-icon share-icon-li" id="bonus-share-li" href="#" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="Share on LinkedIn"><svg class="share-icon-svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
-          <button type="button" class="share-icon share-icon-native" id="bonus-share-native" title="Share" aria-label="Share" hidden><svg class="share-icon-svg share-icon-svg-stroke" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg></button>
+          ${sfGlassPillBody({
+            className: 'share-icon share-icon-native pill--share-32',
+            id: 'bonus-share-native',
+            ariaLabel: 'Share',
+            extraAttrs: ' title="Share" hidden',
+            bodyHtml:
+              '<svg class="share-icon-svg share-icon-svg-stroke" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>',
+          })}
         </div>
         <span class="share-bonus-or">or <a href="#" id="share-bonus-signup-link">sign up</a></span>
       </div>
@@ -333,6 +393,28 @@ export function renderHomePage(siteSettings = null) {
         </label>
       </div>
       </div>
+      </div>
+      </div>
+
+      <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
+        <h2>See what other speedsters generated</h2>
+        <ul class="session-list" id="session-list"></ul>
+        <nav class="session-pagination" id="session-pagination" aria-label="Gallery pages" hidden>
+          <p class="session-page-status" id="session-page-status" aria-live="polite"></p>
+          <div class="session-pagination-actions" id="session-pagination-actions">
+            ${sfGlassPillBody({
+              className: 'session-page-btn pill--session',
+              id: 'session-page-prev',
+              bodyHtml: 'Previous',
+            })}
+            ${sfGlassPillBody({
+              className: 'session-page-btn pill--session',
+              id: 'session-page-next',
+              bodyHtml: 'Next',
+            })}
+          </div>
+        </nav>
+      </section>
     </div>
 
     <footer class="homepage-footer">
@@ -340,17 +422,6 @@ export function renderHomePage(siteSettings = null) {
         <a href="/pricing">Pricing</a>
         <a href="/privacy">Privacy</a>
       </nav>
-      <div class="homepage-footer-social">
-        <a href="https://liviogama.com" target="_blank" rel="noopener" aria-label="Website">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </a>
-        <a href="https://www.linkedin.com/in/livio-gamassia/" target="_blank" rel="noopener" aria-label="LinkedIn">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-        </a>
-        <a href="https://x.com/LivioGama" target="_blank" rel="noopener" aria-label="X">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        </a>
-      </div>
     </footer>
 
     <noscript>
@@ -360,6 +431,7 @@ export function renderHomePage(siteSettings = null) {
     </noscript>
 
     <script type="module" src="/scripts/homepage.js"></script>
+    ${DEV_HOME_HOT_RELOAD_SNIPPET}
   </body>
 </html>`
 }
@@ -376,19 +448,6 @@ Sitemap: ${SITE_URL}/sitemap.xml
 }
 
 export function renderSitemapXml() {
-  const psuBlock = isSanityConfigured()
-    ? `  <url>
-    <loc>${escapeHtml(SITE_URL)}/notices</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-  <url>
-    <loc>${escapeHtml(SITE_URL)}/careers</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
-  </url>
-`
-    : ''
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -400,11 +459,6 @@ export function renderSitemapXml() {
     <loc>${escapeHtml(SITE_URL)}/pricing</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-  </url>
-  ${psuBlock}  <url>
-    <loc>${escapeHtml(SITE_URL)}/blog</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>${escapeHtml(SITE_URL)}/privacy</loc>

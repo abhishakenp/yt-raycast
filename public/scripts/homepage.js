@@ -2,73 +2,27 @@ if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
   history.scrollRestoration = 'manual'
 }
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js'
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithPopup,
-  GoogleAuthProvider,
-  GithubAuthProvider,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
-
 import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from './content-policy.js'
 import { preferMixedEnglishBcp47FromSnippet } from './mixed-english-hints.js'
 import { INDIAN_SAMPLE_PROMPTS } from './indian-sample-prompts.js'
+import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed.js'
 
-let auth = null
 let currentUser = null
 let authResolved = false
 let hasSessionResizeListener = false
-const GITHUB_TOKEN_STORAGE_KEY = 'sf_github_access_token'
 
-function persistGithubAccessToken(result) {
-  const accessToken = GithubAuthProvider.credentialFromResult(result)?.accessToken
-  if (accessToken) sessionStorage.setItem(GITHUB_TOKEN_STORAGE_KEY, accessToken)
-}
-
-function clearGithubAccessToken() {
-  sessionStorage.removeItem(GITHUB_TOKEN_STORAGE_KEY)
-}
-
-async function initFirebase() {
-  const cfg = await fetch('/api/config').then((response) => response.json())
-  const app = initializeApp(cfg)
-  auth = getAuth(app)
-
-  return new Promise((resolve) => {
-    onAuthStateChanged(auth, (user) => {
-      currentUser = user
-      authResolved = true
-      if (user) showApp()
-      else showAnonymousApp()
-      resolve()
-    })
-  })
-}
-
-async function getToken() {
-  if (!currentUser) return null
-  return currentUser.getIdToken(true)
+const openAuthOverlay = () => {
+  window.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
 }
 
 async function authFetch(url, options = {}) {
-  const token = await getToken()
+  const bridge = window.__sfAuthFetch
+  if (bridge) return bridge(url, options)
   const headers = { ...(options.headers || {}) }
-  if (token) headers.Authorization = `Bearer ${token}`
   return fetch(url, { ...options, headers })
 }
 
 async function showAnonymousApp() {
-  document.getElementById('auth-overlay').classList.add('hidden')
-  document.getElementById('signout-btn').style.display = 'none'
-  const signinBtn = document.getElementById('signin-btn')
-  if (signinBtn) signinBtn.style.display = 'flex'
-  sessionStorage.removeItem('sf_return_home')
-  clearGithubAccessToken()
-  // Hydrate share bonus state from server when at base limit
   if (getGenerationCount() >= GENERATION_LIMIT) {
     try {
       const resp = await fetch('/api/share-bonus')
@@ -76,117 +30,22 @@ async function showAnonymousApp() {
         const data = await resp.json()
         if (data.claimed) shareBonusClaimed = true
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   updateGenerationCounter()
   syncSubmitButtonState()
   publicGalleryPage = 1
   userGalleryPage = 1
-  loadRecentPublicSessions(1)
+  await hydrateAnonymousOrPublicGallery()
 }
 
 async function showApp() {
-  document.getElementById('auth-overlay').classList.add('hidden')
-  const signinBtn = document.getElementById('signin-btn')
-  if (signinBtn) signinBtn.style.display = 'none'
-  document.getElementById('signout-btn').style.display = 'flex'
   updateGenerationCounter()
   syncSubmitButtonState()
-  await claimAnonymousSessions()
   loadSessions()
 }
-
-async function claimAnonymousSessions() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
-    if (stored.length === 0) return
-    let claimed = 0
-    const sessionIds = stored.map((s) => s.id)
-    const response = await authFetch('/api/sessions/claim', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionIds }),
-    })
-    if (response.ok) {
-      const result = await response.json()
-      claimed = result?.claimed?.length ?? 0
-      if (result.claimed?.length > 0) {
-        console.log(
-          `[claim] Migrated ${result.claimed.length} anonymous session(s) to your account`,
-        )
-      }
-    }
-    if (claimed > 0) clearAnonSessions()
-  } catch {
-    // Claim failure is non-critical — sessions remain anonymous but user can still generate new ones.
-  }
-}
-
-function setAuthError(message) {
-  document.getElementById('auth-error').textContent = message
-}
-
-document.getElementById('google-signin-btn').addEventListener('click', async () => {
-  setAuthError('')
-  try {
-    await signInWithPopup(auth, new GoogleAuthProvider())
-  } catch (error) {
-    setAuthError(error.message)
-  }
-})
-
-document.getElementById('github-signin-btn').addEventListener('click', async () => {
-  setAuthError('')
-  try {
-    const provider = new GithubAuthProvider()
-    provider.addScope('repo')
-    const result = await signInWithPopup(auth, provider)
-    persistGithubAccessToken(result)
-  } catch (error) {
-    setAuthError(error.message)
-  }
-})
-
-document.getElementById('email-signin-btn').addEventListener('click', async () => {
-  setAuthError('')
-  const email = document.getElementById('auth-email').value.trim()
-  const password = document.getElementById('auth-password').value
-  if (!email || !password) return setAuthError('Email and password required')
-  try {
-    await signInWithEmailAndPassword(auth, email, password)
-  } catch (error) {
-    setAuthError(error.message)
-  }
-})
-
-document.getElementById('email-signup-btn').addEventListener('click', async () => {
-  setAuthError('')
-  const email = document.getElementById('auth-email').value.trim()
-  const password = document.getElementById('auth-password').value
-  if (!email || !password) return setAuthError('Email and password required')
-  try {
-    await createUserWithEmailAndPassword(auth, email, password)
-  } catch (error) {
-    setAuthError(error.message)
-  }
-})
-
-document.getElementById('signout-btn').addEventListener('click', () => {
-  clearGithubAccessToken()
-  signOut(auth)
-})
-
-document.getElementById('signin-btn')?.addEventListener('click', () => {
-  document.getElementById('auth-overlay').classList.remove('hidden')
-})
-
-document.getElementById('auth-overlay').addEventListener('click', (event) => {
-  if (event.target === event.currentTarget && !currentUser) {
-    event.currentTarget.classList.add('hidden')
-    const signinBtn = document.getElementById('signin-btn')
-    if (signinBtn) signinBtn.style.display = 'flex'
-  }
-})
 
 const form = document.getElementById('prompt-form')
 const input = document.getElementById('prompt-input')
@@ -199,6 +58,8 @@ const SUBMIT_BTN_DEFAULT_LABEL = 'Generate'
 const generationCounter = document.getElementById('gen-counter')
 const promptPlaceholder = document.getElementById('prompt-placeholder')
 const promptPlaceholderText = document.getElementById('prompt-placeholder-text')
+const promptSuggestions = document.getElementById('prompt-suggestions')
+const promptSuggestionsList = document.getElementById('prompt-suggestions-list')
 const privateGenRow = document.getElementById('private-gen-row')
 const privateGenCheckbox = document.getElementById('private-gen-checkbox')
 const privateGenModal = document.getElementById('private-gen-modal')
@@ -209,16 +70,35 @@ const sessionPagePrev = document.getElementById('session-page-prev')
 const sessionPageNext = document.getElementById('session-page-next')
 const sessionPageStatus = document.getElementById('session-page-status')
 const GALLERY_PAGE_SIZE = 12
+const GALLERY_RESTORE_PAGE_KEY = 'sf_gallery_restore_page'
+const GALLERY_RESTORE_SOURCE_KEY = 'sf_gallery_restore_source'
 let publicGalleryPage = 1
 let userGalleryPage = 1
 let gallerySource = 'public'
 let galleryMeta = null
+let anonSessionEntriesCacheT = 0
+let anonSessionEntriesCacheV = null
+const ANON_SESSION_ENTRIES_TTL_MS = 45_000
+const SF_PUBLIC_GALLERY_STALE_MS = 90_000
+
+function consumeGalleryRestore() {
+  const pageRaw = sessionStorage.getItem(GALLERY_RESTORE_PAGE_KEY)
+  const sourceRaw = sessionStorage.getItem(GALLERY_RESTORE_SOURCE_KEY)
+  if (pageRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_PAGE_KEY)
+  if (sourceRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_SOURCE_KEY)
+  const page = pageRaw != null ? Math.max(1, parseInt(pageRaw, 10) || 1) : 1
+  const source = sourceRaw === 'user' || sourceRaw === 'public' ? sourceRaw : null
+  return { page, source }
+}
 const GENERATION_LIMIT = 2
 const GENERATION_LIMIT_WITH_BONUS = 3
-const MIN_PROMPT_LENGTH = 70
+const MIN_PROMPT_LENGTH = 15
 const PROMPT_LANG_DETECT_MIN_CHARS = 65
 const PROMPT_LANG_DETECT_DEBOUNCE_MS = 400
 const PROMPT_LANG_DETECT_SNIPPET_MAX = 800
+const PROMPT_SUGGEST_MIN_CHARS = 2
+const PROMPT_SUGGEST_MAX_SHOW = 4
+const PROMPT_SUGGEST_DEBOUNCE_MS = 380
 const PREFERRED_LANGUAGE_KEY = 'sf_preferred_language'
 
 const FRANC_ISO639_3_TO_BCP47 = {
@@ -459,6 +339,7 @@ function resolveFrancCode3HinglishPreference(snippet, code3) {
 let francLoadPromise = null
 let promptLangDetectTimer = null
 let promptLangDetectToken = 0
+let lastPromptTrimLen = 0
 let promptLanguageRowUnlocked = false
 const isLocalDevHost =
   typeof window !== 'undefined' &&
@@ -657,6 +538,15 @@ function getGenerateCtaLabel(bcp47) {
   return (base && GENERATE_CTA_BY_LANG[base]) || SUBMIT_BTN_DEFAULT_LABEL
 }
 
+function syncPreferredLanguageUi() {
+  if (!languageSelect || !promptLanguageRow || !promptLanguageRowUnlocked) return
+  if (promptLanguageRow.classList.contains('is-hidden')) return
+  if (submitButtonLabel) submitButtonLabel.textContent = getGenerateCtaLabel(languageSelect.value)
+  const tag = getLogoTaglineText(languageSelect.value)
+  if (tag) playLogoTaglineIn(tag)
+  else resetLogoTagline()
+}
+
 function playSubmitCtaShake() {
   if (!submitButton) return
   submitButton.classList.remove('submit-btn--cta-shake')
@@ -682,6 +572,7 @@ function syncPromptLanguageRowVisibility() {
   if (!promptLanguageRowUnlocked) {
     applyBrowserPreferredLanguage()
     promptLanguageRowUnlocked = true
+    syncPreferredLanguageUi()
   }
 }
 
@@ -717,6 +608,35 @@ async function detectSnippetLanguageBcp47(fullText) {
   return toBcp47(code3) || null
 }
 
+function runPromptLangDetectAsync(runToken, options) {
+  void (async () => {
+    if (!languageSelect) return
+    if (runToken !== promptLangDetectToken) return
+    const currentText = input.value.trim()
+    if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
+    if (runToken !== promptLangDetectToken) return
+    const bcp47 = await detectSnippetLanguageBcp47(
+      currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
+    )
+    if (!bcp47) return
+    if (runToken !== promptLangDetectToken) return
+    if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
+    if (options?.skipIfUnchanged) {
+      const hasOption = Array.from(languageSelect.options).some((option) => option.value === bcp47)
+      if (languageSelect.value === bcp47 && hasOption) return
+    }
+    mergeLanguageOptionsSelect(bcp47)
+    savePreferredLanguage(bcp47)
+    if (submitButtonLabel) {
+      submitButtonLabel.textContent = getGenerateCtaLabel(bcp47)
+      playSubmitCtaShake()
+    }
+    const tag = getLogoTaglineText(bcp47)
+    if (tag) playLogoTaglineIn(tag)
+    else resetLogoTagline()
+  })()
+}
+
 function schedulePromptLanguageDetect() {
   if (!languageSelect) return
   const text = input.value.trim()
@@ -735,22 +655,166 @@ function schedulePromptLanguageDetect() {
   const runToken = ++promptLangDetectToken
   promptLangDetectTimer = setTimeout(() => {
     promptLangDetectTimer = null
-    void (async () => {
-      if (runToken !== promptLangDetectToken) return
-      const currentText = input.value.trim()
-      if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-      if (runToken !== promptLangDetectToken) return
-      if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
-      const bcp47 = await detectSnippetLanguageBcp47(currentText)
-      if (!bcp47) return
-      if (runToken !== promptLangDetectToken) return
-      if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
-      const hasOption = Array.from(languageSelect.options).some((option) => option.value === bcp47)
-      if (languageSelect.value === bcp47 && hasOption) return
-      mergeLanguageOptionsSelect(bcp47)
-      savePreferredLanguage(bcp47)
-    })()
+    runPromptLangDetectAsync(runToken, { skipIfUnchanged: true })
   }, PROMPT_LANG_DETECT_DEBOUNCE_MS)
+}
+
+let promptSuggestTimer = null
+let promptSuggestToken = 0
+let promptSuggestAbort = null
+let promptSuggestActive = -1
+let promptSuggestRows = []
+let promptSuggestOpen = false
+
+function escapeSuggestHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function formatSuggestRowHtml(full, qLen) {
+  return `${escapeSuggestHtml(full.slice(0, qLen))}<mark>${escapeSuggestHtml(full.slice(qLen))}</mark>`
+}
+
+function setPromptSuggestActive(next) {
+  if (!promptSuggestionsList) return
+  const items = promptSuggestionsList.querySelectorAll('.prompt-suggestions-item')
+  const n = items.length
+  if (n === 0) return
+  const idx = ((next % n) + n) % n
+  promptSuggestActive = idx
+  items.forEach((el, i) => el.classList.toggle('is-active', i === idx))
+  input.setAttribute('aria-activedescendant', `prompt-suggest-${idx}`)
+}
+
+function closePromptSuggestions() {
+  promptSuggestOpen = false
+  promptSuggestActive = -1
+  promptSuggestRows = []
+  if (promptSuggestions) {
+    promptSuggestions.classList.remove('is-open')
+    promptSuggestions.hidden = true
+  }
+  if (promptSuggestionsList) promptSuggestionsList.innerHTML = ''
+  input.removeAttribute('aria-activedescendant')
+}
+
+function renderPromptSuggestions(rows, queryLen) {
+  if (!promptSuggestions || !promptSuggestionsList) return
+  if (rows.length === 0) {
+    closePromptSuggestions()
+    return
+  }
+  promptSuggestRows = rows
+  promptSuggestOpen = true
+  promptSuggestions.hidden = false
+  promptSuggestionsList.innerHTML = ''
+  rows.forEach((text, i) => {
+    const li = document.createElement('li')
+    li.className = 'prompt-suggestions-item'
+    li.setAttribute('role', 'option')
+    li.id = `prompt-suggest-${i}`
+    li.innerHTML = formatSuggestRowHtml(text, queryLen)
+    li.addEventListener('mousedown', (event) => {
+      event.preventDefault()
+      applyPromptSuggestion(text)
+    })
+    promptSuggestionsList.appendChild(li)
+  })
+  setPromptSuggestActive(0)
+  requestAnimationFrame(() => promptSuggestions.classList.add('is-open'))
+}
+
+function applyPromptSuggestion(fullText) {
+  closePromptSuggestions()
+  input.value = fullText
+  hidePolicyViolation()
+  validatePrompt(false)
+  syncSamplePromptVisibility()
+  syncSubmitButtonState()
+  const prev = lastPromptTrimLen
+  const t = input.value.trim()
+  const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS
+  lastPromptTrimLen = t.length
+  syncPromptLanguageRowVisibility()
+  if (crossed) {
+    if (promptLangDetectTimer !== null) {
+      clearTimeout(promptLangDetectTimer)
+      promptLangDetectTimer = null
+    }
+    const runToken = ++promptLangDetectToken
+    requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }))
+  } else {
+    schedulePromptLanguageDetect()
+  }
+  input.focus()
+}
+
+async function fetchPromptSuggestionsFromApi(raw, runToken, signal) {
+  const q = raw.trim()
+  const qLen = q.length
+  if (qLen < PROMPT_SUGGEST_MIN_CHARS) {
+    closePromptSuggestions()
+    return
+  }
+  if (document.activeElement !== input) {
+    closePromptSuggestions()
+    return
+  }
+  try {
+    const resp = await authFetch('/api/prompt-suggestions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ partial: q }),
+      signal,
+    })
+    if (runToken !== promptSuggestToken) return
+    if (!resp.ok) {
+      closePromptSuggestions()
+      return
+    }
+    const data = await resp.json()
+    if (runToken !== promptSuggestToken) return
+    const rows = Array.isArray(data.suggestions)
+      ? data.suggestions.filter((x) => typeof x === 'string').slice(0, PROMPT_SUGGEST_MAX_SHOW)
+      : []
+    renderPromptSuggestions(rows, qLen)
+  } catch (err) {
+    if (err?.name === 'AbortError') return
+    if (runToken !== promptSuggestToken) return
+    closePromptSuggestions()
+  }
+}
+
+function schedulePromptSuggestUpdate() {
+  if (promptSuggestTimer !== null) {
+    clearTimeout(promptSuggestTimer)
+    promptSuggestTimer = null
+  }
+  if (promptSuggestAbort) {
+    promptSuggestAbort.abort()
+    promptSuggestAbort = null
+  }
+  const runToken = ++promptSuggestToken
+  const ac = new AbortController()
+  promptSuggestAbort = ac
+  promptSuggestTimer = setTimeout(() => {
+    promptSuggestTimer = null
+    if (runToken !== promptSuggestToken) return
+    if (document.activeElement !== input) {
+      closePromptSuggestions()
+      return
+    }
+    const raw = input.value
+    const q = raw.trim()
+    if (q.length < PROMPT_SUGGEST_MIN_CHARS) {
+      closePromptSuggestions()
+      return
+    }
+    void fetchPromptSuggestionsFromApi(raw, runToken, ac.signal)
+  }, PROMPT_SUGGEST_DEBOUNCE_MS)
 }
 
 let samplePromptIndex = 0
@@ -877,7 +941,9 @@ async function claimShareBonus() {
   try {
     const resp = await fetch('/api/share-bonus', { method: 'POST' })
     if (resp.ok) shareBonusClaimed = true
-  } catch { /* ignore network errors */ }
+  } catch {
+    /* ignore network errors */
+  }
   updateGenerationCounter()
   syncSubmitButtonState()
 }
@@ -890,6 +956,7 @@ function isGenerationLimitReached() {
 }
 
 function syncSubmitButtonState() {
+  if (!submitButton) return
   submitButton.disabled =
     submitButton.classList.contains('loading') ||
     isGenerationLimitReached() ||
@@ -940,7 +1007,7 @@ function updateGenerationCounter() {
       if (shareBonusPanel) shareBonusPanel.style.display = 'none'
       document.getElementById('gen-signup-link')?.addEventListener('click', (e) => {
         e.preventDefault()
-        document.getElementById('auth-overlay').classList.remove('hidden')
+        openAuthOverlay()
       })
     }
   } else {
@@ -973,8 +1040,13 @@ function initShareBonusPanel() {
   const langs = navigator.languages?.length ? navigator.languages : [navigator.language]
   let locale = 'en'
   for (const L of langs) {
-    const c = String(L || '').toLowerCase().split('-')[0]
-    if (c && c !== 'en' && byLang[c]) { locale = c; break }
+    const c = String(L || '')
+      .toLowerCase()
+      .split('-')[0]
+    if (c && c !== 'en' && byLang[c]) {
+      locale = c
+      break
+    }
   }
   const msg = byLang[locale] || byLang.en
   const encUrl = encodeURIComponent(siteUrl)
@@ -1007,7 +1079,7 @@ function initShareBonusPanel() {
   if (signupLink) {
     signupLink.addEventListener('click', (e) => {
       e.preventDefault()
-      document.getElementById('auth-overlay').classList.remove('hidden')
+      openAuthOverlay()
     })
   }
 }
@@ -1056,6 +1128,7 @@ if (isLocalDevHost) {
       validatePrompt(false)
       syncSamplePromptVisibility()
       syncSubmitButtonState()
+      lastPromptTrimLen = input.value.trim().length
       syncPromptLanguageRowVisibility()
       schedulePromptLanguageDetect()
       input.focus()
@@ -1069,33 +1142,29 @@ input.addEventListener('input', () => {
   validatePrompt(false)
   syncSamplePromptVisibility()
   syncSubmitButtonState()
+  const prev = lastPromptTrimLen
+  const t = input.value.trim()
+  const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS
+  lastPromptTrimLen = t.length
   syncPromptLanguageRowVisibility()
-  schedulePromptLanguageDetect()
+  if (crossed) {
+    if (promptLangDetectTimer !== null) {
+      clearTimeout(promptLangDetectTimer)
+      promptLangDetectTimer = null
+    }
+    const runToken = ++promptLangDetectToken
+    requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }))
+  } else {
+    schedulePromptLanguageDetect()
+  }
+  schedulePromptSuggestUpdate()
 })
 
-input.addEventListener('paste', (event) => {
-  const pasted = (event.clipboardData?.getData('text/plain') ?? '').trim()
-  if (pasted.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-  void (async () => {
-    await new Promise((resolve) => requestAnimationFrame(resolve))
-    const currentText = input.value.trim()
-    if (currentText.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-    const snippet = currentText.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
-    const bcp47 = await detectSnippetLanguageBcp47(snippet)
-    if (!bcp47) return
-    if (input.value.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
-    if (languageSelect) {
-      mergeLanguageOptionsSelect(bcp47)
-      savePreferredLanguage(bcp47)
-    }
-    if (submitButtonLabel) {
-      submitButtonLabel.textContent = getGenerateCtaLabel(bcp47)
-      playSubmitCtaShake()
-    }
-    const tag = getLogoTaglineText(bcp47)
-    if (tag) playLogoTaglineIn(tag)
-    else resetLogoTagline()
-  })()
+input.addEventListener('blur', () => {
+  window.setTimeout(() => {
+    if (document.activeElement === input) return
+    closePromptSuggestions()
+  }, 120)
 })
 
 logoTagline?.addEventListener('animationend', (event) => {
@@ -1111,9 +1180,37 @@ submitButton?.addEventListener('animationend', (event) => {
 
 languageSelect?.addEventListener('change', () => {
   if (languageSelect) savePreferredLanguage(languageSelect.value)
+  syncPreferredLanguageUi()
 })
 
 input.addEventListener('keydown', (event) => {
+  if (promptSuggestOpen && promptSuggestRows.length > 0) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setPromptSuggestActive(promptSuggestActive + 1)
+      return
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setPromptSuggestActive(promptSuggestActive - 1)
+      return
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      closePromptSuggestions()
+      return
+    }
+    if (event.key === 'Tab' && !event.shiftKey) {
+      event.preventDefault()
+      applyPromptSuggestion(promptSuggestRows[promptSuggestActive])
+      return
+    }
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      applyPromptSuggestion(promptSuggestRows[promptSuggestActive])
+      return
+    }
+  }
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault()
     form.requestSubmit()
@@ -1122,6 +1219,7 @@ input.addEventListener('keydown', (event) => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
+  if (!submitButton) return
   if (!validatePrompt(true)) {
     syncSubmitButtonState()
     return
@@ -1136,7 +1234,7 @@ form.addEventListener('submit', async (event) => {
   savePreferredLanguage(preferredLanguage)
 
   if (isGenerationLimitReached()) {
-    document.getElementById('auth-overlay').classList.remove('hidden')
+    openAuthOverlay()
     return
   }
 
@@ -1168,6 +1266,12 @@ form.addEventListener('submit', async (event) => {
     if (data.id) {
       if (!currentUser) saveAnonSession(data.id, prompt, data.anonOwnerSecret)
       localStorage.setItem('sf_generation_count', String(getGenerationCount() + 1))
+      if (isMarketingHomePath()) {
+        openEmbeddedSession(data.id)
+        submitButton.classList.remove('loading')
+        syncSubmitButtonState()
+        return
+      }
       sessionStorage.setItem('sf_return_home', '1')
       window.location.href = `/session/${data.id}`
       return
@@ -1179,7 +1283,7 @@ form.addEventListener('submit', async (event) => {
       if (data.shareBonusClaimed !== undefined) shareBonusClaimed = data.shareBonusClaimed
       updateGenerationCounter()
       if (shareBonusClaimed) {
-        document.getElementById('auth-overlay').classList.remove('hidden')
+        openAuthOverlay()
       }
     } else {
       alert(data.error || 'Failed to create session')
@@ -1194,21 +1298,40 @@ form.addEventListener('submit', async (event) => {
 
 const ANON_SESSIONS_KEY = 'sf_anon_sessions'
 
+function invalidateAnonSessionEntriesCache() {
+  anonSessionEntriesCacheT = 0
+  anonSessionEntriesCacheV = null
+}
+
 function saveAnonSession(id, prompt, ownerSecret) {
   const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
   const entry = { id, prompt }
   if (ownerSecret) entry.secret = String(ownerSecret)
   stored.unshift(entry)
   localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)))
+  invalidateAnonSessionEntriesCache()
 }
 
 function removeAnonSession(id) {
   const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
   localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.filter((s) => s.id !== id)))
+  invalidateAnonSessionEntriesCache()
 }
 
 function clearAnonSessions() {
   localStorage.removeItem(ANON_SESSIONS_KEY)
+  invalidateAnonSessionEntriesCache()
+}
+
+function getAnonOwnerSecretForSession(sessionId) {
+  try {
+    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+    if (!Array.isArray(stored)) return ''
+    const hit = stored.find((s) => s && s.id === sessionId)
+    return hit?.secret ? String(hit.secret) : ''
+  } catch {
+    return ''
+  }
 }
 
 let sessionItemPointerDown = null
@@ -1223,6 +1346,12 @@ const selectionSpansSessionItem = (item) => {
 }
 
 const openSessionFromList = (id) => {
+  sessionStorage.setItem(GALLERY_RESTORE_PAGE_KEY, String(publicGalleryPage))
+  sessionStorage.setItem(GALLERY_RESTORE_SOURCE_KEY, gallerySource)
+  if (isMarketingHomePath()) {
+    openEmbeddedSession(id)
+    return
+  }
   sessionStorage.setItem('sf_return_home', '1')
   location.href = `/session/${id}`
 }
@@ -1230,31 +1359,52 @@ const openSessionFromList = (id) => {
 const hideGalleryPagination = () => {
   galleryMeta = null
   if (sessionPagination) sessionPagination.hidden = true
+  if (sessionPageStatus) sessionPageStatus.textContent = ''
+  if (sessionPagePrev) {
+    sessionPagePrev.hidden = true
+    sessionPagePrev.disabled = true
+  }
+  if (sessionPageNext) {
+    sessionPageNext.hidden = true
+    sessionPageNext.disabled = true
+  }
+  if (sessionPaginationActions) sessionPaginationActions.hidden = true
 }
 
 const updateGalleryPagination = (meta) => {
   if (!sessionPagination || !sessionPagePrev || !sessionPageNext || !sessionPageStatus) return
   if (!meta || meta.total === 0) {
     sessionPagination.hidden = true
+    sessionPageStatus.textContent = ''
+    return
+  }
+  const showPrev = Boolean(meta.hasPrev)
+  const showNext = Boolean(meta.hasNext)
+  if (!showPrev && !showNext) {
+    sessionPagination.hidden = true
+    sessionPageStatus.textContent = ''
+    sessionPagePrev.hidden = true
+    sessionPageNext.hidden = true
+    sessionPagePrev.disabled = true
+    sessionPageNext.disabled = true
+    if (sessionPaginationActions) sessionPaginationActions.hidden = true
     return
   }
   sessionPagination.hidden = false
+  if (sessionPaginationActions) sessionPaginationActions.hidden = false
   const from = (meta.page - 1) * meta.limit + 1
   const to = Math.min(meta.page * meta.limit, meta.total)
   sessionPageStatus.textContent = `Page ${meta.page} of ${meta.totalPages} \u00B7 ${from}\u2013${to} of ${meta.total}`
-
-  const showPrev = Boolean(meta.hasPrev)
-  const showNext = Boolean(meta.hasNext)
   sessionPagePrev.hidden = !showPrev
   sessionPageNext.hidden = !showNext
-  if (sessionPaginationActions) {
-    sessionPaginationActions.hidden = !showPrev && !showNext
-  }
+  sessionPagePrev.disabled = !showPrev
+  sessionPageNext.disabled = !showNext
 }
 
 sessionPagePrev?.addEventListener('click', async () => {
   if (!galleryMeta?.hasPrev) return
-  const p = galleryMeta.page - 1
+  const cur = Number(galleryMeta.page) || 1
+  const p = cur - 1
   if (gallerySource === 'public') await loadRecentPublicSessions(p)
   else if (gallerySource === 'user') {
     userGalleryPage = p
@@ -1264,7 +1414,8 @@ sessionPagePrev?.addEventListener('click', async () => {
 
 sessionPageNext?.addEventListener('click', async () => {
   if (!galleryMeta?.hasNext) return
-  const p = galleryMeta.page + 1
+  const cur = Number(galleryMeta.page) || 1
+  const p = cur + 1
   if (gallerySource === 'public') await loadRecentPublicSessions(p)
   else if (gallerySource === 'user') {
     userGalleryPage = p
@@ -1285,6 +1436,10 @@ document.getElementById('session-list')?.addEventListener('click', (event) => {
   if (!item) return
   const id = item.dataset.id
   if (!id) return
+  if (event.metaKey || event.ctrlKey || event.shiftKey) {
+    window.open(`/session/${id}`, '_blank', 'noopener,noreferrer')
+    return
+  }
   if (event.target.closest('a[href]')) return
   if (event.target.closest('button')) return
   if (selectionSpansSessionItem(item)) return
@@ -1422,25 +1577,101 @@ function renderSessions(sessions) {
   }
 }
 
+async function fetchPublicGalleryPageFromNetwork(page) {
+  const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
+  if (!r.ok) throw new Error('recent-sessions')
+  const data = await r.json()
+  return { ok: true, items: Array.isArray(data.items) ? data.items : [], data }
+}
+
+async function fetchPublicGalleryPage(page) {
+  const qc = window.__sfQueryClient
+  if (qc) {
+    try {
+      return await qc.fetchQuery({
+        queryKey: ['sf-public-gallery', page, GALLERY_PAGE_SIZE],
+        queryFn: () => fetchPublicGalleryPageFromNetwork(page),
+        staleTime: SF_PUBLIC_GALLERY_STALE_MS,
+      })
+    } catch {
+      return { ok: false, items: [], data: null }
+    }
+  }
+  try {
+    return await fetchPublicGalleryPageFromNetwork(page)
+  } catch {
+    return { ok: false, items: [], data: null }
+  }
+}
+
+async function loadAnonymousSessionEntries() {
+  const now = Date.now()
+  if (anonSessionEntriesCacheV && now - anonSessionEntriesCacheT < ANON_SESSION_ENTRIES_TTL_MS) {
+    return anonSessionEntriesCacheV
+  }
+  try {
+    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+    if (stored.length === 0) {
+      anonSessionEntriesCacheT = now
+      anonSessionEntriesCacheV = []
+      return []
+    }
+
+    const results = await Promise.all(
+      stored.map(async ({ id, prompt }) => {
+        try {
+          const res = await fetch(`/api/sessions/${id}`)
+          if (!res.ok) return null
+          const data = await res.json()
+          return {
+            id: data.id,
+            prompt: data.prompt || prompt,
+            homepageReady: data.homepageReady,
+            elapsed: data.elapsed,
+            cost: data.cost,
+          }
+        } catch {
+          return { id, prompt, homepageReady: false, elapsed: null, cost: null }
+        }
+      }),
+    )
+
+    const valid = results.filter(Boolean)
+    const validIds = new Set(valid.map((s) => s.id))
+    const pruned = stored.filter((s) => validIds.has(s.id))
+    if (pruned.length !== stored.length) {
+      localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(pruned))
+    }
+    anonSessionEntriesCacheT = Date.now()
+    anonSessionEntriesCacheV = valid
+    return valid
+  } catch {
+    return []
+  }
+}
+
 async function loadRecentPublicSessions(page = 1) {
   gallerySource = 'public'
   publicGalleryPage = page
   try {
-    const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
-    if (!r.ok) {
+    const [anonExtras, { ok, items, data }] = await Promise.all([
+      page === 1 ? loadAnonymousSessionEntries() : Promise.resolve([]),
+      fetchPublicGalleryPage(page),
+    ])
+    if (!ok) {
       renderSessions([])
       hideGalleryPagination()
       return
     }
-    const data = await r.json()
-    const items = Array.isArray(data.items) ? data.items : []
     galleryMeta = data
-    if (items.length === 0) {
+    const ids = new Set(items.map((s) => s.id))
+    const merged = page === 1 ? [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items] : items
+    if (merged.length === 0) {
       renderSessions([])
       hideGalleryPagination()
       return
     }
-    renderSessions(items)
+    renderSessions(merged)
     updateGalleryPagination(data)
   } catch {
     renderSessions([])
@@ -1467,74 +1698,114 @@ async function loadUserSessionsPage() {
 }
 
 async function loadSessions() {
+  const { page, source } = consumeGalleryRestore()
+  if (source === 'user' && currentUser) {
+    gallerySource = 'user'
+    userGalleryPage = page
+    publicGalleryPage = 1
+    await loadUserSessionsPage()
+    return
+  }
+  if (source === 'public' && page > 1) {
+    gallerySource = 'public'
+    publicGalleryPage = page
+    userGalleryPage = 1
+    await loadRecentPublicSessions(page)
+    return
+  }
   userGalleryPage = 1
-  const ok = await loadUserSessionsPage()
-  if (ok && galleryMeta && galleryMeta.total > 0) return
-  gallerySource = 'public'
   publicGalleryPage = 1
-  hideGalleryPagination()
+  gallerySource = 'public'
   await loadRecentPublicSessions(1)
 }
 
-async function loadAnonymousSessions() {
+async function hydrateAnonymousOrPublicGallery() {
+  const { page, source } = consumeGalleryRestore()
+  if (source === 'public' && page > 1) {
+    gallerySource = 'public'
+    publicGalleryPage = page
+    await loadRecentPublicSessions(page)
+    return
+  }
+  if (source === 'user' && currentUser) {
+    gallerySource = 'user'
+    userGalleryPage = page
+    await loadUserSessionsPage()
+    return
+  }
+  publicGalleryPage = 1
+  gallerySource = 'public'
   try {
-    const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
-    if (stored.length === 0) return
-
-    const results = await Promise.all(
-      stored.map(async ({ id, prompt }) => {
-        try {
-          const r = await fetch(`/api/sessions/${id}`)
-          if (!r.ok) return null
-          const data = await r.json()
-          return {
-            id: data.id,
-            prompt: data.prompt || prompt,
-            homepageReady: data.homepageReady,
-            elapsed: data.elapsed,
-            cost: data.cost,
-          }
-        } catch {
-          return { id, prompt, homepageReady: false, elapsed: null, cost: null }
-        }
-      }),
-    )
-
-    const valid = results.filter(Boolean)
-    const validIds = new Set(valid.map((s) => s.id))
-    const pruned = stored.filter((s) => validIds.has(s.id))
-    if (pruned.length !== stored.length) {
-      localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(pruned))
+    const [{ ok, items, data }, anonExtras] = await Promise.all([
+      fetchPublicGalleryPage(1),
+      loadAnonymousSessionEntries(),
+    ])
+    if (!ok) {
+      if (anonExtras.length === 0) {
+        renderSessions([])
+        hideGalleryPagination()
+        return
+      }
+      renderSessions(anonExtras)
+      hideGalleryPagination()
+      return
     }
-
-    renderSessions(valid)
-    hideGalleryPagination()
+    const ids = new Set(items.map((s) => s.id))
+    const merged = [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items]
+    galleryMeta = data
+    if (merged.length === 0) {
+      renderSessions([])
+      hideGalleryPagination()
+      return
+    }
+    renderSessions(merged)
+    updateGalleryPagination(data)
   } catch {
-    // Ignore failures silently.
+    renderSessions([])
+    hideGalleryPagination()
   }
 }
 
-let hoveredSessionId = null
-document.addEventListener('mouseover', (event) => {
-  const card = event.target.closest('.session-item')
-  hoveredSessionId = card ? card.dataset.id : null
-})
+const reloadHomeGalleryIfReady = () => {
+  if (!authResolved) return
+  if (currentUser) void loadSessions()
+  else void hydrateAnonymousOrPublicGallery()
+}
 
 function activeElementIsTextEntry() {
   const tagName = document.activeElement?.tagName
   return tagName === 'TEXTAREA' || tagName === 'INPUT'
 }
 
-document.addEventListener('keydown', async (event) => {
-  if (event.key !== 'd' || !hoveredSessionId || activeElementIsTextEntry()) return
+const galleryDeleteTargetId = () =>
+  document.querySelector('.session-item:hover')?.dataset?.id || null
 
-  const id = hoveredSessionId
+document.addEventListener('keydown', async (event) => {
+  if (event.repeat) return
+  if (event.code !== 'KeyD' && event.code !== 'PageDown') return
+  const id = galleryDeleteTargetId()
+  if (!id) return
+  if (activeElementIsTextEntry()) event.preventDefault()
+  if (event.code === 'PageDown') event.preventDefault()
   const card = document.querySelector(`.session-item[data-id="${id}"]`)
   if (card) card.style.opacity = '0.3'
 
   if (currentUser) {
-    await authFetch(`/api/sessions/${id}`, { method: 'DELETE' })
+    const r = await authFetch(`/api/sessions/${id}`, { method: 'DELETE' })
+    if (!r.ok) {
+      if (card) card.style.opacity = ''
+      return
+    }
   } else {
+    const secret = getAnonOwnerSecretForSession(id)
+    const r = await fetch(`/api/sessions/${id}`, {
+      method: 'DELETE',
+      headers: secret ? { 'x-ship-fast-anon-owner': secret } : {},
+    })
+    if (!r.ok) {
+      if (card) card.style.opacity = ''
+      return
+    }
     removeAnonSession(id)
   }
   if (card) card.remove()
@@ -1563,7 +1834,7 @@ document.addEventListener('keydown', (event) => {
 
 let deletePresses = []
 document.addEventListener('keydown', async (event) => {
-  if (event.key !== 'd' || activeElementIsTextEntry()) return
+  if (event.code !== 'KeyD' || activeElementIsTextEntry()) return
   const now = Date.now()
   deletePresses.push(now)
   deletePresses = deletePresses.filter((timestamp) => now - timestamp < 1500)
@@ -1576,8 +1847,30 @@ document.addEventListener('keydown', async (event) => {
   })
 
   if (currentUser) {
-    await authFetch('/api/sessions', { method: 'DELETE' })
+    const r = await authFetch('/api/sessions', { method: 'DELETE' })
+    if (!r.ok) {
+      document.querySelectorAll('.session-item').forEach((c) => {
+        c.style.opacity = ''
+      })
+      return
+    }
   } else {
+    try {
+      const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]')
+      if (Array.isArray(stored)) {
+        await Promise.all(
+          stored.map((s) => {
+            if (!s?.id || !s?.secret) return Promise.resolve()
+            return fetch(`/api/sessions/${s.id}`, {
+              method: 'DELETE',
+              headers: { 'x-ship-fast-anon-owner': String(s.secret) },
+            })
+          }),
+        )
+      }
+    } catch {
+      void 0
+    }
     clearAnonSessions()
   }
   document.getElementById('session-list').innerHTML = ''
@@ -1585,15 +1878,225 @@ document.addEventListener('keydown', async (event) => {
   document.body.classList.remove('has-sessions')
 })
 
+const stitchGrid = document.getElementById('stitch-grid')
+const stitchGridLit = document.getElementById('stitch-grid-lit')
+const prefersReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+if (!prefersReduceMotion && stitchGrid && stitchGridLit) {
+  let glowState = null
+  let glowRaf = 0
+
+  const clearGlow = () => {
+    stitchGridLit.style.maskImage = 'linear-gradient(transparent, transparent)'
+    stitchGridLit.style.webkitMaskImage = 'linear-gradient(transparent, transparent)'
+    stitchGridLit.style.opacity = '0'
+  }
+
+  const paintGlow = () => {
+    if (!glowState || glowState.alpha <= 0.01) {
+      clearGlow()
+      return
+    }
+    const alpha = Math.min(glowState.alpha, 1)
+    const radius = getComputedStyle(document.documentElement)
+      .getPropertyValue('--stitch-glow-radius')
+      .trim()
+    const mask = `radial-gradient(circle ${radius} at ${glowState.x}px ${glowState.y}px, rgba(0,0,0,${alpha}) 0%, rgba(0,0,0,${alpha * 0.8}) 25%, rgba(0,0,0,${alpha * 0.4}) 55%, transparent 100%)`
+    stitchGridLit.style.opacity = '1'
+    stitchGridLit.style.maskImage = mask
+    stitchGridLit.style.webkitMaskImage = mask
+  }
+
+  const fadeGlow = () => {
+    if (!glowState) {
+      glowRaf = 0
+      return
+    }
+    const fadeMs = Number(
+      getComputedStyle(document.documentElement).getPropertyValue('--stitch-glow-fade-ms').trim(),
+    )
+    const elapsed = performance.now() - glowState.lastMoveTime
+    glowState.alpha = 1 - Math.min(elapsed / fadeMs, 1)
+    paintGlow()
+    if (glowState.alpha > 0.01) {
+      glowRaf = requestAnimationFrame(fadeGlow)
+      return
+    }
+    glowState = null
+    glowRaf = 0
+    clearGlow()
+  }
+
+  const queueFade = () => {
+    if (!glowRaf) glowRaf = requestAnimationFrame(fadeGlow)
+  }
+
+  window.addEventListener('mousemove', (event) => {
+    const rect = stitchGrid.getBoundingClientRect()
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    )
+      return
+    glowState = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      alpha: 1,
+      lastMoveTime: performance.now(),
+    }
+    queueFade()
+  })
+}
+
+const designRefToggle = document.getElementById('design-ref-toggle')
+const designRefPanel = document.getElementById('design-ref-panel')
+const designRefSearch = document.getElementById('design-ref-search')
+const designRefPreview = document.getElementById('design-ref-preview')
+const designRefPreviewFavicon = document.getElementById('design-ref-preview-favicon')
+const designRefPreviewTitle = document.getElementById('design-ref-preview-title')
+const designRefPreviewUrl = document.getElementById('design-ref-preview-url')
+const designRefPreviewRemove = document.getElementById('design-ref-preview-remove')
+const designRefUrl1 = document.getElementById('design-ref-url-1')
+
+const SITE_SEARCH_DB = [
+  { k: 'stripe', u: 'https://stripe.com', t: 'Stripe' },
+  { k: 'linear', u: 'https://linear.app', t: 'Linear' },
+  { k: 'vercel', u: 'https://vercel.com', t: 'Vercel' },
+  { k: 'notion', u: 'https://notion.so', t: 'Notion' },
+  { k: 'figma', u: 'https://figma.com', t: 'Figma' },
+  { k: 'github', u: 'https://github.com', t: 'GitHub' },
+  { k: 'slack', u: 'https://slack.com', t: 'Slack' },
+  { k: 'discord', u: 'https://discord.com', t: 'Discord' },
+  { k: 'spotify', u: 'https://spotify.com', t: 'Spotify' },
+  { k: 'airbnb', u: 'https://airbnb.com', t: 'Airbnb' },
+  { k: 'shopify', u: 'https://shopify.com', t: 'Shopify' },
+  { k: 'apple', u: 'https://apple.com', t: 'Apple' },
+  { k: 'tesla', u: 'https://tesla.com', t: 'Tesla' },
+  { k: 'netflix', u: 'https://netflix.com', t: 'Netflix' },
+  { k: 'dribbble', u: 'https://dribbble.com', t: 'Dribbble' },
+  { k: 'behance', u: 'https://behance.net', t: 'Behance' },
+  { k: 'twitch', u: 'https://twitch.tv', t: 'Twitch' },
+  { k: 'supabase', u: 'https://supabase.com', t: 'Supabase' },
+  { k: 'tailwind', u: 'https://tailwindcss.com', t: 'Tailwind CSS' },
+  { k: 'nextjs', u: 'https://nextjs.org', t: 'Next.js' },
+  { k: 'next', u: 'https://nextjs.org', t: 'Next.js' },
+  { k: 'framer', u: 'https://framer.com', t: 'Framer' },
+  { k: 'raycast', u: 'https://raycast.com', t: 'Raycast' },
+  { k: 'cal', u: 'https://cal.com', t: 'Cal.com' },
+  { k: 'resend', u: 'https://resend.com', t: 'Resend' },
+  { k: 'openai', u: 'https://openai.com', t: 'OpenAI' },
+  { k: 'anthropic', u: 'https://anthropic.com', t: 'Anthropic' },
+  { k: 'midjourney', u: 'https://midjourney.com', t: 'Midjourney' },
+  { k: 'uber', u: 'https://uber.com', t: 'Uber' },
+  { k: 'google', u: 'https://google.com', t: 'Google' },
+  { k: 'twitter', u: 'https://x.com', t: 'X (Twitter)' },
+  { k: 'instagram', u: 'https://instagram.com', t: 'Instagram' },
+  { k: 'youtube', u: 'https://youtube.com', t: 'YouTube' },
+  { k: 'amazon', u: 'https://amazon.com', t: 'Amazon' },
+  { k: 'dropbox', u: 'https://dropbox.com', t: 'Dropbox' },
+  { k: 'intercom', u: 'https://intercom.com', t: 'Intercom' },
+  { k: 'loom', u: 'https://loom.com', t: 'Loom' },
+  { k: 'arc', u: 'https://arc.net', t: 'Arc Browser' },
+  { k: 'revolut', u: 'https://revolut.com', t: 'Revolut' },
+  { k: 'monzo', u: 'https://monzo.com', t: 'Monzo' },
+  { k: 'wise', u: 'https://wise.com', t: 'Wise' },
+]
+
+const setDesignRefPreview = (url, title) => {
+  if (!designRefPreview) return
+  const hostname = (() => {
+    try {
+      return new URL(url).hostname
+    } catch {
+      return url
+    }
+  })()
+  designRefPreviewFavicon.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`
+  designRefPreviewTitle.textContent = title || hostname
+  designRefPreviewUrl.textContent = url
+  designRefPreview.classList.add('is-visible')
+  designRefUrl1.value = url
+}
+
+const clearDesignRefPreview = () => {
+  if (!designRefPreview) return
+  designRefPreview.classList.remove('is-visible')
+  designRefPreviewFavicon.src = ''
+  designRefPreviewTitle.textContent = ''
+  designRefPreviewUrl.textContent = ''
+  designRefUrl1.value = ''
+  if (designRefSearch) designRefSearch.value = ''
+}
+
+let designRefSearchTimer = null
+
+const handleDesignRefSearch = (value) => {
+  const trimmed = value.trim().toLowerCase()
+  if (!trimmed) {
+    clearDesignRefPreview()
+    return
+  }
+
+  if (/^https?:\/\//i.test(trimmed) || /^[a-z0-9][-a-z0-9]*\.[a-z]{2,}/i.test(trimmed)) {
+    const url = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+    const hostname = (() => {
+      try {
+        return new URL(url).hostname.replace(/^www\./, '')
+      } catch {
+        return trimmed
+      }
+    })()
+    const title = hostname.split('.')[0]
+    setDesignRefPreview(url, title.charAt(0).toUpperCase() + title.slice(1))
+    return
+  }
+
+  const match = SITE_SEARCH_DB.find(
+    (s) => s.k.startsWith(trimmed) || s.t.toLowerCase().startsWith(trimmed),
+  )
+  if (match) {
+    setDesignRefPreview(match.u, match.t)
+  } else {
+    clearDesignRefPreview()
+  }
+}
+
+designRefToggle?.addEventListener('change', () => {
+  designRefPanel?.classList.toggle('is-visible', designRefToggle.checked)
+  if (!designRefToggle.checked) clearDesignRefPreview()
+  else designRefSearch?.focus()
+})
+
+designRefSearch?.addEventListener('input', () => {
+  if (designRefSearchTimer) clearTimeout(designRefSearchTimer)
+  designRefSearchTimer = setTimeout(() => {
+    designRefSearchTimer = null
+    handleDesignRefSearch(designRefSearch.value)
+  }, 200)
+})
+
+designRefSearch?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    if (designRefSearchTimer) {
+      clearTimeout(designRefSearchTimer)
+      designRefSearchTimer = null
+    }
+    handleDesignRefSearch(designRefSearch.value)
+  }
+})
+
+designRefPreviewRemove?.addEventListener('click', clearDesignRefPreview)
+
 try {
   fetch('chrome-extension://gppongmhjkpfnbhagpmjfkannfbllamg/js/js.js')
     .then(() => {
       document.getElementById('wappalyzer-banner').style.display = 'block'
     })
     .catch(() => {})
-} catch {
-  // Ignore extension probing failures outside Chromium.
-}
+} catch {}
 
 const applyHomeTabTitle = () => {
   const tabMeta = document.querySelector('meta[name="sf-home-tab-title"]')
@@ -1602,19 +2105,54 @@ const applyHomeTabTitle = () => {
 }
 applyHomeTabTitle()
 
+window.addEventListener('sf-sync-home-gallery', reloadHomeGalleryIfReady)
+
 window.addEventListener('pageshow', (event) => {
   applyHomeTabTitle()
   const nav = performance.getEntriesByType('navigation')[0]
-  const back = event.persisted || (nav && nav.type === 'back_forward')
-  if (back) {
+  const navType = nav && 'type' in nav ? nav.type : ''
+  const fromCachedPage = Boolean(event.persisted)
+  const isBackNav = navType === 'back_forward'
+  if (fromCachedPage || isBackNav) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => window.scrollTo(0, 0))
     })
   }
-  if (event.persisted) {
-    if (currentUser) loadSessions()
-    else loadAnonymousSessions()
+
+  const cameFromSession =
+    fromCachedPage || isBackNav || sessionStorage.getItem('sf_return_home') === '1'
+  if (!cameFromSession) return
+
+  if (sessionStorage.getItem('sf_return_home') === '1') {
+    sessionStorage.removeItem('sf_return_home')
+  }
+
+  const scheduleGalleryReload = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        void reloadHomeGalleryIfReady()
+      })
+    })
+  }
+
+  if (authResolved) scheduleGalleryReload()
+  else {
+    window.addEventListener(
+      'sf-home-auth-state',
+      () => {
+        scheduleGalleryReload()
+      },
+      { once: true },
+    )
   }
 })
 
-initFirebase()
+window.addEventListener('sf-home-auth-state', (e) => {
+  currentUser = e.detail.user
+  authResolved = true
+  if (currentUser) void showApp()
+  else void showAnonymousApp()
+})
+
+window.__sfHomeScriptReady = true
+window.dispatchEvent(new CustomEvent('sf-home-script-ready'))

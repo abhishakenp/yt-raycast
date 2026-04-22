@@ -1,151 +1,10 @@
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background: #050506;
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #EDEDEF;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-a {
-  color: #EDEDEF;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-a:hover {
-  color: #ffffff;
-}
-
-.bg-glow {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bg-glow::before {
-  content: '';
-  position: absolute;
-  top: 12%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 680px;
-  height: 680px;
-  background: none;
-  border-radius: 50%;
-}
-
-.site-nav {
-  position: relative;
-  z-index: 1;
-  padding: 0 24px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  background: rgba(5, 5, 6, 0.72);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.nav-inner {
-  width: min(1160px, 100%);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: inherit;
-}
-
-.nav-logo-text {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: #EDEDEF;
-  -webkit-background-clip: unset;
-  -webkit-text-fill-color: unset;
-  background-clip: unset;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 28px;
-}
-
-.nav-links a {
-  font-size: 14px;
-  color: #8A8F98;
-  text-decoration: none;
-}
-
-.nav-links a:hover {
-  color: #EDEDEF;
-}
-
-.nav-links a.active {
-  color: #EDEDEF;
-  font-weight: 600;
-}
-
-.nav-cta {
-  height: 36px;
-  padding: 0 18px;
-  border-radius: 999px;
-  border: 1px solid #4E5259;
-  background: rgba(255, 255, 255, 0.05);
-  color: #EDEDEF;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    border-color 0.2s;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.nav-cta:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #8A8F98;
-}
-
-.page {
-  position: relative;
-  z-index: 1;
-  width: min(760px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 48px 0 96px;
-}
+@import url('./space-shell.css');
+@import url('./marketing.css');
 
 .legal-doc {
   font-size: 16px;
   line-height: 1.65;
-  color: #EDEDEF;
+  color: var(--text-primary);
 }
 
 .legal-header {
@@ -155,24 +14,24 @@ a:hover {
 }
 
 .kicker {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #8A8F98;
+  color: #c4c9d4;
   margin-bottom: 12px;
 }
 
 .legal-header h1 {
   font-size: clamp(1.75rem, 4vw, 2.25rem);
   letter-spacing: -0.03em;
-  color: #ffffff;
+  color: #fff;
   margin-bottom: 14px;
 }
 
 .legal-meta {
   font-size: 14px;
-  color: #4E5259;
+  color: #c4c9d4;
 }
 
 .legal-doc section {
@@ -181,14 +40,14 @@ a:hover {
 
 .legal-doc h2 {
   font-size: 1.15rem;
-  color: #EDEDEF;
+  color: var(--text-primary);
   margin-bottom: 14px;
   letter-spacing: -0.02em;
 }
 
 .legal-doc h3 {
   font-size: 1rem;
-  color: #8A8F98;
+  color: #c4c9d4;
   margin: 20px 0 10px;
   font-weight: 600;
 }
@@ -211,11 +70,5 @@ a:hover {
   background: #111113;
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 10px;
-  color: #EDEDEF;
-}
-
-@media (max-width: 720px) {
-  .nav-links {
-    display: none;
-  }
+  color: var(--text-primary);
 }

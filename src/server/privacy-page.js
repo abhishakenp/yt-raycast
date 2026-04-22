@@ -10,6 +10,7 @@ import {
   SITE_URL,
 } from '../config.js'
 import { escapeHtml } from '../renderers/shared.js'
+import { renderMarketingShell } from './marketing-shell.js'
 
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 
@@ -44,29 +45,10 @@ export const renderPrivacyPage = () => {
     <link rel="canonical" href="${siteUrl}/privacy" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script defer data-domain="${plausible}" data-api="/api/event" src="/js/script.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
     <link rel="stylesheet" href="/styles/privacy.css" />
   </head>
   <body>
-    <div class="bg-glow" aria-hidden="true"></div>
-    <nav class="site-nav" aria-label="Main navigation">
-      <div class="nav-inner">
-        <a href="/" class="nav-brand" aria-label="${site} home">
-          <span class="nav-logo-text">SHIP FAST</span>
-        </a>
-        <nav class="nav-links" aria-label="Page links">
-          <a href="/">Home</a>
-          <a href="/pricing">Pricing</a>
-          <a href="/privacy" class="active" aria-current="page">Privacy</a>
-        </nav>
-        <a href="/" class="nav-cta">Get started</a>
-      </div>
-    </nav>
+    ${renderMarketingShell({ active: 'privacy' })}
 
     <main class="page legal-doc">
       <header class="legal-header">
