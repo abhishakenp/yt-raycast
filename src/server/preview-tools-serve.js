@@ -1,6 +1,7 @@
 import { existsSync, statSync } from 'node:fs'
 import { extname, join, resolve, sep } from 'node:path'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
+import { stripLegacyThemeStarTransition } from '../pipeline/phase-homepage.js'
 import { injectStorefrontCartUi } from '../pipeline/storefront-cart-ui.js'
 
 const MARK = 'data-sf-preview-tools="1"'
@@ -15,6 +16,10 @@ export function stripPreviewArtifactsFromHtml(html) {
 
 export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessionWorkspace) {
   if (typeof html !== 'string') return html
+  html = stripLegacyThemeStarTransition(html)
+  if (sessionId && /^[a-f0-9]{12}$/i.test(String(sessionId))) {
+    html = html.replace(/\/preview\/[a-f0-9]{12}\b/gi, `/preview/${sessionId}`)
+  }
   html = injectStorefrontCartUi(html, sessionWorkspace ? { workspace: sessionWorkspace } : {})
   const sid =
     sessionId != null && /^[a-f0-9]{12,64}$/i.test(String(sessionId)) ? String(sessionId) : ''

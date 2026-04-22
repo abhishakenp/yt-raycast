@@ -6,7 +6,7 @@ import { writeFile } from './workspace.js'
 import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
 import { generateContext } from './phase-context.js'
-import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
+import { expandSiteSpecFromThin, generateThinSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
 import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
 import {
   injectMedusaVariantDataAttributes,
@@ -15,10 +15,14 @@ import {
 } from './storefront-cart-ui.js'
 import { shouldReplaceLlmHomepageWithRenderer } from './homepage-substance.js'
 import { injectLLMHomepageSwiper } from './homepage-swiper.js'
+import { inferSiteTypeHint } from '../lib/infer-site-type.js'
+import { buildHeuristicBusinessProfile } from '../spec/business-profile.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
 import { formatRunAllReport, formatEditReport } from './report.js'
 import { editPrompt } from '../prompts/edit.js'
+import { resolveDesignRef } from '../prompts/resolve-design-ref.js'
+import { resolveContentPlanRef } from '../prompts/resolve-content-plan-ref.js'
 import {
   enrichSiteSpecWithWorkspaceBlueprints,
   loadSiteSpec,
@@ -26,6 +30,10 @@ import {
   stripSiteSpecBlueprints,
 } from '../spec/index.js'
 import { renderPreviewToWorkspace, writeNextAppToWorkspace } from '../renderers/index.js'
+import { readDesignRefFromWorkspace, stashDesignRefName } from '../prompts/design-refs.js'
+import { stashContentPlanRefName } from '../prompts/content-refs.js'
+import { injectAuroraLiquidHero } from './aurora-liquid-inject.js'
+import { enforceAuroraHomepageBaseline } from './aurora-enforce.js'
 import { detectLanguage } from './detect-language.js'
 import {
   alignGeneratedImagesToContext,
@@ -57,6 +65,11 @@ const status = (sessionCtx) => (message, phase) => {
   console.log(`  [${phase}] ${message}`)
   sessionCtx.broadcast({ type: 'status', message, phase })
 }
+
+const finalizeAuroraHomepage = (html, workspace, log, injectAuroraLiquid = false) =>
+  injectAuroraLiquid || readDesignRefFromWorkspace(workspace)?.name === 'aurora'
+    ? injectAuroraLiquidHero(enforceAuroraHomepageBaseline(html, log), log)
+    : html
 
 export async function runEdit({ prompt, workspace, sessionCtx }) {
   const _log = log(sessionCtx)
@@ -91,6 +104,11 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
     if (!siteSpec) throw new Error('Invalid site spec generated for edit flow.')
     sessionCtx.setSiteSpec?.(siteSpec)
     renderPreviewToWorkspace(siteSpec, workspace)
+    if (existsSync(join(workspace, 'index.html'))) {
+      let h = readFileSync(join(workspace, 'index.html'), 'utf8')
+      h = finalizeAuroraHomepage(h, workspace, _log)
+      writeFile(workspace, 'index.html', h)
+    }
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
     const enrichedSiteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace)
     saveSiteSpec(workspace, enrichedSiteSpec)
@@ -117,6 +135,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
           h = injectMedusaVariantDataAttributes(h, medusaResult.byTitle)
           h = stripStorefrontCartUi(h)
           h = injectStorefrontCartUi(h, { workspace, variantMap: medusaResult, force: true })
+          h = finalizeAuroraHomepage(h, workspace, _log)
           writeFile(workspace, 'index.html', h)
         }
       } catch (err) {
@@ -273,8 +292,23 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   const indiaMode = await detectLanguage(normalizedPrompt, preferredLanguage)
   const brandProfileCached = readBrandProfileFromWorkspace(workspace)
 
-  const pipelinePrompt = withLanguageEnforcementBlock(promptWithRefs, indiaMode.code)
-  writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
+  const promptCore = withLanguageEnforcementBlock(promptWithRefs, indiaMode.code)
+  const siteTypeHintEarly = inferSiteTypeHint(promptCore) || 'landing'
+  const businessProfileEarly = buildHeuristicBusinessProfile({
+    prompt: promptCore,
+    siteType: inferSiteTypeHint(promptCore) || 'saas',
+    ctx: {},
+  })
+  const designResolution = resolveDesignRef({
+    prompt: promptCore,
+    siteType: siteTypeHintEarly,
+    businessProfile: businessProfileEarly,
+    respectWorkspaceOverride: false,
+  })
+  stashDesignRefName(workspace, designResolution.stashName)
+  const pipelinePrompt = `${promptCore}${designResolution.presetAppendix}`
+  _log(`  design ref: ${designResolution.refId} (${designResolution.reason}) · preset ${designResolution.presetKey}`)
+  writeFileSync(join(workspace, 'prompt.txt'), normalizedPrompt)
 
   if (indiaMode.code !== 'en') {
     _log(
@@ -288,7 +322,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   tick('t0')
 
-  _status('Plotting launch trajectory…', 'spec')
+  _status('Generating spec…', 'spec')
 
   const bootstrapImageHintsPromise = resolvePexelsImageHints(
     { prompt: normalizedPrompt, hydrationPrompt: normalizedPrompt },
@@ -303,34 +337,51 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     },
   )
 
-  const specPromise = (async () => {
-    const [designStats, detectStats] = await Promise.all([
-      generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
-      detectSiteType(pipelinePrompt, _log),
-    ])
-    tick('design_end')
-    tick('detect_end')
-    const ctxStats = await generateContext(
-      pipelinePrompt,
-      designStats.brief,
-      detectStats.siteType,
-      workspace,
-      _log,
-      brandProfileCached?.verified ? brandProfileCached : null,
-    )
-    tick('ctx_end')
-    const siteSpecStats = await generateSiteSpec({
-      prompt: pipelinePrompt,
-      ctx: ctxStats.ctx,
-      designBrief: designStats.brief,
-      siteType: detectStats.siteType,
-      workspace,
-      log: _log,
-      brandProfile: brandProfileCached?.verified ? brandProfileCached : null,
-    })
-    tick('site_spec_end')
-    return { designStats, detectStats, ctxStats, siteSpecStats }
-  })()
+  const [designStats, detectStats] = await Promise.all([
+    generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode, businessProfileEarly, designResolution.designRef),
+    detectSiteType(pipelinePrompt, _log),
+  ])
+  tick('design_end')
+  tick('detect_end')
+  const ctxStats = await generateContext(
+    pipelinePrompt,
+    designStats.brief,
+    detectStats.siteType,
+    workspace,
+    _log,
+    brandProfile,
+  )
+  tick('ctx_end')
+  const contentPlanResolution = resolveContentPlanRef({
+    prompt: pipelinePrompt,
+    siteType: detectStats.siteType,
+    businessProfile: businessProfileEarly,
+    workspace,
+    respectWorkspaceOverride: false,
+  })
+  stashContentPlanRefName(workspace, contentPlanResolution.stashName)
+  _log(
+    `  content plan ref: ${contentPlanResolution.refId} (${contentPlanResolution.reason}) · ${contentPlanResolution.stashName}`,
+  )
+
+  const designBrief = designStats.brief
+  ctx = ctxStats.ctx
+
+  tick('thin_spec_start')
+  const thinStats = await generateThinSiteSpec({
+    prompt: pipelinePrompt,
+    ctx,
+    designBrief,
+    siteType: detectStats.siteType,
+    workspace,
+    log: _log,
+    brandProfile,
+    contentPlanResolution,
+    archetypePresetKey: designResolution.presetKey,
+  })
+  tick('thin_spec_end')
+  const thinSpec = thinStats.siteSpec
+  sessionCtx.setSiteSpec?.(thinSpec)
 
   const homepagePromise = (async () => {
     const baseHints = await bootstrapImageHintsPromise
@@ -347,10 +398,43 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
         sessionCtx,
         indiaMode,
         imageHints,
-        brandProfileCached?.verified ? brandProfileCached : null,
+        brandProfile,
+        businessProfileEarly,
+        designResolution.designRef,
+        contentPlanResolution.contentPlanRef,
+        thinSpec,
       )
+      let homepage = stats.html
+      const thinRich = await resolvePexelsImageHints({
+        prompt: normalizedPrompt,
+        hydrationPrompt: normalizedPrompt,
+        ctx,
+        siteSpec: thinSpec,
+      })
+      const mergedHints = {
+        ...mergeImageHintLists(stats.imageHints, thinRich),
+        hydrationPrompt: normalizedPrompt,
+        prompt: normalizedPrompt,
+      }
+      if (homepage) {
+        homepage = injectStorefrontCartUi(
+          injectEcommerceHeroResponsiveCss(
+            await verifyTrustedStockImageUrls(
+              hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(homepage, mergedHints), mergedHints),
+            ),
+          ),
+          { workspace },
+        )
+        homepage = finalizeAuroraHomepage(homepage, workspace, _log, designResolution.injectAuroraLiquid)
+        writeFile(workspace, 'index.html', homepage)
+      }
+      if (homepage && designBrief) {
+        homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
+        writeFile(workspace, 'index.html', homepage)
+      }
+      if (homepage) sessionCtx.signalHomepageReady()
       tick('homepage_end')
-      return { ...stats, imageHints }
+      return { ...stats, html: homepage, imageHints: mergedHints }
     } catch (error) {
       tick('homepage_end')
       _log(`  homepage: falling back to renderer path — ${error.message}`)
@@ -365,12 +449,41 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     }
   })()
 
-  const [specResult, homepageStats] = await Promise.all([specPromise, homepagePromise])
+  const fullSpecPromise = (async () => {
+    const fullStats = await expandSiteSpecFromThin({
+      thinSpec,
+      prompt: pipelinePrompt,
+      ctx,
+      designBrief,
+      siteType: detectStats.siteType,
+      workspace,
+      log: _log,
+      brandProfile,
+      contentPlanResolution,
+      archetypePresetKey: designResolution.presetKey,
+    })
+    tick('full_spec_end')
+    tick('site_spec_end')
+    return fullStats
+  })()
 
-  const { designStats, detectStats, ctxStats, siteSpecStats } = specResult
-  const designBrief = designStats.brief
-  ctx = ctxStats.ctx
-  siteSpec = siteSpecStats.siteSpec
+  const [homepageStats, fullSpecStats] = await Promise.all([homepagePromise, fullSpecPromise])
+
+  const hpT = timings.homepage_end ?? 0
+  const fullT = timings.full_spec_end ?? 0
+  if (hpT && fullT) {
+    _log(
+      `  pipeline: homepage vs full_spec Δ ${((fullT - hpT) / 1000).toFixed(2)}s (${fullT > hpT ? 'expand slower' : 'homepage slower'})`,
+    )
+  }
+
+  const siteSpecStats = {
+    inputTokens: thinStats.inputTokens + fullSpecStats.inputTokens,
+    outputTokens: thinStats.outputTokens + fullSpecStats.outputTokens,
+    cost: thinStats.cost + fullSpecStats.cost,
+  }
+
+  siteSpec = fullSpecStats.siteSpec
   siteSpec = sanitizeSiteSpec(
     siteSpec,
     { projectName: 'Project' },
@@ -421,16 +534,16 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       ),
       { workspace },
     )
+    homepage = finalizeAuroraHomepage(homepage, workspace, _log, designResolution.injectAuroraLiquid)
     writeFile(workspace, 'index.html', homepage)
   }
 
-  // Inject design system colors into the homepage now that both are ready
-  if (homepage && designBrief) {
-    homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
-    if (siteSpec) writeNextAppToWorkspace(siteSpec, workspace)
+  if (homepage && siteSpec) {
+    writeNextAppToWorkspace(siteSpec, workspace)
     const withSwiper = injectLLMHomepageSwiper(homepage, siteSpec)
     if (withSwiper !== homepage) {
       homepage = withSwiper
+      homepage = finalizeAuroraHomepage(homepage, workspace, _log, designResolution.injectAuroraLiquid)
       writeFile(workspace, 'index.html', homepage)
     }
     const wouldReplaceLlmWithRenderer = shouldReplaceLlmHomepageWithRenderer(homepage, siteSpec)
@@ -439,6 +552,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       _log('  homepage: LLM page body looks too sparse; rendering homepage from site spec instead')
       const recovered = renderPreviewToWorkspace(siteSpec, workspace)
       homepage = recovered.files['index.html'] ?? homepage
+      homepage = finalizeAuroraHomepage(homepage, workspace, _log, designResolution.injectAuroraLiquid)
       writeFile(workspace, 'index.html', homepage)
     } else if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && hasUserDesignReferences) {
       _log(
@@ -447,9 +561,10 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     }
     if (homepage) {
       homepage = injectStorefrontCartUi(injectEcommerceHeroResponsiveCss(homepage), { workspace })
+      homepage = finalizeAuroraHomepage(homepage, workspace, _log, designResolution.injectAuroraLiquid)
       writeFile(workspace, 'index.html', homepage)
     }
-    sessionCtx.signalHomepageReady()
+    sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
@@ -457,6 +572,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       injectEcommerceHeroResponsiveCss(preview.files['index.html'] ?? ''),
       { workspace },
     )
+    homepage = finalizeAuroraHomepage(homepage, workspace, _log, designResolution.injectAuroraLiquid)
     writeFile(workspace, 'index.html', homepage)
     sessionCtx.signalHomepageReady()
   }
@@ -503,6 +619,13 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   tick('gen_start')
   const taskCtx = { taskList: tasks, updateTask: sessionCtx.updateTask }
+  const businessProfileForTasks = siteSpec?.businessProfile ?? businessProfileEarly
+  const taskDesignResolution = resolveDesignRef({
+    prompt: pipelinePrompt,
+    siteType: siteSpec?.siteType || siteTypeHintEarly,
+    businessProfile: businessProfileForTasks,
+    respectWorkspaceOverride: false,
+  })
   const genStats = await generateAllTasks(
     tasks,
     ctx,
@@ -516,6 +639,9 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     imageHints,
     brandProfileCached?.verified ? brandProfileCached : null,
     hasUserDesignReferences,
+    businessProfileForTasks,
+    taskDesignResolution.designRef,
+    siteSpec,
   )
   tick('gen_end')
 
@@ -553,6 +679,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
           h = injectMedusaVariantDataAttributes(h, medusaResult.byTitle)
           h = stripStorefrontCartUi(h)
           h = injectStorefrontCartUi(h, { workspace, variantMap: medusaResult, force: true })
+          h = finalizeAuroraHomepage(h, workspace, _log, designResolution.injectAuroraLiquid)
           homepage = h
           writeFile(workspace, 'index.html', homepage)
         }

@@ -608,12 +608,37 @@ function renderBrandLogoMarkup(brandLogo, opts = {}) {
   return ''
 }
 
+function renderContentBlocksHtml(section) {
+  const blocks = section.contentBlocks
+  if (!Array.isArray(blocks) || !blocks.length) return ''
+  return blocks
+    .map((b) => {
+      const kind = String(b?.kind || 'paragraph').toLowerCase()
+      if (kind === 'list') {
+        const items = (Array.isArray(b?.items) ? b.items : [])
+          .map((t) => `<li>${escapeHtml(String(t))}</li>`)
+          .join('')
+        return items ? `<ul class="section-content-blocks__list">${items}</ul>` : ''
+      }
+      if (kind === 'quote') {
+        return `<blockquote class="section-content-blocks__quote">${escapeHtml(String(b?.text || ''))}</blockquote>`
+      }
+      if (kind === 'stat') {
+        return `<div class="section-content-blocks__stat"><strong>${escapeHtml(String(b?.text || ''))}</strong></div>`
+      }
+      return `<p class="section-content-blocks__p">${escapeHtml(String(b?.text || ''))}</p>`
+    })
+    .filter(Boolean)
+    .join('\n')
+}
+
 export function renderSectionHtml(section, siteSpec = {}) {
   const headline = section.headline ? `<h2>${escapeHtml(section.headline)}</h2>` : ''
   const subheadline = section.subheadline
     ? `<p class="eyebrow">${escapeHtml(section.subheadline)}</p>`
     : ''
-  const body = section.body ? `<p class="section-body">${escapeHtml(section.body)}</p>` : ''
+  const bodyCore = section.body ? `<p class="section-body">${escapeHtml(section.body)}</p>` : ''
+  const body = `${bodyCore}${renderContentBlocksHtml(section)}`
 
   switch (section.type) {
     case 'navbar': {

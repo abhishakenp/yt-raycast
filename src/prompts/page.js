@@ -6,6 +6,9 @@ import {
 } from '../config.js'
 import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
+import { businessProfilePromptBlock } from './business-profile.js'
+import { designRefSystemAppendix } from './design-refs.js'
+import { PUBLIC_DESIGNS_INNER_PAGE_CRAFT } from './public-designs-quality-bar.js'
 
 function imageGuide(imageHints) {
   const photos = imageHints?.photos ?? []
@@ -42,6 +45,20 @@ function imageGuide(imageHints) {
   return `${imgBlock}${vidBlock}\n\nReuse the closest matching verified URL when multiple blocks need similar media. If no line fits, use a non-photo visual treatment instead of inventing URLs.`
 }
 
+function pagePlanBlock(sitePageSpec) {
+  if (!sitePageSpec) return ''
+  const goals = (sitePageSpec.contentGoals || []).filter(Boolean).join('; ')
+  const outline = (sitePageSpec.sections || [])
+    .slice(0, 14)
+    .map(
+      (s) =>
+        `- ${s.type}/${s.id}: ${String(s.headline || '').slice(0, 80)} (${(s.contentBlocks || []).length} blocks)`,
+    )
+    .join('\n')
+  const role = sitePageSpec.pageRole ? `pageRole: ${sitePageSpec.pageRole}\n` : ''
+  return `\nSITE SPEC PAGE PLAN (obey in main content):\n${role}contentGoals: ${goals || '(derive from page title)'}\nSection outline:\n${outline}\n`
+}
+
 export function pagePrompt(
   task,
   navList,
@@ -49,8 +66,11 @@ export function pagePrompt(
   imageHints = null,
   indiaMode = null,
   brandProfile = null,
+  businessProfile = null,
   siteType = null,
   hasUserDesignReferences = false,
+  designRef = null,
+  sitePageSpec = null,
 ) {
   const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   const mixedEn = isMixedEnglishIndicCode(indiaMode?.language?.code)
@@ -60,6 +80,7 @@ export function pagePrompt(
       ? `\n\nLANGUAGE: ${indiaMode.name} — all visible text must be in ${indiaMode.name}. Match the homepage language.\n`
       : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
+  const businessBlock = businessProfilePromptBlock(businessProfile)
   const taskLower = (task.title || '').toLowerCase()
   const fnameLower = (task.filename || '').toLowerCase()
   const isContactPage = taskLower.includes('contact') || fnameLower.includes('contact')
@@ -114,20 +135,22 @@ This page is part of an e-commerce store. Maintain the store aesthetic and Medus
   return {
     system:
       'You build pages that match an existing homepage exactly. Same head, nav, footer, fonts, colors. Output ONLY a complete HTML file.\n\n' +
-      `HOMEPAGE (index.html) \u2014 match this exact style, head, nav, and footer:\n\n${homepageHtml}\n`,
+      `HOMEPAGE (index.html) \u2014 match this exact style, head, nav, and footer:\n\n${homepageHtml}\n` +
+      `${designRefSystemAppendix(designRef)}`,
     prompt: `Create the "${task.title}" page. Reuse the exact <head>, nav, and footer from the homepage.
 Write unique <main> content for: ${task.description ?? task.title}
-${contactPageBlock}${ecommercePageBlock}
+${pagePlanBlock(sitePageSpec)}${contactPageBlock}${ecommercePageBlock}
 ${langNote}Nav links:
 ${navList}
 
 Realistic mock data.
-${brandBlock}
+${brandBlock}${businessBlock}
 ${imageGuide(imageHints)}
 If you add icons, use Lucide with exact placeholders like <i data-lucide="heart"></i>. For brand socials use x, instagram, and whatsapp. NEVER use class="lucide-heart" as the placeholder syntax.
 NEVER use placeholder.com, placehold.co, via.placeholder, or random source endpoints like source.unsplash.com.
 If verified brand details are provided, keep them exact and do not invent missing contact fields.
 Design must match the homepage craft: same fonts, depth (blur, rings, shadows), and motion — not a flat appendix page.
+${PUBLIC_DESIGNS_INNER_PAGE_CRAFT}
 Reuse the same dynamic patterns as the homepage where relevant: data-mobile-nav, data-accordion, data-tab-group, data-carousel, data-counter, data-pricing-billing, with matching inline <script> behavior so buttons and toggles work.
 When this site is exported as Next.js or React components, ${MOTION_REACT_GUIDELINES}
 Output ONLY the complete HTML file.

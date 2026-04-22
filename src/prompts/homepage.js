@@ -9,8 +9,17 @@ import {
   SITE_TYPE_INSTRUCTIONS,
 } from '../config.js'
 import { slug } from '../pipeline/workspace.js'
+import { designRefSystemAppendix } from './design-refs.js'
+import { businessProfilePromptBlock } from './business-profile.js'
 
-export function homepagePrompt(prompt, ctx, designBrief, hasUserDesignReferences = false) {
+export function homepagePrompt(
+  prompt,
+  ctx,
+  designBrief,
+  hasUserDesignReferences = false,
+  designRef = null,
+  businessProfile = null,
+) {
   const st = ctx?.site_type ?? 'saas'
   const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   const otherPages = (ctx?.pages ?? []).filter((p) => !HOME_LABELS.includes(p.toLowerCase()))
@@ -34,7 +43,7 @@ MUST HAVE:
 - Create THREE.Scene, THREE.PerspectiveCamera, THREE.WebGLRenderer, and populate with 3D geometries.
 - Sophisticated game loop with proper state machine (MENU, PLAYING, PAUSED, GAMEOVER).
 - Realistic physics: gravity, momentum, collisions, 3D acceleration curves.
-- Professional HUD: health/ammo/score/radar overlaid on game (NOT Tailwind cards).
+- Professional HUD: health/ammo/score/radar as HTML overlay on the canvas using Tailwind utilities (fixed/inset positioning, flex, typography, bars).
 - Responsive controls: WASD movement, mouse for aiming/camera, smooth input handling.
 - Win/lose conditions with proper progression.
 
@@ -109,13 +118,14 @@ Homepage must match the structural depth in the ecommerce block above (patterns 
 
   const designQualityBlock =
     st === 'ecommerce'
-      ? `STOREFRONT DESIGN (must look like a DTC shop, not SaaS):\n- Slim promo strip first (shipping threshold, sale, or guarantee).\n- Header reads as retail: multi-link Shop menu, visible search field, cart with numeric badge.\n- Hero is editorial commerce: dominant product or lifestyle visual + headline + subcopy + Shop CTA + 2–3 benefit chips.\n- Category grid: four+ large tiles with photography, titles, blurbs, Shop links.\n- Product grid: six+ cards with photo, label, title, stars/reviews line, price row, Add to cart; optional horizontal product marquee.\n- Lower page: bundle/subscription, education cards, stats or testimonials with names, review quotes, email capture, multi-column footer with shop/legal columns.\n- Full width: use max-w-7xl for shop grids; avoid narrow single-column SaaS layouts for the whole page.\n`
-      : `DESIGN QUALITY \u2014 MUST FEEL PREMIUM, NOT GENERIC:\n- Hero: NO photos. Use the design system display font. Headline at text-5xl md:text-8xl if it fits — dramatic scale. Either centered OR a deliberate split (text block + gradient/blur panel). Optional subtle CSS gradient mesh or noise behind the hero. ONE primary CTA with glow or ring on hover.\n- Avoid template sameness: vary section rhythm — one band full-bleed with different bg, one section with asymmetric padding or offset column.\n- Section pattern: small caps label + big headline + subtitle; at least one section uses left-aligned or split layout instead of everything centered.\n- Cards: glass or elevated surfaces (backdrop-blur, ring, shadow-xl), not flat boxes only. 2-col or bento; hover lift or border brighten.\n- Highlight / featured: gradient border, inner glow, or animated gradient — must stand out from plain cards.\n- Pricing: 2-col; featured plan visually dominant (scale, border glow, "Popular").\n- Logo cloud: text-only names; tight letter-spacing or mono treatment for a refined look.\n- Final CTA: high contrast band; two buttons with clear hierarchy.\n- Footer: refined typography hierarchy; ShipFast pill integrated.\n- Width: default max-w-4xl\u2013max-w-5xl; one section may go max-w-6xl for impact. No cluttered 3-col feature grids.\n- Motion: CSS transitions on scroll reveals, buttons, cards; respect reduced-motion.\n- All interactive elements: hover, focus-visible, transition.\n`
+      ? `STOREFRONT DESIGN (must look like a DTC shop, not SaaS):\n- Atmosphere: warm editorial gradients (cream, stone, rose, amber, cocoa)—not harsh black-on-white; layered mesh/aurora blurs in hero and key bands; at least one slanted or skewed section wrapper (-skew-y-1 with counter-skew inner) for energy.\n- Slim promo strip first (shipping threshold, sale, or guarantee).\n- Header reads as retail: multi-link Shop menu, visible search field, cart with numeric badge.\n- Hero is editorial commerce: dominant product or lifestyle visual + headline + subcopy + Shop CTA + 2–3 benefit chips; interactive hover on primary visuals.\n- Category grid: four+ large tiles with photography, titles, blurbs, Shop links.\n- Product grid: six+ cards with photo, label, title, stars/reviews line, price row, Add to cart; hover lift/shadow; optional horizontal product marquee.\n- Lower page: bundle/subscription, education cards, stats or testimonials with names, review quotes, email capture, multi-column footer with shop/legal columns.\n- Full width: use max-w-7xl for shop grids; avoid narrow single-column SaaS layouts for the whole page.\n- Contrast: body text on warm surfaces stays readable (slate-800+ on light, not faint gray); CTAs clearly separated.\n`
+      : `DESIGN QUALITY \u2014 MUST FEEL PREMIUM, NOT GENERIC:\n- Contrast: body text on dark = slate-200/zinc-200 minimum; on light = slate-700+; never muddy gray-on-gray. Viewport meta + responsive type/spacing (text-3xl md:text-5xl, stack on mobile).\n- Hero: NO photos unless ecommerce/blog. Use the design system display font. Headline at text-5xl md:text-8xl if it fits — dramatic scale. Either centered OR a deliberate split (text block + gradient/blur panel). Optional mesh behind hero using Tailwind gradients + blur stacks. ONE primary CTA with ring / shadow on hover.\n- Icons: Lucide with w-5 h-5 md:w-6 md:h-6 and contrasting color; lucide.createIcons() after load.\n- Avoid template sameness: vary section rhythm — one band full-bleed with different bg, one section with asymmetric padding or offset column.\n- Section pattern: small caps label + big headline + subtitle; at least one section uses left-aligned or split layout instead of everything centered.\n- Cards: glass or elevated surfaces (backdrop-blur, ring, shadow-xl), not flat boxes only. 2-col or bento; hover lift or border brighten.\n- Highlight / featured: gradient border, inner glow, or animated gradient — must stand out from plain cards.\n- Pricing: 2-col; featured plan visually dominant (scale, border glow, "Popular").\n- Logo cloud: text-only names; tight letter-spacing or mono treatment for a refined look.\n- Final CTA: high contrast band; two buttons with clear hierarchy.\n- Footer: refined typography hierarchy; ShipFast pill integrated.\n- Width: default max-w-4xl\u2013max-w-5xl; one section may go max-w-6xl for impact. No cluttered 3-col feature grids.\n- Motion: Tailwind transitions / theme keyframes on scroll reveals, buttons, cards; use motion-reduce: variants for accessibility.\n- All interactive elements: hover, focus-visible, transition.\n- Links: href="#id" only when id exists on page.\n`
 
+  const businessBlock = businessProfilePromptBlock(businessProfile)
   return `Build: index.html \u2014 ${st} homepage
 Project: ${ctx?.project_name ?? 'My App'}${taglineBlock}
 Description: ${prompt}
-${featuresBlock}${entitiesBlock}${ecommerceBlock}
+${businessBlock}${featuresBlock}${entitiesBlock}${ecommerceBlock}
 LAYOUT: ${typeBlock}
 ${pagesBlock}
 
@@ -123,10 +133,10 @@ DESIGN SYSTEM (follow these colors, fonts, and patterns exactly):
 ${designBrief || 'Dark mode. Inter font. Minimalist, typography-first. Choose an accent color that fits the project.'}${craftBlock}
 BUILD RULES:
 - Follow the design system colors and component patterns exactly. Do NOT invent your own palette.
-- Use the Tailwind config from the design system in a <script> block after the CDN script.
+- After Tailwind CDN, add tailwind.config in <script> (theme.extend colors, fonts, shadows, keyframes). All visuals are Tailwind utilities and arbitrary values only — no author <style> for appearance.
 - Load the fonts specified in the design system via Google Fonts <link> in <head>.
 ${dynamicUiRule}- Use Lucide icons via CDN with exact placeholders like <i data-lucide="heart"></i>. Call lucide.createIcons() after render. For brand socials use x, instagram, and whatsapp. NEVER use class="lucide-heart" placeholders. NEVER emojis.
 ${imageryRule}${verifiedImagesRule}
 ${designQualityBlock}
-Output ONLY the complete HTML file. No markdown fences. No explanation.`
+Output ONLY the complete HTML file. No markdown fences. No explanation.${designRefSystemAppendix(designRef)}`
 }

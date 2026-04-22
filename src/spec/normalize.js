@@ -1,4 +1,10 @@
-import { buildFallbackSiteSpec, SUPPORTED_EXPORT_TARGETS, SUPPORTED_SECTION_TYPES } from './defaults.js'
+import {
+  buildFallbackSiteSpec,
+  SITE_SPEC_VERSION,
+  SUPPORTED_EXPORT_TARGETS,
+  SUPPORTED_SECTION_TYPES,
+} from './defaults.js'
+import { normalizeBusinessProfile } from './business-profile.js'
 import { slug } from '../pipeline/workspace.js'
 
 function ensureArray(value) {
@@ -11,13 +17,14 @@ function ensureString(value, fallback = '') {
 
 function normalizeAction(action, idx = 0) {
   if (!action || typeof action !== 'object') {
-    return { id: `action-${idx + 1}`, label: 'Learn More', href: '#', style: 'secondary' }
+    return { id: `action-${idx + 1}`, label: 'Learn More', href: '#', style: 'secondary', children: [] }
   }
   return {
     id: ensureString(action.id, `action-${idx + 1}`),
     label: ensureString(action.label, 'Learn More'),
     href: ensureString(action.href, '#'),
     style: ensureString(action.style, 'secondary'),
+    children: ensureArray(action.children).map((child, cidx) => normalizeAction(child, cidx)),
   }
 }
 
@@ -36,6 +43,18 @@ function normalizeItem(item, idx = 0) {
     href: ensureString(item.href, ''),
     price: ensureString(item.price, ''),
     features: ensureArray(item.features).map((feature) => ensureString(feature)).filter(Boolean),
+  }
+}
+
+function normalizeContentBlock(block, idx = 0) {
+  if (!block || typeof block !== 'object') {
+    return { id: `block-${idx + 1}`, kind: 'paragraph', text: '', items: [] }
+  }
+  return {
+    id: ensureString(block.id, `block-${idx + 1}`),
+    kind: ensureString(block.kind, 'paragraph'),
+    text: ensureString(block.text, ''),
+    items: ensureArray(block.items).map((t) => ensureString(t)).filter(Boolean),
   }
 }
 
@@ -83,6 +102,7 @@ function normalizeSection(section, idx = 0) {
     })),
     styling: typeof section?.styling === 'object' && section?.styling ? section.styling : {},
     visibility: typeof section?.visibility === 'object' && section?.visibility ? section.visibility : {},
+    contentBlocks: ensureArray(section?.contentBlocks).map(normalizeContentBlock),
     form:
       section?.form && typeof section.form === 'object'
         ? {
@@ -98,6 +118,109 @@ function normalizeSection(section, idx = 0) {
           }
         : null,
     children: ensureArray(section?.children).map(normalizeSection),
+  }
+}
+
+function normalizeEcommerceProduct(p, idx = 0) {
+  if (!p || typeof p !== 'object') {
+    return {
+      id: `prod-${idx + 1}`,
+      title: `Product ${idx + 1}`,
+      handle: `product-${idx + 1}`,
+      description: '',
+      price: '',
+      currency: 'USD',
+      image: '',
+      category: '',
+    }
+  }
+  const title = ensureString(p.title, `Product ${idx + 1}`)
+  return {
+    id: ensureString(p.id, `prod-${idx + 1}`),
+    title,
+    handle: ensureString(p.handle, slug(title) || `product-${idx + 1}`),
+    description: ensureString(p.description, ''),
+    price: p.price != null && p.price !== '' ? p.price : '',
+    currency: ensureString(p.currency, 'USD'),
+    image: ensureString(p.image, ''),
+    category: ensureString(p.category, ''),
+  }
+}
+
+function normalizeEcommerceCategory(c, idx = 0) {
+  if (!c || typeof c !== 'object') {
+    return {
+      id: `cat-${idx + 1}`,
+      name: '',
+      handle: `category-${idx + 1}`,
+      description: '',
+      image: '',
+    }
+  }
+  const name = ensureString(c.name, '')
+  return {
+    id: ensureString(c.id, `cat-${idx + 1}`),
+    name,
+    handle: ensureString(c.handle, slug(name) || `category-${idx + 1}`),
+    description: ensureString(c.description, ''),
+    image: ensureString(c.image, ''),
+  }
+}
+
+function normalizeEcommerce(raw, fallback) {
+  const fromRaw = raw?.ecommerce && typeof raw.ecommerce === 'object' ? raw.ecommerce : null
+  const fromFb = fallback?.ecommerce && typeof fallback.ecommerce === 'object' ? fallback.ecommerce : null
+  if (!fromRaw && !fromFb) return null
+  const base = fromRaw || fromFb
+  const settingsSrc = base.settings && typeof base.settings === 'object' ? base.settings : {}
+  const fbSettings = fromFb?.settings && typeof fromFb.settings === 'object' ? fromFb.settings : {}
+  let products = ensureArray(base.products).map(normalizeEcommerceProduct)
+  if (!products.length && fromFb?.products?.length) {
+    products = ensureArray(fromFb.products).map(normalizeEcommerceProduct)
+  }
+  let categories = ensureArray(base.categories).map(normalizeEcommerceCategory)
+  if (!categories.length && fromFb?.categories?.length) {
+    categories = ensureArray(fromFb.categories).map(normalizeEcommerceCategory)
+  }
+  return {
+    provider: ensureString(base.provider, 'medusa'),
+    settings: {
+      currency: ensureString(settingsSrc.currency, fbSettings.currency || 'USD'),
+      storeName: ensureString(settingsSrc.storeName, fbSettings.storeName || fallback.projectName || ''),
+      provider: ensureString(settingsSrc.provider, fbSettings.provider || ensureString(base.provider, 'medusa')),
+    },
+    products,
+    categories,
+  }
+}
+
+function normalizeExportOptions(rawEx) {
+  if (rawEx == null) return null
+  if (typeof rawEx !== 'object' || Array.isArray(rawEx)) return null
+  const out = {}
+  if (rawEx.cms === 'sanity') out.cms = 'sanity'
+  if (rawEx.embedSanityStudio != null) out.embedSanityStudio = Boolean(rawEx.embedSanityStudio)
+  return Object.keys(out).length ? out : null
+}
+
+function normalizePlanMeta(rawPm, fallbackPm) {
+  const fb = fallbackPm && typeof fallbackPm === 'object' ? fallbackPm : {}
+  const r = rawPm && typeof rawPm === 'object' ? rawPm : {}
+  return {
+    schemaRevision: ensureString(r.schemaRevision, ensureString(fb.schemaRevision, SITE_SPEC_VERSION)),
+    contentRefId: ensureString(r.contentRefId, fb.contentRefId || ''),
+    contentRefStashName: ensureString(r.contentRefStashName, fb.contentRefStashName || ''),
+    archetypePresetKey: ensureString(r.archetypePresetKey, fb.archetypePresetKey || 'marketingDark'),
+    resolutionReason: ensureString(r.resolutionReason, fb.resolutionReason || ''),
+    qualityChecklist: ensureArray(r.qualityChecklist ?? fb.qualityChecklist)
+      .map((x) => ensureString(x))
+      .filter(Boolean),
+    specPhase:
+      typeof r.specPhase === 'string' && r.specPhase
+        ? r.specPhase
+        : typeof fb.specPhase === 'string'
+          ? fb.specPhase
+          : '',
   }
 }
 
@@ -135,6 +258,13 @@ function normalizePage(page, idx = 0) {
             noIndex: false,
           },
     layoutType: ensureString(page?.layoutType, 'marketing'),
+    pageRole: ensureString(page?.pageRole, idx === 0 ? 'conversion' : 'standard'),
+    contentGoals:
+      ensureArray(page?.contentGoals).map((g) => ensureString(g)).filter(Boolean).length > 0
+        ? ensureArray(page?.contentGoals).map((g) => ensureString(g)).filter(Boolean)
+        : idx === 0
+          ? ['Establish trust', 'Drive primary CTA']
+          : ['Inform', 'Link related pages'],
     sections: ensureArray(page?.sections).map(normalizeSection),
     renderBlueprint:
       page?.renderBlueprint && typeof page.renderBlueprint === 'object'
@@ -171,6 +301,7 @@ export function normalizeSiteSpec(input, context = {}) {
 
   const pages = ensureArray(raw.pages).map(normalizePage)
   const normalizedPages = pages.length ? pages : fallback.pages.map(normalizePage)
+  const ecommerceNormalized = normalizeEcommerce(raw, fallback)
 
   return {
     projectName: ensureString(raw.projectName, fallback.projectName),
@@ -253,5 +384,9 @@ export function normalizeSiteSpec(input, context = {}) {
           }
         : fallback.seo,
     backendFeatureHints: ensureArray(raw.backendFeatureHints).map((item) => ensureString(item)).filter(Boolean),
+    businessProfile: normalizeBusinessProfile(raw.businessProfile, fallback.businessProfile),
+    planMeta: normalizePlanMeta(raw.planMeta, fallback.planMeta),
+    exportOptions: normalizeExportOptions(raw.exportOptions),
+    ...(ecommerceNormalized ? { ecommerce: ecommerceNormalized } : {}),
   }
 }

@@ -50,6 +50,7 @@ function repairEmptyHeroSections(siteSpec) {
 function stripUnstableExactClones(siteSpec) {
   for (const page of siteSpec.pages || []) {
     if (!pageUsesExactClone(page)) continue
+    if (page.renderBlueprint?.exactClone === true) continue
     const rb = page.renderBlueprint
     const doc =
       (rb?.originalHtmlDocument && String(rb.originalHtmlDocument)) ||

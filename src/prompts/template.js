@@ -23,8 +23,8 @@ ${designBlock}
 
 RULES:
 - Output ONLY complete, self-contained HTML file. No markdown, no fences, no explanation.
-- Do NOT use Tailwind via CDN. No external CSS frameworks. Write plain CSS in a <style> tag.
-- Load fonts from Google Fonts in <head>
+- Styling: Tailwind only — load https://cdn.tailwindcss.com in head, then a script with tailwind.config (theme.extend colors, fonts, keyframes). All layout, color, spacing, borders, shadows, gradients, and motion via Tailwind classes or arbitrary values. No <style> blocks for appearance.
+- Load fonts from Google Fonts in <head> and map them in tailwind.config theme.fontFamily
 - Do NOT rely on icon CDNs. Use text labels for social links (Instagram / X / Facebook) or inline SVGs you embed directly.
 - Images only if needed: use relevant verified provider images first. If no good photo exists, use gradients, patterns, icons, or strong typography instead of random stock images
 - NO screenshots, mockups, or hero images for SaaS/landing pages

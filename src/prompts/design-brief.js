@@ -2,11 +2,14 @@ import {
   GROQ_MODEL,
   getEcommerceGenerationGuidelines,
   GLOBAL_UI_CRAFT_GUIDELINES,
+  HOMEPAGE_MODEL,
   INDIAN_DESIGN_TOKENS,
   MOTION_DEV_DOCS_REACT,
 } from '../config.js'
 import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { inferSiteTypeHint } from '../lib/infer-site-type.js'
+import { businessProfilePromptBlock } from './business-profile.js'
+import { designRefSystemAppendix } from './design-refs.js'
 
 function languageDesignAppendix(indiaMode) {
   if (!indiaMode || indiaMode.code === 'en') return ''
@@ -54,14 +57,17 @@ export function designBriefPrompt(
   indiaMode = null,
   siteType = null,
   hasUserDesignReferences = false,
+  designRef = null,
+  businessProfile = null,
 ) {
   const effectiveSiteType = siteType || inferSiteTypeHint(prompt)
   const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   return {
-    system: `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.`,
+    system:
+      `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.${designRefSystemAppendix(designRef)}`,
     user: `Create a design system for this project:
 ${prompt}
-
+${businessProfilePromptBlock(businessProfile)}
 Output a concise design.md with these sections:
 
 ### Colors
@@ -80,7 +86,7 @@ Choose a color palette that fits the project's personality and mood. Provide:
 - Size scale: hero (very large, extrabold, dramatic tracking), section headline (large, extrabold), section label (tiny, uppercase, tracking-widest, accent color), body (medium), small
 
 ### Tailwind Config
-Valid JSON for tailwind.config.theme.extend with semantic color names (primary, accent, background, surface, border) mapped to the hex values above. Include font family if not Inter.
+Valid JSON for tailwind.config.theme.extend with semantic color names. Map \`background\` (or \`ink\`) to the deepest page canvas, \`primary\` to the CTA/brand accent (not the same role as the canvas), \`surface\`/\`elev\` to card layers — not mid-gray for body text. Include font family if not Inter.
 
 ### Component Patterns
 Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
@@ -117,17 +123,16 @@ ${
 8. Social proof: stat row and/or success stories (headline + pull quotes + names)
 9. Customer reviews: aggregate rating line + several quote cards with initials or avatars
 10. Newsletter: headline + email field + submit; optional social row
-11. Footer: four or five columns (Shop, Learn, Resources, About, Partner) + bottom legal strip`
-    : `### Sections (homepage order)
-1. Nav
-2. Hero (pill badge + massive headline + subtitle + 1 CTA button \u2014 NO images)
-3. Features (section label + headline + 2x2 card grid with SVG icon + title + desc)
-4. Pricing (section label + headline + 2-col cards, featured has "Popular" badge)
-5. Highlight/custom section (section label + headline + gradient featured card with icon)
-6. Logo cloud (headline + company names as plain text, muted color \u2014 NO images)
-7. Final CTA (bold headline + subtitle + 2 buttons)
-8. Footer (centered: logo + links row + copyright)`
-}
+11. Footer: four or five columns (Shop, Learn, Resources, About, Partner) + bottom legal strip` : `### Sections (homepage order) — SaaS / product marketing (Nova-caliber depth, not a thin template)
+1. Nav: logo lockup with mono micro-label; anchor links to \`#features\` \`#pricing\` \`#faq\` (and customers/enterprise if used); primary + secondary header actions
+2. Hero: layered mesh or stacked radial+\`blur-3xl\` gradients (Tailwind utilities); pill badge; massive headline + subcopy; primary + secondary CTAs; optional terminal or UI mock panel using borders+\`font-mono\` (no hero photo)
+3. Proof strip: stat row and/or logo text row; mono or tabular numerals where relevant
+4. Features: bento with unequal cells OR split narrative + divided list rows (mono descriptors); avoid three identical icon cards as the only pattern
+5. Deeper capability or integration band: secondary headline + 2\u20134 concrete rows or cards
+6. Pricing: section id \`pricing\`; monthly/year toggle; at least three tiers; one featured/\u201cpopular\u201d tier with stronger ring or shadow
+7. FAQ: section id \`faq\` or clear FAQ heading; real Q&A pairs; accordion-friendly markup
+8. Penultimate CTA band: bold headline + supporting line + two buttons on gradient or elevated surface
+9. Footer: multi-column link groups + legal strip (not a single centered line only)`}
 
 ### Key Principles
 - Apply the UI craft line in your system instructions to spacing rhythm, typographic hierarchy, accent restraint, and interactive states across every pattern below.
@@ -150,7 +155,7 @@ ${
 ${effectiveSiteType !== 'game' ? `- Next.js/React exports: plan Framer Motion (\`framer-motion\`, ${MOTION_DEV_DOCS_REACT}) for interactive motion — not purely static UI; respect reduced-motion preferences.\n` : ''}- If images are truly needed (ecommerce/portfolio), use relevant verified provider photos first. If no close match exists, avoid random stock-photo fallbacks and use gradients, patterns, icons, or typography-driven panels instead
 
 Max 70 lines. Output ONLY markdown.${languageDesignAppendix(indiaMode)}`,
-    model: GROQ_MODEL,
+    model: HOMEPAGE_MODEL,
     temperature: 0.4,
     maxTokens: 3000,
   }

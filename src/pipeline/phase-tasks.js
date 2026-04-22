@@ -12,6 +12,7 @@ import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { slug, writeFile } from './workspace.js'
 import { HOME_LABELS } from '../config.js'
 import { pagePrompt, backendPrompt } from '../prompts/page.js'
+import { readDesignRefFromWorkspace } from '../prompts/design-refs.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
 
 const PAGE_RETRY_ATTEMPTS = 2
@@ -214,6 +215,9 @@ export async function generateAllTasks(
   imageHints = null,
   brandProfile = null,
   hasUserDesignReferences = false,
+  businessProfile = null,
+  designRef = null,
+  siteSpec = null,
 ) {
   const isFrontend = (t) => t.status !== 'DONE' && !String(t.id).startsWith('backend-')
   const isBackend = (t) => String(t.id).startsWith('backend-') && t.status !== 'DONE'
@@ -229,7 +233,11 @@ export async function generateAllTasks(
     .map((t) => ({ title: t.title, filename: t.filename }))
   const navList = allPages.map((p) => `- ${p.title}: ${p.filename}`).join('\n')
 
-  const siteType = ctx?.site_type || null
+  const siteType = siteSpec?.siteType || ctx?.site_type || null
+  const resolvedDesignRef = designRef ?? readDesignRefFromWorkspace(workspace)
+  const pageSpecByFilename = new Map(
+    (siteSpec?.pages || []).map((p) => [routeToHtmlFile(p.route), p]),
+  )
   const pageCalls = pageTasks.map((t) =>
     pagePrompt(
       t,
@@ -238,8 +246,11 @@ export async function generateAllTasks(
       imageHints,
       indiaMode,
       brandProfile,
+      businessProfile,
       siteType,
       hasUserDesignReferences,
+      resolvedDesignRef,
+      pageSpecByFilename.get(t.filename) || null,
     ),
   )
   const backendCalls = backendTasks.map((t) => backendPrompt(t, ctx))

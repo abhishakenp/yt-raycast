@@ -1425,7 +1425,7 @@ export async function startServer(sessionsDir) {
     if (raw.length > 14 * 1024 * 1024) return res.status(413).json({ error: 'Too large' })
     try {
       const cleaned = stripPreviewArtifactsFromHtml(raw)
-      if (htmlLooksDegenerate(cleaned))
+      if (htmlLooksDegenerate(cleaned, { prompt: session.prompt }))
         return res
           .status(422)
           .json({ error: 'Homepage HTML failed quality check (repetition or invalid structure)' })

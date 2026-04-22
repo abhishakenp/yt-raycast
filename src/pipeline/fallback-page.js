@@ -13,13 +13,15 @@ function renderFallbackSection(section) {
   const items = (section.items || []).map(item => {
     const itemTitle = item.title || item.label || ''
     const itemBody = item.body || item.quote || item.description || ''
-    return `<div class="p-4 rounded-lg" style="background:rgba(255,255,255,0.05)">
+    return `<div class="p-4 rounded-lg bg-white/5">
       ${itemTitle ? `<h3 class="font-semibold mb-1">${escapeHtml(itemTitle)}</h3>` : ''}
       ${itemBody ? `<p class="opacity-80 text-sm">${escapeHtml(itemBody)}</p>` : ''}
     </div>`
   }).join('\n')
 
-  const itemsGrid = items ? `<div class="grid gap-4" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr))">${items}</div>` : ''
+  const itemsGrid = items
+    ? `<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(250px,1fr))]">${items}</div>`
+    : ''
 
   return `<section class="max-w-5xl mx-auto px-4 py-12 md:py-16">
     ${subheadline}${headline}${body}${itemsGrid}
@@ -50,7 +52,7 @@ export const buildFallbackPageFromHomepage = (homepageHtml, task, sections = [])
 <label class="block"><span class="block text-sm mb-1 opacity-80">Name</span><input name="name" type="text" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3" /></label>
 <label class="block"><span class="block text-sm mb-1 opacity-80">Email</span><input name="email" type="email" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3" /></label>
 <label class="block"><span class="block text-sm mb-1 opacity-80">Message</span><textarea name="message" rows="5" required class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3"></textarea></label>
-<button type="submit" class="rounded-full px-8 py-3 font-semibold text-white" style="background:linear-gradient(145deg,#7c3aed,#a78bfa)">Send message</button>
+<button type="submit" class="rounded-full px-8 py-3 font-semibold text-white bg-gradient-to-br from-violet-600 to-violet-400">Send message</button>
 <p data-form-message class="text-sm mt-2" aria-live="polite"></p>
 </form>`
       : ''
