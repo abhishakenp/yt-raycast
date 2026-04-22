@@ -1,9 +1,0 @@
-services:
-  ship-fast:
-    build: .
-    ports:
-      - "7420:7420"
-    volumes:
-      - ./sessions:/app/sessions
-    env_file: .env
-    restart: unless-stopped

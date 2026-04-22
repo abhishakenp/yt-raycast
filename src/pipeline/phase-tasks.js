@@ -146,7 +146,15 @@ export function deriveTasks(ctxOrSiteSpec) {
   return tasks
 }
 
-async function processResults(taskCtx, filteredTasks, results, workspace, getFname, log, imageHints = null) {
+async function processResults(
+  taskCtx,
+  filteredTasks,
+  results,
+  workspace,
+  getFname,
+  log,
+  imageHints = null,
+) {
   const { taskList, updateTask } = taskCtx
   const saveTasks = () =>
     writeFile(workspace, 'tasks.json', JSON.stringify({ tasks: taskList }, null, 2))
@@ -164,7 +172,10 @@ async function processResults(taskCtx, filteredTasks, results, workspace, getFna
     }
     const content = ensureLucideIconRuntime(
       await verifyTrustedStockImageUrls(
-        hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(stripFences(r.content), imageHints), imageHints),
+        hydrateStorefrontGradientSlots(
+          alignGeneratedImagesToContext(stripFences(r.content), imageHints),
+          imageHints,
+        ),
       ),
       log,
     )
@@ -210,8 +221,8 @@ export async function generateAllTasks(
   const pageTasks = tasks.filter((t) => isFrontend(t) && t.filename && t.filename !== 'index.html')
   const backendTasks = tasks.filter(isBackend)
 
-  log('\n  \u2500\u2500 Generating tasks \u2500\u2500')
-  status('Generating tasks\u2026', 'generating')
+  log('\n  \u2500\u2500 Assembling the vessel \u2500\u2500')
+  status('Assembling the vessel\u2026', 'generating')
 
   const allPages = tasks
     .filter((t) => t.filename)
@@ -242,7 +253,12 @@ export async function generateAllTasks(
   // Generate all pages with Groq (quality), translate with hex-1 if India mode
   let pageResults = pageCalls.length > 0 ? await groqParallel(pageCalls) : []
 
-  if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation && pageResults.length > 0) {
+  if (
+    indiaMode?.code &&
+    indiaMode.code !== 'en' &&
+    !indiaMode.skipFullTranslation &&
+    pageResults.length > 0
+  ) {
     log(
       `  translating ${pageResults.length} pages to ${indiaMode.name || indiaMode.language?.name} (sequential)...`,
     )
@@ -260,7 +276,15 @@ export async function generateAllTasks(
   const backendResults = backendCalls.length > 0 ? await groqParallel(backendCalls) : []
 
   if (pageTasks.length > 0) {
-    await processResults(taskCtx, pageTasks, pageResults, workspace, (t) => t.filename, log, imageHints)
+    await processResults(
+      taskCtx,
+      pageTasks,
+      pageResults,
+      workspace,
+      (t) => t.filename,
+      log,
+      imageHints,
+    )
     const failedAfterBatch = pageTasks.filter(
       (t) => taskCtx.taskList.find((x) => x.id === t.id)?.status === 'FAILED',
     )

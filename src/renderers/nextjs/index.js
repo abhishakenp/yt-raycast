@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import {
   buildGlobalCss,
   renderCloneRuntimeModule,
@@ -2324,10 +2325,14 @@ ${layoutHeadBlock}      <body suppressHydrationWarning>${layoutEcommerceBody}</b
   )
 }
 `,
-    'app/globals.css': buildGlobalCss(siteSpec.theme, {
-      ecommerce: siteSpec.siteType === 'ecommerce',
-      siteType: siteSpec.siteType,
-    }),
+    'app/globals.css': (function () {
+      const css = buildGlobalCss(siteSpec.theme, {
+        ecommerce: siteSpec.siteType === 'ecommerce',
+        siteType: siteSpec.siteType,
+      })
+      const hash = createHash('sha256').update(css).digest('hex').slice(0, 12)
+      return `/* hash: ${hash} */\n${css}`
+    })(),
     'app/robots.js': `export default function robots() {
   return ${serializeModule(robotsConfig)}
 }

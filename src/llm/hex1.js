@@ -1,8 +1,14 @@
 import { RUNPOD_API_URL, RUNPOD_API_KEY, RUNPOD_MODEL, LLM_CONFIG } from '../config.js'
+import { withLLMRetry } from './retry.js'
 
 const HEX1_TIMEOUT_MS = 180_000 // 3 minutes — accounts for cold starts
 
-async function hex1Fetch({ system, prompt, temperature = LLM_CONFIG.default.temperature, maxTokens = LLM_CONFIG.default.maxTokens }) {
+async function hex1Fetch({
+  system,
+  prompt,
+  temperature = LLM_CONFIG.default.temperature,
+  maxTokens = LLM_CONFIG.default.maxTokens,
+}) {
   if (!RUNPOD_API_URL) throw new Error('RUNPOD_API_URL not set')
   if (!RUNPOD_API_KEY) throw new Error('RUNPOD_API_KEY not set')
 
@@ -11,34 +17,34 @@ async function hex1Fetch({ system, prompt, temperature = LLM_CONFIG.default.temp
     { role: 'user', content: prompt },
   ]
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), HEX1_TIMEOUT_MS)
-
-  let res
-  try {
-    res = await fetch(`${RUNPOD_API_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RUNPOD_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: RUNPOD_MODEL,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-        stream: false,
-      }),
-      signal: controller.signal,
-    })
-  } finally {
-    clearTimeout(timer)
-  }
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`hex-1 RunPod request failed (${res.status}): ${text.slice(0, 200)}`)
-  }
+  const res = await withLLMRetry(async () => {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), HEX1_TIMEOUT_MS)
+    try {
+      const res = await fetch(`${RUNPOD_API_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RUNPOD_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: RUNPOD_MODEL,
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+          stream: false,
+        }),
+        signal: controller.signal,
+      })
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw new Error(`hex-1 RunPod request failed (${res.status}): ${text.slice(0, 200)}`)
+      }
+      return res
+    } finally {
+      clearTimeout(timer)
+    }
+  })
 
   const data = await res.json()
   if (data.error) return { content: '', error: data.error.message ?? String(data.error), tps: 0 }
@@ -138,7 +144,8 @@ function extractTextNodes(html) {
       text.startsWith('http') ||
       text.startsWith('/') ||
       text.startsWith('#')
-    ) continue
+    )
+      continue
     seen.add(text)
     texts.push(text)
   }
@@ -193,27 +200,4 @@ export async function hex1Translate(html, indiaMode) {
   }
 
   return { content: translated, translatedCount }
-}
-
-/**
- * Translate an array of HTML strings sequentially.
- * Falls back to original HTML if translation fails for any item.
- */
-export async function hex1TranslateParallel(htmlArray, indiaMode) {
-  const out = []
-  for (let i = 0; i < htmlArray.length; i++) {
-    try {
-      const result = await hex1Translate(htmlArray[i], indiaMode)
-      if (result?.content && !result.error) {
-        out.push(result.content)
-      } else {
-        console.error(`  hex-1 translation failed for page ${i + 1}: ${result?.error ?? 'empty'} — keeping English`)
-        out.push(htmlArray[i])
-      }
-    } catch (err) {
-      console.error(`  hex-1 translation error for page ${i + 1}: ${err.message} — keeping English`)
-      out.push(htmlArray[i])
-    }
-  }
-  return out
 }

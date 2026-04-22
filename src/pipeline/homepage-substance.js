@@ -23,20 +23,37 @@ function looksLikeThreeJsGame(html) {
 }
 
 function looksLikeDeclaredAppUi(html) {
+  const h = String(html || '')
   return (
-    /\bdata-mobile-nav-toggle\b/.test(html) ||
-    (/\bdata-tab-group\b/.test(html) && /\bdata-tab-panel\b/.test(html)) ||
-    (/<aside[^>]{0,200}\bw-64\b/i.test(html) && /<main[^>]{0,120}\bflex-1\b/i.test(html))
+    /\bdata-mobile-nav-toggle\b/.test(h) ||
+    (/\bdata-tab-group\b/.test(h) && /\bdata-tab-panel\b/.test(h)) ||
+    (/<aside[^>]{0,200}\bw-64\b/i.test(h) && /<main[^>]{0,120}\bflex-1\b/i.test(h)) ||
+    (/<aside\b/i.test(h) && /<main\b/i.test(h)) ||
+    (/\bclass="[^"]*\b(?:sidebar|app-shell|app-layout|dash-board|dash-layout|rail-nav|nav-rail)\b/i.test(
+      h,
+    ) &&
+      /<main\b/i.test(h)) ||
+    (/<nav\b/i.test(h) && /<main\b/i.test(h) && /\b(?:sidebar|drawer|panel|rail)\b/i.test(h))
   )
 }
 
 function hasMarketingStructure(bodyHtml) {
-  return (
-    /<(section|article)\b/i.test(bodyHtml) ||
-    (/<main\b/i.test(bodyHtml) && visibleTextFromHtmlFragment(bodyHtml).split(/\s+/).filter(Boolean).length >= 40) ||
-    /class="[^"]*\b(grid|grid-cols|md:grid)\b/i.test(bodyHtml) ||
-    /class="[^"]*bento/i.test(bodyHtml)
+  const b = String(bodyHtml || '')
+  const wc = visibleTextFromHtmlFragment(b).split(/\s+/).filter(Boolean).length
+  if (/<(section|article)\b/i.test(b)) return true
+  if (/<header\b/i.test(b) && /<footer\b/i.test(b)) return true
+  if (/<(header|nav)\b/i.test(b) && /<main\b/i.test(b)) return true
+  if (
+    /\bclass="[^"]*\b(?:hero|masthead|pricing|features?|testimonial|cta|product|collection|catalog|shop-all|site-footer|navbar|logo-cloud|faq|newsletter)\b/i.test(
+      b,
+    )
   )
+    return true
+  if (/<main\b/i.test(b) && wc >= 40) return true
+  if (/class="[^"]*\b(grid|grid-cols|md:grid)\b/i.test(b)) return true
+  if (/class="[^"]*bento/i.test(b)) return true
+  if (wc >= 48 && /<(div|ul|ol)\b/i.test(b) && /\b(?:button|href=)\b/i.test(b)) return true
+  return false
 }
 
 const siteSpecLooksEcommerce = (siteSpec) =>
@@ -44,13 +61,16 @@ const siteSpecLooksEcommerce = (siteSpec) =>
 
 function hasEcommerceSignals(bodyHtml) {
   const textSignals =
-    /\b(add to cart|add to bag|buy now|shop now|free shipping|checkout|your cart)\b/i.test(bodyHtml) ||
-    /\$\s*\d[\d,.]*/.test(bodyHtml)
+    /\b(add to cart|add to bag|buy now|shop now|free shipping|checkout|your cart)\b/i.test(
+      bodyHtml,
+    ) || /\$\s*\d[\d,.]*/.test(bodyHtml)
   const retailMarkup =
     /class="[^"]*\b(product-card|product-grid|product-carousel|featured-products|shop-grid|pdp|price-row)\b/i.test(
       bodyHtml,
     ) ||
-    /<(?:section|article|main)\b[^>]*class="[^"]*\b(?:products?|catalog|collection|shop-all)\b/i.test(bodyHtml)
+    /<(?:section|article|main)\b[^>]*class="[^"]*\b(?:products?|catalog|collection|shop-all)\b/i.test(
+      bodyHtml,
+    )
   return Boolean(textSignals || retailMarkup)
 }
 
@@ -74,6 +94,11 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   const body = extractBodyInnerHtml(html)
   const words = visibleTextFromHtmlFragment(body).split(/\s+/).filter(Boolean)
   const wc = words.length
+  const rawLen = String(html).length
+
+  if (rawLen >= 14000 && wc >= 42 && /<(header|main|footer|nav|section|article)\b/i.test(body))
+    return false
+  if (rawLen >= 9000 && wc >= 50) return false
 
   if (wc >= 58) return false
 
@@ -85,5 +110,7 @@ export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
 }
 
 export function htmlDocumentPassesPreviewQuality(html, siteSpec) {
-  return Boolean(html && typeof html === 'string' && !shouldReplaceLlmHomepageWithRenderer(html, siteSpec))
+  return Boolean(
+    html && typeof html === 'string' && !shouldReplaceLlmHomepageWithRenderer(html, siteSpec),
+  )
 }

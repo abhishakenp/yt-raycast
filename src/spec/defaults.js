@@ -126,14 +126,22 @@ function defaultPageNamesForSiteType(siteType) {
 
 function findPageRoute(pageNames = [], pattern, fallback = '#') {
   const normalizedPattern = pattern instanceof RegExp ? pattern : new RegExp(String(pattern), 'i')
-  const matchIndex = pageNames.findIndex((pageName) => normalizedPattern.test(String(pageName || '')))
+  const matchIndex = pageNames.findIndex((pageName) =>
+    normalizedPattern.test(String(pageName || '')),
+  )
   if (matchIndex === -1) return fallback
   return toPageRoute(pageNames[matchIndex], matchIndex)
 }
 
 function inferHomeSeoTitle(projectName, tagline, siteType) {
   const cleanTagline = String(tagline || '').trim()
-  if (cleanTagline && cleanTagline.toLowerCase() !== String(projectName || '').trim().toLowerCase()) {
+  if (
+    cleanTagline &&
+    cleanTagline.toLowerCase() !==
+      String(projectName || '')
+        .trim()
+        .toLowerCase()
+  ) {
     return `${projectName} | ${cleanTagline}`
   }
 
@@ -165,7 +173,8 @@ function inferPageTitle(pageName, projectName, siteType, tagline = '') {
   if (lower.includes('careers')) return `${projectName} | Careers`
   if (lower.includes('faq')) return `${projectName} FAQ | Common Questions and Answers`
   if (lower.includes('work')) return `${projectName} Work | Projects and Case Studies`
-  if (lower.includes('shop') || lower.includes('catalog')) return `${projectName} Shop | Browse Our Collection`
+  if (lower.includes('shop') || lower.includes('catalog'))
+    return `${projectName} Shop | Browse Our Collection`
   return `${pageName} | ${projectName}`
 }
 
@@ -242,11 +251,7 @@ function defaultHero(projectName, tagline, siteType, features = [], pageNames = 
         { label: 'Shop now', href: shopHref, style: 'primary' },
         { label: 'View cart', href: cartHref, style: 'secondary' },
       ],
-      items: [
-        { title: 'New arrivals' },
-        { title: 'Secure checkout' },
-        { title: 'Easy returns' },
-      ],
+      items: [{ title: 'New arrivals' }, { title: 'Secure checkout' }, { title: 'Easy returns' }],
       interactions: [{ type: 'heroCta', behavior: 'scroll', target: '#featured-products' }],
     }
   }
@@ -287,8 +292,16 @@ function defaultHero(projectName, tagline, siteType, features = [], pageNames = 
     subheadline: tagline || 'Ship your next product faster.',
     body,
     actions: [
-      { label: 'Get Started', href: findPageRoute(pageNames, /contact/i, '#contact'), style: 'primary' },
-      { label: 'View Pricing', href: findPageRoute(pageNames, /pricing|plans/i, '#pricing'), style: 'secondary' },
+      {
+        label: 'Get Started',
+        href: findPageRoute(pageNames, /contact/i, '#contact'),
+        style: 'primary',
+      },
+      {
+        label: 'View Pricing',
+        href: findPageRoute(pageNames, /pricing|plans/i, '#pricing'),
+        style: 'secondary',
+      },
     ],
     items: features.slice(0, 3).map((feature) => ({ title: feature })),
     interactions: [{ type: 'heroCta', behavior: 'scroll', target: '#contact' }],
@@ -377,10 +390,30 @@ function buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames) {
       headline: 'Featured products',
       body: 'Hand-picked items from our collection.',
       items: [
-        { title: 'Premium pick', price: '$49.99', body: 'Built for daily wear with dependable materials.', image: '' },
-        { title: 'Customer favorite', price: '$39.99', body: 'Our most popular choice this season.', image: '' },
-        { title: 'New arrival', price: '$59.99', body: 'Fresh styles just added to the catalog.', image: '' },
-        { title: 'Limited run', price: '$79.99', body: 'Small-batch release while supplies last.', image: '' },
+        {
+          title: 'Premium pick',
+          price: '$49.99',
+          body: 'Built for daily wear with dependable materials.',
+          image: '',
+        },
+        {
+          title: 'Customer favorite',
+          price: '$39.99',
+          body: 'Our most popular choice this season.',
+          image: '',
+        },
+        {
+          title: 'New arrival',
+          price: '$59.99',
+          body: 'Fresh styles just added to the catalog.',
+          image: '',
+        },
+        {
+          title: 'Limited run',
+          price: '$79.99',
+          body: 'Small-batch release while supplies last.',
+          image: '',
+        },
       ],
     },
     {
@@ -441,7 +474,13 @@ function buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames) {
       body: 'Questions about an order, sizing, or delivery? Send a message and we will get back to you.',
       fields: [
         { name: 'name', label: 'Name', type: 'text', placeholder: 'Your name', required: true },
-        { name: 'email', label: 'Email', type: 'email', placeholder: 'you@example.com', required: true },
+        {
+          name: 'email',
+          label: 'Email',
+          type: 'email',
+          placeholder: 'you@example.com',
+          required: true,
+        },
         {
           name: 'message',
           label: 'Message',
@@ -550,7 +589,13 @@ function buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
       body: 'General enquiries, partnerships, and office locations.',
       fields: [
         { name: 'name', label: 'Name', type: 'text', placeholder: 'Full name', required: true },
-        { name: 'email', label: 'Email', type: 'email', placeholder: 'you@example.com', required: true },
+        {
+          name: 'email',
+          label: 'Email',
+          type: 'email',
+          placeholder: 'you@example.com',
+          required: true,
+        },
         {
           name: 'message',
           label: 'Message',
@@ -635,8 +680,14 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       body: 'Set up the project, understand the architecture, and move into production changes fast.',
       items: [
         { title: 'Install', body: 'Install dependencies and boot the app locally.' },
-        { title: 'Generate', body: 'Create a session from a prompt and inspect the canonical site spec.' },
-        { title: 'Export', body: 'Render HTML, React, or Next.js from the same site specification.' },
+        {
+          title: 'Generate',
+          body: 'Create a session from a prompt and inspect the canonical site spec.',
+        },
+        {
+          title: 'Export',
+          body: 'Render HTML, React, or Next.js from the same site specification.',
+        },
       ],
     })
   } else if (siteType === 'portfolio') {
@@ -646,9 +697,18 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       variant: 'project-grid',
       headline: 'Selected work',
       items: [
-        { title: 'Flagship Project', body: 'A polished launch experience built for clarity and conversion.' },
-        { title: 'Systems Project', body: 'Operational tooling designed around fast iteration and clean handoff.' },
-        { title: 'Experimental Project', body: 'An exploration of bold interfaces and structured product stories.' },
+        {
+          title: 'Flagship Project',
+          body: 'A polished launch experience built for clarity and conversion.',
+        },
+        {
+          title: 'Systems Project',
+          body: 'Operational tooling designed around fast iteration and clean handoff.',
+        },
+        {
+          title: 'Experimental Project',
+          body: 'An exploration of bold interfaces and structured product stories.',
+        },
       ],
     })
   } else if (siteType === 'dashboard') {
@@ -675,7 +735,8 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
           author: 'Product Lead',
         },
         {
-          quote: 'We kept the preview quality and gained clean export paths for the stack we actually use.',
+          quote:
+            'We kept the preview quality and gained clean export paths for the stack we actually use.',
           author: 'Engineering Manager',
         },
       ],
@@ -689,7 +750,12 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       variant: 'three-tier',
       headline: 'Simple plans',
       items: [
-        { title: 'Starter', price: '$0', body: 'Validate ideas quickly.', features: ['1 workspace', 'HTML export'] },
+        {
+          title: 'Starter',
+          price: '$0',
+          body: 'Validate ideas quickly.',
+          features: ['1 workspace', 'HTML export'],
+        },
         {
           title: 'Pro',
           price: '$49',
@@ -721,7 +787,13 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       body: 'Describe the site once and export it to the stack you want afterward.',
       fields: [
         { name: 'name', label: 'Name', type: 'text', placeholder: 'Jane Doe', required: true },
-        { name: 'email', label: 'Email', type: 'email', placeholder: 'jane@company.com', required: true },
+        {
+          name: 'email',
+          label: 'Email',
+          type: 'email',
+          placeholder: 'jane@company.com',
+          required: true,
+        },
         {
           name: 'message',
           label: 'Project Brief',
@@ -766,14 +838,22 @@ function inferPageDescription(pageName, projectName, siteType, tagline = '') {
   if (/careers/i.test(pageName)) {
     return `Explore current job openings and how to apply at ${projectName}.`
   }
-  if (/pricing/i.test(pageName)) return `Compare ${projectName} pricing, included features, and plan details before you choose a rollout path.`
-  if (/contact/i.test(pageName)) return `Contact the ${projectName} team for sales, support, onboarding, or implementation questions.`
-  if (/about/i.test(pageName)) return `Learn what ${projectName} does, how it is positioned, and why teams choose it.`
-  if (/docs/i.test(pageName)) return `Browse ${projectName} documentation, setup steps, and implementation reference in one place.`
-  if (/blog/i.test(pageName)) return `Read ${projectName} insights, launch notes, and product updates.`
-  if (/faq/i.test(pageName)) return `Find answers to common ${projectName} questions about pricing, setup, and team adoption.`
-  if (/work/i.test(pageName)) return `Explore ${projectName} projects, case studies, and selected work.`
-  if (/catalog/i.test(pageName)) return `Browse ${projectName} products, key details, and buying guidance.`
+  if (/pricing/i.test(pageName))
+    return `Compare ${projectName} pricing, included features, and plan details before you choose a rollout path.`
+  if (/contact/i.test(pageName))
+    return `Contact the ${projectName} team for sales, support, onboarding, or implementation questions.`
+  if (/about/i.test(pageName))
+    return `Learn what ${projectName} does, how it is positioned, and why teams choose it.`
+  if (/docs/i.test(pageName))
+    return `Browse ${projectName} documentation, setup steps, and implementation reference in one place.`
+  if (/blog/i.test(pageName))
+    return `Read ${projectName} insights, launch notes, and product updates.`
+  if (/faq/i.test(pageName))
+    return `Find answers to common ${projectName} questions about pricing, setup, and team adoption.`
+  if (/work/i.test(pageName))
+    return `Explore ${projectName} projects, case studies, and selected work.`
+  if (/catalog/i.test(pageName))
+    return `Browse ${projectName} products, key details, and buying guidance.`
   if (/home/i.test(pageName)) {
     if (siteType === 'institutional') {
       return tagline
@@ -800,7 +880,11 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         items: [
           { title: 'Starter', price: '$0', features: ['1 workspace', 'HTML export'] },
           { title: 'Pro', price: '$49', features: ['React export', 'Unlimited sessions'] },
-          { title: 'Enterprise', price: 'Custom', features: ['Security review', 'Priority support'] },
+          {
+            title: 'Enterprise',
+            price: 'Custom',
+            features: ['Security review', 'Priority support'],
+          },
         ],
       },
       {
@@ -824,7 +908,13 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         body: 'Share the product, workflow, or launch brief you need help with.',
         fields: [
           { name: 'name', label: 'Name', type: 'text', placeholder: 'Jane Doe', required: true },
-          { name: 'email', label: 'Email', type: 'email', placeholder: 'jane@company.com', required: true },
+          {
+            name: 'email',
+            label: 'Email',
+            type: 'email',
+            placeholder: 'jane@company.com',
+            required: true,
+          },
           {
             name: 'message',
             label: 'Message',
@@ -876,9 +966,18 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         headline: `Why ${projectName} exists`,
         body: `${projectName} is designed for teams that need structure without losing momentum.`,
         items: [
-          { title: 'Product', body: 'Clear system boundaries, content structure, and export-ready output.' },
-          { title: 'Design', body: 'Consistent tokens and reusable section logic across every target.' },
-          { title: 'Engineering', body: 'A canonical site spec that keeps the project maintainable.' },
+          {
+            title: 'Product',
+            body: 'Clear system boundaries, content structure, and export-ready output.',
+          },
+          {
+            title: 'Design',
+            body: 'Consistent tokens and reusable section logic across every target.',
+          },
+          {
+            title: 'Engineering',
+            body: 'A canonical site spec that keeps the project maintainable.',
+          },
         ],
       },
     ]
@@ -892,8 +991,14 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         variant: 'archive',
         headline: `${projectName} journal`,
         items: [
-          { title: 'Building with structured output', body: 'Why canonical specs scale better than HTML conversion.' },
-          { title: 'Renderer architecture', body: 'How one spec powers multiple frontend targets.' },
+          {
+            title: 'Building with structured output',
+            body: 'Why canonical specs scale better than HTML conversion.',
+          },
+          {
+            title: 'Renderer architecture',
+            body: 'How one spec powers multiple frontend targets.',
+          },
         ],
       },
     ]
@@ -908,7 +1013,11 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         headline: `${projectName} notices and tenders`,
         body: 'Official notifications with dates and downloads.',
         items: [
-          { title: 'Invitation for bids — sample', body: 'Closing 30 days from publish', href: '#' },
+          {
+            title: 'Invitation for bids — sample',
+            body: 'Closing 30 days from publish',
+            href: '#',
+          },
           { title: 'Amendment to tender', body: 'PDF notice', href: '#' },
         ],
       },
@@ -940,9 +1049,18 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         headline: `${projectName} docs`,
         body: 'Installation, workflow, and renderer references in one place.',
         items: [
-          { title: 'Getting Started', body: 'Generate a site, inspect the spec, and export the target you need.' },
-          { title: 'Site Spec', body: 'Pages, sections, interactions, theme tokens, and backend hints.' },
-          { title: 'Exports', body: 'Render HTML, React, and Next.js from the same structured source.' },
+          {
+            title: 'Getting Started',
+            body: 'Generate a site, inspect the spec, and export the target you need.',
+          },
+          {
+            title: 'Site Spec',
+            body: 'Pages, sections, interactions, theme tokens, and backend hints.',
+          },
+          {
+            title: 'Exports',
+            body: 'Render HTML, React, and Next.js from the same structured source.',
+          },
         ],
       },
     ]
@@ -964,20 +1082,24 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
       variant: 'stacked',
       headline: `${pageName} overview`,
       items: [
-        { title: 'Structure', body: 'Page content is defined in the canonical site specification.' },
-        { title: 'Reusability', body: 'Sections can render to multiple frameworks without HTML conversion.' },
-        { title: 'Continuity', body: 'Design tokens and navigation remain consistent across outputs.' },
+        {
+          title: 'Structure',
+          body: 'Page content is defined in the canonical site specification.',
+        },
+        {
+          title: 'Reusability',
+          body: 'Sections can render to multiple frameworks without HTML conversion.',
+        },
+        {
+          title: 'Continuity',
+          body: 'Design tokens and navigation remain consistent across outputs.',
+        },
       ],
     },
   ]
 }
 
-export function buildFallbackSiteSpec({
-  prompt,
-  ctx = {},
-  designBrief = '',
-  siteType,
-}) {
+export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', siteType }) {
   const inferredSiteType = inferSiteType(ctx, siteType)
   const projectName = ctx.project_name || promptSnippet(prompt, 40, 'Generated Project')
   const normalizedSlug = ctx.slug || slug(projectName)
@@ -988,13 +1110,28 @@ export function buildFallbackSiteSpec({
     name: name || `Page ${idx + 1}`,
     route: toPageRoute(name || `Page ${idx + 1}`, idx),
     title: inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
-    description: inferPageDescription(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
+    description: inferPageDescription(
+      name || `Page ${idx + 1}`,
+      projectName,
+      inferredSiteType,
+      ctx.tagline,
+    ),
     seo: {
       title: inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
-      description: inferPageDescription(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
+      description: inferPageDescription(
+        name || `Page ${idx + 1}`,
+        projectName,
+        inferredSiteType,
+        ctx.tagline,
+      ),
       keywords:
         idx === 0
-          ? [projectName, inferredSiteType, ctx.tagline || '', ...(ctx.features || []).slice(0, 3)].filter(Boolean)
+          ? [
+              projectName,
+              inferredSiteType,
+              ctx.tagline || '',
+              ...(ctx.features || []).slice(0, 3),
+            ].filter(Boolean)
           : [String(name || ''), projectName, inferredSiteType].filter(Boolean),
       canonicalPath: toPageRoute(name || `Page ${idx + 1}`, idx),
       ogImage: '',
@@ -1010,15 +1147,20 @@ export function buildFallbackSiteSpec({
               type: 'navbar',
               variant: 'default',
               headline: projectName,
-              links: pageNames
-                .map((pageName, pageIdx) => ({
-                  label: pageName,
-                  href: toPageRoute(pageName, pageIdx),
-                })),
+              links: pageNames.map((pageName, pageIdx) => ({
+                label: pageName,
+                href: toPageRoute(pageName, pageIdx),
+              })),
               actions: defaultNavActions(projectName, pageNames, inferredSiteType),
               interactions: [{ type: 'mobileMenu', target: 'main-nav', behavior: 'toggle' }],
             },
-            ...defaultSectionsForSiteType(ctx, inferredSiteType, projectName, ctx.tagline, pageNames),
+            ...defaultSectionsForSiteType(
+              ctx,
+              inferredSiteType,
+              projectName,
+              ctx.tagline,
+              pageNames,
+            ),
           ]
         : buildSecondaryPageSections(name || `Page ${idx + 1}`, projectName, inferredSiteType),
   }))
@@ -1098,7 +1240,9 @@ export function buildFallbackSiteSpec({
       description: ctx.tagline || `${projectName} generated from a canonical site specification.`,
       siteName: projectName,
       siteUrl,
-      keywords: [projectName, inferredSiteType, ...(ctx.features || [])].filter(Boolean).slice(0, 12),
+      keywords: [projectName, inferredSiteType, ...(ctx.features || [])]
+        .filter(Boolean)
+        .slice(0, 12),
       ogImage: '',
       ogImageAlt: `${projectName} social preview`,
       twitterCard: 'summary_large_image',
@@ -1112,18 +1256,96 @@ export function buildFallbackSiteSpec({
             provider: 'medusa',
             settings: { currency: 'USD', storeName: projectName, provider: 'medusa' },
             products: [
-              { id: 'prod-1', title: 'Signature Collection Item', handle: 'signature-collection', description: 'Our flagship product combining form and function.', price: 49.99, currency: 'USD', image: '', category: 'featured' },
-              { id: 'prod-2', title: 'Everyday Essential', handle: 'everyday-essential', description: 'Built for daily use with premium materials.', price: 29.99, currency: 'USD', image: '', category: 'essentials' },
-              { id: 'prod-3', title: 'Limited Edition Release', handle: 'limited-edition', description: 'Exclusive design available for a limited time.', price: 79.99, currency: 'USD', image: '', category: 'limited' },
-              { id: 'prod-4', title: 'Starter Pack', handle: 'starter-pack', description: 'Everything you need to get started.', price: 19.99, currency: 'USD', image: '', category: 'essentials' },
-              { id: 'prod-5', title: 'Premium Upgrade', handle: 'premium-upgrade', description: 'Elevate your experience with premium features.', price: 99.99, currency: 'USD', image: '', category: 'premium' },
-              { id: 'prod-6', title: 'Gift Bundle', handle: 'gift-bundle', description: 'The perfect gift set curated for any occasion.', price: 59.99, currency: 'USD', image: '', category: 'featured' },
+              {
+                id: 'prod-1',
+                title: 'Signature Collection Item',
+                handle: 'signature-collection',
+                description: 'Our flagship product combining form and function.',
+                price: 49.99,
+                currency: 'USD',
+                image: '',
+                category: 'featured',
+              },
+              {
+                id: 'prod-2',
+                title: 'Everyday Essential',
+                handle: 'everyday-essential',
+                description: 'Built for daily use with premium materials.',
+                price: 29.99,
+                currency: 'USD',
+                image: '',
+                category: 'essentials',
+              },
+              {
+                id: 'prod-3',
+                title: 'Limited Edition Release',
+                handle: 'limited-edition',
+                description: 'Exclusive design available for a limited time.',
+                price: 79.99,
+                currency: 'USD',
+                image: '',
+                category: 'limited',
+              },
+              {
+                id: 'prod-4',
+                title: 'Starter Pack',
+                handle: 'starter-pack',
+                description: 'Everything you need to get started.',
+                price: 19.99,
+                currency: 'USD',
+                image: '',
+                category: 'essentials',
+              },
+              {
+                id: 'prod-5',
+                title: 'Premium Upgrade',
+                handle: 'premium-upgrade',
+                description: 'Elevate your experience with premium features.',
+                price: 99.99,
+                currency: 'USD',
+                image: '',
+                category: 'premium',
+              },
+              {
+                id: 'prod-6',
+                title: 'Gift Bundle',
+                handle: 'gift-bundle',
+                description: 'The perfect gift set curated for any occasion.',
+                price: 59.99,
+                currency: 'USD',
+                image: '',
+                category: 'featured',
+              },
             ],
             categories: [
-              { id: 'cat-1', name: 'Featured', handle: 'featured', description: 'Our top picks', image: '' },
-              { id: 'cat-2', name: 'Essentials', handle: 'essentials', description: 'Daily staples', image: '' },
-              { id: 'cat-3', name: 'Limited Edition', handle: 'limited', description: 'Exclusive releases', image: '' },
-              { id: 'cat-4', name: 'Premium', handle: 'premium', description: 'Luxury collection', image: '' },
+              {
+                id: 'cat-1',
+                name: 'Featured',
+                handle: 'featured',
+                description: 'Our top picks',
+                image: '',
+              },
+              {
+                id: 'cat-2',
+                name: 'Essentials',
+                handle: 'essentials',
+                description: 'Daily staples',
+                image: '',
+              },
+              {
+                id: 'cat-3',
+                name: 'Limited Edition',
+                handle: 'limited',
+                description: 'Exclusive releases',
+                image: '',
+              },
+              {
+                id: 'cat-4',
+                name: 'Premium',
+                handle: 'premium',
+                description: 'Luxury collection',
+                image: '',
+              },
             ],
           },
         }

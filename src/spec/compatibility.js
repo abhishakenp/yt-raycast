@@ -3,7 +3,6 @@ import { join } from 'node:path'
 import { promptSnippet } from '../prompt.js'
 import { buildFallbackSiteSpec } from './defaults.js'
 import { enrichSiteSpecWithWorkspaceBlueprints } from './blueprints.js'
-import { normalizeSiteSpec } from './normalize.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 
 const SITE_SPEC_FILE = 'site-spec.json'

@@ -1,3 +1,4 @@
+import { withLLMRetry } from './retry.js'
 import {
   ECOMMERCE_AWWWARDS_GALLERY_URL,
   ECOMMERCE_DRIBBBLE_TAG_URL,
@@ -14,7 +15,7 @@ import {
 import { isMixedEnglishIndicCode, lookupKnownLanguage } from '../config/languages.js'
 import { brandProfilePromptBlock } from '../prompts/brand-profile.js'
 import { DYNAMIC_UI_LIBRARY_APPEND } from '../prompts/dynamic-ui-append.js'
-import { calculateCost } from './utils.js'
+import { calculateCost, stripGroqReasoningLeak } from './utils.js'
 
 async function groqFetch({
   model = GROQ_MODEL,
@@ -22,6 +23,8 @@ async function groqFetch({
   prompt,
   temperature = LLM_CONFIG.default.temperature,
   maxTokens = LLM_CONFIG.default.maxTokens,
+  reasoningEffort = null,
+  reasoningFormat = null,
 }) {
   if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
 
@@ -30,14 +33,24 @@ async function groqFetch({
     { role: 'user', content: prompt },
   ]
 
-  const res = await fetch(`${GROQ_HOST}/openai/v1/chat/completions`, {
+  const body = {
+    model,
+    messages,
+    temperature,
+    max_tokens: maxTokens,
+    stream: false,
+  }
+  if (reasoningEffort != null) body.reasoning_effort = reasoningEffort
+  if (reasoningFormat != null) body.reasoning_format = reasoningFormat
+
+  const res = await withLLMRetry(() => fetch(`${GROQ_HOST}/openai/v1/chat/completions`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${GROQ_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ model, messages, temperature, max_tokens: maxTokens, stream: false }),
-  })
+    body: JSON.stringify(body),
+  }))
 
   const data = await res.json()
   if (data.error) return { content: '', error: data.error.message, tps: 0 }
@@ -51,9 +64,10 @@ async function groqFetch({
   const inputTokens = usage.prompt_tokens ?? 0
   const outputTokens = usage.completion_tokens ?? 0
   const cost = calculateCost(model, inputTokens, outputTokens)
+  const rawContent = data.choices?.[0]?.message?.content ?? ''
 
   return {
-    content: data.choices?.[0]?.message?.content ?? '',
+    content: stripGroqReasoningLeak(rawContent),
     tps,
     inputTokens,
     outputTokens,
@@ -105,24 +119,25 @@ function nonEnglishLanguageAppend(indiaMode) {
 All visible UI text must be in ${indiaMode.name} (${indiaMode.nativeName}). Nav, buttons, headings, and body — everything the user reads.${fontNote}${rtlNote}`
 }
 
-export async function groqHomepage(
+async function groqHomepageCore(
   prompt,
+  model,
   imageHints = null,
   indiaMode = null,
   brandProfile = null,
   hasDesignReferenceUrls = false,
+  maxTokensOverride = null,
 ) {
   const mixedAppend = mixedEnglishHomepageAppend(indiaMode)
   const mixedEnglish = Boolean(mixedAppend)
   const scriptFontHint = mixedEnglish
-    ? (indiaMode?.fontFamily || indiaMode?.language?.fontFamily || '')
-        .split(',')[0]
-        .trim()
+    ? (indiaMode?.fontFamily || indiaMode?.language?.fontFamily || '').split(',')[0].trim()
     : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
-  const storefrontIntent = /\b(ecommerce|e-commerce|online store|shop|shopping cart|product catalog|checkout|retail|dtc|storefront)\b/i.test(
-    String(prompt || ''),
-  )
+  const storefrontIntent =
+    /\b(ecommerce|e-commerce|online store|shop|shopping cart|product catalog|checkout|retail|dtc|storefront)\b/i.test(
+      String(prompt || ''),
+    )
   const referenceFirstAppend = hasDesignReferenceUrls
     ? `\n\nREFERENCE-FIRST: The user message includes "Primary stylistic direction (user-supplied reference links)" with HTTPS URLs, optional path hints, and optional user notes. You cannot fetch URLs or see screenshots. Prioritize the user's product description, notes, and path hints for header layout, hero composition, navigation density, and visual personality. Named external exemplar sites in these instructions are a loose pattern library for section checklist and density only—not a default aesthetic when they conflict with the user's direction.\n${
         storefrontIntent
@@ -131,11 +146,22 @@ export async function groqHomepage(
       }`
     : ''
   const storefrontRetailReminder = storefrontIntent
-    ? '\n\nStorefront finish: lead with merchandising—categories, product grids, prices, cart/search in header—not a SaaS pricing table or icon-feature grid as the dominant hero.'
+    ? '\n\nStorefront finish: lead with merchandising—categories, product grids, prices, cart/search in header—not a SaaS pricing table or icon-feature grid as the dominant hero. Let palette and layout personality follow this project (sport vs beauty vs electronics vs home, etc.), not a single default boutique aesthetic.'
     : ''
+  const mid = String(model)
+  let reasoningEffort = null
+  let reasoningFormat = null
+  if (mid === 'openai/gpt-oss-120b') {
+    reasoningEffort = 'high'
+    reasoningFormat = 'hidden'
+  } else if (mid === 'openai/gpt-oss-20b') {
+    reasoningEffort = 'medium'
+    reasoningFormat = 'hidden'
+  }
   return groqFetch({
-    model: HOMEPAGE_MODEL,
-    system: `You are a world-class frontend engineer. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
+    model,
+    system: `You are a world-class frontend engineer and visual designer. Your first priority is bespoke UI design for this brief: layout composition, typography, palette, surface depth, and motion must read as intentional art direction—not a reusable template. Output ONLY a complete, self-contained HTML file. No markdown, no explanation, no code fences.
+Before writing HTML, infer ONE strong aesthetic direction from the user's topic and tone (e.g. editorial luxury, brutalist tech, soft organic wellness, neon nightlife, quiet museum minimal, festival maximalism). Execute it consistently; never drift back to neutral gray-violet SaaS sameness.
 ${mixedAppend || nonEnglishLanguageAppend(indiaMode)}${referenceFirstAppend}
 
 CLASSIFY: If the prompt describes ecommerce, online store, shopping cart, product catalog, checkout, retail, DTC, or selling physical/digital goods, build a WEBSITE (storefront) — product-forward marketing layout with cart in nav, NOT a dashboard app. If the prompt describes application functionality (app, client, editor, dashboard, manager, tool) without retail/store context, build an APPLICATION UI. If it describes a business/product/service without store semantics, build a LANDING PAGE. Portfolio, personal site, resume, photographer/designer showcase, or creative work MUST be a WEBSITE with visible sections (hero, work grid, about, contact) — NEVER an empty application shell. Default to APP when unclear for non-store prompts only if the prompt clearly implies a software product UI.
@@ -153,7 +179,7 @@ Build a real, interactive app like Proton Mail, Linear, Notion, or Figma. Not a 
 Adapt the layout to the type of site:
 - SaaS/Landing: typography-first, no hero images. Massive headlines, pill badge + CTA, features cards, pricing, footer.
 - Blog: featured article hero with image, article grid with images + titles + excerpts, categories, newsletter signup.
-- Ecommerce (Luxury DTC, editorial): ${ECOMMERCE_EDITORIAL_CANVAS_PATTERN} Match section depth of premium retail (${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')} — patterns only). Implement that canvas in HTML and CSS: cream ground, burgundy or wine accent, black promo strip, centered nav, utility SVGs including cart bag + badge, split hero with dual CTAs, collection rail with scrim, featured grid with full-width add-to-cart buttons and star ratings, curated pair, materials two-column, three review cards, inverted newsletter band, four-column footer. Document title and hero headline must be specific (craft, materials, product story), not generic AI slogans. Commerce: real button elements for add-to-cart, quantity, newsletter submit; cart control must include a visible bag or cart icon as inline SVG next to label or count. Put \`id="cart-toggle"\` on the header cart button so the mini-cart drawer can attach. Full homepage must include all sections implied above plus six or more SKUs in featured areas. BANNED: sparse SaaS storefronts, violet-gray template, icon-only merchandising, link-only fake cart actions. FORBIDDEN above-fold: pricing tables, three icon columns as hero, bento-as-hero without product, dashboard framing. Desktop collections may be grid or rail; mobile may scroll. Curated: two equal offers or carousel with dots. Reviews: verified buyer, stars in accent color. Carousel rails need three or more visible product cards. Study ${ECOMMERCE_AWWWARDS_GALLERY_URL}, ${ECOMMERCE_ENVATO_TEMPLATES_URL}, ${ECOMMERCE_DRIBBBLE_TAG_URL} for craft only. Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): strong imagery discipline; use only approved media URLs from the user message block.
+- Ecommerce (storefront): ${ECOMMERCE_EDITORIAL_CANVAS_PATTERN} Match section depth of premium retail (${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')} — structure and rhythm only, not one shared look). Implement in HTML and CSS with a palette and mood taken from the user brief (category, tone, brand colors)—utility SVGs including cart bag + badge, hero with dual CTAs, collection rail or grid with scrim, featured grid with full-width add-to-cart and star ratings, curated pair, materials two-column, three review cards, newsletter band, four-column footer. Document title and hero headline must be specific (craft, materials, product story), not generic AI slogans. Commerce: real button elements for add-to-cart, quantity, newsletter submit; cart control must include a visible bag or cart icon as inline SVG next to label or count. Put \`id="cart-toggle"\` on the header cart button so the mini-cart drawer can attach. Full homepage must include all sections implied above plus six or more SKUs in featured areas. BANNED: sparse SaaS storefronts, violet-gray template, icon-only merchandising, link-only fake cart actions. FORBIDDEN above-fold: pricing tables, three icon columns as hero, bento-as-hero without product, dashboard framing. Desktop collections may be grid or rail; mobile may scroll. Curated: two equal offers or carousel with dots. Reviews: verified buyer, stars in accent color. Carousel rails need three or more visible product cards. Study ${ECOMMERCE_AWWWARDS_GALLERY_URL}, ${ECOMMERCE_ENVATO_TEMPLATES_URL}, ${ECOMMERCE_DRIBBBLE_TAG_URL} for craft only. Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): strong imagery discipline; use only approved media URLs from the user message block.
 - Portfolio: project showcase with images, about section, skills, contact form.
 - Docs: search bar, quick start code block, topic cards grid.
 - Community: member stats, trending topics, activity feed.
@@ -161,8 +187,11 @@ Shared: ecommerce storefronts may use a disciplined light canvas with near-black
 
 ── DISTINCTIVE CRAFT (websites + marketing pages; skip for raw app UIs and games) ──
 The output must feel art-directed for this specific prompt, not like interchangeable AI SaaS. Banned vibes: default violet-on-gray template, wall-to-wall Inter, perfectly symmetric boring hero, feature cards that all look identical.
-- Type: use a real display / editorial heading font from Google Fonts for hero and section titles (e.g. Fraunces, Syne, Outfit, Cabinet Grotesk, Playfair Display, DM Serif Display) paired with a readable body font — not Inter-only.
-- Visual hook: include at least ONE memorable composition — bento grid with unequal cells, diagonal or angled section edge, split hero (text vs gradient panel), oversized numeral or word as background watermark, aurora/mesh gradient blob (CSS radial-gradient + blur), or editorial left-aligned column with a strong pull-quote.
+- Anti-sameness: infer palette, hero topology (centered vs split vs full-bleed vs bento), rhythm (airy vs editorial-dense), and type pairing from the user's industry and adjectives—do not default every storefront to the same light editorial + wine accent recipe or every SaaS to the same centered hero. When the brief allows, vary light vs dark themes across projects; refuse the recurring purple-gradient-on-white cliché.
+- Spatial composition: use asymmetry, overlap, diagonal flow, a grid-breaking focal element, or a tight editorial column—employ at least one move that defeats dull center-only symmetry.
+- Type: pair a distinctive display or editorial Google Font for headings (e.g. Fraunces, Syne, Outfit, Cabinet Grotesk, Bebas Neue, DM Serif Display, Playfair Display, Newsreader) with a readable body font. Lazy defaults to avoid unless the brief demands neutral tech utility: Inter-only stacks, Roboto, Arial, Space Grotesk as the primary voice, or system-ui alone.
+- Backgrounds and atmosphere: never a flat solid color as the only above-the-fold treatment—add depth with mesh or aurora gradients, subtle CSS noise or grain, geometric ornament, layered translucency, or volumetric gradient shapes.
+- Visual hook: include at least ONE memorable composition — bento grid with unequal cells, diagonal or angled section edge, split hero (text vs gradient panel), oversized numeral or word as background watermark, aurora or mesh gradient blob (CSS radial-gradient + blur), or editorial left-aligned column with a strong pull-quote.
 - Depth: layered surfaces — backdrop-blur on a panel, ring-1 ring-white/5 to ring-white/15, shadow-2xl, subtle inner glow on primary CTA — avoid flat rectangles only.
 - Motion: CSS-only polish — @keyframes or transition on hero (fade+rise), hover lift/scale on primary buttons and cards, optional slow gradient shift on a band; respect prefers-reduced-motion with @media (prefers-reduced-motion: reduce).
 - Micro-detail: one signature flourish (e.g. gradient border on featured pricing card, animated underline on nav hover, glowing pill badge).
@@ -240,8 +269,47 @@ QUALITY:
         : ''
     }\nShip something that looks deliberately designed: bold typography hierarchy, layered surfaces, tasteful motion, and at least one surprising layout choice — not interchangeable template output.`,
     temperature: LLM_CONFIG.homepage.temperature,
-    maxTokens: LLM_CONFIG.homepage.maxTokens,
+    maxTokens: maxTokensOverride ?? LLM_CONFIG.homepage.maxTokens,
+    reasoningEffort,
+    reasoningFormat,
   })
+}
+
+export async function groqHomepage(
+  prompt,
+  imageHints = null,
+  indiaMode = null,
+  brandProfile = null,
+  hasDesignReferenceUrls = false,
+) {
+  return groqHomepageCore(
+    prompt,
+    HOMEPAGE_MODEL,
+    imageHints,
+    indiaMode,
+    brandProfile,
+    hasDesignReferenceUrls,
+  )
+}
+
+export async function groqHomepageWithModel(
+  prompt,
+  model,
+  imageHints = null,
+  indiaMode = null,
+  brandProfile = null,
+  hasDesignReferenceUrls = false,
+  maxTokensOverride = null,
+) {
+  return groqHomepageCore(
+    prompt,
+    model,
+    imageHints,
+    indiaMode,
+    brandProfile,
+    hasDesignReferenceUrls,
+    maxTokensOverride,
+  )
 }
 
 export async function groqParallel(calls, opts = {}) {

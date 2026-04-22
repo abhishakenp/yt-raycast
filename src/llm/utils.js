@@ -4,7 +4,10 @@ export function trimInlineAiText(s) {
     t = t.slice(1, -1).trim()
   }
   if (t.startsWith('```')) {
-    t = t.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
+    t = t
+      .replace(/^```[a-z]*\n?/i, '')
+      .replace(/```\s*$/i, '')
+      .trim()
   }
   return t
 }
@@ -12,7 +15,10 @@ export function trimInlineAiText(s) {
 export function trimInlineAiHtmlFragment(s) {
   let t = String(s || '').trim()
   if (t.startsWith('```')) {
-    t = t.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
+    t = t
+      .replace(/^```[a-z]*\n?/i, '')
+      .replace(/```\s*$/i, '')
+      .trim()
   }
   const first = t.indexOf('<')
   if (first > 0) t = t.slice(first)
@@ -25,6 +31,12 @@ export function compactStyleFragmentHtml(html) {
     /data:image\/[a-z0-9+.@-]+;base64,[A-Za-z0-9+/=\s]{800,}/gi,
     'data:image/png;base64,[embedded image omitted]',
   )
+}
+
+export function stripGroqReasoningLeak(text) {
+  return String(text || '')
+    .replace(/<think>[\s\S]*?<\/redacted_thinking>/gi, '')
+    .trimStart()
 }
 
 export function stripFences(html) {

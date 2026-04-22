@@ -27,8 +27,7 @@ const DOG_PROMPT_RE =
 const CAT_PROMPT_RE = /\b(cat|cats|kitten|kittens|feline|kitty)\b/i
 const FASHION_PROMPT_RE =
   /\b(fashion|ethnic wear|ethnic|saree|sari|lehenga|bridal|bride|wedding|boutique|couture|silk|embroidery|occasion wear|festive wear|designer wear)\b/i
-const SOUTH_INDIAN_FASHION_RE =
-  /\b(kerala|south indian|south india|kasavu|muhurtham|silks?)\b/i
+const SOUTH_INDIAN_FASHION_RE = /\b(kerala|south indian|south india|kasavu|muhurtham|silks?)\b/i
 
 const DAIRY_PROMPT_RE =
   /\b(amul|dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweets?|dessert|recipe)\b/i
@@ -304,7 +303,9 @@ function tokenMatchesText(token, text) {
   if (!normalized || !token) return false
 
   const variants = MATCH_ALIASES[token] || [token]
-  return variants.some((variant) => new RegExp(`\\b${escapeRegex(variant)}\\b`, 'i').test(normalized))
+  return variants.some((variant) =>
+    new RegExp(`\\b${escapeRegex(variant)}\\b`, 'i').test(normalized),
+  )
 }
 
 function overlapCount(tokens, text) {
@@ -386,9 +387,7 @@ function extractSalientPhrases(prompt, max = 4) {
       .replace(/\s+and\s+(appointment|booking|sections?|cta)[\s\S]+$/i, '')
       .trim()
 
-  const mFor = raw.match(
-    /\b(?:for|about)\s+(?:a|an|the)\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i,
-  )
+  const mFor = raw.match(/\b(?:for|about)\s+(?:a|an|the)\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i)
   if (mFor?.[1]) {
     const chunk = stripTail(mFor[1]).slice(0, 96)
     if (chunk.length > 10) out.push(chunk)
@@ -448,10 +447,7 @@ function isVisualPhrase(phrase = '') {
 }
 
 function extractVisualPhrases(prompt = '') {
-  const lines = String(prompt)
-    .split('\n')
-    .map(cleanupPromptLine)
-    .filter(Boolean)
+  const lines = String(prompt).split('\n').map(cleanupPromptLine).filter(Boolean)
 
   const hits = []
   for (const line of lines) {
@@ -870,7 +866,11 @@ function themedQueries(prompt) {
       'indian classical vocalist performance',
     ]).slice(0, MAX_REQUESTS)
   }
-  if (/\b(museum|heritage walk|cultural centre|cultural center|archaeology|fort palace tour)\b/.test(p)) {
+  if (
+    /\b(museum|heritage walk|cultural centre|cultural center|archaeology|fort palace tour)\b/.test(
+      p,
+    )
+  ) {
     return uniqueValues([
       'india museum artifact gallery',
       'heritage fort india architecture tourism',
@@ -885,9 +885,7 @@ function buildQueries({ prompt, ctx, siteSpec, maxQueries }) {
   const subjectFirst = themedQueries(prompt || '')
   const typed = inferVisualSiteType(prompt || '', ctx, siteSpec)
   const salientRaw = extractSalientPhrases(prompt || '', 3)
-  const salientQueries = salientRaw.flatMap((phrase) =>
-    salientSearchQueries(phrase, typed, prompt),
-  )
+  const salientQueries = salientRaw.flatMap((phrase) => salientSearchQueries(phrase, typed, prompt))
 
   const core = phraseFromPrompt(prompt || '', 6)
   const extracted = extractVisualPhrases(prompt || '')
@@ -1038,7 +1036,9 @@ async function fetchUnsplashPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
       if (!id) continue
 
       const alt = String(photo?.alt_description || photo?.description || '').trim()
-      const slug = String(photo?.slug || '').trim().replace(/-/g, ' ')
+      const slug = String(photo?.slug || '')
+        .trim()
+        .replace(/-/g, ' ')
       const matchText = [alt, slug].filter(Boolean).join(' ').trim()
       const regularUrl = formatUnsplashUrl(photo?.urls?.regular || photo?.urls?.raw)
       const rawUrl = formatUnsplashUrl(photo?.urls?.raw || photo?.urls?.regular)
@@ -1468,6 +1468,36 @@ function looksLikeTrustedStockImageUrl(src) {
   }
 }
 
+export const normalizeStockImageMatchKey = (src) => {
+  const s = String(src || '').trim()
+  if (!s || s.startsWith('data:')) return ''
+  try {
+    const u = new URL(s)
+    if (u.protocol !== 'https:') return ''
+    const path = u.pathname.replace(/\/{2,}/g, '/').replace(/\/$/, '') || '/'
+    const h = u.hostname
+    if (h === 'images.pexels.com' || h.endsWith('.pexels.com')) {
+      const id = path.match(/\/photos\/(\d+)\//)?.[1]
+      if (id) return `pexels:${id}`
+    }
+    if (h === 'images.unsplash.com' || h.endsWith('.unsplash.com')) return path.toLowerCase()
+    if (looksLikeTrustedStockImageUrl(s)) return path.toLowerCase()
+    return ''
+  } catch {
+    return ''
+  }
+}
+
+function injectDataSfStockSrc(tag, url) {
+  const key = normalizeStockImageMatchKey(url)
+  if (!key) return tag
+  const esc = escapeHtmlAttribute(key)
+  if (/\bdata-sf-stock-src\s*=/i.test(tag)) {
+    return tag.replace(/\bdata-sf-stock-src\s*=\s*["'][^"']*["']/i, `data-sf-stock-src="${esc}"`)
+  }
+  return tag.replace(/<img\b/i, `<img data-sf-stock-src="${esc}" `)
+}
+
 function isLikelyLogoTag(tag) {
   const cls = extractAttribute(tag, 'class')
   const alt = extractAttribute(tag, 'alt')
@@ -1486,8 +1516,11 @@ function enforceVerifiedPhotoSources(html, photos, usage) {
     const photo = pickPhotoForImg(alt, photos, usage)
     if (!photo) return stripSrcsetFromTag(tag)
     usage.set(photo.url, (usage.get(photo.url) || 0) + 1)
-    const out = setImgSrcAttribute(tag, photo.url)
-    return stripSrcsetFromTag(out)
+    const out = injectDataSfStockSrc(
+      stripSrcsetFromTag(setImgSrcAttribute(tag, photo.url)),
+      photo.url,
+    )
+    return out
   })
 }
 
@@ -1501,7 +1534,10 @@ function neutralizeNonStockImages(html) {
     if (!/\bstyle\s*=/i.test(out)) {
       out = out.replace(/<img/i, `<img style="${NEUTRAL_IMG_FALLBACK_STYLE}"`)
     } else {
-      out = out.replace(/\bstyle\s*=\s*["']([^"']*)["']/i, (m, st) => `style="${st};${NEUTRAL_IMG_FALLBACK_STYLE}"`)
+      out = out.replace(
+        /\bstyle\s*=\s*["']([^"']*)["']/i,
+        (m, st) => `style="${st};${NEUTRAL_IMG_FALLBACK_STYLE}"`,
+      )
     }
     return out
   })
@@ -1546,15 +1582,16 @@ const VERIFIED_FALLBACK_PEXELS_IDS = [
 ]
 
 const TEA_BEVERAGE_PEXELS_IDS = [
-  5946964, 5946965, 5946966, 5946967, 5946968, 5946969, 5946970, 5946971, 5946972, 5946973, 5946974, 5946975,
-  5946976, 5946977, 5946978, 5946979, 5946980, 5946981, 5946982, 5946983, 5946985,
+  5946964, 5946965, 5946966, 5946967, 5946968, 5946969, 5946970, 5946971, 5946972, 5946973, 5946974,
+  5946975, 5946976, 5946977, 5946978, 5946979, 5946980, 5946981, 5946982, 5946983, 5946985,
 ]
 
 const HYDRATION_MATCH_BLOB = {
   tea: 'tea assam oolong sencha chamomile chai matcha black tea green tea white tea herbal loose leaf beverage cup drink organic brew kettle malt honey ginger cardamom rose floral peony breakfast evening garden spiced hot calming restful grassy delicate bold full bodied',
   coffee:
     'coffee espresso latte cappuccino roast arabica beans cup cafe beverage hot cold brew organic craft pour iced morning',
-  leather: 'leather bag wallet tote handbag craft premium accessory grain stitch natural tanned artisan',
+  leather:
+    'leather bag wallet tote handbag craft premium accessory grain stitch natural tanned artisan',
   generic:
     'product retail ecommerce catalog commercial still life studio photography clean minimal merchandise shopping',
 }
@@ -1597,10 +1634,7 @@ function buildSyntheticFallbackPhotos(category) {
 }
 
 function escapeHtmlAttribute(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 }
 
 function stockPhotosForHydration(imageHints = null) {
@@ -1628,7 +1662,9 @@ section.curated .curated-visual,section.materials .curated-visual{position:relat
 .curated-visual img{width:100%;height:100%;min-height:280px;object-fit:cover;display:block;border-radius:inherit}
 .materials .visual img{width:100%;height:100%;object-fit:cover;display:block;border-radius:var(--radius,.75rem)}
 </style>`
-  return /<\s*\/\s*head\s*>/i.test(h) ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`) : `${block}\n${h}`
+  return /<\s*\/\s*head\s*>/i.test(h)
+    ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`)
+    : `${block}\n${h}`
 }
 
 export function hydrateStorefrontGradientSlots(html, imageHints = null) {
@@ -1658,19 +1694,25 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
     )
   })
 
-  next = next.replace(/<article\s+class="collection-card"[^>]*>([\s\S]*?)<\/article>/gi, (block) => {
-    const lab = block.match(/class="label"[^>]*>([^<]*)</i)
-    const title = (lab?.[1] ?? 'Collection').trim()
-    const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 160)
-    const label = [title, promptCtx].filter(Boolean).join(' ')
-    const pick = pickPhotoForImg(label, photos, usage)
-    const url = pick?.url ?? photos[0].url
-    usage.set(url, (usage.get(url) || 0) + 1)
-    return block.replace(
-      /<div\s+class="img"[^>]*>\s*<\/div>/i,
-      `<img class="img" src="${url}" alt="${escapeHtmlAttribute(title)}" loading="lazy" decoding="async" width="800" height="1000" />`,
-    )
-  })
+  next = next.replace(
+    /<article\s+class="collection-card"[^>]*>([\s\S]*?)<\/article>/gi,
+    (block) => {
+      const lab = block.match(/class="label"[^>]*>([^<]*)</i)
+      const title = (lab?.[1] ?? 'Collection').trim()
+      const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(
+        0,
+        160,
+      )
+      const label = [title, promptCtx].filter(Boolean).join(' ')
+      const pick = pickPhotoForImg(label, photos, usage)
+      const url = pick?.url ?? photos[0].url
+      usage.set(url, (usage.get(url) || 0) + 1)
+      return block.replace(
+        /<div\s+class="img"[^>]*>\s*<\/div>/i,
+        `<img class="img" src="${url}" alt="${escapeHtmlAttribute(title)}" loading="lazy" decoding="async" width="800" height="1000" />`,
+      )
+    },
+  )
 
   next = next.replace(/<div\s+class="hero-visual"[^>]*>\s*<\/div>/i, () => {
     const hp = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 220)
@@ -1680,22 +1722,25 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
     return `<div class="hero-visual"><img src="${url}" alt="${escapeHtmlAttribute('Featured product')}" loading="eager" decoding="async" width="1200" height="900" /></div>`
   })
 
-  next = next.replace(/(<section[^>]*class="[^"]*materials[^"]*"[^>]*>)([\s\S]*?)(<\/section>)/i, (full, open, inner, close) => {
-    if (!/<div\s+class="visual"[^>]*>\s*<\/div>/i.test(inner)) return full
-    const mp = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 200)
-    const pick = pickPhotoForImg(
-      mp ? `${mp} materials craft ingredients story` : 'materials craft ingredients product',
-      photos,
-      usage,
-    )
-    const url = pick?.url ?? photos[0].url
-    usage.set(url, (usage.get(url) || 0) + 1)
-    const inner2 = inner.replace(
-      /<div\s+class="visual"[^>]*>\s*<\/div>/i,
-      `<div class="visual"><img src="${url}" alt="${escapeHtmlAttribute('Materials and craft')}" loading="lazy" decoding="async" width="1000" height="800" /></div>`,
-    )
-    return open + inner2 + close
-  })
+  next = next.replace(
+    /(<section[^>]*class="[^"]*materials[^"]*"[^>]*>)([\s\S]*?)(<\/section>)/i,
+    (full, open, inner, close) => {
+      if (!/<div\s+class="visual"[^>]*>\s*<\/div>/i.test(inner)) return full
+      const mp = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 200)
+      const pick = pickPhotoForImg(
+        mp ? `${mp} materials craft ingredients story` : 'materials craft ingredients product',
+        photos,
+        usage,
+      )
+      const url = pick?.url ?? photos[0].url
+      usage.set(url, (usage.get(url) || 0) + 1)
+      const inner2 = inner.replace(
+        /<div\s+class="visual"[^>]*>\s*<\/div>/i,
+        `<div class="visual"><img src="${url}" alt="${escapeHtmlAttribute('Materials and craft')}" loading="lazy" decoding="async" width="1000" height="800" /></div>`,
+      )
+      return open + inner2 + close
+    },
+  )
 
   if (photos.length) {
     let cvIdx = 0
@@ -1768,16 +1813,50 @@ section.hero,.hero{align-items:center!important;text-align:center!important}
 .hero-visual{margin-left:auto!important;margin-right:auto!important;width:100%!important;max-width:26rem}
 }
 </style>`
-  return /<\s*\/\s*head\s*>/i.test(h) ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`) : `${block}\n${h}`
+  return /<\s*\/\s*head\s*>/i.test(h)
+    ? h.replace(/<\s*\/\s*head\s*>/i, `${block}\n</head>`)
+    : `${block}\n${h}`
 }
 
-export async function resolvePexelsImageHints(hintsInput = null) {
+function mergePhotosFromOrderedSlots(slots, max = 12) {
+  const seen = new Set()
+  const photos = []
+  for (const list of slots) {
+    if (!list) continue
+    for (const photo of list) {
+      if (photos.length >= max) break
+      if (seen.has(photo.url)) continue
+      seen.add(photo.url)
+      photos.push(photo)
+    }
+  }
+  return photos
+}
+
+function mergeVideosFromOrderedSlots(slots) {
+  const seen = new Set()
+  const videos = []
+  for (const list of slots) {
+    if (!list) continue
+    for (const item of list) {
+      if (videos.length >= MAX_VIDEOS_TOTAL) break
+      if (seen.has(item.url)) continue
+      seen.add(item.url)
+      videos.push(item)
+    }
+  }
+  return videos
+}
+
+export async function resolvePexelsImageHints(hintsInput = null, options = null) {
+  const onProgress = typeof options?.onProgress === 'function' ? options.onProgress : null
   const prompt = hintsInput?.prompt ?? ''
   const meta = {
     prompt,
     hydrationPrompt: hintsInput?.hydrationPrompt ?? prompt,
   }
-  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return { photos: [], videos: [], promptBlock: '', ...meta }
+  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY)
+    return { photos: [], videos: [], promptBlock: '', ...meta }
   const hasRichCtx =
     (hintsInput?.ctx &&
       (hintsInput.ctx.project_name ||
@@ -1798,36 +1877,43 @@ export async function resolvePexelsImageHints(hintsInput = null) {
   const subjectKey = subjectKeyFromPrompt(prompt)
 
   const videoQueries = queries.slice(0, MAX_VIDEO_QUERIES)
-  const [results, videoLists] = await Promise.all([
-    Promise.all(queries.map((query) => fetchPhotos(query, subjectKey))),
-    PEXELS_API_KEY && videoQueries.length
-      ? Promise.all(
-          videoQueries.map((query) => fetchPexelsVideos(query, subjectKey, KEEP_VIDEOS_PER_QUERY)),
-        )
-      : Promise.resolve([]),
-  ])
-  const seen = new Set()
-  const photos = []
+  const photoSlots = new Array(queries.length).fill(null)
+  const videoSlots =
+    PEXELS_API_KEY && videoQueries.length ? new Array(videoQueries.length).fill(null) : []
 
-  for (const list of results) {
-    for (const photo of list || []) {
-      if (photos.length >= 12) break
-      if (seen.has(photo.url)) continue
-      seen.add(photo.url)
-      photos.push(photo)
-    }
+  const emitProgressPartial = () => {
+    if (!onProgress) return
+    onProgress({
+      photos: mergePhotosFromOrderedSlots(photoSlots, 12),
+      videos: mergeVideosFromOrderedSlots(videoSlots),
+      done: false,
+    })
   }
+
+  const photoTasks = queries.map((query, i) =>
+    fetchPhotos(query, subjectKey).then((list) => {
+      photoSlots[i] = list || []
+      emitProgressPartial()
+    }),
+  )
+
+  const videoTasks =
+    PEXELS_API_KEY && videoQueries.length
+      ? videoQueries.map((query, i) =>
+          fetchPexelsVideos(query, subjectKey, KEEP_VIDEOS_PER_QUERY).then((list) => {
+            videoSlots[i] = list || []
+            emitProgressPartial()
+          }),
+        )
+      : []
+
+  await Promise.all([...photoTasks, ...videoTasks])
+
+  const photos = mergePhotosFromOrderedSlots(photoSlots, 12)
   const healthyPhotos = await validateAndRepairPhotoList(photos)
-  const seenV = new Set()
-  const videos = []
-  for (const list of videoLists) {
-    for (const item of list || []) {
-      if (videos.length >= MAX_VIDEOS_TOTAL) break
-      if (seenV.has(item.url)) continue
-      seenV.add(item.url)
-      videos.push(item)
-    }
-  }
+  const videos = mergeVideosFromOrderedSlots(videoSlots)
+
+  if (onProgress) onProgress({ photos: healthyPhotos, videos, done: true })
 
   return {
     photos: healthyPhotos,

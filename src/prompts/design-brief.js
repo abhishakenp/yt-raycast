@@ -1,4 +1,5 @@
 import {
+  GROQ_MODEL,
   getEcommerceGenerationGuidelines,
   GLOBAL_UI_CRAFT_GUIDELINES,
   INDIAN_DESIGN_TOKENS,
@@ -57,8 +58,7 @@ export function designBriefPrompt(
   const effectiveSiteType = siteType || inferSiteTypeHint(prompt)
   const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   return {
-    system:
-      `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.`,
+    system: `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.`,
     user: `Create a design system for this project:
 ${prompt}
 
@@ -92,15 +92,21 @@ Using YOUR chosen colors (not hardcoded grays), define Tailwind classes for:
 - Buttons secondary: outline with subtle border, rounded-full, hover: slightly lighter bg
 - CTA link: accent color, hover: lighter accent, text-sm, with \u2192 arrow
 - Footer: dark bg, subtle top border, centered
-${effectiveSiteType === 'ecommerce' ? `- ${ecommerceGuidelines}
+${
+  effectiveSiteType === 'ecommerce'
+    ? `- ${ecommerceGuidelines}
 - Product card: surface bg, rounded-xl, overflow-hidden. Image top (aspect-ratio: 4/3, object-cover), hover: scale-105 transition. Title bold, price accent-colored font-semibold, "Add to Cart" button primary small
 - Category card: relative, rounded-xl, overflow-hidden. Background image with dark overlay gradient, title white text-lg font-bold centered
 - Price tag: font-semibold, text-lg for main price. Strike-through for original price if on sale
 - Cart badge: absolute top-right on cart icon, accent bg, white text, rounded-full, text-xs min-w-5
 - Trust badge row: flex gap-8 justify-center, each badge: icon + text, muted color, text-sm
-- Promo banner: accent gradient bg, white text, py-4, text-center, uppercase tracking-wide` : ''}
+- Promo banner: accent gradient bg, white text, py-4, text-center, uppercase tracking-wide`
+    : ''
+}
 
-${effectiveSiteType === 'ecommerce' ? `### Sections (homepage order) — DTC retail depth (${hasUserDesignReferences ? 'user reference URLs in the prompt override exemplar aesthetics for layout and mood; ' : ''}patterns-only guidance is in the ecommerce block above)
+${
+  effectiveSiteType === 'ecommerce'
+    ? `### Sections (homepage order) — DTC retail depth (${hasUserDesignReferences ? 'user reference URLs in the prompt override exemplar aesthetics for layout and mood; ' : ''}patterns-only guidance is in the ecommerce block above)
 1. Top promo strip (shipping threshold, subscribe-and-save, or limited offer)
 2. Nav: logo, search field or icon, Account, Cart with count; Shop mega-paths (categories, bestsellers, bundles, by benefit); Learn/Blog/Help as needed
 3. Hero: dominant headline + supporting line + primary Shop CTA; optional three benefit chips; lifestyle or product imagery
@@ -111,7 +117,8 @@ ${effectiveSiteType === 'ecommerce' ? `### Sections (homepage order) — DTC ret
 8. Social proof: stat row and/or success stories (headline + pull quotes + names)
 9. Customer reviews: aggregate rating line + several quote cards with initials or avatars
 10. Newsletter: headline + email field + submit; optional social row
-11. Footer: four or five columns (Shop, Learn, Resources, About, Partner) + bottom legal strip` : `### Sections (homepage order)
+11. Footer: four or five columns (Shop, Learn, Resources, About, Partner) + bottom legal strip`
+    : `### Sections (homepage order)
 1. Nav
 2. Hero (pill badge + massive headline + subtitle + 1 CTA button \u2014 NO images)
 3. Features (section label + headline + 2x2 card grid with SVG icon + title + desc)
@@ -119,17 +126,22 @@ ${effectiveSiteType === 'ecommerce' ? `### Sections (homepage order) — DTC ret
 5. Highlight/custom section (section label + headline + gradient featured card with icon)
 6. Logo cloud (headline + company names as plain text, muted color \u2014 NO images)
 7. Final CTA (bold headline + subtitle + 2 buttons)
-8. Footer (centered: logo + links row + copyright)`}
+8. Footer (centered: logo + links row + copyright)`
+}
 
 ### Key Principles
 - Apply the UI craft line in your system instructions to spacing rhythm, typographic hierarchy, accent restraint, and interactive states across every pattern below.
-${effectiveSiteType === 'ecommerce' ? `- Minimum viable homepage is long-form retail: at least ten distinct sections below the nav (see section list). A short page reads as failed output.
+${
+  effectiveSiteType === 'ecommerce'
+    ? `- Minimum viable homepage is long-form retail: at least ten distinct sections below the nav (see section list). A short page reads as failed output.
 - Product-first: hero with lifestyle or product imagery; category and product blocks must feel photo-led like major retail sites, not icon-led SaaS.
 - Product cards: consistent aspect ratio (4:3 or 1:1), hover zoom, review line, clear price + compare-at when on sale, prominent Add to Cart
 - Price styling: font-semibold or bold, currency symbol first
 - Cart icon in nav with numeric badge; search visible in header
 - Footer: multi-column link groups, not a single centered row
-- Growth design: state one primary success metric for this storefront (e.g. conversion rate, cart abandonment, AOV, or page-load perception) and one hypothesis for the hero CTA; repeat for checkout (e.g. guest-first clarity vs. account upsell) — design choices should map to those KPIs in prose, not analytics code` : `- Typography-first: NO hero images, NO screenshots, NO floating mockups`}
+- Growth design: state one primary success metric for this storefront (e.g. conversion rate, cart abandonment, AOV, or page-load perception) and one hypothesis for the hero CTA; repeat for checkout (e.g. guest-first clarity vs. account upsell) — design choices should map to those KPIs in prose, not analytics code`
+    : `- Typography-first: NO hero images, NO screenshots, NO floating mockups`
+}
 - Layout: default centered max-w-4xl, but allow ONE section to break the grid (asymmetric split, bento, or full-bleed band) if it increases wow factor
 - 2-column grids by default; bento-style unequal cells allowed for features when it improves hierarchy
 - Generous spacing: py-20 md:py-28 per section; use whitespace as a luxury
@@ -138,7 +150,7 @@ ${effectiveSiteType === 'ecommerce' ? `- Minimum viable homepage is long-form re
 ${effectiveSiteType !== 'game' ? `- Next.js/React exports: plan Framer Motion (\`framer-motion\`, ${MOTION_DEV_DOCS_REACT}) for interactive motion — not purely static UI; respect reduced-motion preferences.\n` : ''}- If images are truly needed (ecommerce/portfolio), use relevant verified provider photos first. If no close match exists, avoid random stock-photo fallbacks and use gradients, patterns, icons, or typography-driven panels instead
 
 Max 70 lines. Output ONLY markdown.${languageDesignAppendix(indiaMode)}`,
-    model: 'moonshotai/kimi-k2-instruct-0905',
+    model: GROQ_MODEL,
     temperature: 0.4,
     maxTokens: 3000,
   }

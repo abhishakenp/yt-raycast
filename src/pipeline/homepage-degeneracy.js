@@ -8,10 +8,16 @@ function stripToVisibleText(html) {
     .trim()
 }
 
+const MEANINGFUL_DIV_MARKUP_RE =
+  /<div\b[^>]*\b(?:hero|masthead|shell|layout|app-|dashboard|sidebar|rail|drawer|panel|stage|viewport|features?|pricing|testimonial|cta|footer|header|navbar|nav-bar|product|collection|catalog|shop|gallery|content-main|main-content|card|grid|bento|strip|band|section)\b/i
+
 function countStructuralTags(html) {
   const s = String(html || '')
-  const m = s.match(/<\/?(?:section|article|header|footer|nav|main|aside)\b/gi)
-  return m ? m.length : 0
+  const semantic = s.match(/<\/?(?:section|article|header|footer|nav|main|aside)\b/gi)
+  const divLandmarks = s.match(new RegExp(MEANINGFUL_DIV_MARKUP_RE.source, 'gi'))
+  const nSem = semantic ? semantic.length : 0
+  const nDiv = divLandmarks ? Math.min(divLandmarks.length, 24) : 0
+  return nSem + nDiv
 }
 
 export function htmlLooksDegenerate(html) {
@@ -60,7 +66,7 @@ export function htmlLooksDegenerate(html) {
     }
   }
 
-  if (text.length > 12000 && countStructuralTags(s) < 4) return true
+  if (text.length > 12000 && countStructuralTags(s) < 3) return true
 
   return false
 }

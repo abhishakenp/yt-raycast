@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import {
   buildGlobalCss,
   escapeHtml,
@@ -780,10 +781,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 export default siteSpec
 `,
-    'src/styles.css': buildGlobalCss(siteSpec.theme, {
-      ecommerce: siteSpec.siteType === 'ecommerce',
-      siteType: siteSpec.siteType,
-    }),
+    'src/styles.css': (function () {
+      const css = buildGlobalCss(siteSpec.theme, {
+        ecommerce: siteSpec.siteType === 'ecommerce',
+        siteType: siteSpec.siteType,
+      })
+      const hash = createHash('sha256').update(css).digest('hex').slice(0, 12)
+      return `/* hash: ${hash} */\n${css}`
+    })(),
     'src/lib/clone-runtime.js': renderCloneRuntimeModule(),
     'src/components/SeoHead.jsx': `import { useEffect } from 'react'
 

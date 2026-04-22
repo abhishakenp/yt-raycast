@@ -144,7 +144,13 @@ export async function generateHomepage(
   log('  homepage: generating from scratch (LLM)...')
 
   const hasDesignReferenceUrls = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
-  const result = await groqHomepage(prompt, imageHints, indiaMode, brandProfile, hasDesignReferenceUrls)
+  const result = await groqHomepage(
+    prompt,
+    imageHints,
+    indiaMode,
+    brandProfile,
+    hasDesignReferenceUrls,
+  )
 
   if (!result?.content || result.error) {
     log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)
@@ -234,23 +240,38 @@ ${cssVars}
       }
     </style>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: ${JSON.stringify(tailwindColors, null, 2)},
-            fontFamily: ${JSON.stringify(configJson.fontFamily || {}, null, 2)}
+      (function () {
+        var cfg = {
+          theme: {
+            extend: {
+              colors: ${JSON.stringify(tailwindColors, null, 2)},
+              fontFamily: ${JSON.stringify(configJson.fontFamily || {}, null, 2)}
+            }
           }
         }
-      }
-
-      window.addEventListener('message', (e) => {
-        if (e.data.type === 'UPDATE_THEME') {
-          const theme = e.data.colors;
-          for (const [name, value] of Object.entries(theme)) {
-            document.documentElement.style.setProperty(\`--color-\${name}\`, value);
-          }
+        function applyCfg() {
+          if (typeof tailwind === 'undefined') return false
+          tailwind.config = cfg
+          return true
         }
-      });
+        if (!applyCfg()) {
+          var n = 0
+          var id = setInterval(function () {
+            n++
+            if (applyCfg() || n > 80) clearInterval(id)
+          }, 50)
+        }
+        window.addEventListener('message', function (e) {
+          if (e.data.type === 'UPDATE_THEME') {
+            var theme = e.data.colors
+            for (var k in theme) {
+              if (Object.prototype.hasOwnProperty.call(theme, k)) {
+                document.documentElement.style.setProperty('--color-' + k, theme[k])
+              }
+            }
+          }
+        })
+      })()
     </script>
   </head>`
 

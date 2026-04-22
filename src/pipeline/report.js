@@ -20,7 +20,7 @@ export function formatRunAllReport(timings, stats) {
     ? `hex-1 (${indiaMode.language.name})  `
     : indiaMode?.code && indiaMode.code !== 'en'
       ? `Groq (${indiaMode.name})   `
-      : 'Groq kimi-k2      '
+      : 'Groq gpt-oss-120b '
   const pageLabel = indiaMode?.isIndian
     ? `hex-1 (${indiaMode.language.name})  `
     : indiaMode?.code && indiaMode.code !== 'en'
@@ -67,7 +67,7 @@ export function formatRunAllReport(timings, stats) {
   \u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510
   \u2502                      SHIP-FAST REPORT                           \u2502
   \u251c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524
-  \u2502  Design Brief (Groq kimi-k2)    ${ms('t0', 'design_end').padStart(6)}s   design.md                  \u2502
+  \u2502  Design Brief (Groq gpt-oss-120b) ${ms('t0', 'design_end').padStart(6)}s   design.md                  \u2502
   \u2502  Context JSON (Groq)           ${ms('design_end', 'ctx_end').padStart(6)}s   ${ctxPages} pages extracted         \u2502
   \u2502  Site Spec JSON (Groq)         ${ms('ctx_end', 'site_spec_end').padStart(6)}s   site-spec.json              \u2502
   \u2502  Homepage (${homepageLabel})${ms('ctx_end', 'homepage_end').padStart(6)}s   ${homepageChars} chars               \u2502

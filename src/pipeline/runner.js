@@ -71,7 +71,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
   const existingSiteSpec = loadSiteSpec(workspace)
   if (existingSiteSpec) {
     _log(`\n  ── Edit mode: updating canonical site spec ──`)
-    status(sessionCtx)('Editing site spec…', 'editing')
+    status(sessionCtx)('Recalibrating flight plan…', 'editing')
 
     const siteSpecStats = await updateSiteSpecFromPrompt({
       prompt: pipelinePrompt,
@@ -102,7 +102,9 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
       isMedusaSyncConfigured()
     ) {
       try {
-        const medusaResult = await syncProductsToMedusa(enrichedSiteSpec.ecommerce.products, { workspace })
+        const medusaResult = await syncProductsToMedusa(enrichedSiteSpec.ecommerce.products, {
+          workspace,
+        })
         _log(
           `  medusa: synced ${medusaResult.synced} product(s)${medusaResult.errors.length ? ` (${medusaResult.errors.length} failed)` : ''}`,
         )
@@ -170,7 +172,7 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
   _log(
     `\n  ── Edit mode: applying "${promptSnippet(normalizedPrompt, 80)}" to ${htmlTasks.length} HTML files ──`,
   )
-  status(sessionCtx)('Editing pages…', 'editing')
+  status(sessionCtx)('Patching hull segments…', 'editing')
 
   const homepageHtml = existsSync(join(workspace, 'index.html'))
     ? readFileSync(join(workspace, 'index.html'), 'utf-8')
@@ -262,10 +264,12 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   const promptWithRefs = mergePromptWithDesignReferences(normalizedPrompt, workspace)
   const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
 
-  const brandProfilePromise = enrichBrandProfile(normalizedPrompt, workspace, _log).catch((error) => {
-    _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
-    return null
-  })
+  const brandProfilePromise = enrichBrandProfile(normalizedPrompt, workspace, _log).catch(
+    (error) => {
+      _log(`  brand-profile: continuing without verified brand data — ${error.message}`)
+      return null
+    },
+  )
   const indiaMode = await detectLanguage(normalizedPrompt, preferredLanguage)
   const brandProfileCached = readBrandProfileFromWorkspace(workspace)
 
@@ -273,7 +277,9 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   writeFileSync(join(workspace, 'prompt.txt'), pipelinePrompt)
 
   if (indiaMode.code !== 'en') {
-    _log(`  Language detected: ${indiaMode.name} (${indiaMode.code})${indiaMode.isIndian ? ' — routing to hex-1' : ''}`)
+    _log(
+      `  Language detected: ${indiaMode.name} (${indiaMode.code})${indiaMode.isIndian ? ' — routing to hex-1' : ''}`,
+    )
   }
 
   let ctx = null
@@ -282,8 +288,20 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   tick('t0')
 
-  // ── PARALLEL: spec+design AND homepage fire at the same time ──
-  _status('Generating spec…', 'spec')
+  _status('Plotting launch trajectory…', 'spec')
+
+  const bootstrapImageHintsPromise = resolvePexelsImageHints(
+    { prompt: normalizedPrompt, hydrationPrompt: normalizedPrompt },
+    {
+      onProgress: (evt) =>
+        sessionCtx.broadcast({
+          type: 'stock_media_preview',
+          photos: evt.photos ?? [],
+          videos: evt.videos ?? [],
+          done: Boolean(evt.done),
+        }),
+    },
+  )
 
   const specPromise = (async () => {
     const [designStats, detectStats] = await Promise.all([
@@ -315,11 +333,9 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   })()
 
   const homepagePromise = (async () => {
+    const baseHints = await bootstrapImageHintsPromise
     const imageHints = {
-      ...(await resolvePexelsImageHints({
-        prompt: normalizedPrompt,
-        hydrationPrompt: normalizedPrompt,
-      })),
+      ...baseHints,
       hydrationPrompt: normalizedPrompt,
       prompt: normalizedPrompt,
     }
@@ -397,7 +413,10 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     homepage = injectStorefrontCartUi(
       injectEcommerceHeroResponsiveCss(
         await verifyTrustedStockImageUrls(
-          hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(homepage, imageHints), imageHints),
+          hydrateStorefrontGradientSlots(
+            alignGeneratedImagesToContext(homepage, imageHints),
+            imageHints,
+          ),
         ),
       ),
       { workspace },
@@ -521,7 +540,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       try {
         const medusaResult = await syncProductsToMedusa(siteSpec.ecommerce.products, { workspace })
         _status(
-          `Synced ${medusaResult.synced} product(s) to Medusa${medusaResult.errors.length ? ` (${medusaResult.errors.length} failed)` : ''}`,
+          `Cargo synced: ${medusaResult.synced} unit(s) to station${medusaResult.errors.length ? ` (${medusaResult.errors.length} drift)` : ''}`,
           'medusa_sync',
         )
         if (
@@ -621,7 +640,9 @@ function applyBrandLogoToSiteSpec(siteSpec, brandProfile) {
   if (!siteSpec?.pages?.length) return false
   const logo = brandProfile?.logo
   if (!logo || (logo.kind !== 'remote' && logo.kind !== 'svg')) return false
-  const alt = String(logo.alt || `${brandProfile.officialName || brandProfile.requestedName || 'Brand'} logo`)
+  const alt = String(
+    logo.alt || `${brandProfile.officialName || brandProfile.requestedName || 'Brand'} logo`,
+  )
   const payload =
     logo.kind === 'remote'
       ? { kind: 'remote', src: String(logo.src || ''), alt, provider: String(logo.provider || '') }
@@ -634,7 +655,8 @@ function applyBrandLogoToSiteSpec(siteSpec, brandProfile) {
     for (const section of page.sections || []) {
       if (section.type !== 'navbar' && section.type !== 'footer') continue
       const styling = section.styling && typeof section.styling === 'object' ? section.styling : {}
-      const existing = styling.brandLogo && typeof styling.brandLogo === 'object' ? styling.brandLogo : null
+      const existing =
+        styling.brandLogo && typeof styling.brandLogo === 'object' ? styling.brandLogo : null
       const same =
         existing &&
         existing.kind === payload.kind &&
@@ -661,10 +683,13 @@ function applyBrandPaletteToSiteSpec(siteSpec, brandProfile) {
   }
   if (!brand.primary || !/^#[0-9a-f]{6}$/i.test(brand.primary)) return false
   if (brand.secondary && !/^#[0-9a-f]{6}$/i.test(brand.secondary)) brand.secondary = brand.primary
-  if (brand.accent && !/^#[0-9a-f]{6}$/i.test(brand.accent)) brand.accent = brand.secondary || brand.primary
+  if (brand.accent && !/^#[0-9a-f]{6}$/i.test(brand.accent))
+    brand.accent = brand.secondary || brand.primary
 
   const derive = (hex, { l, s } = {}) => {
-    const h = String(hex || '').trim().replace('#', '')
+    const h = String(hex || '')
+      .trim()
+      .replace('#', '')
     if (!/^[0-9a-f]{6}$/i.test(h)) return null
     const r = parseInt(h.slice(0, 2), 16) / 255
     const g = parseInt(h.slice(2, 4), 16) / 255
@@ -674,12 +699,7 @@ function applyBrandPaletteToSiteSpec(siteSpec, brandProfile) {
     const d = max - min
     let hue = 0
     if (d !== 0) {
-      hue =
-        max === r
-          ? ((g - b) / d) % 6
-          : max === g
-            ? (b - r) / d + 2
-            : (r - g) / d + 4
+      hue = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
     }
     hue = Math.round(hue * 60)
     if (hue < 0) hue += 360
@@ -692,7 +712,9 @@ function applyBrandPaletteToSiteSpec(siteSpec, brandProfile) {
   }
 
   const primaryHsl = derive(brand.primary)
-  const isLight = String(siteSpec?.theme?.colors?.background || '').trim().startsWith('#f')
+  const isLight = String(siteSpec?.theme?.colors?.background || '')
+    .trim()
+    .startsWith('#f')
   const bg =
     primaryHsl &&
     `hsl(${primaryHsl.h} ${Math.round((isLight ? Math.max(0.08, primaryHsl.s * 0.18) : Math.max(0.1, primaryHsl.s * 0.22)) * 100)}% ${Math.round((isLight ? 0.97 : 0.06) * 100)}%)`
@@ -759,7 +781,10 @@ function injectBrandPaletteIntoHomepageHtml(workspace, brandProfile) {
   if (!palette || Number(palette.confidence || 0) < 0.75) return false
   const fp = join(workspace, 'index.html')
   if (!existsSync(fp)) return false
-  const themedPalette = buildDerivedBrandPalette(palette, brandProfile?.officialName || brandProfile?.requestedName || '')
+  const themedPalette = buildDerivedBrandPalette(
+    palette,
+    brandProfile?.officialName || brandProfile?.requestedName || '',
+  )
   const html = readFileSync(fp, 'utf8')
   const next = injectBrandPaletteIntoHtml(html, themedPalette)
   if (!next || next === html) return false
@@ -774,7 +799,9 @@ function buildDerivedBrandPalette(palette, brandName = '') {
   const confidence = Number(palette?.confidence || 0)
   const clamp01 = (v) => Math.max(0, Math.min(1, v))
   const toHsl = (hex) => {
-    const h = String(hex || '').trim().replace('#', '')
+    const h = String(hex || '')
+      .trim()
+      .replace('#', '')
     if (!/^[0-9a-f]{6}$/i.test(h)) return null
     const r = parseInt(h.slice(0, 2), 16) / 255
     const g = parseInt(h.slice(2, 4), 16) / 255
@@ -784,12 +811,7 @@ function buildDerivedBrandPalette(palette, brandName = '') {
     const d = max - min
     let hue = 0
     if (d !== 0) {
-      hue =
-        max === r
-          ? ((g - b) / d) % 6
-          : max === g
-            ? (b - r) / d + 2
-            : (r - g) / d + 4
+      hue = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
     }
     hue = Math.round(hue * 60)
     if (hue < 0) hue += 360
@@ -798,7 +820,9 @@ function buildDerivedBrandPalette(palette, brandName = '') {
     return { h: hue, s: clamp01(sat), l: clamp01(light) }
   }
   const hsl = toHsl(primary) || toHsl(secondary) || toHsl(accent)
-  const wantsLight = /\b(psu|government|ministry|department|authority|limited|ltd)\b/i.test(String(brandName || ''))
+  const wantsLight = /\b(psu|government|ministry|department|authority|limited|ltd)\b/i.test(
+    String(brandName || ''),
+  )
   const background =
     hsl &&
     `hsl(${hsl.h} ${Math.round(Math.max(0.1, hsl.s * (wantsLight ? 0.12 : 0.22)) * 100)}% ${Math.round(
@@ -859,9 +883,7 @@ function injectBrandLogoIntoHtml(html = '', logo, brandName = '') {
   const kind = logo?.kind
   if (kind !== 'remote' && kind !== 'svg') return ''
   const src =
-    kind === 'remote'
-      ? String(logo.src || '').trim()
-      : svgToDataUri(String(logo.svg || '').trim())
+    kind === 'remote' ? String(logo.src || '').trim() : svgToDataUri(String(logo.svg || '').trim())
   if (!src) return ''
   if (/\bbrand-logo\b/i.test(html)) return ''
   const img = `<span class="brand-logo"><img src="${escapeHtmlAttr(src)}" alt="${escapeHtmlAttr(
@@ -874,18 +896,17 @@ function injectBrandLogoIntoHtml(html = '', logo, brandName = '') {
   if (patched === html) {
     patched = html.replace(
       /<(div|span)([^>]*\bclass=["'][^"']*\bbrand\b[^"']*["'][^>]*)>([\s\S]*?)<\/\1>/i,
-      (_m, tag, attrs, inner) => `<${tag}${attrs}>${img}<span class="brand-name">${inner}</span></${tag}>`,
+      (_m, tag, attrs, inner) =>
+        `<${tag}${attrs}>${img}<span class="brand-name">${inner}</span></${tag}>`,
     )
   }
   if (patched === html && brandName) {
     const safe = brandName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    patched = html.replace(
-      /<header\b[\s\S]*?<\/header>/i,
-      (header) =>
-        header.replace(
-          new RegExp(`>(\\s*${safe}\\s*)<`, 'i'),
-          (_mm, t) => `>${img}<span class="brand-name">${t}</span><`,
-        ),
+    patched = html.replace(/<header\b[\s\S]*?<\/header>/i, (header) =>
+      header.replace(
+        new RegExp(`>(\\s*${safe}\\s*)<`, 'i'),
+        (_mm, t) => `>${img}<span class="brand-name">${t}</span><`,
+      ),
     )
   }
   if (patched === html) return ''
