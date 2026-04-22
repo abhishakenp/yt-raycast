@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /session/
 Disallow: /preview/
 
-Sitemap: https://ship-fast.devliv.io/sitemap.xml
+Sitemap: https://ship-fast.io/sitemap.xml
