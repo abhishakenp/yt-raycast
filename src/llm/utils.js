@@ -48,6 +48,7 @@ export function stripFences(html) {
 
 const PRICING = {
   'openai/gpt-oss-120b': { in: 0.6, out: 0.8 },
+  'moonshotai/kimi-k2.6': { inCacheHit: 0.16, inCacheMiss: 0.95, out: 4.0 },
   'moonshotai/kimi-k2-instruct-0905': { in: 0.7, out: 1.4 },
   'llama3-70b-8192': { in: 0.59, out: 0.79 },
   'llama3-8b-8192': { in: 0.05, out: 0.08 },
@@ -56,10 +57,18 @@ const PRICING = {
   default: { in: 0.5, out: 1.0 },
 }
 
-export function calculateCost(model, inputTokens, outputTokens) {
+export function calculateCost(model, inputTokens, outputTokens, cachedInputTokens = 0) {
   const p = PRICING[model] || PRICING.default
-  const cost = (inputTokens / 1_000_000) * p.in + (outputTokens / 1_000_000) * p.out
-  return cost
+  const pt = Number(inputTokens ?? 0) || 0
+  const ot = Number(outputTokens ?? 0) || 0
+  const cached = Math.max(0, Math.min(pt, Number(cachedInputTokens ?? 0) || 0))
+
+  if (typeof p.inCacheHit === 'number' && typeof p.inCacheMiss === 'number') {
+    const miss = Math.max(0, pt - cached)
+    return (cached / 1_000_000) * p.inCacheHit + (miss / 1_000_000) * p.inCacheMiss + (ot / 1_000_000) * p.out
+  }
+
+  return (pt / 1_000_000) * p.in + (ot / 1_000_000) * p.out
 }
 
 export function formatTps(result) {
@@ -67,10 +76,11 @@ export function formatTps(result) {
   const pt = result.inputTokens ?? 0
   const tps = result.tps ?? 0
   const model = result.model ?? ''
+  const cachedInputTokens = result.cachedInputTokens ?? 0
 
   let costStr = ''
   if (model && (ot > 0 || pt > 0)) {
-    const cost = calculateCost(model, pt, ot)
+    const cost = calculateCost(model, pt, ot, cachedInputTokens)
     costStr = ` | $${cost.toFixed(4)}`
   }
 

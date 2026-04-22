@@ -19,9 +19,15 @@ export const PRIVACY_POLICY_EFFECTIVE_DATE = (
 
 export const GROQ_API_KEY = process.env.GROQ_API_KEY
 export const GROQ_HOST = process.env.GROQ_HOST ?? 'https://api.groq.com'
+export const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
+export const OPENROUTER_HOST = process.env.OPENROUTER_HOST ?? 'https://openrouter.ai/api'
+export const OLLAMA_API_KEY = process.env.OLLAMA_API_KEY
+export const OLLAMA_HOST = process.env.OLLAMA_HOST ?? 'https://ollama.com'
 export const GROQ_MODEL = process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b'
-export const HOMEPAGE_MODEL = (process.env.HOMEPAGE_MODEL ?? '').trim() || 'openai/gpt-oss-120b'
+export const HOMEPAGE_MODEL = (process.env.HOMEPAGE_MODEL ?? '').trim() || GROQ_MODEL
 export const SITE_SPEC_MODEL = (process.env.SITE_SPEC_MODEL ?? '').trim() || HOMEPAGE_MODEL
+export const SITE_SPEC_ENRICH_MODEL = (process.env.SITE_SPEC_ENRICH_MODEL ?? '').trim()
+export const SHIP_FAST_SITE_SPEC_ENRICH = process.env.SHIP_FAST_SITE_SPEC_ENRICH === '1'
 
 // ─── RunPod / hex-1 Configuration ───────────────────────
 export const RUNPOD_API_URL = process.env.RUNPOD_API_URL ?? ''
@@ -56,7 +62,13 @@ export const LLM_CONFIG = {
   },
   homepage: {
     temperature: 0.62,
-    maxTokens: 12000,
+    maxTokens: Math.min(
+      32000,
+      Math.max(
+        12000,
+        parseInt(process.env.SHIPFAST_HOMEPAGE_MAX_TOKENS || '20000', 10) || 20000,
+      ),
+    ),
   },
   parallel: {
     temperature: 0.3,
@@ -215,7 +227,7 @@ export const buildEcommerceSiteTypeInstructions = (hasUserDesignReferences = fal
   `${getEcommerceGenerationGuidelines({ hasUserDesignReferences })}${ECOMMERCE_SITE_TYPE_MEDUSA_SUFFIX}`
 
 export const SITE_TYPE_INSTRUCTIONS = {
-  saas: `SaaS product. Typography-first, no hero images. Premium editorial feel — display font headlines, layered surfaces, optional bento feature grid. Hero: pill badge + massive headline + subtitle + 1 gradient CTA (rounded-full); consider split layout or gradient mesh behind type. Then: features (section label + headline + strong 2-col or bento card grid) \u2192 pricing (2-col, featured has Popular badge + visual emphasis) \u2192 highlight card (gradient/glass with icon) \u2192 logo cloud (company names as text) \u2192 final CTA (headline + 2 buttons) \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
+  saas: `SaaS product. Typography-first, no hero images. Premium editorial feel — display font headlines, layered surfaces, optional bento feature grid. Hero: pill badge + massive headline + subtitle + dual CTAs; behind them ship a real <canvas> with requestAnimationFrame particles/mesh, stacked radial-gradient + blur-3xl aurora layers with theme.extend keyframed drift, data-magnet on hero CTAs, data-reveal on major bands, skew/rotate or clip-path energy somewhere; body copy on dark uses text-slate-300/400 never slate-500 on large paragraphs. Then: features (section label + headline + strong 2-col or bento card grid) \u2192 pricing (2-col, featured has Popular badge + visual emphasis) \u2192 highlight card (gradient/glass with icon) \u2192 logo cloud (company names as text) \u2192 final CTA (headline + 2 buttons) \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
   dashboard: `Dashboard/analytics tool. Typography-first. Hero: pill badge + headline about data insights + subtitle + CTA. Then: metrics cards (2x2 grid with KPI numbers) \u2192 features (2x2 cards) \u2192 integrations (logo cloud as text) \u2192 pricing (2-col) \u2192 CTA \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
   ecommerce: buildEcommerceSiteTypeInstructions(false),
   marketplace: `Marketplace platform. Hero: search bar centered + category pills + headline. Then: featured listings (2-col cards with relevant listing imagery or non-photo treatments) \u2192 how it works (3-step icons) \u2192 trust stats \u2192 CTA \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
@@ -223,7 +235,7 @@ export const SITE_TYPE_INSTRUCTIONS = {
   docs: `Documentation site. Typography-first. Hero: search bar + quick start code block (dark surface bg, rounded-xl). Then: topic cards (2x2 grid) \u2192 API reference links \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
   community: `Community platform. Typography-first. Hero: headline + member count stats + Join CTA. Then: trending topics cards \u2192 member highlights \u2192 activity preview \u2192 CTA \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
   portfolio: `Portfolio. Images allowed for projects. Hero: bold name + role title + subtle tagline. Then: selected works (2-col, relevant project imagery or strong graphic panels) \u2192 about \u2192 skills/tech \u2192 contact form \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
-  landing: `Landing page. Typography-first, no hero images. High-impact layout — not a generic template: asymmetric hero or full-bleed accent band, display typography, motion-friendly sections. Hero: pill badge + oversized headline + subtitle + 1 gradient CTA (rounded-full). Then: features (2x2 or bento cards) \u2192 social proof (stats + logo cloud as text) \u2192 pricing (2-col) \u2192 FAQ \u2192 final CTA \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
+  landing: `Landing page. Typography-first, no hero images. High-impact layout — not a generic template: asymmetric hero or full-bleed accent band, display typography, motion-friendly sections. Hero: pill badge + oversized headline + subtitle + dual CTAs; same motion craft as SaaS — hero <canvas> rAF field, multi radial-gradient blur mesh + keyframed liquid motion, data-magnet + data-reveal, diagonal/slant energy, strong paragraph contrast on dark. Then: features (2x2 or bento cards) \u2192 social proof (stats + logo cloud as text) \u2192 pricing (2-col) \u2192 FAQ \u2192 final CTA \u2192 footer.${MOTION_NEXT_EXPORT_SUFFIX}`,
   game:
     'Fully playable 3D or 2D game using THREE.js. Not a landing page or demo. ' +
     'Fullscreen experience with realistic physics, smooth controls (WASD + mouse), professional HUD, and win/lose conditions. ' +
