@@ -1,7 +1,7 @@
 'use client'
 
-import { dashboardBodyHtml } from './dashboard-body-html'
+import { dashboardBody } from './dashboard-body'
 
 export function DashboardClient() {
-  return <div dangerouslySetInnerHTML={{ __html: dashboardBodyHtml }} suppressHydrationWarning />
+  return <div dangerouslySetInnerHTML={{ __html: dashboardBody }} suppressHydrationWarning />
 }

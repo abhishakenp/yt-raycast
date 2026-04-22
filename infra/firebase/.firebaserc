@@ -1,7 +1,0 @@
-{
-  "projects": {
-    "default": "ship-fast-saas",
-    "staging": "ship-fast-saas",
-    "prod": "ship-fast-prod"
-  }
-}
