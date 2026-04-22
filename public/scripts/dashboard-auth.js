@@ -5,6 +5,8 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   linkWithPopup,
   reauthenticateWithPopup,
 } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js'
@@ -135,8 +137,33 @@ async function signInWithGoogle() {
   return result.user
 }
 
+async function signInWithGithub() {
+  await ready
+  const provider = new GithubAuthProvider()
+  const result = await signInWithPopup(auth, provider)
+  currentUser = result.user
+  return result.user
+}
+
+async function signInWithEmail(email, password) {
+  await ready
+  const result = await signInWithEmailAndPassword(auth, email, password)
+  currentUser = result.user
+  return result.user
+}
+
+async function signUpWithEmail(email, password) {
+  await ready
+  const result = await createUserWithEmailAndPassword(auth, email, password)
+  currentUser = result.user
+  return result.user
+}
+
 window.shipFastDashboardAuth = {
   ready,
   getCurrentIdToken,
   signInWithGoogle,
+  signInWithGithub,
+  signInWithEmail,
+  signUpWithEmail,
 }
