@@ -10,9 +10,18 @@ const backendWsHost = (() => {
 })()
 
 const nextConfig: NextConfig = {
+  compress: true,
+  poweredByHeader: false,
   env: {
     NEXT_PUBLIC_SF_BACKEND_WS_HOST: backendWsHost,
     NEXT_PUBLIC_SF_HOME_WS_RELOAD: process.env.NEXT_PUBLIC_SF_HOME_WS_RELOAD ?? '1',
+  },
+  experimental: {
+    optimizePackageImports: [
+      '@openuidev/react-ui',
+      '@openuidev/react-lang',
+      '@openuidev/lang-core',
+    ],
   },
   async redirects() {
     return [{ source: '/index.html', destination: '/', permanent: true }]
@@ -21,7 +30,6 @@ const nextConfig: NextConfig = {
     return [
       { source: '/api/:path*', destination: `${backend}/api/:path*` },
       { source: '/js/script.js', destination: `${backend}/js/script.js` },
-      { source: '/session/:id', destination: `${backend}/session/:id` },
       { source: '/preview/:path*', destination: `${backend}/preview/:path*` },
       { source: '/llms.txt', destination: `${backend}/llms.txt` },
       { source: '/studio', destination: `${backend}/studio` },

@@ -1889,12 +1889,15 @@ form.addEventListener("submit", async (event) => {
       if (!currentUser) saveAnonSession(data2.id, prompt, data2.anonOwnerSecret);
       localStorage.setItem("sf_generation_count", String(getGenerationCount() + 1));
       if (isMarketingHomePath()) {
+        localStorage.setItem(`sf_openui_prompt_${data2.id}`, prompt);
         openEmbeddedSession(data2.id);
         submitButton.classList.remove("loading");
         syncSubmitButtonState();
         return;
       }
       sessionStorage.setItem("sf_return_home", "1");
+      localStorage.setItem(`sf_openui_prompt_${data2.id}`, prompt);
+      sessionStorage.setItem("sf_openui_prompt", prompt);
       window.location.href = `/session/${data2.id}`;
       return;
     }

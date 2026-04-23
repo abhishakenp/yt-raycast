@@ -1329,12 +1329,15 @@ form.addEventListener('submit', async (event) => {
       if (!currentUser) saveAnonSession(data.id, prompt, data.anonOwnerSecret)
       localStorage.setItem('sf_generation_count', String(getGenerationCount() + 1))
       if (isMarketingHomePath()) {
+        localStorage.setItem(`sf_openui_prompt_${data.id}`, prompt)
         openEmbeddedSession(data.id)
         submitButton.classList.remove('loading')
         syncSubmitButtonState()
         return
       }
       sessionStorage.setItem('sf_return_home', '1')
+      localStorage.setItem(`sf_openui_prompt_${data.id}`, prompt)
+      sessionStorage.setItem('sf_openui_prompt', prompt)
       window.location.href = `/session/${data.id}`
       return
     }

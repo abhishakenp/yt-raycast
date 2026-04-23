@@ -9,7 +9,13 @@ const SF_EMBED_HOME = (() => {
   }
 })()
 const PREVIEW_BASE = `${location.origin}/preview/${SESSION_ID}`
-const WS_HOST = '__SF_WS_HOST__'
+const WS_HOST = (() => {
+  // When served from Next.js (port 3000), Express WS is on port 7420
+  const h = location.hostname
+  const p = location.port
+  if (p === '3000' || p === '') return `${h}:7420`
+  return location.host
+})()
 const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${WS_HOST}?session=${SESSION_ID}`
 const TYPING_SPEED_MS = 40
 const PAYMENT_COUNTRY_HINT = detectCountryHint()
@@ -1348,7 +1354,7 @@ function updatePreviewProgress() {
         rightPanel.classList.add('expanded')
         rightPanel.style.width = ''
         leftPanel.style.width = ''
-        reloadPreview()
+        loadPreview()
       }
     }, 600)
   }
@@ -1358,7 +1364,8 @@ function updateBackendProgress() {
   const counts = getTaskCounts()
   const bp = document.getElementById('backend-progress')
   const bpf = document.getElementById('backend-progress-fill')
-  if (counts.backendTotal > 0) {
+  const backendAllDone = counts.backendTotal > 0 && counts.backendDone === counts.backendTotal
+  if (counts.backendTotal > 0 && !backendAllDone) {
     bp.classList.add('visible')
     const pct = Math.round((counts.backendDone / counts.backendTotal) * 100)
     bpf.style.width = pct + '%'
@@ -3426,7 +3433,7 @@ function connectWS() {
         renderTasks()
         if (updated.status === 'DONE') {
           triggerTeleport(updated.id)
-          if (isFrontendTask(updated) && previewLoaded) reloadPreview()
+          if (isFrontendTask(updated)) previewLoaded ? reloadPreview() : loadPreview()
           checkAllDone()
         } else if (updated.status === 'FAILED') {
           checkAllDone()
@@ -3469,7 +3476,7 @@ function connectWS() {
 
       case 'alternative_design_ready':
         alternativeDesign = ev.design
-        document.getElementById('theme-magic-btn').classList.add('ready')
+        document.getElementById('theme-magic-btn')?.classList.add('ready')
         debugLog('magic_theme_ready', ev.design)
         break
 

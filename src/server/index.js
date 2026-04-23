@@ -146,10 +146,7 @@ import {
 } from './session-chat.js'
 import { MAX_UPLOAD_BYTES, saveSessionImageBuffers } from './session-uploads.js'
 import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
-import {
-  checkPromptContentPolicy,
-  CONTENT_POLICY_CLIENT_MESSAGE,
-} from '../lib/content-policy'
+import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy'
 import {
   getNextPreviewSnapshot,
   isNextPreviewFeatureEnabled,
@@ -658,7 +655,13 @@ export async function startServer(sessionsDir) {
   })
 
   // Serve public assets statically, but keep / routed through SSR.
-  app.use(express.static(publicDir, { index: false }))
+  app.use(
+    express.static(publicDir, {
+      index: false,
+      maxAge: '1h',
+      etag: true,
+    }),
+  )
 
   // ─── Dashboard (session-scoped) ───────────────────────────
   // ─── Session route now handled by Next.js at /src/app/session/[id]/page.tsx ───
@@ -2095,6 +2098,8 @@ export async function startServer(sessionsDir) {
     '/preview/:sessionId',
     (req, res, next) => {
       setNoIndexHeaders(res)
+      // Cache preview files aggressively - they don't change once generated
+      res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
       next()
     },
     (req, res, next) => {
