@@ -1,9 +1,4 @@
 import { groqHomepage } from '../llm/groq.js'
-import { readDesignRefFromWorkspace } from '../prompts/design-refs.js'
-import {
-  VAGUE_MARKETING_HOMEPAGE_APPENDIX,
-  shouldExpandVagueMarketing,
-} from '../prompts/vague-marketing-brief.js'
 import { inferSiteTypeHint } from '../lib/infer-site-type.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
@@ -296,6 +291,12 @@ export function injectShipFastFooterBranding(html, log = () => {}) {
   if (next !== html) log('  ✓ Ship Fast footer branding appended')
   return next
 }
+
+const LEGACY_THEME_STAR_TRANSITION =
+  /\s*\*\s*\{\s*transition:\s*background-color\s+0\.6s\s+cubic-bezier\(0\.4,\s*0,\s*0\.2,\s*1\),[\s\S]*?stroke\s+0\.6s\s+cubic-bezier\(0\.4,\s*0,\s*0\.2,\s*1\);\s*\}\s*/g
+
+export const stripLegacyThemeStarTransition = (html) =>
+  !html || typeof html !== 'string' ? html : html.replace(LEGACY_THEME_STAR_TRANSITION, '\n')
 
 export async function generateHomepage(
   prompt,
