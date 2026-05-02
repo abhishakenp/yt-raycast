@@ -1,0 +1,158 @@
+/* Ship Fast dashboard intro–style loading, scoped for OpenUI iframe preview */
+
+.sf-openui-launch-root {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.sf-openui-launch-warp {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+}
+
+.sf-openui-launch-brand-wrap {
+  position: relative;
+  z-index: 2;
+  transform: scale(0.5);
+  transform-origin: center center;
+}
+
+@media (min-width: 900px) {
+  .sf-openui-launch-brand-wrap {
+    transform: scale(0.62);
+  }
+}
+
+.sf-openui-launch-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transform: scale(2.8);
+  opacity: 0;
+  transition:
+    transform 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    margin-top 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 1.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sf-openui-launch-logo.is-visible {
+  opacity: 1;
+  transform: scale(2.8);
+}
+
+.sf-openui-launch-logo.is-shaking {
+  animation: sfLaunchRocketShake 0.08s ease-in-out infinite alternate;
+}
+
+.sf-openui-launch-logo.is-settled {
+  transform: scale(1.1);
+  margin-top: -6vh;
+  animation: sfLaunchRocketLaunch 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+
+@keyframes sfLaunchRocketShake {
+  0% {
+    transform: scale(2.8) translate(-2px, 1px) rotate(-0.5deg);
+  }
+  25% {
+    transform: scale(2.8) translate(2px, -1px) rotate(0.5deg);
+  }
+  50% {
+    transform: scale(2.8) translate(-1px, -2px) rotate(-0.3deg);
+  }
+  75% {
+    transform: scale(2.8) translate(1px, 2px) rotate(0.3deg);
+  }
+  100% {
+    transform: scale(2.8) translate(2px, -1px) rotate(0.5deg);
+  }
+}
+
+@keyframes sfLaunchRocketLaunch {
+  0% {
+    transform: scale(2.8);
+    filter: brightness(1);
+  }
+  30% {
+    transform: scale(3);
+    filter: brightness(1.8);
+  }
+  60% {
+    transform: scale(1.2);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: scale(1.1);
+    filter: brightness(1);
+  }
+}
+
+.sf-openui-launch-logo .logo-icon {
+  width: 52px;
+  height: 52px;
+  position: relative;
+}
+
+.sf-openui-launch-logo .logo-icon svg {
+  width: 100%;
+  height: 100%;
+  filter: grayscale(1) brightness(2);
+}
+
+.sf-openui-launch-logo .logo-text {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: #ededef;
+  -webkit-text-fill-color: #ededef;
+}
+
+.sf-openui-launch-phase {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: #6b7280;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+  max-width: 92%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sf-openui-launch-phase.is-visible {
+  opacity: 1;
+  color: #4e5259;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-openui-launch-logo,
+  .sf-openui-launch-logo.is-shaking {
+    animation: none !important;
+  }
+  .sf-openui-launch-warp {
+    opacity: 0.35;
+  }
+}
