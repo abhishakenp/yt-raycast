@@ -24,7 +24,7 @@ import {
   ensureCompatibleSiteSpec,
 } from '../spec/index.js'
 import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
-import { groq } from '../llm/groq.js'
+import { groq } from '@ship-fast/engine/llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
 import { htmlLooksDegenerate } from '../pipeline/homepage-degeneracy.js'
@@ -36,7 +36,7 @@ import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
   trimInlineAiText,
-} from '../llm/utils.js'
+} from '@ship-fast/engine/llm/utils.js'
 import {
   createSession,
   getSession,
