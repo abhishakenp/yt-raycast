@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "bun"]
+
+[phases.install]
+cmds = ["bun install --no-save"]
+
+[start]
+cmd = "bun src/index.js"
