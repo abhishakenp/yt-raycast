@@ -39,3 +39,4 @@ public/styles/*.css
 *.swo
 *~
 .gitnexus
+vanilla/.forge/
