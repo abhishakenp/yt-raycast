@@ -33,11 +33,14 @@ export const LLM_CONFIG = {
   },
   homepage: {
     temperature: 0.62,
+    // FORGE-validated default: 10000 keeps reasoning_effort='low' inside the
+    // 13-18s generation envelope on GPT-OSS-120b. Caller can opt up to 32000
+    // via SHIPFAST_HOMEPAGE_MAX_TOKENS for manual high-budget runs.
     maxTokens: Math.min(
       32000,
       Math.max(
-        12000,
-        parseInt(process.env.SHIPFAST_HOMEPAGE_MAX_TOKENS || '20000', 10) || 20000,
+        8000,
+        parseInt(process.env.SHIPFAST_HOMEPAGE_MAX_TOKENS || '10000', 10) || 10000,
       ),
     ),
   },
