@@ -1,12 +1,7 @@
 /**
- * Forge lib: lean homepage caller. Bypasses engine's hardcoded reasoning_effort='high'
- * but reuses the SAME public-design system prompt the real project uses.
- *
- * Strategy: monkey-call Groq API directly with the same system+user prompt
- * the engine builds, but with tunable max_tokens / reasoning_effort.
- *
- * To stay aligned with the real project we import the engine's prompt-building
- * helpers and rebuild the system prompt verbatim.
+ * Forge lib — direct Groq homepage caller, audit-aware system prompt,
+ * composition + aesthetic variance, optional reference fingerprint, optional
+ * winner seed, optional self-critique fix-pass.
  */
 import {
   GROQ_API_KEY,
@@ -15,57 +10,104 @@ import {
   LLM_CONFIG,
 } from '@ship-fast/engine/config.js'
 import { stripGroqReasoningLeak } from '@ship-fast/engine/llm/utils.js'
+import { referencePromptBlock } from './forge-reference.mjs'
 
 const URL = `${GROQ_HOST}/openai/v1/chat/completions`
 
-/**
- * Minimal homepage system prompt — distilled from the engine's prompt while staying
- * faithful to the SaaS reference-tier checklist scored by ralph-homepage-score.
- *
- * Keeping it tighter (≈3k tokens) lets us crank reasoning_effort=low and still
- * fit under 15s wall-clock without losing the structural signals the audit grades.
- */
-const HOMEPAGE_SYSTEM_LEAN = `You are a world-class frontend engineer and visual designer. Output ONLY a complete self-contained HTML file. No markdown. No code fences. No explanation. Begin with <!DOCTYPE html>.
+const HOMEPAGE_SYSTEM_LEAN = `You are a world-class frontend engineer + visual designer. Output ONLY a complete self-contained HTML doc starting with <!DOCTYPE html>. No markdown, no fences, no prose.
 
 Build a B2B SaaS marketing homepage at reference-tier quality (match design-03-saas-homepage energy).
 
-HARD REQUIREMENTS (each is auto-scored — every one must be met):
-1. Length >= 12,000 chars. Output the FULL HTML document.
-2. >= 7 <section> elements + <header> + <footer>.
-3. <head>: viewport meta; <script src="https://cdn.tailwindcss.com"></script>; <script src="https://unpkg.com/lucide@latest"></script>; tailwind.config = { theme: { extend: { colors:{background, surface, elev, primary}, fontFamily:{display,body,mono}, keyframes:{liquid:{...}}, animation:{liquid:'liquid 22s ease-in-out infinite'}, boxShadow } } }.
-4. Aurora hero MUST contain ALL of:
-   - >= 3 absolutely-positioned divs each with inline style="background: radial-gradient(...)" (literal radial-gradient string in 3+ places), each with blur-3xl, opacity-40..70, motion-reduce:hidden.
-   - A <canvas id="hero-canvas"> with requestAnimationFrame loop in inline script: particles/constellation reacting to pointer (mousemove); respect prefers-reduced-motion.
-   - Slow ambient motion: theme.extend.keyframes.liquid (translate+rotate+scale over ~22s) and animate-liquid class applied to at least 2 of the gradient orbs.
-   - Diagonal energy: ONE band has class -skew-y-3 or -skew-y-6 OR a clip-path polygon OR a keyframed rotate transform on an aurora layer.
-5. Reveal: >= 4 elements with data-reveal, starting visible (opacity-100 translate-y-0) — JS adds class reveal-ready to <html> then refines transitions. IntersectionObserver in inline script toggles is-visible.
-6. Magnets: >= 2 primary CTAs with data-magnet — inline script applies pointer parallax (translate3d).
-7. Dynamic UI hooks (single inline IIFE script before </body>, every querySelector null-guarded):
-   - data-mobile-nav header + data-mobile-nav-toggle button (toggles is-open class).
-   - data-accordion FAQ with >= 5 data-accordion-item, each with data-accordion-trigger button.
-   - data-pricing-billing wrapper + buttons data-billing="month"/"year" toggling data-show-monthly / data-show-yearly.
-   - >= 2 data-counter elements with data-counter-target — count-up on intersection.
-   - lucide.createIcons() called after DOM ready and after any dynamic update.
-8. Pricing band: 3 tiers, one with ring-2 ring-offset-2 as featured. Both monthly + yearly prices visible (paired data-show- elements), toggle works.
-9. Typography: link Google Fonts for a display family (Fraunces / Syne / Outfit / Cabinet Grotesk / DM Serif Display) + body (Inter / Geist / DM Sans) + mono (JetBrains Mono / IBM Plex Mono). Map all three in tailwind.config.
-10. Dark theme: tinted slate/zinc background; surface/elev cards with backdrop-blur and ring-1 ring-white/10. Body paragraphs use text-slate-300 (never text-slate-500 on text-lg/text-base/max-w-xl/max-w-lg/leading-relaxed paragraphs).
-11. Real anchors only — every <a href> either targets a real on-page id or "#" only when ≤ 55 total. >= 8 navigational <a href=> links across header/footer.
-12. >= 3 real <button> elements (CTAs).
-13. Penultimate CTA band before footer. Multi-column footer (>= 4 columns).
-14. Lucide icons only (no emoji icons, no Font Awesome). Use data-lucide="..." placeholders. Icon sizes w-5 h-5 md:w-6 md:h-6.
-15. No <style> tags for theme/layout/animation. Vanilla JS only — no frameworks, no external script sources besides Tailwind/Lucide CDNs.
-16. No "Ship Fast" branding, no fake addresses, no Lorem ipsum, no placeholder copy.
-
-QUALITY BAR: Real art direction — bento or split hero, oversized display headline, layered surfaces, signature flourish (e.g. glowing pill badge), at least one diagonal/clip-path/skewed band. Avoid generic violet-on-gray template vibe. Visible text must be specific and product-credible (not Lorem ipsum).
-
-Output the full HTML now.`
+HARD REQS (each auto-scored — meet every one):
+1. ≥12,000 chars. Full HTML document.
+2. ≥7 <section> + <header> + <footer>. Every section ≥200px tall with real content (heading + paragraph/cards), NO empty bands.
+3. <head>: viewport meta + <script src="https://cdn.tailwindcss.com"> + <script src="https://unpkg.com/lucide@latest"> + tailwind.config={theme:{extend:{colors:{background,surface,elev,primary},fontFamily:{display,body,mono},keyframes:{liquid:{...}},animation:{liquid:'liquid 22s ease-in-out infinite'},boxShadow}}}.
+4. Hero: ≥3 absolute divs with style="background: radial-gradient(...)" + blur-3xl + opacity-40..70 + motion-reduce:hidden. <canvas id="hero-canvas"> + requestAnimationFrame particle loop reactive to mousemove (respect prefers-reduced-motion). theme.extend.keyframes.liquid (translate+rotate+scale ~22s) + animate-liquid on ≥2 orbs. ONE band uses -skew-y-3 / clip-path polygon / keyframed rotate.
+5. ≥4 [data-reveal] elements. CRITICAL: never add opacity-0 / translate-y-* in the initial markup or via JS on page load. The page MUST be fully visible without JS. JS may only ADD class reveal-ready to <html> then animate IN existing visible elements (e.g. transition-opacity). Empty reveal panels are forbidden.
+6. ≥2 [data-magnet] CTAs with pointer parallax in inline script.
+7. Single inline IIFE before </body>, every querySelector null-guarded. Wire: data-mobile-nav + data-mobile-nav-toggle (is-open class); data-accordion FAQ ≥5 items each with data-accordion-trigger; data-pricing-billing + [data-billing="month"|"year"] toggling [data-show-monthly]/[data-show-yearly]; ≥2 [data-counter][data-counter-target] count-up on intersection; lucide.createIcons() after DOM ready + after dynamic updates.
+8. Pricing: 3 tiers, middle featured with ring-2 ring-offset-2; monthly+yearly prices both wired through toggle.
+9. Three Google Fonts (fonts.googleapis.com). Display ∈ {Fraunces,Syne,Outfit,DM Serif Display,Playfair Display,Space Grotesk,Bricolage Grotesque,Instrument Serif,Manrope,Sora}. Body: Inter/DM Sans/Manrope. Mono: JetBrains Mono/IBM Plex Mono. NEVER Cabinet Grotesk/Geist (not Google-hosted). Map all 3 in tailwind.config.fontFamily.
+10. Dark theme. Tinted slate/zinc bg. Cards: backdrop-blur + ring-1 ring-white/10. Body paragraphs text-slate-300 (never text-slate-500 on text-lg/text-base/leading-relaxed). 4.5:1 contrast on body text.
+11. Real anchors only. ≥8 nav links across header+footer. ≤55 total href="#" placeholders.
+12. ≥3 real <button> CTAs.
+13. Penultimate CTA band before footer. Footer ≥4 columns.
+14. Lucide icons via data-lucide. STRICT BAN — these names DO NOT EXIST in Lucide and silently render blank: github, twitter, linkedin, discord, facebook, instagram, youtube, "x", "chart", "close", "search-icon", "envelope", "phone-icon". Replace: x → x-circle. chart → bar-chart-3 OR pie-chart. close → x-circle. github/twitter/linkedin/etc → inline <svg viewBox="0 0 24 24"> with the brand path. For brand/social icons use inline <svg viewBox="0 0 24 24">. Safe Lucide names: arrow-right, arrow-up-right, check, check-circle, x-circle, menu, sparkles, zap, shield, rocket, layers, code, terminal, cpu, gauge, lock, users, bot, workflow, git-branch, chevron-down, chevron-right, star, mail, search, settings, bell, user, calendar, clock, globe, map-pin, eye, copy, trash-2, plus, minus, info, alert-circle, file-text, folder, image, tag, bookmark, share-2, download, upload, link-2, external-link, bar-chart-3, pie-chart, activity, trending-up, target, flame, lightbulb, wand-2. Sizes w-5 h-5 md:w-6 md:h-6.
+15. NO <style> tags for theme/layout/animation. Vanilla JS only. Only external scripts: Tailwind + Lucide CDNs.
+16. Specific product-credible copy. NO Ship Fast / fake addresses / Lorem ipsum / generic placeholders. Concrete numbers ("3.2× faster", "14-day trial"). 3+ testimonial cards with named authors+roles.`
 
 export const FORGE_DEFAULT_PROMPT =
   'A B2B SaaS marketing site for an AI-first agentic workflow product for engineering teams: aurora hero, social proof strip, feature grid, pricing band with monthly/yearly toggle, FAQ, penultimate CTA band, multi-column footer.'
 
+const HERO_ARCHETYPES = [
+  'Hero archetype: SPLIT — left text column (badge + headline + subhead + 2 CTAs + trust chips), right column a layered visual panel (mesh + product preview frame).',
+  'Hero archetype: CENTERED — oversized display headline center-aligned, max-w-4xl, dual CTAs below, proof strip directly under.',
+  'Hero archetype: BENTO — 2x2 bento immediately under nav: top-left big text card, top-right product mock card, bottom-left metric card, bottom-right testimonial snippet card.',
+  'Hero archetype: EDITORIAL — left column with eyebrow + serif headline + body paragraph + pull-quote, right column oversized numeral watermark + CTAs.',
+  'Hero archetype: POSTER — typographic poster: word lockup with line breaks, oversized number/word as background watermark, single CTA, asymmetric byline footer.',
+]
+
+const PRICING_ARCHETYPES = [
+  'Pricing archetype: 3-card row, middle tier featured with ring-2 ring-offset-2 ring-primary and a "Most popular" pill, monthly/yearly segmented toggle above.',
+  'Pricing archetype: comparison table — features as rows, 3 tiers as columns, check/x icons per cell, toggle above.',
+  'Pricing archetype: 3 tiers stacked vertically on mobile, side-by-side on lg, each with badge, price, 6 feature lines, CTA button.',
+]
+
+const COMPOSITION_NUDGES = [
+  'Section rhythm: alternate full-bleed and contained (max-w-7xl) sections; one diagonal -skew-y-3 transition band between features and pricing.',
+  'Section rhythm: every other section gets bg-elev with ring-1 ring-white/5; rule lines between feature columns.',
+  'Section rhythm: editorial — large eyebrow tags above each section heading, generous py-24, asymmetric column widths.',
+]
+
+const AESTHETIC_NUDGES = [
+  'Aesthetic: editorial luxury — Fraunces display, deep aubergine + champagne accents, oversize numerals as watermark.',
+  'Aesthetic: brutalist tech — Space Grotesk display, electric lime accent on near-black, monospaced labels, hairline borders.',
+  'Aesthetic: aurora midnight — DM Serif Display, violet/teal/amber blobs, pointer-reactive constellation canvas.',
+  'Aesthetic: quiet museum minimal — Outfit display, parchment elev, single citrus accent, gallery-grid bento.',
+  'Aesthetic: neon nightlife — Syne display, magenta + cyan glow, scanline-overlay canvas, glitch hover on CTAs.',
+  'Aesthetic: organic wellness — Fraunces display, sage + clay palette, soft mesh blobs, generous whitespace.',
+  'Aesthetic: festival maximalism — Syne display, layered confetti gradients, oversize emoji-free typographic poster hero.',
+  'Aesthetic: tactile craft — DM Serif Display, paper-grain noise overlay, terracotta + ink accents, letterpress pricing card.',
+  'Aesthetic: nordic SaaS — Outfit display, glacier blue + frost white on charcoal, sharp grid bento.',
+  'Aesthetic: cyberpunk dossier — JetBrains Mono everywhere except hero (Space Grotesk), CRT scan canvas, amber on inkblack.',
+]
+
+export function pickVariation(i) {
+  return {
+    aesthetic: AESTHETIC_NUDGES[i % AESTHETIC_NUDGES.length],
+    hero: HERO_ARCHETYPES[Math.floor(i / 2) % HERO_ARCHETYPES.length],
+    pricing: PRICING_ARCHETYPES[i % PRICING_ARCHETYPES.length],
+    composition: COMPOSITION_NUDGES[Math.floor(i / 3) % COMPOSITION_NUDGES.length],
+  }
+}
+
+export function buildVariantPrompt(basePrompt, i, opts = {}) {
+  const v = pickVariation(i)
+  const ref = opts.includeReference !== false ? referencePromptBlock() : ''
+  const seed = opts.winnerSeedBlock ? `\n${opts.winnerSeedBlock}` : ''
+  // Pack the four variation axes onto two compact lines to keep input tokens lean.
+  const variation = `${v.aesthetic} ${v.hero}\n${v.pricing} ${v.composition}`
+  return `${basePrompt}\n\n${variation}${ref}${seed}`
+}
+
 /**
- * Direct call. Returns { content, ms, inputTokens, outputTokens, cost, model }.
- * `reasoningEffort` defaults to 'low' — that's the knob that lets us stay <15s.
+ * Tempo schedule. v1 ran T=0.55–0.75 with 17/50 keep rate. Mirror that range
+ * so we don't pay extra reasoning latency for low-T determinism.
+ * - 0..9   : 0.6 (tight-ish, balanced)
+ * - 10..34 : 0.65 / 0.7 / 0.75 (explore)
+ * - 35..49 : 0.6 (converge)
+ */
+export function temperatureForIter(i) {
+  if (i < 10) return 0.6
+  if (i < 35) {
+    const cyc = (i - 10) % 3
+    return cyc === 0 ? 0.65 : cyc === 1 ? 0.7 : 0.75
+  }
+  return 0.6
+}
+
+/**
+ * Direct call to Groq.
  */
 export async function forgeGenerate({
   prompt = FORGE_DEFAULT_PROMPT,
@@ -118,4 +160,36 @@ export async function forgeGenerate({
     cost: 0,
     model,
   }
+}
+
+/**
+ * Self-critique fix pass: ask the model to find 3 weakest details + emit fixed HTML.
+ * Returns { content, ms } or null if budget exceeded.
+ */
+export async function forgeFixPass(html, prompt, { remainingBudgetMs = 6000, model } = {}) {
+  if (remainingBudgetMs < 4000) return null
+  const sys =
+    'You are a frontend engineer. Output ONLY a complete HTML document — no markdown, no fences, no prose. Apply minimal targeted fixes to the input HTML to address the 3 weakest details (color contrast, typography hierarchy, empty bands, generic copy, missing depth). Do not regress any working feature. Keep all data-* hooks intact.'
+  const user = `Brief: ${prompt}\n\nFix the 3 weakest details in this HTML and emit the FULL fixed HTML. Reply with only HTML.\n\n<<<HTML>>>\n${html}\n<<<END>>>`
+  return forgeGenerate({
+    system: sys,
+    prompt: user,
+    temperature: 0.3,
+    maxTokens: 14000,
+    reasoningEffort: 'low',
+    model,
+  })
+}
+
+/**
+ * Build a winner-seed prompt block from a previously kept iteration: extract
+ * theme.extend snippet + section ID list. Inject as soft style anchor.
+ */
+export function buildWinnerSeed(html) {
+  if (!html) return ''
+  const cfgMatch = html.match(/tailwind\.config\s*=\s*(\{[\s\S]*?\n\}\s*;)/)
+  const themeBlock = cfgMatch ? cfgMatch[1].slice(0, 1400) : ''
+  const sectionIds = [...new Set((html.match(/<section[^>]*id=["']([^"']+)["']/gi) || []).map((s) => s.match(/id=["']([^"']+)["']/i)?.[1]).filter(Boolean))]
+  if (!themeBlock && sectionIds.length === 0) return ''
+  return `\n── PRIOR-WINNER STYLE SEED (use as soft palette/typography anchor; vary aesthetic) ──\nSection IDs: ${sectionIds.join(', ')}\n${themeBlock ? `Tailwind theme.extend snippet:\n${themeBlock}` : ''}`
 }
