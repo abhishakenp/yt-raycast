@@ -17,7 +17,28 @@ if (!existsSync(RUN_DIR)) {
   process.exit(1)
 }
 
-const board = JSON.parse(readFileSync(join(RUN_DIR, 'leaderboard.json'), 'utf8'))
+let board
+const lbPath = join(RUN_DIR, 'leaderboard.json')
+if (existsSync(lbPath)) {
+  board = JSON.parse(readFileSync(lbPath, 'utf8'))
+} else {
+  // Run was killed before final write — reconstruct from per-iter meta files.
+  const iters = readdirSync(RUN_DIR).filter((d) => d.startsWith('iter-')).sort()
+  board = []
+  for (const d of iters) {
+    const m = join(RUN_DIR, d, 'meta.json')
+    if (existsSync(m)) {
+      const meta = JSON.parse(readFileSync(m, 'utf8'))
+      meta.dir = join(RUN_DIR, d)
+      board.push(meta)
+    }
+  }
+  board.sort((a, b) => {
+    if (a.kept !== b.kept) return a.kept ? -1 : 1
+    if ((b.vision?.score || 0) !== (a.vision?.score || 0)) return (b.vision?.score || 0) - (a.vision?.score || 0)
+    return a.ms - b.ms
+  })
+}
 const total = board.length
 const kept = board.filter((b) => b.kept).length
 const sub15 = board.filter((b) => b.kept && b.subBudget15).length
