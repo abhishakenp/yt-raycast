@@ -5,6 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
+    "predev": "bun run build:scripts",
     "dev": "NODE_ENV=development DASHBOARD_PORT=7420 bun --watch src/index.js",
     "dev:no-watch": "NODE_ENV=development DASHBOARD_PORT=7420 bun src/index.js",
     "start": "DASHBOARD_PORT=7420 node src/index.js",
