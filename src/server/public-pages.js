@@ -431,6 +431,25 @@ export function renderHomePage(siteSettings = null) {
     </noscript>
 
     <script type="module" src="/scripts/homepage.js"></script>
+    <script>
+      // FORGE: SSR fallback for anonymous auth — when the React auth provider is
+      // not mounted (Express SSR, no Next.js), dispatch an anonymous auth-state
+      // event so the homepage gallery + hero finish initializing.
+      (function () {
+        let resolved = false
+        function fireAnon() {
+          if (resolved) return
+          resolved = true
+          window.dispatchEvent(new CustomEvent('sf-home-auth-state', { detail: { user: null } }))
+        }
+        window.addEventListener('sf-home-auth-state', () => { resolved = true }, { once: true })
+        if (window.__sfHomeScriptReady) {
+          setTimeout(fireAnon, 50)
+        } else {
+          window.addEventListener('sf-home-script-ready', () => setTimeout(fireAnon, 50), { once: true })
+        }
+      })()
+    </script>
     ${DEV_HOME_HOT_RELOAD_SNIPPET}
   </body>
 </html>`

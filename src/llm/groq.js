@@ -258,7 +258,7 @@ The prompt is a public-sector / PSU / ministry / tender / citizen-information po
   let reasoningEffort = null
   let reasoningFormat = null
   if (mid === 'openai/gpt-oss-120b') {
-    reasoningEffort = 'high'
+    reasoningEffort = 'low'
     reasoningFormat = 'hidden'
   } else if (mid === 'openai/gpt-oss-20b') {
     reasoningEffort = 'medium'
