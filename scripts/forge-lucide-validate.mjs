@@ -70,7 +70,17 @@ export function validateLucideIcons(html, registry) {
   while ((m = re.exec(String(html || ''))) !== null) {
     used.add(m[1].toLowerCase())
   }
-  const unknown = [...used].filter((n) => !names.has(n))
+  // Brand/social names handled at render-time by the engine's lucide bootstrap
+  // script (see packages/ship-fast-engine/src/pipeline/lucide-icons.js): it
+  // substitutes inline SVG for these names so they render correctly even
+  // though they are not in the lucide-static registry. Treat them as known
+  // for validation purposes.
+  const HANDLED_BRAND_NAMES = new Set([
+    'github', 'twitter', 'linkedin', 'discord', 'facebook',
+    'instagram', 'youtube', 'tiktok', 'pinterest', 'threads',
+    'whatsapp', 'x', 'x-twitter', 'twitter-x',
+  ])
+  const unknown = [...used].filter((n) => !names.has(n) && !HANDLED_BRAND_NAMES.has(n))
   return {
     ok: unknown.length === 0,
     unknown,

@@ -57,8 +57,11 @@ export async function renderAudit({ url, shotPath, page, siteType = 'saas' }) {
     consoleErrors.push(`pageerror: ${err.message?.slice(0, 200)}`)
   })
 
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 20000 })
-  await page.waitForTimeout(1500)
+  // Use 'load' rather than 'networkidle' — homepages with Tailwind CDN +
+  // Lucide + Google Fonts often have lingering background fetches that
+  // never reach networkidle within 20s but don't block visual readiness.
+  await page.goto(url, { waitUntil: 'load', timeout: 20000 })
+  await page.waitForTimeout(2200)
   // Force reveal-ready state and trigger any IntersectionObserver-based reveals so we measure
   // post-reveal heights (otherwise data-reveal blocks may carry opacity-0 / translate-y-8 and
   // the audit incorrectly thinks the page has empty bands).
