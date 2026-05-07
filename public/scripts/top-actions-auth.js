@@ -1,7 +1,7 @@
-// node_modules/@firebase/util/dist/postinstall.mjs
+// node_modules/.bun/@firebase+util@1.15.0/node_modules/@firebase/util/dist/postinstall.mjs
 var getDefaultsFromPostinstall = () => void 0;
 
-// node_modules/@firebase/util/dist/index.esm.js
+// node_modules/.bun/@firebase+util@1.15.0/node_modules/@firebase/util/dist/index.esm.js
 var stringToByteArray$1 = function(str) {
   const out = [];
   let p = 0;
@@ -670,7 +670,7 @@ async function pingServer(endpoint) {
   return result.ok;
 }
 
-// node_modules/@firebase/component/dist/esm/index.esm.js
+// node_modules/.bun/@firebase+component@0.7.2/node_modules/@firebase/component/dist/esm/index.esm.js
 var Component = class {
   /**
    *
@@ -957,7 +957,7 @@ var ComponentContainer = class {
   }
 };
 
-// node_modules/@firebase/logger/dist/esm/index.esm.js
+// node_modules/.bun/@firebase+logger@0.5.0/node_modules/@firebase/logger/dist/esm/index.esm.js
 var instances = [];
 var LogLevel;
 (function(LogLevel2) {
@@ -1063,7 +1063,7 @@ var Logger = class {
   }
 };
 
-// node_modules/idb/build/wrap-idb-value.js
+// node_modules/.bun/idb@7.1.1/node_modules/idb/build/wrap-idb-value.js
 var instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
 var idbProxyableTypes;
 var cursorAdvanceMethods;
@@ -1206,7 +1206,7 @@ function wrap(value) {
 }
 var unwrap = (value) => reverseTransformCache.get(value);
 
-// node_modules/idb/build/index.js
+// node_modules/.bun/idb@7.1.1/node_modules/idb/build/index.js
 function openDB(name4, version4, { blocked, upgrade, blocking, terminated } = {}) {
   const request = indexedDB.open(name4, version4);
   const openPromise = wrap(request);
@@ -1270,7 +1270,7 @@ replaceTraps((oldTraps) => ({
   has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop)
 }));
 
-// node_modules/@firebase/app/dist/esm/index.esm.js
+// node_modules/.bun/@firebase+app@0.14.11/node_modules/@firebase/app/dist/esm/index.esm.js
 var PlatformLoggerServiceImpl = class {
   constructor(container) {
     this.container = container;
@@ -1858,12 +1858,12 @@ function registerCoreComponents(variant) {
 }
 registerCoreComponents("");
 
-// node_modules/firebase/app/dist/esm/index.esm.js
+// node_modules/.bun/firebase@12.12.0/node_modules/firebase/app/dist/esm/index.esm.js
 var name2 = "firebase";
 var version2 = "12.12.0";
 registerVersion(name2, version2, "app");
 
-// node_modules/@firebase/auth/dist/esm/index-568d0403.js
+// node_modules/.bun/@firebase+auth@1.13.0+f47c220e5e36c32c/node_modules/@firebase/auth/dist/esm/index-568d0403.js
 function _prodErrorMap() {
   return {
     [

@@ -104,6 +104,9 @@ var openEmbeddedSession = (sessionId) => {
   }
 };
 export {
+  ensureShell,
   isMarketingHomePath,
-  openEmbeddedSession
+  openEmbeddedSession,
+  setMainInert,
+  showShellForSession
 };

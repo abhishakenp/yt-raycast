@@ -9,7 +9,7 @@ export const isMarketingHomePath = (): boolean => {
   return p === '/' || p === ''
 }
 
-const setMainInert = (on: boolean): void => {
+export const setMainInert = (on: boolean): void => {
   if (!shell) return
   for (const el of Array.from(document.body.children)) {
     if (el === shell) continue
@@ -61,7 +61,7 @@ const bindListeners = (): void => {
   })
 }
 
-const ensureShell = (): void => {
+export const ensureShell = (): void => {
   if (shell && frame) {
     bindListeners()
     return
@@ -81,7 +81,7 @@ const ensureShell = (): void => {
   bindListeners()
 }
 
-const showShellForSession = (sessionId: string | number): void => {
+export const showShellForSession = (sessionId: string | number): void => {
   ensureShell()
   const idStr: string = String(sessionId)
   const path: string = `/session/${encodeURIComponent(idStr)}?embed=1`

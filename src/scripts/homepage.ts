@@ -5,7 +5,7 @@ if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
 import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy'
 import { preferMixedEnglishBcp47FromSnippet } from '../lib/home/mixed-english-hints'
 import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
-import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed'
+import { openEmbeddedSession, isMarketingHomePath, ensureShell, showShellForSession, setMainInert } from './home-session-embed'
 
 type CurrentUser = unknown | null
 
@@ -1175,7 +1175,70 @@ renderSamplePrompt()
 syncSamplePromptVisibility()
 syncSubmitButtonState()
 
+const exampleChips = document.querySelectorAll('.prompt-example-chip')
+exampleChips.forEach((chip) => {
+  chip.addEventListener('click', () => {
+    const prompt = chip.getAttribute('data-prompt')
+    if (!prompt) return
+    input.value = prompt
+    hidePolicyViolation()
+    validatePrompt(false)
+    syncSamplePromptVisibility()
+    syncSubmitButtonState()
+    const prev = lastPromptTrimLen
+    const t = input.value.trim()
+    const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS
+    lastPromptTrimLen = t.length
+    syncPromptLanguageRowVisibility()
+    if (crossed) {
+      if (promptLangDetectTimer !== null) {
+        clearTimeout(promptLangDetectTimer)
+        promptLangDetectTimer = null
+      }
+      const runToken = ++promptLangDetectToken
+      requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }))
+    } else {
+      schedulePromptLanguageDetect()
+    }
+    input.focus()
+  })
+})
+
 if (isLocalDevHost) {
+  const IMAGE_STUDIO_PROMPT =
+    'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.'
+
+  const chipDefs: Array<{ label: string; text: string }> = [
+    { label: 'Image studio', text: IMAGE_STUDIO_PROMPT },
+    { label: 'Pet wellness', text: LOCAL_DEV_PROMPT_SHORTCUTS[1] },
+    { label: 'SaaS dashboard', text: LOCAL_DEV_PROMPT_SHORTCUTS[2] },
+    { label: 'Hindi gym site', text: LOCAL_DEV_PROMPT_SHORTCUTS[0] },
+  ]
+
+  const chipBar = document.createElement('div')
+  chipBar.className = 'dev-prompt-chips dev-prompt-chips--glass'
+  chipBar.setAttribute('aria-label', 'Dev quick prompts')
+  chipDefs.forEach((def, i) => {
+    if (!def.text) return
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'dev-prompt-chip'
+    btn.title = def.text
+    btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`
+    btn.addEventListener('click', () => {
+      btn.disabled = true
+      input.value = def.text
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      setTimeout(() => {
+        if (form) form.requestSubmit()
+        btn.disabled = false
+      }, 50)
+    })
+    chipBar.appendChild(btn)
+  })
+  const heroCard = document.getElementById('hero-card')
+  heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling)
+
   document.addEventListener(
     'keydown',
     (event) => {

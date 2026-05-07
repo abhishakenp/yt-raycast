@@ -17,6 +17,13 @@
         "gitnexus",
         "mcp"
       ]
+    },
+    "doppler": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@dopplerhq/mcp-server"
+      ]
     }
   }
 }

@@ -8,7 +8,7 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// node_modules/n-gram/index.js
+// node_modules/.bun/n-gram@2.0.2/node_modules/n-gram/index.js
 function nGram(n) {
   if (typeof n !== "number" || Number.isNaN(n) || n < 1 || n === Number.POSITIVE_INFINITY) {
     throw new Error("`" + n + "` is not a valid argument for `n-gram`");
@@ -32,13 +32,13 @@ function nGram(n) {
 }
 var bigram, trigram;
 var init_n_gram = __esm({
-  "node_modules/n-gram/index.js"() {
+  "node_modules/.bun/n-gram@2.0.2/node_modules/n-gram/index.js"() {
     bigram = nGram(2);
     trigram = nGram(3);
   }
 });
 
-// node_modules/collapse-white-space/index.js
+// node_modules/.bun/collapse-white-space@2.1.0/node_modules/collapse-white-space/index.js
 function collapseWhiteSpace(value, options) {
   if (!options) {
     options = {};
@@ -66,13 +66,13 @@ function trimFactory(replace) {
 }
 var js, html;
 var init_collapse_white_space = __esm({
-  "node_modules/collapse-white-space/index.js"() {
+  "node_modules/.bun/collapse-white-space@2.1.0/node_modules/collapse-white-space/index.js"() {
     js = /\s+/g;
     html = /[\t\n\v\f\r ]+/g;
   }
 });
 
-// node_modules/trigram-utils/index.js
+// node_modules/.bun/trigram-utils@2.0.1/node_modules/trigram-utils/index.js
 function clean(value) {
   if (value === null || value === void 0) {
     return "";
@@ -112,17 +112,17 @@ function sort(a, b) {
 }
 var own;
 var init_trigram_utils = __esm({
-  "node_modules/trigram-utils/index.js"() {
+  "node_modules/.bun/trigram-utils@2.0.1/node_modules/trigram-utils/index.js"() {
     init_n_gram();
     init_collapse_white_space();
     own = {}.hasOwnProperty;
   }
 });
 
-// node_modules/franc-min/expressions.js
+// node_modules/.bun/franc-min@6.2.0/node_modules/franc-min/expressions.js
 var expressions;
 var init_expressions = __esm({
-  "node_modules/franc-min/expressions.js"() {
+  "node_modules/.bun/franc-min@6.2.0/node_modules/franc-min/expressions.js"() {
     expressions = {
       cmn: /[\u2E80-\u2E99\u2E9B-\u2EF3\u2F00-\u2FD5\u3005\u3007\u3021-\u3029\u3038-\u303B\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFA6D\uFA70-\uFAD9]|\uD81B[\uDFE2\uDFE3\uDFF0\uDFF1]|[\uD840-\uD868\uD86A-\uD86C\uD86F-\uD872\uD874-\uD879\uD880-\uD883\uD885-\uD887][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF\uDF00-\uDFFF]|\uD86D[\uDC00-\uDF39\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1D\uDC20-\uDFFF]|\uD873[\uDC00-\uDEA1\uDEB0-\uDFFF]|\uD87A[\uDC00-\uDFE0]|\uD87E[\uDC00-\uDE1D]|\uD884[\uDC00-\uDF4A\uDF50-\uDFFF]|\uD888[\uDC00-\uDFAF]/g,
       Latin: /[A-Za-z\u00AA\u00BA\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02B8\u02E0-\u02E4\u1D00-\u1D25\u1D2C-\u1D5C\u1D62-\u1D65\u1D6B-\u1D77\u1D79-\u1DBE\u1E00-\u1EFF\u2071\u207F\u2090-\u209C\u212A\u212B\u2132\u214E\u2160-\u2188\u2C60-\u2C7F\uA722-\uA787\uA78B-\uA7CA\uA7D0\uA7D1\uA7D3\uA7D5-\uA7D9\uA7F2-\uA7FF\uAB30-\uAB5A\uAB5C-\uAB64\uAB66-\uAB69\uFB00-\uFB06\uFF21-\uFF3A\uFF41-\uFF5A]|\uD801[\uDF80-\uDF85\uDF87-\uDFB0\uDFB2-\uDFBA]|\uD837[\uDF00-\uDF1E\uDF25-\uDF2A]/g,
@@ -148,10 +148,10 @@ var init_expressions = __esm({
   }
 });
 
-// node_modules/franc-min/data.js
+// node_modules/.bun/franc-min@6.2.0/node_modules/franc-min/data.js
 var data;
 var init_data = __esm({
-  "node_modules/franc-min/data.js"() {
+  "node_modules/.bun/franc-min@6.2.0/node_modules/franc-min/data.js"() {
     data = {
       Latin: {
         spa: " de|de |os | la| a |la | y |\xF3n |i\xF3n|es |ere|rec|ien|o a|der|ci\xF3|cho|ech|en |a p|ent|a l|aci|el |na |ona|e d| co|as |da | to|al |ene| en|tod| pe|e l| el|ho |nte| su|per|a t|ad | ti|ers|tie| se|rso|son|e s| pr|o d|oda|te |cia|n d| es|dad|ida| in|ne |est|ion|cio|s d|con|a e| po|men| li|n e|nci|res|su |to |tra| re| lo|tad| na|los|a s| o |ia |que| pa|r\xE1 |pro| un|s y|ual|s e|lib|nac|do |ra |er |a d|ue | qu|e e|sta|nal|ar |nes|ica|a c|ser|or |ter|se |por|cci|io |del|l d|des|ado|les|one|a a|ndi| so| cu|s p|ale|s n|ame|par|ici|oci|una|ber|s t|rta|com| di|dos|e a|imi|o s|e c|ert|las|o p|ant|dic|nto| al|ara|ibe|enc|o e|s l|cas| as|e p|ten|ali|o t|soc|y l|n c|nta|so |tos|y a|ria|n t|die|a u| fu|no |l p|ial|qui|dis|s o|hos|gua|igu| ig| ca|sar|l t| ma|l e|pre| ac|tiv|s a|re |nad|vid|era| tr|ier|cua|n p|ta |cla|ade|bre|s s|esa|ntr|ecc|a i| le|lid|das|d d|ido|ari|ind|ada|nda|fun|mie|ca |tic|eli|y d|nid|e i|odo|ios|o y|esp|iva|y e|mat|bli|r a|dr\xE1|tri|cti|tal|rim|ont|er\xE1|us |sus|end|pen|tor|ito|ond|ori|uie|lig|n a|ist|rac|lar|rse|tar|mo |omo|ibr|n l|edi|med| me|nio|a y|eda|isf|lo |aso|l m|ias|ico|lic|ple|ste|act|tec|ote|rot|ele|ura| ni|ie |adi|u p|seg|s i|un |und|a n|lqu|alq|o i|inc|sti| si|n s|ern",
@@ -231,7 +231,7 @@ var init_data = __esm({
   }
 });
 
-// node_modules/franc-min/index.js
+// node_modules/.bun/franc-min@6.2.0/node_modules/franc-min/index.js
 var franc_min_exports = {};
 __export(franc_min_exports, {
   franc: () => franc,
@@ -347,7 +347,7 @@ function sort2(a, b) {
 }
 var MAX_LENGTH, MIN_LENGTH, MAX_DIFFERENCE, own2, script, numericData;
 var init_franc_min = __esm({
-  "node_modules/franc-min/index.js"() {
+  "node_modules/.bun/franc-min@6.2.0/node_modules/franc-min/index.js"() {
     init_trigram_utils();
     init_expressions();
     init_data();
@@ -1750,7 +1750,65 @@ updateGenerationCounter();
 renderSamplePrompt();
 syncSamplePromptVisibility();
 syncSubmitButtonState();
+var exampleChips = document.querySelectorAll(".prompt-example-chip");
+exampleChips.forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const prompt = chip.getAttribute("data-prompt");
+    if (!prompt) return;
+    input.value = prompt;
+    hidePolicyViolation();
+    validatePrompt(false);
+    syncSamplePromptVisibility();
+    syncSubmitButtonState();
+    const prev = lastPromptTrimLen;
+    const t = input.value.trim();
+    const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS;
+    lastPromptTrimLen = t.length;
+    syncPromptLanguageRowVisibility();
+    if (crossed) {
+      if (promptLangDetectTimer !== null) {
+        clearTimeout(promptLangDetectTimer);
+        promptLangDetectTimer = null;
+      }
+      const runToken = ++promptLangDetectToken;
+      requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }));
+    } else {
+      schedulePromptLanguageDetect();
+    }
+    input.focus();
+  });
+});
 if (isLocalDevHost) {
+  const IMAGE_STUDIO_PROMPT = "This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.";
+  const chipDefs = [
+    { label: "Image studio", text: IMAGE_STUDIO_PROMPT },
+    { label: "Pet wellness", text: LOCAL_DEV_PROMPT_SHORTCUTS[1] },
+    { label: "SaaS dashboard", text: LOCAL_DEV_PROMPT_SHORTCUTS[2] },
+    { label: "Hindi gym site", text: LOCAL_DEV_PROMPT_SHORTCUTS[0] }
+  ];
+  const chipBar = document.createElement("div");
+  chipBar.className = "dev-prompt-chips dev-prompt-chips--glass";
+  chipBar.setAttribute("aria-label", "Dev quick prompts");
+  chipDefs.forEach((def, i) => {
+    if (!def.text) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "dev-prompt-chip";
+    btn.title = def.text;
+    btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`;
+    btn.addEventListener("click", () => {
+      btn.disabled = true;
+      input.value = def.text;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      setTimeout(() => {
+        if (form) form.requestSubmit();
+        btn.disabled = false;
+      }, 50);
+    });
+    chipBar.appendChild(btn);
+  });
+  const heroCard = document.getElementById("hero-card");
+  heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling);
   document.addEventListener(
     "keydown",
     (event) => {
