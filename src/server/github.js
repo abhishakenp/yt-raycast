@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { slug as slugify } from '../pipeline/workspace.js'
-import { renderProject } from '../renderers/index.js'
-import { ensureCompatibleSiteSpec, SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
+import { slug as slugify } from '@ship-fast/engine/pipeline/workspace.js'
+import { renderProject } from '@ship-fast/engine/renderers/index.js'
+import { ensureCompatibleSiteSpec, SUPPORTED_EXPORT_TARGETS } from '@ship-fast/engine/spec/index.js'
 import { generateSessionExport } from './exports.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 

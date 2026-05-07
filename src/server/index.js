@@ -24,7 +24,7 @@ import {
   ensureCompatibleSiteSpec,
 } from '../spec/index.js'
 import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
-import { groq } from '../llm/groq.js'
+import { groq } from '@ship-fast/engine/llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
 import { htmlLooksDegenerate } from '../pipeline/homepage-degeneracy.js'
@@ -36,7 +36,7 @@ import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
   trimInlineAiText,
-} from '../llm/utils.js'
+} from '@ship-fast/engine/llm/utils.js'
 import {
   createSession,
   getSession,
@@ -64,7 +64,14 @@ import {
 } from './exports.js'
 import { broadcastDevReload, setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
-import { existsSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  unlinkSync,
+  watch,
+  writeFileSync,
+} from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import multer from 'multer'
 import {
@@ -145,6 +152,7 @@ import {
   readChatStoreAsync,
 } from './session-chat.js'
 import { MAX_UPLOAD_BYTES, saveSessionImageBuffers } from './session-uploads.js'
+import { readPalette, writePalette } from './session-palette.js'
 import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
 import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy'
 import {
@@ -664,15 +672,16 @@ export async function startServer(sessionsDir) {
   )
 
   // ─── Dashboard (session-scoped) ───────────────────────────
-  app.get('/session/:id', async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).send('Session not found')
-    setNoIndexHeaders(res)
-    const tpl = readFileSync(join(publicDir, 'dashboard.html'), 'utf8')
-    let wsHost = req.get('host') || `127.0.0.1:${DASHBOARD_PORT}`
-    if (/:3000$/.test(wsHost)) wsHost = `${req.hostname || '127.0.0.1'}:${DASHBOARD_PORT}`
-    res.type('html').send(tpl.replaceAll('__SF_WS_HOST__', wsHost))
-  })
+  // ─── Session route now handled by Next.js at /src/app/session/[id]/page.tsx ───
+  // app.get('/session/:id', async (req, res) => {
+  //   const session = getSession(req.params.id)
+  //   if (!session) return res.status(404).send('Session not found')
+  //   setNoIndexHeaders(res)
+  //   const tpl = readFileSync(join(publicDir, 'dashboard.html'), 'utf8')
+  //   let wsHost = req.get('host') || `127.0.0.1:${DASHBOARD_PORT}`
+  //   if (/:3000$/.test(wsHost)) wsHost = `${req.hostname || '127.0.0.1'}:${DASHBOARD_PORT}`
+  //   res.type('html').send(tpl.replaceAll('__SF_WS_HOST__', wsHost))
+  // })
 
   // ─── API: Create session + start generation ───────────────
   app.post('/api/sessions', optionalAuth, async (req, res) => {
@@ -1023,16 +1032,6 @@ export async function startServer(sessionsDir) {
     }
   })
 
-  // ─── API: Config (Firebase and other client-side config) ──────
-  app.get('/api/config', (req, res) => {
-    res.json({
-      apiKey: process.env.FIREBASE_API_KEY ?? '',
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
-      projectId: process.env.FIREBASE_PROJECT_ID ?? '',
-      appId: process.env.FIREBASE_APP_ID ?? '',
-    })
-  })
-
   // ─── API: List sessions (authenticated — own sessions) ───────
   app.get('/api/sessions', requireAuth, (req, res) => {
     const all = getAllSessions(req.user.uid)
@@ -1125,6 +1124,23 @@ export async function startServer(sessionsDir) {
       ecommerce: false,
       medusaAdminEmbed: { show: false, url: null },
     })
+  })
+
+  app.post('/api/sessions/:id/apply-palette', optionalAuth, (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const saved = writePalette(session.workspace, req.body || {})
+    if (!saved) return res.status(400).json({ error: 'Invalid palette payload' })
+    res.json({ ok: true, palette: saved })
+  })
+
+  app.get('/api/sessions/:id/palette', optionalAuth, (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const palette = readPalette(session.workspace)
+    res.json({ palette: palette || null })
   })
 
   app.get('/api/sessions/:id/chat', optionalAuth, async (req, res) => {
@@ -1432,6 +1448,53 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  // ─── Preview history (per-session checkpoints) ──────────────
+  const HISTORY_MAX_ENTRIES = 50
+  const CHECKPOINT_ID_RE = /^[0-9a-zA-Z:_.-]+$/
+
+  function historyDir(session) {
+    return join(session.workspace, 'history')
+  }
+  function historyIndexPath(session) {
+    return join(historyDir(session), 'index.json')
+  }
+  function readHistoryIndex(session) {
+    const p = historyIndexPath(session)
+    if (!existsSync(p)) return []
+    try {
+      const parsed = JSON.parse(readFileSync(p, 'utf8'))
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  function writeHistoryIndex(session, entries) {
+    const dir = historyDir(session)
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+    writeFileSync(historyIndexPath(session), JSON.stringify(entries, null, 2))
+  }
+  function writeHistoryCheckpoint(session, html) {
+    const dir = historyDir(session)
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+    const now = new Date()
+    const id = now.toISOString().replace(/[^0-9a-zA-Z:_.-]/g, '-')
+    writeFileSync(join(dir, `${id}.html`), html, 'utf8')
+    const entries = readHistoryIndex(session)
+    entries.push({ id, at: now.getTime(), label: null })
+    while (entries.length > HISTORY_MAX_ENTRIES) {
+      const evicted = entries.shift()
+      if (evicted && CHECKPOINT_ID_RE.test(String(evicted.id))) {
+        try {
+          unlinkSync(join(dir, `${evicted.id}.html`))
+        } catch {
+          void 0
+        }
+      }
+    }
+    writeHistoryIndex(session, entries)
+    return id
+  }
+
   app.post('/api/sessions/:id/preview-homepage-html', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
@@ -1442,18 +1505,67 @@ export async function startServer(sessionsDir) {
     if (raw.length > 14 * 1024 * 1024) return res.status(413).json({ error: 'Too large' })
     try {
       const cleaned = stripPreviewArtifactsFromHtml(raw)
-      if (htmlLooksDegenerate(cleaned, { prompt: session.prompt }))
+      if (htmlLooksDegenerate(cleaned))
         return res
           .status(422)
           .json({ error: 'Homepage HTML failed quality check (repetition or invalid structure)' })
       writeFileSync(join(session.workspace, 'index.html'), cleaned, 'utf8')
       session.homepageReady = true
+      let checkpointId = null
+      try {
+        checkpointId = writeHistoryCheckpoint(session, cleaned)
+      } catch {
+        // history is best-effort; primary save already succeeded.
+        checkpointId = null
+      }
       makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
-      res.json({ ok: true })
+      res.json({ ok: true, checkpointId })
     } catch {
       res.status(500).json({ error: 'Save failed' })
     }
   })
+
+  app.get('/api/sessions/:id/history', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    try {
+      const entries = readHistoryIndex(session)
+      res.json({ entries })
+    } catch {
+      res.json({ entries: [] })
+    }
+  })
+
+  app.post(
+    '/api/sessions/:id/history/:checkpointId/restore',
+    optionalAuth,
+    async (req, res) => {
+      const session = getSession(req.params.id)
+      if (!session) return res.status(404).json({ error: 'Session not found' })
+      if (!ensureSessionArtifactAccess(req, res, session)) return
+      const checkpointId = String(req.params.checkpointId || '')
+      if (!checkpointId || !CHECKPOINT_ID_RE.test(checkpointId)) {
+        return res.status(400).json({ error: 'Invalid checkpointId' })
+      }
+      if (checkpointId.includes('..') || checkpointId.includes('/')) {
+        return res.status(400).json({ error: 'Invalid checkpointId' })
+      }
+      const checkpointPath = join(historyDir(session), `${checkpointId}.html`)
+      if (!existsSync(checkpointPath)) {
+        return res.status(404).json({ error: 'Checkpoint not found' })
+      }
+      try {
+        const html = readFileSync(checkpointPath, 'utf8')
+        writeFileSync(join(session.workspace, 'index.html'), html, 'utf8')
+        session.homepageReady = true
+        makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
+        res.json({ ok: true })
+      } catch {
+        res.status(500).json({ error: 'Restore failed' })
+      }
+    },
+  )
 
   app.post('/api/sessions/:id/preview-inline-text', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
@@ -1527,23 +1639,64 @@ export async function startServer(sessionsDir) {
     if (!ensureSessionArtifactAccess(req, res, session)) return
     const rawFragment = req.body?.fragmentHtml
     const instruction = req.body?.instruction
+    const computedStylesIn = req.body?.computedStyles
+    const tokensIn = req.body?.tokens
+    const friendlyLabelIn = req.body?.friendlyLabel
+    const scopeIn = req.body?.scope
     if (typeof rawFragment !== 'string' || typeof instruction !== 'string') {
       return res.status(400).json({ error: 'fragmentHtml and instruction required' })
     }
     const fragmentHtml = compactStyleFragmentHtml(rawFragment)
-    if (fragmentHtml.length > 120000 || instruction.length > 8000)
+    if (fragmentHtml.length > 300000 || instruction.length > 8000)
       return res.status(400).json({ error: 'Too long' })
     if (!fragmentHtml.includes('<')) return res.status(400).json({ error: 'Invalid fragment' })
     const hadLargeEmbeddedImage = /data:image\/[a-z0-9+.@-]+;base64,[A-Za-z0-9+/=\s]{800,}/i.test(
       rawFragment,
     )
+
+    // Normalize the extended, optional inputs so they are safe to inline into
+    // the prompt context (defensive caps; silently dropped if the shapes are off).
+    let computedStylesStr = ''
+    if (typeof computedStylesIn === 'string') {
+      computedStylesStr = computedStylesIn.slice(0, 8000)
+    } else if (computedStylesIn && typeof computedStylesIn === 'object') {
+      try {
+        computedStylesStr = JSON.stringify(computedStylesIn).slice(0, 8000)
+      } catch {
+        computedStylesStr = ''
+      }
+    }
+    let tokensStr = ''
+    if (Array.isArray(tokensIn)) {
+      try {
+        tokensStr = JSON.stringify(tokensIn).slice(0, 8000)
+      } catch {
+        tokensStr = ''
+      }
+    }
+    const friendlyLabel =
+      typeof friendlyLabelIn === 'string' ? friendlyLabelIn.slice(0, 120) : ''
+    const scope =
+      scopeIn === 'element' || scopeIn === 'section' || scopeIn === 'page' ? scopeIn : 'element'
+
+    const extraContext = [
+      friendlyLabel ? `Friendly label: ${friendlyLabel}` : '',
+      `Scope: ${scope}`,
+      computedStylesStr ? `Computed styles (whitelist):\n${computedStylesStr}` : '',
+      tokensStr ? `Available palette tokens (prefer var(--name) values):\n${tokensStr}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n\n')
+
     const userBlock = `Current element HTML:\n${fragmentHtml}\n\nRequested visual changes:\n${instruction}${
+      extraContext ? `\n\n${extraContext}` : ''
+    }${
       hadLargeEmbeddedImage
         ? '\n\nNote: A large data-URL image in src was omitted from the snippet. Keep the img tag; adjust classes, sizes, and alt text. To replace with a new generated photo, the UI has a separate image generation action.'
         : ''
     }`
     const sys =
-      'You adjust a single HTML element for layout and styling. Output ONLY the replacement HTML for that one element: from its opening tag through its closing tag. Preserve inner text and child elements unless the user explicitly asks to change copy. Prefer Tailwind-style utility classes on the element and wrappers when the page likely uses Tailwind. Inline style attributes are allowed. Do not wrap the answer in markdown code fences. No commentary before or after the HTML.'
+      'You adjust a single HTML element for layout and styling. You may return EITHER (a) a replacement HTML fragment for the element (from its opening tag through its closing tag) OR (b) a JSON object of the form {"styleDiff":[{"selector":"...","property":"...","value":"...","before":"..."}],"tokensUsed":["--primary",...]} when the change is purely stylistic. Prefer JSON styleDiff for pure styling edits; prefer HTML when structure changes. When palette tokens are provided, prefer CSS values like var(--primary) over raw hex so palette swaps propagate. Preserve inner text and child elements unless the user explicitly asks to change copy. Tailwind-style utility classes on the element and wrappers are allowed when returning HTML. Do not wrap the answer in markdown code fences. No commentary before or after the output.'
     const maxTok = Math.min(8000, LLM_CONFIG.parallel.maxTokens)
     try {
       const r = await groq(userBlock, {
@@ -1553,6 +1706,23 @@ export async function startServer(sessionsDir) {
         maxTokens: maxTok,
       })
       if (r.error) return res.status(502).json({ error: String(r.error) })
+      const raw = typeof r.content === 'string' ? r.content.trim() : ''
+
+      // Try JSON first: the model may return {styleDiff, tokensUsed}.
+      if (raw.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(raw)
+          if (parsed && Array.isArray(parsed.styleDiff)) {
+            return res.json({
+              styleDiff: parsed.styleDiff,
+              tokensUsed: Array.isArray(parsed.tokensUsed) ? parsed.tokensUsed : undefined,
+            })
+          }
+        } catch {
+          void 0
+        }
+      }
+
       const html = trimInlineAiHtmlFragment(r.content)
       if (!html.includes('<') || html.length < 3) {
         return res.status(502).json({ error: 'Model did not return valid HTML' })
@@ -2103,6 +2273,12 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── Preview: per-session workspace static files ──────────
+  // No trailing-slash redirect here: the Next.js `/preview/:path*` rewrite
+  // strips the slash when forwarding to this backend, so any 302 we issue
+  // to `/preview/:id/` re-enters the rewrite and loops forever. All in-app
+  // /preview/ URLs are constructed with the trailing slash already; for
+  // direct no-slash hits the static handler below serves index.html and
+  // the browser URL bar just lacks the slash (relative assets may 404).
   app.use(
     '/preview/:sessionId',
     (req, res, next) => {
@@ -2126,6 +2302,7 @@ export async function startServer(sessionsDir) {
                 req.params.sessionId,
                 session.preferredLanguage,
                 session.workspace,
+                readPalette(session.workspace),
               ),
             )
         } catch {

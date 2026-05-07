@@ -21,8 +21,6 @@ ship.log
 sessions/
 
 groq-model-benchmark/
-.aurora-quality-tmp/
-.ab-compare/
 
 .storyrun/
 .next/
@@ -30,8 +28,6 @@ groq-model-benchmark/
 
 # Build artifacts
 public/scripts/
-public/styles/*.css
-!public/styles/liquid-glass-button.css
 
 # IDE files
 .idea/
@@ -39,4 +35,6 @@ public/styles/*.css
 *.swo
 *~
 .gitnexus
-vanilla/.forge/
+.forge/
+.worktrees/
+.claude/worktrees/

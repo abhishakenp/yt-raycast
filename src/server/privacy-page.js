@@ -9,7 +9,7 @@ import {
   SITE_NAME,
   SITE_URL,
 } from '../config.js'
-import { escapeHtml } from '../renderers/shared.js'
+import { escapeHtml } from '@ship-fast/engine/renderers/shared.js'
 import { renderMarketingShell } from './marketing-shell.js'
 
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`

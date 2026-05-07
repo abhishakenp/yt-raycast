@@ -660,6 +660,28 @@ var INDIAN_SAMPLE_PROMPTS = [
   "A mobile wallet and recharge super-app landing page with rewards, bill categories, and KYC upgrade journey for India users."
 ];
 
+// src/lib/home/sample-prompts.ts
+var SAMPLE_PROMPTS = [
+  "A cinematic travel landing page for curated weekend escapes with reviews and fast booking.",
+  "A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.",
+  "A premium architecture studio site with immersive case studies, awards, and inquiry scheduling.",
+  "A bold ecommerce homepage for handcrafted coffee gear with bundles and subscriptions.",
+  "A sleek fintech landing page for founders tracking runway, burn, and investor updates.",
+  "A modern fitness club website with class schedules, trainer profiles, and membership plans.",
+  ...INDIAN_SAMPLE_PROMPTS
+];
+var LOCAL_DEV_PROMPT_SHORTCUTS = [
+  "Mere local gym ke liye ek powerful modern website banao with membership plans",
+  "Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.",
+  "Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.",
+  "A trustworthy mixed Hindi-English landing page for a chartered accountant practice offering GST return filing, income tax, and ROC compliance with fees and appointment booking.",
+  "A fine-dine and family restaurant landing page with chef story, regional menu highlights, table reservation, and catering upsell.",
+  "A regional language edtech landing page with micro-courses, mobile-first lessons, and affordable annual plans for Bharat students.",
+  "An FPO and farmer collective landing page with crop plans, mandi connect, transparent pricing charts, and member onboarding.",
+  "A multi-speciality hospital landing page with departments, insurance tie-ups, OT availability, and emergency contact strip.",
+  "A solar EPC and rooftop landing page with subsidy steps, generation calculator, and O&M warranty table for homes and SMEs."
+];
+
 // src/scripts/home-session-embed.ts
 var STATE_KEY = "sfEmbeddedSession";
 var shell = null;
@@ -708,6 +730,10 @@ var bindListeners = () => {
   });
   window.addEventListener("message", (ev) => {
     if (ev.origin !== location.origin) return;
+    if (ev.data?.type === "sf-request-auth-overlay") {
+      window.dispatchEvent(new CustomEvent("sf-request-auth-overlay"));
+      return;
+    }
     if (ev.data?.type !== "sf-close-embedded-session") return;
     if (!shell || shell.hidden) return;
     if (history.state?.[STATE_KEY]) {
@@ -1086,18 +1112,11 @@ var promptLangDetectToken = 0;
 var lastPromptTrimLen = 0;
 var promptLanguageRowUnlocked = false;
 var isLocalDevHost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "::1");
-var LOCAL_DEV_PROMPT_SHORTCUTS = [
-  "Mere local gym ke liye ek powerful modern website banao with membership plans",
-  "Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.",
-  "Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.",
-  "A trustworthy mixed Hindi-English landing page for a chartered accountant practice offering GST return filing, income tax, and ROC compliance with fees and appointment booking.",
-  "A fine-dine and family restaurant landing page with chef story, regional menu highlights, table reservation, and catering upsell.",
-  "A regional language edtech landing page with micro-courses, mobile-first lessons, and affordable annual plans for Bharat students.",
-  "An FPO and farmer collective landing page with crop plans, mandi connect, transparent pricing charts, and member onboarding.",
-  "A multi-speciality hospital landing page with departments, insurance tie-ups, OT availability, and emergency contact strip.",
-  "A solar EPC and rooftop landing page with subsidy steps, generation calculator, and O&M warranty table for homes and SMEs."
-];
-var SAMPLE_PROMPTS = [
+var isHomeDevPromptsEnabled = () => {
+  if (true) return true;
+  return isLocalDevHost;
+};
+var SAMPLE_PROMPTS2 = [
   "A cinematic travel landing page for curated weekend escapes with reviews and fast booking.",
   "A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.",
   "A premium architecture studio site with immersive case studies, awards, and inquiry scheduling.",
@@ -1507,7 +1526,7 @@ function randomDelay(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 function renderSamplePrompt() {
-  promptPlaceholderText.textContent = SAMPLE_PROMPTS[samplePromptIndex].slice(0, samplePromptLength);
+  promptPlaceholderText.textContent = SAMPLE_PROMPTS2[samplePromptIndex].slice(0, samplePromptLength);
 }
 function stopSamplePromptAnimation() {
   if (samplePromptTimer !== null) {
@@ -1536,7 +1555,7 @@ function stepSamplePromptAnimation() {
     syncSamplePromptVisibility();
     return;
   }
-  const currentPrompt = SAMPLE_PROMPTS[samplePromptIndex];
+  const currentPrompt = SAMPLE_PROMPTS2[samplePromptIndex];
   if (samplePromptMode === "typing") {
     samplePromptLength += 1;
     renderSamplePrompt();
@@ -1559,7 +1578,7 @@ function stepSamplePromptAnimation() {
     scheduleSamplePromptStep(randomDelay(10, 18));
     return;
   }
-  samplePromptIndex = (samplePromptIndex + 1) % SAMPLE_PROMPTS.length;
+  samplePromptIndex = (samplePromptIndex + 1) % SAMPLE_PROMPTS2.length;
   samplePromptMode = "typing";
   scheduleSamplePromptStep(260);
 }
@@ -1750,35 +1769,65 @@ updateGenerationCounter();
 renderSamplePrompt();
 syncSamplePromptVisibility();
 syncSubmitButtonState();
-var exampleChips = document.querySelectorAll(".prompt-example-chip");
-exampleChips.forEach((chip) => {
-  chip.addEventListener("click", () => {
-    const prompt = chip.getAttribute("data-prompt");
-    if (!prompt) return;
-    input.value = prompt;
-    hidePolicyViolation();
+if (isHomeDevPromptsEnabled()) {
+  const applyDevPrompt = (text) => {
+    input.value = text;
     validatePrompt(false);
     syncSamplePromptVisibility();
     syncSubmitButtonState();
-    const prev = lastPromptTrimLen;
-    const t = input.value.trim();
-    const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS;
-    lastPromptTrimLen = t.length;
+    lastPromptTrimLen = input.value.trim().length;
     syncPromptLanguageRowVisibility();
-    if (crossed) {
-      if (promptLangDetectTimer !== null) {
-        clearTimeout(promptLangDetectTimer);
-        promptLangDetectTimer = null;
+    schedulePromptLanguageDetect();
+  };
+  const deleteSessionsWithPrompt = async (target) => {
+    const want = target.trim();
+    if (!want) return;
+    try {
+      if (currentUser) {
+        const r = await authFetch(`/api/sessions?page=1&limit=50`);
+        if (!r.ok) return;
+        const raw = await r.json();
+        const items = Array.isArray(raw?.items) ? raw.items : [];
+        const matches = items.filter(
+          (s) => (s.prompt || "").trim() === want
+        );
+        await Promise.all(
+          matches.map(
+            (s) => authFetch(`/api/sessions/${s.id}`, { method: "DELETE" }).catch(() => null)
+          )
+        );
+      } else {
+        const stored = JSON.parse(
+          localStorage.getItem(ANON_SESSIONS_KEY) || "[]"
+        );
+        if (!Array.isArray(stored)) return;
+        const matches = stored.filter((s) => (s?.prompt || "").trim() === want);
+        await Promise.all(
+          matches.map(
+            (s) => fetch(`/api/sessions/${s.id}`, {
+              method: "DELETE",
+              headers: s.secret ? { "x-ship-fast-anon-owner": String(s.secret) } : {}
+            }).then(() => removeAnonSession(s.id)).catch(() => null)
+          )
+        );
       }
-      const runToken = ++promptLangDetectToken;
-      requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }));
-    } else {
-      schedulePromptLanguageDetect();
+    } catch {
     }
-    input.focus();
-  });
-});
-if (isLocalDevHost) {
+  };
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (!event.metaKey && !event.ctrlKey) return;
+      if (!/^[1-9]$/.test(event.key)) return;
+      const text = LOCAL_DEV_PROMPT_SHORTCUTS[Number(event.key) - 1];
+      if (!text) return;
+      event.preventDefault();
+      event.stopPropagation();
+      applyDevPrompt(text);
+      input.focus();
+    },
+    true
+  );
   const IMAGE_STUDIO_PROMPT = "This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.";
   const chipDefs = [
     { label: "Image studio", text: IMAGE_STUDIO_PROMPT },
@@ -1796,39 +1845,17 @@ if (isLocalDevHost) {
     btn.className = "dev-prompt-chip";
     btn.title = def.text;
     btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`;
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       btn.disabled = true;
-      input.value = def.text;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      setTimeout(() => {
-        if (form) form.requestSubmit();
-        btn.disabled = false;
-      }, 50);
+      await deleteSessionsWithPrompt(def.text);
+      applyDevPrompt(def.text);
+      btn.disabled = false;
+      form.requestSubmit();
     });
     chipBar.appendChild(btn);
   });
   const heroCard = document.getElementById("hero-card");
   heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling);
-  document.addEventListener(
-    "keydown",
-    (event) => {
-      if (!event.metaKey && !event.ctrlKey) return;
-      if (!/^[1-9]$/.test(event.key)) return;
-      const text = LOCAL_DEV_PROMPT_SHORTCUTS[Number(event.key) - 1];
-      if (!text) return;
-      event.preventDefault();
-      event.stopPropagation();
-      input.value = text;
-      validatePrompt(false);
-      syncSamplePromptVisibility();
-      syncSubmitButtonState();
-      lastPromptTrimLen = input.value.trim().length;
-      syncPromptLanguageRowVisibility();
-      schedulePromptLanguageDetect();
-      input.focus();
-    },
-    true
-  );
 }
 input.addEventListener("input", () => {
   hidePolicyViolation();
@@ -2705,6 +2732,11 @@ var applyHomeTabTitle = () => {
   if (tabTitle) document.title = tabTitle;
 };
 applyHomeTabTitle();
+var _autoOpenId = new URLSearchParams(location.search).get("s");
+if (_autoOpenId) {
+  history.replaceState(null, "", "/");
+  openEmbeddedSession(_autoOpenId);
+}
 window.addEventListener("sf-sync-home-gallery", reloadHomeGalleryIfReady);
 window.addEventListener("pageshow", (event) => {
   applyHomeTabTitle();

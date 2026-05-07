@@ -9,9 +9,9 @@ import {
   loadSiteSpec,
   saveSiteSpec,
   SUPPORTED_EXPORT_TARGETS,
-} from '../spec/index.js'
-import { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from '../renderers/index.js'
-import { routeToHtmlFile } from '../renderers/shared.js'
+} from '@ship-fast/engine/spec/index.js'
+import { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from '@ship-fast/engine/renderers/index.js'
+import { routeToHtmlFile } from '@ship-fast/engine/renderers/shared.js'
 import { createZipBuffer } from './zip.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 
@@ -130,6 +130,7 @@ export function getSessionExportTargets(session) {
       generatedAt: targetMeta.generatedAt || null,
       fileCount: targetMeta.fileCount || 0,
       downloadPath: ready ? `/api/sessions/${session.id}/download/${target}` : null,
+      specVersion: currentSourceHash,
     }
   })
 }
@@ -147,6 +148,22 @@ export function generateSessionExport(session, target) {
   if (!exactCloneStatus.ready) throw new Error(exactCloneStatus.reason)
   const sourceHash = hashSiteSpec(siteSpec)
 
+  const metadata = readExportMetadata(session.workspace)
+  const cachedTarget = metadata.targets?.[target]
+  if (
+    cachedTarget?.sourceHash === sourceHash &&
+    cachedTarget.bundlePath &&
+    existsSync(join(session.workspace, cachedTarget.bundlePath))
+  ) {
+    return {
+      target,
+      generatedAt: cachedTarget.generatedAt,
+      fileCount: cachedTarget.fileCount,
+      downloadPath: `/api/sessions/${session.id}/download/${target}`,
+      siteSpecReady: session.siteSpecReady,
+    }
+  }
+
   const { files } = renderProject(siteSpec, target, session)
   const exportsDir = join(session.workspace, 'exports')
   const outputDir = join(exportsDir, target)
@@ -158,7 +175,6 @@ export function generateSessionExport(session, target) {
   const bundlePath = join(session.workspace, bundleRelativePath)
   writeFileSync(bundlePath, bundleBuffer)
 
-  const metadata = readExportMetadata(session.workspace)
   metadata.targets = metadata.targets || {}
   metadata.targets[target] = {
     bundlePath: bundleRelativePath,

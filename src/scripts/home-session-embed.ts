@@ -9,7 +9,7 @@ export const isMarketingHomePath = (): boolean => {
   return p === '/' || p === ''
 }
 
-export const setMainInert = (on: boolean): void => {
+const setMainInert = (on: boolean): void => {
   if (!shell) return
   for (const el of Array.from(document.body.children)) {
     if (el === shell) continue
@@ -50,6 +50,12 @@ const bindListeners = (): void => {
   })
   window.addEventListener('message', (ev: MessageEvent<{ type?: string }>) => {
     if (ev.origin !== location.origin) return
+
+    if (ev.data?.type === 'sf-request-auth-overlay') {
+      window.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
+      return
+    }
+
     if (ev.data?.type !== 'sf-close-embedded-session') return
     if (!shell || shell.hidden) return
     if ((history.state as Record<string, unknown> | null)?.[STATE_KEY]) {
@@ -61,7 +67,7 @@ const bindListeners = (): void => {
   })
 }
 
-export const ensureShell = (): void => {
+const ensureShell = (): void => {
   if (shell && frame) {
     bindListeners()
     return
@@ -81,7 +87,7 @@ export const ensureShell = (): void => {
   bindListeners()
 }
 
-export const showShellForSession = (sessionId: string | number): void => {
+const showShellForSession = (sessionId: string | number): void => {
   ensureShell()
   const idStr: string = String(sessionId)
   const path: string = `/session/${encodeURIComponent(idStr)}?embed=1`

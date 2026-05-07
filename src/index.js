@@ -9,9 +9,11 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { startServer, startCLISession } from './server/index.js'
 
-function cleanupPort7420() {
+const PORT = Number(process.env.DASHBOARD_PORT) || 7430
+
+function cleanupPort() {
   try {
-    execSync('kill $(lsof -t -i:7420) 2>/dev/null', { stdio: 'ignore' })
+    execSync(`kill $(lsof -t -i:${PORT}) 2>/dev/null`, { stdio: 'ignore' })
   } catch {
     /* port cleanup is best-effort */
   }
@@ -49,7 +51,7 @@ if (promptArg) {
   )
   console.log(`  workspace: ${workspace}\n`)
 
-  cleanupPort7420()
+  cleanupPort()
   await startServer(sessionsDir)
 
   const { generation } = await startCLISession(workspace, promptArg)
@@ -60,8 +62,8 @@ if (promptArg) {
   console.log('\n  ship-fast \u2500 server mode (multi-session)')
   console.log(`  sessions: ${sessionsDir}\n`)
 
-  cleanupPort7420()
+  cleanupPort()
   await startServer(sessionsDir)
 
-  console.log('  Waiting for prompts at http://localhost:7420\n')
+  console.log(`  Waiting for prompts at http://localhost:${PORT}\n`)
 }

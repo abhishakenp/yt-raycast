@@ -1,4 +1,4 @@
-import { escapeHtml } from '../renderers/shared.js'
+import { escapeHtml } from '@ship-fast/engine/renderers/shared.js'
 
 export const applyPricingPageOverrides = (html, settings) => {
   if (!settings || typeof html !== 'string') return html

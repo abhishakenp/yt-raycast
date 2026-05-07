@@ -5,7 +5,10 @@ if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
 import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy'
 import { preferMixedEnglishBcp47FromSnippet } from '../lib/home/mixed-english-hints'
 import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
-import { openEmbeddedSession, isMarketingHomePath, ensureShell, showShellForSession, setMainInert } from './home-session-embed'
+import { LOCAL_DEV_PROMPT_SHORTCUTS } from '../lib/home/sample-prompts'
+
+declare const __SF_DEV_SCRIPTS__: boolean
+import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed'
 
 type CurrentUser = unknown | null
 
@@ -391,17 +394,11 @@ const isLocalDevHost =
   (window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '::1')
-const LOCAL_DEV_PROMPT_SHORTCUTS: string[] = [
-  'Mere local gym ke liye ek powerful modern website banao with membership plans',
-  'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
-  'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
-  'A trustworthy mixed Hindi-English landing page for a chartered accountant practice offering GST return filing, income tax, and ROC compliance with fees and appointment booking.',
-  'A fine-dine and family restaurant landing page with chef story, regional menu highlights, table reservation, and catering upsell.',
-  'A regional language edtech landing page with micro-courses, mobile-first lessons, and affordable annual plans for Bharat students.',
-  'An FPO and farmer collective landing page with crop plans, mandi connect, transparent pricing charts, and member onboarding.',
-  'A multi-speciality hospital landing page with departments, insurance tie-ups, OT availability, and emergency contact strip.',
-  'A solar EPC and rooftop landing page with subsidy steps, generation calculator, and O&M warranty table for homes and SMEs.',
-]
+/** True when the browser script was built for non-production (see `build-browser-scripts.ts`) or the page is on a loopback host. LAN IP + production script build → false. */
+const isHomeDevPromptsEnabled = (): boolean => {
+  if (typeof __SF_DEV_SCRIPTS__ !== 'undefined' && __SF_DEV_SCRIPTS__) return true
+  return isLocalDevHost
+}
 const SAMPLE_PROMPTS: string[] = [
   'A cinematic travel landing page for curated weekend escapes with reviews and fast booking.',
   'A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.',
@@ -1175,36 +1172,71 @@ renderSamplePrompt()
 syncSamplePromptVisibility()
 syncSubmitButtonState()
 
-const exampleChips = document.querySelectorAll('.prompt-example-chip')
-exampleChips.forEach((chip) => {
-  chip.addEventListener('click', () => {
-    const prompt = chip.getAttribute('data-prompt')
-    if (!prompt) return
-    input.value = prompt
-    hidePolicyViolation()
+if (isHomeDevPromptsEnabled()) {
+  const applyDevPrompt = (text: string) => {
+    input.value = text
     validatePrompt(false)
     syncSamplePromptVisibility()
     syncSubmitButtonState()
-    const prev = lastPromptTrimLen
-    const t = input.value.trim()
-    const crossed = prev < PROMPT_LANG_DETECT_MIN_CHARS && t.length >= PROMPT_LANG_DETECT_MIN_CHARS
-    lastPromptTrimLen = t.length
+    lastPromptTrimLen = input.value.trim().length
     syncPromptLanguageRowVisibility()
-    if (crossed) {
-      if (promptLangDetectTimer !== null) {
-        clearTimeout(promptLangDetectTimer)
-        promptLangDetectTimer = null
-      }
-      const runToken = ++promptLangDetectToken
-      requestAnimationFrame(() => runPromptLangDetectAsync(runToken, { skipIfUnchanged: false }))
-    } else {
-      schedulePromptLanguageDetect()
-    }
-    input.focus()
-  })
-})
+    schedulePromptLanguageDetect()
+  }
 
-if (isLocalDevHost) {
+  const deleteSessionsWithPrompt = async (target: string): Promise<void> => {
+    const want = target.trim()
+    if (!want) return
+    try {
+      if (currentUser) {
+        const r = await authFetch(`/api/sessions?page=1&limit=50`)
+        if (!r.ok) return
+        const raw = await r.json()
+        const items = Array.isArray(raw?.items) ? raw.items : []
+        const matches = items.filter(
+          (s: { id: string; prompt?: string }) => (s.prompt || '').trim() === want,
+        )
+        await Promise.all(
+          matches.map((s: { id: string }) =>
+            authFetch(`/api/sessions/${s.id}`, { method: 'DELETE' }).catch(() => null),
+          ),
+        )
+      } else {
+        const stored = JSON.parse(
+          localStorage.getItem(ANON_SESSIONS_KEY) || '[]',
+        ) as StoredAnonSessionEntry[]
+        if (!Array.isArray(stored)) return
+        const matches = stored.filter((s) => (s?.prompt || '').trim() === want)
+        await Promise.all(
+          matches.map((s) =>
+            fetch(`/api/sessions/${s.id}`, {
+              method: 'DELETE',
+              headers: s.secret ? { 'x-ship-fast-anon-owner': String(s.secret) } : {},
+            })
+              .then(() => removeAnonSession(s.id))
+              .catch(() => null),
+          ),
+        )
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (!event.metaKey && !event.ctrlKey) return
+      if (!/^[1-9]$/.test(event.key)) return
+      const text = LOCAL_DEV_PROMPT_SHORTCUTS[Number(event.key) - 1]
+      if (!text) return
+      event.preventDefault()
+      event.stopPropagation()
+      applyDevPrompt(text)
+      input.focus()
+    },
+    true,
+  )
+
   const IMAGE_STUDIO_PROMPT =
     'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.'
 
@@ -1225,40 +1257,17 @@ if (isLocalDevHost) {
     btn.className = 'dev-prompt-chip'
     btn.title = def.text
     btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       btn.disabled = true
-      input.value = def.text
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-      setTimeout(() => {
-        if (form) form.requestSubmit()
-        btn.disabled = false
-      }, 50)
+      await deleteSessionsWithPrompt(def.text)
+      applyDevPrompt(def.text)
+      btn.disabled = false
+      form.requestSubmit()
     })
     chipBar.appendChild(btn)
   })
   const heroCard = document.getElementById('hero-card')
   heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling)
-
-  document.addEventListener(
-    'keydown',
-    (event) => {
-      if (!event.metaKey && !event.ctrlKey) return
-      if (!/^[1-9]$/.test(event.key)) return
-      const text = LOCAL_DEV_PROMPT_SHORTCUTS[Number(event.key) - 1]
-      if (!text) return
-      event.preventDefault()
-      event.stopPropagation()
-      input.value = text
-      validatePrompt(false)
-      syncSamplePromptVisibility()
-      syncSubmitButtonState()
-      lastPromptTrimLen = input.value.trim().length
-      syncPromptLanguageRowVisibility()
-      schedulePromptLanguageDetect()
-      input.focus()
-    },
-    true,
-  )
 }
 
 input.addEventListener('input', () => {
@@ -2256,6 +2265,13 @@ const applyHomeTabTitle = (): void => {
   if (tabTitle) document.title = tabTitle
 }
 applyHomeTabTitle()
+
+// Auto-open embedded session from redirect
+const _autoOpenId = new URLSearchParams(location.search).get('s')
+if (_autoOpenId) {
+  history.replaceState(null, '', '/')
+  openEmbeddedSession(_autoOpenId)
+}
 
 window.addEventListener('sf-sync-home-gallery', reloadHomeGalleryIfReady)
 

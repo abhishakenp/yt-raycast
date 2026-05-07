@@ -1,4 +1,4 @@
-import { groq } from '../llm/groq.js'
+import { groq } from '@ship-fast/engine/llm/groq.js'
 import { isSlugTaken } from './deployments.js'
 
 const ADJECTIVES = [

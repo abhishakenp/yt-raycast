@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { loadSiteSpec, saveSiteSpec } from '../spec/index.js'
+import { loadSiteSpec, saveSiteSpec } from '@ship-fast/engine/spec/index.js'
 
 const THEME_OVERRIDE_FILE = '.theme.json'
 const ALLOWED_THEME_KEYS = new Set([

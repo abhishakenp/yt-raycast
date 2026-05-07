@@ -35,7 +35,8 @@ function ensureBillingDir() {
 const PAYWALL_DISABLED =
   String(process.env.DISABLE_PAYWALL ?? '')
     .trim()
-    .toLowerCase() === 'true'
+    .toLowerCase() === 'true' ||
+  process.env.NODE_ENV === 'development'
 
 const EXPORT_HISTORICAL_SUBSCRIPTION_ACCESS =
   String(process.env.EXPORT_HISTORICAL_SUBSCRIPTION_ACCESS ?? '')
@@ -529,12 +530,14 @@ export async function getSessionPaymentDetails(
   const resolvedCountry = countryCode || resolveCountryCodeFromHeaders(headers) || 'GLOBAL'
   const isIndianUser = resolvedCountry === 'IN'
   const resolvedIp = ip
-  const [isSubscribed, earlyAdopter, credits, quota] = await Promise.all([
+  const [isSubscribedRaw, earlyAdopter, credits, quota] = await Promise.all([
     hasActiveSubscription(session?.userId),
     getEarlyAdopterStatus(),
     getUserCredits(session?.userId),
     getUserGenerationQuota(session?.userId, resolvedIp),
   ])
+  const isSubscribed = PAYWALL_DISABLED ? true : isSubscribedRaw
+  const targetUnlocked = PAYWALL_DISABLED ? true : isSubscribed || credits > 0
 
   return {
     gateway: 'razorpay',
@@ -578,7 +581,7 @@ export async function getSessionPaymentDetails(
     },
     quota,
     access: {
-      targetUnlocked: isSubscribed || credits > 0,
+      targetUnlocked,
       subscriptionUnlocked: isSubscribed,
     },
   }

@@ -1,4 +1,7 @@
 // @ts-nocheck
+import { THEME_PRESETS } from './theme-presets'
+import { deriveCustomPalette } from './palette-derive'
+import './preview-editor/index'
 // ─── Config ────────────────────────────────────────────────
 const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
 const SF_EMBED_HOME = (() => {
@@ -78,20 +81,59 @@ function isRailUnlocked() {
 }
 
 function requirePremium() {
+  if (isRailUnlocked()) return true
   if (isAnonymousSession) {
     openAuthWall()
     return false
   }
-  if (!isRailUnlocked()) {
-    openPaymentModal(railPaywallEntry())
-    return false
+  if (!paymentState) return true
+  openPaymentModal(railPaywallEntry())
+  return false
+}
+
+function showRailToast(message, durationMs) {
+  let el = document.getElementById('rail-toast')
+  if (!el) {
+    el = document.createElement('div')
+    el.id = 'rail-toast'
+    el.className = 'rail-toast'
+    el.setAttribute('role', 'status')
+    el.setAttribute('aria-live', 'polite')
+    document.body.appendChild(el)
   }
-  return true
+  el.textContent = String(message || '')
+  // Force reflow so the transition kicks in reliably on rapid re-triggers.
+  void el.offsetHeight
+  el.classList.add('is-visible')
+  if (el._sfToastTimer) clearTimeout(el._sfToastTimer)
+  el._sfToastTimer = setTimeout(
+    () => el.classList.remove('is-visible'),
+    Math.max(600, Number(durationMs) || 2600),
+  )
+}
+
+function setRailRowBusy(action, isBusy, busyLabel) {
+  const row = document.querySelector(`[data-rail-action="${action}"]`)
+  if (!row) return
+  row.classList.toggle('preview-site-rail-row--busy', Boolean(isBusy))
+  const label = row.querySelector('.preview-site-rail-row-label')
+  if (label) {
+    if (isBusy) {
+      if (!row._sfOriginalLabel) row._sfOriginalLabel = label.textContent
+      if (busyLabel) label.textContent = busyLabel
+    } else if (row._sfOriginalLabel) {
+      label.textContent = row._sfOriginalLabel
+      row._sfOriginalLabel = null
+    }
+  }
 }
 
 function syncToastGenerateAnotherVisibility() {
+  const unlocked = isRailUnlocked()
   const cta = document.getElementById('toast-cta')
-  if (cta) cta.hidden = isRailUnlocked()
+  if (cta) cta.hidden = unlocked
+  const ctaStudio = document.getElementById('toast-cta-studio')
+  if (ctaStudio) ctaStudio.hidden = unlocked
 }
 
 function syncRailPremiumBadges() {
@@ -222,9 +264,13 @@ function _stopCmsifyAnimation() {
 let _ecommercifyAnim = null
 function _startEcommercifyAnimation() {
   try {
+    // Mount on the device shell (sibling of #preview-iframe) so the overlay stacks above the
+    // iframe compositing layer; fall back to the outer stage for older markup.
+    const shell = document.getElementById('preview-device-shell')
     const stage = document.getElementById('preview-stage')
-    if (!stage || typeof EcommercifyAnimation === 'undefined') return
-    _ecommercifyAnim = new EcommercifyAnimation(stage)
+    const mount = shell || stage
+    if (!mount || typeof EcommercifyAnimation === 'undefined') return
+    _ecommercifyAnim = new EcommercifyAnimation(mount as HTMLElement)
     _ecommercifyAnim.start()
   } catch (_) {
     /* animation is non-critical */
@@ -425,6 +471,7 @@ let hasSeenLiveUpdate = false // only auto-collapse if we watched tasks complete
 let isReconnect = false // true when refreshing a session that already has homepage
 let alternativeDesign = null // background-loaded alternative theme
 let exportTargets = []
+const exportBuildRequested: Set<string> = new Set()
 let exportTargetsPollTimer = null
 let siteSpecReady = false
 let preferredExportTarget = 'html'
@@ -440,7 +487,24 @@ let provisionDialogType = null
 let provisionBusy = false
 let githubPushBusy = false
 let githubMenuOpen = false
+let paletteMenuOpen = false
+let currentPaletteId = null
+let paletteSearchQuery = ''
+let customPaletteSeed = '#3b82f6'
+let customColorInputEl = null
 let lastGithubPush = null
+
+const PALETTE_PRESETS = THEME_PRESETS.map((p) => ({
+  id: p.id,
+  name: p.label,
+  dark: p.dark,
+  light: p.light,
+  bg: p.dark.background,
+  surface: p.dark.card || p.dark.background,
+  accent: p.dark.primary,
+  text: p.dark.foreground,
+  border: p.dark.border,
+}))
 let previewSelectMode = false
 let previewAnnotatorActive = false
 let chatEditable = false
@@ -755,31 +819,26 @@ function syncPreviewChrome() {
   if (!chrome) return
   chrome.classList.toggle('is-preview-ready', homepageReady || previewLoaded)
   const urlText = document.getElementById('url-text')
-  const urlLive = document.getElementById('browser-url-live')
   const statusText = document.getElementById('status-text')
-  if (deploymentState?.url) {
-    const raw = formatDeploymentUrl(deploymentState.url)
-    const href = raw.startsWith('http') ? raw : `https://${raw}`
-    const shown = href.replace(/^https?:\/\//, '')
-    if (urlLive) {
-      urlLive.href = href
-      urlLive.textContent = shown
-      urlLive.hidden = false
-    }
-    if (urlText) urlText.hidden = true
-  } else {
-    if (urlLive) urlLive.hidden = true
-    if (urlText) {
-      urlText.hidden = false
-      if (nextPreviewActive && nextPreviewBase) {
-        try {
-          urlText.textContent = `${new URL(nextPreviewBase).host}/`
-        } catch {
-          urlText.textContent = nextPreviewBase
-        }
-      } else if (previewLoaded || homepageReady)
-        urlText.textContent = new URL(PREVIEW_BASE).pathname
-      else urlText.textContent = window.location.host
+  if (urlText) {
+    if (deploymentState?.url) {
+      const raw = formatDeploymentUrl(deploymentState.url)
+      const href = raw.startsWith('http') ? raw : `https://${raw}`
+      urlText.href = href
+      urlText.textContent = href.replace(/^https?:\/\//, '')
+    } else if (nextPreviewActive && nextPreviewBase) {
+      urlText.href = nextPreviewBase
+      try {
+        urlText.textContent = `${new URL(nextPreviewBase).host}/`
+      } catch {
+        urlText.textContent = nextPreviewBase
+      }
+    } else if (previewLoaded || homepageReady) {
+      urlText.href = PREVIEW_BASE
+      urlText.textContent = new URL(PREVIEW_BASE).pathname
+    } else {
+      urlText.href = window.location.href
+      urlText.textContent = window.location.host
     }
   }
   if (statusText) {
@@ -815,38 +874,13 @@ function railPaywallEntry() {
   )
 }
 
+function canShowGitHubMenu() {
+  if (isAnonymousSession) return false
+  return homepageReady && (exportTargets.length > 0 || siteSpecReady)
+}
+
 function renderGitHubPushButton() {
-  const menu = document.getElementById('github-export-menu')
-  const button = document.getElementById('github-push-btn')
-
-  if (isAnonymousSession) {
-    menu.style.display = 'none'
-    return
-  }
-
-  const selected = getSelectedExportEntry()
-  const canShow = homepageReady && (exportTargets.length > 0 || siteSpecReady)
-  const pushedLabel = lastGithubPush?.target
-    ? formatExportTargetLabel(lastGithubPush.target)
-    : selected
-      ? formatExportTargetLabel(selected.target)
-      : 'an export'
-
-  menu.style.display = canShow ? 'inline-flex' : 'none'
-  button.disabled = githubPushBusy || !canShow
-  button.classList.toggle('is-loading', githubPushBusy)
-  button.classList.toggle('is-open', githubMenuOpen && canShow)
-  button.classList.toggle('is-success', Boolean(lastGithubPush?.repoFullName) && !githubPushBusy)
-  if (!canShow) setGitHubMenuOpen(false)
-
-  const title = githubPushBusy
-    ? `Pushing ${pushedLabel} to GitHub…`
-    : lastGithubPush?.repoFullName
-      ? `Choose another stack to push to ${lastGithubPush.repoFullName}`
-      : 'Choose GitHub export target'
-  button.title = title
-  button.setAttribute('aria-label', title)
-  button.setAttribute('aria-expanded', githubMenuOpen ? 'true' : 'false')
+  if (!canShowGitHubMenu()) setGitHubMenuOpen(false)
 }
 
 function getGitHubTargetEntries() {
@@ -866,33 +900,102 @@ function getGitHubTargetEntries() {
   )
 }
 
-function setGitHubMenuOpen(nextOpen) {
-  const menu = document.getElementById('github-export-menu')
-  const panel = document.getElementById('github-export-panel')
-  const button = document.getElementById('github-push-btn')
-  const canShow = Boolean(menu) && menu.style.display !== 'none'
+function ensureGitHubMenu() {
+  let panel = document.getElementById('github-export-panel')
+  if (!panel) {
+    panel = document.createElement('div')
+    panel.id = 'github-export-panel'
+    panel.className = 'export-panel github-export-panel'
+    panel.innerHTML = `
+      <div class="export-panel-top github-export-panel-top">
+        <div class="export-copy">
+          <span class="export-eyebrow">GitHub Push</span>
+          <strong>Choose the repo stack</strong>
+          <p id="github-export-subtext">
+            Pick HTML, React, or Next.js and Ship Fast will push that export to GitHub.
+          </p>
+        </div>
+        <span class="export-status-badge" id="github-export-status">Choose target</span>
+      </div>
+      <div class="export-target-list" id="github-export-target-list"></div>
+    `
+    document.body.appendChild(panel)
+    panel.querySelector('#github-export-target-list').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-github-target]')
+      if (!button || githubPushBusy || button.disabled) return
+      selectedExportTarget = button.dataset.githubTarget || selectedExportTarget
+      const entry =
+        getExportEntry(selectedExportTarget) ||
+        getGitHubTargetEntries().find((e) => e.target === selectedExportTarget)
+      if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
+        openPaymentModal(entry)
+        return
+      }
+      renderExportPanel()
+      renderGitHubExportPanel()
+      pushSelectedExportToGitHub(selectedExportTarget)
+    })
+  }
+  return panel
+}
 
+function positionGitHubMenu(anchor) {
+  const panel = document.getElementById('github-export-panel')
+  if (!panel || !anchor || !anchor.isConnected) return
+  const rect = anchor.getBoundingClientRect()
+  const gap = 8
+  const margin = 12
+  const top = rect.bottom + gap
+  const availableHeight = Math.max(140, window.innerHeight - top - margin)
+  panel.style.setProperty('max-height', `${Math.round(availableHeight)}px`, 'important')
+  void panel.offsetWidth
+  const panelWidth = panel.offsetWidth || 340
+  let left = rect.right - panelWidth
+  if (left < margin) left = Math.max(margin, rect.left)
+  if (left + panelWidth > window.innerWidth - margin) {
+    left = Math.max(margin, window.innerWidth - panelWidth - margin)
+  }
+  panel.style.setProperty('left', `${Math.round(left)}px`, 'important')
+  panel.style.setProperty('top', `${Math.round(top)}px`, 'important')
+}
+
+function setGitHubMenuOpen(nextOpen, anchor) {
+  const panel = ensureGitHubMenu()
+  const canShow = canShowGitHubMenu()
   githubMenuOpen = Boolean(nextOpen) && canShow
-  panel.style.display = githubMenuOpen ? 'grid' : 'none'
-  button.classList.toggle('is-open', githubMenuOpen)
-  button.setAttribute('aria-expanded', githubMenuOpen ? 'true' : 'false')
+  if (githubMenuOpen) {
+    panel.style.display = 'grid'
+    if (anchor) positionGitHubMenu(anchor)
+    requestAnimationFrame(() => panel.classList.add('is-open'))
+  } else {
+    panel.classList.remove('is-open')
+    panel.style.display = 'none'
+  }
+  const railRow = document.querySelector('#preview-site-rail [data-rail-action="github"]')
+  if (railRow) {
+    railRow.classList.toggle('is-open', githubMenuOpen)
+    railRow.setAttribute('aria-expanded', githubMenuOpen ? 'true' : 'false')
+  }
 }
 
 function closeGitHubMenu() {
   setGitHubMenuOpen(false)
 }
 
-function toggleGitHubMenu() {
+function toggleGitHubMenu(anchor) {
   closeExportMenu()
+  ensureGitHubMenu()
   renderGitHubExportPanel()
-  setGitHubMenuOpen(!githubMenuOpen)
+  setGitHubMenuOpen(!githubMenuOpen, anchor)
 }
 
 function renderGitHubExportPanel() {
+  const panel = document.getElementById('github-export-panel')
+  if (!panel) return
   const statusEl = document.getElementById('github-export-status')
   const subtextEl = document.getElementById('github-export-subtext')
-  const eyebrowEl = document.querySelector('#github-export-panel .export-eyebrow')
-  const headingEl = document.querySelector('#github-export-panel .export-copy strong')
+  const eyebrowEl = panel.querySelector('.export-eyebrow')
+  const headingEl = panel.querySelector('.export-copy strong')
   const targetList = document.getElementById('github-export-target-list')
   const targets = getGitHubTargetEntries()
 
@@ -950,6 +1053,254 @@ function renderGitHubExportPanel() {
     : githubRequiresPayment
       ? 'Subscribe to Pro or purchase download credits to push to GitHub.'
       : 'Pick HTML, React, or Next.js and Ship Fast will push that export to GitHub.'
+}
+
+function buildStripGradient(c) {
+  return `linear-gradient(115deg, ${c.bg} 0 25%, ${c.surface} 25% 50%, ${c.accent} 50% 75%, ${c.text} 75% 100%)`
+}
+
+function renderPaletteRailStrip() {
+  const strip = document.getElementById('rail-palette-strip')
+  if (!strip) return
+  strip.innerHTML = ''
+  let colors = null
+  if (currentPaletteId === 'custom') {
+    const d = deriveCustomPalette(customPaletteSeed)
+    colors = { bg: d.bg, surface: d.surface, accent: d.accent, text: d.text }
+  } else if (currentPaletteId) {
+    const p = PALETTE_PRESETS.find((p) => p.id === currentPaletteId)
+    if (p) colors = { bg: p.bg, surface: p.surface, accent: p.accent, text: p.text }
+  }
+  if (!colors) {
+    strip.removeAttribute('style')
+    strip.classList.remove('is-active')
+    return
+  }
+  strip.classList.add('is-active')
+  strip.style.background = buildStripGradient(colors)
+}
+
+function ensurePaletteMenu() {
+  let menu = document.getElementById('palette-menu')
+  if (!menu) {
+    menu = document.createElement('div')
+    menu.id = 'palette-menu'
+    document.body.appendChild(menu)
+  }
+  return menu
+}
+
+function positionPaletteMenu(anchor) {
+  const menu = document.getElementById('palette-menu')
+  if (!menu || !anchor) return
+  const rect = anchor.getBoundingClientRect()
+  const menuWidth = menu.offsetWidth || 340
+  const menuHeight = menu.offsetHeight || 420
+  let left = rect.left - menuWidth - 12
+  if (left < 12) left = Math.max(12, rect.right - menuWidth)
+  let top = rect.top
+  if (top + menuHeight > window.innerHeight - 12) {
+    top = Math.max(12, window.innerHeight - menuHeight - 12)
+  }
+  menu.style.left = `${Math.round(left)}px`
+  menu.style.top = `${Math.round(top)}px`
+}
+
+function setPaletteMenuOpen(open) {
+  const menu = document.getElementById('palette-menu')
+  if (!menu) return
+  paletteMenuOpen = Boolean(open)
+  if (paletteMenuOpen) {
+    menu.style.display = 'grid'
+    requestAnimationFrame(() => menu.classList.add('is-open'))
+  } else {
+    menu.classList.remove('is-open')
+    menu.style.display = 'none'
+  }
+}
+
+function closePaletteMenu() {
+  setPaletteMenuOpen(false)
+}
+
+function openCustomColorPicker() {
+  if (!customColorInputEl) {
+    customColorInputEl = document.createElement('input')
+    customColorInputEl.type = 'color'
+    customColorInputEl.style.position = 'fixed'
+    customColorInputEl.style.left = '-9999px'
+    customColorInputEl.style.top = '-9999px'
+    customColorInputEl.style.opacity = '0'
+    customColorInputEl.style.pointerEvents = 'none'
+    document.body.appendChild(customColorInputEl)
+    customColorInputEl.addEventListener('input', (ev) => {
+      const hex = ev.target.value
+      customPaletteSeed = hex
+      const derived = deriveCustomPalette(hex)
+      applyPaletteToPreview(derived)
+      const stripEl = document.getElementById('palette-custom-strip')
+      if (stripEl) stripEl.style.background = buildStripGradient(derived)
+      const cardEl = document.querySelector('.palette-preset-card--custom')
+      if (cardEl) cardEl.style.setProperty('--sf-accent', hex)
+    })
+  }
+  customColorInputEl.value = customPaletteSeed
+  customColorInputEl.click()
+}
+
+function renderPalettePanel(anchor) {
+  const menu = ensurePaletteMenu()
+  const customCardHtml = `<button type="button" class="palette-preset-card palette-preset-card--custom${currentPaletteId === 'custom' ? ' is-active' : ''}" data-palette-preset="custom" data-palette-name="custom" style="--sf-accent:${escapeHtml(customPaletteSeed)}">
+      <span class="palette-preset-swatches palette-preset-swatches--strip" id="palette-custom-strip" style="background:${escapeHtml(buildStripGradient(deriveCustomPalette(customPaletteSeed)))}"></span>
+      <span class="palette-preset-name">Custom</span>
+    </button>`
+  const presetCards = customCardHtml + PALETTE_PRESETS.map((p) => {
+    const swatches = [p.bg, p.surface, p.accent, p.text]
+      .map((c) => `<span class="palette-preset-swatch" style="background:${escapeHtml(c)}"></span>`)
+      .join('')
+    return `<button type="button" class="palette-preset-card${p.id === currentPaletteId ? ' is-active' : ''}" data-palette-preset="${escapeHtml(p.id)}" data-palette-name="${escapeHtml(p.name.toLowerCase())}" style="--sf-accent:${escapeHtml(p.accent)}">
+      <span class="palette-preset-swatches">${swatches}</span>
+      <span class="palette-preset-name">${escapeHtml(p.name)}</span>
+    </button>`
+  }).join('')
+  menu.innerHTML = `
+    <div class="export-panel-top">
+      <div class="export-copy">
+        <span class="export-eyebrow">Color palette</span>
+        <strong>Pick a theme, or set a custom accent.</strong>
+      </div>
+    </div>
+    <div class="palette-search-row">
+      <input type="search" class="palette-search" id="palette-search" placeholder="Search themes…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="palette-preset-grid">
+      ${presetCards}
+      <p class="palette-empty" id="palette-empty" hidden></p>
+    </div>
+  `
+  menu.querySelectorAll('[data-palette-preset]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-palette-preset')
+      if (id === 'custom') {
+        openCustomColorPicker()
+        return
+      }
+      const preset = PALETTE_PRESETS.find((p) => p.id === id)
+      if (preset) applyPaletteToPreview(preset)
+    })
+  })
+  const searchInput = menu.querySelector('#palette-search')
+  const emptyEl = menu.querySelector('#palette-empty')
+  const cards = menu.querySelectorAll('.palette-preset-card')
+  const applyFilter = () => {
+    const q = paletteSearchQuery
+    let visible = 0
+    cards.forEach((card) => {
+      const name = card.getAttribute('data-palette-name') || ''
+      const match = !q || name.includes(q)
+      card.hidden = !match
+      if (match) visible++
+    })
+    if (emptyEl) {
+      emptyEl.hidden = visible > 0
+      emptyEl.textContent = q ? `No themes match "${q}".` : 'No themes available.'
+    }
+  }
+  if (searchInput) {
+    searchInput.value = paletteSearchQuery
+    searchInput.addEventListener('input', (ev) => {
+      paletteSearchQuery = String(ev.target.value || '').trim().toLowerCase()
+      applyFilter()
+    })
+    // Keep focus on open
+    requestAnimationFrame(() => searchInput.focus())
+  }
+  applyFilter()
+  positionPaletteMenu(anchor)
+}
+
+function buildPaletteCss(palette) {
+  const vars = {}
+  if (palette && palette.dark && typeof palette.dark === 'object') {
+    Object.assign(vars, palette.dark)
+  } else {
+    if (palette.bg) vars.background = palette.bg
+    if (palette.surface) {
+      vars.card = palette.surface
+      vars.popover = palette.surface
+    }
+    if (palette.accent) {
+      vars.primary = palette.accent
+      vars.ring = palette.accent
+    }
+    if (palette.text) vars.foreground = palette.text
+    if (palette.border) vars.border = palette.border
+  }
+  const entries = Object.entries(vars).filter(([, v]) => typeof v === 'string' && v.length)
+  if (!entries.length) return ''
+  const decls = entries.map(([k, v]) => `  --${k}: ${v} !important;`).join('\n')
+  // Emit on both :root and .dark so Tailwind's dark-mode scope picks it up too.
+  return `:root, .dark, html, body {\n${decls}\n}`
+}
+
+function applyPaletteToPreview(palette) {
+  // Backend endpoint /api/sessions/:id/apply-palette is not yet wired.
+  // Frontend still POSTs so the server team can pick it up; we fall back to
+  // injecting a <style> tag into the preview iframe for immediate feedback.
+  if (SESSION_ID) {
+    apiFetch(`/api/sessions/${SESSION_ID}/apply-palette`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: palette.id || null,
+        dark: palette.dark || null,
+        light: palette.light || null,
+        bg: palette.bg || null,
+        surface: palette.surface || null,
+        accent: palette.accent || null,
+        text: palette.text || null,
+        border: palette.border || null,
+      }),
+    }).catch(() => {})
+  }
+  const css = buildPaletteCss(palette)
+  if (!css) return
+  try {
+    const iframe = document.getElementById('preview-iframe')
+    const doc = iframe && iframe.contentDocument
+    if (!doc) return
+    let styleEl = doc.getElementById('sf-palette-override')
+    if (!styleEl) {
+      styleEl = doc.createElement('style')
+      styleEl.id = 'sf-palette-override'
+      ;(doc.head || doc.documentElement).appendChild(styleEl)
+    }
+    styleEl.textContent = css
+  } catch {
+    /* cross-origin iframe — fall back to postMessage below */
+  }
+  // Always postMessage too — works even when the iframe is cross-origin.
+  try {
+    const iframe = document.getElementById('preview-iframe')
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage(
+        { type: 'SF_APPLY_PALETTE', css, palette: { id: palette.id || null, dark: palette.dark || null } },
+        '*',
+      )
+    }
+  } catch {
+    /* ignore */
+  }
+  currentPaletteId = palette && palette.id ? palette.id : null
+  renderPaletteRailStrip()
+  // Update the open panel's active card marker in place (if open) without rebuilding
+  const openMenu = document.getElementById('palette-menu')
+  if (openMenu && paletteMenuOpen) {
+    openMenu.querySelectorAll('.palette-preset-card').forEach((card) => {
+      const id = card.getAttribute('data-palette-preset')
+      card.classList.toggle('is-active', id === currentPaletteId)
+    })
+  }
 }
 
 function setPaymentError(message = '') {
@@ -1043,6 +1394,7 @@ function closePaymentModal() {
 }
 
 function openPaymentModal(targetEntry) {
+  if (isRailUnlocked()) return
   paymentModalTarget = targetEntry
   setPaymentBusyState(false)
   setPaymentError('')
@@ -1058,6 +1410,10 @@ function openPaymentModal(targetEntry) {
 }
 
 function openAuthWall() {
+  if (SF_EMBED_HOME) {
+    try { window.parent.postMessage({ type: 'sf-request-auth-overlay' }, location.origin) } catch {}
+    return
+  }
   document.getElementById('auth-overlay').classList.remove('hidden')
 }
 
@@ -1178,25 +1534,73 @@ function initPreviewSiteRail() {
       return
     }
     if (action === 'palette') {
-      if (alternativeDesign) applyMagicTheme()
-      else if (SESSION_ID)
-        void apiFetch(`/api/sessions/${SESSION_ID}/generate-design`, { method: 'POST' })
+      closeExportMenu()
+      closeGitHubMenu()
+      if (paletteMenuOpen) {
+        closePaletteMenu()
+        return
+      }
+      renderPalettePanel(row)
+      setPaletteMenuOpen(true)
       return
     }
     if (action === 'github') {
-      const menu = document.getElementById('github-export-menu')
-      if (!menu || menu.style.display === 'none') return
+      if (!canShowGitHubMenu()) return
       closeExportMenu()
+      closePaletteMenu()
+      if (githubMenuOpen) {
+        closeGitHubMenu()
+        return
+      }
+      ensureGitHubMenu()
       renderGitHubExportPanel()
-      setGitHubMenuOpen(true)
+      setGitHubMenuOpen(true, row)
       return
     }
     if (action === 'export') {
-      const menu = document.getElementById('export-menu')
-      if (!menu || menu.style.display === 'none') return
-      toggleExportMenu()
+      if (!canShowExportMenu()) return
+      closeGitHubMenu()
+      closePaletteMenu()
+      if (exportMenuOpen) {
+        closeExportMenu()
+        return
+      }
+      ensureExportMenu()
+      renderExportPanel()
+      setExportMenuOpen(true, row)
+      return
+    }
+    if (action === 'domain') {
+      showRailToast(
+        'Custom domains — coming soon. Email support@ship-fast.io to request early access.',
+        4200,
+      )
+      return
     }
   })
+}
+
+async function hydrateCurrentPalette() {
+  if (!SESSION_ID) {
+    renderPaletteRailStrip()
+    return
+  }
+  try {
+    const res = await apiFetch(`/api/sessions/${SESSION_ID}/palette`)
+    if (res.ok) {
+      const data = await res.json()
+      const p = data && data.palette ? data.palette : null
+      if (p && p.id) {
+        currentPaletteId = p.id
+        if (p.id === 'custom' && p.dark && typeof p.dark.primary === 'string') {
+          customPaletteSeed = p.dark.primary
+        }
+      }
+    }
+  } catch {
+    /* ignore — strip will render with no active marker */
+  }
+  renderPaletteRailStrip()
 }
 
 // ─── Magic Theme Logic ─────────────────────────────────────
@@ -1404,52 +1808,243 @@ function formatExportTargetGlyph(target) {
   return '•'
 }
 
-function setExportMenuOpen(nextOpen) {
-  const menu = document.getElementById('export-menu')
-  const panel = document.getElementById('export-panel')
-  const trigger = document.getElementById('export-trigger-btn')
-  const canShow = Boolean(menu) && menu.style.display !== 'none'
+function canShowExportMenu() {
+  if (isAnonymousSession) return false
+  if (!homepageReady) return false
+  return siteSpecReady || exportTargets.length > 0
+}
 
+function ensureExportMenu() {
+  let panel = document.getElementById('export-panel')
+  if (!panel) {
+    panel = document.createElement('div')
+    panel.id = 'export-panel'
+    panel.className = 'export-panel'
+    panel.innerHTML = `
+      <div class="export-panel-top">
+        <div class="export-copy">
+          <span class="export-eyebrow">Project Export</span>
+          <strong>Ship this exact UI in the stack you need</strong>
+          <p id="export-subtext">
+            Pick a target and Ship Fast will package the current generated UI for it.
+          </p>
+        </div>
+        <span class="export-status-badge" id="export-status">Locking mission spec…</span>
+      </div>
+      <div class="export-target-list" id="export-target-list"></div>
+      <div class="export-panel-actions">
+        <span
+          id="export-building-indicator"
+          style="display: none; font-size: 13px; color: #8a8f98; align-items: center; gap: 6px;"
+        >Building downloads…</span>
+        <button
+          type="button"
+          id="export-download-link"
+          class="export-download-link secondary"
+          style="display: none"
+        >Download ZIP</button>
+      </div>
+    `
+    document.body.appendChild(panel)
+    panel.querySelector('#export-target-list').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-target]')
+      if (!button) return
+      selectedExportTarget = button.dataset.target || selectedExportTarget
+      const entry = getExportEntry(selectedExportTarget)
+      if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
+        openPaymentModal(entry)
+        return
+      }
+      renderExportPanel()
+    })
+    panel.querySelector('#export-download-link').addEventListener('click', async (event) => {
+      const selected = getSelectedExportEntry()
+      if (!selected) return
+      if (event.currentTarget.dataset.requiresPayment === '1') {
+        closeExportMenu()
+        openPaymentModal(selected)
+        return
+      }
+      const href = event.currentTarget.dataset.downloadUrl
+      if (!href) {
+        closeExportMenu()
+        return
+      }
+      closeExportMenu()
+      try {
+        const res = await apiFetch(href, { method: 'GET' })
+        if (!res.ok) {
+          const text = await res.text()
+          let msg = 'Download failed'
+          try {
+            const j = JSON.parse(text)
+            msg = j.error || msg
+          } catch {
+            if (text) msg = text.slice(0, 200)
+          }
+          window.alert?.(msg)
+          return
+        }
+        const blob = await res.blob()
+        const cd = res.headers.get('Content-Disposition')
+        let filename = `${SESSION_ID}-${selected.target}.zip`
+        const m = cd && /filename[^;=\n]*=(['"]?)([^;\n'"]+)\1/i.exec(cd)
+        if (m && m[2]) filename = m[2].trim()
+        const objUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = objUrl
+        a.download = filename
+        a.rel = 'noopener'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        URL.revokeObjectURL(objUrl)
+      } catch (e) {
+        window.alert?.(String(e?.message || e || 'Download failed'))
+      }
+    })
+  }
+  return panel
+}
+
+let exportMenuAnchor = null
+
+function positionExportMenu(anchor) {
+  const panel = document.getElementById('export-panel')
+  if (!panel || !anchor || !anchor.isConnected) return
+  const rect = anchor.getBoundingClientRect()
+  const gap = 8
+  const margin = 12
+  const top = rect.bottom + gap
+  const availableHeight = Math.max(140, window.innerHeight - top - margin)
+  panel.style.setProperty('max-height', `${Math.round(availableHeight)}px`, 'important')
+  void panel.offsetWidth
+  const panelWidth = panel.offsetWidth || 380
+  let left = rect.right - panelWidth
+  if (left < margin) left = Math.max(margin, rect.left)
+  if (left + panelWidth > window.innerWidth - margin) {
+    left = Math.max(margin, window.innerWidth - panelWidth - margin)
+  }
+  panel.style.setProperty('left', `${Math.round(left)}px`, 'important')
+  panel.style.setProperty('top', `${Math.round(top)}px`, 'important')
+}
+
+function onExportMenuReposition() {
+  if (!exportMenuOpen || !exportMenuAnchor) return
+  positionExportMenu(exportMenuAnchor)
+}
+
+function setExportMenuOpen(nextOpen, anchor) {
+  const panel = ensureExportMenu()
+  const canShow = canShowExportMenu()
   exportMenuOpen = Boolean(nextOpen) && canShow
-  panel.style.display = exportMenuOpen ? 'grid' : 'none'
-  trigger.setAttribute('aria-expanded', exportMenuOpen ? 'true' : 'false')
-  trigger.classList.toggle('is-open', exportMenuOpen)
+  if (exportMenuOpen) {
+    if (anchor) exportMenuAnchor = anchor
+    panel.style.display = 'grid'
+    // Force layout now so offsetWidth/offsetHeight are accurate.
+    void panel.offsetWidth
+    if (exportMenuAnchor) positionExportMenu(exportMenuAnchor)
+    requestAnimationFrame(() => {
+      if (exportMenuAnchor) positionExportMenu(exportMenuAnchor)
+      panel.classList.add('is-open')
+    })
+    window.addEventListener('resize', onExportMenuReposition)
+    window.addEventListener('scroll', onExportMenuReposition, true)
+  } else {
+    panel.classList.remove('is-open')
+    panel.style.display = 'none'
+    exportMenuAnchor = null
+    window.removeEventListener('resize', onExportMenuReposition)
+    window.removeEventListener('scroll', onExportMenuReposition, true)
+  }
+  const railRow = document.querySelector('#preview-site-rail [data-rail-action="export"]')
+  if (railRow) {
+    railRow.classList.toggle('is-open', exportMenuOpen)
+    railRow.setAttribute('aria-expanded', exportMenuOpen ? 'true' : 'false')
+  }
 }
 
 function closeExportMenu() {
   setExportMenuOpen(false)
 }
 
-function toggleExportMenu() {
+function toggleExportMenu(anchor) {
   closeGitHubMenu()
-  setExportMenuOpen(!exportMenuOpen)
+  ensureExportMenu()
+  renderExportPanel()
+  setExportMenuOpen(!exportMenuOpen, anchor)
+}
+
+function syncExportRailRow() {
+  const row = document.querySelector('#preview-site-rail [data-rail-action="export"]')
+  if (!row) return
+  const metaEl = row.querySelector('[data-rail-meta="export"]')
+  const badgeEl = row.querySelector('[data-rail-badge="export-state"]')
+
+  const targets = exportTargets.length
+    ? exportTargets
+    : ['html', 'react', 'nextjs'].map((target) => ({ target, ready: false, buildReady: false }))
+  const metaText = targets.map((entry) => formatExportTargetLabel(entry.target)).join(' / ')
+  if (metaEl) metaEl.textContent = metaText
+
+  const selected = getSelectedExportEntry()
+  const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
+  const anyRequiresPayment = exportTargets.some(
+    (entry) => entry.paymentRequired && !entry.downloadUnlocked,
+  )
+
+  let state = 'premium'
+  let label = 'Pro only'
+  if (!canShowExportMenu()) {
+    state = 'waiting'
+    label = 'Waiting'
+  } else if (requiresPayment || (!selected && anyRequiresPayment)) {
+    state = 'subscribe'
+    label = 'Subscribe'
+  } else if (selected?.ready) {
+    state = 'ready'
+    label = 'Ready'
+  } else if (selected?.buildReady) {
+    state = 'building'
+    label = 'Building'
+  } else if (selected) {
+    state = 'waiting'
+    label = 'Waiting'
+  }
+
+  if (badgeEl) {
+    badgeEl.textContent = label
+    badgeEl.dataset.state = state
+  }
 }
 
 function renderExportPanel() {
-  const menu = document.getElementById('export-menu')
   const panel = document.getElementById('export-panel')
-  const trigger = document.getElementById('export-trigger-btn')
-  const triggerMetaEl = document.getElementById('export-trigger-meta')
-  const triggerStateEl = document.getElementById('export-trigger-state')
-  const statusEl = document.getElementById('export-status')
-  const subtextEl = document.getElementById('export-subtext')
-  const targetList = document.getElementById('export-target-list')
-  const download = document.getElementById('export-download-link')
-  const buildingIndicator = document.getElementById('export-building-indicator')
+  if (!panel) {
+    syncExportRailRow()
+    renderGitHubPushButton()
+    renderGitHubExportPanel()
+    ensureExportTargetsPolling()
+    return
+  }
+  const statusEl = panel.querySelector('#export-status')
+  const subtextEl = panel.querySelector('#export-subtext')
+  const targetList = panel.querySelector('#export-target-list')
+  const download = panel.querySelector('#export-download-link')
+  const buildingIndicator = panel.querySelector('#export-building-indicator')
   const exactCloneReady = !siteSpecReady
     ? false
     : exportTargets.every((entry) => entry.buildReady !== false)
 
-  if (isAnonymousSession || !homepageReady || (!siteSpecReady && exportTargets.length === 0)) {
-    menu.style.display = 'none'
+  if (!canShowExportMenu()) {
     setExportMenuOpen(false)
+    syncExportRailRow()
     renderGitHubPushButton()
     renderGitHubExportPanel()
     ensureExportTargetsPolling()
     return
   }
 
-  menu.style.display = 'block'
   if (!exportTargets.some((entry) => entry.target === selectedExportTarget)) {
     selectedExportTarget = exportTargets[0]?.target || 'html'
   }
@@ -1457,19 +2052,6 @@ function renderExportPanel() {
   const selected = getSelectedExportEntry()
   const selectedLabel = selected ? formatExportTargetLabel(selected.target) : 'Export'
   const requiresPayment = Boolean(selected?.paymentRequired && !selected?.downloadUnlocked)
-  const triggerState = requiresPayment
-    ? 'Subscribe'
-    : selected?.ready
-      ? 'Ready'
-      : selected?.buildReady
-        ? 'Building'
-        : 'Waiting'
-
-  triggerMetaEl.textContent = exportTargets
-    .map((entry) => formatExportTargetLabel(entry.target))
-    .join(' / ')
-  triggerStateEl.textContent = triggerState
-  trigger.dataset.state = triggerState.toLowerCase()
 
   targetList.innerHTML = exportTargets
     .map((entry) => {
@@ -1529,7 +2111,8 @@ function renderExportPanel() {
       download.dataset.requiresPayment = '0'
       download.style.display = 'none'
     }
-    setExportMenuOpen(exportMenuOpen)
+    if (exportMenuOpen) setExportMenuOpen(true)
+    syncExportRailRow()
     renderGitHubPushButton()
     renderGitHubExportPanel()
     ensureExportTargetsPolling()
@@ -1572,7 +2155,8 @@ function renderExportPanel() {
     download.style.display = 'none'
   }
 
-  setExportMenuOpen(exportMenuOpen)
+  if (exportMenuOpen) setExportMenuOpen(true)
+  syncExportRailRow()
   renderGitHubPushButton()
   renderGitHubExportPanel()
   ensureExportTargetsPolling()
@@ -1597,13 +2181,42 @@ function ensureExportTargetsPolling() {
   let ticks = 0
   exportTargetsPollTimer = setInterval(() => {
     ticks += 1
-    if (ticks > 30) {
+    if (ticks > 90) {
       clearInterval(exportTargetsPollTimer)
       exportTargetsPollTimer = null
       return
     }
     void refreshExportTargets()
   }, 4000)
+}
+
+function maybeRequestExportBuilds() {
+  if (isAnonymousSession || !siteSpecReady) return
+  for (const entry of exportTargets) {
+    if (!(entry && entry.buildReady === true && entry.ready === false)) continue
+    const key = `${entry.target}:${entry.specVersion || 'v0'}`
+    if (exportBuildRequested.has(key)) continue
+    exportBuildRequested.add(key)
+    void apiFetch(`/api/sessions/${SESSION_ID}/export`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: entry.target }),
+    })
+      .then((r) => {
+        if (r.status === 429) {
+          entry.buildReason = 'Rate limited — try again in a few minutes.'
+          renderExportPanel()
+          return
+        }
+        if (r.status === 401 || r.status === 403) return
+        if (!r.ok) {
+          exportBuildRequested.delete(key)
+        }
+      })
+      .catch(() => {
+        exportBuildRequested.delete(key)
+      })
+  }
 }
 
 function refreshExportTargets() {
@@ -1613,6 +2226,7 @@ function refreshExportTargets() {
       siteSpecReady = Boolean(data.siteSpecReady) || siteSpecReady
       exportTargets = Array.isArray(data.targets) ? data.targets : []
       paymentState = normalizePaymentState(data.payment)
+      maybeRequestExportBuilds()
       renderExportPanel()
       ensureExportTargetsPolling()
       syncPreviewSiteRail()
@@ -1686,11 +2300,17 @@ async function pushSelectedExportToGitHub(targetOverride = selectedExportTarget)
       githubStatusEl.textContent = 'Pro Required'
       githubSubtextEl.textContent = `Subscribe to Pro to push exports to GitHub.`
     } else {
-      statusEl.textContent = 'GitHub Push Failed'
-      subtextEl.textContent = error.message || 'GitHub push failed.'
-      githubStatusEl.textContent = 'GitHub Push Failed'
-      githubSubtextEl.textContent = error.message || 'GitHub push failed.'
-      openPaymentModal(selected)
+      const message = error.message || 'GitHub push failed.'
+      const needsSignIn = /sign in/i.test(message) || error?.code === 'auth/popup-blocked'
+      if (needsSignIn) {
+        openAuthWall()
+      } else {
+        statusEl.textContent = 'GitHub Push Failed'
+        subtextEl.textContent = message
+        githubStatusEl.textContent = 'GitHub Push Failed'
+        githubSubtextEl.textContent = message
+        showRailToast(message, 5000)
+      }
     }
   } finally {
     githubPushBusy = false
@@ -1978,12 +2598,14 @@ function startIntro() {
 }
 
 function emitExhaustParticles() {
+  if (exhaustTimerId) { clearTimeout(exhaustTimerId); exhaustTimerId = null; }
   const logo = document.getElementById('intro-logo')
-  if (!logo.classList.contains('shaking')) return
+  if (!logo || !logo.classList.contains('shaking') || document.body.classList.contains('sf-openui-active')) return
   const rect = logo.getBoundingClientRect()
   const cx = rect.left + rect.width / 2
   const cy = rect.bottom
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
+    if (particles.length >= MAX_PARTICLES) break
     particles.push({
       x: cx + (Math.random() - 0.5) * 40,
       y: cy + Math.random() * 10,
@@ -1995,7 +2617,8 @@ function emitExhaustParticles() {
       size: 2 + Math.random() * 3,
     })
   }
-  setTimeout(emitExhaustParticles, 50)
+  ensureAnimating()
+  exhaustTimerId = setTimeout(emitExhaustParticles, 80)
 }
 
 function emitLaunchBurst() {
@@ -2005,6 +2628,7 @@ function emitLaunchBurst() {
   const cy = rect.top + rect.height / 2
   const colors = ['#7c3aed', '#a78bfa', '#c4b5fd', '#f97316', '#fbbf24', '#fff']
   for (let i = 0; i < 40; i++) {
+    if (particles.length >= MAX_PARTICLES) break
     const angle = Math.random() * Math.PI * 2
     const speed = 100 + Math.random() * 300
     particles.push({
@@ -2018,6 +2642,7 @@ function emitLaunchBurst() {
       size: 2 + Math.random() * 5,
     })
   }
+  ensureAnimating()
 }
 
 function startTyping() {
@@ -2337,6 +2962,12 @@ function triggerCompletion() {
     document.getElementById('toast-elapsed').textContent = elapsed + 's'
     const toast = document.getElementById('completion-toast')
     toast.classList.add('visible')
+    if (isRailUnlocked()) {
+      const fab = document.getElementById('preview-chat-fab')
+      const panel = document.getElementById('preview-chat-panel')
+      if (fab) fab.setAttribute('aria-expanded', 'true')
+      if (panel) panel.hidden = false
+    }
   }
 
   document.getElementById('preview-loading').classList.add('hidden')
@@ -2362,6 +2993,15 @@ function triggerCompletion() {
 const particlesCanvas = document.getElementById('particles-canvas')
 const pCtx = particlesCanvas.getContext('2d')
 let particles = []
+const MAX_PARTICLES = 40
+let animRafId = null
+let exhaustTimerId = null
+
+function ensureAnimating() {
+  if (animRafId !== null) return
+  lastParticleTime = performance.now()
+  animRafId = requestAnimationFrame(animateParticles)
+}
 
 function resizeParticles() {
   particlesCanvas.width = window.innerWidth * devicePixelRatio
@@ -2375,6 +3015,7 @@ window.addEventListener('resize', resizeParticles)
 function emitCelebrationParticles() {
   const colors = ['#7c3aed', '#a78bfa', '#69f0ae', '#ffd740', '#ff6e40', '#40c4ff', '#ea80fc']
   for (let i = 0; i < 60; i++) {
+    if (particles.length >= MAX_PARTICLES) break
     particles.push({
       x: window.innerWidth * Math.random(),
       y: window.innerHeight + 10,
@@ -2386,6 +3027,7 @@ function emitCelebrationParticles() {
       size: 3 + Math.random() * 4,
     })
   }
+  ensureAnimating()
 }
 
 let lastParticleTime = 0
@@ -2413,10 +3055,13 @@ function animateParticles(now) {
     pCtx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size)
   }
   pCtx.globalAlpha = 1
-  requestAnimationFrame(animateParticles)
+  if (particles.length === 0) {
+    pCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height)
+    animRafId = null
+    return
+  }
+  animRafId = requestAnimationFrame(animateParticles)
 }
-lastParticleTime = performance.now()
-requestAnimationFrame(animateParticles)
 
 function looksLikeTrustedStockImageUrl(s) {
   const raw = String(s || '').trim()
@@ -2689,15 +3334,6 @@ function reloadPreview() {
 
 const PREVIEW_DEVICE_KEY = 'sf_preview_device'
 
-function getPreviewOpenUrl() {
-  if (deploymentState?.url) {
-    const raw = formatDeploymentUrl(deploymentState.url)
-    return raw.startsWith('http') ? raw : `https://${raw}`
-  }
-  if (nextPreviewActive && nextPreviewBase) return nextPreviewBase
-  return PREVIEW_BASE
-}
-
 function applyPreviewDeviceMode(mode) {
   const stage = document.getElementById('preview-stage')
   if (!stage) return
@@ -2719,9 +3355,6 @@ function applyPreviewDeviceMode(mode) {
 function initPreviewFrameTools() {
   document.getElementById('preview-refresh-btn')?.addEventListener('click', () => {
     reloadPreview()
-  })
-  document.getElementById('preview-open-external-btn')?.addEventListener('click', () => {
-    window.open(getPreviewOpenUrl(), '_blank', 'noopener,noreferrer')
   })
   document.querySelectorAll('.preview-device-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -3353,6 +3986,7 @@ function initPreviewChat() {
 
 initPreviewChat()
 initPreviewSiteRail()
+hydrateCurrentPalette()
 
 // ─── WebSocket: Connect to server ─────────────────────────
 function connectWS() {
@@ -3593,34 +4227,6 @@ function appendLog(msg) {
 document.getElementById('log-toggle').addEventListener('click', () => {
   document.getElementById('log-section').classList.toggle('open')
 })
-document.getElementById('export-trigger-btn').addEventListener('click', toggleExportMenu)
-document.getElementById('github-push-btn').addEventListener('click', toggleGitHubMenu)
-document.getElementById('export-target-list').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-target]')
-  if (!button) return
-  selectedExportTarget = button.dataset.target || selectedExportTarget
-  const entry = getExportEntry(selectedExportTarget)
-  if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
-    openPaymentModal(entry)
-    return
-  }
-  renderExportPanel()
-})
-document.getElementById('github-export-target-list').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-github-target]')
-  if (!button || githubPushBusy || button.disabled) return
-  selectedExportTarget = button.dataset.githubTarget || selectedExportTarget
-  const entry =
-    getExportEntry(selectedExportTarget) ||
-    getGitHubTargetEntries().find((e) => e.target === selectedExportTarget)
-  if (entry && entry.paymentRequired && !entry.downloadUnlocked) {
-    openPaymentModal(entry)
-    return
-  }
-  renderExportPanel()
-  renderGitHubExportPanel()
-  pushSelectedExportToGitHub(selectedExportTarget)
-})
 document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal)
 document.getElementById('payment-cancel-btn').addEventListener('click', closePaymentModal)
 document.getElementById('payment-confirm-btn').addEventListener('click', startCheckout)
@@ -3705,57 +4311,19 @@ document.getElementById('payment-option-list').addEventListener('click', (event)
   selectedPaymentMode = option.dataset.paymentMode || selectedPaymentMode
   renderPaymentOptions()
 })
-document.getElementById('export-download-link').addEventListener('click', async (event) => {
-  const selected = getSelectedExportEntry()
-  if (!selected) return
-  if (event.currentTarget.dataset.requiresPayment === '1') {
-    closeExportMenu()
-    openPaymentModal(selected)
-    return
-  }
-  const href = event.currentTarget.dataset.downloadUrl
-  if (!href) {
-    closeExportMenu()
-    return
-  }
-  closeExportMenu()
-  try {
-    const res = await apiFetch(href, { method: 'GET' })
-    if (!res.ok) {
-      const text = await res.text()
-      let msg = 'Download failed'
-      try {
-        const j = JSON.parse(text)
-        msg = j.error || msg
-      } catch {
-        if (text) msg = text.slice(0, 200)
-      }
-      window.alert?.(msg)
-      return
-    }
-    const blob = await res.blob()
-    const cd = res.headers.get('Content-Disposition')
-    let filename = `${SESSION_ID}-${selected.target}.zip`
-    const m = cd && /filename[^;=\n]*=(['"]?)([^;\n'"]+)\1/i.exec(cd)
-    if (m && m[2]) filename = m[2].trim()
-    const objUrl = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = objUrl
-    a.download = filename
-    a.rel = 'noopener'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(objUrl)
-  } catch (e) {
-    window.alert?.(String(e?.message || e || 'Download failed'))
-  }
-})
 document.addEventListener('click', (event) => {
-  if (event.target.closest('#export-menu')) return
-  if (event.target.closest('#github-export-menu')) return
+  if (event.target.closest('#export-panel')) return
+  if (event.target.closest('#github-export-panel')) return
+  if (event.target.closest('#palette-menu')) return
+  // The rail's github/export rows toggle these menus programmatically. Let
+  // those clicks bubble up without the outside-click close cascade canceling
+  // the open we just kicked off.
+  if (event.target.closest('#preview-site-rail [data-rail-action="github"]')) return
+  if (event.target.closest('#preview-site-rail [data-rail-action="export"]')) return
+  if (event.target.closest('#preview-site-rail [data-rail-action="palette"]')) return
   closeExportMenu()
   closeGitHubMenu()
+  closePaletteMenu()
 })
 window.addEventListener('message', (event) => {
   const data = event.data || {}
@@ -3838,6 +4406,77 @@ window.addEventListener('message', (event) => {
         reply({
           type: 'SF_PREVIEW_STYLE_AI_RES',
           id: data.id,
+          error: err?.message || 'Failed',
+        })
+      }
+    })()
+    return
+  }
+  if (data.type === 'SF_HISTORY_CHECKPOINT_REQ' && data.id && SESSION_ID) {
+    void (async () => {
+      const iframe = document.getElementById('preview-iframe')
+      const reply = (payload) => {
+        iframe?.contentWindow?.postMessage(payload, '*')
+      }
+      try {
+        const res = await apiFetch(`/api/sessions/${SESSION_ID}/preview-homepage-html`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ html: data.html }),
+        })
+        const j = await res.json().catch(() => ({}))
+        reply({
+          type: 'SF_HISTORY_CHECKPOINT_RES',
+          id: data.id,
+          checkpointId: j.checkpointId,
+          error: res.ok ? undefined : j.error || 'Request failed',
+        })
+        if (res.ok) reloadPreview()
+      } catch (err) {
+        reply({
+          type: 'SF_HISTORY_CHECKPOINT_RES',
+          id: data.id,
+          error: err?.message || 'Failed',
+        })
+      }
+    })()
+    return
+  }
+  if (data.type === 'SF_HISTORY_RESTORE_REQ' && data.id && SESSION_ID) {
+    void (async () => {
+      const iframe = document.getElementById('preview-iframe')
+      const reply = (payload) => {
+        iframe?.contentWindow?.postMessage(payload, '*')
+      }
+      const checkpointId =
+        typeof data.checkpointId === 'string' ? data.checkpointId.trim() : ''
+      if (!checkpointId) {
+        reply({
+          type: 'SF_HISTORY_RESTORE_RES',
+          id: data.id,
+          ok: false,
+          error: 'Missing checkpointId',
+        })
+        return
+      }
+      try {
+        const res = await apiFetch(
+          `/api/sessions/${SESSION_ID}/history/${encodeURIComponent(checkpointId)}/restore`,
+          { method: 'POST' },
+        )
+        const j = await res.json().catch(() => ({}))
+        reply({
+          type: 'SF_HISTORY_RESTORE_RES',
+          id: data.id,
+          ok: res.ok,
+          error: res.ok ? undefined : j.error || 'Request failed',
+        })
+        if (res.ok) reloadPreview()
+      } catch (err) {
+        reply({
+          type: 'SF_HISTORY_RESTORE_RES',
+          id: data.id,
+          ok: false,
           error: err?.message || 'Failed',
         })
       }
@@ -4015,6 +4654,17 @@ document.getElementById('toast-cta').addEventListener('click', () => {
   const overlay = document.getElementById('new-prompt-overlay')
   overlay.classList.add('visible')
   setTimeout(() => document.getElementById('new-prompt-input').focus(), 400)
+})
+document.getElementById('toast-cta-studio')?.addEventListener('click', () => {
+  document.getElementById('completion-toast')?.classList.remove('visible')
+  if (isAnonymousSession) {
+    openAuthWall()
+  } else {
+    const fab = document.getElementById('preview-chat-fab')
+    const panel = document.getElementById('preview-chat-panel')
+    if (fab) fab.setAttribute('aria-expanded', 'true')
+    if (panel) panel.hidden = false
+  }
 })
 document.getElementById('toast-back-home')?.addEventListener('click', (ev) => navigateHome(ev))
 document.getElementById('new-prompt-cancel').addEventListener('click', () => {

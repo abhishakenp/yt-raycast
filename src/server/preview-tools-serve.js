@@ -1,8 +1,7 @@
 import { existsSync, statSync } from 'node:fs'
 import { extname, join, resolve, sep } from 'node:path'
-import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
-import { stripLegacyThemeStarTransition } from '../pipeline/phase-homepage.js'
-import { injectStorefrontCartUi } from '../pipeline/storefront-cart-ui.js'
+import { resolveLanguageModeFromPreference } from '@ship-fast/engine/pipeline/detect-language.js'
+import { injectStorefrontCartUi } from '@ship-fast/engine/pipeline/storefront-cart-ui.js'
 
 const MARK = 'data-sf-preview-tools="1"'
 
@@ -11,15 +10,12 @@ export function stripPreviewArtifactsFromHtml(html) {
     .replace(/<base\b[^>]*href\s*=\s*["']\/preview\/[a-f0-9]{12,64}\/?["'][^>]*>\s*/gi, '')
     .replace(/<script>window\.__SF_PREVIEW_SESSION_ID__=[^<]*<\/script>\s*/gi, '')
     .replace(/<script>window\.__SF_PREVIEW_AI__=[^<]*<\/script>\s*/gi, '')
+    .replace(/<script>window\.__SF_PERSISTED_PALETTE__=[^<]*<\/script>\s*/gi, '')
     .replace(/<script\b[^>]*data-sf-preview-tools="1"[^>]*><\/script>\s*/gi, '')
 }
 
-export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessionWorkspace) {
+export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessionWorkspace, palette) {
   if (typeof html !== 'string') return html
-  html = stripLegacyThemeStarTransition(html)
-  if (sessionId && /^[a-f0-9]{12}$/i.test(String(sessionId))) {
-    html = html.replace(/\/preview\/[a-f0-9]{12}\b/gi, `/preview/${sessionId}`)
-  }
   html = injectStorefrontCartUi(html, sessionWorkspace ? { workspace: sessionWorkspace } : {})
   const sid =
     sessionId != null && /^[a-f0-9]{12,64}$/i.test(String(sessionId)) ? String(sessionId) : ''
@@ -37,8 +33,12 @@ export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessi
           ? mode.name
           : '',
   }
-  const cfg = `<script>window.__SF_PREVIEW_SESSION_ID__=${JSON.stringify(sessionId ?? '')}</script>\n<script>window.__SF_PREVIEW_AI__=${JSON.stringify(aiOpts)}</script>\n`
-  const snippet = `${cfg}<script src="/preview-tools-runtime.js" defer ${MARK}></script>`
+  const paletteGlobal =
+    palette && typeof palette === 'object'
+      ? `<script>window.__SF_PERSISTED_PALETTE__=${JSON.stringify(palette)}</script>\n`
+      : ''
+  const cfg = `<script>window.__SF_PREVIEW_SESSION_ID__=${JSON.stringify(sessionId ?? '')}</script>\n<script>window.__SF_PREVIEW_AI__=${JSON.stringify(aiOpts)}</script>\n${paletteGlobal}`
+  const snippet = `${cfg}<script src="/scripts/preview-tools-runtime.js" defer ${MARK}></script>`
   const lower = html.toLowerCase()
   const idx = lower.lastIndexOf('</body>')
   if (idx !== -1) return `${html.slice(0, idx)}${snippet}\n${html.slice(idx)}`

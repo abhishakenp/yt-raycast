@@ -13,10 +13,10 @@ import {
 import { join } from 'node:path'
 import { BASE_DOMAIN } from '../config.js'
 import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
-import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
+import { SUPPORTED_EXPORT_TARGETS } from '@ship-fast/engine/spec/index.js'
 import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deployments.js'
-import { normalizeSession, validateSession } from '../contracts/contracts.js'
-import { readDesignReferenceFingerprintFromWorkspace } from '../pipeline/ecommerce-design-references.js'
+import { normalizeSession, validateSession } from '@ship-fast/engine/contracts/contracts.js'
+import { readDesignReferenceFingerprintFromWorkspace } from '@ship-fast/engine/pipeline/ecommerce-design-references.js'
 import { invalidatePublicGallery } from './public-gallery-cache.js'
 
 const sessions = new Map()
@@ -279,6 +279,7 @@ export function getSession(id) {
 
   // Check if homepage exists
   const homepageReady = existsSync(join(workspace, 'index.html'))
+  const openuiReady = existsSync(join(workspace, 'home.openui'))
   const siteSpecReady = existsSync(join(workspace, 'site-spec.json'))
 
   // Load elapsed time from disk
@@ -335,6 +336,7 @@ export function getSession(id) {
     createdAt,
     tasks,
     homepageReady,
+    openuiReady,
     siteSpecReady,
     elapsed,
     cost,
@@ -703,6 +705,12 @@ export function makeSessionState(session) {
     broadcast({ type: 'homepage_ready' })
   }
 
+  const signalOpenuiReady = () => {
+    session.openuiReady = true
+    invalidatePublicGallery()
+    broadcast({ type: 'openui_ready' })
+  }
+
   const setElapsed = (seconds) => {
     session.elapsed = seconds
     try {
@@ -743,6 +751,7 @@ export function makeSessionState(session) {
   const getState = () => ({
     tasks: session.tasks,
     homepageReady: session.homepageReady,
+    openuiReady: session.openuiReady,
     siteSpecReady: session.siteSpecReady,
     alternativeDesign: session.alternativeDesign,
     themeOverride: session.themeOverride,
@@ -757,6 +766,7 @@ export function makeSessionState(session) {
     setSiteSpec,
     updateTask,
     signalHomepageReady,
+    signalOpenuiReady,
     setElapsed,
     setCost,
     setAlternativeDesign,

@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { isSanityChatWriteConfigured } from '../config.js'
 import { deleteChatFromSanity, loadChatFromSanity, persistChatToSanity } from '../sanity/chat-sync.js'
-import { loadSiteSpec } from '../spec/index.js'
+import { loadSiteSpec } from '@ship-fast/engine/spec/index.js'
 
 const CHAT_FILE = 'messages.json'
 const STORE_VERSION = 1

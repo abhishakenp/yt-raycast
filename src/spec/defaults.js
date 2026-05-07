@@ -1,8 +1,7 @@
 import { slug } from '../pipeline/workspace.js'
-import { buildHeuristicBusinessProfile } from './business-profile.js'
 import { promptSnippet } from '../prompt.js'
 
-export const SITE_SPEC_VERSION = '2.0.0'
+export const SITE_SPEC_VERSION = '1.0.0'
 export const SUPPORTED_EXPORT_TARGETS = ['html', 'react', 'nextjs']
 export const SUPPORTED_SECTION_TYPES = [
   'hero',
@@ -1110,8 +1109,6 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
     id: idx === 0 ? 'page-home' : `page-${slug(name || `page-${idx + 1}`)}`,
     name: name || `Page ${idx + 1}`,
     route: toPageRoute(name || `Page ${idx + 1}`, idx),
-    pageRole: idx === 0 ? 'conversion' : 'support',
-    contentGoals: idx === 0 ? ['Establish trust', 'Drive primary CTA'] : ['Inform', 'Link related pages'],
     title: inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
     description: inferPageDescription(
       name || `Page ${idx + 1}`,
@@ -1252,33 +1249,7 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
       locale: 'en_US',
       robots: 'index, follow',
     },
-    planMeta: {
-      schemaRevision: SITE_SPEC_VERSION,
-      contentRefId: '',
-      contentRefStashName: '',
-      archetypePresetKey:
-        {
-          ecommerce: 'storefrontEditorial',
-          docs: 'docsDev',
-          institutional: 'institutionalCivic',
-          dashboard: 'dashboardShell',
-          portfolio: 'portfolioShowcase',
-          blog: 'blogEditorial',
-          marketplace: 'marketplaceTwoSided',
-          community: 'communitySocial',
-          game: 'gameLanding',
-          saas: 'marketingDark',
-          landing: 'marketingDark',
-        }[inferredSiteType] || 'marketingDark',
-      resolutionReason: 'fallback',
-      qualityChecklist: [],
-    },
     backendFeatureHints: ctx.features || [],
-    businessProfile: buildHeuristicBusinessProfile({
-      prompt,
-      siteType: inferredSiteType,
-      ctx,
-    }),
     ...(inferredSiteType === 'ecommerce'
       ? {
           ecommerce: {
@@ -1379,31 +1350,5 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
           },
         }
       : {}),
-  }
-}
-
-export function buildFallbackThinSiteSpec(args) {
-  const full = buildFallbackSiteSpec(args)
-  const home = full.pages?.[0]
-  const formsOnHome =
-    home?.sections
-      ?.filter((section) => section.type === 'contact-form')
-      .map((section) => ({
-        id: `${section.id}-form`,
-        pageId: home?.id || 'page-home',
-        fields: section.fields || [],
-        validationHints: (section.fields || []).map((field) => ({
-          field: field.name,
-          required: !!field.required,
-        })),
-        successMessage: section.form?.successMessage || 'Submitted successfully.',
-        errorMessage: section.form?.errorMessage || 'Unable to submit.',
-        action: section.form?.action || { type: 'placeholder', target: 'lead_capture' },
-      })) ?? []
-  return {
-    ...full,
-    pages: home ? [home] : [],
-    forms: formsOnHome,
-    navigation: full.navigation,
   }
 }

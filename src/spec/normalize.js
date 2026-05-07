@@ -17,14 +17,13 @@ function ensureString(value, fallback = '') {
 
 function normalizeAction(action, idx = 0) {
   if (!action || typeof action !== 'object') {
-    return { id: `action-${idx + 1}`, label: 'Learn More', href: '#', style: 'secondary', children: [] }
+    return { id: `action-${idx + 1}`, label: 'Learn More', href: '#', style: 'secondary' }
   }
   return {
     id: ensureString(action.id, `action-${idx + 1}`),
     label: ensureString(action.label, 'Learn More'),
     href: ensureString(action.href, '#'),
     style: ensureString(action.style, 'secondary'),
-    children: ensureArray(action.children).map((child, cidx) => normalizeAction(child, cidx)),
   }
 }
 

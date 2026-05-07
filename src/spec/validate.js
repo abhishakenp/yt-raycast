@@ -21,9 +21,6 @@ export function validateSiteSpec(spec) {
   }
 
   if (!spec.theme || typeof spec.theme !== 'object') errors.push('theme is required.')
-  if (spec.planMeta != null && typeof spec.planMeta !== 'object') {
-    errors.push('planMeta must be an object when provided.')
-  }
   if (spec.exportOptions != null) {
     if (typeof spec.exportOptions !== 'object' || Array.isArray(spec.exportOptions)) {
       errors.push('exportOptions must be an object.')

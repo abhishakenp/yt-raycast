@@ -20,7 +20,11 @@ function injectStyles(): void {
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
+      /* Must stack above the preview iframe (which is often composited in its own layer). */
+      z-index: 500;
+      isolation: isolate;
+      transform: translateZ(0);
+      pointer-events: auto;
       font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
     }
 
@@ -234,6 +238,7 @@ export class EcommercifyAnimation {
     injectStyles()
     this._build()
     this._mount.appendChild(this._overlay as HTMLDivElement)
+    document.body.classList.add('sf-ecommercify-provisioning')
 
     // Kick off status cycling
     this._statusIndex = 0
@@ -246,6 +251,7 @@ export class EcommercifyAnimation {
   }
 
   stop(): void {
+    document.body.classList.remove('sf-ecommercify-provisioning')
     if (!this._running) return
     this._running = false
     if (this._statusInterval !== null) {

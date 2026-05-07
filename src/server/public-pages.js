@@ -5,7 +5,7 @@ import {
   SITE_URL,
   SUPPORTED_INDIAN_LANGUAGES,
 } from '../config.js'
-import { escapeHtml } from '../renderers/shared.js'
+import { escapeHtml } from '@ship-fast/engine/renderers/shared.js'
 import { sfGlassPillBody, sfGlassPillSvgDefs } from './liquid-glass-button.js'
 import { SPACE_BACKDROP_HTML, renderTopActions } from './marketing-shell.js'
 
@@ -220,7 +220,7 @@ export function renderHomePage(siteSettings = null) {
     <meta name="twitter:image:alt" content="Ship Fast homepage preview" />
     <script defer data-domain="${escapeHtml(PLAUSIBLE_DOMAIN)}" data-api="/api/event" src="/js/script.js"></script>
     <script type="application/ld+json">${renderStructuredData(pageDescription)}</script>
-    <link rel="stylesheet" href="/styles/index.css" />
+    <link rel="stylesheet" href="/styles/index.css${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}" />
   </head>
   <body>
     ${sfGlassPillSvgDefs()}
@@ -430,26 +430,8 @@ export function renderHomePage(siteSettings = null) {
       </div>
     </noscript>
 
+    <script type="module" src="/scripts/top-actions-auth.js"></script>
     <script type="module" src="/scripts/homepage.js"></script>
-    <script>
-      // FORGE: SSR fallback for anonymous auth — when the React auth provider is
-      // not mounted (Express SSR, no Next.js), dispatch an anonymous auth-state
-      // event so the homepage gallery + hero finish initializing.
-      (function () {
-        let resolved = false
-        function fireAnon() {
-          if (resolved) return
-          resolved = true
-          window.dispatchEvent(new CustomEvent('sf-home-auth-state', { detail: { user: null } }))
-        }
-        window.addEventListener('sf-home-auth-state', () => { resolved = true }, { once: true })
-        if (window.__sfHomeScriptReady) {
-          setTimeout(fireAnon, 50)
-        } else {
-          window.addEventListener('sf-home-script-ready', () => setTimeout(fireAnon, 50), { once: true })
-        }
-      })()
-    </script>
     ${DEV_HOME_HOT_RELOAD_SNIPPET}
   </body>
 </html>`

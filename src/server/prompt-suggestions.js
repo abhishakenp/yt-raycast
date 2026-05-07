@@ -1,6 +1,6 @@
 import { GROQ_API_KEY } from '../config.js'
-import { groq } from '../llm/groq.js'
-import { trimInlineAiText } from '../llm/utils.js'
+import { groq } from '@ship-fast/engine/llm/groq.js'
+import { trimInlineAiText } from '@ship-fast/engine/llm/utils.js'
 
 const PARTIAL_MAX = 480
 const OUT_MAX = 4

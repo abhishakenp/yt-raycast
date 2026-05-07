@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { loadSiteSpec } from '../spec/index.js'
+import { loadSiteSpec } from '@ship-fast/engine/spec/index.js'
 import { resolveMedusaAdminEmbedPayload } from '../config.js'
 
 const workspaceLooksEcommerceMedusa = (workspace) => {

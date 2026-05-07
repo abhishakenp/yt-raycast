@@ -1,5 +1,5 @@
 import { writeFile } from './workspace.js'
-import { materializeBrandfetchLogoToWorkspace, resolveBrandfetchBrandProfile } from '../server/brandfetch.js'
+import { resolveBrandfetchBrandProfile } from '../server/brandfetch.js'
 
 const SEARCH_API_URL = 'https://search.brave.com/search'
 const FETCH_TIMEOUT_MS = 7000
@@ -713,8 +713,6 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
 
   const brandfetch = await resolveBrandfetchBrandProfile({ query: brandName, timeoutMs: 5500 }).catch(() => null)
   if (brandfetch?.ok && brandfetch.logo?.src) {
-    let logo = brandfetch.logo
-    logo = await materializeBrandfetchLogoToWorkspace(workspace, logo).catch(() => logo)
     const profile = buildBrandProfile({
       brandName,
       officialUrl: brandfetch.match?.officialUrl || '',
@@ -724,7 +722,7 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
         title: brandfetch.match?.name || '',
         name: brandfetch.match?.name || brandName,
         description: '',
-        logoUrl: logo.kind === 'remote' ? logo.src : '',
+        logoUrl: brandfetch.logo.src,
         faviconUrl: '',
         emails: [],
         phones: [],
@@ -734,7 +732,7 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
       },
       pageSignals: [],
       searchResults: [],
-      logo,
+      logo: brandfetch.logo,
       palette: brandfetch.palette || null,
       verified: true,
     })
@@ -830,7 +828,7 @@ function profileFromSignals(homepageSignals, extraSignals, brandName) {
     src: logoUrl,
     provider: 'scrape',
     confidence: 0.6,
-    alt: officialName || 'Brand',
+    alt: officialName ? `${officialName} logo` : 'Company logo',
   }
 }
 
@@ -845,7 +843,7 @@ function buildFallbackSvgLogo(name = '') {
   const fg = 'white'
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" role="img" aria-label="${escapeXml(
     safeName,
-  )}"><rect x="0" y="0" width="160" height="48" rx="14" fill="${bg}"/><text x="80" y="31" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="20" font-weight="800" fill="${fg}" letter-spacing="-0.02em">${escapeXml(
+  )} logo"><rect x="0" y="0" width="160" height="48" rx="14" fill="${bg}"/><text x="80" y="31" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="20" font-weight="800" fill="${fg}" letter-spacing="-0.02em">${escapeXml(
     initials,
   )}</text></svg>`
   return {
@@ -853,7 +851,7 @@ function buildFallbackSvgLogo(name = '') {
     svg,
     provider: 'fallback',
     confidence: 0.2,
-    alt: safeName,
+    alt: `${safeName} logo`,
     dominantColor: bg,
   }
 }

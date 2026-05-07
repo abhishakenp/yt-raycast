@@ -61,8 +61,7 @@ const getSiteSettingsInner = async (config: SanityConfig = {}): Promise<SiteSett
     "seoDescription": seo.metaDescription
   }`
   try {
-    const fresh = client.withConfig({ useCdn: false })
-    return await fresh.fetch(query)
+    return await client.fetch(query)
   } catch {
     return null
   }

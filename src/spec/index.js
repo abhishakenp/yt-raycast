@@ -16,8 +16,8 @@ export {
   enrichSiteSpecWithWorkspaceBlueprints,
   extractRenderBlueprintFromHtml,
   stripSiteSpecBlueprints,
-} from './blueprints.js'
-export { ensureCompatibleSiteSpec } from './compatibility.js'
+} from '@ship-fast/engine/spec/blueprints.js'
+export { ensureCompatibleSiteSpec } from '@ship-fast/engine/spec/compatibility.js'
 
 export function loadSiteSpec(workspace) {
   const filePath = join(workspace, 'site-spec.json')

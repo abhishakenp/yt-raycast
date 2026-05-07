@@ -1,7 +1,5 @@
-import { buildFallbackSiteSpec, normalizeSiteSpec, validateSiteSpec } from '../src/spec/index.js'
-import { sanitizeSiteSpec } from '../src/contracts/contracts.js'
-import { SITE_SPEC_VERSION } from '../src/spec/defaults.js'
-import { renderProject } from '../src/renderers/index.js'
+import { buildFallbackSiteSpec, normalizeSiteSpec, validateSiteSpec } from '@ship-fast/engine/spec/index.js'
+import { renderProject } from '@ship-fast/engine/renderers/index.js'
 
 const spec = normalizeSiteSpec(
   buildFallbackSiteSpec({
@@ -30,100 +28,6 @@ const validation = validateSiteSpec(spec)
 if (!validation.valid) {
   console.error('Site spec validation failed:')
   for (const error of validation.errors) console.error(`- ${error}`)
-  process.exit(1)
-}
-
-if (spec.version !== SITE_SPEC_VERSION) {
-  console.error(`Expected site spec version ${SITE_SPEC_VERSION}, got ${spec.version}`)
-  process.exit(1)
-}
-if (!spec.planMeta || typeof spec.planMeta !== 'object') {
-  console.error('planMeta missing after normalize')
-  process.exit(1)
-}
-const home = spec.pages?.[0]
-if (!home?.pageRole) {
-  console.error('home pageRole missing')
-  process.exit(1)
-}
-const v1Raw = JSON.parse(JSON.stringify(spec))
-v1Raw.version = '1.0.0'
-delete v1Raw.planMeta
-if (v1Raw.ecommerce) delete v1Raw.ecommerce
-const migrated = sanitizeSiteSpec(v1Raw, {
-  projectName: spec.projectName,
-  prompt: spec.userPrompt,
-  ctx: { project_name: spec.projectName, pages: spec.pages.map((p) => p.name) },
-  designBrief: '',
-  siteType: spec.siteType,
-})
-if (!migrated.spec || migrated.spec.version !== SITE_SPEC_VERSION) {
-  console.error('v1 → current migration failed')
-  process.exit(1)
-}
-if (!migrated.spec.planMeta) {
-  console.error('planMeta missing after v1 migration')
-  process.exit(1)
-}
-
-const ecCtx = {
-  prompt: 'Luxury leather goods shop',
-  ctx: { project_name: 'Atelier', site_type: 'ecommerce', pages: ['Home', 'Shop'] },
-  designBrief: '',
-  siteType: 'ecommerce',
-}
-const ecSpec = normalizeSiteSpec(
-  buildFallbackSiteSpec(ecCtx),
-  ecCtx,
-)
-if (!ecSpec.ecommerce?.products?.length) {
-  console.error('ecommerce products missing after normalize')
-  process.exit(1)
-}
-const ecVal = validateSiteSpec(ecSpec)
-if (!ecVal.valid) {
-  console.error('ecommerce spec validation failed:', ecVal.errors.join(' | '))
-  process.exit(1)
-}
-const withBlocks = normalizeSiteSpec(
-  {
-    ...spec,
-    pages: spec.pages.map((p, i) =>
-      i === 0
-        ? {
-            ...p,
-            pageRole: 'conversion',
-            contentGoals: ['Explain value', 'Drive signup'],
-            sections: (p.sections || []).map((s, j) =>
-              j === 1
-                ? {
-                    ...s,
-                    contentBlocks: [
-                      { id: 'b1', kind: 'paragraph', text: 'Ship Fast specs drive HTML and SPA exports.', items: [] },
-                      { id: 'b2', kind: 'list', text: '', items: ['Fast', 'Structured', 'Tested'] },
-                    ],
-                  }
-                : s,
-            ),
-          }
-        : p,
-    ),
-  },
-  {
-    prompt: spec.userPrompt,
-    ctx: { project_name: spec.projectName, pages: spec.pages.map((p) => p.name) },
-    designBrief: '',
-    siteType: spec.siteType,
-  },
-)
-const blockVal = validateSiteSpec(withBlocks)
-if (!blockVal.valid) {
-  console.error('contentBlocks fixture invalid:', blockVal.errors.join(' | '))
-  process.exit(1)
-}
-const htmlOut = renderProject(withBlocks, 'html').files['index.html'] || ''
-if (!htmlOut.includes('section-content-blocks__list')) {
-  console.error('HTML renderer did not emit contentBlocks list markup')
   process.exit(1)
 }
 

@@ -15,7 +15,7 @@ export const siteSpecSchema = {
   ],
   requiredPageFields: ['id', 'name', 'route', 'title', 'description', 'seo', 'layoutType', 'sections'],
   requiredSectionFields: ['id', 'type', 'variant'],
-  optionalProjectFields: ['ecommerce', 'exportOptions', 'planMeta'],
+  optionalProjectFields: ['ecommerce', 'exportOptions'],
   ecommerceSchema: {
     products: { type: 'array', itemFields: ['id', 'title', 'handle', 'description', 'price', 'currency', 'image', 'category'] },
     categories: { type: 'array', itemFields: ['id', 'name', 'handle', 'description', 'image'] },

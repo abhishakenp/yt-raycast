@@ -2,7 +2,7 @@ import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, writeFileSync } from 'node:fs'
 import { request } from 'node:http'
 import { join } from 'node:path'
-import { loadSiteSpec } from '../spec/index.js'
+import { loadSiteSpec } from '@ship-fast/engine/spec/index.js'
 import { getSession } from './sessions.js'
 
 const previewState = {

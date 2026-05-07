@@ -1904,6 +1904,19 @@ function _errorWithCustomMessage(auth, code, message) {
 function _serverAppCurrentUserOperationNotSupportedError(auth) {
   return _errorWithCustomMessage(auth, "operation-not-supported-in-this-environment", "Operations that alter the current user are not supported in conjunction with FirebaseServerApp");
 }
+function _assertInstanceOf(auth, object, instance) {
+  const constructorInstance = instance;
+  if (!(object instanceof constructorInstance)) {
+    if (constructorInstance.name !== object.constructor.name) {
+      _fail(
+        auth,
+        "argument-error"
+        /* AuthErrorCode.ARGUMENT_ERROR */
+      );
+    }
+    throw _errorWithCustomMessage(auth, "argument-error", `Type of ${object.constructor.name} does not match expected instance.Did you pass a reference from a different Auth SDK?`);
+  }
+}
 function createErrorInternal(authOrCode, ...rest) {
   if (typeof authOrCode !== "string") {
     const code = rest[0];
@@ -5297,6 +5310,9 @@ var TwitterAuthProvider = class _TwitterAuthProvider extends BaseOAuthProvider {
 };
 TwitterAuthProvider.TWITTER_SIGN_IN_METHOD = "twitter.com";
 TwitterAuthProvider.PROVIDER_ID = "twitter.com";
+async function signUp(auth, request) {
+  return _performSignInRequest(auth, "POST", "/v1/accounts:signUp", _addTidIfNecessary(auth, request));
+}
 var UserCredentialImpl = class _UserCredentialImpl {
   constructor(params) {
     this.user = params.user;
@@ -5420,6 +5436,56 @@ async function _signInWithCredential(auth, credential, bypassAuthState = false) 
     await auth._updateCurrentUser(userCredential.user);
   }
   return userCredential;
+}
+async function signInWithCredential(auth, credential) {
+  return _signInWithCredential(_castAuth(auth), credential);
+}
+async function recachePasswordPolicy(auth) {
+  const authInternal = _castAuth(auth);
+  if (authInternal._getPasswordPolicyInternal()) {
+    await authInternal._updatePasswordPolicy();
+  }
+}
+async function createUserWithEmailAndPassword(auth, email, password) {
+  if (_isFirebaseServerApp(auth.app)) {
+    return Promise.reject(_serverAppCurrentUserOperationNotSupportedError(auth));
+  }
+  const authInternal = _castAuth(auth);
+  const request = {
+    returnSecureToken: true,
+    email,
+    password,
+    clientType: "CLIENT_TYPE_WEB"
+    /* RecaptchaClientType.WEB */
+  };
+  const signUpResponse = handleRecaptchaFlow(
+    authInternal,
+    request,
+    "signUpPassword",
+    signUp,
+    "EMAIL_PASSWORD_PROVIDER"
+    /* RecaptchaAuthProvider.EMAIL_PASSWORD_PROVIDER */
+  );
+  const response = await signUpResponse.catch((error) => {
+    if (error.code === `auth/${"password-does-not-meet-requirements"}`) {
+      void recachePasswordPolicy(auth);
+    }
+    throw error;
+  });
+  const userCredential = await UserCredentialImpl._fromIdTokenResponse(authInternal, "signIn", response);
+  await authInternal._updateCurrentUser(userCredential.user);
+  return userCredential;
+}
+function signInWithEmailAndPassword(auth, email, password) {
+  if (_isFirebaseServerApp(auth.app)) {
+    return Promise.reject(_serverAppCurrentUserOperationNotSupportedError(auth));
+  }
+  return signInWithCredential(getModularInstance(auth), EmailAuthProvider.credential(email, password)).catch(async (error) => {
+    if (error.code === `auth/${"password-does-not-meet-requirements"}`) {
+      void recachePasswordPolicy(auth);
+    }
+    throw error;
+  });
 }
 function onIdTokenChanged(auth, nextOrObserver, error, completed) {
   return getModularInstance(auth).onIdTokenChanged(nextOrObserver, error, completed);
@@ -6762,6 +6828,20 @@ var AbstractPopupRedirectOperation = class {
   }
 };
 var _POLL_WINDOW_CLOSE_TIMEOUT = new Delay(2e3, 1e4);
+async function signInWithPopup(auth, provider, resolver) {
+  if (_isFirebaseServerApp(auth.app)) {
+    return Promise.reject(_createError(
+      auth,
+      "operation-not-supported-in-this-environment"
+      /* AuthErrorCode.OPERATION_NOT_SUPPORTED */
+    ));
+  }
+  const authInternal = _castAuth(auth);
+  _assertInstanceOf(auth, provider, FederatedAuthProvider);
+  const resolverInternal = _withDefaultResolver(authInternal, resolver);
+  const action = new PopupOperation(authInternal, "signInViaPopup", provider, resolverInternal);
+  return action.executeNotNull();
+}
 var PopupOperation = class _PopupOperation extends AbstractPopupRedirectOperation {
   constructor(auth, filter, provider, resolver, user) {
     super(auth, filter, resolver, user);
@@ -7844,6 +7924,7 @@ registerAuth(
 );
 
 // src/scripts/top-actions-auth.ts
+var GITHUB_TOKEN_STORAGE_KEY = "sf:github-access-token";
 var signinBtn = document.getElementById("signin-btn");
 var signoutBtn = document.getElementById("signout-btn");
 var setSignedOutUi = () => {
@@ -7864,14 +7945,47 @@ var main = async () => {
     auth = getAuth(initializeApp(cfg));
   } catch {
     setSignedOutUi();
+    window.__sfAuthUnavailable = true;
+    window.dispatchEvent(new CustomEvent("sf-home-auth-state", { detail: { user: null } }));
+    window.dispatchEvent(new CustomEvent("sf-firebase-ready", { detail: { auth: null } }));
     return;
   }
+  window.__sfFirebaseAuth = auth;
+  window.__sfAuthApi = {
+    signInGoogle: async () => {
+      if (!auth) return;
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    },
+    signInGithub: async () => {
+      if (!auth) return;
+      const provider = new GithubAuthProvider();
+      provider.addScope("repo");
+      const result = await signInWithPopup(auth, provider);
+      const accessToken = GithubAuthProvider.credentialFromResult(result)?.accessToken;
+      if (accessToken) sessionStorage.setItem(GITHUB_TOKEN_STORAGE_KEY, accessToken);
+    },
+    signInEmail: async (email, password) => {
+      if (!auth) return;
+      await signInWithEmailAndPassword(auth, email, password);
+    },
+    signUpEmail: async (email, password) => {
+      if (!auth) return;
+      await createUserWithEmailAndPassword(auth, email, password);
+    },
+    signOut: async () => {
+      if (!auth) return;
+      sessionStorage.removeItem(GITHUB_TOKEN_STORAGE_KEY);
+      await signOut(auth);
+    }
+  };
+  window.dispatchEvent(new CustomEvent("sf-firebase-ready", { detail: { auth } }));
   onAuthStateChanged(auth, (user) => {
     if (user) setSignedInUi();
     else setSignedOutUi();
+    window.dispatchEvent(new CustomEvent("sf-home-auth-state", { detail: { user: user ?? null } }));
   });
   signoutBtn?.addEventListener("click", () => {
-    void signOut(auth);
+    void window.__sfAuthApi?.signOut();
   });
   signinBtn?.addEventListener("click", () => {
     window.dispatchEvent(new CustomEvent("sf-request-auth-overlay"));
@@ -8007,8 +8121,6 @@ void main();
 
 @firebase/util/dist/index.esm.js:
 firebase/app/dist/esm/index.esm.js:
-@firebase/auth/dist/esm/index-568d0403.js:
-@firebase/auth/dist/esm/index-568d0403.js:
 @firebase/auth/dist/esm/index-568d0403.js:
 @firebase/auth/dist/esm/index-568d0403.js:
 @firebase/auth/dist/esm/index-568d0403.js:

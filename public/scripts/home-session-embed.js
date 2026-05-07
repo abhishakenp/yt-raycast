@@ -46,6 +46,10 @@ var bindListeners = () => {
   });
   window.addEventListener("message", (ev) => {
     if (ev.origin !== location.origin) return;
+    if (ev.data?.type === "sf-request-auth-overlay") {
+      window.dispatchEvent(new CustomEvent("sf-request-auth-overlay"));
+      return;
+    }
     if (ev.data?.type !== "sf-close-embedded-session") return;
     if (!shell || shell.hidden) return;
     if (history.state?.[STATE_KEY]) {
@@ -104,9 +108,6 @@ var openEmbeddedSession = (sessionId) => {
   }
 };
 export {
-  ensureShell,
   isMarketingHomePath,
-  openEmbeddedSession,
-  setMainInert,
-  showShellForSession
+  openEmbeddedSession
 };
