@@ -5,7 +5,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs'
 
-const REF_PATH = '/Users/livio/Documents/ship-fast/vanilla/.forge/_ref/design-03-saas-homepage.html'
+const REF_PATH = '/Users/livio/Documents/ship-fast/.forge/_ref/design-03-saas-homepage.html'
 const ALT_REF = '/Users/livio/Documents/ship-fast/public/designs/design-03-saas-homepage.html'
 
 let CACHE = null

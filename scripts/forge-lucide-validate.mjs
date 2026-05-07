@@ -8,7 +8,7 @@
 import { readdirSync, existsSync, writeFileSync, readFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 
-const REGISTRY_PATH = '/Users/livio/Documents/ship-fast/vanilla/.forge/_ref/lucide-names.json'
+const REGISTRY_PATH = '/Users/livio/Documents/ship-fast/.forge/_ref/lucide-names.json'
 
 let CACHED_NAMES = null
 
@@ -27,8 +27,8 @@ async function refreshFromCDN() {
 
 function loadFromBundled() {
   const candidates = [
-    '/Users/livio/Documents/ship-fast/vanilla/node_modules/.bun/lucide-react@1.11.0+3f10a4be4e334a9b/node_modules/lucide-react/dist/esm/icons',
-    '/Users/livio/Documents/ship-fast/vanilla/node_modules/.bun/lucide-react@0.562.0+3f10a4be4e334a9b/node_modules/lucide-react/dist/esm/icons',
+    '/Users/livio/Documents/ship-fast/node_modules/.bun/lucide-react@1.11.0+3f10a4be4e334a9b/node_modules/lucide-react/dist/esm/icons',
+    '/Users/livio/Documents/ship-fast/node_modules/.bun/lucide-react@0.562.0+3f10a4be4e334a9b/node_modules/lucide-react/dist/esm/icons',
   ]
   for (const dir of candidates) {
     if (existsSync(dir)) {

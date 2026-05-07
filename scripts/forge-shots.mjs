@@ -3,7 +3,7 @@
  * Take Playwright screenshots for top-K kept iterations of a forge-loop run.
  *
  * Usage:
- *   bun vanilla/scripts/forge-shots.mjs <runId|latest> [K]
+ *   bun scripts/forge-shots.mjs <runId|latest> [K]
  */
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, resolve, sep, normalize } from 'node:path'
@@ -11,7 +11,7 @@ import { createServer } from 'node:http'
 import { chromium } from 'playwright'
 
 const ROOT = process.cwd()
-const LOOP_DIR = join(ROOT, 'vanilla', '.forge', 'loop')
+const LOOP_DIR = join(ROOT, '.forge', 'loop')
 const arg0 = process.argv[2] || 'latest'
 const K = Math.max(1, parseInt(process.argv[3] || '5', 10))
 const PORT = parseInt(process.env.FORGE_PORT || '9889', 10)

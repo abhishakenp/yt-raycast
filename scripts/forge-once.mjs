@@ -3,7 +3,7 @@
  * Forge once: single homepage gen + render audit + vision judge + lucide validate.
  *
  * Usage:
- *   bun vanilla/scripts/forge-once.mjs ["prompt"] [--effort low|medium|high] [--max 10000] [--temp 0.62]
+ *   bun scripts/forge-once.mjs ["prompt"] [--effort low|medium|high] [--max 10000] [--temp 0.62]
  */
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
 import { join, resolve, sep, normalize } from 'node:path'
@@ -28,7 +28,7 @@ const effort = arg('--effort', 'low')
 const maxTokens = parseInt(arg('--max', '10000'), 10)
 const temperature = parseFloat(arg('--temp', '0.65'))
 const PORT = parseInt(arg('--port', '9907'), 10)
-const outDir = arg('--out', join(process.cwd(), 'vanilla', '.forge', 'once', String(Date.now())))
+const outDir = arg('--out', join(process.cwd(), '.forge', 'once', String(Date.now())))
 
 mkdirSync(outDir, { recursive: true })
 const ROOT = process.cwd()

@@ -2,13 +2,13 @@
 /**
  * Quick summary table for any forge run.
  *
- * Usage: bun vanilla/scripts/forge-summary.mjs <runId|latest>
+ * Usage: bun scripts/forge-summary.mjs <runId|latest>
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = process.cwd()
-const LOOP_DIR = join(ROOT, 'vanilla', '.forge', 'loop')
+const LOOP_DIR = join(ROOT, '.forge', 'loop')
 let runId = process.argv[2] || 'latest'
 if (runId === 'latest') runId = readdirSync(LOOP_DIR).sort().pop()
 const RUN_DIR = join(LOOP_DIR, runId)

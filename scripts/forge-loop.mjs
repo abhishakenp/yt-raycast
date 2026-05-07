@@ -61,7 +61,7 @@ const USE_ASSETS = process.env.FORGE_USE_ASSETS === '1'
 
 const RUN_ID = String(Date.now())
 const ROOT = process.cwd()
-const RUN_DIR = join(ROOT, 'vanilla', '.forge', 'loop', RUN_ID)
+const RUN_DIR = join(ROOT, '.forge', 'loop', RUN_ID)
 mkdirSync(RUN_DIR, { recursive: true })
 
 const BASE_PROMPT = process.env.FORGE_PROMPT || FORGE_DEFAULT_PROMPT

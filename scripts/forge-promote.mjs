@@ -4,7 +4,7 @@
  * the lean prompt + reasoning_effort knob into a draft engine patch file.
  *
  * Usage:
- *   bun vanilla/scripts/forge-promote.mjs <runId|latest> [--copy-html] [--patch]
+ *   bun scripts/forge-promote.mjs <runId|latest> [--copy-html] [--patch]
  *
  * --copy-html : copies vanilla/.forge/loop/<run>/best/index.html →
  *               vanilla/.forge/promoted/best.html (preview path; engine
@@ -18,8 +18,8 @@ import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, copyFi
 import { join } from 'node:path'
 
 const ROOT = process.cwd()
-const LOOP_DIR = join(ROOT, 'vanilla', '.forge', 'loop')
-const OUT_DIR = join(ROOT, 'vanilla', '.forge', 'promoted')
+const LOOP_DIR = join(ROOT, '.forge', 'loop')
+const OUT_DIR = join(ROOT, '.forge', 'promoted')
 
 let runId = process.argv[2] || 'latest'
 if (runId === 'latest') runId = readdirSync(LOOP_DIR).sort().pop()
@@ -60,7 +60,7 @@ if (wantPatch || (!wantCopy && !wantPatch)) {
 //   }
 //
 // Replace the LANDING-PAGE branch of the homepage system prompt with the
-// audit-aware lean prompt from vanilla/scripts/forge-lib.mjs (HOMEPAGE_SYSTEM_LEAN
+// audit-aware lean prompt from scripts/forge-lib.mjs (HOMEPAGE_SYSTEM_LEAN
 // constant). Keep the existing classification / image / brand blocks above and
 // below.
 //
