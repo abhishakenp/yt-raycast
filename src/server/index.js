@@ -1023,6 +1023,16 @@ export async function startServer(sessionsDir) {
     }
   })
 
+  // ─── API: Config (Firebase and other client-side config) ──────
+  app.get('/api/config', (req, res) => {
+    res.json({
+      apiKey: process.env.FIREBASE_API_KEY ?? '',
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
+      projectId: process.env.FIREBASE_PROJECT_ID ?? '',
+      appId: process.env.FIREBASE_APP_ID ?? '',
+    })
+  })
+
   // ─── API: List sessions (authenticated — own sessions) ───────
   app.get('/api/sessions', requireAuth, (req, res) => {
     const all = getAllSessions(req.user.uid)
