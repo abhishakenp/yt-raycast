@@ -86,6 +86,35 @@
 
         <div class="stats-bar">
           <span id="gen-timing">Standing by for t-zero…</span>
+          <div class="stats-export-controls">
+            <button id="export-trigger-btn" class="stats-export-btn" aria-expanded="false">Export</button>
+            <button id="github-push-btn" class="stats-github-btn">Push to GitHub</button>
+          </div>
+        </div>
+        <!-- Export Menu -->
+        <div id="export-menu" class="export-menu" style="display: none;">
+          <div id="export-panel" class="export-panel" style="display: none;">
+            <div class="export-header">
+              <span class="export-eyebrow">Download</span>
+              <p class="export-copy">Select a format to download</p>
+            </div>
+            <div id="export-target-list" class="export-target-list"></div>
+            <div class="export-status" id="export-status"></div>
+            <div class="export-subtext" id="export-subtext"></div>
+            <a id="export-download-link" class="export-download-link" style="display: none;">Download</a>
+          </div>
+        </div>
+        <!-- GitHub Export Menu -->
+        <div id="github-export-menu" class="export-menu" style="display: none;">
+          <div id="github-export-panel" class="export-panel" style="display: none;">
+            <div class="export-header">
+              <span class="export-eyebrow">GitHub</span>
+              <p class="export-copy">Push to GitHub repository</p>
+            </div>
+            <div id="github-export-target-list" class="export-target-list"></div>
+            <div id="github-export-status" class="export-status"></div>
+            <div id="github-export-subtext" class="export-subtext"></div>
+          </div>
         </div>
 
         <div class="task-list" id="task-list">
@@ -1557,7 +1586,7 @@
       </div>
       <div class="debug-feed" id="debug-feed"></div>
     </div>
-    <script src="/scripts/dashboard-auth.js" type="module"></script>
+        <script src="/scripts/dashboard-auth.js" type="module"></script>
     <script src="/scripts/dashboard-main.js" type="module"></script>
   </body>
 </html>
