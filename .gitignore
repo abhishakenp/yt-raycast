@@ -36,5 +36,6 @@ public/scripts/
 *~
 .gitnexus
 .forge/
+.ralph/
 .worktrees/
 .claude/worktrees/
