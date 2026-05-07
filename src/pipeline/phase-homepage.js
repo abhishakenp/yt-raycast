@@ -1,13 +1,13 @@
-import { groqHomepage } from '../llm/groq.js'
-import { readDesignRefFromWorkspace } from '../prompts/design-refs.js'
+import { groqHomepage } from '@ship-fast/engine/llm/groq.js'
+import { readDesignRefFromWorkspace } from '@ship-fast/engine/prompts/design-refs.js'
 import {
   VAGUE_MARKETING_HOMEPAGE_APPENDIX,
   shouldExpandVagueMarketing,
-} from '../prompts/vague-marketing-brief.js'
+} from '@ship-fast/engine/prompts/vague-marketing-brief.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
-import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
-import { translateHtml } from '../llm/translator.js'
-import { stripFences, formatTps } from '../llm/utils.js'
+import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '@ship-fast/engine/marketing.js'
+import { translateHtml } from '@ship-fast/engine/llm/translator.js'
+import { stripFences, formatTps } from '@ship-fast/engine/llm/utils.js'
 import {
   alignGeneratedImagesToContext,
   hydrateStorefrontGradientSlots,
@@ -17,8 +17,8 @@ import {
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { htmlLooksDegenerate } from './homepage-degeneracy.js'
 import { passesHomepagePublicDesignVerification } from './ralph-homepage-score.js'
-import { getPublicDesignExemplarPath } from '../prompts/public-design-exemplar-append.js'
-import { stripDestructiveEmptyDesignTheme } from './homepage-theme-sanitize.js'
+import { getPublicDesignExemplarPath } from '@ship-fast/engine/prompts/public-design-exemplar-append.js'
+import { stripDestructiveEmptyDesignTheme } from '@ship-fast/engine/pipeline/homepage-theme-sanitize.js'
 import { writeFile } from './workspace.js'
 import { buildHomepageSpecSliceJson } from '../spec/homepage-spec-slice.js'
 

@@ -1,8 +1,8 @@
-import { groq } from '../llm/groq.js'
-import { formatTps } from '../llm/utils.js'
+import { groq } from '@ship-fast/engine/llm/groq.js'
+import { formatTps } from '@ship-fast/engine/llm/utils.js'
 import { promptSnippet } from '../prompt.js'
 import { slug, parseJson, writeFile } from './workspace.js'
-import { contextPrompt } from '../prompts/context.js'
+import { contextPrompt } from '@ship-fast/engine/prompts/context.js'
 
 export async function generateContext(prompt, designBrief, siteType, workspace, log, brandProfile = null) {
   log('  context: extracting from prompt via Groq')

@@ -1,17 +1,17 @@
-import { groq, groqParallel } from '../llm/groq.js'
-import { translateHtmlSequential } from '../llm/translator.js'
-import { stripFences, formatTps } from '../llm/utils.js'
+import { groq, groqParallel } from '@ship-fast/engine/llm/groq.js'
+import { translateHtmlSequential } from '@ship-fast/engine/llm/translator.js'
+import { stripFences, formatTps } from '@ship-fast/engine/llm/utils.js'
 import {
   alignGeneratedImagesToContext,
   hydrateStorefrontGradientSlots,
   injectEcommerceHeroResponsiveCss,
   verifyTrustedStockImageUrls,
 } from './image-hints.js'
-import { buildFallbackPageFromHomepage } from './fallback-page.js'
+import { buildFallbackPageFromHomepage } from '@ship-fast/engine/pipeline/fallback-page.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { slug, writeFile } from './workspace.js'
 import { HOME_LABELS } from '../config.js'
-import { pagePrompt, backendPrompt } from '../prompts/page.js'
+import { pagePrompt, backendPrompt } from '@ship-fast/engine/prompts/page.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
 
 const PAGE_RETRY_ATTEMPTS = 2

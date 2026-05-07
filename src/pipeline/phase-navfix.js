@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { groqParallel } from '../llm/groq.js'
-import { stripFences, formatTps } from '../llm/utils.js'
+import { groqParallel } from '@ship-fast/engine/llm/groq.js'
+import { stripFences, formatTps } from '@ship-fast/engine/llm/utils.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { writeFile } from './workspace.js'
 import { sumTokens } from './phase-tasks.js'
-import { navfixPrompt } from '../prompts/navfix.js'
+import { navfixPrompt } from '@ship-fast/engine/prompts/navfix.js'
 
 export async function fixHomepageNav(navList, workspace, log) {
   // Skip nav fixing for now unless explicitly enabled.

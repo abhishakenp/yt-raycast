@@ -1,6 +1,6 @@
 import { SITE_SPEC_MODEL } from '../config.js'
-import { groq } from '../llm/groq.js'
-import { formatTps } from '../llm/utils.js'
+import { groq } from '@ship-fast/engine/llm/groq.js'
+import { formatTps } from '@ship-fast/engine/llm/utils.js'
 import { parseJson } from './workspace.js'
 import {
   buildFallbackSiteSpec,
@@ -8,10 +8,10 @@ import {
   saveSiteSpec,
   validateSiteSpec,
 } from '../spec/index.js'
-import { siteSpecPrompt } from '../prompts/site-spec.js'
+import { siteSpecPrompt } from '@ship-fast/engine/prompts/site-spec.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
-import { repairThemeColors } from '../spec/theme-contrast.js'
+import { repairThemeColors } from '@ship-fast/engine/spec/theme-contrast.js'
 
 function cleanJsonContent(text = '') {
   return String(text)

@@ -4,7 +4,7 @@ import {
   SUPPORTED_EXPORT_TARGETS,
   SUPPORTED_SECTION_TYPES,
 } from './defaults.js'
-import { normalizeBusinessProfile } from './business-profile.js'
+import { normalizeBusinessProfile } from '@ship-fast/engine/spec/business-profile.js'
 import { slug } from '../pipeline/workspace.js'
 
 function ensureArray(value) {

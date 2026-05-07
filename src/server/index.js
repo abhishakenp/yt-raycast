@@ -191,7 +191,7 @@ const sanitizeChatAttachmentPaths = (workspace, paths) => {
 let _sessionsDir = null
 let rateLimitFile = null
 
-const httpContractsPromise = import('../contracts/http-contracts.js')
+const httpContractsPromise = import('@ship-fast/engine/contracts/http-contracts.js')
 
 // Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
 const WHITELISTED_IPS = new Set(

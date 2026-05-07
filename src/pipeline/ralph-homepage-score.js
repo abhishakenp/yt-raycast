@@ -4,7 +4,7 @@ import {
   htmlLooksDegenerate,
   promptExpectsNovaDenseMarketing,
 } from './homepage-degeneracy.js'
-import { collectHomepageQualityIssues } from './homepage-quality-audit.js'
+import { collectHomepageQualityIssues } from '@ship-fast/engine/pipeline/homepage-quality-audit.js'
 
 const hookRe =
   /data-mobile-nav|data-accordion|data-carousel|data-tab-group|data-counter|data-pricing-billing|data-bill|\bdata-acc\b|data-open-drawer|data-cart-count|data-add\b|data-magnet|data-reveal|popovertarget|data-docs-nav|data-copy\b/i

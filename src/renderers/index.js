@@ -1,8 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { renderHtmlProject } from './html/index.js'
-import { renderReactProject } from './react/index.js'
-import { renderNextProject } from './nextjs/index.js'
 import { renderProjectReadme } from './shared.js'
 import { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 
@@ -10,20 +8,10 @@ export { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 
 export function renderProject(siteSpec, target, session) {
   prepareSiteSpecForReliableRender(siteSpec)
-  let rendered
-  switch (target) {
-    case 'html':
-      rendered = renderHtmlProject(siteSpec)
-      break
-    case 'react':
-      rendered = renderReactProject(siteSpec, session)
-      break
-    case 'nextjs':
-      rendered = renderNextProject(siteSpec, session)
-      break
-    default:
-      throw new Error(`Unsupported render target: ${target}`)
+  if (target !== 'html') {
+    throw new Error(`Unsupported render target: ${target}. Only 'html' is supported (vanilla project).`)
   }
+  const rendered = renderHtmlProject(siteSpec)
 
   return {
     ...rendered,
@@ -42,17 +30,14 @@ export function writeRenderedFiles(baseDir, files) {
   }
 }
 
-export function writeNextAppToWorkspace(siteSpec, workspace, session) {
-  if (!siteSpec) return
-  const rendered = renderProject(siteSpec, 'nextjs', session)
-  const root = join(workspace, 'next-app')
-  writeRenderedFiles(root, rendered.files)
-}
-
 export function renderPreviewToWorkspace(siteSpec, workspace, session) {
   prepareSiteSpecForReliableRender(siteSpec)
   const { files } = renderHtmlProject(siteSpec)
   writeRenderedFiles(workspace, files)
-  writeNextAppToWorkspace(siteSpec, workspace, session)
   return { files }
+}
+
+/** Vanilla project is HTML-only — this is a no-op kept for runner compatibility. */
+export function writeNextAppToWorkspace(siteSpec, workspace, session) {
+  return renderPreviewToWorkspace(siteSpec, workspace, session)
 }

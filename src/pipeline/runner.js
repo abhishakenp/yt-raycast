@@ -1,7 +1,7 @@
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { stripFences, formatTps } from '../llm/utils.js'
-import { groqParallel } from '../llm/groq.js'
+import { stripFences, formatTps } from '@ship-fast/engine/llm/utils.js'
+import { groqParallel } from '@ship-fast/engine/llm/groq.js'
 import { writeFile } from './workspace.js'
 import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
@@ -13,12 +13,12 @@ import {
   injectStorefrontCartUi,
   stripStorefrontCartUi,
 } from './storefront-cart-ui.js'
-import { shouldReplaceLlmHomepageWithRenderer } from './homepage-substance.js'
-import { injectLLMHomepageSwiper } from './homepage-swiper.js'
+import { shouldReplaceLlmHomepageWithRenderer } from '@ship-fast/engine/pipeline/homepage-substance.js'
+import { injectLLMHomepageSwiper } from '@ship-fast/engine/pipeline/homepage-swiper.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
 import { formatRunAllReport, formatEditReport } from './report.js'
-import { editPrompt } from '../prompts/edit.js'
+import { editPrompt } from '@ship-fast/engine/prompts/edit.js'
 import {
   enrichSiteSpecWithWorkspaceBlueprints,
   loadSiteSpec,

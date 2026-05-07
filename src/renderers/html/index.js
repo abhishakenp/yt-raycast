@@ -17,7 +17,7 @@ import {
   resolvePageSeo,
   serializeStructuredData,
 } from '../seo.js'
-import { shouldUseSwiper } from '../../lib/swiper-policy.js'
+import { shouldUseSwiper } from '@ship-fast/engine/lib/swiper-policy.js'
 
 function renderSeoHeadMarkup(siteSpec, page) {
   const seo = resolvePageSeo(siteSpec, page)

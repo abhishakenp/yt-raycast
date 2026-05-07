@@ -1,8 +1,8 @@
-import { groq } from '../llm/groq.js'
-import { formatTps } from '../llm/utils.js'
+import { groq } from '@ship-fast/engine/llm/groq.js'
+import { formatTps } from '@ship-fast/engine/llm/utils.js'
 import { VALID_SITE_TYPES } from '../config.js'
 import { inferSiteTypeHint } from '../lib/infer-site-type.js'
-import { siteTypePrompt } from '../prompts/site-type.js'
+import { siteTypePrompt } from '@ship-fast/engine/prompts/site-type.js'
 
 export async function detectSiteType(prompt, log) {
   const hinted = inferSiteTypeHint(prompt)

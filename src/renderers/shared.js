@@ -1,6 +1,6 @@
 import { isMixedEnglishIndicCode } from '../config/languages.js'
-import { shouldUseSwiper } from '../lib/swiper-policy.js'
-import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '../marketing.js'
+import { shouldUseSwiper } from '@ship-fast/engine/lib/swiper-policy.js'
+import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '@ship-fast/engine/marketing.js'
 
 /**
  * Returns a Google Fonts <link> tag for the Noto Sans script matching the

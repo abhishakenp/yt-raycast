@@ -1,4 +1,4 @@
-import { htmlDocumentPassesPreviewQuality } from '../pipeline/homepage-substance.js'
+import { htmlDocumentPassesPreviewQuality } from '@ship-fast/engine/pipeline/homepage-substance.js'
 import { buildFallbackSiteSpec } from '../spec/defaults.js'
 import { applyGeneratedSitePseoGuardrails } from './pseo-guardrails.js'
 import { pageUsesExactClone } from './shared.js'
