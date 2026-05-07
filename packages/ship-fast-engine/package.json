@@ -1,0 +1,15 @@
+{
+  "name": "@ship-fast/engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "latest",
+    "dotenv": "^17.4.2",
+    "zod": "^4.3.6"
+  }
+}

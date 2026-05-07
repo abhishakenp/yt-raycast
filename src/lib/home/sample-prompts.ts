@@ -10,6 +10,9 @@ export const SAMPLE_PROMPTS = [
   ...INDIAN_SAMPLE_PROMPTS,
 ]
 
+/** First N entries used for local dev (`homepage.ts` keyboard shortcuts + glass chip bar). */
+export const LOCAL_DEV_PROMPT_QUICK_PICK_COUNT = 4
+
 export const LOCAL_DEV_PROMPT_SHORTCUTS = [
   'Mere local gym ke liye ek powerful modern website banao with membership plans',
   'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',

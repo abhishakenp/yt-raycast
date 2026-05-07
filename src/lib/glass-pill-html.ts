@@ -6,7 +6,8 @@ export const GLASS_LENS_FILTER_ID = 'sf-glass-lens'
 export const glassPillSvgDefs = () =>
   `<svg class="sf-glass-sr-only" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><filter id="${GLASS_LENS_FILTER_ID}" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.0082 0.0058" numOctaves="3" seed="41" result="noise" /><feGaussianBlur in="noise" stdDeviation="2" result="smooth" /><feDisplacementMap in="SourceGraphic" in2="smooth" scale="24" xChannelSelector="R" yChannelSelector="G" /></filter></defs></svg>`
 
-const LAYERS = `<span class="pill__lens" aria-hidden="true"></span><span class="pill__fringe pill__fringe--r" aria-hidden="true"></span><span class="pill__fringe pill__fringe--b" aria-hidden="true"></span><span class="pill__mist" aria-hidden="true"></span><span class="pill__iris" aria-hidden="true"></span><span class="pill__sheen" aria-hidden="true"></span><span class="pill__rim" aria-hidden="true"></span>`
+/** Decoration nodes inserted before `.pill__body` on liquid-glass controls. */
+export const glassPillDecorationLayersHtml = `<span class="pill__lens" aria-hidden="true"></span><span class="pill__fringe pill__fringe--r" aria-hidden="true"></span><span class="pill__fringe pill__fringe--b" aria-hidden="true"></span><span class="pill__mist" aria-hidden="true"></span><span class="pill__iris" aria-hidden="true"></span><span class="pill__sheen" aria-hidden="true"></span><span class="pill__rim" aria-hidden="true"></span>`
 
 export type GlassPillButtonHtmlOpts = {
   type?: string
@@ -42,7 +43,7 @@ export const glassPillButtonHtml = ({
   const dis = disabled ? ' disabled' : ''
   const aria = ariaLabel ? ` aria-label="${esc(ariaLabel)}"` : ''
   const inner = html != null && html !== '' ? html : esc(text ?? label ?? '')
-  return `<button type="${esc(type)}" class="${cls}"${idAttr}${nameAttr}${valueAttr}${dis}${aria}${extraAttrs}>${LAYERS}<span class="pill__body">${inner}</span></button>`
+  return `<button type="${esc(type)}" class="${cls}"${idAttr}${nameAttr}${valueAttr}${dis}${aria}${extraAttrs}>${glassPillDecorationLayersHtml}<span class="pill__body">${inner}</span></button>`
 }
 
 export type GlassPillAnchorHtmlOpts = {
@@ -70,5 +71,5 @@ export const glassPillAnchorHtml = ({
   const idAttr = id ? ` id="${esc(id)}"` : ''
   const aria = ariaLabel ? ` aria-label="${esc(ariaLabel)}"` : ''
   const inner = html != null && html !== '' ? html : esc(text ?? label ?? '')
-  return `<a href="${esc(href)}" class="${cls}"${idAttr}${aria}${extraAttrs}>${LAYERS}<span class="pill__body">${inner}</span></a>`
+  return `<a href="${esc(href)}" class="${cls}"${idAttr}${aria}${extraAttrs}>${glassPillDecorationLayersHtml}<span class="pill__body">${inner}</span></a>`
 }
