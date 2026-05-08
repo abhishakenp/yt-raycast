@@ -48,6 +48,29 @@ export function siteSpecPrompt({
 
   const craftRules = `\n- Visual craft: ${GLOBAL_UI_CRAFT_GUIDELINES} Encode spacing and typographic intent in theme.spacing, theme.typography.scale, and theme.radius; keep sections scannable without clutter.\n`
 
+  // Strong palette + typography discipline. Without this, the LLM frequently
+  // returns 5 shades of gray + a jarring border accent, regardless of vibe.
+  const themeDisciplineRules = `\n- Palette discipline (MANDATORY): theme.colors.primary, secondary, and accent must be visibly distinct hues (not three near-blacks or three near-whites). At least one of {primary, accent} must be a saturated brand-appropriate hue, not gray or black. Read the prompt's domain and vibe to pick hues:
+  - Coffee / cafe / bakery: warm earth tones — espresso brown (#3B2415–#5A2E1A), caramel/latte (#C8966B), cream/oat (#F5EBDD). Primary brown, accent caramel.
+  - Wellness / spa / yoga / herbal: sage green, terracotta, dusty rose, warm cream backgrounds.
+  - Fitness / gym / sports: high-contrast — black background with neon lime / electric blue / energetic red accent.
+  - Jewelry / luxury / cosmetics: champagne gold (#C9A96E), rose gold, ivory, deep burgundy or charcoal text.
+  - Fashion / streetwear: bold black/white with one saturated pop (cobalt, oxblood, safety-orange).
+  - Tech / SaaS / dashboard: indigo, violet, cyan, or emerald primary on near-black surface.
+  - Kids / toys / candy: playful saturated primaries (sunshine yellow, sky blue, candy pink) on cream.
+  - Food delivery / restaurant: appetizing warm reds, paprika, mustard, deep green.
+  - Real estate / construction: navy, gold accent, ivory background, cream surface.
+  - Outdoors / travel: forest green, ochre, sky blue, sand.
+- theme.colors.border MUST be a low-saturation neutral derived from text or background (e.g. ~10% opacity of text on background, OR a desaturated near-neighbor of background). NEVER set border to a saturated brand color like bright orange, red, or yellow — borders frame, they don't shout.
+- text vs background contrast: WCAG AA at minimum. Don't pair near-black text with dark gray backgrounds or near-white text with cream backgrounds. Pick a coherent light OR dark scheme — not both at once.
+- Typography (MANDATORY): match the vibe, don't default to Inter for everything.
+  - Luxury / editorial / cafe / boutique: heading uses a serif (Playfair Display, Cormorant Garamond, DM Serif Display, Fraunces); body remains a clean sans (Inter, Manrope) for readability.
+  - Streetwear / sports / nightlife: heading uses a condensed or display sans (Bebas Neue, Anton, Archivo Black); body Inter or Space Grotesk.
+  - SaaS / tech / dashboard: heading and body both clean modern sans (Inter, Manrope, Space Grotesk, Geist).
+  - Handcraft / artisan / wellness: heading a humanist serif or warm sans (Cormorant, Fraunces, Lora, DM Sans).
+  - Only use Inter for both heading and body when the prompt is generic SaaS/dashboard with no vibe signal.
+`
+
   return {
     system:
       'You are a product architect who outputs only valid JSON. No markdown. No explanation. Keep the result strongly structured and renderer-friendly.',
@@ -135,7 +158,7 @@ export function siteSpecPrompt({
       `- When verified brand details are provided, use them for logo/contact/footer/social sections and keep those fields exact.\n` +
       `- Do not invent physical addresses or phone numbers in contact/footer; omit them if not in the prompt or brand block.\n` +
       `- Do not put generator/tool branding strings in any page content.\n` +
-      `- Use the fallback structure when uncertain rather than inventing a malformed schema.${craftRules}${ecommerceRules}${editThemeRules}`,
+      `- Use the fallback structure when uncertain rather than inventing a malformed schema.${craftRules}${themeDisciplineRules}${ecommerceRules}${editThemeRules}`,
     temperature: 0.2,
     maxTokens: 4000,
   }
