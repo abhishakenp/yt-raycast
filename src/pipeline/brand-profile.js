@@ -6,7 +6,7 @@ const FETCH_TIMEOUT_MS = 7000
 const MAX_SEARCH_RESULTS = 8
 const MAX_SOURCE_PAGES = 3
 const BLACKLISTED_PRIMARY_HOST_RE =
-  /(^|\.)((facebook|instagram|linkedin|youtube|youtu|x|twitter|tiktok|pinterest|threads|justdial|indiamart|tradeindia|sulekha|amazon|flipkart|nykaa|myntra)\.)/i
+  /(^|\.)((facebook|instagram|linkedin|youtube|youtu|x|twitter|tiktok|pinterest|threads|justdial|indiamart|tradeindia|sulekha|amazon|flipkart|nykaa|myntra|wikipedia|wikimedia|wiktionary|wikihow|fandom|britannica|encyclopedia|reddit|quora|medium|pinterest|yelp|tripadvisor)\.)/i
 const SOCIAL_HOST_RE =
   /(^|\.)((facebook|instagram|linkedin|youtube|youtu|x|twitter|tiktok|pinterest|threads|wa\.me)\.)/i
 const SEARCH_RESULT_RE =
@@ -43,6 +43,21 @@ const BRAND_STOP_WORDS = new Set([
   'the',
   'website',
   'with',
+])
+
+// Generic nouns/category words that, on their own (no proper-noun anchor),
+// describe a kind of business rather than a real brand. Prompts like
+// "a coffee shop", "an online store", "the website" are NOT brand-driven —
+// they should skip web resolution and fall through to LLM-only generation.
+const GENERIC_BUSINESS_NOUNS = new Set([
+  'agency', 'app', 'application', 'bar', 'blog', 'boutique', 'brand', 'business',
+  'cafe', 'coffee', 'clinic', 'club', 'college', 'company', 'dashboard',
+  'ecommerce', 'fitness', 'gallery', 'group', 'gym', 'homepage', 'hospital',
+  'hotel', 'institute', 'landing', 'library', 'marketplace', 'market', 'motel',
+  'museum', 'network', 'online', 'organization', 'page', 'platform', 'portfolio',
+  'project', 'pub', 'restaurant', 'salon', 'saas', 'school', 'service',
+  'services', 'shop', 'site', 'software', 'startup', 'store', 'studio', 'team',
+  'tool', 'university', 'web', 'website',
 ])
 
 const SOCIAL_NETWORKS = [
@@ -209,6 +224,33 @@ function extractPromptUrl(prompt = '') {
   return match ? trimCandidate(match[0]) : ''
 }
 
+function looksLikeGenericNounPhrase(candidate = '') {
+  const raw = String(candidate).trim()
+  if (!raw) return true
+  // Strip leading article ("a", "an", "the") — common in "a coffee shop"
+  const stripped = raw.replace(/^(?:a|an|the)\s+/i, '').trim()
+  if (!stripped) return true
+  const tokens = stripped.split(/[\s\-_/]+/).filter(Boolean)
+  if (!tokens.length) return true
+
+  // Real brands almost always have at least one Title-cased token
+  // (proper-noun anchor): "Stripe", "Blue Bottle Coffee", "Acme", "Patagonia".
+  // If any token starts with uppercase, accept it as a real brand candidate.
+  if (tokens.some((t) => /^[A-Z]/.test(t))) return false
+
+  // No proper-noun anchor. Only accept if it's a single distinctive lowercase
+  // word that isn't a generic business category — e.g. "stripe" without
+  // capitalization is still likely the brand, but "coffee shop" or
+  // "powerful website" are descriptions, not brands.
+  if (tokens.length === 1) {
+    const t = tokens[0].toLowerCase()
+    if (t.length >= 4 && !GENERIC_BUSINESS_NOUNS.has(t) && !BRAND_STOP_WORDS.has(t)) {
+      return false
+    }
+  }
+  return true
+}
+
 export function extractOrganizationCandidate(prompt = '') {
   const input = String(prompt || '')
   const patterns = [
@@ -221,20 +263,25 @@ export function extractOrganizationCandidate(prompt = '') {
     const match = input.match(pattern)
     if (!match) continue
     const candidate = trimCandidate(match[1] || '')
-    if (candidate && candidate.length >= 3) return candidate
+    if (!candidate || candidate.length < 3) continue
+    if (looksLikeGenericNounPhrase(candidate)) continue
+    return candidate
   }
 
   const quoted = input.match(/["“]([^"”]{3,80})["”]/)
   if (quoted) {
     const candidate = trimCandidate(quoted[1] || '')
-    if (candidate && candidate.length >= 3) return candidate
+    if (candidate && candidate.length >= 3 && !looksLikeGenericNounPhrase(candidate)) return candidate
   }
 
   const lines = input
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
-  if (lines.length === 1 && lines[0].split(/\s+/).length <= 8) return trimCandidate(lines[0])
+  if (lines.length === 1 && lines[0].split(/\s+/).length <= 8) {
+    const candidate = trimCandidate(lines[0])
+    if (candidate && !looksLikeGenericNounPhrase(candidate)) return candidate
+  }
 
   return ''
 }
