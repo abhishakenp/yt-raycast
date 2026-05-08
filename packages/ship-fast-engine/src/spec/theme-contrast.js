@@ -173,58 +173,89 @@ const VIBE_PALETTES = {
     background: '#F4EEE5', surface: '#EADBC4', border: '#D9C4A6',
     typography: { heading: 'Fraunces', body: 'Inter' },
   },
-  // farmersmarket tokens derived from Playwright extraction of:
-  //   misfitsmarket.com, imperfectfoods.com, hungryroot.com,
-  //   goodeggs.com, sweetgreen.com
-  // Consensus: cream/oat/faint-mint backgrounds, dark warm-gray text,
-  // bold display-or-Grotesk heading, modern sans body. CTAs are an
-  // accent — Sweetgreen's deep forest #00473C, Misfits' mustard #F1C34A,
-  // Imperfect's magenta #B32274. Going with deep forest primary (the
-  // most "farm trust" of the three) and harvest-mustard accent.
+  // farmersmarket: Playwright on misfitsmarket, imperfectfoods, hungryroot,
+  // goodeggs, sweetgreen. Cream/oat bg, deep forest primary, harvest-mustard
+  // accent.
   farmersmarket: {
     primary: '#2D4A2A', secondary: '#7B5E3D', accent: '#F1C34A',
     background: '#F9F8F4', surface: '#EEF5EA', border: '#D9D2BC',
     typography: { heading: 'Fraunces', body: 'Inter' },
   },
-  wellness: {
-    primary: '#6B8E5A', secondary: '#A8624D', accent: '#D9A89F',
-    background: '#FAF5EE', surface: '#F0E6D6', border: '#D8C9B2',
+  // food: Mobbin (OpenTable navy+red+cream, Blue Apron cream+navy serif)
+  // + restaurant DTC convention. Warm cream bg, restaurant-red primary,
+  // deep green secondary, mustard accent. Editorial serif heading.
+  food: {
+    primary: '#A53B26', secondary: '#1F4F2C', accent: '#E0A82E',
+    background: '#FAF6F0', surface: '#F5EFE6', border: '#E5CCA1',
+    typography: { heading: 'Playfair Display', body: 'Inter' },
   },
-  fitness: {
-    primary: '#0E0E12', secondary: '#1E1E26', accent: '#A6F500',
-    background: '#0A0A0E', surface: '#15151B', border: '#23232C',
-  },
-  jewelry: {
-    primary: '#8B0F2A', secondary: '#1A1A1D', accent: '#C9A96E',
-    background: '#FBF6EC', surface: '#F2E9D6', border: '#DECDA8',
-  },
+  // fashion: Mobbin Nike (black+white+sand+saturated-pop). Black/white
+  // chrome, photography-led, bold sans heading, saturated red/orange
+  // accent for CTAs.
   fashion: {
     primary: '#0A0A0A', secondary: '#FAFAFA', accent: '#D44C2A',
     background: '#FAFAFA', surface: '#F0F0F0', border: '#D9D9D9',
+    typography: { heading: 'Manrope', body: 'Inter' },
   },
-  tech: {
-    primary: '#7C3AED', secondary: '#22D3EE', accent: '#A78BFA',
-    background: '#09090B', surface: '#18181B', border: '#27272A',
+  // jewelry: Mobbin HODINKEE (white+Bodoni-style serif+small caps+photo
+  // editorial). Luxury watches/jewelry use near-black + champagne gold
+  // + burgundy on cream. Editorial-luxury serif.
+  jewelry: {
+    primary: '#1A1A1D', secondary: '#8B0F2A', accent: '#C9A96E',
+    background: '#FBF6EC', surface: '#F2E9D6', border: '#DECDA8',
+    typography: { heading: 'Cormorant Garamond', body: 'Inter' },
   },
+  // wellness: Mobbin (Headspace warm yellow+cream playful, Calm deep blue).
+  // Default to grounded calm — deep slate-green primary, terracotta
+  // secondary, golden-yellow accent. Editorial-warm serif.
+  wellness: {
+    primary: '#3F4E3D', secondary: '#A8624D', accent: '#F4C04E',
+    background: '#FAF5EE', surface: '#F0E6D6', border: '#D8C9B2',
+    typography: { heading: 'DM Serif Display', body: 'Inter' },
+  },
+  // fitness: Mobbin Tonal (dark+magenta hero, photo-heavy). Dark theme,
+  // saturated brand color (neon lime/magenta/electric blue) for energy.
+  // Bold display sans heading.
+  fitness: {
+    primary: '#0E0E12', secondary: '#1E1E26', accent: '#A6F500',
+    background: '#0A0A0E', surface: '#15151B', border: '#23232C',
+    typography: { heading: 'Bebas Neue', body: 'Inter' },
+  },
+  // kids: Mobbin ClassDojo (playful purple+orange+cream, chunky illustrative).
+  // Saturated playful primaries on warm cream, friendly rounded sans.
   kids: {
-    primary: '#F4B400', secondary: '#3CA0E7', accent: '#E84A5F',
+    primary: '#7B3FE4', secondary: '#FF8E3C', accent: '#27D4C6',
     background: '#FFF8E7', surface: '#FFEFC7', border: '#F1D88A',
+    typography: { heading: 'Fredoka', body: 'Nunito' },
   },
-  food: {
-    primary: '#B23A28', secondary: '#1F4F2C', accent: '#E0A82E',
-    background: '#FFF4E6', surface: '#FBE5C2', border: '#E5CCA1',
-  },
+  // realestate: Mobbin Zillow/Realtor.com (deep navy + signature green CTA
+  // + cream/white). Trust-building navy primary, sage/emerald accent.
   realestate: {
-    primary: '#0F2A4A', secondary: '#1F3A66', accent: '#C9A96E',
+    primary: '#0F2A4A', secondary: '#1F3A66', accent: '#10B981',
     background: '#FBF8F2', surface: '#F0EADC', border: '#D9CFB8',
+    typography: { heading: 'Lora', body: 'Inter' },
   },
+  // outdoors: Travel/adventure DTC convention (Patagonia/REI). Forest
+  // green primary, ochre secondary, sky-blue accent on warm sand bg.
+  // Editorial-warm serif for grounded/heritage feel.
   outdoors: {
     primary: '#2F4A2C', secondary: '#A86A2C', accent: '#6FA1C9',
     background: '#F4EFE3', surface: '#E6DEC8', border: '#C8BFA0',
+    typography: { heading: 'Fraunces', body: 'Inter' },
   },
+  // tech: Mobbin OpenAI Platform (dark + indigo, developer tools). Dark
+  // theme, violet/cyan accent, modern dev-tool sans (Geist).
+  tech: {
+    primary: '#7C3AED', secondary: '#22D3EE', accent: '#A78BFA',
+    background: '#09090B', surface: '#18181B', border: '#27272A',
+    typography: { heading: 'Geist', body: 'Geist' },
+  },
+  // saas: Mobbin Productivity (Felt, Confluence, Fireflies — light
+  // dashboard, indigo primary, emerald CTA). Clean modern sans throughout.
   saas: {
-    primary: '#6366F1', secondary: '#8B5CF6', accent: '#22D3EE',
-    background: '#0A0A0F', surface: '#15151F', border: '#23232E',
+    primary: '#4F46E5', secondary: '#0EA5E9', accent: '#10B981',
+    background: '#FBFBFD', surface: '#FFFFFF', border: '#E5E7EB',
+    typography: { heading: 'Inter', body: 'Inter' },
   },
 }
 
