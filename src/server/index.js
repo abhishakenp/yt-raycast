@@ -666,10 +666,12 @@ export async function startServer(sessionsDir) {
   })
 
   // Serve public assets statically, but keep / routed through SSR.
+  // In dev, suppress max-age so script/style edits are reflected on reload
+  // (the hour-long cache hid recent rebuilds of dashboard-main.js etc.).
   app.use(
     express.static(publicDir, {
       index: false,
-      maxAge: '1h',
+      maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
       etag: true,
     }),
   )
