@@ -1856,6 +1856,35 @@ ${
 .site-shell--store .section--store-products .product-grid {
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
+/* Defensive grid for LLM-invented product-list wrappers on shop/catalog
+   subpages. The framework's .product-grid rule only matches that exact
+   class — but the LLM frequently authors inner wrappers like
+   .product-grid__cards, .card-grid, .products-grid, .collection-grid,
+   .catalog-grid, .product-list. Without these rules those wrappers have
+   no display:grid and every card stacks full-width with stretched images. */
+.site-shell--store .product-grid__cards,
+.site-shell--store .card-grid,
+.site-shell--store .products-grid,
+.site-shell--store .collection-grid,
+.site-shell--store .catalog-grid,
+.site-shell--store .product-list,
+.site-shell--store .shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--gap);
+  margin-top: 1.5rem;
+}
+@media (max-width: 540px) {
+  .site-shell--store .product-grid__cards,
+  .site-shell--store .card-grid,
+  .site-shell--store .products-grid,
+  .site-shell--store .collection-grid,
+  .site-shell--store .catalog-grid,
+  .site-shell--store .product-list,
+  .site-shell--store .shop-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
 .store-promo-bar {
   background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 35%, #0f172a), color-mix(in srgb, var(--color-accent) 25%, #0f172a));
   color: #f8fafc;
