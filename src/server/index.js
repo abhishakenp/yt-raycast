@@ -88,6 +88,7 @@ import {
   getSessionPaymentDetails,
 } from '../billing/payments.js'
 import { razorpayWebhookHandler } from './razorpay.js'
+import { mountNextApiPort } from './next-api-port.js'
 import { applySiteSettingsPatch } from '../sanity/sync.js'
 import {
   MAX_FREE_PER_MONTH,
@@ -498,6 +499,8 @@ export async function startServer(sessionsDir) {
   // Extracted to src/server/middleware/auth.middleware.js
   const { requireAuth, optionalAuth, requireProvisionAuth } =
     await import('./middleware/auth.middleware.js')
+
+  mountNextApiPort(app, { requireAuth })
 
   function ensureSessionArtifactAccess(req, res, session) {
     if (session?.userId) {
