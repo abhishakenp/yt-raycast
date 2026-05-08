@@ -173,6 +173,19 @@ const VIBE_PALETTES = {
     background: '#F4EEE5', surface: '#EADBC4', border: '#D9C4A6',
     typography: { heading: 'Fraunces', body: 'Inter' },
   },
+  // farmersmarket tokens derived from Playwright extraction of:
+  //   misfitsmarket.com, imperfectfoods.com, hungryroot.com,
+  //   goodeggs.com, sweetgreen.com
+  // Consensus: cream/oat/faint-mint backgrounds, dark warm-gray text,
+  // bold display-or-Grotesk heading, modern sans body. CTAs are an
+  // accent — Sweetgreen's deep forest #00473C, Misfits' mustard #F1C34A,
+  // Imperfect's magenta #B32274. Going with deep forest primary (the
+  // most "farm trust" of the three) and harvest-mustard accent.
+  farmersmarket: {
+    primary: '#2D4A2A', secondary: '#7B5E3D', accent: '#F1C34A',
+    background: '#F9F8F4', surface: '#EEF5EA', border: '#D9D2BC',
+    typography: { heading: 'Fraunces', body: 'Inter' },
+  },
   wellness: {
     primary: '#6B8E5A', secondary: '#A8624D', accent: '#D9A89F',
     background: '#FAF5EE', surface: '#F0E6D6', border: '#D8C9B2',
@@ -218,6 +231,7 @@ const VIBE_PALETTES = {
 // Keyword → vibe mapping. Order matters — more specific keywords first.
 const VIBE_KEYWORDS = [
   ['coffee', /\b(coffee|cafe|café|espresso|barista|roastery|tea\s*house|bakery|patisserie)\b/i],
+  ['farmersmarket', /\b(farmer'?s?\s*market|farm|produce|harvest|organic|grocery|grocer|csa|local\s*food|farm.to.table|seasonal\s*produce|veggie|vegetable\s*box)\b/i],
   ['wellness', /\b(wellness|spa|yoga|meditation|herbal|ayurveda|holistic|naturopath|massage)\b/i],
   ['fitness', /\b(gym|fitness|crossfit|workout|bodybuilding|martial.arts|boxing|hiit|trainer)\b/i],
   ['jewelry', /\b(jewel(ry|lery)?|gold|diamond|ring|necklace|bridal|gemstone|wedding\s*band)\b/i],
@@ -230,14 +244,16 @@ const VIBE_KEYWORDS = [
   ['saas', /\b(software|app|tool|productivity|workflow|automation|crm|erp)\b/i],
 ]
 
+// Returns { vibe, confident } — confident=true means a keyword matched
+// (we can override the LLM's palette aggressively); confident=false means
+// we fell through to a siteType default (only override if palette is bad).
 const inferVibeFromPrompt = (prompt = '', siteType = '') => {
   const text = String(prompt || '').toLowerCase()
   for (const [vibe, re] of VIBE_KEYWORDS) {
-    if (re.test(text)) return vibe
+    if (re.test(text)) return { vibe, confident: true }
   }
-  // No keyword hit — pick a sensible default per siteType
-  if (String(siteType).toLowerCase() === 'ecommerce') return 'fashion'
-  return 'tech'
+  if (String(siteType).toLowerCase() === 'ecommerce') return { vibe: 'fashion', confident: false }
+  return { vibe: 'tech', confident: false }
 }
 
 // True if primary, secondary, accent are all near-grayscale (low saturation)
@@ -263,6 +279,28 @@ const borderIsGarish = (border, primary, accent) => {
   const a = colorHsl(accent)
   const maxBrand = Math.max(p?.s ?? 0, a?.s ?? 0)
   return b.s > maxBrand + 0.15
+}
+
+// Shortest distance between two hues on the 0-360 wheel.
+const hueDistance = (a, b) => {
+  const d = Math.abs(a - b) % 360
+  return d > 180 ? 360 - d : d
+}
+
+// True if the LLM-emitted primary is in a hue family that's clearly wrong
+// for the matched vibe (e.g. SaaS-purple primary for a farmers market).
+// Only call this when the vibe match was keyword-confident, AND the
+// vibe palette itself has a meaningfully saturated primary (so we have
+// a target hue to compare against). Threshold is generous (>= 60°) so
+// e.g. coffee accepts both deep brown and warm orange-brown.
+const paletteIsOffVibe = (primary, vibe) => {
+  const v = VIBE_PALETTES[vibe]
+  if (!v) return false
+  const expected = colorHsl(v.primary)
+  const actual = colorHsl(primary)
+  if (!expected || !actual) return false
+  if (expected.s < 0.15 || actual.s < 0.15) return false // either side near-grayscale: not a hue mismatch
+  return hueDistance(expected.h, actual.h) >= 60
 }
 
 const applyVibePalette = (colors, vibe) => {
@@ -307,17 +345,18 @@ export const repairThemeColors = (theme, fallbackTheme, options = {}) => {
   // ─── Palette quality (vibe-driven, runs first so contrast pass sees fixed bg) ───
   const userPrompt = options.userPrompt || fallbackTheme?.userPrompt || ''
   const siteType = options.siteType || fallbackTheme?.siteType || ''
-  const vibe = inferVibeFromPrompt(userPrompt, siteType)
+  const { vibe, confident: vibeConfident } = inferVibeFromPrompt(userPrompt, siteType)
   const monotone = palettePrimariesAreMonotone(colors.primary, colors.secondary, colors.accent)
   const garish = borderIsGarish(colors.border, colors.primary, colors.accent)
-  if (monotone || garish) {
-    if (monotone) {
-      applyVibePalette(colors, vibe)
-    } else if (garish) {
-      // Just neutralize the border — keep the LLM's primary/accent.
-      const v = VIBE_PALETTES[vibe] || VIBE_PALETTES.tech
-      colors.border = v.border
-    }
+  // Off-vibe trigger: only fires when keyword-confident, otherwise we
+  // can't be sure the vibe match is correct enough to override.
+  const offVibe = vibeConfident && paletteIsOffVibe(colors.primary, vibe)
+  if (monotone || offVibe) {
+    applyVibePalette(colors, vibe)
+  } else if (garish) {
+    // Border-only fix — keep the LLM's primary/accent.
+    const v = VIBE_PALETTES[vibe] || VIBE_PALETTES.tech
+    colors.border = v.border
   }
   // Typography repair: independent of palette repair — even a good palette
   // looks generic with Inter+Inter on a coffee shop. Only applies when the
