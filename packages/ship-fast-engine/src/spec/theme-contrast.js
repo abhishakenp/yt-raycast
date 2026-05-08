@@ -154,11 +154,24 @@ const colorHsl = (hex) => rgbToHsl(parseColor(hex))
 
 // Curated vibe palettes. Each picks distinct hues for primary/secondary/
 // accent, an appropriate background/surface pair, and a low-saturation
-// border so it can't compete with brand colors.
+// border so it can't compete with brand colors. Optional `typography`
+// block applies heading + body font defaults — currently set only on
+// vibes that have been validated against real production references.
+//
+// coffee tokens derived from Playwright extraction of:
+//   bluebottlecoffee.com, stumptowncoffee.com, vervecoffee.com,
+//   onyxcoffeelab.com, counterculturecoffee.com, seycoffee.com
+// Consensus: warm cream/paper backgrounds (NOT pure white), deep warm-brown
+// or near-black text, accent is a CONTRAST color (deep blue) — real sites
+// don't use brown for CTAs, brown is the atmosphere. Heading uses a custom
+// display serif (Bajern, SC BNCanyon, GT-America-Condensed) → closest free
+// Google Font is Fraunces. Body uses founders-grotesk / GT Flexa / Akkurat
+// → closest free is Inter.
 const VIBE_PALETTES = {
   coffee: {
-    primary: '#3B2415', secondary: '#5A2E1A', accent: '#C8966B',
-    background: '#F5EBDD', surface: '#EADBC4', border: '#D9C4A6',
+    primary: '#28201D', secondary: '#3B2415', accent: '#0F4C75',
+    background: '#F4EEE5', surface: '#EADBC4', border: '#D9C4A6',
+    typography: { heading: 'Fraunces', body: 'Inter' },
   },
   wellness: {
     primary: '#6B8E5A', secondary: '#A8624D', accent: '#D9A89F',
@@ -262,6 +275,29 @@ const applyVibePalette = (colors, vibe) => {
   colors.border = v.border
 }
 
+// True if typography is generic Inter-only — the LLM's known fallback that
+// looks identical regardless of vibe. Real production sites in any given
+// category have characterful display fonts; defaulting to Inter+Inter is
+// the typography equivalent of the monotone palette bug.
+const typographyIsGeneric = (typography) => {
+  if (!typography || typeof typography !== 'object') return true
+  const heading = String(typography.heading || '').trim().toLowerCase()
+  const body = String(typography.body || '').trim().toLowerCase()
+  if (!heading && !body) return true
+  // Both unset, or both set to the same generic system sans
+  const generic = new Set(['', 'inter', 'system-ui', 'sans-serif', 'arial', 'helvetica'])
+  return generic.has(heading) && generic.has(body)
+}
+
+const applyVibeTypography = (theme, vibe) => {
+  const v = VIBE_PALETTES[vibe]
+  if (!v?.typography) return false
+  if (!theme.typography || typeof theme.typography !== 'object') theme.typography = {}
+  theme.typography.heading = v.typography.heading
+  theme.typography.body = v.typography.body
+  return true
+}
+
 export const repairThemeColors = (theme, fallbackTheme, options = {}) => {
   if (!theme || typeof theme !== 'object') return theme
   const colors = theme.colors && typeof theme.colors === 'object' ? theme.colors : null
@@ -271,10 +307,10 @@ export const repairThemeColors = (theme, fallbackTheme, options = {}) => {
   // ─── Palette quality (vibe-driven, runs first so contrast pass sees fixed bg) ───
   const userPrompt = options.userPrompt || fallbackTheme?.userPrompt || ''
   const siteType = options.siteType || fallbackTheme?.siteType || ''
+  const vibe = inferVibeFromPrompt(userPrompt, siteType)
   const monotone = palettePrimariesAreMonotone(colors.primary, colors.secondary, colors.accent)
   const garish = borderIsGarish(colors.border, colors.primary, colors.accent)
   if (monotone || garish) {
-    const vibe = inferVibeFromPrompt(userPrompt, siteType)
     if (monotone) {
       applyVibePalette(colors, vibe)
     } else if (garish) {
@@ -282,6 +318,12 @@ export const repairThemeColors = (theme, fallbackTheme, options = {}) => {
       const v = VIBE_PALETTES[vibe] || VIBE_PALETTES.tech
       colors.border = v.border
     }
+  }
+  // Typography repair: independent of palette repair — even a good palette
+  // looks generic with Inter+Inter on a coffee shop. Only applies when the
+  // matched vibe has a validated typography default.
+  if (typographyIsGeneric(theme.typography)) {
+    applyVibeTypography(theme, vibe)
   }
 
   // ─── Contrast safety on text/mutedText (existing behavior) ───

@@ -985,7 +985,20 @@ export function buildGlobalCss(theme = {}, layout = {}) {
   const spacing = theme.spacing || {}
   const shadows = theme.shadows || {}
 
-  return `
+  // Auto-import Google Fonts for the configured heading/body fonts so that
+  // theme.typography actually takes visual effect on the rendered page.
+  // Without this, declaring `font-family: "Fraunces"` silently falls
+  // through to system-ui because the font isn't loaded.
+  const googleFontFamilies = [typography.heading, typography.body]
+    .map((f) => String(f || '').trim())
+    .filter((f) => f && !/^(system-ui|sans-serif|serif|monospace|inherit|initial|arial|helvetica)$/i.test(f))
+  const fontImport = googleFontFamilies.length
+    ? `@import url('https://fonts.googleapis.com/css2?${[...new Set(googleFontFamilies)]
+        .map((f) => `family=${f.replace(/\s+/g, '+')}:wght@400;500;600;700`)
+        .join('&')}&display=swap');\n`
+    : ''
+
+  return `${fontImport}
 :root {
   --color-primary: ${colors.primary || '#7c3aed'};
   --color-secondary: ${colors.secondary || '#a78bfa'};
