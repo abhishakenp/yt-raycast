@@ -160,6 +160,10 @@ export function siteSpecPrompt({
       `- Do not put generator/tool branding strings in any page content.\n` +
       `- Use the fallback structure when uncertain rather than inventing a malformed schema.${craftRules}${themeDisciplineRules}${ecommerceRules}${editThemeRules}`,
     temperature: 0.2,
-    maxTokens: 4000,
+    // Bumped from 4000: with themeDiscipline + ecommerce rules, the model
+    // emits richer spec JSON and was hitting the cap mid-output, producing
+    // truncated invalid JSON and forcing the pipeline to fall back to the
+    // boilerplate site-spec (the "Built for high-output teams" effect).
+    maxTokens: 8000,
   }
 }
