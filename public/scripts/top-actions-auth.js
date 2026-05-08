@@ -1,7 +1,7 @@
-// node_modules/.bun/@firebase+util@1.15.0/node_modules/@firebase/util/dist/postinstall.mjs
+// node_modules/@firebase/util/dist/postinstall.mjs
 var getDefaultsFromPostinstall = () => void 0;
 
-// node_modules/.bun/@firebase+util@1.15.0/node_modules/@firebase/util/dist/index.esm.js
+// node_modules/@firebase/util/dist/index.esm.js
 var stringToByteArray$1 = function(str) {
   const out = [];
   let p = 0;
@@ -670,7 +670,7 @@ async function pingServer(endpoint) {
   return result.ok;
 }
 
-// node_modules/.bun/@firebase+component@0.7.2/node_modules/@firebase/component/dist/esm/index.esm.js
+// node_modules/@firebase/component/dist/esm/index.esm.js
 var Component = class {
   /**
    *
@@ -957,7 +957,7 @@ var ComponentContainer = class {
   }
 };
 
-// node_modules/.bun/@firebase+logger@0.5.0/node_modules/@firebase/logger/dist/esm/index.esm.js
+// node_modules/@firebase/logger/dist/esm/index.esm.js
 var instances = [];
 var LogLevel;
 (function(LogLevel2) {
@@ -1063,7 +1063,7 @@ var Logger = class {
   }
 };
 
-// node_modules/.bun/idb@7.1.1/node_modules/idb/build/wrap-idb-value.js
+// node_modules/idb/build/wrap-idb-value.js
 var instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
 var idbProxyableTypes;
 var cursorAdvanceMethods;
@@ -1206,7 +1206,7 @@ function wrap(value) {
 }
 var unwrap = (value) => reverseTransformCache.get(value);
 
-// node_modules/.bun/idb@7.1.1/node_modules/idb/build/index.js
+// node_modules/idb/build/index.js
 function openDB(name4, version4, { blocked, upgrade, blocking, terminated } = {}) {
   const request = indexedDB.open(name4, version4);
   const openPromise = wrap(request);
@@ -1270,7 +1270,7 @@ replaceTraps((oldTraps) => ({
   has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop)
 }));
 
-// node_modules/.bun/@firebase+app@0.14.11/node_modules/@firebase/app/dist/esm/index.esm.js
+// node_modules/@firebase/app/dist/esm/index.esm.js
 var PlatformLoggerServiceImpl = class {
   constructor(container) {
     this.container = container;
@@ -1858,12 +1858,12 @@ function registerCoreComponents(variant) {
 }
 registerCoreComponents("");
 
-// node_modules/.bun/firebase@12.12.0/node_modules/firebase/app/dist/esm/index.esm.js
+// node_modules/firebase/app/dist/esm/index.esm.js
 var name2 = "firebase";
 var version2 = "12.12.0";
 registerVersion(name2, version2, "app");
 
-// node_modules/.bun/@firebase+auth@1.13.0+f47c220e5e36c32c/node_modules/@firebase/auth/dist/esm/index-568d0403.js
+// node_modules/@firebase/auth/dist/esm/index-568d0403.js
 function _prodErrorMap() {
   return {
     [
@@ -7927,6 +7927,8 @@ registerAuth(
 var GITHUB_TOKEN_STORAGE_KEY = "sf:github-access-token";
 var signinBtn = document.getElementById("signin-btn");
 var signoutBtn = document.getElementById("signout-btn");
+var authOverlay = document.getElementById("auth-overlay");
+var authErrorEl = document.getElementById("auth-error");
 var setSignedOutUi = () => {
   if (signoutBtn) signoutBtn.style.display = "none";
   if (signinBtn) signinBtn.style.display = "inline-flex";
@@ -7934,6 +7936,20 @@ var setSignedOutUi = () => {
 var setSignedInUi = () => {
   if (signinBtn) signinBtn.style.display = "none";
   if (signoutBtn) signoutBtn.style.display = "inline-flex";
+};
+var openOverlay = () => {
+  if (!authOverlay) return;
+  if (authErrorEl) authErrorEl.textContent = "";
+  authOverlay.classList.remove("hidden");
+};
+var closeOverlay = () => {
+  if (!authOverlay) return;
+  authOverlay.classList.add("hidden");
+  if (authErrorEl) authErrorEl.textContent = "";
+};
+var showAuthError = (err) => {
+  if (!authErrorEl) return;
+  authErrorEl.textContent = err instanceof Error ? err.message : "Sign-in failed";
 };
 var main = async () => {
   if (!signinBtn && !signoutBtn) return;
@@ -7980,8 +7996,12 @@ var main = async () => {
   };
   window.dispatchEvent(new CustomEvent("sf-firebase-ready", { detail: { auth } }));
   onAuthStateChanged(auth, (user) => {
-    if (user) setSignedInUi();
-    else setSignedOutUi();
+    if (user) {
+      setSignedInUi();
+      closeOverlay();
+    } else {
+      setSignedOutUi();
+    }
     window.dispatchEvent(new CustomEvent("sf-home-auth-state", { detail: { user: user ?? null } }));
   });
   signoutBtn?.addEventListener("click", () => {
@@ -7993,6 +8013,44 @@ var main = async () => {
       window.parent.dispatchEvent(new CustomEvent("sf-request-auth-overlay"));
     }
   });
+  window.addEventListener("sf-request-auth-overlay", () => openOverlay());
+  authOverlay?.addEventListener("click", (event) => {
+    if (event.target === authOverlay && !auth?.currentUser) closeOverlay();
+  });
+  const wrap2 = (fn) => (event) => {
+    event.preventDefault();
+    if (authErrorEl) authErrorEl.textContent = "";
+    fn().catch(showAuthError);
+  };
+  document.getElementById("google-signin-btn")?.addEventListener("click", wrap2(() => window.__sfAuthApi.signInGoogle()));
+  document.getElementById("github-signin-btn")?.addEventListener("click", wrap2(() => window.__sfAuthApi.signInGithub()));
+  const emailInput = document.getElementById("auth-email");
+  const passwordInput = document.getElementById("auth-password");
+  const readEmailCreds = () => {
+    const email = emailInput?.value.trim() ?? "";
+    const password = passwordInput?.value ?? "";
+    if (!email || !password) {
+      if (authErrorEl) authErrorEl.textContent = "Email and password required";
+      return null;
+    }
+    return { email, password };
+  };
+  document.getElementById("email-signin-btn")?.addEventListener(
+    "click",
+    wrap2(async () => {
+      const creds = readEmailCreds();
+      if (!creds) return;
+      await window.__sfAuthApi.signInEmail(creds.email, creds.password);
+    })
+  );
+  document.getElementById("email-signup-btn")?.addEventListener(
+    "click",
+    wrap2(async () => {
+      const creds = readEmailCreds();
+      if (!creds) return;
+      await window.__sfAuthApi.signUpEmail(creds.email, creds.password);
+    })
+  );
 };
 void main();
 /*! Bundled license information:

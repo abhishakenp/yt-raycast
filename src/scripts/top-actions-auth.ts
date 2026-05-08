@@ -29,6 +29,8 @@ declare global {
 
 const signinBtn: HTMLElement | null = document.getElementById('signin-btn')
 const signoutBtn: HTMLElement | null = document.getElementById('signout-btn')
+const authOverlay: HTMLElement | null = document.getElementById('auth-overlay')
+const authErrorEl: HTMLElement | null = document.getElementById('auth-error')
 
 const setSignedOutUi = (): void => {
   if (signoutBtn) signoutBtn.style.display = 'none'
@@ -38,6 +40,23 @@ const setSignedOutUi = (): void => {
 const setSignedInUi = (): void => {
   if (signinBtn) signinBtn.style.display = 'none'
   if (signoutBtn) signoutBtn.style.display = 'inline-flex'
+}
+
+const openOverlay = (): void => {
+  if (!authOverlay) return
+  if (authErrorEl) authErrorEl.textContent = ''
+  authOverlay.classList.remove('hidden')
+}
+
+const closeOverlay = (): void => {
+  if (!authOverlay) return
+  authOverlay.classList.add('hidden')
+  if (authErrorEl) authErrorEl.textContent = ''
+}
+
+const showAuthError = (err: unknown): void => {
+  if (!authErrorEl) return
+  authErrorEl.textContent = err instanceof Error ? err.message : 'Sign-in failed'
 }
 
 const main = async (): Promise<void> => {
@@ -91,8 +110,12 @@ const main = async (): Promise<void> => {
   window.dispatchEvent(new CustomEvent('sf-firebase-ready', { detail: { auth } }))
 
   onAuthStateChanged(auth, (user) => {
-    if (user) setSignedInUi()
-    else setSignedOutUi()
+    if (user) {
+      setSignedInUi()
+      closeOverlay()
+    } else {
+      setSignedOutUi()
+    }
     window.dispatchEvent(new CustomEvent('sf-home-auth-state', { detail: { user: user ?? null } }))
   })
 
@@ -106,6 +129,60 @@ const main = async (): Promise<void> => {
       window.parent.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
     }
   })
+
+  // ─── Auth overlay wiring (replaces the old React AuthOverlay) ───
+  window.addEventListener('sf-request-auth-overlay', () => openOverlay())
+
+  authOverlay?.addEventListener('click', (event) => {
+    if (event.target === authOverlay && !auth?.currentUser) closeOverlay()
+  })
+
+  const wrap =
+    (fn: () => Promise<unknown>): ((event: Event) => void) =>
+    (event) => {
+      event.preventDefault()
+      if (authErrorEl) authErrorEl.textContent = ''
+      fn().catch(showAuthError)
+    }
+
+  document
+    .getElementById('google-signin-btn')
+    ?.addEventListener('click', wrap(() => window.__sfAuthApi!.signInGoogle()))
+
+  document
+    .getElementById('github-signin-btn')
+    ?.addEventListener('click', wrap(() => window.__sfAuthApi!.signInGithub()))
+
+  const emailInput = document.getElementById('auth-email') as HTMLInputElement | null
+  const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null
+
+  const readEmailCreds = (): { email: string; password: string } | null => {
+    const email = emailInput?.value.trim() ?? ''
+    const password = passwordInput?.value ?? ''
+    if (!email || !password) {
+      if (authErrorEl) authErrorEl.textContent = 'Email and password required'
+      return null
+    }
+    return { email, password }
+  }
+
+  document.getElementById('email-signin-btn')?.addEventListener(
+    'click',
+    wrap(async () => {
+      const creds = readEmailCreds()
+      if (!creds) return
+      await window.__sfAuthApi!.signInEmail(creds.email, creds.password)
+    }),
+  )
+
+  document.getElementById('email-signup-btn')?.addEventListener(
+    'click',
+    wrap(async () => {
+      const creds = readEmailCreds()
+      if (!creds) return
+      await window.__sfAuthApi!.signUpEmail(creds.email, creds.password)
+    }),
+  )
 }
 
 void main()
