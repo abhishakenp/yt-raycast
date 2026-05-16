@@ -87,9 +87,10 @@ export function buildVariantPrompt(basePrompt, i, opts = {}) {
   const v = pickVariation(i)
   const ref = opts.includeReference !== false ? referencePromptBlock() : ''
   const seed = opts.winnerSeedBlock ? `\n${opts.winnerSeedBlock}` : ''
+  const mobbin = opts.mobbinBlock ? `\n${opts.mobbinBlock}` : ''
   // Pack the four variation axes onto two compact lines to keep input tokens lean.
   const variation = `${v.aesthetic} ${v.hero}\n${v.pricing} ${v.composition}`
-  return `${basePrompt}\n\n${variation}${ref}${seed}`
+  return `${basePrompt}\n\n${variation}${ref}${mobbin}${seed}`
 }
 
 /**

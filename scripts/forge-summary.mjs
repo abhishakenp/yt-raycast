@@ -82,3 +82,33 @@ console.log('FAILURE REASONS:')
 for (const [k, v] of Object.entries(counts).sort((a, b) => b[1] - a[1])) {
   console.log(`  ${String(v).padStart(3)}× ${k}`)
 }
+
+const mobbinIters = board.filter((b) => b.mobbin && typeof b.mobbin.ratio === 'number')
+if (mobbinIters.length) {
+  const mean = mobbinIters.reduce((a, b) => a + b.mobbin.ratio, 0) / mobbinIters.length
+  const keptMobbin = mobbinIters.filter((b) => b.kept)
+  const meanKept = keptMobbin.length
+    ? keptMobbin.reduce((a, b) => a + b.mobbin.ratio, 0) / keptMobbin.length
+    : 0
+  const byApp = {}
+  for (const b of mobbinIters) {
+    const app = b.mobbin.featuredApp || 'unknown'
+    if (!byApp[app]) byApp[app] = { iters: 0, kept: 0, ratioSum: 0 }
+    byApp[app].iters += 1
+    byApp[app].kept += b.kept ? 1 : 0
+    byApp[app].ratioSum += b.mobbin.ratio
+  }
+  console.log()
+  console.log('MOBBIN COVERAGE:')
+  console.log(`  iters with mobbin data: ${mobbinIters.length}`)
+  console.log(`  mean element-coverage: ${(mean * 100).toFixed(1)}%  (kept iters: ${(meanKept * 100).toFixed(1)}%)`)
+  console.log('  per featured-app (iters / kept / mean coverage):')
+  const rows = Object.entries(byApp)
+    .map(([app, s]) => ({ app, iters: s.iters, kept: s.kept, ratio: s.ratioSum / s.iters }))
+    .sort((a, b) => b.kept - a.kept || b.ratio - a.ratio)
+  for (const r of rows) {
+    console.log(
+      `    ${r.app.padEnd(22)} iters=${String(r.iters).padStart(2)}  kept=${String(r.kept).padStart(2)}  coverage=${(r.ratio * 100).toFixed(1)}%`,
+    )
+  }
+}

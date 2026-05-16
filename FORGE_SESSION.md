@@ -148,6 +148,41 @@ density signals (section ids, link count, button count, radial-gradient
 count) appended to every prompt — the model has a numeric target to match
 without copying.
 
+`forge-mobbin.mjs` (v3) adds a live Mobbin Pro reference tier on top of the
+static fingerprint. When `FORGE_USE_MOBBIN=1` is set, the loop prefetches
+one trending `screenPatterns=['Home']` lookup per category (default
+`Developer Tools` / `AI` / `Productivity`) using the Supabase auth cookie
+minted by `mobbin-mcp auth` (`~/.mobbin-mcp/auth.json`), then injects a
+compact block of named real products + observed element vocabulary into
+every iter's prompt. gpt-oss-120b can't take images, but naming
+**ElevenLabs / Linear / Cloudflare / Databricks / Clay / OpenAI Platform**
+gives it concrete training-knowledge anchors that pull the output toward
+production-grade B2B SaaS marketing instead of the generic template.
+Validated end-to-end: one forge-once run with `FORGE_USE_MOBBIN=1`
+produced HTML that literally name-drops Linear / Cloudflare / Databricks
+as logo-cloud references, all 5 structural/lucide gates green
+(score 100, verifyOk, lucideOk), input-token delta ~50.
+
+Auth is shared with the engine's prior `mobbin-runtime.js`
+(commit `858ea92`, since dropped on the `vanilla-to-root-no-mobbin`
+branch). The cookie is reconstructed as the chunked `sb-…-auth-token.0/.1`
+SSR format Mobbin's server requires; tokens auto-refresh against Supabase
+within 60s of expiry. The publishable key needed for the refresh call is
+read from `~/.mobbin-mcp/anon-key.json` (shared with mobbin-mcp), scraped
+from Mobbin's `main-app-*.js` chunk if absent, and falls back to the
+build-time `sb_publishable_…` constant on offline boots. Disk cache
+(7-day TTL) keeps all 50 iters of a loop to a single live query per
+(platform, category, pattern).
+
+Refresh path verified end-to-end: mutating `expires_at` to 30s in the
+future trips the refresh window, Supabase returns a new access token,
+the new session is rewritten to `auth.json`, the next request uses it.
+This caught a real bug — Mobbin switched from JWT-style anon keys
+(`eyJ…`) to publishable keys (`sb_publishable_…`); the original
+`mobbin-runtime.js` regex matched the old format, so refresh silently
+no-op'd on it. forge-mobbin.mjs matches the new format and the build-
+time fallback so refresh works without any user setup.
+
 Winner seeding: the first iter that satisfies all five gates with the
 highest vision score has its `tailwind.config.theme.extend` snippet +
 section-id list extracted via `buildWinnerSeed` and appended as a soft
@@ -222,6 +257,7 @@ contains iter-39's HTML, screenshot, and meta.
 | `forge-vision.mjs` | Groq Llama-4 Scout vision rubric (hierarchy / harmony / spacing / copy / artDirection — 0-25 each) |
 | `forge-lucide-validate.mjs` | mirrors lucide-static@latest icon registry once; flags any `data-lucide` name not in the registry |
 | `forge-assets.mjs` | optional Pexels image-hints prefetch (one call shared across all iters) |
+| `forge-mobbin.mjs` | optional Mobbin Pro live reference fetch (Supabase auth cookie → /api/content/search-screens; 7-day on-disk cache; one call per category shared across iters) |
 | `forge-once.mjs` | single-shot generator with full gating |
 | `forge-loop.mjs` | Ralph 50-iter loop with leaderboard + best/ + Playwright top-K screenshots |
 | `forge-shots.mjs` | re-screenshot a prior run's top-K |
@@ -246,6 +282,9 @@ Outputs land in `vanilla/.forge/` (gitignored).
 | `FORGE_MAX_TOK` | 10000 | Groq `max_tokens` |
 | `FORGE_PROMPT` | (lib default) | base brief |
 | `FORGE_USE_ASSETS` | 0 | prefetch Pexels block |
+| `FORGE_USE_MOBBIN` | 0 | prefetch live Mobbin Pro reference block (requires `~/.mobbin-mcp/auth.json`) |
+| `FORGE_MOBBIN_CATEGORIES` | `Developer Tools,AI,Productivity` | comma-separated Mobbin app categories (overrides default forge SaaS slice) |
+| `FORGE_MOBBIN_PATTERN` | `Home` | comma-separated Mobbin screen patterns (`Home` is what Pro web data is tagged with — `Landing Page` / `Hero Section` return zero on web) |
 | `FORGE_FIX_PASS` | 0 | enable self-critique pass when budget allows |
 | `FORGE_SKIP_VISION` | 0 | skip vision judge (debug only) |
 | `FORGE_SKIP_RENDER` | 0 | skip Playwright audit (debug only) |
@@ -264,6 +303,9 @@ FORGE_ITERS=50 bun vanilla/scripts/forge-loop.mjs
 
 # With Pexels images injected
 FORGE_USE_ASSETS=1 bun vanilla/scripts/forge-loop.mjs
+
+# With live Mobbin Pro references (named real apps) injected
+FORGE_USE_MOBBIN=1 bun vanilla/scripts/forge-loop.mjs
 
 # Self-critique fix pass when budget allows
 FORGE_FIX_PASS=1 bun vanilla/scripts/forge-loop.mjs

@@ -45,6 +45,7 @@ import { renderAudit } from './forge-render-audit.mjs'
 import { visionJudge } from './forge-vision.mjs'
 import { validateLucideIcons, ensureLucideRegistry } from './forge-lucide-validate.mjs'
 import { prefetchAssets, assetPromptBlock } from './forge-assets.mjs'
+import { prefetchForgeMobbin, mobbinIterBlock, scoreMobbinCoverage } from './forge-mobbin.mjs'
 
 const ITERS = parseInt(process.env.FORGE_ITERS || '50', 10)
 // Default 18s — keep quality first. iters under 15s are flagged in meta.subBudget15.
@@ -58,6 +59,7 @@ const SKIP_VISION = process.env.FORGE_SKIP_VISION === '1'
 const SKIP_RENDER = process.env.FORGE_SKIP_RENDER === '1'
 const FIX_PASS = process.env.FORGE_FIX_PASS === '1'
 const USE_ASSETS = process.env.FORGE_USE_ASSETS === '1'
+const USE_MOBBIN = process.env.FORGE_USE_MOBBIN === '1'
 
 const RUN_ID = String(Date.now())
 const ROOT = process.cwd()
@@ -122,6 +124,20 @@ if (USE_ASSETS) {
   assetsBlock = assetPromptBlock(assets)
   console.log(`[forge-loop v2] assets: ${assets.photos?.length || 0} photos, ${assets.videos?.length || 0} videos`)
 }
+
+let mobbinData = null
+if (USE_MOBBIN) {
+  console.log('[forge-loop v2] prefetching Mobbin Pro references…')
+  try {
+    mobbinData = await prefetchForgeMobbin()
+    const total = Object.values(mobbinData?.byCategory || {}).reduce((n, arr) => n + (arr?.length || 0), 0)
+    console.log(
+      `[forge-loop v2] mobbin: ${total} screens across {${(mobbinData?.categories || []).join(', ')}} — rotating featured anchor per iter`,
+    )
+  } catch (e) {
+    console.log(`[forge-loop v2] mobbin prefetch failed: ${e?.message || e} — falling back`)
+  }
+}
 let browser = null
 let ctx = null
 if (!SKIP_RENDER) {
@@ -140,10 +156,12 @@ try {
     mkdirSync(iterDir, { recursive: true })
 
     const temperature = temperatureForIter(i)
+    const iterMobbinBlock = USE_MOBBIN && mobbinData ? mobbinIterBlock(mobbinData, i) : ''
     const userPrompt =
       buildVariantPrompt(BASE_PROMPT, i, {
         includeReference: true,
         winnerSeedBlock: i >= 12 && winnerSeed ? winnerSeed : '',
+        mobbinBlock: iterMobbinBlock,
       }) + (USE_ASSETS ? assetsBlock : '')
 
     let result
@@ -176,6 +194,9 @@ try {
 
     writeFileSync(join(iterDir, 'index.html'), html, 'utf8')
     writeFileSync(join(iterDir, 'prompt.txt'), userPrompt, 'utf8')
+    if (iterMobbinBlock) {
+      writeFileSync(join(iterDir, 'mobbin.txt'), iterMobbinBlock, 'utf8')
+    }
 
     const sc = scoreRalphHomepage(html, {
       prompt: BASE_PROMPT,
@@ -211,6 +232,7 @@ try {
       }
     }
 
+    const mobbinCoverage = USE_MOBBIN && mobbinData ? scoreMobbinCoverage(html, mobbinData) : null
     const underBudget = totalMs > 0 && totalMs <= TIME_BUDGET_MS
     const subBudget15 = totalMs > 0 && totalMs <= TIGHT_TIME_MS
     const structuralOk = sc.ok && ver.ok
@@ -252,6 +274,15 @@ try {
         ms: vision.ms,
         error: vision.error,
       },
+      mobbin: mobbinCoverage
+        ? {
+            hits: mobbinCoverage.hits,
+            total: mobbinCoverage.total,
+            ratio: Number(mobbinCoverage.ratio.toFixed(3)),
+            hitNames: mobbinCoverage.hitNames,
+            featuredApp: (iterMobbinBlock.match(/FEATURED ANCHOR \(iter \d+\): ([^(]+) \(/) || [])[1]?.trim() || null,
+          }
+        : null,
       htmlLen: html.length,
       inputTokens: result.inputTokens || 0,
       outputTokens: result.outputTokens || 0,
@@ -266,8 +297,11 @@ try {
       winnerSeed = buildWinnerSeed(html)
     }
 
+    const mobbinTag = mobbinCoverage
+      ? `  mobbin=${mobbinCoverage.hits}/${mobbinCoverage.total}${meta.mobbin?.featuredApp ? ` (${meta.mobbin.featuredApp})` : ''}`
+      : ''
     console.log(
-      `iter ${idx}/${ITERS}  ms=${String(totalMs).padStart(5)}  T=${temperature.toFixed(2)}  struct=${sc.score}/${ver.ok ? 'V' : 'v'}  render=${renderOk ? 'OK' : 'X'}  vision=${visionScore}  kept=${kept}  ${
+      `iter ${idx}/${ITERS}  ms=${String(totalMs).padStart(5)}  T=${temperature.toFixed(2)}  struct=${sc.score}/${ver.ok ? 'V' : 'v'}  render=${renderOk ? 'OK' : 'X'}  vision=${visionScore}${mobbinTag}  kept=${kept}  ${
         kept ? '' : (render.issues?.[0] || vision.reasons?.[0] || sc.reasons?.[0] || meta.error || '').slice(0, 80)
       }`,
     )

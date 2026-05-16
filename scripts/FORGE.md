@@ -15,10 +15,12 @@ winner. Built so we can sweep many iterations cheaply, then port the prompt
 | `forge-vision.mjs` | Groq Llama-4 Scout vision rubric (hierarchy / harmony / spacing / copy / artDirection — 0-25 each) |
 | `forge-lucide-validate.mjs` | mirrors `lucide-static@latest` icon registry once; flags any `data-lucide` name not in the registry |
 | `forge-assets.mjs` | optional Pexels image-hints prefetch (one call shared across all iters) |
+| `forge-mobbin.mjs` | optional live Mobbin Pro reference fetch (Supabase auth cookie → /api/content/search-screens; 7-day on-disk cache; per-iter rotation across categories; element-coverage scoring) |
 | `forge-once.mjs` | single-shot generator with full gating (struct + render + vision + lucide) |
 | `forge-loop.mjs` | Ralph 50-iter loop with leaderboard + best/ symlink + Playwright top-K screenshots |
 | `forge-shots.mjs` | re-screenshot a prior run's top-K |
 | `forge-promote.mjs` | copy winning HTML + emit engine-patch sketch |
+| `forge-summary.mjs` | post-run analyzer with leaderboard table, failure histogram, and mobbin-coverage breakdown by featured app |
 
 ## Composite kept condition
 
@@ -44,6 +46,9 @@ FORGE_ITERS=50 bun vanilla/scripts/forge-loop.mjs
 # With Pexels images injected
 FORGE_USE_ASSETS=1 bun vanilla/scripts/forge-loop.mjs
 
+# With live Mobbin Pro references (rotating featured anchor per iter)
+FORGE_USE_MOBBIN=1 bun vanilla/scripts/forge-loop.mjs
+
 # With self-critique fix pass
 FORGE_FIX_PASS=1 bun vanilla/scripts/forge-loop.mjs
 
@@ -52,6 +57,9 @@ bun vanilla/scripts/forge-shots.mjs latest 10
 
 # Copy best HTML + emit engine-patch sketch
 bun vanilla/scripts/forge-promote.mjs latest --copy-html --patch
+
+# Post-run summary (leaderboard + failures + mobbin coverage)
+bun vanilla/scripts/forge-summary.mjs latest
 ```
 
 ## Env knobs
@@ -66,6 +74,9 @@ bun vanilla/scripts/forge-promote.mjs latest --copy-html --patch
 | `FORGE_MAX_TOK` | 10000 | Groq `max_tokens` |
 | `FORGE_PROMPT` | (lib default) | base brief |
 | `FORGE_USE_ASSETS` | 0 | prefetch Pexels block |
+| `FORGE_USE_MOBBIN` | 0 | prefetch live Mobbin Pro references (requires `~/.mobbin-mcp/auth.json` — run `mobbin-mcp auth` once to mint it) |
+| `FORGE_MOBBIN_CATEGORIES` | `Developer Tools,AI,Productivity` | comma-separated Mobbin app categories (override per run) |
+| `FORGE_MOBBIN_PATTERN` | `Home` | comma-separated Mobbin screen patterns — `Home` is what Pro web data is tagged with; `Landing Page` / `Hero Section` exist in the filter UI but return zero |
 | `FORGE_FIX_PASS` | 0 | enable self-critique pass when budget allows |
 | `FORGE_SKIP_VISION` | 0 | skip vision judge (debug only) |
 | `FORGE_SKIP_RENDER` | 0 | skip Playwright audit (debug only) |
