@@ -9,36 +9,65 @@ import { join } from 'node:path'
 
 const ROOT = process.cwd()
 const LOOP_DIR = join(ROOT, '.forge', 'loop')
-let runId = process.argv[2] || 'latest'
-if (runId === 'latest') runId = readdirSync(LOOP_DIR).sort().pop()
-const RUN_DIR = join(LOOP_DIR, runId)
-if (!existsSync(RUN_DIR)) {
-  console.error(`run not found: ${RUN_DIR}`)
-  process.exit(1)
-}
 
-let board
-const lbPath = join(RUN_DIR, 'leaderboard.json')
-if (existsSync(lbPath)) {
-  board = JSON.parse(readFileSync(lbPath, 'utf8'))
-} else {
-  // Run was killed before final write — reconstruct from per-iter meta files.
-  const iters = readdirSync(RUN_DIR).filter((d) => d.startsWith('iter-')).sort()
-  board = []
-  for (const d of iters) {
-    const m = join(RUN_DIR, d, 'meta.json')
-    if (existsSync(m)) {
-      const meta = JSON.parse(readFileSync(m, 'utf8'))
-      meta.dir = join(RUN_DIR, d)
-      board.push(meta)
+// Accept multiple run IDs to merge boards across runs (e.g. resume after a
+// broken Mobbin auth: keep the valid mobbin=off iters from run A, run a fresh
+// mobbin=on-only run B, then `forge-summary A B` produces the combined view).
+// Each iter is tagged with `_run` so per-iter breakdowns can be traced back.
+const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))
+const runIds = args.length ? args : ['latest']
+
+function loadBoard(rawId) {
+  let id = rawId
+  if (id === 'latest') id = readdirSync(LOOP_DIR).sort().pop()
+  const dir = join(LOOP_DIR, id)
+  if (!existsSync(dir)) {
+    console.error(`run not found: ${dir}`)
+    process.exit(1)
+  }
+  const lbPath = join(dir, 'leaderboard.json')
+  let b
+  if (existsSync(lbPath)) {
+    b = JSON.parse(readFileSync(lbPath, 'utf8'))
+  } else {
+    // Run was killed before final write — reconstruct from per-iter meta files.
+    const iters = readdirSync(dir).filter((d) => d.startsWith('iter-')).sort()
+    b = []
+    for (const d of iters) {
+      const m = join(dir, d, 'meta.json')
+      if (existsSync(m)) {
+        const meta = JSON.parse(readFileSync(m, 'utf8'))
+        meta.dir = join(dir, d)
+        b.push(meta)
+      }
     }
   }
-  board.sort((a, b) => {
-    if (a.kept !== b.kept) return a.kept ? -1 : 1
-    if ((b.vision?.score || 0) !== (a.vision?.score || 0)) return (b.vision?.score || 0) - (a.vision?.score || 0)
-    return a.ms - b.ms
-  })
+  return { id, board: b.map((row) => ({ ...row, _run: id })) }
 }
+
+const loaded = runIds.map(loadBoard)
+const runId = loaded.map((r) => r.id).join('+')
+let board = loaded.flatMap((r) => r.board)
+
+// When merging multiple runs, deduplicate against a "use this iter only if it
+// has live Mobbin data, else fall back to off-arm" rule: keep all iters from
+// the first run, but drop iters from subsequent runs that would create a
+// duplicate (iter,run) collision. Practically this never fires for the resume
+// flow — different runIds always produce different iter sets — but it's a
+// safety net.
+const seen = new Set()
+board = board.filter((row) => {
+  const key = `${row._run}:${row.iter}`
+  if (seen.has(key)) return false
+  seen.add(key)
+  return true
+})
+
+board.sort((a, b) => {
+  if (a.kept !== b.kept) return a.kept ? -1 : 1
+  if ((b.vision?.score || 0) !== (a.vision?.score || 0)) return (b.vision?.score || 0) - (a.vision?.score || 0)
+  return a.ms - b.ms
+})
 const total = board.length
 const kept = board.filter((b) => b.kept).length
 const sub15 = board.filter((b) => b.kept && b.subBudget15).length
@@ -83,32 +112,116 @@ for (const [k, v] of Object.entries(counts).sort((a, b) => b[1] - a[1])) {
   console.log(`  ${String(v).padStart(3)}× ${k}`)
 }
 
-const mobbinIters = board.filter((b) => b.mobbin && typeof b.mobbin.ratio === 'number')
-if (mobbinIters.length) {
-  const mean = mobbinIters.reduce((a, b) => a + b.mobbin.ratio, 0) / mobbinIters.length
-  const keptMobbin = mobbinIters.filter((b) => b.kept)
-  const meanKept = keptMobbin.length
-    ? keptMobbin.reduce((a, b) => a + b.mobbin.ratio, 0) / keptMobbin.length
-    : 0
-  const byApp = {}
-  for (const b of mobbinIters) {
-    const app = b.mobbin.featuredApp || 'unknown'
-    if (!byApp[app]) byApp[app] = { iters: 0, kept: 0, ratioSum: 0 }
-    byApp[app].iters += 1
-    byApp[app].kept += b.kept ? 1 : 0
-    byApp[app].ratioSum += b.mobbin.ratio
+// Mobbin analysis: split into "on" (USE_MOBBIN was true) and "off" buckets.
+// Treats `b.mobbin === null` as off — the loop only writes a mobbin block
+// when USE_MOBBIN is set, so absence = off. Within "on", further analyse:
+//   - status counts (how many iters actually got live data vs. fell back)
+//   - coverage tier vs. kept rate (does element-naming correlate with quality?)
+//   - per-featured-app kept rate
+const mobbinOn = board.filter((b) => b.mobbin)
+const mobbinOff = board.filter((b) => !b.mobbin)
+if (mobbinOn.length || mobbinOff.length) {
+  console.log()
+  console.log('MOBBIN A/B:')
+  const fmtSide = (label, arr) => {
+    if (!arr.length) {
+      console.log(`  ${label.padEnd(8)} n=0`)
+      return
+    }
+    const keptN = arr.filter((b) => b.kept).length
+    const meanMs = Math.round(arr.reduce((a, b) => a + (b.ms || 0), 0) / arr.length)
+    const meanOut = Math.round(arr.reduce((a, b) => a + (b.outputTokens || 0), 0) / arr.length)
+    const meanVis = (arr.reduce((a, b) => a + (b.vision?.score || 0), 0) / arr.length).toFixed(1)
+    console.log(
+      `  ${label.padEnd(8)} n=${String(arr.length).padStart(2)}  kept=${keptN}/${arr.length} (${((keptN / arr.length) * 100).toFixed(0)}%)  meanMs=${String(meanMs).padStart(5)}  meanOutTok=${String(meanOut).padStart(5)}  meanVision=${meanVis}`,
+    )
+  }
+  fmtSide('mobbin=on', mobbinOn)
+  fmtSide('mobbin=off', mobbinOff)
+  // n<10 per side is too small to claim anything — flag explicitly.
+  const small = Math.min(mobbinOn.length, mobbinOff.length)
+  if (small < 10 && small > 0) {
+    console.log(`  ⚠ n<10 on smaller side — treat deltas as directional, not significant`)
+  }
+}
+
+if (mobbinOn.length) {
+  // Status counts — distinguishes "Mobbin healthy with low coverage" from
+  // "auth expired so coverage is zero by construction".
+  const statusCounts = {}
+  for (const b of mobbinOn) {
+    const s = b.mobbin.status || 'unknown'
+    statusCounts[s] = (statusCounts[s] || 0) + 1
   }
   console.log()
-  console.log('MOBBIN COVERAGE:')
-  console.log(`  iters with mobbin data: ${mobbinIters.length}`)
-  console.log(`  mean element-coverage: ${(mean * 100).toFixed(1)}%  (kept iters: ${(meanKept * 100).toFixed(1)}%)`)
-  console.log('  per featured-app (iters / kept / mean coverage):')
-  const rows = Object.entries(byApp)
-    .map(([app, s]) => ({ app, iters: s.iters, kept: s.kept, ratio: s.ratioSum / s.iters }))
-    .sort((a, b) => b.kept - a.kept || b.ratio - a.ratio)
-  for (const r of rows) {
-    console.log(
-      `    ${r.app.padEnd(22)} iters=${String(r.iters).padStart(2)}  kept=${String(r.kept).padStart(2)}  coverage=${(r.ratio * 100).toFixed(1)}%`,
-    )
+  console.log('MOBBIN STATUS (USE_MOBBIN=1 iters):')
+  for (const [k, v] of Object.entries(statusCounts).sort((a, b) => b[1] - a[1])) {
+    const marker = k === 'ok' ? '✓' : '✗'
+    console.log(`  ${marker} ${String(v).padStart(3)}× ${k}`)
+  }
+
+  // Only iters that actually got live data — drop preflight-failed ones from
+  // the coverage analysis so they don't drag the mean to 0.
+  const live = mobbinOn.filter((b) => b.mobbin.statusOk && typeof b.mobbin.ratio === 'number')
+  if (live.length) {
+    const mean = live.reduce((a, b) => a + b.mobbin.ratio, 0) / live.length
+    const keptLive = live.filter((b) => b.kept)
+    const meanKept = keptLive.length
+      ? keptLive.reduce((a, b) => a + b.mobbin.ratio, 0) / keptLive.length
+      : 0
+    console.log()
+    console.log('MOBBIN COVERAGE (live data only):')
+    console.log(`  iters with live mobbin data: ${live.length}`)
+    console.log(`  mean element-coverage: ${(mean * 100).toFixed(1)}%  (kept iters: ${(meanKept * 100).toFixed(1)}%)`)
+
+    // Coverage tiers vs kept rate — the soft signal that lets us see whether
+    // named anchors actually correlate with passing the gates. If the high
+    // tier doesn't outperform the low tier, the Mobbin block isn't earning
+    // its latency cost and the rotation strategy needs rework.
+    const TIERS = [
+      { name: 'high  (>20%)', test: (r) => r > 0.2 },
+      { name: 'med (5-20%)', test: (r) => r >= 0.05 && r <= 0.2 },
+      { name: 'low (<5%)', test: (r) => r < 0.05 },
+    ]
+    console.log('  coverage tier vs kept rate:')
+    for (const t of TIERS) {
+      const tier = live.filter((b) => t.test(b.mobbin.ratio))
+      if (!tier.length) {
+        console.log(`    ${t.name.padEnd(12)} n=0`)
+        continue
+      }
+      const keptN = tier.filter((b) => b.kept).length
+      const visMean = (tier.reduce((a, b) => a + (b.vision?.score || 0), 0) / tier.length).toFixed(1)
+      console.log(
+        `    ${t.name.padEnd(12)} n=${String(tier.length).padStart(2)}  kept=${keptN}/${tier.length} (${((keptN / tier.length) * 100).toFixed(0)}%)  meanVision=${visMean}`,
+      )
+    }
+
+    // Per-app analysis — same as before, but only over live iters so the
+    // "unknown" featured-app bucket reflects real ambiguity, not failures.
+    const byApp = {}
+    for (const b of live) {
+      const app = b.mobbin.featuredApp || 'unknown'
+      if (!byApp[app]) byApp[app] = { iters: 0, kept: 0, ratioSum: 0, visSum: 0 }
+      byApp[app].iters += 1
+      byApp[app].kept += b.kept ? 1 : 0
+      byApp[app].ratioSum += b.mobbin.ratio
+      byApp[app].visSum += b.vision?.score || 0
+    }
+    console.log('  per featured-app (iters / kept / coverage / vision):')
+    const rows = Object.entries(byApp)
+      .map(([app, s]) => ({
+        app,
+        iters: s.iters,
+        kept: s.kept,
+        ratio: s.ratioSum / s.iters,
+        vision: s.visSum / s.iters,
+      }))
+      .sort((a, b) => b.kept - a.kept || b.ratio - a.ratio)
+    for (const r of rows) {
+      console.log(
+        `    ${r.app.padEnd(22)} iters=${String(r.iters).padStart(2)}  kept=${String(r.kept).padStart(2)}  cov=${(r.ratio * 100).toFixed(1)}%  vis=${r.vision.toFixed(1)}`,
+      )
+    }
   }
 }
