@@ -106,9 +106,140 @@ export function buildVariantPrompt(basePrompt, i, opts = {}) {
   const ref = opts.includeReference !== false ? referencePromptBlock() : ''
   const seed = opts.winnerSeedBlock ? `\n${opts.winnerSeedBlock}` : ''
   const mobbin = opts.mobbinBlock ? `\n${opts.mobbinBlock}` : ''
+  const rigor = opts.rigorBlock ? `\n${opts.rigorBlock}` : ''
   // Pack the four variation axes onto two compact lines to keep input tokens lean.
   const variation = `${v.aesthetic} ${v.hero}\n${v.pricing} ${v.composition}`
-  return `${basePrompt}\n\n${variation}${ref}${mobbin}${seed}`
+  return `${basePrompt}\n\n${variation}${ref}${mobbin}${rigor}${seed}`
+}
+
+/**
+ * Curated B2B SaaS marketing-page anchors. Goal: name-drop real, well-known
+ * products the model has seen in training so it anchors against their actual
+ * pages instead of generic "modern SaaS" averages. This is the auth-free
+ * structural sibling of forge-mobbin — same density mechanic, no API.
+ *
+ * Brands chosen for marketing-page rigor (concrete pricing, named logos in
+ * social proof, verb-led headlines, real feature copy). Avoid consumer apps,
+ * avoid niche tools the model might confuse.
+ */
+export const BRAND_ANCHORS = {
+  'developer-tools': [
+    'Linear',
+    'Vercel',
+    'Cloudflare',
+    'Resend',
+    'Railway',
+    'Render',
+    'Supabase',
+    'PlanetScale',
+    'Fly.io',
+    'Neon',
+    'Clerk',
+    'WorkOS',
+  ],
+  ai: [
+    'OpenAI Platform',
+    'Anthropic',
+    'ElevenLabs',
+    'Hume AI',
+    'Replicate',
+    'Together AI',
+    'Hugging Face',
+    'Cohere',
+    'Pinecone',
+    'LangChain',
+    'Modal',
+    'Groq',
+  ],
+  productivity: [
+    'Linear',
+    'Notion',
+    'Felt',
+    'Fireflies',
+    'Loom',
+    'Cron',
+    'Raycast',
+    'Arc',
+    'Superhuman',
+    'Height',
+    'Pitch',
+    'Tella',
+  ],
+  'data-infra': [
+    'Databricks',
+    'Snowflake',
+    'dbt',
+    'Hashnode',
+    'PostHog',
+    'Sentry',
+    'Highlight',
+    'Datadog',
+    'Grafana',
+    'ClickHouse',
+    'MotherDuck',
+    'Tinybird',
+  ],
+  'b2b-saas-generic': [
+    'Stripe',
+    'Plaid',
+    'Mercury',
+    'Brex',
+    'Ramp',
+    'Linear',
+    'Notion',
+    'Intercom',
+    'Vanta',
+    'Drata',
+    'Retool',
+    'Airtable',
+  ],
+}
+
+/**
+ * Synchronous, pure rigor block. Rotates category by iter (same pattern as
+ * mobbinIterBlock), picks 4 anchor brands deterministically from that
+ * category, and emits a structural-rules block. No API calls, no I/O.
+ *
+ * Use as `rigorBlock` option to buildVariantPrompt. forge-loop A/Bs it via
+ * FORGE_RIGOR_MIX=1 (even iters get rigor, odd don't), mirroring the
+ * existing FORGE_MOBBIN_MIX shape.
+ */
+export function buildRigorBlock(iter) {
+  const categories = Object.keys(BRAND_ANCHORS)
+  const category = categories[iter % categories.length]
+  const pool = BRAND_ANCHORS[category]
+  // Deterministic stride pick — 4 brands spaced across the pool so iters
+  // within the same category still vary their concrete anchors.
+  const stride = Math.max(1, Math.floor(pool.length / 4))
+  const start = iter % pool.length
+  const picks = []
+  for (let k = 0; k < 4; k++) {
+    picks.push(pool[(start + k * stride) % pool.length])
+  }
+  const brands = [...new Set(picks)]
+
+  const lines = []
+  lines.push('── REFERENCE-TIER RIGOR ──')
+  lines.push(
+    `Anchor against these real B2B SaaS marketing pages (iter ${iter + 1}, category: ${category}): ${brands.join(', ')}.`,
+  )
+  lines.push('Match their density and copy specificity. Do NOT copy any literally.')
+  lines.push('')
+  lines.push('STRUCTURAL RULES (non-negotiable):')
+  lines.push(
+    '- Social proof: name >=3 recognizable companies, not "trusted by leading teams"',
+  )
+  lines.push(
+    '- Pricing: concrete numbers ($29/mo, 10K events/mo), not "Contact Sales" placeholder tiers',
+  )
+  lines.push(
+    '- Hero headline: verb-led, <=8 words, specific outcome (e.g. "Deploy GPUs in 60 seconds")',
+  )
+  lines.push(
+    '- Feature copy: concrete capability + measurable benefit, never marketing fluff',
+  )
+  lines.push('- CTA: action verb + specific noun ("Start free trial" not "Get started")')
+  return { block: lines.join('\n'), category, brands }
 }
 
 /**

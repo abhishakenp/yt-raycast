@@ -145,6 +145,56 @@ if (mobbinOn.length || mobbinOff.length) {
   }
 }
 
+// Rigor A/B: same shape as Mobbin. Splits on b.rigor?.on (absence = off).
+const rigorOn = board.filter((b) => b.rigor?.on)
+const rigorOff = board.filter((b) => !b.rigor?.on)
+if (rigorOn.length || rigorOff.length) {
+  console.log()
+  console.log('RIGOR A/B:')
+  const fmtRigorSide = (label, arr) => {
+    if (!arr.length) {
+      console.log(`  ${label.padEnd(9)} n=0`)
+      return
+    }
+    const keptN = arr.filter((b) => b.kept).length
+    const meanMs = Math.round(arr.reduce((a, b) => a + (b.ms || 0), 0) / arr.length)
+    const meanOut = Math.round(arr.reduce((a, b) => a + (b.outputTokens || 0), 0) / arr.length)
+    const meanVis = (arr.reduce((a, b) => a + (b.vision?.score || 0), 0) / arr.length).toFixed(1)
+    console.log(
+      `  ${label.padEnd(9)} n=${String(arr.length).padStart(2)}  kept=${keptN}/${arr.length} (${((keptN / arr.length) * 100).toFixed(0)}%)  meanMs=${String(meanMs).padStart(5)}  meanOutTok=${String(meanOut).padStart(5)}  meanVision=${meanVis}`,
+    )
+  }
+  fmtRigorSide('rigor=on', rigorOn)
+  fmtRigorSide('rigor=off', rigorOff)
+  const smallR = Math.min(rigorOn.length, rigorOff.length)
+  if (smallR < 10 && smallR > 0) {
+    console.log(`  ⚠ n<10 on smaller side — treat deltas as directional, not significant`)
+  }
+}
+
+if (rigorOn.length) {
+  // Per-category breakdown so we can see if developer-tools brands lift
+  // harder than ai or data-infra (same shape as per-featured-app for mobbin).
+  const byCat = {}
+  for (const b of rigorOn) {
+    const cat = b.rigor.featuredCategory || 'unknown'
+    if (!byCat[cat]) byCat[cat] = { iters: 0, kept: 0, visSum: 0 }
+    byCat[cat].iters += 1
+    byCat[cat].kept += b.kept ? 1 : 0
+    byCat[cat].visSum += b.vision?.score || 0
+  }
+  console.log()
+  console.log('RIGOR per category (iters / kept / vision):')
+  const rows = Object.entries(byCat)
+    .map(([cat, s]) => ({ cat, iters: s.iters, kept: s.kept, vision: s.visSum / s.iters }))
+    .sort((a, b) => b.kept - a.kept || b.vision - a.vision)
+  for (const r of rows) {
+    console.log(
+      `  ${r.cat.padEnd(22)} iters=${String(r.iters).padStart(2)}  kept=${String(r.kept).padStart(2)}  vis=${r.vision.toFixed(1)}`,
+    )
+  }
+}
+
 if (mobbinOn.length) {
   // Status counts — distinguishes "Mobbin healthy with low coverage" from
   // "auth expired so coverage is zero by construction".
