@@ -1,0 +1,2606 @@
+{
+  "generatedAt": "2026-05-18T11:36:46.308Z",
+  "source": "mobbin.com /api/content/search-screens",
+  "platform": "web",
+  "patterns": [
+    "Home"
+  ],
+  "limitPerCategory": 20,
+  "byCategory": {
+    "Developer Tools": [
+      {
+        "app": "Cloudflare",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Keyboard Key",
+          "Banner",
+          "Side Navigation",
+          "Logo",
+          "Top Navigation Bar",
+          "Tab",
+          "Link"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/fa952182-6143-4d36-adde-57401801c335.png"
+      },
+      {
+        "app": "Firecrawl",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Stacked List",
+          "Divider"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1b4b84e9-9567-448a-ad75-c06b67f66997.png"
+      },
+      {
+        "app": "Linear",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a32a851e-f2fb-4ef4-b013-efacd014b2e4.png"
+      },
+      {
+        "app": "Databricks",
+        "patterns": [
+          "Date & Time",
+          "Home"
+        ],
+        "elements": [
+          "Status Dot",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/da2ec258-5b4e-4079-a42c-d0cf101b3333.png"
+      },
+      {
+        "app": "Hashnode",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Avatar",
+          "Card"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/12cb7625-906a-410f-b306-786b9fecb2fc.png"
+      },
+      {
+        "app": "Hex",
+        "patterns": [
+          "Date & Time",
+          "Home",
+          "Timeline & History",
+          "Guided Tour & Tutorial",
+          "Progress"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Button",
+          "Search Bar",
+          "Banner",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/19f190d8-5f8b-445a-bb75-eb8d3a95c265.png"
+      },
+      {
+        "app": "Modal",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Banner",
+          "Top Navigation Bar",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/967cd9b8-0304-4605-bcd1-d2a0cb9af6b2.png"
+      },
+      {
+        "app": "Render",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Icon",
+          "Side Navigation",
+          "Table",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/54f3e16f-3d37-461c-8b13-1440bb91cd19.png"
+      },
+      {
+        "app": "Twingate",
+        "patterns": [
+          "Charts",
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/0c03f1b7-7b59-42e3-90b3-18f2d0b5db29.png"
+      },
+      {
+        "app": "Replit",
+        "patterns": [
+          "Home",
+          "Timeline & History",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Carousel",
+          "Side Navigation",
+          "Badge",
+          "Chip",
+          "Keyboard Key",
+          "Top Navigation Bar",
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/ee419418-caef-443d-a510-36868351da40.png"
+      },
+      {
+        "app": "GitBook",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button",
+          "Banner",
+          "Side Navigation",
+          "Card",
+          "Icon",
+          "Search Bar",
+          "Stacked List",
+          "Avatar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/0032cb95-3cc4-4bd5-85e6-048e438768d1.png"
+      },
+      {
+        "app": "Linear",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Tree"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/072349b1-ecae-4514-8cd3-4cf40fe9ef00.png"
+      },
+      {
+        "app": "Retool",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Floating Action Button",
+          "Search Bar",
+          "Button",
+          "Avatar",
+          "Side Navigation",
+          "Icon",
+          "Thumbnail",
+          "Top Navigation Bar",
+          "Stacked List",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f7b2998e-df90-41f7-b8db-bd9de03a7267.png"
+      },
+      {
+        "app": "Unity",
+        "patterns": [
+          "Home",
+          "Dashboard"
+        ],
+        "elements": [
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f5fd8068-4818-4daa-a336-802d4b761723.png"
+      },
+      {
+        "app": "Cursor",
+        "patterns": [
+          "Home",
+          "Billing",
+          "Progress"
+        ],
+        "elements": [
+          "Card",
+          "Avatar",
+          "Icon",
+          "Top Navigation Bar",
+          "Progress Indicator",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/2bdbdf56-9a2a-437e-958d-91788990cb9c.png"
+      },
+      {
+        "app": "Braintrust",
+        "patterns": [
+          "Home",
+          "Date & Time",
+          "Dashboard"
+        ],
+        "elements": [
+          "Card",
+          "Toolbar",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4908f38c-9062-4755-9485-56318ea03103.png"
+      },
+      {
+        "app": "Hashnode",
+        "patterns": [
+          "Home",
+          "Empty State"
+        ],
+        "elements": [
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d920fbba-5fce-495f-9259-12093f2370d4.png"
+      },
+      {
+        "app": "NordVPN",
+        "patterns": [
+          "Date & Time",
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/844a2da3-eaba-4266-9128-358f6cd6a843.png"
+      },
+      {
+        "app": "incident.io",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Badge",
+          "Keyboard Key",
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Card"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/cb8fef89-c3b6-427c-b6e7-13f8a38bcb51.png"
+      },
+      {
+        "app": "Exa",
+        "patterns": [
+          "Home",
+          "Suggestions & Similar Items",
+          "Chat Detail",
+          "Empty State",
+          "Chat Bot"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Chip",
+          "Card",
+          "Icon",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/10a37bcf-f070-4b04-b9b2-be8b1b0941df.png"
+      }
+    ],
+    "AI": [
+      {
+        "app": "Clay",
+        "patterns": [
+          "Home",
+          "Date & Time"
+        ],
+        "elements": [
+          "Logo",
+          "Side Navigation",
+          "Table"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/23554473-f4f8-49ef-b8e4-f89e22c0889f.png"
+      },
+      {
+        "app": "ElevenLabs",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Logo",
+          "Top Navigation Bar",
+          "Avatar",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a4edf968-f82e-4e42-9321-9d7f1c544e6a.png"
+      },
+      {
+        "app": "Hume AI",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Logo",
+          "Icon",
+          "Top Navigation Bar",
+          "Card",
+          "Carousel",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/13f6f40c-4584-4cb9-bd81-026957837730.png"
+      },
+      {
+        "app": "Base44",
+        "patterns": [
+          "Home",
+          "Add & Create",
+          "Timer & Clock",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Logo",
+          "Status Dot",
+          "Button",
+          "Segmented Control",
+          "Text Field",
+          "Divider"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/bc4d373e-bcfe-4fd6-b6d2-ffc4747b84ee.png"
+      },
+      {
+        "app": "Google AI Studio",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Banner",
+          "Side Navigation",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/8dfe7a20-fa77-4e8b-b2b7-a97a429412e9.png"
+      },
+      {
+        "app": "Craft",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Segmented Control",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/cc770da8-d4af-4e35-a0c0-748e43ca0338.png"
+      },
+      {
+        "app": "Fireflies",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Icon",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d46d73b1-62ac-4961-b5fd-27f7e85b9aa0.png"
+      },
+      {
+        "app": "Relevance AI",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Carousel",
+          "Progress Indicator"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/15fa2355-cb69-415a-a688-cd1ad80f2171.png"
+      },
+      {
+        "app": "OpenAI Platform",
+        "patterns": [
+          "Home",
+          "Date & Time"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Chip"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/03817fc9-2704-4581-b4e0-eb0b4a4225d7.png"
+      },
+      {
+        "app": "OpenAI Platform",
+        "patterns": [
+          "Home",
+          "Chat Bot",
+          "Chat Detail",
+          "Empty State",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Breadcrumbs",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/47f93dd2-17dc-44ad-8d2c-d2447e8cec62.png"
+      },
+      {
+        "app": "Base44",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Carousel"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/85108fcc-5cbb-45e1-8871-fe7b33deff25.png"
+      },
+      {
+        "app": "Sana AI",
+        "patterns": [
+          "Suggestions & Similar Items",
+          "Home"
+        ],
+        "elements": [
+          "Toolbar",
+          "Side Navigation",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f67a4854-ac6b-44a7-8731-d68b5db231df.png"
+      },
+      {
+        "app": "Firecrawl",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Stacked List",
+          "Divider"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1b4b84e9-9567-448a-ad75-c06b67f66997.png"
+      },
+      {
+        "app": "Manus",
+        "patterns": [
+          "Home",
+          "Emails & Messages"
+        ],
+        "elements": [
+          "Icon",
+          "Illustration"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/56d20302-6fe6-4a12-b55d-75adc091f6b4.png"
+      },
+      {
+        "app": "Airtable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/291a81da-9cf3-44b4-8b11-4e91c9ad98ec.png"
+      },
+      {
+        "app": "PlayAI",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [
+          "Illustration",
+          "Logo",
+          "Card",
+          "Side Navigation",
+          "Tree"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/6f761aa0-b688-456d-9696-39426820d395.png"
+      },
+      {
+        "app": "Databricks",
+        "patterns": [
+          "Date & Time",
+          "Home"
+        ],
+        "elements": [
+          "Status Dot",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/da2ec258-5b4e-4079-a42c-d0cf101b3333.png"
+      },
+      {
+        "app": "ClickUp",
+        "patterns": [
+          "Home",
+          "Empty State"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/8b882367-4ac9-42fa-82ac-ab5dc3e1360b.png"
+      },
+      {
+        "app": "Otter.ai",
+        "patterns": [
+          "Home",
+          "Calendar",
+          "Progress",
+          "Timeline & History"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Banner",
+          "Progress Indicator",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a39356a4-d4b8-412a-8cca-1cdd668ce290.png"
+      },
+      {
+        "app": "Hex",
+        "patterns": [
+          "Date & Time",
+          "Home",
+          "Timeline & History",
+          "Guided Tour & Tutorial",
+          "Progress"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Button",
+          "Search Bar",
+          "Banner",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/19f190d8-5f8b-445a-bb75-eb8d3a95c265.png"
+      }
+    ],
+    "Productivity": [
+      {
+        "app": "Craft",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Segmented Control",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/cc770da8-d4af-4e35-a0c0-748e43ca0338.png"
+      },
+      {
+        "app": "Felt",
+        "patterns": [
+          "Home",
+          "Date & Time"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Logo",
+          "Icon",
+          "Top Navigation Bar",
+          "Card",
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/19a09f0e-533c-431d-96a5-d8c472bf0517.png"
+      },
+      {
+        "app": "Fireflies",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Icon",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d46d73b1-62ac-4961-b5fd-27f7e85b9aa0.png"
+      },
+      {
+        "app": "Relevance AI",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Carousel",
+          "Progress Indicator"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/15fa2355-cb69-415a-a688-cd1ad80f2171.png"
+      },
+      {
+        "app": "OpenAI Platform",
+        "patterns": [
+          "Home",
+          "Date & Time"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Chip"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/03817fc9-2704-4581-b4e0-eb0b4a4225d7.png"
+      },
+      {
+        "app": "OpenAI Platform",
+        "patterns": [
+          "Home",
+          "Chat Bot",
+          "Chat Detail",
+          "Empty State",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Breadcrumbs",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/47f93dd2-17dc-44ad-8d2c-d2447e8cec62.png"
+      },
+      {
+        "app": "Confluence",
+        "patterns": [
+          "Suggestions & Similar Items",
+          "Date & Time",
+          "Home"
+        ],
+        "elements": [
+          "Illustration",
+          "Side Navigation",
+          "Card",
+          "Top Navigation Bar",
+          "Logo",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/98afe45a-1fb0-4103-a7dd-fe302f378ae5.png"
+      },
+      {
+        "app": "Manus",
+        "patterns": [
+          "Home",
+          "Emails & Messages"
+        ],
+        "elements": [
+          "Icon",
+          "Illustration"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/56d20302-6fe6-4a12-b55d-75adc091f6b4.png"
+      },
+      {
+        "app": "Airtable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/291a81da-9cf3-44b4-8b11-4e91c9ad98ec.png"
+      },
+      {
+        "app": "Linear",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a32a851e-f2fb-4ef4-b013-efacd014b2e4.png"
+      },
+      {
+        "app": "Google Analytics",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f7046f43-78fe-480a-b5d2-09af51ab8365.png"
+      },
+      {
+        "app": "ClickUp",
+        "patterns": [
+          "Home",
+          "Empty State"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/8b882367-4ac9-42fa-82ac-ab5dc3e1360b.png"
+      },
+      {
+        "app": "Otter.ai",
+        "patterns": [
+          "Home",
+          "Calendar",
+          "Progress",
+          "Timeline & History"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Banner",
+          "Progress Indicator",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a39356a4-d4b8-412a-8cca-1cdd668ce290.png"
+      },
+      {
+        "app": "Charma",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4ee841bf-cefb-4e91-9846-c3a1092e08c4.png"
+      },
+      {
+        "app": "Notion",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/40febc9b-be38-4fb4-b8b2-6e6c3ff561e8.png"
+      },
+      {
+        "app": "Dropbox Paper",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Stacked List",
+          "Avatar",
+          "Chip",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f8145ec7-0206-4f8c-8598-ed08d0d2bebc.png"
+      },
+      {
+        "app": "Todoist",
+        "patterns": [
+          "Home",
+          "Dark Mode"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/be617b2a-2f8c-4fe1-b1e1-57f02de340e5.png"
+      },
+      {
+        "app": "monday.com",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/3204ca46-c615-4f9c-b0ed-71628f8a0d6f.png"
+      },
+      {
+        "app": "Sketch",
+        "patterns": [
+          "Date & Time",
+          "Home"
+        ],
+        "elements": [
+          "Icon",
+          "Card",
+          "Banner",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/5678a539-4390-4ac2-a649-5555a02bed9b.png"
+      },
+      {
+        "app": "Miro",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Table",
+          "Top Navigation Bar",
+          "Segmented Control",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1c7e611b-d9e3-428f-9c57-be32ad915756.png"
+      }
+    ],
+    "Business": [
+      {
+        "app": "AutoSend",
+        "patterns": [
+          "Home",
+          "Dashboard"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Card",
+          "Divider"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1512be6a-db7a-41a4-897c-5fb651a8c21d.png"
+      },
+      {
+        "app": "Clay",
+        "patterns": [
+          "Home",
+          "Date & Time"
+        ],
+        "elements": [
+          "Logo",
+          "Side Navigation",
+          "Table"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/23554473-f4f8-49ef-b8e4-f89e22c0889f.png"
+      },
+      {
+        "app": "QuickBooks",
+        "patterns": [
+          "Dashboard",
+          "Home",
+          "Charts"
+        ],
+        "elements": [
+          "Logo",
+          "Chip",
+          "Top Navigation Bar",
+          "Status Dot",
+          "Card",
+          "Side Navigation",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a5fc6c4e-eb2b-4283-b22a-7a8ec085bf3e.png"
+      },
+      {
+        "app": "Whop",
+        "patterns": [
+          "Home",
+          "Social Feed"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Logo",
+          "Avatar",
+          "Side Navigation",
+          "Stacked List",
+          "Card",
+          "Status Dot",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/7dae08a8-683b-4b00-850c-2977717087d6.png"
+      },
+      {
+        "app": "Fireflies",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Icon",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d46d73b1-62ac-4961-b5fd-27f7e85b9aa0.png"
+      },
+      {
+        "app": "Relevance AI",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Carousel",
+          "Progress Indicator"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/15fa2355-cb69-415a-a688-cd1ad80f2171.png"
+      },
+      {
+        "app": "AutoSend",
+        "patterns": [
+          "Home",
+          "Guided Tour & Tutorial",
+          "Progress"
+        ],
+        "elements": [
+          "Progress Indicator",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/fa7dfd2f-293b-4007-aeb2-0e838166a4f2.png"
+      },
+      {
+        "app": "Deputy",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Logo",
+          "Carousel",
+          "Card",
+          "Illustration",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/42613e65-36e7-4e16-9b54-8c63ea4a4efa.png"
+      },
+      {
+        "app": "Deputy",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/596f8547-1a45-4516-b0a2-a73184466f86.png"
+      },
+      {
+        "app": "Trello",
+        "patterns": [
+          "Goal & Task",
+          "Home",
+          "Multi-Column Layout"
+        ],
+        "elements": [
+          "Search Bar",
+          "Banner",
+          "Stacked List",
+          "Side Navigation",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/6e6573af-5790-445a-bcd5-a061b1193147.png"
+      },
+      {
+        "app": "Sana AI",
+        "patterns": [
+          "Suggestions & Similar Items",
+          "Home"
+        ],
+        "elements": [
+          "Toolbar",
+          "Side Navigation",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f67a4854-ac6b-44a7-8731-d68b5db231df.png"
+      },
+      {
+        "app": "Fiverr",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Stacked List",
+          "Badge",
+          "Avatar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/313ca929-8228-472d-9b70-5fd94e73008b.png"
+      },
+      {
+        "app": "Apollo",
+        "patterns": [
+          "Home",
+          "Guided Tour & Tutorial"
+        ],
+        "elements": [
+          "Keyboard Key",
+          "Top Navigation Bar",
+          "Card",
+          "Side Navigation",
+          "Tree"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e0f0591c-d6b4-4b11-8076-7cff2f57dba0.png"
+      },
+      {
+        "app": "Airtable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/291a81da-9cf3-44b4-8b11-4e91c9ad98ec.png"
+      },
+      {
+        "app": "Whop",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/417e48e0-4bb2-40f9-9041-22c0f35c951a.png"
+      },
+      {
+        "app": "Basecamp",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Status Dot",
+          "Floating Action Button",
+          "Banner",
+          "Badge",
+          "Link",
+          "Top Navigation Bar",
+          "Card",
+          "Avatar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1fcf8327-b9fa-4df1-b7d3-9fe3147d558e.png"
+      },
+      {
+        "app": "Upwork",
+        "patterns": [
+          "Dashboard",
+          "Home"
+        ],
+        "elements": [
+          "Card",
+          "Segmented Control",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/ed6f2333-4ec6-4973-98dd-599d3f59eb74.png"
+      },
+      {
+        "app": "Google Analytics",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f7046f43-78fe-480a-b5d2-09af51ab8365.png"
+      },
+      {
+        "app": "Databricks",
+        "patterns": [
+          "Date & Time",
+          "Home"
+        ],
+        "elements": [
+          "Status Dot",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/da2ec258-5b4e-4079-a42c-d0cf101b3333.png"
+      },
+      {
+        "app": "ClickUp",
+        "patterns": [
+          "Home",
+          "Empty State"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/8b882367-4ac9-42fa-82ac-ab5dc3e1360b.png"
+      }
+    ],
+    "Shopping": [
+      {
+        "app": "Walmart",
+        "patterns": [
+          "Home",
+          "Date & Time",
+          "Browse & Discover"
+        ],
+        "elements": [
+          "Banner",
+          "Top Navigation Bar",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/6997340b-bbd6-47e3-bc22-38e3b7e65239.png"
+      },
+      {
+        "app": "HODINKEE",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/cd95dd71-1b47-4860-9a4f-a26fa4cb360c.png"
+      },
+      {
+        "app": "Dollar Shave Club",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/c09e79dd-8ee7-4f6d-a496-aae9cf40fd1e.png"
+      },
+      {
+        "app": "HODINKEE",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Thumbnail",
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4e999e9e-f940-4876-b294-1ff41fef1d8d.png"
+      },
+      {
+        "app": "Nike",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Card",
+          "Button",
+          "Thumbnail"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/7fbbc6d3-671e-4e77-a74a-1766545a7611.png"
+      },
+      {
+        "app": "Hims",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Card",
+          "Carousel"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/23445d20-3486-4292-80f7-c716a16cef32.png"
+      },
+      {
+        "app": "Dollar Shave Club",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Hero Image"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/7e6b6540-fab8-4bcc-8209-8fda094596d5.png"
+      },
+      {
+        "app": "Apple",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d1a40d66-c51d-41d7-91ac-bee7cf48709d.png"
+      },
+      {
+        "app": "Gamma",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/dc22a7b8-60b7-45ed-8f2a-95fece461807.png"
+      },
+      {
+        "app": "Hers",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/de7f4ecd-3165-4b0d-bad7-92f01513fff6.png"
+      },
+      {
+        "app": "Hers",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [
+          "Badge",
+          "Grid List",
+          "Banner",
+          "Logo",
+          "Card"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/52220774-1bc4-4e7b-8ab3-3dfb9395f832.png"
+      },
+      {
+        "app": "Hers",
+        "patterns": [
+          "Home",
+          "Feature Info"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/bda8fad2-87c4-42e9-b9dd-3c838a6baa63.png"
+      },
+      {
+        "app": "Blue Apron",
+        "patterns": [
+          "Home",
+          "Feature Info"
+        ],
+        "elements": [
+          "Card",
+          "Badge",
+          "Link"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d602edde-4dbf-40db-87bd-d33ade3404dd.png"
+      },
+      {
+        "app": "Walmart",
+        "patterns": [
+          "Home",
+          "Browse & Discover",
+          "Shop & Storefront",
+          "Video Player"
+        ],
+        "elements": [
+          "Carousel",
+          "Card"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a857fbf9-d5c2-4ec3-b4d6-73e47b7953b9.png"
+      },
+      {
+        "app": "adidas",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Banner",
+          "Button",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e6eafff0-6733-4d2f-a6d5-5d14728fc22e.png"
+      },
+      {
+        "app": "OpenSea",
+        "patterns": [
+          "Home",
+          "Browse & Discover"
+        ],
+        "elements": [
+          "Thumbnail",
+          "Card",
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d3e32743-3c6b-4851-9a03-37edf24600af.png"
+      },
+      {
+        "app": "Klarna",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Icon",
+          "Toolbar",
+          "Logo",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/99818652-f385-44c3-baeb-0de781ae5b81.png"
+      },
+      {
+        "app": "Nike",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Carousel"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/0f61f66b-00b7-4cd1-8114-5cbc3d4e2c30.png"
+      },
+      {
+        "app": "HODINKEE",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button",
+          "Animation & Video",
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e7be908b-2f80-4cfc-97d1-06db23fcf146.png"
+      },
+      {
+        "app": "Dollar Shave Club",
+        "patterns": [
+          "Home",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Badge",
+          "Button",
+          "Thumbnail"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/98a32f2c-1a8b-4eed-a94a-b6854ee7aa45.png"
+      }
+    ],
+    "Food & Drink": [
+      {
+        "app": "NYT Cooking",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Grid List",
+          "Thumbnail",
+          "Button",
+          "Card"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/8dcec6e2-af9a-47ee-964a-35f102e319bf.png"
+      },
+      {
+        "app": "Blue Apron",
+        "patterns": [
+          "Home",
+          "Feature Info"
+        ],
+        "elements": [
+          "Card",
+          "Badge",
+          "Link"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d602edde-4dbf-40db-87bd-d33ade3404dd.png"
+      },
+      {
+        "app": "NYT Cooking",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button",
+          "Thumbnail",
+          "Card"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/88335507-4324-430f-a9f4-92194ea6fcf4.png"
+      },
+      {
+        "app": "OpenTable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Carousel",
+          "Thumbnail",
+          "Card",
+          "Top Navigation Bar",
+          "Button",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/b34fcdea-89b9-4da6-be3b-977b7abab409.png"
+      },
+      {
+        "app": "OpenTable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Tab",
+          "Grid List",
+          "Link",
+          "Banner",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/31450e50-0419-4f0c-91ba-73561816a85c.png"
+      },
+      {
+        "app": "NYT Cooking",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Link",
+          "Card",
+          "Thumbnail",
+          "Gallery"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/b46a1845-410f-42e5-b0c9-59dbaf102dae.png"
+      },
+      {
+        "app": "Uber Eats",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/c2ea1d9b-0607-491e-8482-0e89885fd8d2.png"
+      },
+      {
+        "app": "Uber Eats",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [
+          "Icon",
+          "Top Navigation Bar",
+          "Search Bar",
+          "Carousel",
+          "Illustration",
+          "Card",
+          "Badge",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/fa3afe9c-d888-4792-a41e-86d324b79c1c.png"
+      },
+      {
+        "app": "Blue Apron",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Page Control",
+          "Button",
+          "Thumbnail"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/aee1f046-089d-40b0-aab4-e90a336b8ee4.png"
+      },
+      {
+        "app": "sweetgreen",
+        "patterns": [
+          "Home",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Photo",
+          "Top Navigation Bar",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d53c1c6b-1e21-48f7-859c-ad2c57f9de31.png"
+      },
+      {
+        "app": "OpenTable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Carousel"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1dc9d9e4-f88e-4d16-b4b7-a24bec74a691.png"
+      },
+      {
+        "app": "Blue Apron",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Tab"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/33e4de34-af42-4ecf-b963-d8f4bac322ce.png"
+      },
+      {
+        "app": "NYT Cooking",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Hero Image",
+          "Button",
+          "Top Navigation Bar",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f07bf04a-30e4-4260-95b0-004865fe9f5c.png"
+      },
+      {
+        "app": "Instacart",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/ffb91aea-2505-42c5-8620-5010097d556a.png"
+      },
+      {
+        "app": "Blue Apron",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/fd7a4457-6b3e-4d74-9869-ccac18edc21b.png"
+      },
+      {
+        "app": "Blue Apron",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d91f561b-a9c7-440f-bad7-70cdcede2c0b.png"
+      },
+      {
+        "app": "NYT Cooking",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1a0fbccc-8636-4728-a3f1-9852111b6d29.png"
+      },
+      {
+        "app": "Instacart",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Card",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/52f3f720-1c95-4a3f-ac34-04dbf5f9ec51.png"
+      },
+      {
+        "app": "Instacart",
+        "patterns": [
+          "Home",
+          "Browse & Discover"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Search Bar",
+          "Icon",
+          "Side Navigation",
+          "Logo",
+          "Banner"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/518843a5-cc6c-4603-bd13-e55a8b3a3079.png"
+      },
+      {
+        "app": "DoorDash",
+        "patterns": [
+          "Browse & Discover",
+          "Home",
+          "Shop & Storefront"
+        ],
+        "elements": [
+          "Logo",
+          "Top Navigation Bar",
+          "Status Dot",
+          "Badge",
+          "Icon",
+          "Side Navigation",
+          "Banner",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/041e2528-ad0f-4be8-a8eb-1180c7d7f423.png"
+      }
+    ],
+    "Health & Fitness": [
+      {
+        "app": "Open",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Tab",
+          "Search Bar",
+          "Top Navigation Bar",
+          "Banner",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/887788c4-9901-4392-b4b2-f4ff9384dab4.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home",
+          "Timeline & History"
+        ],
+        "elements": [
+          "Tab",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/5a77f326-4089-432a-95a6-e7cdff1a5ada.png"
+      },
+      {
+        "app": "Calm",
+        "patterns": [
+          "Home",
+          "Browse & Discover"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a4208cde-06f0-4813-8312-828ce50be9e8.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Timeline & History",
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/564078bf-978e-4252-af60-c6ec99e8d01e.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Stacked List",
+          "Thumbnail",
+          "Illustration",
+          "Card",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1037fdef-37c4-47db-96c3-956672e34787.png"
+      },
+      {
+        "app": "Calm",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d43365f2-3ab0-480d-833a-414f8b3fee81.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Stacked List",
+          "Badge",
+          "Button",
+          "Icon",
+          "Tab",
+          "Thumbnail"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/64787062-0579-4758-9234-6d2214288277.png"
+      },
+      {
+        "app": "Calm",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/1b81d3f0-83ae-4c7d-9f51-c4f7de2d33e8.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/5667f140-ba18-4654-b258-7d7f42e21eb9.png"
+      },
+      {
+        "app": "Open",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [
+          "Card",
+          "Carousel"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/37b23826-7fde-42e1-adb5-85e905b7c40c.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home",
+          "Browse & Discover"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4de888a7-8e10-4962-ac21-401cc7bb7652.png"
+      },
+      {
+        "app": "Calm",
+        "patterns": [
+          "Home",
+          "Browse & Discover"
+        ],
+        "elements": [
+          "Icon",
+          "Thumbnail",
+          "Carousel",
+          "Side Navigation",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/28c25cfb-f34a-436e-89b2-1729983935d8.png"
+      },
+      {
+        "app": "Calm",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/6ddf39b5-6d34-4db0-aa23-5cac3ae353e5.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Browse & Discover",
+          "Home"
+        ],
+        "elements": [
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/0b900cea-5e34-459a-a120-25195ae95038.png"
+      },
+      {
+        "app": "Calm",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Thumbnail"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/ce4b204c-290c-4182-9484-f27ffa672587.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Tab",
+          "Button",
+          "Logo",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/bf48850c-e18b-4d3b-ba44-9f946b945974.png"
+      },
+      {
+        "app": "Calm",
+        "patterns": [
+          "Audio Player",
+          "Home"
+        ],
+        "elements": [
+          "Drawer"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e8d76eb1-44c5-42e9-8d6e-7edbc3cedbcf.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home",
+          "Empty State"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/84cb4b24-09d3-4ba8-a7c2-4906e3116a5b.png"
+      },
+      {
+        "app": "Headspace",
+        "patterns": [
+          "Home",
+          "Browse & Discover"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/05062cf6-753d-4bc3-bdbb-27c8c742bef0.png"
+      }
+    ],
+    "Education": [
+      {
+        "app": "Skillshare",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Page Control",
+          "Carousel"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/b1939c9a-bff6-4106-a45e-7f8ac55c07b8.png"
+      },
+      {
+        "app": "Udemy",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/143a8266-e92e-4589-b34f-84de76b245ee.png"
+      },
+      {
+        "app": "Duolingo",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f9747436-7363-4abd-b3ce-25108651316f.png"
+      },
+      {
+        "app": "Babbel",
+        "patterns": [
+          "Progress",
+          "Home"
+        ],
+        "elements": [
+          "Progress Indicator"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/581db513-7bf5-4db9-a060-c5d46a40ea73.png"
+      },
+      {
+        "app": "ClassDojo",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Banner",
+          "Segmented Control",
+          "Toolbar",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/53e76bf0-91f1-4dab-81f9-d8cfee53a592.png"
+      },
+      {
+        "app": "Google Classroom",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/40c12a98-f573-436c-9fe3-23f002f18dc9.png"
+      },
+      {
+        "app": "Codecademy",
+        "patterns": [
+          "Timer & Clock",
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Link",
+          "Logo",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/ae0483ae-23a3-4c0b-aeac-e51ef24ff607.png"
+      },
+      {
+        "app": "Duolingo",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e449fde5-2dfa-46ec-9f22-6c117d05a55b.png"
+      },
+      {
+        "app": "Skillshare",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/252ee05a-63bf-4112-bc36-40d5196b1588.png"
+      },
+      {
+        "app": "ClassDojo",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/607a56e9-bcc8-4ecd-8169-2b8752982e9d.png"
+      },
+      {
+        "app": "Teachable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button",
+          "Top Navigation Bar",
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/7afce79b-253f-4154-877f-a5279da056d1.png"
+      },
+      {
+        "app": "SuperHi",
+        "patterns": [
+          "Home",
+          "Bookmarks & Collections",
+          "Timeline & History"
+        ],
+        "elements": [
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4f1e5b0c-3722-4b06-96ca-0d35e7679cfc.png"
+      },
+      {
+        "app": "Coursera",
+        "patterns": [
+          "Home",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/6662c774-0dc3-442f-b295-26888123be38.png"
+      },
+      {
+        "app": "Google Classroom",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button",
+          "Illustration"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/693c8cf1-7449-4f24-a9a3-2d17d560cc8a.png"
+      },
+      {
+        "app": "Kajabi",
+        "patterns": [
+          "Home",
+          "Progress"
+        ],
+        "elements": [
+          "Link",
+          "Illustration",
+          "Progress Indicator"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e48990f9-031f-4a61-addc-6662f4c141c1.png"
+      },
+      {
+        "app": "Preply",
+        "patterns": [
+          "Home",
+          "Pricing",
+          "Shop & Storefront"
+        ],
+        "elements": [
+          "Avatar",
+          "Stacked List",
+          "Search Bar",
+          "Top Navigation Bar",
+          "Status Dot",
+          "Banner",
+          "Logo",
+          "Card"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/707c9cb7-6341-494c-a2aa-2a49a20b9fd4.png"
+      },
+      {
+        "app": "Teachable",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d9266796-d4b1-4805-9f19-704fa45240cf.png"
+      },
+      {
+        "app": "Coursera",
+        "patterns": [
+          "Home",
+          "Dashboard",
+          "Progress",
+          "Goal & Task"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Search Bar",
+          "Tab",
+          "Progress Indicator"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d286adbd-41fa-41d7-8b98-52e30c0540b2.png"
+      },
+      {
+        "app": "Duolingo",
+        "patterns": [
+          "Goal & Task",
+          "Home"
+        ],
+        "elements": [
+          "Icon",
+          "Side Navigation",
+          "Banner",
+          "Tab",
+          "Top Navigation Bar",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/dde26360-d9c5-4d8c-bd83-77534581dd9f.png"
+      },
+      {
+        "app": "Duolingo",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Card",
+          "Progress Indicator"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d22d9cfc-fd6d-41e9-a686-baf5c92cae6e.png"
+      }
+    ],
+    "Travel": [],
+    "Real Estate": [
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/58774833-e8d6-4d32-aeb6-26a6a621f346.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Home",
+          "Browse & Discover"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4a887029-95c5-4819-88b1-2cdab767e5dc.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Browse & Discover",
+          "Suggestions & Similar Items",
+          "Home"
+        ],
+        "elements": [
+          "Search Bar",
+          "Tab",
+          "Carousel",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4124cecb-c20e-4c1a-96f5-f6eb1f0aec0d.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/b80aba4a-199d-4409-a52d-d75362615439.png"
+      },
+      {
+        "app": "Zillow",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/08d0cb34-ce70-4e60-83e3-bc7cb8b67595.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Home",
+          "Progress"
+        ],
+        "elements": [
+          "Badge",
+          "Card",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f36adc7e-3cdb-45a6-9222-37350773b4cc.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Verification",
+          "Guided Tour & Tutorial",
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/5489ef78-6716-47ce-a9d4-63ab0a59f4ec.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/0df89fa9-673a-4a79-9981-d630d89f2faa.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e1e35005-0285-400f-aa03-97a1d15417d9.png"
+      },
+      {
+        "app": "Airbnb",
+        "patterns": [
+          "Empty State",
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/70fd039c-f877-43f7-8573-12a3d4d375a0.png"
+      }
+    ],
+    "Finance": [
+      {
+        "app": "Wise",
+        "patterns": [
+          "Wallet & Balance",
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Logo",
+          "Tree",
+          "Button",
+          "Status Dot",
+          "Toolbar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/3aa8a475-c6aa-44f7-8da2-78278811e49c.png"
+      },
+      {
+        "app": "QuickBooks",
+        "patterns": [
+          "Dashboard",
+          "Home",
+          "Charts"
+        ],
+        "elements": [
+          "Logo",
+          "Chip",
+          "Top Navigation Bar",
+          "Status Dot",
+          "Card",
+          "Side Navigation",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/a5fc6c4e-eb2b-4283-b22a-7a8ec085bf3e.png"
+      },
+      {
+        "app": "Origin",
+        "patterns": [
+          "Home",
+          "Charts",
+          "Multi-Column Layout"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Logo",
+          "Top Navigation Bar",
+          "Segmented Control",
+          "Banner"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/3e6fa536-3091-49d6-b5f8-748006ab35e2.png"
+      },
+      {
+        "app": "Wise",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/27f9bc11-7365-4c6a-a74b-b2231be43676.png"
+      },
+      {
+        "app": "Wise",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Banner"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d2ba62f0-ea28-4ba2-a713-f5a1736825bb.png"
+      },
+      {
+        "app": "Midday",
+        "patterns": [
+          "Home",
+          "Dashboard",
+          "Charts"
+        ],
+        "elements": [
+          "Logo",
+          "Side Navigation",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/53d73f69-a684-4cdd-a71e-ad7058cb0e93.png"
+      },
+      {
+        "app": "Gusto",
+        "patterns": [
+          "Empty State",
+          "Progress",
+          "Home"
+        ],
+        "elements": [
+          "Progress Indicator",
+          "Illustration",
+          "Banner"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/beb153c6-ac66-48e9-8b22-bd639555fc23.png"
+      },
+      {
+        "app": "Coinbase",
+        "patterns": [
+          "Home",
+          "Progress"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Progress Indicator",
+          "Banner",
+          "Icon",
+          "Side Navigation",
+          "Divider"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/d6f93852-f497-4d8f-aef9-5b952183622f.png"
+      },
+      {
+        "app": "Wise",
+        "patterns": [
+          "Charts",
+          "Home"
+        ],
+        "elements": [
+          "Card",
+          "Illustration"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/ee744959-9c63-4500-855d-e17893ac6d7f.png"
+      },
+      {
+        "app": "PayPal",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Illustration"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/c5dda240-b1c5-474f-942f-5bfaf0bbb013.png"
+      },
+      {
+        "app": "Expensify",
+        "patterns": [
+          "Feature Info",
+          "Home"
+        ],
+        "elements": [
+          "Icon",
+          "Card",
+          "Breadcrumbs",
+          "Badge",
+          "Accordion"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4809df48-510f-4aec-a272-cb4033ea0706.png"
+      },
+      {
+        "app": "Airwallex",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Banner",
+          "Divider",
+          "Logo",
+          "Avatar",
+          "Badge",
+          "Side Navigation",
+          "Card",
+          "Link",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/f2b584b5-f971-4c0f-8651-b3ee44f59055.png"
+      },
+      {
+        "app": "PayPal",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/5eb14b3a-0967-4349-b355-ce82f296fd80.png"
+      },
+      {
+        "app": "Coinbase",
+        "patterns": [
+          "Dashboard",
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Side Navigation",
+          "Banner",
+          "Logo",
+          "Divider",
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/407a80b8-310d-487c-ad76-9eb8e37b0728.png"
+      },
+      {
+        "app": "Revolut",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation",
+          "Avatar",
+          "Tab"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/b8d6562e-5cfa-4978-a292-a9ac30ff4517.png"
+      },
+      {
+        "app": "Kraken",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/bcc8d941-638d-4d98-aac2-ae61501d9dcf.png"
+      },
+      {
+        "app": "Melio",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Tab",
+          "Logo",
+          "Side Navigation",
+          "Button",
+          "Avatar",
+          "Search Bar",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/0fd59465-9ecd-4a89-bf9b-48083d8794f3.png"
+      },
+      {
+        "app": "Origin",
+        "patterns": [
+          "Multi-Column Layout",
+          "Invite & Refer Friends",
+          "Timeline & History",
+          "Home"
+        ],
+        "elements": [
+          "Status Dot",
+          "Logo",
+          "Banner",
+          "Button",
+          "Tab",
+          "Top Navigation Bar",
+          "Card",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/ca274150-48a5-464d-8c54-176b3c3f4804.png"
+      },
+      {
+        "app": "Revolut Business",
+        "patterns": [
+          "Multi-Column Layout",
+          "Date & Time",
+          "Home"
+        ],
+        "elements": [
+          "Banner",
+          "Avatar",
+          "Table",
+          "Badge",
+          "Side Navigation",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/eadd5d52-a604-4bf2-8632-d9406855c8fd.png"
+      },
+      {
+        "app": "Klarna",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Icon",
+          "Toolbar",
+          "Logo",
+          "Top Navigation Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/99818652-f385-44c3-baeb-0de781ae5b81.png"
+      }
+    ],
+    "Lifestyle": [
+      {
+        "app": "Whop",
+        "patterns": [
+          "Home",
+          "Social Feed"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Logo",
+          "Avatar",
+          "Side Navigation",
+          "Stacked List",
+          "Card",
+          "Status Dot",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/7dae08a8-683b-4b00-850c-2977717087d6.png"
+      },
+      {
+        "app": "Whop",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Search Bar"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/417e48e0-4bb2-40f9-9041-22c0f35c951a.png"
+      },
+      {
+        "app": "HODINKEE",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/cd95dd71-1b47-4860-9a4f-a26fa4cb360c.png"
+      },
+      {
+        "app": "Dollar Shave Club",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/c09e79dd-8ee7-4f6d-a496-aae9cf40fd1e.png"
+      },
+      {
+        "app": "Pinterest",
+        "patterns": [
+          "Social Feed",
+          "Home"
+        ],
+        "elements": [
+          "Gallery",
+          "Logo",
+          "Top Navigation Bar",
+          "Search Bar",
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/fde1da5c-b51b-4cfa-851e-a26ff32e26ae.png"
+      },
+      {
+        "app": "HODINKEE",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Thumbnail",
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/4e999e9e-f940-4876-b294-1ff41fef1d8d.png"
+      },
+      {
+        "app": "Bumble",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/73bd6282-d9d9-4c69-a4ef-5dd55179e87a.png"
+      },
+      {
+        "app": "Givingli",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/db6962d3-295a-41a6-a970-b04d890f3577.png"
+      },
+      {
+        "app": "Whop",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Side Navigation"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/8b6ca1c5-80c5-4b41-b029-c200e8854189.png"
+      },
+      {
+        "app": "Literal",
+        "patterns": [
+          "Home",
+          "Social Feed"
+        ],
+        "elements": [
+          "Status Dot",
+          "Top Navigation Bar",
+          "Logo",
+          "Card",
+          "Toolbar",
+          "Search Bar",
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/32fa72bb-9f30-40a3-989d-6d5631de72f4.png"
+      },
+      {
+        "app": "Dollar Shave Club",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Hero Image"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/7e6b6540-fab8-4bcc-8209-8fda094596d5.png"
+      },
+      {
+        "app": "Airtasker",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Chip",
+          "Icon"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/eeb62666-ac1b-43b5-b121-a2563f48b507.png"
+      },
+      {
+        "app": "adidas",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Top Navigation Bar",
+          "Banner",
+          "Button",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e6eafff0-6733-4d2f-a6d5-5d14728fc22e.png"
+      },
+      {
+        "app": "Oku",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Avatar",
+          "Button",
+          "Illustration",
+          "Logo"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/cea326bd-5f82-4a55-8e50-53a1074ca2b2.png"
+      },
+      {
+        "app": "Partiful",
+        "patterns": [
+          "Home",
+          "Date & Time"
+        ],
+        "elements": [
+          "Carousel",
+          "Tab",
+          "Top Navigation Bar",
+          "Card",
+          "Badge"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e25fe99a-3a5e-4632-87f9-8ad2369e7932.png"
+      },
+      {
+        "app": "Oku",
+        "patterns": [
+          "Home",
+          "Dashboard"
+        ],
+        "elements": [
+          "Icon",
+          "Card",
+          "Button"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/37077d9f-6387-4ae9-8487-a1d1430e2307.png"
+      },
+      {
+        "app": "HODINKEE",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Button",
+          "Animation & Video",
+          "Grid List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/e7be908b-2f80-4cfc-97d1-06db23fcf146.png"
+      },
+      {
+        "app": "Dollar Shave Club",
+        "patterns": [
+          "Home",
+          "Suggestions & Similar Items"
+        ],
+        "elements": [
+          "Badge",
+          "Button",
+          "Thumbnail"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/98a32f2c-1a8b-4eed-a94a-b6854ee7aa45.png"
+      },
+      {
+        "app": "Oku",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/b68d69b5-07d8-4616-b31e-c4f7427e79a0.png"
+      },
+      {
+        "app": "Bumble",
+        "patterns": [
+          "Home"
+        ],
+        "elements": [
+          "Badge",
+          "Card",
+          "Status Dot",
+          "Avatar",
+          "Stacked List"
+        ],
+        "screenUrl": "https://ujasntkfphywizsdaapi.supabase.co/storage/v1/object/public/content/app_screens/93c0967c-7501-4b9e-b79b-afba822ce726.png"
+      }
+    ],
+    "Social": []
+  }
+}
