@@ -242,7 +242,7 @@ try {
         prompt: userPrompt,
         temperature,
         reasoningEffort: 'low',
-        maxTokens: parseInt(process.env.FORGE_MAX_TOK || '10000', 10),
+        maxTokens: parseInt(process.env.FORGE_MAX_TOK || '20000', 10),
       })
     } catch (e) {
       result = { content: '', ms: 0, error: String(e?.message || e) }
