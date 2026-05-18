@@ -36,7 +36,12 @@ export function safeToken(value, fallback = 'session') {
 }
 
 export function shortToken(value, length = 12, fallback = 'session') {
-  return safeToken(value, fallback).slice(0, length) || fallback
+  // Slicing can land mid-separator and leave a trailing `_` / `-`, which
+  // makes the token unusable as a Docker image reference (compose tags
+  // `<project>-<service>` and rejects trailing separators with "invalid
+  // reference format"). Re-strip after slicing so the truncation is safe.
+  const sliced = safeToken(value, fallback).slice(0, length).replace(/[_-]+$/, '')
+  return sliced || fallback
 }
 
 export function generateSecret(length = 32) {
@@ -235,7 +240,10 @@ export async function createSessionDatabase(dbName) {
   }
 }
 
-export async function waitForMedusaHealth(port, maxWaitMs = 120000) {
+// Medusa v2 first-boot in a fresh tenant container: ~5-10s frontend admin
+// compile + 25 modules × ~4s migration each + ~5s server start = comfortably
+// over the old 120s default. 300s gives headroom for slow CI hardware.
+export async function waitForMedusaHealth(port, maxWaitMs = 300000) {
   const deadline = Date.now() + maxWaitMs
 
   while (Date.now() < deadline) {

@@ -15,6 +15,11 @@
     "verify:site-spec": "node scripts/verify-site-spec.js",
     "sync:medusa-catalog": "node scripts/sync-ecommerce-to-medusa.js",
     "verify:swiper-policy": "node scripts/verify-swiper-policy.mjs",
+    "medusa:up": "docker compose -f infra/medusa/docker-compose.yml up -d postgres redis",
+    "medusa:down": "docker compose -f infra/medusa/docker-compose.yml down",
+    "medusa:logs": "docker compose -f infra/medusa/docker-compose.yml logs -f --tail=200",
+    "medusa:nuke": "docker compose -f infra/medusa/docker-compose.yml down -v && rm -f infra/medusa/sessions/docker-compose.session-*.yml",
+    "medusa:sessions": "ls -1 infra/medusa/sessions/docker-compose.session-*.yml 2>/dev/null | wc -l | awk '{print $1\" tenant compose file(s)\"}' && docker ps --filter \"name=medusa-session-\" --format \"table {{.Names}}\\t{{.Ports}}\\t{{.Status}}\"",
     "test": "vitest run",
     "test:watch": "vitest"
   },
