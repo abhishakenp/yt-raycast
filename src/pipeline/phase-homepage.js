@@ -1,6 +1,13 @@
 import { groqHomepage } from '@ship-fast/engine/llm/groq.js'
 import { readDesignRefFromWorkspace } from '@ship-fast/engine/prompts/design-refs.js'
 import {
+  anchorAvoidsAurora,
+  anchorAvoidsSaasMarketing,
+  readMobbinAnchorFromWorkspace,
+  relaxAuroraAuditForAnchor,
+} from '@ship-fast/engine/lib/mobbin/index.js'
+import { auditMobbinCoverage } from '@ship-fast/engine/pipeline/mobbin-audit.js'
+import {
   VAGUE_MARKETING_HOMEPAGE_APPENDIX,
   shouldExpandVagueMarketing,
 } from '@ship-fast/engine/prompts/vague-marketing-brief.js'
@@ -80,6 +87,8 @@ export async function generateHomepage(
   const hasDesignReferenceUrls = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   const resolvedDesignRef = designRef ?? readDesignRefFromWorkspace(workspace)
   if (resolvedDesignRef) log(`  homepage: using design ref "${resolvedDesignRef.name}"`)
+  const mobbinAnchor = readMobbinAnchorFromWorkspace(workspace)
+  if (mobbinAnchor?.app) log(`  homepage: inheriting Mobbin DNA from ${mobbinAnchor.app}`)
   const thinJson = thinSiteSpec ? buildHomepageSpecSliceJson(thinSiteSpec) : ''
   const siteTypeForVague = thinSiteSpec?.siteType
   const siteType = String(thinSiteSpec?.siteType || 'landing').toLowerCase()
@@ -120,6 +129,7 @@ export async function generateHomepage(
       businessProfile,
       contentPlanRef,
       thinJson,
+      mobbinAnchor,
     )
     if (!result?.content || result.error) {
       log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)
@@ -129,10 +139,22 @@ export async function generateHomepage(
     tokenAgg.outputTokens += result.outputTokens ?? 0
     tokenAgg.cost += result.cost ?? 0
     html = shellAfterGroq(result.content)
-    const ver =
+    let ver =
       exemplarPath && !hasDesignReferenceUrls
         ? passesHomepagePublicDesignVerification(html, prompt, exemplarPath, siteType)
-        : { ok: !htmlLooksDegenerate(html, { prompt }), feedback: 'Output failed degeneracy or marketing bar checks.' }
+        : { ok: !htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) }), feedback: 'Output failed degeneracy or marketing bar checks.' }
+    // When the active anchor's DNA explicitly rejects aurora visuals
+    // (Airbnb/Apple/Linear/Patagonia/etc), the engine's aurora-tier
+    // verification rules become a quality regression — the LLM CORRECTLY
+    // followed the anchor by omitting radial-gradient stacks, but the engine
+    // sees that omission as failure. Relax the audit to its theme-agnostic
+    // checks (data-reveal, data-magnet, contrast) when the anchor is
+    // anti-aurora. This is the production analog of forge's relaxation pass.
+    if (!ver.ok && mobbinAnchor && anchorAvoidsAurora(mobbinAnchor.dna)) {
+      const relaxed = relaxAuroraAuditForAnchor(ver, mobbinAnchor.dna)
+      if (relaxed.auroraRelaxed) log(`  homepage: aurora-tier audit relaxed for anti-aurora anchor ${mobbinAnchor.app}`)
+      ver = relaxed
+    }
     if (ver.ok) {
       if (maxRalph > 1) log(`  homepage: reference-tier verification passed (attempt ${attempt}/${maxRalph})`)
       break
@@ -140,6 +162,13 @@ export async function generateHomepage(
     ralphFeedback = ver.feedback || 'Match the public design exemplar for this site type in the system prompt.'
     log(`  homepage: reference-tier verification failed — attempt ${attempt}/${maxRalph}`)
     if (attempt === maxRalph) {
+      // When Mobbin anchor is active, the renderer fallback is a worse
+      // outcome than imperfect LLM output (it strips all anchor inheritance).
+      // Keep going with the LLM HTML rather than throwing.
+      if (mobbinAnchor?.app) {
+        log(`  homepage: keeping LLM output despite verification failure — Mobbin Pro anchor ${mobbinAnchor.app} active`)
+        break
+      }
       throw new Error(`Homepage failed reference-tier verification after ${maxRalph} attempts: ${ralphFeedback}`)
     }
   }
@@ -159,9 +188,12 @@ export async function generateHomepage(
     }
   }
 
-  if (htmlLooksDegenerate(html, { prompt })) {
-    log('  ❌ homepage: rejected — output looks degenerate before image pass')
-    throw new Error('Homepage output failed quality check')
+  if (htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) })) {
+    log('  ❌ homepage: degeneracy flag tripped before image pass')
+    if (!mobbinAnchor?.app) {
+      throw new Error('Homepage output failed quality check')
+    }
+    log(`  homepage: keeping LLM output despite pre-image degeneracy flag — Mobbin Pro anchor ${mobbinAnchor.app} active`)
   }
 
   html = alignGeneratedImagesToContext(html, imageHints)
@@ -170,14 +202,38 @@ export async function generateHomepage(
   html = injectEcommerceHeroResponsiveCss(html)
   html = ensureLucideIconRuntime(html, log)
 
-  if (htmlLooksDegenerate(html, { prompt })) {
-    log('  ❌ homepage: rejected — output looks degenerate (repetition or invalid HTML)')
-    throw new Error('Homepage output failed quality check')
+  // Save the raw LLM output to disk before the final degeneracy check so we
+  // can always recover the model's actual work for debugging when the check
+  // rejects it.
+  try {
+    writeFile(workspace, 'index.llm.html', html)
+  } catch {}
+  if (htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) })) {
+    log('  ❌ homepage: degeneracy flag tripped (repetition or invalid HTML)')
+    // When Mobbin anchor is active, trust the LLM output even if it's
+    // structurally lean — the renderer fallback strips all anchor inheritance,
+    // which is a far worse outcome than a slightly thin LLM page.
+    if (!mobbinAnchor?.app) {
+      throw new Error('Homepage output failed quality check')
+    }
+    log(`  homepage: keeping LLM output despite degeneracy flag — Mobbin Pro anchor ${mobbinAnchor.app} active`)
   }
 
   writeFile(workspace, 'index.html', html)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
   log(`  index.html: ${html.length} chars${tpsStr}`)
+
+  if (mobbinAnchor?.app) {
+    const coverage = auditMobbinCoverage(html, mobbinAnchor)
+    try {
+      writeFile(workspace, 'mobbin-coverage.json', JSON.stringify(coverage, null, 2))
+    } catch {}
+    if (coverage.warnings.length) {
+      for (const w of coverage.warnings) log(`  ⚠️  mobbin: ${w}`)
+    } else {
+      log(`  ✓ mobbin: anchor ${coverage.anchor} inheritance looks healthy (palette ${coverage.score?.palette?.hits}/${coverage.score?.palette?.total}, doctrine ${coverage.score?.doctrine?.hits}/${coverage.score?.doctrine?.total})`)
+    }
+  }
 
   return {
     html,

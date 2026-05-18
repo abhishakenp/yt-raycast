@@ -12,6 +12,7 @@ import { siteSpecPrompt } from '@ship-fast/engine/prompts/site-spec.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 import { repairThemeColors } from '@ship-fast/engine/spec/theme-contrast.js'
+import { readMobbinAnchorFromWorkspace } from '@ship-fast/engine/lib/mobbin/index.js'
 
 function cleanJsonContent(text = '') {
   return String(text)
@@ -40,6 +41,7 @@ export async function generateSiteSpec({
   let validation = { valid: false, errors: [] }
 
   const hasUserDesignReferences = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
+  const mobbinAnchor = readMobbinAnchorFromWorkspace(workspace)
   for (let attempt = 0; attempt < 2; attempt++) {
     const promptBlock = siteSpecPrompt({
       prompt,
@@ -49,6 +51,7 @@ export async function generateSiteSpec({
       brandProfile,
       mode: 'generate',
       hasUserDesignReferences,
+      mobbinAnchor,
     })
     const result = await groq(promptBlock.user, {
       system: promptBlock.system,

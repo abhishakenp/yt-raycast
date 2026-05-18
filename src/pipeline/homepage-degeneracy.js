@@ -134,7 +134,20 @@ export function htmlLooksDegenerate(html, opts = {}) {
   if (text.length > 12000 && countStructuralTags(s) < 3) return true
 
   const prompt = opts.prompt
-  if (prompt && promptExpectsNovaDenseMarketing(prompt) && htmlFailsNovaMarketingBar(s)) return true
+  // When a Mobbin anchor explicitly rejects SaaS marketing rigor (Airbnb /
+  // Patagonia / Apple / NYT / Vogue etc), skip the Nova marketing-bar check
+  // — it would otherwise fail every correctly-built anchor-aware page for
+  // not having a pricing band + FAQ + aurora visuals the anchor explicitly
+  // forbids. Structural sanity checks (length / body tag / contrast / runs)
+  // still apply.
+  const skipNovaBar = opts.skipNovaMarketingBar === true
+  if (
+    !skipNovaBar &&
+    prompt &&
+    promptExpectsNovaDenseMarketing(prompt) &&
+    htmlFailsNovaMarketingBar(s)
+  )
+    return true
 
   return false
 }

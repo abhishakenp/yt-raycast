@@ -1,6 +1,21 @@
 import { getEcommerceGenerationGuidelines, GLOBAL_UI_CRAFT_GUIDELINES } from '../config.js'
 import { siteSpecSchema } from '../spec/schema.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
+import { dnaSectionsBlock, mobbinDoctrineBlock, mobbinSessionBlock } from '../lib/mobbin/prompt-blocks.js'
+
+function mobbinSiteSpecBlock(anchor) {
+  if (!anchor?.app) return ''
+  const session = mobbinSessionBlock(anchor)
+  const accents = anchor.accents?.length ? anchor.accents : anchor.dna?.accents || []
+  const accentLine = accents.length
+    ? `theme.colors.primary, accent, background, surface MUST be derived from these ${anchor.app} hex tokens: ${accents.join(', ')}. Use them verbatim — never substitute or "round".`
+    : `theme palette MUST match the ${anchor.app} register described above.`
+  const sectionsBlock = dnaSectionsBlock(anchor.dna, anchor.app)
+  const sectionsPart = sectionsBlock
+    ? `\n\n── MOBBIN PRO ANCHOR SECTION PATTERN ──\n${sectionsBlock}\n\nForbidden in pages[].sections[] for this anchor: any section type / variant the anchor's composition does NOT use. Examples of forbidden substitutions for this anchor: ${(anchor.dna?.avoid || []).slice(0, 6).join('; ') || '(see "anti-patterns" above)'}.`
+    : ''
+  return `\n${mobbinDoctrineBlock()}\n${session}\n\n── MOBBIN PRO ANCHOR (site spec) ──\n${accentLine}\nThe spec's typography (theme.typography.heading/body) MUST match the anchor's display + body family register. The pages[] list must include sections that mirror ${anchor.app}'s composition signature.${sectionsPart}\n`
+}
 
 export function siteSpecPrompt({
   prompt,
@@ -10,6 +25,7 @@ export function siteSpecPrompt({
   brandProfile = null,
   mode = 'generate',
   hasUserDesignReferences = false,
+  mobbinAnchor = null,
 }) {
   const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
   const actionLine =
@@ -71,9 +87,12 @@ export function siteSpecPrompt({
   - Only use Inter for both heading and body when the prompt is generic SaaS/dashboard with no vibe signal.
 `
 
+  const mobbinBlock = mobbinSiteSpecBlock(mobbinAnchor)
+
   return {
     system:
-      'You are a product architect who outputs only valid JSON. No markdown. No explanation. Keep the result strongly structured and renderer-friendly.',
+      'You are a product architect who outputs only valid JSON. No markdown. No explanation. Keep the result strongly structured and renderer-friendly.' +
+      mobbinBlock,
     user:
       `${actionLine}\n\n` +
       `User prompt:\n${prompt}\n\n` +

@@ -11,35 +11,42 @@ import {
 } from '@ship-fast/engine/config.js'
 import { stripGroqReasoningLeak } from '@ship-fast/engine/llm/utils.js'
 import { referencePromptBlock } from './forge-reference.mjs'
+import { mobbinDoctrineBlock } from './forge-mobbin.mjs'
 
 const URL = `${GROQ_HOST}/openai/v1/chat/completions`
 
 const HOMEPAGE_SYSTEM_LEAN = `You are a world-class frontend engineer + visual designer. Output ONLY a complete self-contained HTML doc starting with <!DOCTYPE html>. No markdown, no fences, no prose.
 
-Build a B2B SaaS marketing homepage at reference-tier quality (match design-03-saas-homepage energy).
+Build a B2B SaaS marketing homepage at reference-tier quality (match design-03-saas-homepage energy AND every named anchor in the Mobbin Pro DNA block when present).
 
 HARD REQS (each auto-scored — meet every one):
 1. ≥12,000 chars. Full HTML document.
 2. ≥7 <section> + <header> + <footer>. Every section ≥200px tall with real content (heading + paragraph/cards), NO empty bands.
 3. <head>: viewport meta + <script src="https://cdn.tailwindcss.com"> + <script src="https://unpkg.com/lucide@latest"> + tailwind.config={theme:{extend:{colors:{background,surface,elev,primary},fontFamily:{display,body,mono},keyframes:{liquid:{...}},animation:{liquid:'liquid 22s ease-in-out infinite'},boxShadow}}}.
-4. Hero MUST contain LITERAL TEXT "radial-gradient(" appearing 3 OR MORE times in the HTML output — count them yourself. Each instance is on an absolutely-positioned <div> with classes containing both "blur-3xl" AND "motion-reduce:hidden" AND opacity-40..70, e.g.:
-   <div class="absolute -top-24 -left-24 w-[520px] h-[520px] blur-3xl opacity-60 motion-reduce:hidden animate-liquid" style="background: radial-gradient(circle at 30% 30%, rgba(167,139,250,0.55), transparent 70%);"></div>
-Plus: <canvas id="hero-canvas"> with requestAnimationFrame particle loop reactive to mousemove (respect prefers-reduced-motion). theme.extend.keyframes.liquid (translate+rotate+scale ~22s) + animate-liquid on ≥2 orbs. ONE band uses -skew-y-3 / clip-path polygon / keyframed rotate.
+4. Hero ALWAYS has a <canvas id="hero-canvas"> with requestAnimationFrame loop reactive to mousemove (respect prefers-reduced-motion), theme.extend.keyframes.liquid (translate+rotate+scale ~22s), and ONE band that uses -skew-y-3 / clip-path polygon / keyframed rotate for diagonal energy.
+Hero-accent SHAPE is anchor-conditional:
+  (a) When the active aesthetic IS aurora/festival/cyberpunk/neon OR no Mobbin anchor is present: emit ≥3 absolutely-positioned <div>s whose inline style contains the LITERAL TEXT "radial-gradient(", each with classes "blur-3xl" AND "motion-reduce:hidden" AND opacity-40..70, AND animate-liquid on ≥2 of them. PALETTE LOCK: every radial-gradient stop MUST be derived from the active anchor's sampled hex palette (or, with no anchor, from theme.extend.colors.primary/elev/surface) converted to rgba() with 0.30..0.60 alpha. NEVER invent peach (rgba(255,200,150…)), cyan (rgba(100,200,255…)), amber (rgba(255,180,80…)) or any other "default aurora trio" RGBA — those colors are auto-fail unless they literally appear in the anchor palette. e.g. if primary=#5e6ad2, emit <div class="absolute -top-24 -left-24 w-[520px] h-[520px] blur-3xl opacity-60 motion-reduce:hidden animate-liquid" style="background: radial-gradient(circle at 30% 30%, rgba(94,106,210,0.55), transparent 70%);"></div> — the three blobs vary in POSITION and SIZE, not hue.
+  (b) When the active Mobbin Pro anchor's "avoid" list contains "aurora" / "multi-color gradients" (Linear, Vercel, Stripe, Anthropic, Notion, OpenAI, GitHub, Plausible, etc): the hero accent is EITHER ONE subtle full-width linear-gradient ribbon OR ONE corner-anchored radial-gradient spotlight, NOT three. Use class blur-3xl + motion-reduce:hidden + opacity-40..70 on that single accent. The audit's "≥3 radial-gradient" rule is overridden by the forge harness when an anti-aurora anchor is active — DO NOT pad with extra radial-gradients to satisfy a count.
 5. ≥4 [data-reveal] elements. CRITICAL: never add opacity-0 / translate-y-* in the initial markup or via JS on page load. The page MUST be fully visible without JS. JS may only ADD class reveal-ready to <html> then animate IN existing visible elements (e.g. transition-opacity). Empty reveal panels are forbidden.
 6. ≥2 [data-magnet] CTAs with pointer parallax in inline script.
 7. Single inline IIFE before </body>, every querySelector null-guarded. Wire: data-mobile-nav + data-mobile-nav-toggle (is-open class); data-accordion FAQ ≥5 items each with data-accordion-trigger; data-pricing-billing + [data-billing="month"|"year"] toggling [data-show-monthly]/[data-show-yearly]; ≥2 [data-counter][data-counter-target] count-up on intersection; lucide.createIcons() after DOM ready + after dynamic updates.
 8. Pricing: 3 tiers, middle featured with ring-2 ring-offset-2; monthly+yearly prices both wired through toggle.
 9. Three Google Fonts (fonts.googleapis.com). Display ∈ {Fraunces,Syne,Outfit,DM Serif Display,Playfair Display,Space Grotesk,Bricolage Grotesque,Instrument Serif,Manrope,Sora}. Body: Inter/DM Sans/Manrope. Mono: JetBrains Mono/IBM Plex Mono. NEVER Cabinet Grotesk/Geist (not Google-hosted). Map all 3 in tailwind.config.fontFamily.
-10. Dark theme. Tinted slate/zinc bg. Cards: backdrop-blur + ring-1 ring-white/10. Body paragraphs text-slate-300 (never text-slate-500 on text-lg/text-base/leading-relaxed). 4.5:1 contrast on body text.
+10. Theme is anchor-conditional. When the Mobbin anchor's palette resolves a light background (≥ 220/255 luminance — Notion/Anthropic/OpenAI/Stripe/Webflow), use a LIGHT theme: bg-white or warm off-white (#faf9f5), body text-slate-700 / text-zinc-800, cards with ring-1 ring-zinc-200 + soft shadow. When the anchor resolves a dark background (Linear/Cursor/Sentry/Pinecone) OR no anchor is present, use a DARK theme: tinted slate/zinc bg, cards with backdrop-blur + ring-1 ring-white/10, body text-slate-300 (never text-slate-500 on text-lg/text-base/leading-relaxed). Either way, 4.5:1 contrast on body text.
 11. Real anchors only. ≥8 nav links across header+footer. ≤55 total href="#" placeholders.
 12. ≥3 real <button> CTAs.
 13. Penultimate CTA band before footer. Footer ≥4 columns.
 14. Lucide icons via data-lucide. STRICT BAN — these names DO NOT EXIST in Lucide and silently render blank: github, twitter, linkedin, discord, facebook, instagram, youtube, "x", "chart", "close", "search-icon", "envelope", "phone-icon". Replace: x → x-circle. chart → bar-chart-3 OR pie-chart. close → x-circle. github/twitter/linkedin/etc → inline <svg viewBox="0 0 24 24"> with the brand path. For brand/social icons use inline <svg viewBox="0 0 24 24">. Safe Lucide names: arrow-right, arrow-up-right, check, check-circle, x-circle, menu, sparkles, zap, shield, rocket, layers, code, terminal, cpu, gauge, lock, users, bot, workflow, git-branch, chevron-down, chevron-right, star, mail, search, settings, bell, user, calendar, clock, globe, map-pin, eye, copy, trash-2, plus, minus, info, alert-circle, file-text, folder, image, tag, bookmark, share-2, download, upload, link-2, external-link, bar-chart-3, pie-chart, activity, trending-up, target, flame, lightbulb, wand-2. Sizes w-5 h-5 md:w-6 md:h-6.
 15. NO <style> tags for theme/layout/animation. Vanilla JS only. Only external scripts: Tailwind + Lucide CDNs.
-16. Specific product-credible copy. NO Ship Fast / fake addresses / Lorem ipsum / generic placeholders. Concrete numbers ("3.2× faster", "14-day trial"). 3+ testimonial cards with named authors+roles.`
+16. Specific product-credible copy. NO Ship Fast / fake addresses / Lorem ipsum / generic placeholders. Concrete numbers ("3.2× faster", "14-day trial"). 3+ testimonial cards with named authors+roles.
+17. STRICT IMAGE BAN. NEVER use placeholder image domains — no via.placeholder.com, no placehold.it / placeholder.com / placekitten / dummyimage / picsum.photos / cataas / loremflickr. For logo proof bands, customer logos, and brand marks: inline <svg viewBox="0 0 120 32"> with a real-looking text-mark OR a recognizable abbreviated brand path. For product preview imagery: build the UI as actual HTML (cards, tables, code blocks, charts as inline SVG), not <img> tags. The only <img> tags allowed are: (a) Pexels/Unsplash-verified stock URLs explicitly supplied in a MEDIA URLS block, or (b) <img> tags rendered ENTIRELY as base64 data: URIs (avoid this — prefer inline SVG). If a logo cloud needs N brands, render N <svg> blocks side-by-side, each ~120×32 with the brand name as <text> in a brand-appropriate font-family, NEVER N <img src="placeholder">.
+18. STRICT BRAND-NAME BAN for customer/testimonial logos and quotes. NEVER use any of: Acme, AcmeCo, Acme Corp, Foo, Foobar, Bar, Baz, BetaCo, Beta Inc, Gamma Ltd, GammaCo, Globex, Hooli, Initech, Pied Piper, Cyberdyne, Stark Industries, Wayne Enterprises, FakeCo, DemoCo, Example Inc, Sample Co, TestCo, Lorem Inc, Ipsum LLC, Brand A/B/C, Company 1/2/3. These read instantly as fake and break Mobbin Pro fidelity. Pick from this curated bank of believable B2B-SaaS customer names instead (mix freely — diverse mix is fine): HelixOps, Nordbridge Capital, Pacific Mediawire, Lattice Robotics, Foundry47, Saltline Logistics, Quanta Health, Northwind Analytics, Verbera Mobility, Atlas Forge, Cinder Energy, Patternline, Stormharbor Insurance, Cobalt & Co, Westcliff Health, Polaris Audio, Beacon Sciences, Klein Foundry, Trove Capital, Mosaic Defense, Helia Pharma, Aerohelm, Kindred Labs, Sundial Markets, Tessera AI, Greengate Mobility, Continuum Robotics, Pendulum Audio, Cantilever Labs, Riftline Capital. You may ALSO use real public-company names that plausibly appear as Mobbin Pro customer logos (Linear, Vercel, Stripe, Notion, Loom, Figma, OpenAI, Anthropic, Cloudflare, Datadog, Sentry, GitHub, Plaid, Brex, Ramp, Discord, Slack, Asana, Intercom, Postman) — choose names that match the product's positioning (e.g. infra products → Cloudflare/Vercel/Stripe; AI products → OpenAI/Anthropic/Hugging Face; collaboration → Notion/Loom/Figma). For testimonial authors, pair a believable first+last name with a real-sounding role+company; never use "John Doe" / "Jane Smith" / "User 1" / generic role titles like "CEO at Company".
+19. STRICT HEADLINE BAN — these generic SaaS patterns are auto-fail and instantly break Mobbin Pro fidelity. Do NOT write a hero h1 that matches any of: "Unleash {anything}", "Supercharge {anything}", "Revolutionize {anything}", "Transform {anything}", "Empower {anything}", "Unlock {anything}", "See Every {X}, Instantly", "{X}, Reimagined", "{X} for the Modern {Y}", "Built for the {Future|Next-Gen|AI Era}", "The {Future|Next} of {X}", "{Faster|Smarter|Better} {X}", "{X} Made Simple", "{X} that Just Works", "The All-in-One {X}", "Beyond {X}", "{X} Without {Y}", "Welcome to the {Future|Era} of {X}". Hero h1 must be EITHER (a) an outcome-driven imperative ≤8 words ("Move work forward" / "Accept payments online" / "Deploy on the edge" / "Build internal tools, faster"), OR (b) a concrete product noun phrase ("The AI code editor" / "Voice AI that understands emotion" / "Vector database for AI" / "Your AI everything app"), OR (c) a measurable-outcome stat-led headline ("20% of the internet runs on our network" / "Cut MTTR by 65%"). Sub-headline (one sentence, ≤24 words) must contain at least one concrete product noun OR one quantified outcome (number/percentage/duration). No exclamation marks anywhere except in single-word UI labels.
+20. STRICT NO-VERBATIM-COPY of any named Mobbin anchor's actual marketing copy. When a Mobbin Pro DNA block lists real headline/sub/product-noun shapes for an anchor (Linear / Stripe / Vercel / Notion / Figma / OpenAI / Anthropic / Cursor / etc), those examples are STYLE references — the model MUST paraphrase them, never reproduce them verbatim. Specifically banned in the GENERATED page: hero h1 EXACTLY equal to "Move work forward" / "Accept payments online" / "Deploy on the edge" / "The AI code editor" / "Frontend cloud, built for AI agents" / "Develop. Preview. Ship." / "The connectivity cloud" / "Your AI everything app" / "Nothing great is made alone" / "Models built for reasoning, multimodality, and tool use" / "Pioneering research on the path to AGI" / "Build in a weekend. Scale to millions." / "The open source Firebase alternative" / "Where the world builds software" / "The complete developer platform" / "Async video for work" / "Replace meetings with messages" / "AI research and products that put safety at the frontier" / "Models built to think" / "The most realistic AI voices" / "The Data Intelligence Platform" / "Banking engineered for the ambitious" / "How developers build successful products". Banned product-noun verbatims: "Cycles" + "Triage" + "Initiatives" together (Linear), "Workers" + "R2" + "D1" together (Cloudflare), "Connect" + "Atlas" + "Radar" together (Stripe), "Lakehouse" + "Unity Catalog" together (Databricks). The model MUST invent equivalents that share REGISTER (verb-noun shape, syllable count, tone) — e.g. for an issue-tracking product anchored on Linear, write "Cut shipping cycles by half" not "Move work forward"; for products with Linear's Cycles/Triage/Initiatives IA, write "Sprints / Surface / Roadlines" or similar invented proprietary nouns. Verbatim use of these banned strings is auto-fail.
+${mobbinDoctrineBlock()}`
 
 export const FORGE_DEFAULT_PROMPT =
-  'A B2B SaaS marketing site for an AI-first agentic workflow product for engineering teams: aurora hero, social proof strip, feature grid, pricing band with monthly/yearly toggle, FAQ, penultimate CTA band, multi-column footer.'
+  'A B2B SaaS marketing site for an AI-first agentic workflow product for engineering teams. Required sections: hero with a product-preview surface, social-proof / logo-cloud strip, feature grid (≥6 features grouped 2x3 or 3x2), pricing band with monthly/yearly toggle, FAQ accordion, named-customer testimonial band, penultimate CTA band, multi-column footer. Hero visual treatment is dictated by the active Mobbin Pro anchor (if any) or the active aesthetic — DO NOT default to an aurora hero unless explicitly called for.'
 
 const HERO_ARCHETYPES = [
   'Hero archetype: SPLIT — left text column (badge + headline + subhead + 2 CTAs + trust chips), right column a layered visual panel (mesh + product preview frame).',
@@ -73,6 +80,17 @@ const AESTHETIC_NUDGES = [
   'Aesthetic: nordic SaaS — Outfit display, glacier blue + frost white on charcoal, sharp grid bento.',
   'Aesthetic: cyberpunk dossier — JetBrains Mono everywhere except hero (Space Grotesk), CRT scan canvas, amber on inkblack.',
 ]
+
+// v6: which aesthetics actually call for the engine's aurora-tier visual
+// rules (3+ radial-gradient stacks, multi-color blobs, ambient liquid motion).
+// Aesthetics NOT in this set produce non-aurora heroes by design, and the
+// engine's aurora-audit becomes a quality regression for them — the forge
+// harness then relaxes those rules via `relaxAuroraAuditForAnchor`.
+export const AURORA_AESTHETIC_INDICES = new Set([2, 4, 5, 6, 9]) // aurora-midnight, neon-nightlife, organic-wellness, festival-maximalism, cyberpunk
+
+export function isAuroraAesthetic(i) {
+  return AURORA_AESTHETIC_INDICES.has(i % AESTHETIC_NUDGES.length)
+}
 
 export function pickVariation(i) {
   return {
@@ -174,6 +192,68 @@ export async function forgeFixPass(html, prompt, { remainingBudgetMs = 6000, mod
   const sys =
     'You are a frontend engineer. Output ONLY a complete HTML document — no markdown, no fences, no prose. Apply minimal targeted fixes to the input HTML to address the 3 weakest details (color contrast, typography hierarchy, empty bands, generic copy, missing depth). Do not regress any working feature. Keep all data-* hooks intact.'
   const user = `Brief: ${prompt}\n\nFix the 3 weakest details in this HTML and emit the FULL fixed HTML. Reply with only HTML.\n\n<<<HTML>>>\n${html}\n<<<END>>>`
+  return forgeGenerate({
+    system: sys,
+    prompt: user,
+    temperature: 0.3,
+    maxTokens: 14000,
+    reasoningEffort: 'low',
+    model,
+  })
+}
+
+/**
+ * Mobbin-aware fix pass. v6 close-the-loop layer: when the vision judge says
+ * the iter didn't inherit (low mobbinFidelity OR judge reasons mention
+ * inheritance failure) OR the per-iter palette gate missed, this pass asks
+ * the model to specifically address the inheritance gaps named in `gaps`,
+ * with the featured anchor's full DNA still in scope.
+ *
+ * Returns { content, ms } or null if budget exceeded.
+ *
+ * gaps shape: {
+ *   anchor: { app, category, palette, hexHits, hexMissed, dna },
+ *   judgeReasons: string[],
+ *   mobbinFidelity: number|null,
+ * }
+ */
+export async function mobbinAwareFixPass(html, prompt, gaps, { remainingBudgetMs = 6000, model } = {}) {
+  if (remainingBudgetMs < 4000) return null
+  if (!gaps?.anchor?.app) return null
+  const { anchor, judgeReasons = [], mobbinFidelity } = gaps
+  const hexMissed = (anchor.hexMissed || []).slice(0, 5)
+  const hexHits = (anchor.hexHits || []).slice(0, 5)
+  const dna = anchor.dna || {}
+  const doctrine = Array.isArray(dna.doctrine) ? dna.doctrine : []
+  const avoid = Array.isArray(dna.avoid) ? dna.avoid : []
+
+  const sys = `You are a senior frontend engineer making a SURGICAL revision to inherit a specific Mobbin Pro anchor. Output ONLY a complete HTML document — no markdown, no fences, no prose. Keep all data-* hooks intact. Make MINIMAL changes; do not redesign — fix only what the inheritance brief identifies.`
+
+  const inheritanceBrief = [
+    `ANCHOR: ${anchor.app}${anchor.category ? ` (${anchor.category})` : ''}`,
+    anchor.palette?.length ? `Required palette (sampled hex): ${anchor.palette.join(', ')}` : null,
+    hexHits.length ? `Already present in HTML: ${hexHits.join(', ')}` : null,
+    hexMissed.length
+      ? `MISSING from HTML — add these hex values to tailwind.config.theme.extend.colors and/or inline styles in the most prominent surfaces (bg/surface/primary/text): ${hexMissed.join(', ')}`
+      : null,
+    dna.display ? `Display typography target: ${dna.display}` : null,
+    dna.body ? `Body typography target: ${dna.body}` : null,
+    dna.mono ? `Mono typography target: ${dna.mono}` : null,
+    dna.layout ? `Layout signature: ${dna.layout}` : null,
+    dna.copy ? `Copy register: ${dna.copy}` : null,
+    doctrine.length ? `Required moves to ensure are present:\n- ${doctrine.join('\n- ')}` : null,
+    avoid.length ? `Anti-patterns to REMOVE if found:\n- ${avoid.join('\n- ')}` : null,
+    Number.isFinite(mobbinFidelity)
+      ? `Vision judge mobbinFidelity score: ${mobbinFidelity}/25 — raise this above 18.`
+      : null,
+    judgeReasons.length ? `Judge said these are the worst gaps:\n- ${judgeReasons.join('\n- ')}` : null,
+    'Surgical edit rules: do NOT change unrelated sections. If you need to shift a color, change the tailwind config + a small number of inline overrides. If you need to fix copy, target only generic phrases. If the page has an aurora hero but the anchor forbids aurora, REMOVE the extra radial-gradient orbs (keep ONE subtle accent at most). NEVER add via.placeholder.com or any placeholder-image domain. ANTI-PLAGIARISM: if the current hero h1 is one of the anchor\'s real marketing headlines verbatim (e.g. "Move work forward" / "Accept payments online" / "Deploy on the edge" / "The AI code editor" / "Async video for work"), REWRITE it with a paraphrased headline that matches register but uses different specific words. If the page uses ≥3 of the anchor\'s proprietary product nouns clustered (e.g. Linear\'s Cycles + Triage + Initiatives), INVENT replacement proprietary nouns that share the verb-noun shape (e.g. Sprints / Surface / Roadlines).',
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+
+  const user = `Brief: ${prompt}\n\nINHERITANCE BRIEF — revise the HTML below so it INHERITS the named Mobbin Pro anchor:\n\n${inheritanceBrief}\n\nEmit the FULL fixed HTML. Reply with ONLY HTML, starting at <!DOCTYPE html>.\n\n<<<HTML>>>\n${html}\n<<<END>>>`
+
   return forgeGenerate({
     system: sys,
     prompt: user,

@@ -134,10 +134,20 @@ export async function renderAudit({ url, shotPath, page, siteType = 'saas' }) {
   if (tinyBands.length > 3) {
     issues.push(`${tinyBands.length} bands collapsed below 60px`)
   }
-  // 2. Total page height sanity
+  // 2. Total page height sanity. v8: lowered 3.0 → 2.5 viewports because dense
+  // Mobbin Pro anchors (Linear / Cursor / Sentry / Stripe) routinely ship
+  // marketing pages that are ~2.5 viewports tall — the original 3-viewport
+  // bar was authored for aurora-tier exemplars and incorrectly flagged
+  // well-composed dense pages. Also count distinct content-bearing sections
+  // as a secondary heuristic so a 2200px page with 9 dense sections passes
+  // while a 2200px page with 4 sparse sections still fails.
   const totalH = sectionHeights.reduce((a, b) => a + b.h, 0)
-  if (totalH < viewportH * 3) {
-    issues.push(`page total height ${totalH}px < 3 viewports (${viewportH * 3}px) — likely missing sections`)
+  const contentSections = sectionHeights.filter((s) => s.h >= 200 && s.text >= 80).length
+  const heightFloor = viewportH * 2.5
+  if (totalH < heightFloor && contentSections < 8) {
+    issues.push(
+      `page total height ${totalH}px < 2.5 viewports (${Math.round(heightFloor)}px) AND only ${contentSections} content-bearing sections — likely missing sections`,
+    )
   }
   // 3. Contrast: at least 80% of body text samples >= AA (4.5:1)
   const audit = lowContrastSamples

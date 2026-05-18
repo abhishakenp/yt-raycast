@@ -7,6 +7,23 @@ import {
 } from '../config.js'
 import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { inferSiteTypeHint } from '../lib/infer-site-type.js'
+import { mobbinDoctrineBlock, mobbinSessionBlock } from '../lib/mobbin/prompt-blocks.js'
+
+function mobbinAnchorAppendix(anchor) {
+  if (!anchor?.app) return { systemAppend: '', userAppend: '' }
+  const session = mobbinSessionBlock(anchor)
+  const doctrine = mobbinDoctrineBlock()
+  const accents = anchor.accents?.length ? anchor.accents : anchor.dna?.accents || []
+  const accentLine = accents.length
+    ? `Required palette base — the design.md palette MUST inherit from ${anchor.app}'s sampled hex values: ${accents.join(', ')}. Use these as the literal hex tokens in your tailwind.config (background / surface / primary / accent slots). DO NOT substitute or "round" them.`
+    : ''
+  return {
+    systemAppend: `\n\n${doctrine}\n${session}`,
+    userAppend: accentLine
+      ? `\n\n── MOBBIN PRO ANCHOR PALETTE LOCK ──\n${accentLine}\nThe design system you output must be unmistakably ${anchor.app}-family at thumbnail glance.`
+      : `\n\n── MOBBIN PRO ANCHOR ──\nThe design system you output should be unmistakably ${anchor.app}-family at thumbnail glance.`,
+  }
+}
 
 function languageDesignAppendix(indiaMode) {
   if (!indiaMode || indiaMode.code === 'en') return ''
@@ -54,11 +71,13 @@ export function designBriefPrompt(
   indiaMode = null,
   siteType = null,
   hasUserDesignReferences = false,
+  mobbinAnchor = null,
 ) {
   const effectiveSiteType = siteType || inferSiteTypeHint(prompt)
   const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
+  const { systemAppend, userAppend } = mobbinAnchorAppendix(mobbinAnchor)
   return {
-    system: `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.`,
+    system: `You are an award-caliber product designer. You ship design systems that look unmistakably crafted — bold type, memorable color, and layout tension — never generic purple-gradient SaaS slop. Typography-first dark UIs. ${GLOBAL_UI_CRAFT_GUIDELINES} Output ONLY markdown. No preamble.${systemAppend}`,
     user: `Create a design system for this project:
 ${prompt}
 
@@ -149,7 +168,7 @@ ${
 - Signature: specify one motion or depth token (e.g. card hover lift, gradient mesh hero bg, blur glass panel)
 ${effectiveSiteType !== 'game' ? `- Next.js/React exports: plan Framer Motion (\`framer-motion\`, ${MOTION_DEV_DOCS_REACT}) for interactive motion — not purely static UI; respect reduced-motion preferences.\n` : ''}- If images are truly needed (ecommerce/portfolio), use relevant verified provider photos first. If no close match exists, avoid random stock-photo fallbacks and use gradients, patterns, icons, or typography-driven panels instead
 
-Max 70 lines. Output ONLY markdown.${languageDesignAppendix(indiaMode)}`,
+Max 70 lines. Output ONLY markdown.${userAppend}${languageDesignAppendix(indiaMode)}`,
     model: GROQ_MODEL,
     temperature: 0.4,
     maxTokens: 3000,

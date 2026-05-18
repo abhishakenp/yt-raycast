@@ -5,6 +5,10 @@ import { groqParallel } from '@ship-fast/engine/llm/groq.js'
 import { writeFile } from './workspace.js'
 import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
+import {
+  inferMobbinAnchor,
+  writeMobbinAnchorToWorkspace,
+} from '@ship-fast/engine/lib/mobbin/index.js'
 import { generateContext } from './phase-context.js'
 import { generateSiteSpec, updateSiteSpecFromPrompt } from './phase-site-spec.js'
 import { generateHomepage, injectDesignIntoHomepage } from './phase-homepage.js'
@@ -290,6 +294,23 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   _status('Plotting launch trajectory…', 'spec')
 
+  // Resolve the Mobbin Pro DNA anchor BEFORE the design/site-spec/homepage
+  // promises fan out. All three phases read mobbin-anchor.json from the
+  // workspace; doing inference up-front ensures the homepage phase (which runs
+  // in parallel with design) sees the same anchor as the design phase. Fail-
+  // soft: a null anchor means downstream falls through to the legacy path.
+  try {
+    const mobbinAnchor = await inferMobbinAnchor({ brief: pipelinePrompt, projectContext: {} })
+    if (mobbinAnchor?.app) {
+      writeMobbinAnchorToWorkspace(workspace, mobbinAnchor)
+      _log(`  mobbin anchor: ${mobbinAnchor.app} (${mobbinAnchor.category}) — ${mobbinAnchor.reason}`)
+    } else {
+      _log('  mobbin anchor: none (brief did not match any DNA entry)')
+    }
+  } catch (e) {
+    _log(`  mobbin anchor: skipped (${e?.message || 'error'})`)
+  }
+
   const bootstrapImageHintsPromise = resolvePexelsImageHints(
     { prompt: normalizedPrompt, hydrationPrompt: normalizedPrompt },
     {
@@ -433,8 +454,23 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       homepage = withSwiper
       writeFile(workspace, 'index.html', homepage)
     }
+    // Save the LLM output before any substance-check replacement so we can
+    // audit Mobbin inheritance against the model's actual work (the renderer
+    // fallback strips all anchor-specific structure).
+    if (homepage) {
+      try {
+        writeFile(workspace, 'index.llm.html', homepage)
+      } catch {}
+    }
     const wouldReplaceLlmWithRenderer = shouldReplaceLlmHomepageWithRenderer(homepage, siteSpec)
-    const replaceLlmWithRenderer = wouldReplaceLlmWithRenderer && !hasUserDesignReferences
+    // When a Mobbin anchor is active, trust the LLM path more aggressively —
+    // the doctrine + session block already forces ~9-11 dense sections, and
+    // replacing with the renderer throws away every Mobbin DNA inheritance
+    // (layout signature, copy register, anchor-specific section choices). The
+    // user explicitly opts INTO Mobbin DNA by having an anchor; respect it.
+    const mobbinAnchorActive = existsSync(join(workspace, 'mobbin-anchor.json'))
+    const replaceLlmWithRenderer =
+      wouldReplaceLlmWithRenderer && !hasUserDesignReferences && !mobbinAnchorActive
     if (siteSpec?.pages?.length && replaceLlmWithRenderer) {
       _log('  homepage: LLM page body looks too sparse; rendering homepage from site spec instead')
       const recovered = renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)
@@ -443,6 +479,10 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     } else if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && hasUserDesignReferences) {
       _log(
         '  homepage: keeping LLM HTML — layout inspiration references set (skipping spec renderer substitution for sparse output)',
+      )
+    } else if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && mobbinAnchorActive) {
+      _log(
+        '  homepage: keeping LLM HTML — Mobbin Pro anchor active (skipping renderer fallback to preserve anchor-driven layout)',
       )
     }
     if (homepage) {

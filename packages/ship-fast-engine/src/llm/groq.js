@@ -24,7 +24,15 @@ import { designRefSystemAppendix } from '../prompts/design-refs.js'
 import { publicDesignExemplarAppendix } from '../prompts/public-design-exemplar-append.js'
 import { DYNAMIC_UI_LIBRARY_APPEND } from '../prompts/dynamic-ui-append.js'
 import { PUBLIC_DESIGNS_QUALITY_APPENDIX } from '../prompts/public-designs-quality-bar.js'
+import { mobbinDoctrineBlock, mobbinSessionBlock } from '../lib/mobbin/prompt-blocks.js'
 import { calculateCost, stripGroqReasoningLeak } from './utils.js'
+
+function mobbinHomepageAppend(anchor) {
+  if (!anchor?.app) return ''
+  const session = mobbinSessionBlock(anchor)
+  const doctrine = mobbinDoctrineBlock()
+  return `\n${doctrine}\n${session}\n\n── MOBBIN PRO ANCHOR LOCK ──\nThe rendered homepage MUST be unmistakably ${anchor.app}-family at thumbnail glance. Anchor doctrine OVERRIDES any conflicting general guidance in this system prompt — when the anchor's "Required move" lines or "Anti-patterns to reject" contradict a generic rule above, the anchor wins.\n`
+}
 
 const OPENROUTER_MODELS = new Set(['moonshotai/kimi-k2-0905', 'moonshotai/kimi-k2.6'])
 
@@ -191,6 +199,7 @@ async function groqHomepageCore(
   contentPlanRef = null,
   thinSiteSpecJson = '',
   maxTokensOverride = null,
+  mobbinAnchor = null,
 ) {
   const mixedAppend = mixedEnglishHomepageAppend(indiaMode)
   const mixedEnglish = Boolean(mixedAppend)
@@ -287,7 +296,7 @@ Build a real, interactive app like Proton Mail, Linear, Notion, or Figma. Not a 
 
 ── WEBSITE (landing, blog, ecommerce, portfolio, docs, etc.) ──
 Adapt the layout to the type of site:
-- SaaS/Landing (match public/designs/design-03-saas-homepage.html energy, not a flat template): typography-first, no stock hero photos. HERO MUST feel alive — count yourself: the LITERAL TEXT \`radial-gradient(\` MUST appear 3 OR MORE times in the output, each on an absolutely-positioned div with classes including both \`blur-3xl\` AND \`motion-reduce:hidden\` AND opacity-40..70 (e.g. \`<div class="absolute -top-24 -left-24 w-[520px] h-[520px] blur-3xl opacity-60 motion-reduce:hidden animate-liquid" style="background: radial-gradient(circle at 30% 30%, rgba(167,139,250,0.55), transparent 70%);"></div>\`). Plus: a \`<canvas>\` with \`requestAnimationFrame\` particle/constellation loop reactive to mousemove (respect prefers-reduced-motion); \`theme.extend.keyframes.liquid\` (translate+rotate+scale ~22s) wired via \`animate-liquid\` on at least 2 orbs; ONE band uses \`-skew-y-3\` / \`-skew-y-6\` / \`clip-path\` polygon / keyframed rotate. At least four \`data-reveal\` blocks — CRITICAL: never start them at \`opacity-0\` / \`translate-y-*\` either in markup or via JS on load (the page must be fully readable without JS); JS may only ADD class \`reveal-ready\` to \`<html>\` then animate IN already-visible elements. At least 2 primary hero CTAs with \`data-magnet\` + parallax JS. Every \`<section>\` MUST contain real visible content (heading + paragraph or card grid) — empty bands are forbidden, every section measures ≥200px tall when rendered. Marketing body copy on dark: use \`text-slate-300\`/\`text-slate-400\`, never \`text-slate-500\` on \`text-lg\`/\`text-base\`/\`leading-relaxed\` paragraphs (4.5:1 contrast minimum on body text). PRIMARY CTA BUTTONS must have ≥4.5:1 label vs button-fill contrast: solid bright accent fill + \`text-slate-900\` or \`text-white\`, or solid \`text-white\` on \`bg-violet-600\`/\`bg-indigo-600\`/\`bg-emerald-600\` etc. NEVER use medium-tone label colors (text-slate-300 / text-slate-400) on translucent or light pill buttons — the label MUST stay readable in screenshot audits. Also: elevated nav (mono micro-label), pill + dual CTAs + trust chips; proof strip; bento or split column with divided list rows (forbid three equal icon cards as the whole story); wired pricing band (\`#pricing\`, \`data-pricing-billing\`, three+ tiers, monthly/yearly toggle, middle tier featured with \`ring-2 ring-offset-2\`); \`#faq\` with accordion (≥5 items); penultimate CTA band; multi-column footer (≥4 columns); eight+ bands minimum. Use specific product-credible copy with concrete numbers ("3.2× faster", "14-day trial") and 3+ named testimonial cards. Semantic \`theme.extend.colors\` (background/surface/elev/primary), display+body+mono font families in config.
+- SaaS/Landing (match public/designs/design-03-saas-homepage.html energy, not a flat template): typography-first, no stock hero photos. HERO MUST feel alive — count yourself: the LITERAL TEXT \`radial-gradient(\` MUST appear 3 OR MORE times in the output, each on an absolutely-positioned div with classes including both \`blur-3xl\` AND \`motion-reduce:hidden\` AND opacity-40..70. PALETTE LOCK: every radial-gradient stop MUST be derived from theme.extend.colors.primary / accent / surface, converted to rgba() with 0.30..0.60 alpha. The three blobs vary in POSITION and SIZE, never in HUE. NEVER invent peach (rgba(255,200,150,…)), cyan (rgba(100,200,255,…)), amber (rgba(255,180,80,…)) or any other "default aurora trio" RGBA — those colors are auto-fail unless they literally appear in the active theme palette. e.g. if primary=#5e6ad2, emit \`<div class="absolute -top-24 -left-24 w-[520px] h-[520px] blur-3xl opacity-60 motion-reduce:hidden animate-liquid" style="background: radial-gradient(circle at 30% 30%, rgba(94,106,210,0.55), transparent 70%);"></div>\`. Plus: a \`<canvas>\` with \`requestAnimationFrame\` particle/constellation loop reactive to mousemove (respect prefers-reduced-motion); \`theme.extend.keyframes.liquid\` (translate+rotate+scale ~22s) wired via \`animate-liquid\` on at least 2 orbs; ONE band uses \`-skew-y-3\` / \`-skew-y-6\` / \`clip-path\` polygon / keyframed rotate. At least four \`data-reveal\` blocks — CRITICAL: never start them at \`opacity-0\` / \`translate-y-*\` either in markup or via JS on load (the page must be fully readable without JS); JS may only ADD class \`reveal-ready\` to \`<html>\` then animate IN already-visible elements. At least 2 primary hero CTAs with \`data-magnet\` + parallax JS. Every \`<section>\` MUST contain real visible content (heading + paragraph or card grid) — empty bands are forbidden, every section measures ≥200px tall when rendered. Marketing body copy on dark: use \`text-slate-300\`/\`text-slate-400\`, never \`text-slate-500\` on \`text-lg\`/\`text-base\`/\`leading-relaxed\` paragraphs (4.5:1 contrast minimum on body text). PRIMARY CTA BUTTONS must have ≥4.5:1 label vs button-fill contrast: solid bright accent fill + \`text-slate-900\` or \`text-white\`, or solid \`text-white\` on \`bg-violet-600\`/\`bg-indigo-600\`/\`bg-emerald-600\` etc. NEVER use medium-tone label colors (text-slate-300 / text-slate-400) on translucent or light pill buttons — the label MUST stay readable in screenshot audits. Also: elevated nav (mono micro-label), pill + dual CTAs + trust chips; proof strip; bento or split column with divided list rows (forbid three equal icon cards as the whole story); wired pricing band (\`#pricing\`, \`data-pricing-billing\`, three+ tiers, monthly/yearly toggle, middle tier featured with \`ring-2 ring-offset-2\`); \`#faq\` with accordion (≥5 items); penultimate CTA band; multi-column footer (≥4 columns); eight+ bands minimum. Use specific product-credible copy with concrete numbers ("3.2× faster", "14-day trial") and 3+ named testimonial cards. Semantic \`theme.extend.colors\` (background/surface/elev/primary), display+body+mono font families in config.
 - Blog: featured article hero with image, article grid with images + titles + excerpts, categories, newsletter signup.
 - Ecommerce (storefront): CONTRAST RULES on warm/light editorial palettes (cream/stone/rose/amber): body text uses \`text-stone-700\`/\`text-stone-800\`/\`text-neutral-800\` (NEVER text-stone-400/500 on cream — fails 4.5:1). Numerals (prices, ratings, counts) MUST be text-stone-900 or darker accent — never light gray. Star ratings should be amber-500/amber-600 fill, never amber-200/300. Cart count badges must be solid dark fill with white text. Verify every visible numeric character (price, "0", "5/5", quantity) reaches ≥4.5:1 against its background. ${ECOMMERCE_EDITORIAL_CANVAS_PATTERN} Match section depth of premium retail (${ECOMMERCE_REFERENCE_EXEMPLAR_URLS.join(' | ')} — structure and rhythm only). Implement in HTML and CSS with a palette and mood taken from the user brief (category, tone, brand colors)—utility SVGs including cart bag + badge, hero with dual CTAs, collection rail or grid with scrim, featured grid with full-width add-to-cart and star ratings, curated pair, materials two-column, three review cards, newsletter band, four-column footer. Document title and hero headline must be specific (craft, materials, product story), not generic AI slogans. Commerce: real button elements for add-to-cart, quantity, newsletter submit; cart control must include a visible bag or cart icon as inline SVG next to label or count. Put \`id="cart-toggle"\` on the header cart button so the mini-cart drawer can attach. Full homepage must include all sections implied above plus six or more SKUs in featured areas. BANNED: sparse SaaS storefronts, violet-gray template, icon-only merchandising, link-only fake cart actions. FORBIDDEN above-fold: pricing tables, three icon columns as hero, bento-as-hero without product, dashboard framing. Desktop collections may be grid or rail; mobile may scroll. Curated: two equal offers or carousel with dots. Reviews: verified buyer, stars in accent color. Carousel rails need three or more visible product cards. Study ${ECOMMERCE_AWWWARDS_GALLERY_URL}, ${ECOMMERCE_ENVATO_TEMPLATES_URL}, ${ECOMMERCE_DRIBBBLE_TAG_URL} for craft only. Medusa (${ECOMMERCE_MEDUSA_DOCS_LEARN}): strong imagery discipline; use only approved media URLs from the user message block.
 - Portfolio: project showcase with images, about section, skills, contact form.
@@ -372,7 +381,7 @@ QUALITY:
 - Fonts: load Google Fonts only (\`https://fonts.googleapis.com\`). Display family MUST be one of: Fraunces, Syne, Outfit, DM Serif Display, Playfair Display, Space Grotesk, Bricolage Grotesque, Instrument Serif, Manrope, Sora — these are confirmed Google-hosted. Do NOT request Cabinet Grotesk, Geist, or any non-Google family — Google Fonts will silently 404 the family and the page falls back to default sans, breaking the design.
 - Default mood for non-store sites: rich dark surfaces with intentional borders; ecommerce may follow the light editorial bar above when it suits the brief.
 - Vanilla JS only. No frameworks.
-- IMAGES & VIDEO: use only the image and MP4 URLs in the media block below; never invent hosts or IDs. When the block lists a video with a poster, pair them on the same video element. Never use placeholder.com, picsum, or other off-list URLs. Avoid laptop or phone stock for non-tech subjects. If no listed asset fits, use gradients, pattern, or type instead of guessing URLs.${designRefSystemAppendix(designRef)}${publicDesignExemplar}`,
+- IMAGES & VIDEO: use only the image and MP4 URLs in the media block below; never invent hosts or IDs. When the block lists a video with a poster, pair them on the same video element. Never use placeholder.com, picsum, or other off-list URLs. Avoid laptop or phone stock for non-tech subjects. If no listed asset fits, use gradients, pattern, or type instead of guessing URLs.${designRefSystemAppendix(designRef)}${publicDesignExemplar}${mobbinHomepageAppend(mobbinAnchor)}`,
     prompt: `${prompt}${brandBlock}${businessBlock}${structuredSpec}${contentPlanPromptAppendix(contentPlanRef)}${buildImagePrompt(imageHints?.promptBlock)}${storefrontRetailReminder}\n${
       brandProfile
         ? 'Use the verified brand details above as exact source data. Do not invent missing logo, contact, or social fields.'
@@ -391,6 +400,11 @@ export async function groqHomepage(
   indiaMode = null,
   brandProfile = null,
   hasDesignReferenceUrls = false,
+  designRef = null,
+  businessProfile = null,
+  contentPlanRef = null,
+  thinSiteSpecJson = '',
+  mobbinAnchor = null,
 ) {
   return groqHomepageCore(
     prompt,
@@ -399,6 +413,12 @@ export async function groqHomepage(
     indiaMode,
     brandProfile,
     hasDesignReferenceUrls,
+    designRef,
+    businessProfile,
+    contentPlanRef,
+    thinSiteSpecJson,
+    null,
+    mobbinAnchor,
   )
 }
 
@@ -410,6 +430,11 @@ export async function groqHomepageWithModel(
   brandProfile = null,
   hasDesignReferenceUrls = false,
   maxTokensOverride = null,
+  designRef = null,
+  businessProfile = null,
+  contentPlanRef = null,
+  thinSiteSpecJson = '',
+  mobbinAnchor = null,
 ) {
   return groqHomepageCore(
     prompt,
@@ -418,7 +443,12 @@ export async function groqHomepageWithModel(
     indiaMode,
     brandProfile,
     hasDesignReferenceUrls,
+    designRef,
+    businessProfile,
+    contentPlanRef,
+    thinSiteSpecJson,
     maxTokensOverride,
+    mobbinAnchor,
   )
 }
 
