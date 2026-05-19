@@ -134,7 +134,7 @@ export async function provisionSanityForSession(sessionId) {
     await addCorsOrigin(newProjectId, origin)
   }
 
-  return {
+  const config = {
     projectId: newProjectId,
     dataset: 'production',
     apiVersion: SANITY_API_VERSION || '2024-01-01',
@@ -142,6 +142,78 @@ export async function provisionSanityForSession(sessionId) {
     writeToken,
     provisionedAt: new Date().toISOString(),
   }
+
+  try {
+    await seedTenantDataset(config, displayName)
+  } catch (err) {
+    console.warn(
+      `[sanity] Initial dataset seed failed for ${newProjectId}; tenant project is up, dashboard CMS panel will be empty until edited:`,
+      err?.message,
+    )
+  }
+
+  return config
+}
+
+async function seedTenantDataset(config, displayName) {
+  const { createSanityWriteClient } = await import('../sanity/client.js')
+  const client = createSanityWriteClient(config)
+  if (!client) return
+  const existing = await client.fetch(`*[_type == "siteSettings"][0]{ _id }`).catch(() => null)
+  if (existing?._id) return
+  await client.create({
+    _type: 'siteSettings',
+    homeTitle: String(displayName || '').trim() || 'Ship Fast Tenant',
+    homeDescription: '',
+    shipChatHeadline: '',
+    shipChatSubheadline: '',
+    shipChatSyncedAt: new Date().toISOString(),
+  })
+}
+
+const _inFlightSanityProvisions = new Map()
+
+export function getInFlightSanityProvision(sessionId) {
+  return _inFlightSanityProvisions.get(sessionId) || null
+}
+
+export function startSanityPreWarmIfApplicable(sessionId) {
+  if (!sessionId) return false
+  if (!isSanityProvisionable()) return false
+  if (_inFlightSanityProvisions.has(sessionId)) return true
+
+  const promise = provisionSanityForSession(sessionId)
+    .then(async (config) => {
+      try {
+        const { setSanityConfig, getSession } = await import('./sessions.js')
+        const stillExists = Boolean(getSession(sessionId))
+        if (!stillExists) {
+          try {
+            await deprovisionSanityForSession(sessionId, config)
+          } catch (err) {
+            console.warn(`[sanity-prewarm] orphan cleanup failed for ${sessionId}: ${err.message}`)
+          }
+          return null
+        }
+        await setSanityConfig(sessionId, config)
+        return config
+      } catch (err) {
+        console.warn(
+          `[sanity-prewarm] post-provision wiring failed for ${sessionId}: ${err.message}`,
+        )
+        return null
+      }
+    })
+    .catch((err) => {
+      console.warn(`[sanity-prewarm] provision failed for ${sessionId}: ${err.message}`)
+      return null
+    })
+    .finally(() => {
+      _inFlightSanityProvisions.delete(sessionId)
+    })
+
+  _inFlightSanityProvisions.set(sessionId, promise)
+  return true
 }
 
 export async function deprovisionSanityForSession(sessionId, sanityConfig) {

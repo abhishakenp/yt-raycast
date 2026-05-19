@@ -2,8 +2,30 @@ import { randomUUID } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { isSanityChatWriteConfigured } from '../config.js'
-import { deleteChatFromSanity, loadChatFromSanity, persistChatToSanity } from '../sanity/chat-sync.js'
+import {
+  deleteChatFromSanity,
+  loadChatFromSanity,
+  persistChatToSanity,
+} from '../sanity/chat-sync.js'
 import { loadSiteSpec } from '@ship-fast/engine/spec/index.js'
+import { getSession } from './sessions.js'
+
+const resolveSessionSanityConfig = (sessionId) => {
+  if (!sessionId) return null
+  try {
+    const s = getSession(sessionId)
+    return s?.sanityConfig || null
+  } catch {
+    return null
+  }
+}
+
+const canSyncChat = (sanityConfig) => {
+  if (sanityConfig?.projectId && sanityConfig?.dataset) {
+    if (sanityConfig.writeToken || sanityConfig.token) return true
+  }
+  return isSanityChatWriteConfigured()
+}
 
 const CHAT_FILE = 'messages.json'
 const STORE_VERSION = 1
@@ -59,14 +81,13 @@ export const readChatStore = (workspace) => {
 export const readChatStoreAsync = async (workspace, sessionId) => {
   const local = readChatStore(workspace)
   if (!sessionId) return local
-  const remote = await loadChatFromSanity(sessionId)
+  const sanityConfig = resolveSessionSanityConfig(sessionId)
+  const remote = await loadChatFromSanity(sessionId, sanityConfig)
   if (!remote?.messages?.length) return local
   const normalizedRemote = normalizeStore(remote)
   if (!local.messages?.length) return normalizedRemote
   const tLocal = local.updatedAt ? new Date(local.updatedAt).getTime() : 0
-  const tRemote = normalizedRemote.updatedAt
-    ? new Date(normalizedRemote.updatedAt).getTime()
-    : 0
+  const tRemote = normalizedRemote.updatedAt ? new Date(normalizedRemote.updatedAt).getTime() : 0
   return tRemote >= tLocal ? normalizedRemote : local
 }
 
@@ -74,8 +95,11 @@ export const writeChatStore = (workspace, store, sessionId = null) => {
   const normalized = normalizeStore(store)
   normalized.updatedAt = new Date().toISOString()
   writeFileSync(join(workspace, CHAT_FILE), JSON.stringify(normalized, null, 2), 'utf-8')
-  if (sessionId && isSanityChatWriteConfigured()) {
-    void persistChatToSanity(sessionId, normalized)
+  if (sessionId) {
+    const sanityConfig = resolveSessionSanityConfig(sessionId)
+    if (canSyncChat(sanityConfig)) {
+      void persistChatToSanity(sessionId, normalized, sanityConfig)
+    }
   }
   return normalized
 }
@@ -148,7 +172,10 @@ export const appendAssistantMessage = (workspace, store, text, sessionId = null)
 
 export const clearChatStore = (workspace, sessionId = null) => {
   writeChatStore(workspace, defaultStore(), null)
-  if (sessionId && isSanityChatWriteConfigured()) {
-    void deleteChatFromSanity(sessionId)
+  if (sessionId) {
+    const sanityConfig = resolveSessionSanityConfig(sessionId)
+    if (canSyncChat(sanityConfig)) {
+      void deleteChatFromSanity(sessionId, sanityConfig)
+    }
   }
 }

@@ -15,7 +15,12 @@ import {
 } from '../config.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
-import { provisionSanityForSession, isSanityProvisionable } from './sanity-provision.js'
+import {
+  provisionSanityForSession,
+  isSanityProvisionable,
+  startSanityPreWarmIfApplicable,
+  getInFlightSanityProvision,
+} from './sanity-provision.js'
 import {
   provisionMedusaForSession,
   isMedusaProvisionable,
@@ -29,7 +34,7 @@ import {
   enrichSiteSpecWithWorkspaceBlueprints,
   ensureCompatibleSiteSpec,
 } from '../spec/index.js'
-import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
+import { ensureSanityCorsOrigins, ensureSanityCorsForTenant } from '../sanity/ensure-cors.js'
 import { groq } from '@ship-fast/engine/llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
@@ -70,14 +75,7 @@ import {
 } from './exports.js'
 import { broadcastDevReload, setupWebSocket } from './websocket.js'
 import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  unlinkSync,
-  watch,
-  writeFileSync,
-} from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import multer from 'multer'
 import {
@@ -568,6 +566,9 @@ export async function startServer(sessionsDir) {
     }
     const state = makeSessionState(session)
     state.broadcast({ type: 'deployed', slug: deployment.slug, url: deployment.url })
+    if (session.sanityConfig?.projectId && deployment.url) {
+      void ensureSanityCorsForTenant(session.sanityConfig, [deployment.url]).catch(() => {})
+    }
     return deployment
   }
 
@@ -870,6 +871,10 @@ export async function startServer(sessionsDir) {
       // the eCommerce rail click is near-instant by the time the user gets
       // there. No-op when the env isn't configured or the prompt isn't a fit.
       startMedusaPreWarmIfApplicable(session.id, trimmedPrompt)
+      // Every session gets its own Sanity project — kick off provisioning in
+      // the background so the dashboard CMS panel is ready by the time the
+      // user opens it. No-op when SANITY_MANAGEMENT_TOKEN isn't set.
+      startSanityPreWarmIfApplicable(session.id)
 
       console.log(
         `[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} monthly=${userMonthly + 1}`,
@@ -928,6 +933,7 @@ export async function startServer(sessionsDir) {
       })
 
       startMedusaPreWarmIfApplicable(session.id, trimmedPrompt)
+      startSanityPreWarmIfApplicable(session.id)
 
       console.log(`[${ts}] GENERATE anon ip=${clientIp} session=${session.id}`)
 
@@ -1554,35 +1560,31 @@ export async function startServer(sessionsDir) {
     }
   })
 
-  app.post(
-    '/api/sessions/:id/history/:checkpointId/restore',
-    optionalAuth,
-    async (req, res) => {
-      const session = getSession(req.params.id)
-      if (!session) return res.status(404).json({ error: 'Session not found' })
-      if (!ensureSessionArtifactAccess(req, res, session)) return
-      const checkpointId = String(req.params.checkpointId || '')
-      if (!checkpointId || !CHECKPOINT_ID_RE.test(checkpointId)) {
-        return res.status(400).json({ error: 'Invalid checkpointId' })
-      }
-      if (checkpointId.includes('..') || checkpointId.includes('/')) {
-        return res.status(400).json({ error: 'Invalid checkpointId' })
-      }
-      const checkpointPath = join(historyDir(session), `${checkpointId}.html`)
-      if (!existsSync(checkpointPath)) {
-        return res.status(404).json({ error: 'Checkpoint not found' })
-      }
-      try {
-        const html = readFileSync(checkpointPath, 'utf8')
-        writeFileSync(join(session.workspace, 'index.html'), html, 'utf8')
-        session.homepageReady = true
-        makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
-        res.json({ ok: true })
-      } catch {
-        res.status(500).json({ error: 'Restore failed' })
-      }
-    },
-  )
+  app.post('/api/sessions/:id/history/:checkpointId/restore', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const checkpointId = String(req.params.checkpointId || '')
+    if (!checkpointId || !CHECKPOINT_ID_RE.test(checkpointId)) {
+      return res.status(400).json({ error: 'Invalid checkpointId' })
+    }
+    if (checkpointId.includes('..') || checkpointId.includes('/')) {
+      return res.status(400).json({ error: 'Invalid checkpointId' })
+    }
+    const checkpointPath = join(historyDir(session), `${checkpointId}.html`)
+    if (!existsSync(checkpointPath)) {
+      return res.status(404).json({ error: 'Checkpoint not found' })
+    }
+    try {
+      const html = readFileSync(checkpointPath, 'utf8')
+      writeFileSync(join(session.workspace, 'index.html'), html, 'utf8')
+      session.homepageReady = true
+      makeSessionState(session).broadcast({ type: 'preview_reload', at: Date.now() })
+      res.json({ ok: true })
+    } catch {
+      res.status(500).json({ error: 'Restore failed' })
+    }
+  })
 
   app.post('/api/sessions/:id/preview-inline-text', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
@@ -1691,8 +1693,7 @@ export async function startServer(sessionsDir) {
         tokensStr = ''
       }
     }
-    const friendlyLabel =
-      typeof friendlyLabelIn === 'string' ? friendlyLabelIn.slice(0, 120) : ''
+    const friendlyLabel = typeof friendlyLabelIn === 'string' ? friendlyLabelIn.slice(0, 120) : ''
     const scope =
       scopeIn === 'element' || scopeIn === 'section' || scopeIn === 'page' ? scopeIn : 'element'
 
@@ -1851,9 +1852,22 @@ export async function startServer(sessionsDir) {
     const id = req.body?.sessionId
     if (!id) return res.status(400).json({ error: 'sessionId required' })
     req.params = { id }
-    const session = getSession(id)
+    let session = getSession(id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.sanityConfig) {
+
+    // Wait out an in-flight pre-warm before considering a fresh provision so
+    // we don't race the background job and end up with two tenant projects.
+    const inflight = getInFlightSanityProvision(id)
+    if (inflight) {
+      try {
+        await inflight
+      } catch {
+        void 0
+      }
+      session = getSession(id)
+    }
+
+    if (session?.sanityConfig) {
       const safeConfig = {
         projectId: session.sanityConfig.projectId,
         dataset: session.sanityConfig.dataset,
@@ -1949,10 +1963,20 @@ export async function startServer(sessionsDir) {
   })
 
   app.post('/api/sessions/:id/provision/sanity', requireProvisionAuth, async (req, res) => {
-    const session = getSession(req.params.id)
+    let session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
-    if (session.sanityConfig) {
+    const inflight = getInFlightSanityProvision(req.params.id)
+    if (inflight) {
+      try {
+        await inflight
+      } catch {
+        void 0
+      }
+      session = getSession(req.params.id)
+    }
+
+    if (session?.sanityConfig) {
       const safeConfig = {
         projectId: session.sanityConfig.projectId,
         dataset: session.sanityConfig.dataset,
@@ -2003,7 +2027,10 @@ export async function startServer(sessionsDir) {
         return res.status(503).json({ error: 'Medusa provisioning not configured' })
       }
 
-      const provisioned = await provisionMedusaForSession(req.params.id, session.prompt?.slice(0, 50))
+      const provisioned = await provisionMedusaForSession(
+        req.params.id,
+        session.prompt?.slice(0, 50),
+      )
       await setMedusaConfig(req.params.id, provisioned)
       const syncResult = await _maybeSyncSessionProductsToTenant(req.params.id, provisioned)
       const config = syncResult?.ok ? syncResult.config : provisioned
@@ -2141,7 +2168,9 @@ export async function startServer(sessionsDir) {
   const _applyEcommercifyCors = (req, res) => {
     const origin = String(req.headers.origin || '').trim()
     const allowedOrigins = new Set()
-    const legacy = String(process.env.MEDUSA_BACKEND_URL || '').trim().replace(/\/$/, '')
+    const legacy = String(process.env.MEDUSA_BACKEND_URL || '')
+      .trim()
+      .replace(/\/$/, '')
     if (legacy) allowedOrigins.add(legacy)
     allowedOrigins.add('http://localhost:9000')
     allowedOrigins.add('http://127.0.0.1:9000')

@@ -1159,15 +1159,19 @@ function renderPalettePanel(anchor) {
       <span class="palette-preset-swatches palette-preset-swatches--strip" id="palette-custom-strip" style="background:${escapeHtml(buildStripGradient(deriveCustomPalette(customPaletteSeed)))}"></span>
       <span class="palette-preset-name">Custom</span>
     </button>`
-  const presetCards = customCardHtml + PALETTE_PRESETS.map((p) => {
-    const swatches = [p.bg, p.surface, p.accent, p.text]
-      .map((c) => `<span class="palette-preset-swatch" style="background:${escapeHtml(c)}"></span>`)
-      .join('')
-    return `<button type="button" class="palette-preset-card${p.id === currentPaletteId ? ' is-active' : ''}" data-palette-preset="${escapeHtml(p.id)}" data-palette-name="${escapeHtml(p.name.toLowerCase())}" style="--sf-accent:${escapeHtml(p.accent)}">
+  const presetCards =
+    customCardHtml +
+    PALETTE_PRESETS.map((p) => {
+      const swatches = [p.bg, p.surface, p.accent, p.text]
+        .map(
+          (c) => `<span class="palette-preset-swatch" style="background:${escapeHtml(c)}"></span>`,
+        )
+        .join('')
+      return `<button type="button" class="palette-preset-card${p.id === currentPaletteId ? ' is-active' : ''}" data-palette-preset="${escapeHtml(p.id)}" data-palette-name="${escapeHtml(p.name.toLowerCase())}" style="--sf-accent:${escapeHtml(p.accent)}">
       <span class="palette-preset-swatches">${swatches}</span>
       <span class="palette-preset-name">${escapeHtml(p.name)}</span>
     </button>`
-  }).join('')
+    }).join('')
   menu.innerHTML = `
     <div class="export-panel-top">
       <div class="export-copy">
@@ -1214,7 +1218,9 @@ function renderPalettePanel(anchor) {
   if (searchInput) {
     searchInput.value = paletteSearchQuery
     searchInput.addEventListener('input', (ev) => {
-      paletteSearchQuery = String(ev.target.value || '').trim().toLowerCase()
+      paletteSearchQuery = String(ev.target.value || '')
+        .trim()
+        .toLowerCase()
       applyFilter()
     })
     // Keep focus on open
@@ -1289,7 +1295,11 @@ function applyPaletteToPreview(palette) {
     const iframe = document.getElementById('preview-iframe')
     if (iframe && iframe.contentWindow) {
       iframe.contentWindow.postMessage(
-        { type: 'SF_APPLY_PALETTE', css, palette: { id: palette.id || null, dark: palette.dark || null } },
+        {
+          type: 'SF_APPLY_PALETTE',
+          css,
+          palette: { id: palette.id || null, dark: palette.dark || null },
+        },
         '*',
       )
     }
@@ -1416,7 +1426,9 @@ function openPaymentModal(targetEntry) {
 
 function openAuthWall() {
   if (SF_EMBED_HOME) {
-    try { window.parent.postMessage({ type: 'sf-request-auth-overlay' }, location.origin) } catch {}
+    try {
+      window.parent.postMessage({ type: 'sf-request-auth-overlay' }, location.origin)
+    } catch {}
     return
   }
   document.getElementById('auth-overlay').classList.remove('hidden')
@@ -2604,9 +2616,17 @@ function startIntro() {
 }
 
 function emitExhaustParticles() {
-  if (exhaustTimerId) { clearTimeout(exhaustTimerId); exhaustTimerId = null; }
+  if (exhaustTimerId) {
+    clearTimeout(exhaustTimerId)
+    exhaustTimerId = null
+  }
   const logo = document.getElementById('intro-logo')
-  if (!logo || !logo.classList.contains('shaking') || document.body.classList.contains('sf-openui-active')) return
+  if (
+    !logo ||
+    !logo.classList.contains('shaking') ||
+    document.body.classList.contains('sf-openui-active')
+  )
+    return
   const rect = logo.getBoundingClientRect()
   const cx = rect.left + rect.width / 2
   const cy = rect.bottom
@@ -3670,7 +3690,7 @@ function initPreviewChat() {
       if (toolbar) toolbar.hidden = false
       if (frame) {
         frame.hidden = false
-        frame.src = '/studio/'
+        frame.src = SESSION_ID ? `/studio/?session=${SESSION_ID}` : '/studio/'
       }
     } else {
       if (unbuilt) unbuilt.hidden = false
@@ -4454,8 +4474,7 @@ window.addEventListener('message', (event) => {
       const reply = (payload) => {
         iframe?.contentWindow?.postMessage(payload, '*')
       }
-      const checkpointId =
-        typeof data.checkpointId === 'string' ? data.checkpointId.trim() : ''
+      const checkpointId = typeof data.checkpointId === 'string' ? data.checkpointId.trim() : ''
       if (!checkpointId) {
         reply({
           type: 'SF_HISTORY_RESTORE_RES',

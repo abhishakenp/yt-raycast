@@ -9,11 +9,25 @@ import {
   stripStorefrontCartUi,
 } from '@ship-fast/engine/pipeline/storefront-cart-ui.js'
 
+const SESSION_META_FILE = '.session.json'
+
+const readWorkspaceSanityConfig = (workspace) => {
+  try {
+    const metaPath = join(workspace, SESSION_META_FILE)
+    if (!existsSync(metaPath)) return null
+    const meta = JSON.parse(readFileSync(metaPath, 'utf-8'))
+    return meta?.sanityConfig || null
+  } catch {
+    return null
+  }
+}
+
 /** Hooks optional CMS / catalog sync after the engine persists `site-spec.json`. */
 export function createDefaultPipelineIntegrations() {
   return {
     async afterSiteSpecSaved({ workspace, siteSpec, log, status }) {
-      void syncSiteSettingsFromSiteSpec(siteSpec)
+      const tenantSanity = readWorkspaceSanityConfig(workspace)
+      void syncSiteSettingsFromSiteSpec(siteSpec, tenantSanity)
       if (
         siteSpec?.siteType !== 'ecommerce' ||
         !siteSpec?.ecommerce?.products?.length ||

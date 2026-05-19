@@ -30,12 +30,13 @@ const getSanityFetchClient = () => {
   return _readishClient
 }
 
-const resolveSanityClientConfig = (sanityConfig = {}, fallbackToken = '') => {
+const resolveSanityClientConfig = (sanityConfig = {}, fallbackToken = '', preferKey = '') => {
   const projectId = String(sanityConfig.projectId ?? SANITY_PROJECT_ID ?? '').trim()
   const dataset = String(sanityConfig.dataset ?? SANITY_DATASET ?? '').trim()
   const apiVersion =
     String(sanityConfig.apiVersion ?? SANITY_API_VERSION ?? '').trim() || SANITY_API_VERSION
-  const token = String(sanityConfig.token ?? fallbackToken ?? '').trim()
+  const preferredTenantToken = preferKey ? sanityConfig[preferKey] : ''
+  const token = String(preferredTenantToken ?? sanityConfig.token ?? fallbackToken ?? '').trim()
   if (!projectId || !dataset) return null
   return {
     projectId,
@@ -45,9 +46,24 @@ const resolveSanityClientConfig = (sanityConfig = {}, fallbackToken = '') => {
   }
 }
 
+const hasTenantOverride = (config) =>
+  Boolean(
+    config &&
+    (config.projectId ||
+      config.dataset ||
+      config.token ||
+      config.readToken ||
+      config.writeToken ||
+      config.apiVersion),
+  )
+
 const createSanityFetchClient = (sanityConfig = {}) => {
-  if (!isSanityConfigured()) return null
-  const resolved = resolveSanityClientConfig(sanityConfig, SANITY_READ_TOKEN || SANITY_WRITE_TOKEN)
+  if (!hasTenantOverride(sanityConfig) && !isSanityConfigured()) return null
+  const resolved = resolveSanityClientConfig(
+    sanityConfig,
+    SANITY_READ_TOKEN || SANITY_WRITE_TOKEN,
+    'readToken',
+  )
   if (!resolved) return null
   return createClient({
     ...resolved,
@@ -56,8 +72,8 @@ const createSanityFetchClient = (sanityConfig = {}) => {
 }
 
 const createSanityWriteClientForConfig = (sanityConfig = {}) => {
-  if (!isSanityConfigured()) return null
-  const resolved = resolveSanityClientConfig(sanityConfig, SANITY_WRITE_TOKEN)
+  if (!hasTenantOverride(sanityConfig) && !isSanityConfigured()) return null
+  const resolved = resolveSanityClientConfig(sanityConfig, SANITY_WRITE_TOKEN, 'writeToken')
   if (!resolved) return null
   return createClient({
     ...resolved,

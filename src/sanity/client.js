@@ -10,12 +10,13 @@ import {
 
 let _client = null
 
-const resolveClientConfig = (config = {}, tokenFallback = '') => {
+const resolveClientConfig = (config = {}, tokenFallback = '', preferKey = '') => {
   const projectId = String(config.projectId ?? SANITY_PROJECT_ID ?? '').trim()
   const dataset = String(config.dataset ?? SANITY_DATASET ?? '').trim()
   const apiVersion =
     String(config.apiVersion ?? SANITY_API_VERSION ?? '').trim() || SANITY_API_VERSION
-  const token = String(config.token ?? tokenFallback ?? '').trim()
+  const preferredTenantToken = preferKey ? config[preferKey] : ''
+  const token = String(preferredTenantToken ?? config.token ?? tokenFallback ?? '').trim()
   if (!projectId || !dataset) return null
   return {
     projectId,
@@ -25,12 +26,20 @@ const resolveClientConfig = (config = {}, tokenFallback = '') => {
   }
 }
 
-export const createSanityReadClient = (config = {}) => {
-  const hasOverrideConfig = Boolean(
-    config && (config.projectId || config.dataset || config.token || config.apiVersion),
+const hasOverrideConfig = (config) =>
+  Boolean(
+    config &&
+    (config.projectId ||
+      config.dataset ||
+      config.token ||
+      config.readToken ||
+      config.writeToken ||
+      config.apiVersion),
   )
-  if (!hasOverrideConfig && !isSanityConfigured()) return null
-  const resolved = resolveClientConfig(config, SANITY_READ_TOKEN)
+
+export const createSanityReadClient = (config = {}) => {
+  if (!hasOverrideConfig(config) && !isSanityConfigured()) return null
+  const resolved = resolveClientConfig(config, SANITY_READ_TOKEN, 'readToken')
   if (!resolved) return null
   return createClient({
     ...resolved,
@@ -39,11 +48,8 @@ export const createSanityReadClient = (config = {}) => {
 }
 
 export const createSanityWriteClient = (config = {}) => {
-  const hasOverrideConfig = Boolean(
-    config && (config.projectId || config.dataset || config.token || config.apiVersion),
-  )
-  if (!hasOverrideConfig && !isSanityConfigured()) return null
-  const resolved = resolveClientConfig(config, SANITY_WRITE_TOKEN)
+  if (!hasOverrideConfig(config) && !isSanityConfigured()) return null
+  const resolved = resolveClientConfig(config, SANITY_WRITE_TOKEN, 'writeToken')
   if (!resolved) return null
   return createClient({
     ...resolved,
@@ -102,8 +108,8 @@ export async function fetchSanityImageAssets(limit = 24, sanityConfig) {
   }
 }
 
-export async function fetchPosts() {
-  const client = getSanityClient()
+export async function fetchPosts(sanityConfig) {
+  const client = sanityConfig ? createSanityReadClient(sanityConfig) : getSanityClient()
   if (!client) return []
   const query = `*[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
     "slug": slug.current,
@@ -123,8 +129,8 @@ export async function fetchPosts() {
   }
 }
 
-export async function fetchPostBySlug(slug) {
-  const client = getSanityClient()
+export async function fetchPostBySlug(slug, sanityConfig) {
+  const client = sanityConfig ? createSanityReadClient(sanityConfig) : getSanityClient()
   if (!client || !slug) return null
   const query = `*[_type == "post" && slug.current == $slug][0]{
     title,
@@ -152,8 +158,8 @@ export async function fetchPostBySlug(slug) {
   }
 }
 
-export async function fetchOfficialNotices(options = {}) {
-  const client = getSanityClient()
+export async function fetchOfficialNotices(options = {}, sanityConfig) {
+  const client = sanityConfig ? createSanityReadClient(sanityConfig) : getSanityClient()
   if (!client) return []
   const noticeKind = String(options.noticeKind || '').trim()
   const limit = Math.min(200, Math.max(1, Number(options.limit) || 100))
@@ -184,8 +190,8 @@ export async function fetchOfficialNotices(options = {}) {
   }
 }
 
-export async function fetchOfficialNoticeBySlug(slug) {
-  const client = getSanityClient()
+export async function fetchOfficialNoticeBySlug(slug, sanityConfig) {
+  const client = sanityConfig ? createSanityReadClient(sanityConfig) : getSanityClient()
   if (!client || !slug) return null
   const query = `*[_type == "officialNotice" && slug.current == $slug][0]{
     noticeKind,
@@ -206,8 +212,8 @@ export async function fetchOfficialNoticeBySlug(slug) {
   }
 }
 
-export async function fetchJobOpenings(options = {}) {
-  const client = getSanityClient()
+export async function fetchJobOpenings(options = {}, sanityConfig) {
+  const client = sanityConfig ? createSanityReadClient(sanityConfig) : getSanityClient()
   if (!client) return []
   const openOnly = options.openOnly !== false
   const limit = Math.min(200, Math.max(1, Number(options.limit) || 100))
