@@ -387,23 +387,33 @@ export async function createAdminAndGetPublishableKey(port, email, password) {
     throw err
   }
 
-  const keyRes = await postJson(
-    `${base}/admin/api-keys`,
-    { title: 'Storefront Key', type: 'publishable' },
-    { Authorization: `Bearer ${adminToken}` },
-  )
+  // Same warm-up race as login: /health goes green a beat before all admin
+  // routes + middleware are fully wired, so the first POST /admin/api-keys
+  // can transiently 401 with a valid JWT in hand. Retry on the same cadence.
+  let keyRes = null
+  let lastKeyError = null
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    keyRes = await postJson(
+      `${base}/admin/api-keys`,
+      { title: 'Storefront Key', type: 'publishable' },
+      { Authorization: `Bearer ${adminToken}` },
+    )
+    if (keyRes.res.ok) break
+    lastKeyError = { status: keyRes.res.status, body: keyRes.data }
+    await new Promise((r) => setTimeout(r, 1500))
+  }
 
   const publishableKey =
-    keyRes.data?.api_key?.token ||
-    keyRes.data?.apiKey?.token ||
-    keyRes.data?.token ||
-    keyRes.data?.data?.token
+    keyRes?.data?.api_key?.token ||
+    keyRes?.data?.apiKey?.token ||
+    keyRes?.data?.token ||
+    keyRes?.data?.data?.token
 
-  if (!keyRes.res.ok || !publishableKey) {
+  if (!keyRes?.res?.ok || !publishableKey) {
     const err = new Error(
-      `Medusa publishable API key creation failed (status ${keyRes.res.status})`,
+      `Medusa publishable API key creation failed (status ${keyRes?.res?.status}) — body: ${JSON.stringify(lastKeyError?.body ?? keyRes?.data)}`,
     )
-    err.detail = keyRes.data
+    err.detail = lastKeyError ?? keyRes?.data
     throw err
   }
 
@@ -581,7 +591,10 @@ export function startMedusaPreWarmIfApplicable(sessionId, prompt) {
       }
     })
     .catch((err) => {
-      console.warn(`[medusa-prewarm] provision failed for ${sessionId}: ${err.message}`)
+      console.warn(
+        `[medusa-prewarm] provision failed for ${sessionId}: ${err.message}`,
+        err?.detail ? `\n  detail: ${JSON.stringify(err.detail)}` : '',
+      )
     })
   return true
 }
