@@ -347,36 +347,39 @@ export async function waitForMedusaHealth(port, maxWaitMs = 300000) {
 
 export async function createAdminAndGetPublishableKey(port, email, password) {
   const base = normalizeBaseUrl(`http://localhost:${port}`)
-  const existingToken = String(process.env.MEDUSA_ADMIN_API_TOKEN || '').trim()
 
   if (!email || !password) {
     throw new Error('createAdminAndGetPublishableKey requires seed admin email + password')
   }
 
+  // We deliberately ignore MEDUSA_ADMIN_API_TOKEN here. That env var, when
+  // set, is a Medusa secret API key (sk_…) intended for HTTP Basic auth, not
+  // Bearer. Using it as a Bearer token against /admin/api-keys makes Medusa
+  // try to verify it as a JWT, fail, and return 401 — silently breaking
+  // every tenant for any operator who still has a single-tenant token in
+  // their environment. In multi-tenant each tenant has its own admin user;
+  // always log in per-tenant.
+  //
   // The container's entrypoint runs `medusa user --email ${email} --password
   // ${password}` before starting the server, so a real admin User exists by
-  // the time we reach this code. Just log in — register-via-HTTP is not the
-  // right primitive in Medusa v2 (it mints an auth-identity JWT, not a User
-  // session). Retry a few times because the auth module may finish loading
-  // a beat after /health returns 200.
-  let adminToken = existingToken
+  // the time we reach this code. Retry a few times because the auth module
+  // may finish loading a beat after /health returns 200.
+  let adminToken = ''
   let lastLoginError = null
 
-  if (!adminToken) {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      try {
-        const loginRes = await postJson(`${base}/auth/user/emailpass`, { email, password })
-        const token = extractToken(loginRes.data)
-        if (loginRes.res.ok && token) {
-          adminToken = token
-          break
-        }
-        lastLoginError = { status: loginRes.res.status, body: loginRes.data }
-      } catch (err) {
-        lastLoginError = { message: err?.message }
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      const loginRes = await postJson(`${base}/auth/user/emailpass`, { email, password })
+      const token = extractToken(loginRes.data)
+      if (loginRes.res.ok && token) {
+        adminToken = token
+        break
       }
-      await new Promise((r) => setTimeout(r, 1500))
+      lastLoginError = { status: loginRes.res.status, body: loginRes.data }
+    } catch (err) {
+      lastLoginError = { message: err?.message }
     }
+    await new Promise((r) => setTimeout(r, 1500))
   }
 
   if (!adminToken) {

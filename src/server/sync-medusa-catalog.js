@@ -61,16 +61,23 @@ async function getAdminToken(base, email, password) {
 
 async function resolveMedusaAdmin(options = {}) {
   const base = options.backendUrl || process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
-  let token = options.token || process.env.MEDUSA_ADMIN_API_TOKEN || ''
+  // Per-tenant creds always win when provided — otherwise a leftover global
+  // MEDUSA_ADMIN_API_TOKEN (an sk_ secret key meant for HTTP Basic auth) gets
+  // sent as Bearer and 401s every tenant call. The legacy env-token path is
+  // only used as a last-resort fallback when no email/password were passed.
   const email = options.email || process.env.MEDUSA_ADMIN_EMAIL || ''
   const password = options.password || process.env.MEDUSA_ADMIN_PASSWORD || ''
+  let token = options.token || ''
 
-  if (!token && email && password) {
+  if (email && password) {
     token = await getAdminToken(base, email, password)
+  } else if (!token) {
+    token = String(process.env.MEDUSA_ADMIN_API_TOKEN || '').trim()
   }
+
   if (!token) {
     throw new Error(
-      'No Medusa admin credentials: set MEDUSA_ADMIN_API_TOKEN or MEDUSA_ADMIN_EMAIL + MEDUSA_ADMIN_PASSWORD',
+      'No Medusa admin credentials: pass options.email + options.password, or set MEDUSA_ADMIN_EMAIL + MEDUSA_ADMIN_PASSWORD',
     )
   }
   return { base, token }
