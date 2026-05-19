@@ -440,6 +440,29 @@ export function isMedusaProvisionInFlight(sessionId) {
   return _inFlightProvisions.has(sessionId)
 }
 
+// Read the seed admin creds from an existing compose file so a re-provision
+// for the same sessionId (pre-warm failed → user clicked → click triggered a
+// fresh _doProvision after dedup cleared) keeps the same password. Otherwise
+// each retry rewrites the compose with a new random password, `docker compose
+// up -d` recreates the container with the new env, but the DB user row from
+// the first attempt still has the original password — so login 401s
+// permanently and every retry walks us further from the truth.
+function _readExistingSeedCreds(sessionId) {
+  const composeFilePath = getComposeFilePath(sessionId)
+  if (!fs.existsSync(composeFilePath)) return null
+  try {
+    const existing = fs.readFileSync(composeFilePath, 'utf8')
+    const emailMatch = existing.match(/MEDUSA_SEED_ADMIN_EMAIL:\s*(\S+)/)
+    const passMatch = existing.match(/MEDUSA_SEED_ADMIN_PASSWORD:\s*(\S+)/)
+    if (emailMatch && passMatch) {
+      return { adminEmail: emailMatch[1], adminPassword: passMatch[1] }
+    }
+  } catch {
+    /* fall through to fresh generation */
+  }
+  return null
+}
+
 async function _doProvisionMedusaForSession(sessionId) {
   // Ensure shared postgres + redis are running before session provisioning
   await ensureSharedInfraRunning()
@@ -450,15 +473,19 @@ async function _doProvisionMedusaForSession(sessionId) {
     .replace(/[^a-zA-Z0-9_]/g, '_')
     .slice(0, 20)}`
 
-  // Seed admin credentials — generated here, passed into the container as env
-  // (the entrypoint's `medusa user` creates the User record from them), and
-  // remembered so we can log in once the server is healthy. Operator-set
-  // global creds win when present so multi-tenant fleets can share one admin.
+  // Seed admin credentials — sticky per session via _readExistingSeedCreds so
+  // retries don't drift away from the user row already in postgres. Operator-
+  // set global creds still win when present (multi-tenant fleets sharing one
+  // admin); only the per-session auto-generation goes through the cache.
+  const cached = _readExistingSeedCreds(sessionId)
   const adminEmail =
     String(process.env.MEDUSA_ADMIN_EMAIL || '').trim() ||
+    cached?.adminEmail ||
     `admin-${shortToken(sessionId, 8, 'session')}@ship-fast.local`
   const adminPassword =
-    String(process.env.MEDUSA_ADMIN_PASSWORD || '').trim() || generateSecret(24)
+    String(process.env.MEDUSA_ADMIN_PASSWORD || '').trim() ||
+    cached?.adminPassword ||
+    generateSecret(24)
 
   const composeFilePath = generateSessionComposeFile(sessionId, port, dbName, {
     adminEmail,
