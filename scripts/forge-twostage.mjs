@@ -1,44 +1,58 @@
 #!/usr/bin/env bun
 /**
- * ⚠ EXPERIMENTAL — KEPT FOR REFERENCE, NOT THE DEFAULT PATH ⚠
+ * Two-stage forge: Qwen3-32B planner → GPT-OSS-120B builder.
  *
- * Two-stage forge demo.
- *
- * Stage A: Llama 3.1 8B produces a strict JSON skeleton plan (~1-2s).
+ * Stage A: Qwen3-32B produces a strict JSON skeleton plan (~3-4s).
  * Stage B: GPT-OSS-120B via split3 expands the plan into dense HTML (~18s).
  *
- * Original idea: give the heavy model a tighter, pre-decided plan so it
- * spends its reasoning budget on HTML quality, not on "what sections do
- * I need / what brands / what theme". Llama 8B is fast on Groq (~700
- * tok/s) so the planning overhead is cheap (~1-2s); GPT-OSS gets a
- * concrete, vertical-correct plan up front.
+ * Idea: give the heavy model a tighter, pre-decided plan so it spends its
+ * reasoning budget on HTML quality, not on "what sections do I need / what
+ * brands / what theme". A smaller model that's smart about verticals can
+ * decide that structure cheaply; GPT-OSS gets a concrete, vertical-correct
+ * plan up front and expands it.
  *
- * Why it's not the default:
- *   Tested on 2026-05-19 with the Sumida coffee brief. Two-stage worked
- *   (19.5s total: 1.3s stage A + 18.3s stage B, 54K char HTML, cleanly
- *   restaurant-shaped sections, real coffee brand logos planned by
- *   Llama). But:
+ * Status: viable quality mode. Default planner is Qwen 3-32B
+ * (FORGE_SKELETON_MODEL=qwen/qwen3-32b).
  *
- *   1. Llama 3.1 8B is too weak to fully reject the SaaS-default mock
- *      pattern — it picked mockType="terminal" for a coffee shop. The
- *      enum is supposed to include menu-card / product-card / etc. but
- *      Llama 8B defaulted to terminal anyway. GPT-OSS then rendered a
- *      terminal in the coffee hero (SaaS bleed).
+ * History (2026-05-19):
+ *   - v1 tested Llama 3.1 8B as the planner (1.3s plan + 18s build = 19.5s
+ *     total). Llama 8B was too weak — picked mockType="terminal" for a
+ *     coffee shop (SaaS-default bleed). Human reviewer preferred
+ *     single-shot variant-1 over this output.
+ *   - v2 swapped to Qwen 3-32B (3.8s plan + 18s build = ~22s total).
+ *     Qwen produced dramatically better plans: real Tokyo coffee houses
+ *     (Tsukiji Coffee House, Shibuya Roasters, etc.), correct math
+ *     (36 years from 1987), specific entities (third-gen roaster Akira
+ *     Sumida, 217°C roast temp, bamboo cooling trays, Yamaguchi
+ *     prefecture), evocative voice, no SaaS leaks. Human reviewer
+ *     preferred this over the parallel Option 2 (few-shot exemplar
+ *     approach, which regressed density 60% and copied entities
+ *     verbatim).
  *
- *   2. Human reviewer (Livio) preferred single-shot variant-1 (T=0.55,
- *      16s) over this two-stage output. Side-by-side: single-shot had
- *      lower variance per-gen but landed cleaner aesthetics on this run;
- *      two-stage was more *predictable* (Llama plan locks the structure)
- *      but inherited Llama's blind spots without a clear quality win.
+ * Known remaining gap:
+ *   Stage B (GPT-OSS split3) sometimes drifts from the planner's palette
+ *   spec — e.g. Qwen specified "warm terracotta + ochre + burnt umber",
+ *   GPT-OSS rendered blue/purple. Future fix: inject the palette as an
+ *   explicit HARD REQ in the stage B system prompt rather than relying on
+ *   user-prompt scaffolding.
  *
- *   Single-shot at 16s stays as the production default. This script
- *   stays for future revisit when (a) the planner can use a stronger
- *   small model (Llama 4 Scout 17B? Groq compound?), or (b) we want
- *   predictability over peak quality (e.g. CI smoke tests).
+ * When to use:
+ *   - Quality mode for one-off marketing pages where +5s is acceptable.
+ *   - When the brief is on a vertical the SITE_TYPE_PACK doesn't handle
+ *     well (Qwen's plan covers the gap).
+ *   - When you want predictability — Qwen's plan locks the structure, so
+ *     repeated runs of the same brief produce similar shapes.
+ *
+ * When NOT to use:
+ *   - Tight wall-clock budget (single-shot at 16s remains the speed king).
+ *   - CI smoke tests where each second matters.
  *
  * Usage:
  *   bun scripts/forge-twostage.mjs ["brief"]      run with provided brief
  *   bun scripts/forge-twostage.mjs                use canon Sumida brief
+ *
+ *   # Revert to legacy Llama planner:
+ *   FORGE_SKELETON_MODEL=llama-3.1-8b-instant bun scripts/forge-twostage.mjs
  *
  * Output: .forge/twostage/<runId>/{skeleton.json, index.html, shot.png}
  *

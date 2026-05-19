@@ -33,9 +33,20 @@ export function compactStyleFragmentHtml(html) {
   )
 }
 
+// Strip "thinking" / reasoning blocks that some Groq-hosted models leak into
+// the response when reasoning isn't fully hidden:
+//   <think>…</think>                   — Qwen 3 chat template default
+//   <think>…</redacted_thinking>       — earlier Anthropic-style leak we hit
+//   <thinking>…</thinking>              — alt format some models emit
+//   <|thinking|>…<|/thinking|>          — Kimi-style channel markers
+// Each gets a separate regex so a missing closing tag in one format doesn't
+// swallow the rest of the response.
 export function stripGroqReasoningLeak(text) {
   return String(text || '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
     .replace(/<think>[\s\S]*?<\/redacted_thinking>/gi, '')
+    .replace(/<thinking>[\s\S]*?<\/thinking>/gi, '')
+    .replace(/<\|thinking\|>[\s\S]*?<\|\/thinking\|>/gi, '')
     .trimStart()
 }
 

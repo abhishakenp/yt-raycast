@@ -9,7 +9,7 @@ import {
   HOMEPAGE_MODEL,
   LLM_CONFIG,
 } from '@ship-fast/engine/config.js'
-import { stripGroqReasoningLeak } from '@ship-fast/engine/llm/utils.js'
+import { stripGroqReasoningLeak, stripFences } from '@ship-fast/engine/llm/utils.js'
 import { referencePromptBlock } from './forge-reference.mjs'
 import { mobbinDoctrineBlock } from './forge-mobbin.mjs'
 
@@ -47,6 +47,187 @@ ${mobbinDoctrineBlock()}`
 
 export const FORGE_DEFAULT_PROMPT =
   'A B2B SaaS marketing site for an AI-first agentic workflow product for engineering teams. Required sections: hero with a product-preview surface, social-proof / logo-cloud strip, feature grid (≥6 features grouped 2x3 or 3x2), pricing band with monthly/yearly toggle, FAQ accordion, named-customer testimonial band, penultimate CTA band, multi-column footer. Hero visual treatment is dictated by the active Mobbin Pro anchor (if any) or the active aesthetic — DO NOT default to an aurora hero unless explicitly called for.'
+
+/**
+ * ⚠ EXPERIMENTAL — KEPT FOR REFERENCE, NOT THE DEFAULT PATH ⚠
+ *
+ * Aesthetic exemplars distilled from a Qwen3-32B run on a Tokyo single-origin
+ * coffee brief. The three excerpts show: two-tone hero with concrete origins;
+ * restrained restaurant-voice "Our Story" prose with terroir specifics;
+ * and a featured-selections grid with real coffee origin names + prices.
+ *
+ * Env-gated via FORGE_USE_EXEMPLAR=1 (default OFF).
+ *
+ * Why kept-for-reference but NOT default (tested 2026-05-19 as the parallel
+ * Option 2 in the Qwen-hybrid sweep, against the Qwen-as-planner approach):
+ *
+ *   - Density collapsed to 22.5K chars (vs ~50-60K baseline — 60% drop).
+ *     GPT-OSS got so anchored to the exemplar's compact pacing that it
+ *     produced a shorter page than either parent.
+ *   - Verbatim entity copy: model lifted "Nakamura family" and "Shinjuku
+ *     roastery" from the exemplar despite explicit "never reuse the
+ *     reference brand" instruction. In-context HTML wins attention over
+ *     abstract rules.
+ *   - SaaS-stats leak: stats strip rendered "Developers Served / % Uptime"
+ *     on a coffee page — the exemplar showed structure but not vertical-
+ *     appropriate stat labels, and the SaaS bias in HOMEPAGE_SYSTEM_LEAN
+ *     re-asserted.
+ *   - Missing pricing + FAQ sections (audit-required, exemplar didn't
+ *     include them → model skipped).
+ *   - First attempt got refused by GPT-OSS safety filter — original
+ *     framing ("match this aesthetic / channel the moves") tripped a
+ *     stylistic-imitation guard. Current framing ("internal style guide /
+ *     project-owned reference patterns") passes.
+ *
+ *   Root cause: 4K tokens of concrete HTML overwhelms 4K tokens of abstract
+ *   instructions. The exemplar wins the model's attention, abstract rules
+ *   lose.
+ *
+ *   Future revisit fixes (not implemented):
+ *     (a) shorter exemplars (~1K chars total)
+ *     (b) cross-vertical exemplars so model can't anchor on one
+ *     (c) skeleton-only excerpts (structure without copy) to prevent lift
+ *     (d) keep density constraints in user prompt rather than system
+ *
+ *   Human reviewer preferred the Qwen-as-planner output over this approach
+ *   in a side-by-side. Two-stage with Qwen planner is the default quality
+ *   mode; this exemplar code stays for future revisit.
+ */
+export const FORGE_AESTHETIC_EXEMPLARS = {
+  hero: `<section class="min-h-[80vh] md:h-screen relative overflow-hidden" id="hero">
+  <div class="absolute inset-0 bg-gradient-to-br from-indigo-100/20 to-primary/5 pointer-events-none"></div>
+  <div class="absolute inset-0">
+    <div class="absolute inset-0 bg-radial-gradient-1 blur-3xl opacity-40 motion-reduce:hidden"></div>
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-radial-gradient-2 blur-3xl opacity-30 motion-reduce:hidden"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-72 h-72 bg-radial-gradient-3 blur-3xl opacity-50 motion-reduce:hidden"></div>
+  </div>
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+    <div class="max-w-2xl lg:w-1/2">
+      <span class="inline-block px-4 py-1 bg-surface text-xs font-medium text-primary rounded-full mb-4">Family-Run Since 1987</span>
+      <h1 class="text-5xl md:text-6xl font-display mb-6 leading-tight">
+        <span class="block">Sumida Coffee</span>
+        <span class="text-accent">Tokyo's Single-Origin Craft</span>
+      </h1>
+      <p class="text-lg text-slate-700 mb-8 max-w-lg">
+        Stone-milled in our Shinjuku roastery, each bean tells a story from Ethiopia, Colombia, and Sumatra.
+        <span class="block mt-4">Available in our retail store, wholesale to cafes, or home delivery.</span>
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 mb-8">
+        <a href="#order" class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition">Order Online</a>
+        <a href="#reserve" class="px-6 py-3 border border-surface text-surface hover:bg-surface/50 transition">Reserve In-Store</a>
+      </div>
+      <div class="flex gap-4 text-sm text-slate-500">
+        <span class="flex items-center"><span data-lucide="map-pin" class="w-4 h-4 mr-1"></span>2-15-8 Shinjuku, Tokyo</span>
+        <span class="flex items-center"><span data-lucide="clock" class="w-4 h-4 mr-1"></span>Open 8:00 AM - 7:00 PM</span>
+      </div>
+    </div>
+    <div class="hidden lg:block lg:w-1/2 relative">
+      <div class="relative z-10 bg-white/80 backdrop-blur-sm rounded-lg p-6 shadow-lg">
+        <div class="aspect-[4/3] bg-surface rounded-lg overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1594813662424-6b1c0b3f68c3?auto=format&fit=crop&w=800&q=80" alt="Sumida coffee beans" class="w-full h-full object-cover" />
+        </div>
+        <div class="flex justify-between mt-4 text-xs text-slate-500">
+          <span>Yirgacheffe Beans</span><span>Stone-Milled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`,
+  story: `<section class="min-h-[600px] py-16 bg-slate-900 text-white" id="story">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div class="order-2 lg:order-1">
+        <img src="https://images.unsplash.com/photo-1590145143324-834e89a76b4e?auto=format&fit=crop&w=600&q=80" alt="Sumida founders" class="rounded-lg shadow-lg" />
+      </div>
+      <div class="order-1 lg:order-2">
+        <h2 class="text-3xl font-display mb-6">Our Story</h2>
+        <p class="text-lg text-slate-300 mb-6">
+          Founded in 1987 by the Nakamura family, Sumida has perfected the craft of single-origin coffee through generations.
+          We source directly from small farms in Ethiopia, Colombia, and Sumatra, maintaining relationships that ensure quality and sustainability.
+        </p>
+        <p class="text-lg text-slate-300 mb-6">
+          Our Shinjuku roastery uses traditional stone-milling techniques combined with modern precision.
+          Every batch is roasted to highlight the unique terroir of each origin, from the floral notes of Yirgacheffe to the earthy depth of Sumatran Mandheling.
+        </p>
+        <p class="text-lg text-slate-300">
+          We believe in coffee as a bridge between cultures. Our wholesale partners include 120+ Tokyo cafes, and our retail customers enjoy the same quality we serve to our family.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>`,
+  featured: `<section class="py-16 bg-surface" id="featured">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 class="text-3xl font-display text-center mb-12">Featured Selections</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1600047569675-2e8202894cf6?auto=format&fit=crop&w=400&q=80" alt="Ethiopian Yirgacheffe" class="w-full h-48 object-cover" />
+        <div class="p-6">
+          <h3 class="text-xl font-semibold mb-2">Ethiopian Yirgacheffe</h3>
+          <p class="text-slate-600 mb-4">Citrus and jasmine notes with a clean finish. Light roast for maximum origin character.</p>
+          <div class="flex justify-between items-center">
+            <span class="font-medium">¥3,800/kg</span>
+            <span class="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">Organic</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1587614728578-671b33dbd6b1?auto=format&fit=crop&w=400&q=80" alt="Colombian Supremo" class="w-full h-48 object-cover" />
+        <div class="p-6">
+          <h3 class="text-xl font-semibold mb-2">Colombian Supremo</h3>
+          <p class="text-slate-600 mb-4">Balanced acidity with caramel sweetness. Ideal for pour-over or espresso.</p>
+          <div class="flex justify-between items-center">
+            <span class="font-medium">¥3,500/kg</span>
+            <span class="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">Fair Trade</span>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1593487053677-546b35e057b5?auto=format&fit=crop&w=400&q=80" alt="Sumatran Mandheling" class="w-full h-48 object-cover" />
+        <div class="p-6">
+          <h3 class="text-xl font-semibold mb-2">Sumatran Mandheling</h3>
+          <p class="text-slate-600 mb-4">Earthy and full-bodied with hints of tobacco and dark chocolate. Best for French press.</p>
+          <div class="flex justify-between items-center">
+            <span class="font-medium">¥3,600/kg</span>
+            <span class="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">Direct Trade</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`,
+}
+
+function buildExemplarBlock() {
+  return `── INTERNAL STYLE GUIDE (project-owned reference patterns) ──
+The following HTML patterns are part of our internal design system. They illustrate the structural moves we use across consumer marketing pages. Study the patterns, then apply them to whatever brief follows. The content shown is illustrative only — your output must always use the brief's actual brand and product details, not the reference content.
+
+Pattern notes:
+  - product specificity over generic labels (named varietals, real numbers, real locations)
+  - two-tone hero headlines: neutral base text + accent color on the payoff phrase
+  - restrained palette: one warm bg + one dark contrast band + one accent
+  - paragraphs are 2-3 sentences, not single-line marketing fluff
+  - alternating light / dark contrast bands provide section rhythm
+
+Pattern A (hero structure):
+${FORGE_AESTHETIC_EXEMPLARS.hero}
+
+Pattern B (founder / story section):
+${FORGE_AESTHETIC_EXEMPLARS.story}
+
+Pattern C (featured-products grid):
+${FORGE_AESTHETIC_EXEMPLARS.featured}
+
+Apply these structural moves to the user's brief below. Generate fresh content — never reuse the reference brand, addresses, or copy verbatim.
+── END STYLE GUIDE ──
+
+`
+}
+
+function maybePrependExemplar(system) {
+  if (process.env.FORGE_USE_EXEMPLAR !== '1') return system
+  return buildExemplarBlock() + system
+}
 
 const HERO_ARCHETYPES = [
   'Hero archetype: SPLIT — left text column (badge + headline + subhead + 2 CTAs + trust chips), right column a layered visual panel (mesh + product preview frame).',
@@ -456,15 +637,15 @@ export function temperatureForIter(i) {
 }
 
 /**
- * ⚠ EXPERIMENTAL — see scripts/forge-twostage.mjs header for why this is
- *   kept for reference and NOT the default. Short version: Llama 3.1 8B
- *   is too weak to fully reject SaaS-default patterns in the planning
- *   step (e.g. picks mockType="terminal" for a coffee shop), and the
- *   human reviewer preferred single-shot output on a side-by-side test.
+ * Two-stage generation: planner model produces a JSON skeleton, then
+ * GPT-OSS-120B does the heavy HTML lift conditioned on that skeleton.
  *
- * Two-stage generation: small/fast model produces a structural skeleton
- * (JSON plan), then GPT-OSS-120B does the heavy HTML lift conditioned on
- * that skeleton.
+ * Default planner: Qwen 3-32B (FORGE_SKELETON_MODEL). Promoted from Llama
+ * 3.1 8B on 2026-05-19 after side-by-side test — Qwen's plans are
+ * dramatically more vertical-fluent (real Tokyo coffee houses vs Llama's
+ * US-press brand bleed, correct math, named entities, no SaaS leaks).
+ * Cost: +2.4s planner overhead vs Llama 8B; ~5s vs single-shot. See
+ * scripts/forge-twostage.mjs header for the full trace + when to use.
  *
  * Why: GPT-OSS-120B spends a chunk of its reasoning budget on "what
  * sections do I need? what anchors? what palette?" before generating
@@ -530,7 +711,17 @@ Return EXACTLY this shape:
 
 The siteType MUST be detected from the brief. Sections MUST suit the vertical (no pricing tiers for restaurant/ecommerce/portfolio; no API integrations for non-SaaS; menu for restaurant; shop-grid for ecommerce; case-studies for portfolio/agency; rooms-grid for hotel). Brands MUST be vertical-appropriate. Be opinionated — the model downstream needs concrete decisions, not options.`
 
-const SKELETON_MODEL = process.env.FORGE_SKELETON_MODEL || 'llama-3.1-8b-instant'
+// Default planner: Qwen 3-32B. Promoted from the original llama-3.1-8b-instant
+// after a 2026-05-19 side-by-side test where Qwen produced dramatically
+// better vertical-specific plans (real Tokyo coffee houses vs Llama's US-press
+// brand bleed, correct year math, named third-gen roaster + roast temp +
+// terroir specifics, no SaaS-default "terminal mockType" leak for non-SaaS
+// briefs). Cost: +2.4s (3.8s vs 1.3s) for measurably better plan quality.
+// The human reviewer preferred the Qwen-planned two-stage output over both
+// the Llama-planned two-stage and the few-shot exemplar approach.
+//
+// Override via env: FORGE_SKELETON_MODEL=llama-3.1-8b-instant to revert.
+const SKELETON_MODEL = process.env.FORGE_SKELETON_MODEL || 'qwen/qwen3-32b'
 
 export async function forgeGenerateTwoStage({
   prompt = FORGE_DEFAULT_PROMPT,
@@ -636,17 +827,23 @@ export async function forgeGenerate({
   signal,
 } = {}) {
   if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
+  const finalSystem = maybePrependExemplar(system)
   const body = {
     model,
     messages: [
-      { role: 'system', content: system },
+      { role: 'system', content: finalSystem },
       { role: 'user', content: prompt },
     ],
     temperature,
     max_tokens: maxTokens,
     stream: false,
-    reasoning_effort: reasoningEffort,
-    reasoning_format: reasoningFormat,
+  }
+  // reasoning_effort / reasoning_format are GPT-OSS-specific. Other Groq
+  // models (llama-3.x, qwen, kimi) reject the request with 400 if these
+  // are present. Only attach for gpt-oss models.
+  if (model.startsWith('openai/gpt-oss')) {
+    body.reasoning_effort = reasoningEffort
+    body.reasoning_format = reasoningFormat
   }
   const t0 = Date.now()
   const res = await fetch(URL, {
@@ -669,7 +866,9 @@ export async function forgeGenerate({
   }
   const usage = data.usage ?? {}
   return {
-    content: stripGroqReasoningLeak(data.choices?.[0]?.message?.content ?? ''),
+    // Some Groq models (Qwen 3) wrap output in ```html ... ``` markdown
+    // fences; stripFences removes them so the HTML renders.
+    content: stripFences(stripGroqReasoningLeak(data.choices?.[0]?.message?.content ?? '')),
     ms,
     inputTokens: usage.prompt_tokens ?? 0,
     outputTokens: usage.completion_tokens ?? 0,
@@ -803,25 +1002,30 @@ export async function forgeGenerateSplit({
   // Both halves receive the SAME user prompt (variation + brief + mobbin
   // + rigor blocks all live in `prompt`). The system prompt differentiates
   // which sections each half produces.
-  const callOne = (system, maxTok) =>
-    fetch(URL, {
+  const isGptOss = model.startsWith('openai/gpt-oss')
+  const callOne = (system, maxTok) => {
+    const body = {
+      model,
+      messages: [
+        { role: 'system', content: maybePrependExemplar(system) },
+        { role: 'user', content: prompt },
+      ],
+      temperature,
+      max_tokens: maxTok,
+      stream: false,
+    }
+    // reasoning_* keys are gpt-oss-only on Groq; other models reject them.
+    if (isGptOss) {
+      body.reasoning_effort = reasoningEffort
+      body.reasoning_format = 'hidden'
+    }
+    return fetch(URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: prompt },
-        ],
-        temperature,
-        max_tokens: maxTok,
-        stream: false,
-        reasoning_effort: reasoningEffort,
-        reasoning_format: 'hidden',
-      }),
+      body: JSON.stringify(body),
       signal,
     }).then(async (res) => {
       if (!res.ok) {
@@ -830,6 +1034,7 @@ export async function forgeGenerateSplit({
       }
       return res.json()
     })
+  }
 
   const t0 = Date.now()
   let resA, resB
@@ -1024,25 +1229,30 @@ export async function forgeGenerateSplit3({
 } = {}) {
   if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
 
-  const callOne = (system, maxTok) =>
-    fetch(URL, {
+  // reasoning_* keys are gpt-oss-only on Groq; other models reject them.
+  const isGptOss = model.startsWith('openai/gpt-oss')
+  const callOne = (system, maxTok) => {
+    const body = {
+      model,
+      messages: [
+        { role: 'system', content: maybePrependExemplar(system) },
+        { role: 'user', content: prompt },
+      ],
+      temperature,
+      max_tokens: maxTok,
+      stream: false,
+    }
+    if (isGptOss) {
+      body.reasoning_effort = reasoningEffort
+      body.reasoning_format = 'hidden'
+    }
+    return fetch(URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: prompt },
-        ],
-        temperature,
-        max_tokens: maxTok,
-        stream: false,
-        reasoning_effort: reasoningEffort,
-        reasoning_format: 'hidden',
-      }),
+      body: JSON.stringify(body),
       signal,
     }).then(async (res) => {
       if (!res.ok) {
@@ -1051,6 +1261,7 @@ export async function forgeGenerateSplit3({
       }
       return res.json()
     })
+  }
 
   const t0 = Date.now()
   const [resA, resB, resC] = await Promise.all([
