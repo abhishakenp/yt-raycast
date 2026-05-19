@@ -1,6 +1,7 @@
 import { execSync, exec } from 'node:child_process'
 import { promisify } from 'node:util'
 import fs from 'node:fs'
+import net from 'node:net'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
@@ -90,21 +91,28 @@ export function extractToken(data) {
   )
 }
 
+// `lsof` runs as the ship-fast user, so root-owned docker-proxy sockets are
+// invisible — and on hosts where Docker uses iptables-only DNAT lsof sees
+// nothing at all. Both produce false-positive "port free" results which then
+// blow up at `docker compose up` time with "Bind for 0.0.0.0:<port> failed:
+// port is already allocated". Bind-probing the port ourselves is the only
+// check that agrees with what the Docker daemon will attempt.
+function _isPortFree(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer()
+    server.unref()
+    server.once('error', () => resolve(false))
+    server.once('listening', () => {
+      server.close(() => resolve(true))
+    })
+    server.listen({ port, host: '0.0.0.0' })
+  })
+}
+
 export async function findAvailablePort(startPort = 9100) {
   for (let port = Number(startPort) || 9100; port < 65535; port += 1) {
-    try {
-      const { stdout } = await execAsync(`lsof -ti :${port}`)
-      if (!String(stdout || '').trim()) {
-        return port
-      }
-    } catch (error) {
-      const stdout = String(error?.stdout || '')
-      if (!stdout.trim()) {
-        return port
-      }
-    }
+    if (await _isPortFree(port)) return port
   }
-
   throw new Error(`No available port found starting at ${startPort}`)
 }
 
