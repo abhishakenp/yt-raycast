@@ -110,6 +110,10 @@ console.log(`\n[twostage] STAGE B (GPT-OSS-120B split3 HTML): ${result.stageBMs}
 console.log(`  part chars: A=${result.partAChars}  B=${result.partBChars}  C=${result.partCChars}`)
 console.log(`  html chars: ${result.content.length}`)
 
+console.log(`\n[twostage] STAGE C (genome merge): ${result.mergeMs}ms  applied=${result.mergeApplied || 'none'}`)
+console.log(`[twostage] STAGE D (critic):       ${result.critiqueMs}ms  issues=${(result.critiqueIssues || []).length}`)
+console.log(`[twostage] STAGE E (repair):       ${result.repairMs}ms  backend=${result.repairBackend || 'n/a'}`)
+
 console.log(`\n[twostage] TOTAL wall: ${wall}ms`)
 console.log(`[twostage] artifacts: ${OUT_DIR}`)
 console.log(`[twostage] open: ${OUT_DIR}/index.html`)

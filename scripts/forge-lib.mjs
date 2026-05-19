@@ -671,13 +671,35 @@ export function temperatureForIter(i) {
  *
  * Returns: { content, ms, stageAMs, stageBMs, skeleton, ... }
  */
-const SKELETON_SYSTEM = `You are a senior product designer planning the structure of a marketing homepage. Output ONLY strict JSON, no prose, no markdown fences.
+// Build the planner system prompt dynamically. We inject:
+//  - the 20 layout primitives from data/primitives.json (sections must pick from this list)
+//  - the 6 style genomes from data/style-genomes/ (the plan picks ONE; later merge stage
+//    deterministically rewrites palette tokens, fixing the Qwen→GPT-OSS palette drift bug)
+// Lazy-built so the imports settle at module load time but the prompt string
+// can use them.
+let _SKELETON_SYSTEM_CACHE = null
+async function getSkeletonSystem() {
+  if (_SKELETON_SYSTEM_CACHE) return _SKELETON_SYSTEM_CACHE
+  const { describePrimitives, PRIMITIVE_IDS } = await import('./forge-primitives.mjs')
+  const { describeGenomes, GENOME_NAMES } = await import('./forge-genomes.mjs')
+  _SKELETON_SYSTEM_CACHE = `You are a senior product designer planning the structure of a marketing homepage. Output ONLY strict JSON, no prose, no markdown fences.
 
 Given a brief, produce a concrete JSON plan another model will use to generate the full HTML. Be specific — name the brands, name the headlines, name the section intents. The model that consumes your plan will hallucinate less when your plan is more concrete.
 
-Return EXACTLY this shape:
+── STRUCTURAL VOCABULARY: LAYOUT PRIMITIVES ──
+Every section MUST be assigned ONE of these 20 primitives — the structural shape it should take. Pick the one that best fits the section's intent:
+
+${describePrimitives()}
+
+── AESTHETIC VOCABULARY: STYLE GENOMES ──
+Pick EXACTLY ONE genome that fits the brand. The downstream merge stage will deterministically rewrite palette tokens to match this genome, so picking the wrong genome will be visible in the output. Genomes:
+
+${describeGenomes()}
+
+── RETURN EXACTLY THIS JSON SHAPE ──
 {
   "siteType": "saas" | "ecommerce" | "restaurant" | "portfolio" | "agency" | "fitness" | "wellness" | "hotel" | "fintech" | "education" | "realestate" | "nonprofit",
+  "genome": ${JSON.stringify(GENOME_NAMES)},
   "hero": {
     "headline": "verb-led, ≤8 words. Two-tone: base text + accent word/phrase.",
     "accentPhrase": "the part of the headline that should render in the accent color",
@@ -691,7 +713,7 @@ Return EXACTLY this shape:
     "...(4 stats total, vertical-appropriate metrics — uptime/req-s for SaaS; cups/orders/years for restaurant; members/classes for fitness)"
   ],
   "sections": [
-    { "id": "kebab-case", "kind": "features|how-it-works|use-cases|logos|testimonials|menu|gallery|case-studies|capabilities|process|rooms-grid|class-types|trainer-profiles|treatments|pricing|shop-grid|contact|booking|story", "intent": "what this section delivers", "headingText": "actual heading", "contentHints": "concrete content to include (3-5 sentences of specifics)" },
+    { "id": "kebab-case", "kind": "features|how-it-works|use-cases|logos|testimonials|menu|gallery|case-studies|capabilities|process|rooms-grid|class-types|trainer-profiles|treatments|pricing|shop-grid|contact|booking|story", "primitive": ${JSON.stringify(PRIMITIVE_IDS)}, "intent": "what this section delivers", "headingText": "actual heading", "contentHints": "concrete content to include (3-5 sentences of specifics)" },
     "...(5-8 sections in order appropriate to siteType)"
   ],
   "logoGrid": ["6-10 real brand names appropriate to the vertical (e.g. for restaurant: Stumptown, Blue Bottle, Sweetgreen, OpenTable, Resy, Eater, NYT, Bon Appetit; for fitness: Equinox, Barry's, Strava, Whoop; never SaaS dev tools for non-SaaS verticals)"],
@@ -709,7 +731,9 @@ Return EXACTLY this shape:
   "voice": "1 sentence describing copy voice (e.g. 'evocative, sensory, place-based — chef voice in first person plural')"
 }
 
-The siteType MUST be detected from the brief. Sections MUST suit the vertical (no pricing tiers for restaurant/ecommerce/portfolio; no API integrations for non-SaaS; menu for restaurant; shop-grid for ecommerce; case-studies for portfolio/agency; rooms-grid for hotel). Brands MUST be vertical-appropriate. Be opinionated — the model downstream needs concrete decisions, not options.`
+The siteType MUST be detected from the brief. The genome MUST be one of the six listed. Every section MUST have a primitive from the 20 listed above. Sections MUST suit the vertical (no pricing tiers for restaurant/ecommerce/portfolio; no API integrations for non-SaaS; menu for restaurant; shop-grid for ecommerce; case-studies for portfolio/agency; rooms-grid for hotel). Brands MUST be vertical-appropriate. Be opinionated — the model downstream needs concrete decisions, not options.`
+  return _SKELETON_SYSTEM_CACHE
+}
 
 // Default planner: Qwen 3-32B. Promoted from the original llama-3.1-8b-instant
 // after a 2026-05-19 side-by-side test where Qwen produced dramatically
@@ -730,8 +754,9 @@ export async function forgeGenerateTwoStage({
 } = {}) {
   if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
 
-  // ---- Stage A: skeleton plan via Llama 3.1 8B ----
+  // ---- Stage A: skeleton plan via Qwen 3-32B (default) ----
   const tA = Date.now()
+  const systemPrompt = await getSkeletonSystem()
   const skeletonRes = await fetch(URL, {
     method: 'POST',
     headers: {
@@ -741,11 +766,11 @@ export async function forgeGenerateTwoStage({
     body: JSON.stringify({
       model: SKELETON_MODEL,
       messages: [
-        { role: 'system', content: SKELETON_SYSTEM },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: `Brief: ${prompt}\n\nReturn the JSON plan only.` },
       ],
       temperature: 0.3,
-      max_tokens: 2500,
+      max_tokens: 4000,
       response_format: { type: 'json_object' },
       stream: false,
     }),
@@ -796,11 +821,104 @@ Use the headline / accent phrase / mockType / mockHints / sections / brand names
   })
   const stageBMs = Date.now() - tB
 
+  let html = stageBResult.content
+  let mergeMs = 0
+  let mergeApplied = null
+  let critiqueIssues = []
+  let critiqueMs = 0
+  let repairMs = 0
+  let repairBackend = null
+  let repairSkipped = false
+  let repairSkipReason = null
+
+  // ---- Stage C: deterministic genome-aware token rewrite ----
+  // Fixes the known palette-drift bug — Qwen plans "terracotta" but GPT-OSS
+  // sometimes renders blue/purple. The regex merge rewrites neutral-* /
+  // slate-* / zinc-* tokens to the genome's palette family (stone for
+  // editorial-warm, emerald for boutique-organic, etc.). Zero-LLM, ~50ms.
+  // Opt-in via FORGE_USE_GENOME_MERGE=1 (default OFF until validated).
+  if (process.env.FORGE_USE_GENOME_MERGE === '1' && skeleton.genome && html) {
+    try {
+      const { mergeWithGenome, GENOME_NAMES } = await import('./forge-genomes.mjs')
+      if (GENOME_NAMES.includes(skeleton.genome)) {
+        const tMerge = Date.now()
+        const merged = mergeWithGenome(html, skeleton.genome)
+        mergeMs = Date.now() - tMerge
+        if (merged && typeof merged === 'string' && merged.length > 0) {
+          html = merged
+          mergeApplied = skeleton.genome
+        }
+      }
+    } catch (e) {
+      mergeMs = -1 // sentinel: import or merge threw
+    }
+  }
+
+  // ---- Stage D: heuristic critic (zero-LLM) ----
+  // Scans the HTML for known structural failures — missing dark variants,
+  // weak hierarchy (h1-h3 without tracking-tight), undersized CTAs, tight
+  // vertical rhythm, missing responsive padding, palette drift, SaaS-stats
+  // leak on non-SaaS verticals. ~50ms regex pass.
+  // Opt-in via FORGE_USE_CRITIC=1 (default OFF until validated).
+  if (process.env.FORGE_USE_CRITIC === '1' && html) {
+    try {
+      const { critique, repair } = await import('./forge-critic.mjs')
+      const tCrit = Date.now()
+      critiqueIssues =
+        critique(html, {
+          siteType: skeleton.siteType,
+          brief: prompt,
+          // genome+palette must flow into the critic so the palette-drift
+          // rule can be gated when a genome has authoritatively reskinned.
+          genome: skeleton.genome,
+          palette: skeleton?.theme?.palette,
+        }) || []
+      critiqueMs = Date.now() - tCrit
+
+      // ---- Stage E: targeted repair (single LLM call, only if issues found) ----
+      if (critiqueIssues.length > 0) {
+        const tRep = Date.now()
+        const repairRes = await repair(html, critiqueIssues, {
+          brief: prompt,
+          siteType: skeleton.siteType,
+          palette: skeleton?.theme?.palette,
+          genome: skeleton.genome,
+        })
+        repairMs = Date.now() - tRep
+        if (repairRes?.skipped) {
+          repairSkipped = true
+          repairSkipReason = repairRes.skipReason || 'skipped'
+        } else if (repairRes?.html && repairRes.html.length > 100) {
+          html = repairRes.html
+          repairBackend = repairRes.model || repairRes.backend || 'groq'
+          // Repair regenerates the full page, which typically restores
+          // the model's default neutral-family. Re-apply genome merge so
+          // the deterministic palette wins on the final HTML.
+          if (mergeApplied) {
+            try {
+              const { mergeWithGenome } = await import('./forge-genomes.mjs')
+              const reMerged = mergeWithGenome(html, mergeApplied)
+              if (reMerged && reMerged.length > 0) html = reMerged
+            } catch { /* keep repaired html */ }
+          }
+        }
+      }
+    } catch (e) {
+      critiqueMs = -1 // sentinel: critic threw
+    }
+  }
+
   return {
-    content: stageBResult.content,
-    ms: stageAMs + stageBMs,
+    content: html,
+    ms: stageAMs + stageBMs + mergeMs + critiqueMs + repairMs,
     stageAMs,
     stageBMs,
+    mergeMs,
+    mergeApplied,
+    critiqueMs,
+    critiqueIssues,
+    repairMs,
+    repairBackend,
     skeleton,
     skeletonRaw,
     stageBMsA: stageBResult.msA,
