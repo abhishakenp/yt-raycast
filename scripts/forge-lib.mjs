@@ -564,7 +564,11 @@ Output ONLY:
       ...two-tone headline (accent color on payoff word)
       ...4-line subhead
       ...2 CTAs (one data-magnet) + 4-item trust chip row
-      ...PRODUCT UI MOCK ~420px tall: terminal/dashboard/chat with 12+ rows of REAL contextual content (colored syntax spans, table rows, chart bars, conversation bubbles). Include browser/window chrome at top.
+      ...PRODUCT UI MOCK ~480px tall: terminal/dashboard/chat with 18+ rows of REAL contextual content. Include browser/window chrome at top (3 colored circle buttons + tab strip with active tab name + url bar). The mock body contains:
+         - if terminal: 18-25 lines of code/output with colored spans (text-emerald-400 for keywords, text-amber-400 for strings, text-slate-400 for comments, text-sky-400 for identifiers) + a fake prompt line
+         - if dashboard: a stats row at top + a sortable-looking table with 10+ rows + a sidebar with 4-6 nav items + a chart placeholder with bars/lines
+         - if chat: 8+ message bubbles alternating sender/agent with timestamps + typing indicator at bottom + tool-use card embedded between messages
+         The mock should reach ~6,000-9,000 chars on its own. This is the single most important visual element.
     </section>
     <section id="stats">
       ...subtitle row ("Trusted at scale")
@@ -576,14 +580,18 @@ That marker ends your output. NOTHING after it — Part B and Part C produce fea
 
 const SYSTEM_PART_B3 = HOMEPAGE_SYSTEM_LEAN + `
 
-PARALLEL-3-SPLIT MODE — PART B (features + how-it-works + logos + testimonials):
-Part A already produced: <!DOCTYPE>, <head>, <body opening>, <header>, hero, stats. Part C will produce pricing, faq, cta, footer, IIFE, closing tags. Your job: the 4 middle sections.
+PARALLEL-3-SPLIT MODE — PART B (features + use-cases + how-it-works + logos + testimonials):
+Part A already produced: <!DOCTYPE>, <head>, <body opening>, <header>, hero, stats. Part C will produce pricing, faq, cta, footer, IIFE, closing tags. Your job: the 5 middle sections.
 
 Output EXACTLY:
 ${SPLIT_MARKER}
   <section id="features">
     ...heading + 2-line subheading
     ...12 feature cards in 3-column grid; each card: icon + heading + 3-line description + sub-bullet list of 2-3 specific capabilities.
+  </section>
+  <section id="use-cases">
+    ...heading "Built for [target users]" + 2-line subheading
+    ...4 use-case cards in 2-column grid (NOT same shape as features — wider, with named persona/team + scenario sentence + 3-bullet "what they get" list + small avatar/icon + outcome metric line). Each ~80-100 words.
   </section>
   <section id="how-it-works">
     ...heading + 2-line subheading
@@ -599,7 +607,7 @@ ${SPLIT_MARKER}
   </section>
 ${SPLIT_MARKER_BC}
 
-Marker is FIRST line, ${SPLIT_MARKER_BC} is LAST line. NO doctype/html/head/body opening/header/hero/stats at start. NO pricing/faq/cta/footer/script after. Target 24,000-30,000 chars. Use Lucide icons from the safe list.`
+Marker is FIRST line, ${SPLIT_MARKER_BC} is LAST line. NO doctype/html/head/body opening/header/hero/stats at start. NO pricing/faq/cta/footer/script after. Target 28,000-34,000 chars. Use Lucide icons from the safe list.`
 
 const SYSTEM_PART_C3 = HOMEPAGE_SYSTEM_LEAN + `
 
@@ -642,9 +650,9 @@ export async function forgeGenerateSplit3({
   prompt = FORGE_DEFAULT_PROMPT,
   model = HOMEPAGE_MODEL || 'openai/gpt-oss-120b',
   temperature = LLM_CONFIG.homepage.temperature,
-  maxTokensA = 7000,
-  maxTokensB = 11000,
-  maxTokensC = 7500,
+  maxTokensA = 8500,
+  maxTokensB = 14000,
+  maxTokensC = 8500,
   reasoningEffort = 'low',
   signal,
 } = {}) {
