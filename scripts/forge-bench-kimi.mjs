@@ -34,7 +34,7 @@ import { promisify } from 'node:util'
 import { createServer } from 'node:http'
 import { resolve, sep, normalize } from 'node:path'
 import { statSync } from 'node:fs'
-import { forgeGenerate, buildVariantPrompt, FORGE_DEFAULT_PROMPT } from './forge-lib.mjs'
+import { forgeGenerate, forgeGenerateSplit3, buildVariantPrompt, FORGE_DEFAULT_PROMPT } from './forge-lib.mjs'
 import { renderAudit } from './forge-render-audit.mjs'
 import { visionJudge } from './forge-vision.mjs'
 import { prefetchForgeMobbin, mobbinIterBlock } from './forge-mobbin.mjs'
@@ -126,16 +126,39 @@ async function generateWithForge(brief, briefDir) {
     mobbinBlock = mobbinIterBlock(data, 0)
   } catch {}
   const userPrompt = buildVariantPrompt(brief, 0, { includeReference: true, mobbinBlock })
-  const result = await forgeGenerate({
-    prompt: userPrompt,
-    reasoningEffort: 'low',
-    maxTokens: 20000,
-    temperature: 0.62,
-  })
+
+  // Split3 mode: 3 parallel Groq calls, stitched. ~15-19s wall vs ~20s for
+  // single call, ~55K chars vs ~30K. Opt-out via FORGE_NO_SPLIT3=1 to use
+  // single-call legacy path for comparison.
+  let result
+  if (process.env.FORGE_NO_SPLIT3 !== '1') {
+    result = await forgeGenerateSplit3({
+      prompt: userPrompt,
+      temperature: 0.62,
+    })
+  } else {
+    result = await forgeGenerate({
+      prompt: userPrompt,
+      reasoningEffort: 'low',
+      maxTokens: 20000,
+      temperature: 0.62,
+    })
+  }
   const html = String(result?.content || '')
   writeFileSync(join(briefDir, 'forge.html'), html, 'utf8')
   writeFileSync(join(briefDir, 'forge.prompt.txt'), userPrompt, 'utf8')
-  return { html, ms: Date.now() - t0, model: result.model, outputTokens: result.outputTokens }
+  return {
+    html,
+    ms: Date.now() - t0,
+    model: result.model || 'gpt-oss-120b',
+    outputTokens: result.outputTokens,
+    msA: result.msA,
+    msB: result.msB,
+    msC: result.msC,
+    partAChars: result.partAChars,
+    partBChars: result.partBChars,
+    partCChars: result.partCChars,
+  }
 }
 
 /**

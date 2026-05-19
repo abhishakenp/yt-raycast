@@ -315,6 +315,443 @@ export async function forgeGenerate({
 }
 
 /**
+ * Parallel section-split generation.
+ *
+ * GPT-OSS-120b on Groq has a practical "natural ceiling" around 30K chars
+ * per output (model converges there regardless of higher char-count
+ * requests). To reach Kimi K2.5 reference-tier density (~55-60K chars)
+ * within a 20s budget, fire two calls in parallel:
+ *
+ *   Call A: <!DOCTYPE> through end of features section, ends with marker
+ *   Call B: section content from how-it-works through footer + IIFE
+ *
+ * Both run concurrently → wall-clock = slower(A, B), typically 16-19s
+ * vs ~20s for single-call. Output: 50-65K chars stitched.
+ *
+ * Coherence: both calls receive the SAME variation block (aesthetic,
+ * hero archetype, pricing archetype, composition, mobbinBlock, rigorBlock)
+ * so colors/fonts/theme match. A defines tailwind.config + body classes;
+ * B's sections inherit from those at stitch time.
+ *
+ * Returns { content, ms, msA, msB, inputTokensA, outputTokensA,
+ *           inputTokensB, outputTokensB, errorA?, errorB? }
+ */
+const SPLIT_MARKER = '<!-- FORGE_SPLIT_AB -->'
+const SPLIT_MARKER_BC = '<!-- FORGE_SPLIT_BC -->'
+
+const SYSTEM_PART_A = HOMEPAGE_SYSTEM_LEAN + `
+
+PARALLEL-SPLIT MODE — PART A:
+You are producing PART A of a 2-part split generation. Output the FIRST half of the page with HIGH density. End with the marker (no closing tags, no script).
+
+Output ONLY:
+  <!DOCTYPE html>
+  <html ...>
+  <head>...full head with tailwind.config (colors, fontFamily, keyframes liquid, animation), 3 Google Fonts <link>, viewport meta, Tailwind CDN script, Lucide CDN script...</head>
+  <body class="...">
+    <header>...nav with ≥6 nav links, mobile-nav-toggle, primary CTA in nav...</header>
+    <section id="hero">
+      ...eyebrow announcement pill above headline ("New in 2026: …" or "Backed by …" — clickable, with arrow icon)
+      ...3+ radial-gradient blur orbs (absolutely positioned, motion-reduce:hidden)
+      ...<canvas id="hero-canvas"> for particle loop
+      ...two-tone headline (accent color on payoff word/phrase)
+      ...4-line subhead/description (not 1-2 lines — go editorial)
+      ...2 CTAs (one data-magnet) + 4-item trust chip row (e.g. "SOC 2 Type II", "99.99% SLA", "GDPR ready", "Open-source")
+      ...PRODUCT UI MOCK (~400px tall): terminal/dashboard/chat preview with 12+ rows of REAL contextual content — multi-line code with syntax-highlight-looking colored spans, table rows with cell content, conversation bubbles, chart data; NOT a placeholder box. Include a fake browser/window chrome at top (3 dot circles + tab/url bar).
+    </section>
+    <section id="stats">
+      ...subtitle row above ("Trusted at scale")
+      ...4 stat columns, each with text-4xl/5xl number + data-counter data-counter-target attribute + label below + 1-line context note under label
+    </section>
+    <section id="features">
+      ...heading + 2-line subheading
+      ...12 feature cards in 3 column grid (NOT 6 or 8 — go MAX density); each card has icon + heading + 3-line description + a sub-bullet list of 2-3 specific capabilities. Each card ~150 words minimum.
+    </section>
+    <section id="how-it-works">
+      ...heading + 2-line subheading
+      ...4 numbered steps (1./2./3./4.) with icon + step heading + 3-sentence description + a code/command snippet OR a row of sub-points per step; connect with thin line/arrow on lg
+    </section>
+    <section id="logos">
+      ...heading "Trusted by teams at" with 2-line subheading
+      ...grid of 8+ NAMED REAL B2B SaaS brands (Linear, Vercel, Stripe, Resend, Notion, Cloudflare, Hashnode, Supabase, Anthropic, OpenAI Platform, ElevenLabs, Hume AI, Clay, Base44, Relevance AI — pick from the variation block's anchor brands). Render brand names as styled text in grayscale, hover to color.
+      ...3 mini-quotes UNDER the logo grid with named author + brand (italic, ~2 lines each)
+    </section>
+    <section id="faq">
+      ...heading + 2-line subheading + ≥7 data-accordion items, each with data-accordion-trigger button + 3-sentence answer + (where natural) inline link or code snippet in answer
+    </section>
+${SPLIT_MARKER}
+
+That marker is the EXACT ending — nothing after it (no </body>, no </html>, no <script>, no <footer>, no testimonials/pricing/faq/cta). Part B will append testimonials, pricing, faq, cta, footer, IIFE, closing tags. DO NOT include those sections. DO NOT close body/html.
+
+YOUR PORTION MUST BE ≥30,000 chars. If you naturally finish under that, you have under-developed: ADD more nested content (3+ sub-bullets per feature card, 4+ sentences per how-it-works step, 8+ logos with mini-quotes underneath, longer hero subhead with more concrete benefit lines, more stat columns with context notes). Reference-tier homepages spend more words per section than a typical SaaS template — match that voice. Target 32,000-40,000 chars.`
+
+const SYSTEM_PART_B = HOMEPAGE_SYSTEM_LEAN + `
+
+PARALLEL-SPLIT MODE — PART B:
+You are producing PART B of a 2-part split generation. Part A already produced: <!DOCTYPE>, <head>, <body opening>, <header>, hero, stats, features, how-it-works, logos, FAQ. Your job: testimonials + pricing + cta + footer + IIFE + closing tags.
+
+Output EXACTLY (marker first, no preamble):
+${SPLIT_MARKER}
+  <section id="testimonials">
+    ...heading + 2-line subheading + 3 cards in lg:grid-cols-3
+    ...each card: ★★★★★ row (5 inline lucide star icons or chars) at top, 3-line quote, author block with colored-circle initial + name + role @ named real company (different real B2B SaaS brand per card — pick from variation block anchors)
+  </section>
+  <section id="pricing">
+    ...heading "Simple, transparent pricing" + 2-line subheading + monthly/yearly segmented toggle (data-pricing-billing with two buttons data-billing="month"/"year") + "save 20%" pill on yearly
+    ...3 tiers, middle tier MUST scale-105 md:scale-110 ring-2 ring-primary + "Most popular" pill at top + elevated shadow
+    ...each tier: name + price ([data-show-monthly]/[data-show-yearly] for toggle) + 1-line description + 8 feature lines with check icons + CTA button (one data-magnet)
+  </section>
+  <section id="cta-final">
+    ...penultimate CTA band with heading + 2-line subheading + 2 CTAs + trust line; subtle gradient or dark band
+  </section>
+  <footer>
+    ...4 columns: Product / Resources / Company / Legal; each with 4-5 links; logo + tagline column on the left; copyright row at bottom + secondary nav strip; social icons as inline <svg viewBox="0 0 24 24"> (Lucide doesn't have brand icons)
+  </footer>
+  <script>(function(){
+    ...single IIFE, null-guarded querySelectors
+    ...wire: data-mobile-nav + data-mobile-nav-toggle (is-open class)
+    ...wire: data-accordion items (click trigger toggles is-open)
+    ...wire: data-pricing-billing (clicking month/year toggles [data-show-monthly]/[data-show-yearly])
+    ...wire: data-counter (IntersectionObserver → count-up from 0 to data-counter-target over 1.2s)
+    ...wire: data-magnet (pointer parallax: translate by mouse offset * 0.15)
+    ...wire: hero-canvas particle loop (respect prefers-reduced-motion)
+    ...call lucide.createIcons() once after DOM ready
+    ...add 'reveal-ready' class to <html> on DOMContentLoaded so transition-opacity reveal kicks in
+  })();</script>
+  </body>
+</html>
+
+DO NOT include <!DOCTYPE>, <html>, <head>, <body opening>, <header>, hero, stats, features, how-it-works, logos, or FAQ. The marker is the very first line in your output. Use Lucide icons from data-lucide names (safe list applies).
+
+YOUR PORTION TARGET: 18,000-24,000 chars. Be substantive but DO NOT over-elaborate — total page including Part A should be ~55-60K chars. Keep testimonials at 3 cards, pricing at 8 features per tier. Quality over verbosity.`
+
+export async function forgeGenerateSplit({
+  prompt = FORGE_DEFAULT_PROMPT,
+  model = HOMEPAGE_MODEL || 'openai/gpt-oss-120b',
+  temperature = LLM_CONFIG.homepage.temperature,
+  maxTokensPerHalfA = 14000,
+  maxTokensPerHalfB = 9000,
+  reasoningEffort = 'low',
+  signal,
+} = {}) {
+  if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
+
+  // Both halves receive the SAME user prompt (variation + brief + mobbin
+  // + rigor blocks all live in `prompt`). The system prompt differentiates
+  // which sections each half produces.
+  const callOne = (system, maxTok) =>
+    fetch(URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature,
+        max_tokens: maxTok,
+        stream: false,
+        reasoning_effort: reasoningEffort,
+        reasoning_format: 'hidden',
+      }),
+      signal,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw new Error(`Groq ${res.status}: ${text.slice(0, 200)}`)
+      }
+      return res.json()
+    })
+
+  const t0 = Date.now()
+  let resA, resB
+  try {
+    ;[resA, resB] = await Promise.all([
+      callOne(SYSTEM_PART_A, maxTokensPerHalfA).then((d) => ({ ok: true, ms: Date.now() - t0, data: d })).catch((e) => ({ ok: false, error: String(e?.message || e) })),
+      callOne(SYSTEM_PART_B, maxTokensPerHalfB).then((d) => ({ ok: true, ms: Date.now() - t0, data: d })).catch((e) => ({ ok: false, error: String(e?.message || e) })),
+    ])
+  } catch (e) {
+    return { content: '', ms: Date.now() - t0, error: String(e?.message || e) }
+  }
+  const ms = Date.now() - t0
+  if (!resA.ok || !resB.ok) {
+    return { content: '', ms, error: `A: ${resA.error || 'ok'} | B: ${resB.error || 'ok'}` }
+  }
+  const partA = stripGroqReasoningLeak(resA.data.choices?.[0]?.message?.content ?? '')
+  const partB = stripGroqReasoningLeak(resB.data.choices?.[0]?.message?.content ?? '')
+
+  // Defensive stitch:
+  //   - Take A up to (and excluding) any premature </body></html>
+  //   - Strip everything before marker in A; if no marker, append at end of body
+  //   - Take B from marker onward; if no marker in B, prepend it
+  //   - Concatenate
+  let cleanA = partA
+  const aMarkerIdx = cleanA.indexOf(SPLIT_MARKER)
+  if (aMarkerIdx >= 0) cleanA = cleanA.slice(0, aMarkerIdx)
+  // Strip any premature closing tags in A (model sometimes adds them anyway).
+  cleanA = cleanA
+    .replace(/<\/body>[\s\S]*<\/html>\s*$/i, '')
+    .replace(/<\/body>\s*$/i, '')
+    .replace(/<\/html>\s*$/i, '')
+    .replace(/<script[\s\S]*?<\/script>\s*$/i, '') // strip trailing script if A added one
+    .trimEnd()
+
+  let cleanB = partB
+  const bMarkerIdx = cleanB.indexOf(SPLIT_MARKER)
+  if (bMarkerIdx >= 0) cleanB = cleanB.slice(bMarkerIdx + SPLIT_MARKER.length)
+  cleanB = cleanB.trimStart()
+  // Defensively strip any rogue <!DOCTYPE>/<html>/<head>/<body> from B start.
+  cleanB = cleanB.replace(/^[\s\S]*?<section/i, '<section').trim()
+  // Ensure B ends with </body></html>; add if missing.
+  if (!/<\/html>\s*$/i.test(cleanB)) {
+    if (!/<\/body>\s*<\/html>\s*$/i.test(cleanB)) {
+      cleanB = cleanB.replace(/<\/body>\s*$/i, '') + '\n</body>\n</html>'
+    }
+  }
+
+  const stitched = cleanA + '\n' + cleanB
+
+  const usageA = resA.data.usage ?? {}
+  const usageB = resB.data.usage ?? {}
+  return {
+    content: stitched,
+    ms,
+    msA: resA.ms,
+    msB: resB.ms,
+    inputTokensA: usageA.prompt_tokens ?? 0,
+    outputTokensA: usageA.completion_tokens ?? 0,
+    inputTokensB: usageB.prompt_tokens ?? 0,
+    outputTokensB: usageB.completion_tokens ?? 0,
+    inputTokens: (usageA.prompt_tokens ?? 0) + (usageB.prompt_tokens ?? 0),
+    outputTokens: (usageA.completion_tokens ?? 0) + (usageB.completion_tokens ?? 0),
+    cost: 0,
+    model,
+    partAChars: cleanA.length,
+    partBChars: cleanB.length,
+  }
+}
+
+/**
+ * 3-way parallel section split.
+ *
+ * Goal: hit Kimi K2.5 density (~55-60K chars) within 20s wall-clock budget.
+ * 2-way split converges around 20-22s; splitting into 3 lets each call be
+ * lighter (~14-17s) so parallel wall = max(A,B,C) ≈ 17s.
+ *
+ *   A: head + header + hero + stats        (target ~15K, ~13s)
+ *   B: features + how-it-works + logos     (target ~22K, ~16s)
+ *   C: testimonials + pricing + faq + cta + footer + IIFE (target ~22K, ~16s)
+ *
+ * Markers: SPLIT_MARKER between A/B end, SPLIT_MARKER_BC between B/C end.
+ */
+const SYSTEM_PART_A3 = HOMEPAGE_SYSTEM_LEAN + `
+
+PARALLEL-3-SPLIT MODE — PART A (head + header + hero + stats only):
+Output ONLY:
+  <!DOCTYPE html>
+  <html ...>
+  <head>...full head with tailwind.config (colors, fontFamily, keyframes liquid, animation), 3 Google Fonts <link>, viewport meta, Tailwind CDN script, Lucide CDN script...</head>
+  <body class="...">
+    <header>...nav with ≥6 nav links, mobile-nav-toggle, primary CTA in nav...</header>
+    <section id="hero">
+      ...eyebrow announcement pill above headline
+      ...3+ radial-gradient blur orbs (motion-reduce:hidden)
+      ...<canvas id="hero-canvas"> for particle loop
+      ...two-tone headline (accent color on payoff word)
+      ...4-line subhead
+      ...2 CTAs (one data-magnet) + 4-item trust chip row
+      ...PRODUCT UI MOCK ~420px tall: terminal/dashboard/chat with 12+ rows of REAL contextual content (colored syntax spans, table rows, chart bars, conversation bubbles). Include browser/window chrome at top.
+    </section>
+    <section id="stats">
+      ...subtitle row ("Trusted at scale")
+      ...4 stat columns: text-4xl/5xl number with data-counter data-counter-target + label + 1-line context note
+    </section>
+${SPLIT_MARKER}
+
+That marker ends your output. NOTHING after it — Part B and Part C produce features/how-it-works/logos/testimonials/pricing/faq/cta/footer/IIFE/closing tags. DO NOT close body or html. Target 12,000-18,000 chars for your portion. Quality of hero product-UI mock is the most important detail — make it visually rich with believable content.`
+
+const SYSTEM_PART_B3 = HOMEPAGE_SYSTEM_LEAN + `
+
+PARALLEL-3-SPLIT MODE — PART B (features + how-it-works + logos + testimonials):
+Part A already produced: <!DOCTYPE>, <head>, <body opening>, <header>, hero, stats. Part C will produce pricing, faq, cta, footer, IIFE, closing tags. Your job: the 4 middle sections.
+
+Output EXACTLY:
+${SPLIT_MARKER}
+  <section id="features">
+    ...heading + 2-line subheading
+    ...12 feature cards in 3-column grid; each card: icon + heading + 3-line description + sub-bullet list of 2-3 specific capabilities.
+  </section>
+  <section id="how-it-works">
+    ...heading + 2-line subheading
+    ...4 numbered steps with icon + step heading + 3-sentence description + code/command snippet OR row of sub-points per step
+  </section>
+  <section id="logos">
+    ...heading "Trusted by teams at" + 2-line subheading
+    ...grid of 8+ NAMED REAL B2B SaaS brands (Linear, Vercel, Stripe, Resend, Notion, Cloudflare, Hashnode, Supabase, Anthropic, OpenAI Platform, ElevenLabs, Hume AI, Clay, Base44, Relevance AI — pick from variation block anchors). Styled text in grayscale, hover to color.
+  </section>
+  <section id="testimonials">
+    ...heading + 2-line subheading + 3 cards in lg:grid-cols-3
+    ...each card: ★★★★★ row (5 inline lucide star icons or chars), 3-line quote, colored-circle initial + name + role @ named real B2B SaaS brand (different per card)
+  </section>
+${SPLIT_MARKER_BC}
+
+Marker is FIRST line, ${SPLIT_MARKER_BC} is LAST line. NO doctype/html/head/body opening/header/hero/stats at start. NO pricing/faq/cta/footer/script after. Target 24,000-30,000 chars. Use Lucide icons from the safe list.`
+
+const SYSTEM_PART_C3 = HOMEPAGE_SYSTEM_LEAN + `
+
+PARALLEL-3-SPLIT MODE — PART C (pricing + faq + cta + footer + IIFE + closing tags):
+Parts A and B already produced everything from <!DOCTYPE> through the end of the testimonials section. Your job: the rest of the page.
+
+Output EXACTLY (marker first, no preamble):
+${SPLIT_MARKER_BC}
+  <section id="pricing">
+    ...heading + 2-line subheading + monthly/yearly toggle (data-pricing-billing) + "save 20%" pill on yearly
+    ...3 tiers, middle tier scale-105 md:scale-110 ring-2 ring-primary + "Most popular" pill + elevated shadow
+    ...each tier: name + price ([data-show-monthly]/[data-show-yearly]) + 1-line description + 7 feature lines with check icons + CTA button (one data-magnet)
+  </section>
+  <section id="faq">
+    ...heading + 2-line subheading + 6 data-accordion items with data-accordion-trigger + 2-3 sentence answer (concrete examples)
+  </section>
+  <section id="cta-final">
+    ...penultimate CTA band: heading + subheading + 2 CTAs + trust line
+  </section>
+  <footer>
+    ...4 columns: Product/Resources/Company/Legal, each 4-5 links; logo + tagline column on left; copyright + secondary nav strip + social icons (inline <svg viewBox="0 0 24 24"> for brand glyphs)
+  </footer>
+  <script>(function(){
+    ...single IIFE, null-guarded querySelectors. Concise — single helpers, no redundancy.
+    ...wire data-mobile-nav + data-mobile-nav-toggle (is-open class)
+    ...wire data-accordion items (click toggles is-open)
+    ...wire data-pricing-billing (toggle [data-show-monthly]/[data-show-yearly])
+    ...wire data-counter (IntersectionObserver → count-up over 1.2s)
+    ...wire data-magnet (pointer parallax: translate by mouse offset * 0.15)
+    ...hero-canvas particle loop (respect prefers-reduced-motion)
+    ...lucide.createIcons() once after DOM ready
+    ...add 'reveal-ready' class to <html> on DOMContentLoaded
+  })();</script>
+  </body>
+</html>
+
+NO doctype/html/head/body/header/hero/stats/features/how-it-works/logos/testimonials at start. The marker is the very first line. Target 18,000-22,000 chars.`
+
+export async function forgeGenerateSplit3({
+  prompt = FORGE_DEFAULT_PROMPT,
+  model = HOMEPAGE_MODEL || 'openai/gpt-oss-120b',
+  temperature = LLM_CONFIG.homepage.temperature,
+  maxTokensA = 7000,
+  maxTokensB = 11000,
+  maxTokensC = 7500,
+  reasoningEffort = 'low',
+  signal,
+} = {}) {
+  if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
+
+  const callOne = (system, maxTok) =>
+    fetch(URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature,
+        max_tokens: maxTok,
+        stream: false,
+        reasoning_effort: reasoningEffort,
+        reasoning_format: 'hidden',
+      }),
+      signal,
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text().catch(() => '')
+        throw new Error(`Groq ${res.status}: ${text.slice(0, 200)}`)
+      }
+      return res.json()
+    })
+
+  const t0 = Date.now()
+  const [resA, resB, resC] = await Promise.all([
+    callOne(SYSTEM_PART_A3, maxTokensA).then((d) => ({ ok: true, ms: Date.now() - t0, data: d })).catch((e) => ({ ok: false, error: String(e?.message || e) })),
+    callOne(SYSTEM_PART_B3, maxTokensB).then((d) => ({ ok: true, ms: Date.now() - t0, data: d })).catch((e) => ({ ok: false, error: String(e?.message || e) })),
+    callOne(SYSTEM_PART_C3, maxTokensC).then((d) => ({ ok: true, ms: Date.now() - t0, data: d })).catch((e) => ({ ok: false, error: String(e?.message || e) })),
+  ])
+  const ms = Date.now() - t0
+  if (!resA.ok || !resB.ok || !resC.ok) {
+    return {
+      content: '',
+      ms,
+      error: `A: ${resA.error || 'ok'} | B: ${resB.error || 'ok'} | C: ${resC.error || 'ok'}`,
+    }
+  }
+  const partA = stripGroqReasoningLeak(resA.data.choices?.[0]?.message?.content ?? '')
+  const partB = stripGroqReasoningLeak(resB.data.choices?.[0]?.message?.content ?? '')
+  const partC = stripGroqReasoningLeak(resC.data.choices?.[0]?.message?.content ?? '')
+
+  // Stitch: A up to SPLIT_MARKER, then B (from SPLIT_MARKER to SPLIT_MARKER_BC),
+  // then C (from SPLIT_MARKER_BC). Strip rogue closing tags between segments.
+  const sliceBefore = (s, m) => {
+    const i = s.indexOf(m)
+    return i >= 0 ? s.slice(0, i) : s
+  }
+  const sliceAfter = (s, m) => {
+    const i = s.indexOf(m)
+    return i >= 0 ? s.slice(i + m.length) : s
+  }
+  let cleanA = sliceBefore(partA, SPLIT_MARKER)
+  cleanA = cleanA
+    .replace(/<\/body>[\s\S]*<\/html>\s*$/i, '')
+    .replace(/<\/body>\s*$/i, '')
+    .replace(/<\/html>\s*$/i, '')
+    .replace(/<script[\s\S]*?<\/script>\s*$/i, '')
+    .trimEnd()
+
+  let cleanB = sliceBefore(sliceAfter(partB, SPLIT_MARKER), SPLIT_MARKER_BC)
+  cleanB = cleanB.replace(/^[\s\S]*?<section/i, '<section').trim()
+  cleanB = cleanB
+    .replace(/<\/body>[\s\S]*<\/html>\s*$/i, '')
+    .replace(/<\/body>\s*$/i, '')
+    .replace(/<\/html>\s*$/i, '')
+    .replace(/<script[\s\S]*?<\/script>\s*$/i, '')
+    .trimEnd()
+
+  let cleanC = sliceAfter(partC, SPLIT_MARKER_BC)
+  cleanC = cleanC.replace(/^[\s\S]*?<section/i, '<section').trim()
+  if (!/<\/html>\s*$/i.test(cleanC)) {
+    if (!/<\/body>\s*<\/html>\s*$/i.test(cleanC)) {
+      cleanC = cleanC.replace(/<\/body>\s*$/i, '') + '\n</body>\n</html>'
+    }
+  }
+
+  const stitched = `${cleanA}\n${cleanB}\n${cleanC}`
+
+  const sum = (k) =>
+    (resA.data.usage?.[k] ?? 0) + (resB.data.usage?.[k] ?? 0) + (resC.data.usage?.[k] ?? 0)
+  return {
+    content: stitched,
+    ms,
+    msA: resA.ms,
+    msB: resB.ms,
+    msC: resC.ms,
+    partAChars: cleanA.length,
+    partBChars: cleanB.length,
+    partCChars: cleanC.length,
+    inputTokens: sum('prompt_tokens'),
+    outputTokens: sum('completion_tokens'),
+    cost: 0,
+    model,
+  }
+}
+
+/**
  * Self-critique fix pass: ask the model to find 3 weakest details + emit fixed HTML.
  * Returns { content, ms } or null if budget exceeded.
  */
