@@ -122,6 +122,42 @@ const SHARED_POSTGRES_CONTAINER = 'medusa-postgres-1'
 const SHARED_DB_USER = 'medusa'
 const SHARED_DB_PASSWORD = 'medusa'
 
+// All tenants run the same pre-built image — the admin bundle is baked into
+// it at image build time, so per-tenant container boots are migrate-only and
+// the click-to-admin path stays fast. If you change medusa-backend/Dockerfile
+// or src/, rebuild via `docker rmi ${TENANT_IMAGE}` or call
+// ensureTenantImageBuilt({ force: true }).
+const TENANT_IMAGE = 'ship-fast-medusa-tenant:latest'
+const TENANT_BUILD_CONTEXT = path.join(PROJECT_ROOT, 'medusa-backend')
+
+let _tenantImageBuildPromise = null
+
+export async function ensureTenantImageBuilt(options = {}) {
+  if (!options.force) {
+    try {
+      await execAsync(`docker image inspect ${TENANT_IMAGE}`, { stdio: 'ignore' })
+      return // image already present
+    } catch {
+      // not built yet — fall through to build
+    }
+  }
+  // Dedup concurrent builds — first caller starts the build, the rest await
+  // the same promise so we don't spawn N redundant `docker build`s if
+  // multiple sessions land at the same time.
+  if (_tenantImageBuildPromise) return _tenantImageBuildPromise
+  _tenantImageBuildPromise = (async () => {
+    try {
+      await execAsync(`docker build -t ${TENANT_IMAGE} "${TENANT_BUILD_CONTEXT}"`, {
+        cwd: PROJECT_ROOT,
+        maxBuffer: 100 * 1024 * 1024,
+      })
+    } finally {
+      _tenantImageBuildPromise = null
+    }
+  })()
+  return _tenantImageBuildPromise
+}
+
 // Derive the public reverse-proxy config for a given session. When
 // MEDUSA_PUBLIC_HOST is unset we return { enabled: false } and callers fall
 // back to the localhost:<port> behavior used in local development. The
@@ -260,9 +296,7 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
 
   const compose = `services:
   ${containerName}:
-    build:
-      context: ../../../medusa-backend
-      dockerfile: Dockerfile
+    image: ${TENANT_IMAGE}
     container_name: ${containerName}
     ports:
       - "${portMapping}"
@@ -497,6 +531,9 @@ async function _doProvisionMedusaForSession(sessionId) {
   const publicCfg = getPublicMedusaConfig(sessionId)
 
   await createSessionDatabase(dbName)
+  // Make sure the shared tenant image exists before compose tries to use it.
+  // Idempotent fast-path (docker image inspect) after the first build.
+  await ensureTenantImageBuilt()
   await execAsync(`docker compose -f "${composeFilePath}" up -d`, { cwd: PROJECT_ROOT })
   // Health + admin bootstrap always go through loopback — the container still
   // listens on 9000 internally and is mapped to 127.0.0.1:${port} on the host,

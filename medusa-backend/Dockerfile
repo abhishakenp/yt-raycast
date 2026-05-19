@@ -21,10 +21,21 @@ RUN npm install --no-audit --no-fund --loglevel=error
 COPY tsconfig.json medusa-config.js entrypoint.sh ./
 COPY src ./src
 
+# Pre-build the Medusa server + admin bundle into the image, then prepare
+# .medusa/server as the production runtime dir (Medusa v2's standard
+# deploy pattern). medusa-config.js has to live alongside the bundle so
+# `medusa start` can load it; npm install --omit=dev fills in the
+# production-only node_modules the bundle expects.
+RUN npx --no medusa build && \
+    cp medusa-config.js .medusa/server/medusa-config.js && \
+    cd .medusa/server && \
+    npm install --omit=dev --no-audit --no-fund --loglevel=error
+
 RUN chmod +x entrypoint.sh && chown -R medusa:medusa /app
 
 USER medusa
 EXPOSE 9000
 
-# entrypoint handles: wait for pg → ensure build → migrate → start.
+# entrypoint handles: wait for pg → migrate → seed admin → start. Build
+# already happened at image build time (see RUN npx medusa build above).
 ENTRYPOINT ["/sbin/tini", "--", "./entrypoint.sh"]

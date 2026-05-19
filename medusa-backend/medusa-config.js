@@ -18,10 +18,8 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || 'supersecret',
     },
   },
-  // Tenant Medusa is API-only — ship-fast drives it programmatically via the
-  // admin REST endpoints, so the bundled React admin UI is dead weight. Skips
-  // ~25s of frontend webpack build and ~120MB image bloat per tenant.
-  admin: {
-    disable: true,
-  },
+  // Bundled React admin is served at /app per Medusa v2 defaults. The
+  // dashboard popup opens `${backendUrl}/app` after provisioning, so the
+  // admin must be enabled. Webpack build cost is paid once at image build
+  // (Dockerfile RUN npx medusa build) — tenant boots reuse the bundle.
 })

@@ -1,10 +1,12 @@
 #!/bin/sh
 # Per-tenant Medusa boot:
 #   1. Wait for the shared Postgres (DATABASE_URL).
-#   2. Build the Medusa app if .medusa/server doesn't already exist (idempotent —
-#      cached across container restarts; rebuilt only when source changes).
-#   3. Run pending migrations against this tenant's database.
+#   2. Run pending migrations against this tenant's database.
+#   3. Bootstrap the seed admin user (idempotent — tolerates re-run errors).
 #   4. Start the server bound to 0.0.0.0:$PORT.
+# The .medusa/server bundle (server + admin UI) is baked into the image at
+# build time (Dockerfile `RUN npx --no medusa build`), so per-container boot
+# stays under a few seconds — no webpack at runtime.
 set -eu
 
 PORT="${PORT:-9000}"
@@ -25,12 +27,11 @@ wait_for_pg() {
 
 wait_for_pg
 
-if [ ! -d ".medusa/server" ]; then
-  echo "[entrypoint] no prior build — running medusa build…"
-  npx --no medusa build
-else
-  echo "[entrypoint] reusing cached .medusa/server build"
-fi
+# Switch to the built production bundle for the rest of the boot. Medusa v2's
+# `medusa start` resolves admin assets relative to CWD via ./public/admin, so
+# running from /app would 404 on /app even though the admin is built — the
+# bundle lives at .medusa/server/public/admin instead.
+cd /app/.medusa/server
 
 echo "[entrypoint] running migrations…"
 npx --no medusa db:migrate || {
