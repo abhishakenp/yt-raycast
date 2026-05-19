@@ -1,0 +1,18 @@
+{
+  "name": "editorial-warm",
+  "radius": "rounded-md",
+  "spacing": "generous-magazine",
+  "shadow": "none-paper",
+  "contrast": "medium-high",
+  "borders": "warm-stone-200",
+  "font_pairing": "fraunces/inter",
+  "motion": "ease-out-slow",
+  "density": "spacious",
+  "palette": {
+    "bg": "bg-stone-50",
+    "fg": "text-stone-900",
+    "muted": "text-stone-500",
+    "accent": "bg-stone-900 text-stone-50",
+    "border": "border-stone-200"
+  }
+}

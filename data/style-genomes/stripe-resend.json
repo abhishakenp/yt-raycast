@@ -1,0 +1,18 @@
+{
+  "name": "stripe-resend",
+  "radius": "rounded-lg",
+  "spacing": "generous-12pt",
+  "shadow": "elevated-blurry",
+  "contrast": "medium",
+  "borders": "soft-slate-200",
+  "font_pairing": "inter/sf-mono",
+  "motion": "ease-out-150",
+  "density": "comfortable",
+  "palette": {
+    "bg": "bg-slate-50",
+    "fg": "text-slate-900",
+    "muted": "text-slate-500",
+    "accent": "bg-indigo-600 text-white",
+    "border": "border-slate-200"
+  }
+}
