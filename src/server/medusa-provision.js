@@ -238,11 +238,19 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
     'http://localhost:9000,http://127.0.0.1:9000,http://localhost:3000,http://localhost:7420,http://127.0.0.1:3000,http://127.0.0.1:7420',
   )
 
-  // When the tenant is reachable through Traefik, the public subdomain must be
-  // in every CORS list and the dashboard origin must be allowed too (the admin
-  // popup that calls back into ship-fast.io's /api/ecommercify/products lives
-  // there). Local-only deployments keep the original localhost defaults.
-  const extraOrigins = []
+  // CORS allowlist additions. Two cases:
+  //   1) Local dev — admin SPA runs at http://localhost:${port}/app and POSTs
+  //      to /auth/user/emailpass on the same origin. The template defaults
+  //      hardcode port 9000, so without injecting the tenant's actual port
+  //      the browser fails CORS and login silently shows "Invalid email or
+  //      password" even though the credentials are correct.
+  //   2) Public host (Traefik) — the public subdomain + the dashboard
+  //      origin both need to be on the allowlist so the popup can talk to
+  //      its tenant and ship-fast.io's /api/ecommercify/products.
+  const extraOrigins = [
+    `http://localhost:${port}`,
+    `http://127.0.0.1:${port}`,
+  ]
   if (publicCfg.enabled) {
     extraOrigins.push(publicCfg.publicUrl)
     const dashboardOrigin = String(process.env.DASHBOARD_PUBLIC_ORIGIN || '').trim()
