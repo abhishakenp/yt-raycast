@@ -457,6 +457,41 @@ export async function createAdminAndGetPublishableKey(port, email, password) {
   return { publishableKey, adminToken, adminEmail: email, adminPassword: password }
 }
 
+// Mint a Medusa admin invite using the seed admin token. The seed admin user
+// stays reserved for ship-fast's automated tasks (catalog sync); the invite
+// gives the human user a separate admin account they can set up with their
+// own email + password on first visit. Returns { id, token } from the invite
+// response, or null on failure (non-fatal — caller can still surface the
+// seed admin login).
+export async function createAdminInvite(port, adminToken, email) {
+  if (!adminToken || !email) return null
+  const base = normalizeBaseUrl(`http://localhost:${port}`)
+
+  // Same admin warmup race as api-keys — short retry on transient 401s.
+  let res = null
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    res = await postJson(
+      `${base}/admin/invites`,
+      { email },
+      { Authorization: `Bearer ${adminToken}` },
+    )
+    if (res.res.ok) break
+    await new Promise((r) => setTimeout(r, 1500))
+  }
+  if (!res?.res?.ok) {
+    const err = new Error(
+      `Medusa admin invite creation failed (status ${res?.res?.status}) — body: ${JSON.stringify(res?.data)}`,
+    )
+    err.detail = res?.data
+    throw err
+  }
+  const invite = res.data?.invite || null
+  if (!invite?.token) {
+    throw new Error('Medusa admin invite response missing token')
+  }
+  return invite
+}
+
 // In-flight provisioning promises keyed by sessionId. Concurrent callers
 // (e.g. a background pre-warm racing the user's click on Ecommerce) share the
 // same promise so we never spin up two containers for one session.
@@ -540,7 +575,11 @@ async function _doProvisionMedusaForSession(sessionId) {
   // so we don't depend on DNS / TLS being ready before provisioning finishes.
   await waitForMedusaHealth(port)
 
-  const { publishableKey } = await createAdminAndGetPublishableKey(port, adminEmail, adminPassword)
+  const { publishableKey, adminToken } = await createAdminAndGetPublishableKey(
+    port,
+    adminEmail,
+    adminPassword,
+  )
 
   const backendUrl = publicCfg.enabled ? publicCfg.publicUrl : `http://localhost:${port}`
   // adminBaseUrl stays on loopback because we hit it for server-to-server
@@ -548,12 +587,31 @@ async function _doProvisionMedusaForSession(sessionId) {
   // depend on DNS/TLS at sync time for no benefit.
   const adminBaseUrl = `http://localhost:${port}`
 
+  // Mint a separate admin invite so the human user lands on a sign-up form
+  // (/app/invite?token=…) rather than a bare login they have no credentials
+  // for. Non-fatal — if invite creation fails the rest of the provision
+  // still succeeds and the caller can fall back to /app login.
+  let adminInviteToken = null
+  let adminInviteUrl = null
+  try {
+    const inviteEmail = `user-${shortToken(sessionId, 8, 'session')}@ship-fast.local`
+    const invite = await createAdminInvite(port, adminToken, inviteEmail)
+    adminInviteToken = invite?.token || null
+    if (adminInviteToken) {
+      adminInviteUrl = `${backendUrl}/app/invite?token=${adminInviteToken}`
+    }
+  } catch (err) {
+    console.warn(`[medusa-provision] invite mint failed for ${sessionId}: ${err.message}`)
+  }
+
   return {
     publishableKey,
     backendUrl,
     adminBaseUrl,
     adminEmail,
     adminPassword,
+    adminInviteToken,
+    adminInviteUrl,
     port,
     dbName,
     containerId: `medusa-session-${shortToken(sessionId, 12, 'session')}`,

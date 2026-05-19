@@ -316,9 +316,14 @@ async function provisionService(type) {
       medusaConfig = data.config || medusaConfig
       updateRailButton('ecommerce', 'active')
       hideProvisionDialog()
-      const adminUrl = medusaConfig?.backendUrl
+      // Open the invite URL on first visit so the user lands on a sign-up
+      // form (set their own email + password). Falls back to /app login
+      // once the invite has been consumed or when no invite is present
+      // (operator-set global creds).
+      const baseAdminUrl = medusaConfig?.backendUrl
         ? `${String(medusaConfig.backendUrl).replace(/\/$/, '')}/app`
         : ''
+      const adminUrl = medusaConfig?.adminInviteUrl || baseAdminUrl
       if (adminUrl) {
         if (popup) popup.location.href = adminUrl
         else window.open(adminUrl, '_blank')
@@ -1527,9 +1532,10 @@ function initPreviewSiteRail() {
         showProvisionDialog('medusa')
         return
       }
-      const adminUrl = medusaConfig?.backendUrl
+      const baseAdminUrl = medusaConfig?.backendUrl
         ? `${String(medusaConfig.backendUrl).replace(/\/$/, '')}/app`
         : ''
+      const adminUrl = medusaConfig?.adminInviteUrl || baseAdminUrl
       if (adminUrl) window.open(adminUrl, '_blank')
       return
     }
