@@ -8,21 +8,31 @@ export function isMedusaStoreApiConfigured() {
   return Boolean(key.trim())
 }
 
+const DEFAULT_BASE_URL = () => process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+
+async function resolveSessionMedusaConfig(sessionId) {
+  if (!sessionId) return null
+  try {
+    const session = await getSession(sessionId)
+    return session?.medusaConfig || null
+  } catch {
+    return null
+  }
+}
+
 async function getPublishableKey(req) {
-  const baseUrl = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+  const sessionId = String(req?.query?.sessionId || '').trim()
+  const sessionCfg = await resolveSessionMedusaConfig(sessionId)
+  // Prefer the session's tenant URL when a session is provisioned — otherwise
+  // multi-tenant storefronts would all be funneled into MEDUSA_BACKEND_URL.
+  const sessionBaseUrl = String(sessionCfg?.backendUrl || '').trim().replace(/\/$/, '')
+  const baseUrl = sessionBaseUrl || DEFAULT_BASE_URL()
+
   const headerKey = String(req?.headers?.['x-medusa-publishable-key'] || '').trim()
   if (headerKey) return { baseUrl, publishableKey: headerKey }
 
-  const sessionId = String(req?.query?.sessionId || '').trim()
-  if (sessionId) {
-    try {
-      const session = await getSession(sessionId)
-      const sessionKey = String(session?.medusaConfig?.publishableKey || '').trim()
-      if (sessionKey) return { baseUrl, publishableKey: sessionKey }
-    } catch {
-      // fall through to global key
-    }
-  }
+  const sessionKey = String(sessionCfg?.publishableKey || '').trim()
+  if (sessionKey) return { baseUrl, publishableKey: sessionKey }
 
   const publishableKey =
     process.env.MEDUSA_PUBLISHABLE_API_KEY || process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ''
@@ -42,9 +52,11 @@ export function createMedusaStoreRouter() {
 
   r.get('/config', async (req, res) => {
     const c = await getMedusaStoreClient(req)
+    const sessionCfg = await resolveSessionMedusaConfig(String(req?.query?.sessionId || '').trim())
+    const sessionBaseUrl = String(sessionCfg?.backendUrl || '').trim().replace(/\/$/, '')
     res.json({
       enabled: Boolean(c),
-      backendUrl: process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
+      backendUrl: sessionBaseUrl || DEFAULT_BASE_URL(),
     })
   })
 

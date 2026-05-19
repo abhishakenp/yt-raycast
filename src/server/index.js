@@ -16,7 +16,13 @@ import {
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
 import { provisionSanityForSession, isSanityProvisionable } from './sanity-provision.js'
-import { provisionMedusaForSession, isMedusaProvisionable } from './medusa-provision.js'
+import {
+  provisionMedusaForSession,
+  isMedusaProvisionable,
+  startMedusaPreWarmIfApplicable,
+} from './medusa-provision.js'
+import { extractSessionProducts } from './extract-session-products.js'
+import { syncProductsToMedusa } from './sync-medusa-catalog.js'
 import {
   loadSiteSpec,
   saveSiteSpec,
@@ -860,6 +866,11 @@ export async function startServer(sessionsDir) {
         isPrivate: false,
       })
 
+      // Background-provision Medusa as soon as the prompt looks ecommerce, so
+      // the eCommerce rail click is near-instant by the time the user gets
+      // there. No-op when the env isn't configured or the prompt isn't a fit.
+      startMedusaPreWarmIfApplicable(session.id, trimmedPrompt)
+
       console.log(
         `[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} monthly=${userMonthly + 1}`,
       )
@@ -915,6 +926,8 @@ export async function startServer(sessionsDir) {
         preferredLanguage,
         isPrivate: false,
       })
+
+      startMedusaPreWarmIfApplicable(session.id, trimmedPrompt)
 
       console.log(`[${ts}] GENERATE anon ip=${clientIp} session=${session.id}`)
 
@@ -1866,20 +1879,73 @@ export async function startServer(sessionsDir) {
     res.json({ success: true, config: safeConfig })
   })
 
+  // Push the session's catalogue (extracted from the rendered template HTML)
+  // into the tenant Medusa admin. Idempotent: it's safe to call again if the
+  // sync flag isn't set yet, but we skip when productsSyncedAt is already
+  // populated to avoid re-syncing on every click.
+  const _maybeSyncSessionProductsToTenant = async (sessionId, config) => {
+    if (!config?.adminBaseUrl || !config?.adminEmail || !config?.adminPassword) return null
+    const session = getSession(sessionId)
+    if (!session?.siteSpecReady) return null
+    const products = extractSessionProducts(session, _sessionsDir)
+    if (products.length === 0) return null
+    try {
+      const result = await syncProductsToMedusa(products, {
+        backendUrl: config.adminBaseUrl,
+        email: config.adminEmail,
+        password: config.adminPassword,
+        workspace: session.workspace,
+      })
+      const next = {
+        ...config,
+        productsSyncedAt: new Date().toISOString(),
+        productsSyncedCount: result.synced,
+      }
+      await setMedusaConfig(sessionId, next)
+      return { ok: true, ...result, config: next }
+    } catch (err) {
+      console.warn(`[medusa-sync] catalog push failed for ${sessionId}: ${err.message}`)
+      return { ok: false, error: err.message }
+    }
+  }
+
   app.post('/api/provision/medusa', async (req, res) => {
     const id = req.body?.sessionId
     if (!id) return res.status(400).json({ error: 'sessionId required' })
     const session = getSession(id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (session.medusaConfig) {
-      return res.json({ success: true, config: session.medusaConfig, alreadyProvisioned: true })
+    try {
+      if (session.medusaConfig) {
+        let config = session.medusaConfig
+        let sync = null
+        // Pre-warm can finish before the template's HTML is rendered, so a
+        // session may already be provisioned but never had its catalog pushed.
+        // Push it now if we've never synced this session.
+        if (!config.productsSyncedAt) {
+          const result = await _maybeSyncSessionProductsToTenant(id, config)
+          if (result?.ok) {
+            config = result.config
+            sync = { synced: result.synced, errors: result.errors }
+          }
+        }
+        return res.json({ success: true, config, alreadyProvisioned: true, sync })
+      }
+      if (!isMedusaProvisionable()) {
+        return res.status(503).json({ error: 'Medusa provisioning not configured' })
+      }
+      const provisioned = await provisionMedusaForSession(id, session.prompt?.slice(0, 50))
+      await setMedusaConfig(id, provisioned)
+      const syncResult = await _maybeSyncSessionProductsToTenant(id, provisioned)
+      const config = syncResult?.ok ? syncResult.config : provisioned
+      res.json({
+        success: true,
+        config,
+        sync: syncResult?.ok ? { synced: syncResult.synced, errors: syncResult.errors } : null,
+      })
+    } catch (err) {
+      console.error(`[provision/medusa] session=${id} failed: ${err.message}`, err.detail || '')
+      res.status(500).json({ error: err.message || 'Provisioning failed', detail: err.detail })
     }
-    if (!isMedusaProvisionable()) {
-      return res.status(503).json({ error: 'Medusa provisioning not configured' })
-    }
-    const config = await provisionMedusaForSession(id, session.prompt?.slice(0, 50))
-    await setMedusaConfig(id, config)
-    res.json({ success: true, config })
   })
 
   app.post('/api/sessions/:id/provision/sanity', requireProvisionAuth, async (req, res) => {
@@ -1919,18 +1985,41 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
-    if (session.medusaConfig) {
-      return res.json({ success: true, config: session.medusaConfig, alreadyProvisioned: true })
+    try {
+      if (session.medusaConfig) {
+        let config = session.medusaConfig
+        let sync = null
+        if (!config.productsSyncedAt) {
+          const result = await _maybeSyncSessionProductsToTenant(req.params.id, config)
+          if (result?.ok) {
+            config = result.config
+            sync = { synced: result.synced, errors: result.errors }
+          }
+        }
+        return res.json({ success: true, config, alreadyProvisioned: true, sync })
+      }
+
+      if (!isMedusaProvisionable()) {
+        return res.status(503).json({ error: 'Medusa provisioning not configured' })
+      }
+
+      const provisioned = await provisionMedusaForSession(req.params.id, session.prompt?.slice(0, 50))
+      await setMedusaConfig(req.params.id, provisioned)
+      const syncResult = await _maybeSyncSessionProductsToTenant(req.params.id, provisioned)
+      const config = syncResult?.ok ? syncResult.config : provisioned
+
+      res.json({
+        success: true,
+        config,
+        sync: syncResult?.ok ? { synced: syncResult.synced, errors: syncResult.errors } : null,
+      })
+    } catch (err) {
+      console.error(
+        `[provision/medusa] session=${req.params.id} failed: ${err.message}`,
+        err.detail || '',
+      )
+      res.status(500).json({ error: err.message || 'Provisioning failed', detail: err.detail })
     }
-
-    if (!isMedusaProvisionable()) {
-      return res.status(503).json({ error: 'Medusa provisioning not configured' })
-    }
-
-    const config = await provisionMedusaForSession(req.params.id, session.prompt?.slice(0, 50))
-    await setMedusaConfig(req.params.id, config)
-
-    res.json({ success: true, config })
   })
 
   app.get('/api/sessions/:id/medusa-config', requireAuth, async (req, res) => {
@@ -2045,22 +2134,46 @@ export async function startServer(sessionsDir) {
   })
 
   // ─── API: Ecommercify — return all Ship Fast ecommerce products ──
-  // Used by the Medusa admin widget to pull products into Medusa.
-  app.options('/api/ecommercify/products', (_req, res) => {
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
-    )
+  // Used by the Medusa admin widget to pull products into Medusa. The widget
+  // runs inside a tenant's Medusa admin (medusa-<token>.<host>), so we can't
+  // statically allow a single origin — we validate the request Origin against
+  // the wildcard tenant pattern and echo it back when it matches.
+  const _applyEcommercifyCors = (req, res) => {
+    const origin = String(req.headers.origin || '').trim()
+    const allowedOrigins = new Set()
+    const legacy = String(process.env.MEDUSA_BACKEND_URL || '').trim().replace(/\/$/, '')
+    if (legacy) allowedOrigins.add(legacy)
+    allowedOrigins.add('http://localhost:9000')
+    allowedOrigins.add('http://127.0.0.1:9000')
+
+    const publicHost = String(process.env.MEDUSA_PUBLIC_HOST || '')
+      .trim()
+      .replace(/^https?:\/\//, '')
+    const tenantPattern = publicHost
+      ? new RegExp(`^https://medusa-[a-z0-9_-]+\\.${publicHost.replace(/\./g, '\\.')}$`)
+      : null
+
+    let allow = ''
+    if (origin && (allowedOrigins.has(origin) || (tenantPattern && tenantPattern.test(origin)))) {
+      allow = origin
+    } else if (legacy) {
+      allow = legacy
+    } else {
+      allow = 'http://localhost:9000'
+    }
+    res.setHeader('Access-Control-Allow-Origin', allow)
+    res.setHeader('Vary', 'Origin')
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  }
+
+  app.options('/api/ecommercify/products', (req, res) => {
+    _applyEcommercifyCors(req, res)
     res.sendStatus(204)
   })
 
   app.get('/api/ecommercify/products', (req, res) => {
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000',
-    )
+    _applyEcommercifyCors(req, res)
 
     if (!_sessionsDir) return res.json({ products: [], total: 0 })
 
@@ -2081,189 +2194,14 @@ export async function startServer(sessionsDir) {
         message: 'Unknown session',
       })
     }
-
-    const slugify = (s) =>
-      String(s || '')
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '') || 'product'
-
-    // Generic placeholder titles that ship-fast uses when real product names aren't specified
-    const PLACEHOLDER_TITLES = new Set([
-      'premium pick',
-      'customer favorite',
-      'new arrival',
-      'limited run',
-      'best seller',
-      'premium product',
-      'featured product',
-      'top pick',
-      'popular item',
-      'trending now',
-      'staff pick',
-      "editor's choice",
-      'editor choice',
-      'most loved',
-      'new release',
-      'hot deal',
-      'special offer',
-      'shop now',
-      'view product',
-      'buy now',
-      'add to cart',
-      'explore now',
-    ])
-
-    // Extract real products from rendered HTML (most reliable source — section.items often
-    // contains generic placeholders; the rendered HTML has the actual product catalogue)
-    const extractFromHtml = (html, sessionId, sessionPrompt) => {
-      const products = []
-      const seen = new Set()
-
-      // Strategy 1: split by <article> — most generated sites wrap cards in <article>
-      const parts = html.split(/<article\b/)
-      if (parts.length > 1) {
-        for (let i = 1; i < parts.length; i++) {
-          const chunk = parts[i]
-          const h3Match = chunk.match(/<h3[^>]*>([^<]{3,80})<\/h3>/)
-          if (!h3Match) continue
-          const title = h3Match[1].trim()
-          const lc = title.toLowerCase()
-          if (PLACEHOLDER_TITLES.has(lc) || seen.has(lc)) continue
-          const priceMatch = chunk.match(/[₹$€£]([\d,]+(?:\.\d{2})?)/)
-          if (!priceMatch) continue
-          const imgMatch = chunk.match(/<img[^>]+src="([^"]+)"/)
-          const descMatch = chunk.match(/<p[^>]*>([^<]{10,200})<\/p>/)
-          const priceNum = parseFloat(priceMatch[1].replace(/,/g, ''))
-          const priceStr = priceMatch[0]
-          seen.add(lc)
-          products.push({
-            id: slugify(title),
-            title,
-            handle: slugify(title),
-            description: descMatch?.[1]?.trim() || '',
-            price: priceNum,
-            currency: priceStr.startsWith('₹')
-              ? 'INR'
-              : priceStr.startsWith('€')
-                ? 'EUR'
-                : priceStr.startsWith('£')
-                  ? 'GBP'
-                  : 'USD',
-            image: imgMatch?.[1] || null,
-            category: '',
-            sessionId,
-            sessionPrompt,
-          })
-        }
-      }
-
-      // Strategy 2: fallback for sites that use div/li cards — h3 + nearby price in 600-char window
-      if (products.length === 0) {
-        const h3Regex = /<h3[^>]*>([^<]{3,80})<\/h3>/g
-        let m
-        while ((m = h3Regex.exec(html)) !== null) {
-          const title = m[1].trim()
-          const lc = title.toLowerCase()
-          if (PLACEHOLDER_TITLES.has(lc) || seen.has(lc)) continue
-          const pos = m.index
-          const fwd = html.slice(pos, pos + 600)
-          const priceMatch = fwd.match(/[₹$€£]([\d,]+(?:\.\d{2})?)/)
-          if (!priceMatch) continue
-          // Look in a 2500-char window for the nearest img
-          const window2 = html.slice(Math.max(0, pos - 2000), pos + 600)
-          const imgMatches = [...window2.matchAll(/<img[^>]+src="([^"]+)"/g)]
-          const imgMatch = imgMatches[imgMatches.length - 1]
-          const descMatch = fwd.match(/<p[^>]*>([^<]{10,200})<\/p>/)
-          const priceNum = parseFloat(priceMatch[1].replace(/,/g, ''))
-          const priceStr = priceMatch[0]
-          seen.add(lc)
-          products.push({
-            id: slugify(title),
-            title,
-            handle: slugify(title),
-            description: descMatch?.[1]?.trim() || '',
-            price: priceNum,
-            currency: priceStr.startsWith('₹')
-              ? 'INR'
-              : priceStr.startsWith('€')
-                ? 'EUR'
-                : priceStr.startsWith('£')
-                  ? 'GBP'
-                  : 'USD',
-            image: imgMatch?.[1] || null,
-            category: '',
-            sessionId,
-            sessionPrompt,
-          })
-        }
-      }
-      return products
-    }
-
-    const seen = new Set()
-    const products = []
-    const s = scopedSession
-
-    if (!s.siteSpecReady) {
+    if (!scopedSession.siteSpecReady) {
       return res.json({ products: [], total: 0, message: 'Site spec not ready' })
     }
-
-    const workspace = join(_sessionsDir, s.id)
-    const spec = loadSiteSpec(workspace)
-    if (!spec || spec.siteType !== 'ecommerce') {
-      return res.json({ products: [], total: 0, message: 'Not an ecommerce site spec' })
+    const products = extractSessionProducts(scopedSession, _sessionsDir)
+    if (products.length === 0) {
+      return res.json({ products: [], total: 0, message: 'No products found' })
     }
-
-    const pages = Array.isArray(spec.pages) ? spec.pages : []
-    let extracted = false
-    for (const page of pages) {
-      const html = page.renderBlueprint?.bodyHtml
-      if (!html) continue
-      const pageProducts = extractFromHtml(html, s.id, s.prompt || '')
-      for (const p of pageProducts) {
-        if (seen.has(p.handle)) continue
-        seen.add(p.handle)
-        products.push(p)
-      }
-      if (pageProducts.length > 0) extracted = true
-    }
-
-    if (!extracted) {
-      const PRODUCT_SECTION_TYPES = new Set([
-        'featured-products',
-        'product-grid',
-        'product-detail',
-        'product-list',
-      ])
-      for (const page of pages) {
-        const sections = Array.isArray(page.sections) ? page.sections : []
-        for (const section of sections) {
-          if (!PRODUCT_SECTION_TYPES.has(section.type)) continue
-          const items = Array.isArray(section.items) ? section.items : []
-          for (const item of items) {
-            if (!item.title) continue
-            const lc = item.title.toLowerCase().trim()
-            if (PLACEHOLDER_TITLES.has(lc) || seen.has(slugify(item.title))) continue
-            seen.add(slugify(item.title))
-            products.push({
-              id: item.id || slugify(item.title),
-              title: item.title,
-              handle: slugify(item.title),
-              description: item.body || item.description || '',
-              price: item.price || null,
-              image: item.image || item.thumbnail || null,
-              category: item.label || item.category || '',
-              sessionId: s.id,
-              sessionPrompt: s.prompt,
-            })
-          }
-        }
-      }
-    }
-
-    res.json({ products, total: products.length })
+    return res.json({ products, total: products.length })
   })
 
   // ─── Catch-all 404 handler ──────────────────────────────

@@ -114,6 +114,29 @@ const SHARED_POSTGRES_CONTAINER = 'medusa-postgres-1'
 const SHARED_DB_USER = 'medusa'
 const SHARED_DB_PASSWORD = 'medusa'
 
+// Derive the public reverse-proxy config for a given session. When
+// MEDUSA_PUBLIC_HOST is unset we return { enabled: false } and callers fall
+// back to the localhost:<port> behavior used in local development. The
+// subdomain reuses the same shortToken as the container name so operators can
+// trace `medusa-<token>.<host>` straight to `medusa-session-<token>`.
+export function getPublicMedusaConfig(sessionId) {
+  const host = String(process.env.MEDUSA_PUBLIC_HOST || '').trim().replace(/^https?:\/\//, '')
+  if (!host) return { enabled: false }
+
+  const token = shortToken(sessionId, 12, 'session')
+  const subdomain = `medusa-${token}.${host}`
+  return {
+    enabled: true,
+    host,
+    token,
+    subdomain,
+    publicUrl: `https://${subdomain}`,
+    network: String(process.env.MEDUSA_PROXY_NETWORK || '').trim() || 'dokploy-network',
+    entrypoint: String(process.env.MEDUSA_PROXY_ENTRYPOINT || '').trim() || 'websecure',
+    certResolver: String(process.env.MEDUSA_PROXY_CERT_RESOLVER || '').trim(),
+  }
+}
+
 export async function ensureSharedInfraRunning() {
   // Start postgres + redis from the base docker-compose if not already healthy
   try {
@@ -138,12 +161,13 @@ export async function ensureSharedInfraRunning() {
   }
 }
 
-export function generateSessionComposeFile(sessionId, port, dbName) {
+export function generateSessionComposeFile(sessionId, port, dbName, options = {}) {
   ensureSessionDir()
 
   const template = fs.readFileSync(TEMPLATE_PATH, 'utf8')
   const containerName = `medusa-session-${shortToken(sessionId, 12, 'session')}`
   const composeFilePath = getComposeFilePath(sessionId)
+  const publicCfg = getPublicMedusaConfig(sessionId)
 
   const jwtSecret = String(process.env.JWT_SECRET || '').trim() || generateSecret(32)
   const cookieSecret = String(process.env.COOKIE_SECRET || '').trim() || generateSecret(32)
@@ -154,21 +178,77 @@ export function generateSessionComposeFile(sessionId, port, dbName) {
         process.env.POSTGRES_PASSWORD ||
         'medusa',
     ).trim() || 'medusa'
-  const storeCors = extractTemplateCors(
+  const storeCorsBase = extractTemplateCors(
     template,
     'STORE_CORS',
     'http://localhost:3000,http://localhost:7420,http://localhost:7430,http://127.0.0.1:3000,http://127.0.0.1:7420,http://127.0.0.1:7430',
   )
-  const adminCors = extractTemplateCors(
+  const adminCorsBase = extractTemplateCors(
     template,
     'ADMIN_CORS',
     'http://localhost:9000,http://127.0.0.1:9000,http://localhost:7420,http://127.0.0.1:7420',
   )
-  const authCors = extractTemplateCors(
+  const authCorsBase = extractTemplateCors(
     template,
     'AUTH_CORS',
     'http://localhost:9000,http://127.0.0.1:9000,http://localhost:3000,http://localhost:7420,http://127.0.0.1:3000,http://127.0.0.1:7420',
   )
+
+  // When the tenant is reachable through Traefik, the public subdomain must be
+  // in every CORS list and the dashboard origin must be allowed too (the admin
+  // popup that calls back into ship-fast.io's /api/ecommercify/products lives
+  // there). Local-only deployments keep the original localhost defaults.
+  const extraOrigins = []
+  if (publicCfg.enabled) {
+    extraOrigins.push(publicCfg.publicUrl)
+    const dashboardOrigin = String(process.env.DASHBOARD_PUBLIC_ORIGIN || '').trim()
+    if (dashboardOrigin) extraOrigins.push(dashboardOrigin.replace(/\/$/, ''))
+    extraOrigins.push(`https://${publicCfg.host}`)
+  }
+  const mergeOrigins = (base) => {
+    const items = String(base || '').split(',').map((s) => s.trim()).filter(Boolean)
+    for (const origin of extraOrigins) if (!items.includes(origin)) items.push(origin)
+    return items.join(',')
+  }
+  const storeCors = mergeOrigins(storeCorsBase)
+  const adminCors = mergeOrigins(adminCorsBase)
+  const authCors = mergeOrigins(authCorsBase)
+
+  // Behind Traefik, bind the host port to loopback only so tenants aren't
+  // reachable on 0.0.0.0:<port> (Traefik reaches them via the proxy network).
+  const portMapping = publicCfg.enabled ? `127.0.0.1:${port}:9000` : `${port}:9000`
+  const backendUrl = publicCfg.enabled ? publicCfg.publicUrl : `http://localhost:${port}`
+
+  const traefikRouter = `medusa-${publicCfg.token || shortToken(sessionId, 12, 'session')}`
+  const certResolverLabel = publicCfg.certResolver
+    ? `\n      - "traefik.http.routers.${traefikRouter}.tls.certresolver=${publicCfg.certResolver}"`
+    : ''
+  const labelsBlock = publicCfg.enabled
+    ? `
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=${publicCfg.network}"
+      - "traefik.http.routers.${traefikRouter}.rule=Host(\`${publicCfg.subdomain}\`)"
+      - "traefik.http.routers.${traefikRouter}.entrypoints=${publicCfg.entrypoint}"
+      - "traefik.http.routers.${traefikRouter}.tls=true"${certResolverLabel}
+      - "traefik.http.services.${traefikRouter}.loadbalancer.server.port=9000"`
+    : ''
+
+  const networksList = publicCfg.enabled ? `      - medusa_net\n      - proxy_net` : `      - medusa_net`
+  const networksBlock = publicCfg.enabled
+    ? `\nnetworks:\n  medusa_net:\n    name: ${SHARED_NETWORK}\n    external: true\n  proxy_net:\n    name: ${publicCfg.network}\n    external: true\n`
+    : `\nnetworks:\n  medusa_net:\n    name: ${SHARED_NETWORK}\n    external: true\n`
+
+  // Seed-admin creds are passed to the container so its entrypoint.sh can
+  // run `medusa user --email ... --password ...` BEFORE the server starts.
+  // Medusa v2's /auth/user/emailpass/register only creates an auth identity
+  // (not a real User), so we can't bootstrap an admin over HTTP — the CLI
+  // step inside the container is the only path that creates a usable admin.
+  const adminEmail = String(options.adminEmail || '').trim()
+  const adminPassword = String(options.adminPassword || '').trim()
+  const adminSeedEnv = adminEmail && adminPassword
+    ? `\n      MEDUSA_SEED_ADMIN_EMAIL: ${adminEmail}\n      MEDUSA_SEED_ADMIN_PASSWORD: ${adminPassword}`
+    : ''
 
   const compose = `services:
   ${containerName}:
@@ -177,26 +257,21 @@ export function generateSessionComposeFile(sessionId, port, dbName) {
       dockerfile: Dockerfile
     container_name: ${containerName}
     ports:
-      - "${port}:9000"
+      - "${portMapping}"
     environment:
       DATABASE_URL: postgres://${SHARED_DB_USER}:${SHARED_DB_PASSWORD}@postgres:5432/${dbName}?sslmode=disable
       REDIS_URL: redis://redis:6379
       NODE_ENV: production
       PORT: "9000"
-      MEDUSA_BACKEND_URL: http://localhost:${port}
+      MEDUSA_BACKEND_URL: ${backendUrl}
       JWT_SECRET: ${jwtSecret}
       COOKIE_SECRET: ${cookieSecret}
       STORE_CORS: ${storeCors}
       ADMIN_CORS: ${adminCors}
-      AUTH_CORS: ${authCors}
+      AUTH_CORS: ${authCors}${adminSeedEnv}
     networks:
-      - medusa_net
-
-networks:
-  medusa_net:
-    name: ${SHARED_NETWORK}
-    external: true
-`
+${networksList}${labelsBlock}
+${networksBlock}`
 
   fs.writeFileSync(composeFilePath, compose)
   return composeFilePath
@@ -262,47 +337,45 @@ export async function waitForMedusaHealth(port, maxWaitMs = 300000) {
   throw new Error(`Timed out waiting for Medusa health on port ${port}`)
 }
 
-export async function createAdminAndGetPublishableKey(port) {
+export async function createAdminAndGetPublishableKey(port, email, password) {
   const base = normalizeBaseUrl(`http://localhost:${port}`)
   const existingToken = String(process.env.MEDUSA_ADMIN_API_TOKEN || '').trim()
-  const email =
-    String(process.env.MEDUSA_ADMIN_EMAIL || '').trim() ||
-    `session-${port}-${Date.now()}@ship-fast.local`
-  const password = String(process.env.MEDUSA_ADMIN_PASSWORD || '').trim() || generateSecret(24)
 
+  if (!email || !password) {
+    throw new Error('createAdminAndGetPublishableKey requires seed admin email + password')
+  }
+
+  // The container's entrypoint runs `medusa user --email ${email} --password
+  // ${password}` before starting the server, so a real admin User exists by
+  // the time we reach this code. Just log in — register-via-HTTP is not the
+  // right primitive in Medusa v2 (it mints an auth-identity JWT, not a User
+  // session). Retry a few times because the auth module may finish loading
+  // a beat after /health returns 200.
   let adminToken = existingToken
+  let lastLoginError = null
 
   if (!adminToken) {
-    const registerAttempts = [
-      { url: `${base}/auth/user/emailpass/register`, body: { email, password } },
-      { url: `${base}/admin/users`, body: { email, password } },
-    ]
-
-    for (const attempt of registerAttempts) {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
       try {
-        const { res, data } = await postJson(attempt.url, attempt.body)
-        if (res.ok) {
-          adminToken = extractToken(data)
-          if (!adminToken) {
-            const loginRes = await postJson(`${base}/auth/user/emailpass`, { email, password })
-            adminToken = extractToken(loginRes.data)
-          }
-          if (adminToken) break
+        const loginRes = await postJson(`${base}/auth/user/emailpass`, { email, password })
+        const token = extractToken(loginRes.data)
+        if (loginRes.res.ok && token) {
+          adminToken = token
+          break
         }
-      } catch {
-        // try next creation endpoint
+        lastLoginError = { status: loginRes.res.status, body: loginRes.data }
+      } catch (err) {
+        lastLoginError = { message: err?.message }
       }
+      await new Promise((r) => setTimeout(r, 1500))
     }
   }
 
   if (!adminToken) {
-    const loginRes = await postJson(`${base}/auth/user/emailpass`, { email, password })
-    adminToken = extractToken(loginRes.data)
-  }
-
-  if (!adminToken) {
-    const err = new Error('Medusa admin auth failed: could not obtain a token')
-    err.detail = { email }
+    const err = new Error(
+      `Medusa admin login failed for ${email} — the seed admin user was not created or credentials don't match`,
+    )
+    err.detail = lastLoginError
     throw err
   }
 
@@ -319,15 +392,37 @@ export async function createAdminAndGetPublishableKey(port) {
     keyRes.data?.data?.token
 
   if (!keyRes.res.ok || !publishableKey) {
-    const err = new Error('Medusa publishable API key creation failed')
+    const err = new Error(
+      `Medusa publishable API key creation failed (status ${keyRes.res.status})`,
+    )
     err.detail = keyRes.data
     throw err
   }
 
-  return { publishableKey, adminToken }
+  return { publishableKey, adminToken, adminEmail: email, adminPassword: password }
 }
 
+// In-flight provisioning promises keyed by sessionId. Concurrent callers
+// (e.g. a background pre-warm racing the user's click on Ecommerce) share the
+// same promise so we never spin up two containers for one session.
+const _inFlightProvisions = new Map()
+
 export async function provisionMedusaForSession(sessionId) {
+  const existing = _inFlightProvisions.get(sessionId)
+  if (existing) return existing
+
+  const promise = _doProvisionMedusaForSession(sessionId).finally(() => {
+    _inFlightProvisions.delete(sessionId)
+  })
+  _inFlightProvisions.set(sessionId, promise)
+  return promise
+}
+
+export function isMedusaProvisionInFlight(sessionId) {
+  return _inFlightProvisions.has(sessionId)
+}
+
+async function _doProvisionMedusaForSession(sessionId) {
   // Ensure shared postgres + redis are running before session provisioning
   await ensureSharedInfraRunning()
 
@@ -336,20 +431,48 @@ export async function provisionMedusaForSession(sessionId) {
     .replace(/-/g, '_')
     .replace(/[^a-zA-Z0-9_]/g, '_')
     .slice(0, 20)}`
-  const composeFilePath = generateSessionComposeFile(sessionId, port, dbName)
+
+  // Seed admin credentials — generated here, passed into the container as env
+  // (the entrypoint's `medusa user` creates the User record from them), and
+  // remembered so we can log in once the server is healthy. Operator-set
+  // global creds win when present so multi-tenant fleets can share one admin.
+  const adminEmail =
+    String(process.env.MEDUSA_ADMIN_EMAIL || '').trim() ||
+    `admin-${shortToken(sessionId, 8, 'session')}@ship-fast.local`
+  const adminPassword =
+    String(process.env.MEDUSA_ADMIN_PASSWORD || '').trim() || generateSecret(24)
+
+  const composeFilePath = generateSessionComposeFile(sessionId, port, dbName, {
+    adminEmail,
+    adminPassword,
+  })
+  const publicCfg = getPublicMedusaConfig(sessionId)
 
   await createSessionDatabase(dbName)
   await execAsync(`docker compose -f "${composeFilePath}" up -d`, { cwd: PROJECT_ROOT })
+  // Health + admin bootstrap always go through loopback — the container still
+  // listens on 9000 internally and is mapped to 127.0.0.1:${port} on the host,
+  // so we don't depend on DNS / TLS being ready before provisioning finishes.
   await waitForMedusaHealth(port)
 
-  const { publishableKey } = await createAdminAndGetPublishableKey(port)
+  const { publishableKey } = await createAdminAndGetPublishableKey(port, adminEmail, adminPassword)
+
+  const backendUrl = publicCfg.enabled ? publicCfg.publicUrl : `http://localhost:${port}`
+  // adminBaseUrl stays on loopback because we hit it for server-to-server
+  // sync calls (catalog push). Routing through Traefik would force us to
+  // depend on DNS/TLS at sync time for no benefit.
+  const adminBaseUrl = `http://localhost:${port}`
 
   return {
     publishableKey,
-    backendUrl: `http://localhost:${port}`,
+    backendUrl,
+    adminBaseUrl,
+    adminEmail,
+    adminPassword,
     port,
     dbName,
     containerId: `medusa-session-${shortToken(sessionId, 12, 'session')}`,
+    subdomain: publicCfg.enabled ? publicCfg.subdomain : null,
     provisionedAt: new Date().toISOString(),
   }
 }
@@ -404,4 +527,53 @@ export function isMedusaProvisionable() {
   } catch {
     return false
   }
+}
+
+// Same regex as src/pipeline/image-hints.js inferVisualSiteType — we want the
+// pre-warm signal to track the same classifier the rest of the pipeline uses,
+// so a prompt that gets routed as "ecommerce" downstream also pre-warms Medusa.
+const _ECOMMERCE_PROMPT_RE = /\b(ecommerce|e-commerce|shop|store|boutique|catalog|collection|buy|products?)\b/i
+
+export function isEcommercePrompt(prompt) {
+  return _ECOMMERCE_PROMPT_RE.test(String(prompt || ''))
+}
+
+// Fire-and-forget pre-warm. Returns true if a provision was kicked off (or one
+// is already in flight for this session), false if skipped because the env
+// isn't configured or the prompt doesn't read as ecommerce. Failures are
+// logged but never thrown — provisioning happens behind the dashboard's
+// existing on-click flow, so a pre-warm miss just falls back to the slow path.
+export function startMedusaPreWarmIfApplicable(sessionId, prompt) {
+  if (!sessionId) return false
+  if (!isMedusaProvisionable()) return false
+  if (!isEcommercePrompt(prompt)) return false
+  if (_inFlightProvisions.has(sessionId)) return true
+
+  provisionMedusaForSession(sessionId)
+    .then(async (config) => {
+      try {
+        const { setMedusaConfig, getSession } = await import('./sessions.js')
+        // If the session disappeared mid-provision (deleted before the
+        // tenant finished booting), tear down the orphaned tenant instead
+        // of writing config to a stale session record.
+        const stillExists = Boolean(getSession(sessionId))
+        if (!stillExists) {
+          try {
+            await deprovisionMedusaForSession(sessionId, config)
+          } catch (err) {
+            console.warn(
+              `[medusa-prewarm] orphan cleanup failed for ${sessionId}: ${err.message}`,
+            )
+          }
+          return
+        }
+        await setMedusaConfig(sessionId, config)
+      } catch (err) {
+        console.warn(`[medusa-prewarm] post-provision wiring failed for ${sessionId}: ${err.message}`)
+      }
+    })
+    .catch((err) => {
+      console.warn(`[medusa-prewarm] provision failed for ${sessionId}: ${err.message}`)
+    })
+  return true
 }
