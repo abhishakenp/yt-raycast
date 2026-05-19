@@ -38,6 +38,7 @@ import {
 } from './image-hints.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { withLanguageEnforcementBlock } from './prompt-language.js'
+import { applyGenomeMerge } from './genome-merge.js'
 import { getWorkspacePreferredLanguage } from '../session-prefs.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt.js'
@@ -403,6 +404,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
       ),
       { workspace },
     )
+    // Genome-aware palette merge — deterministic Tailwind family rewrites.
+    // Off by default; opt in via SHIPFAST_USE_GENOME_MERGE=1.
+    const genomeRes = applyGenomeMerge(homepage, {
+      siteType: detectStats?.siteType,
+      design: siteSpec?.design,
+      brief: normalizedPrompt,
+    })
+    if (genomeRes.applied) {
+      homepage = genomeRes.html
+      _log?.(`[runner] genome-merge applied: ${genomeRes.genome} (source=${genomeRes.source}, ${genomeRes.mergeMs}ms)`)
+    }
     writeFile(workspace, 'index.html', homepage)
   }
 
