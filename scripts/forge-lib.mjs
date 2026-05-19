@@ -101,15 +101,212 @@ export function pickVariation(i) {
   }
 }
 
+/**
+ * Site-type taxonomy + per-type prompt packs.
+ *
+ * The forge's HOMEPAGE_SYSTEM_LEAN system prompt is tuned for B2B SaaS
+ * marketing pages — it asks for pricing tiers, dev-tool brand anchors,
+ * "How It Works" steps, etc. That shape doesn't fit a coffee roaster, a
+ * restaurant, a portfolio, or a fitness studio: those need menus, case
+ * studies, class schedules, ingredient stories — different sections,
+ * different copy voice, different brand anchors, different aesthetic.
+ *
+ * detectSiteType() runs a heuristic keyword pass on the brief and picks a
+ * type. SITE_TYPE_PACKS encodes per-type overrides: section prescription,
+ * brand anchors, aesthetic steer, copy voice. buildSiteTypeBlock(brief)
+ * emits a markdown block that the split3 system prompts read alongside
+ * the universal HARD REQS — wherever the universal rules conflict with
+ * the type pack (e.g. "pricing tiers" vs "menu items"), the type pack
+ * wins.
+ */
+// Order matters — most-specific FIRST so e.g. "hotel ... with an on-site
+// restaurant" classifies as hotel, not restaurant. The detector returns the
+// first match; later regexes act as fallbacks.
+const SITE_TYPE_DETECTORS = [
+  ['hotel', /\b(hotel|resort|boutique\s*stay|vacation\s*rental|guesthouse|airbnb|bed\s*and\s*breakfast|inn\b|lodge|retreat\s*center|chalet|bnb)\b/i],
+  ['portfolio', /\b(portfolio|personal\s*site|freelance|side\s*projects|case\s*stud|my\s*work|creative\s*director|art\s*director|solo\s*designer|independent\s*(designer|developer|illustrator))\b/i],
+  ['agency', /\b(agency|design\s*studio|consultancy|brand\s*identity|design\s*firm|branding\s*agency|advertising|creative\s*shop|brand\s*design\s+agency|our\s*clients\s*include)\b/i],
+  ['ecommerce', /\b(shop|store|buy\s+now|cart|product\s*line|merch|tee\s*shirt|apparel|streetwear|fashion|skincare|jewelry|sneaker|fragrance|candle|dtc|direct.to.consumer|cosmetic|subscribe\s*and\s*save)\b/i],
+  ['fitness', /\b(gym|fitness|crossfit|workout|personal\s*trainer|class\s*pass|yoga|pilates|spin|barre|hiit|bouldering|martial\s*arts|boxing|kettlebell|strength\s*training)\b/i],
+  ['wellness', /\b(wellness|spa|massage|meditation|sound\s*bath|herbal|ayurveda|naturopath|holistic|reiki|sauna|bathhouse)\b/i],
+  ['realestate', /\b(real\s*estate|property\s*listing|realtor|broker|interior\s*design|homes?\s*for\s*sale|home\s*tour|MLS\b)\b/i],
+  ['education', /\b(course|bootcamp|school|tutor|coaching|certification|workshop|masterclass|cohort|curriculum|syllabus|enroll)\b/i],
+  ['nonprofit', /\b(nonprofit|charity|foundation|donate|donat|mission.driven|community\s*org|ngo\b|501\(c\)|fundraising)\b/i],
+  ['fintech', /\b(payments?\b|banking|fintech|investment\s*platform|crypto|wallet|trading|brokerage|loan|mortgage|neobank)\b/i],
+  ['restaurant', /\b(restaurant|bistro|kitchen|cafe|café|coffee\s*(roaster|shop|bar)|coffee\s*roaster|tea\s*house|bakery|patisserie|menu|chef|cuisine|fine\s*dining|distillery|brewery|tap\s*room)\b/i],
+  ['saas', /\b(saas|platform|api\b|developer|devops|infra(structure)?|cloud|dashboard|analytics|crm\b|erp\b|workflow|automation|integration|observability|monitoring|database|serverless)\b/i],
+]
+
+export function detectSiteType(brief = '') {
+  for (const [type, re] of SITE_TYPE_DETECTORS) {
+    if (re.test(brief)) return type
+  }
+  return 'saas' // fallback — the universal HOMEPAGE_SYSTEM_LEAN is SaaS-flavored anyway
+}
+
+/**
+ * Per-type prompt pack. Each entry overrides the SaaS-shaped HARD REQS
+ * for that vertical. Sections list is what should ACTUALLY appear (the
+ * universal prompt asks for features+pricing+FAQ; for a restaurant that
+ * becomes menu+hours+reservations).
+ */
+const SITE_TYPE_PACKS = {
+  saas: {
+    label: 'B2B SaaS / Developer Tool marketing homepage',
+    sections:
+      'hero (with product UI mock: terminal/dashboard/code editor showing real commands or data), stats strip (technical metrics — uptime, latency, deploys/month, requests/s), 12-card feature grid (technical capabilities), use-cases section (3-4 personas: engineers/ops/product), how-it-works (4 steps with code snippets), logo grid (8+ real B2B SaaS brand names), 3 testimonial cards (B2B engineering buyers), pricing (3 tiers, monthly/yearly toggle, concrete numbers), FAQ (6 items technical), CTA, multi-column footer.',
+    heroMock:
+      'A faux terminal OR dashboard OR code-editor preview with 18+ lines of CONTEXTUAL real-looking content (SQL queries + results, log lines, table rows, API JSON responses, chart bars). Window chrome at top (3 colored dot circles + URL bar). Syntax-highlight-looking colored spans.',
+    brandAnchors: ['Linear', 'Vercel', 'Stripe', 'Resend', 'Cloudflare', 'Supabase', 'Notion', 'Anthropic', 'OpenAI Platform', 'Hashnode', 'PlanetScale', 'Neon'],
+    aesthetic: 'developer-docs light OR linear-style light OR dashboard editorial OR stripe-style light. Inter / Manrope / JetBrains Mono. Light bg with one dark stats band.',
+    voice: 'concrete, technical, numbers-led. Verb-led headline. No marketing fluff. Use real product terminology.',
+    bannedSections: [],
+  },
+  ecommerce: {
+    label: 'DTC / consumer ecommerce homepage selling a physical product line',
+    sections:
+      'hero (large lifestyle/product photography, headline + benefit subhead + "Shop Now" CTA, optional hero product card with price), benefits strip (free shipping, returns, sustainable materials), featured products (8-card grid, each with image + name + price + add-to-cart), shop-by-category (3-4 collection tiles), ingredient/material story OR press strip ("As seen in Vogue / NYT / Fast Company"), bestsellers (4-card highlight), customer reviews (3 cards: stars + quote + verified-buyer + their photo + product they bought), newsletter signup with discount offer, Instagram/UGC grid (6-9 lifestyle images), footer with shop links + customer service + about. NO pricing tiers, NO "How It Works" steps for SaaS sense.',
+    brandAnchors: ['Glossier', 'Allbirds', 'Warby Parker', 'Everlane', 'Outdoor Voices', 'Aesop', 'Necessaire', 'Hims', 'Hers', 'Olipop', 'Hu Kitchen', 'Cuyana'],
+    aesthetic: 'editorial luxury OR organic wellness OR tactile craft. Fraunces / Cormorant Garamond / Playfair Display + Inter. Warm cream/off-white bg, photography-led, one accent color (terracotta/sage/dusty pink).',
+    voice: 'sensory, aspirational, lifestyle-driven. Product names. Ingredient/material stories. "Yours" / "you" — second person. No metrics-speak.',
+    bannedSections: ['pricing tiers', 'monthly/yearly toggle', 'API integrations', 'how it works developer steps'],
+  },
+  restaurant: {
+    label: 'restaurant / cafe / coffee roaster / bakery marketing homepage',
+    sections:
+      'hero (photography-led: dish or interior, serif display headline naming the experience, eyebrow with year established, address + hours block, "Reserve" or "Order" CTA), our story (chef/founder bio with portrait, origin story 3-4 paragraphs), menu categories (3-5: brunch / lunch / dinner / drinks / dessert OR for coffee: single-origin / blends / wholesale / subscriptions), featured menu items (6-8 dishes: name + 2-line description + price + optional photo + dietary tag), location & hours (table format: day / hours, address, parking notes, map iframe placeholder), reservation/order CTA section, press quotes / awards strip ("Michelin Bib Gourmand / NYT Critic\'s Pick / Eater Best Of"), gallery grid (6 photos), footer with social + newsletter + contact. NO pricing tiers, NO SaaS metrics.',
+    brandAnchors: ['Sweetgreen', 'Eleven Madison Park', 'Sqirl', 'Tartine', 'Blue Bottle', 'Stumptown', 'Verve', 'Onyx Coffee Lab', 'Counter Culture', 'OpenTable', 'Resy', 'Tock', 'Atomix'],
+    aesthetic: 'editorial warm OR organic wellness OR tactile craft. Playfair Display / Fraunces / DM Serif Display + Inter. Cream/paper bg, warm earth accent (terracotta / forest / espresso), photography-led.',
+    voice: 'evocative, sensory, place-based. Menu poetry. Origin stories. Chef voice — first person plural ("we", "our team"). Specific provenance ("Ethiopian Yirgacheffe", "stone-milled Sonora wheat").',
+    bannedSections: ['pricing tiers', 'monthly/yearly toggle', 'API integrations', 'how it works developer steps', 'developer-tool brand logos'],
+  },
+  portfolio: {
+    label: 'designer / agency / freelancer creative portfolio',
+    sections:
+      'hero (oversized typographic name + role + tagline, optional photo or signature illustration, "View Work" + "Contact" CTAs), about section (background, philosophy, what I do, 4-5 paragraphs), case studies grid (6-9 projects, each: hero image + client + 1-line outcome + project category tag; click leads to imagined detail page), services or capabilities strip (4-8 services with icons + 1-line descriptions), process timeline (3-5 steps: discovery → strategy → design → delivery), recognition/awards strip (Webby, Awwwards SOTD, ADC, Pentagram x, etc.), client testimonials (3 cards: stars + quote + client name + role + company), social/links + contact form. NO pricing tiers, NO product-tier feature grids.',
+    brandAnchors: ['Pentagram', 'Studio Dumbar', 'Mother NY', '&Co', 'Wieden+Kennedy', 'Bruno Simon', 'Tobias van Schneider', 'Cosmos', 'Linear', 'Awwwards', 'Site Inspire', 'Frank Body'],
+    aesthetic: 'brutalist tech OR quiet museum minimal OR poster-style maximalism. Space Grotesk / Outfit / Manrope / DM Serif Display. Monochrome (black/white/one accent), asymmetric grid, oversized type, generous whitespace.',
+    voice: 'confident, project-focused, specific. First person OR brand-collective "we", be consistent. Name clients and outcomes (e.g. "redesigned Linear\'s docs site — drove 32% activation lift").',
+    bannedSections: ['pricing tiers', 'monthly/yearly toggle', 'API integrations', 'how-it-works developer steps'],
+  },
+  agency: {
+    label: 'creative / branding / digital agency homepage',
+    sections:
+      'hero (manifesto-style headline + positioning subhead + "See our work" CTA, optional reel/video placeholder), capabilities strip (brand strategy, identity, digital, motion, photography — 4-8 services with descriptions), featured work case studies (6-9 client projects with hero image + client + sector + outcome), client logo grid (real brand names the agency could plausibly have served), our process (4-step methodology), team grid (4-8 team members with photo + name + role), recognition strip (awards), testimonials (3 client quotes), CTA / "Start a project" form, footer with offices.',
+    brandAnchors: ['Pentagram', 'Studio Dumbar', 'Mother NY', '&Co', 'Wieden+Kennedy', 'Frog', 'IDEO', 'Adobe', 'Nike', 'Apple', 'Spotify', 'Airbnb'],
+    aesthetic: 'minimal Swiss OR poster-style maximalism OR brutalist tech. Outfit / Manrope / DM Serif Display + Inter. Bold typography hierarchy, oversized headlines, asymmetric grids.',
+    voice: 'authoritative, third-person plural ("we") OR brand-collective. Specific outcomes for named clients. Avoid agency clichés ("we love what we do").',
+    bannedSections: ['pricing tiers', 'monthly/yearly toggle', 'API integrations'],
+  },
+  fitness: {
+    label: 'gym / studio / fitness brand marketing homepage',
+    sections:
+      'hero (action photography of person mid-workout, bold sans headline naming the transformation, "Book a class" + "First class free" CTAs), class types (4-6 categories: HIIT / strength / yoga / cycling / boxing, each with description + duration + intensity), trainer profiles (3-4 trainers with photo + bio + speciality + certifications), class schedule grid (week view with class types and times), membership tiers (3 levels: drop-in / unlimited / premium — concrete prices, not subscription SaaS-style), transformation stories (3 before/after with testimonial + member name + duration), facility / amenities strip, locations + contact, footer. NO API integrations, NO developer tools voice.',
+    brandAnchors: ['Equinox', 'Barry\'s', 'SoulCycle', 'Peloton', 'Tonal', 'F45', 'Orangetheory', 'CrossFit', 'Apple Fitness+', 'ClassPass', 'Strava', 'Whoop'],
+    aesthetic: 'brutalist tech OR neon nightlife. Bebas Neue / Space Grotesk / Manrope + Inter. Dark theme + saturated accent (electric lime / magenta / neon red). Action photography, motion-heavy.',
+    voice: 'energetic, second-person, outcome-focused. Numbers (calories, reps, watts, hours/week). Imperative verbs ("Push harder. Recover smarter.").',
+    bannedSections: ['API integrations', 'developer tools', 'how-it-works SaaS steps', 'monthly/yearly subscription tier shape — use class packs and memberships instead'],
+  },
+  wellness: {
+    label: 'wellness / spa / meditation studio / holistic health homepage',
+    sections:
+      'hero (calm/soft photography — nature or treatment room — generous serif headline, "Book a session" CTA), services / treatments (4-8 treatments with description + duration + price), practitioner profiles (3-4 with photo + credentials + speciality), client journey / approach (3-step process), packages or membership levels (concrete prices), testimonials (3 calm quotes), location + hours + booking, gallery, newsletter, footer.',
+    brandAnchors: ['Headspace', 'Calm', 'Goop', 'Aesop', 'Sakara', 'Heyday', 'Skin Laundry', 'The Now', 'Squeeze', 'Therabody', 'Liquid IV'],
+    aesthetic: 'organic wellness OR quiet museum minimal OR editorial warm. Fraunces / Playfair / Cormorant + Inter. Cream / sage / dusty rose palette. Soft photography, generous whitespace.',
+    voice: 'calm, sensory, present-tense. Avoid medical claims. Restorative language ("restore", "reset", "soften").',
+    bannedSections: ['API integrations', 'developer steps'],
+  },
+  hotel: {
+    label: 'hotel / resort / boutique stay homepage',
+    sections:
+      'hero (large architectural photography — hero shot of the property, headline naming the experience, date-range picker + "Book Now" CTA), the property / story section (origins, character, what makes it special), rooms & suites grid (4-8 room types with photos + amenities + nightly price), amenities strip (spa, dining, pool, etc.), dining / restaurants (if applicable — featured outlets), experiences / activities (curated guest experiences), location guide (neighborhood, distance to landmarks), guest testimonials, awards / press strip, booking CTA, footer.',
+    brandAnchors: ['Aman', 'Soho House', 'Ace Hotel', 'Hoxton', 'Standard', 'Edition', '1 Hotels', 'Six Senses', 'Rosewood', 'Belmond', 'Auberge Resorts'],
+    aesthetic: 'editorial luxury OR quiet museum minimal OR organic wellness. Fraunces / Playfair / DM Serif + Inter. Warm neutrals + photography-led, generous whitespace.',
+    voice: 'evocative, place-based, sensory. Describe what the guest experiences. Specific details (thread count, sunset times, distance to beach).',
+    bannedSections: ['API integrations', 'developer voice', 'SaaS pricing tiers'],
+  },
+  fintech: {
+    label: 'fintech / banking / payments / investment platform homepage',
+    sections:
+      'hero (trust-led: headline + clear value prop + dashboard/balance preview mock, "Open account" CTA + "FDIC insured" trust note), key benefits strip (4-6: no fees / instant transfer / regulated / secure), product/account types (3-4: checking / savings / business / investing — each with feature highlights + concrete numbers), how it works (4 steps: sign up → verify → fund → transact), security & compliance section (SOC 2, PCI DSS, encryption details, regulators), pricing or fees table (transparent breakdown), customer testimonials (3 with named users + amount/outcome), press/regulator logos (NYT / Forbes / WSJ / Bloomberg / FDIC / SEC), FAQ (KYC, limits, fees, security), CTA.',
+    brandAnchors: ['Stripe', 'Plaid', 'Mercury', 'Brex', 'Ramp', 'Wise', 'Wealthfront', 'Robinhood', 'Coinbase', 'Square', 'Chime', 'Bloomberg', 'Forbes', 'FDIC'],
+    aesthetic: 'stripe-style light OR linear-style light OR editorial luxury. Inter / Manrope + Sora. Light bg with one dark stats band. Subtle accent (indigo / emerald). Trust-first composition.',
+    voice: 'precise, regulatory-aware, numbers-led. Avoid hype. Cite specific protections (FDIC, SIPC, PCI). Use real percentages and rates.',
+    bannedSections: ['casual marketing tone', 'developer integrations focus'],
+  },
+  education: {
+    label: 'online course / bootcamp / school marketing homepage',
+    sections:
+      'hero (instructor photo + course headline + "Enroll now" / "Next cohort" CTA, with concrete dates + price + duration), what you\'ll learn section (8-12 outcomes/skills with checkmarks), curriculum overview (4-8 modules with descriptions + duration + lesson count), instructor bio (photo + credentials + past students + companies they\'ve taught at), social proof (student outcomes — "got hired at X" with named real companies), pricing tiers (3 levels: full / cohort / scholarship — concrete prices, payment plans), student testimonials with photos, FAQ (refund policy, time commitment, prerequisites), CTA.',
+    brandAnchors: ['Coursera', 'Udemy', 'Codecademy', 'Skillshare', 'Duolingo', 'Khan Academy', 'MasterClass', 'Maven', 'Stripe Press', 'Y Combinator', 'On Deck'],
+    aesthetic: 'editorial warm OR dashboard editorial OR linear-style light. Outfit / Manrope / DM Serif + Inter. Light bg + photo of instructor or students, single accent (orange / blue).',
+    voice: 'enthusiastic, outcome-focused, second-person ("you\'ll learn", "you\'ll build"). Specific skills + named companies students went to.',
+    bannedSections: ['API integrations', 'developer dashboard voice'],
+  },
+  realestate: {
+    label: 'real estate listings / agent / brokerage homepage',
+    sections:
+      'hero (large property photography + headline + city/neighborhood search + "Browse listings" CTA), featured listings grid (6-9 properties with hero photo placeholder + price + beds/baths/sqft + neighborhood + agent badge), browse by neighborhood / city (8-12 area cards), services strip (buying / selling / renting / mortgage), agent profiles (3-4 with photo + sales volume + speciality), client testimonials with named clients + dollar outcomes, market insights / blog teasers (3 articles), CTA "Find your home", footer.',
+    brandAnchors: ['Compass', 'Zillow', 'Redfin', 'Realtor.com', 'Sotheby\'s International Realty', 'Douglas Elliman', 'Coldwell Banker', 'Keller Williams', 'Architectural Digest', 'Dwell'],
+    aesthetic: 'editorial luxury OR quiet museum minimal. Fraunces / Playfair + Inter. Light bg, large photography, single accent (navy / forest).',
+    voice: 'authoritative, place-based, market-aware. Specific neighborhoods + sale prices + days on market.',
+    bannedSections: ['API integrations', 'developer voice', 'SaaS monthly tiers'],
+  },
+  nonprofit: {
+    label: 'nonprofit / charity / foundation homepage',
+    sections:
+      'hero (emotional photography + mission headline + "Donate now" CTA + impact stat), impact stats strip (lives reached / projects funded / years active / countries served), our story / mission, programs / initiatives (4-6 with photos + descriptions + impact numbers), how to help (donate / volunteer / fundraise / corporate partnerships), donation tiers (3-5: $25 / $100 / $500 / $1000 — each with concrete impact mapping "buys X for Y people"), partner logos (corporate sponsors + grant-making foundations + media partners), testimonial stories from beneficiaries (with photos + first names + outcomes), press/awards strip, transparency section (financials, charity rating links), FAQ, CTA, footer.',
+    brandAnchors: ['charity: water', 'GiveWell', 'Pencils of Promise', 'Heifer International', 'World Wildlife Fund', 'Doctors Without Borders', 'Bill & Melinda Gates Foundation', 'Ford Foundation', 'GuideStar', 'Candid', 'Charity Navigator'],
+    aesthetic: 'editorial warm OR organic wellness. Fraunces / Playfair + Inter. Warm earth tones + photography-led, generous whitespace. Single accent (forest / sky-blue / amber).',
+    voice: 'emotional, specific, beneficiary-centered. Use named beneficiaries + concrete impact numbers. Avoid empty inspiration language.',
+    bannedSections: ['SaaS pricing tiers', 'API integrations', 'developer voice', 'monthly subscription toggle (use donation tiers instead)'],
+  },
+}
+
+/**
+ * Build the per-site-type prompt block. Emits a structured markdown block
+ * the split3 system prompts will read alongside the universal HARD REQS.
+ * Returns { block, type, pack } so callers can record the detected type
+ * onto meta.json for traceability.
+ */
+export function buildSiteTypeBlock(brief = '', explicitType = null) {
+  const type = explicitType || detectSiteType(brief)
+  const pack = SITE_TYPE_PACKS[type] || SITE_TYPE_PACKS.saas
+  const banned = (pack.bannedSections || []).length
+    ? `\nDO NOT include these sections (they are wrong for this site type): ${pack.bannedSections.join('; ')}.`
+    : ''
+  const block = `── SITE TYPE PACK: ${pack.label} (detected: ${type}) ──
+This brief is NOT a generic B2B SaaS marketing homepage. Adapt every section to the vertical.
+
+REQUIRED SECTIONS (in order, replacing the SaaS template default):
+${pack.sections}
+
+BRAND ANCHORS (use these in logo grids, press strips, testimonial author affiliations — NOT B2B SaaS dev-tool brands): ${pack.brandAnchors.join(', ')}.
+
+AESTHETIC STEER: ${pack.aesthetic}
+
+COPY VOICE: ${pack.voice}${banned}
+
+When the universal HARD REQS conflict with this pack (e.g. universal says "pricing tiers", this pack says "menu items"), THIS PACK WINS. Treat universal HARD REQS as accessibility/markup contracts (Tailwind setup, ≥9 sections, ≥45K chars, two-tone headline, real anchors, lucide icon safe list, IIFE wiring) — those still apply. Section semantics come from this pack.`
+  return { block, type, pack }
+}
+
 export function buildVariantPrompt(basePrompt, i, opts = {}) {
   const v = pickVariation(i)
   const ref = opts.includeReference !== false ? referencePromptBlock() : ''
   const seed = opts.winnerSeedBlock ? `\n${opts.winnerSeedBlock}` : ''
   const mobbin = opts.mobbinBlock ? `\n${opts.mobbinBlock}` : ''
   const rigor = opts.rigorBlock ? `\n${opts.rigorBlock}` : ''
+  // Site-type pack runs FIRST — it overrides section semantics from the
+  // universal SaaS-shaped template. Skip when caller forces type=null
+  // (e.g. legacy SaaS-only flows that don't want detection).
+  const siteType =
+    opts.siteTypeBlock === false
+      ? ''
+      : `\n${(opts.siteTypeBlock || buildSiteTypeBlock(basePrompt, opts.forceSiteType).block)}\n`
   // Pack the four variation axes onto two compact lines to keep input tokens lean.
   const variation = `${v.aesthetic} ${v.hero}\n${v.pricing} ${v.composition}`
-  return `${basePrompt}\n\n${variation}${ref}${mobbin}${rigor}${seed}`
+  return `${basePrompt}\n\n${variation}${siteType}${ref}${mobbin}${rigor}${seed}`
 }
 
 /**
@@ -564,77 +761,79 @@ Output ONLY:
       ...two-tone headline (accent color on payoff word)
       ...4-line subhead
       ...2 CTAs (one data-magnet) + 4-item trust chip row
-      ...PRODUCT UI MOCK ~480px tall: terminal/dashboard/chat with 18+ rows of REAL contextual content. Include browser/window chrome at top (3 colored circle buttons + tab strip with active tab name + url bar). The mock body contains:
-         - if terminal: 18-25 lines of code/output with colored spans (text-emerald-400 for keywords, text-amber-400 for strings, text-slate-400 for comments, text-sky-400 for identifiers) + a fake prompt line
-         - if dashboard: a stats row at top + a sortable-looking table with 10+ rows + a sidebar with 4-6 nav items + a chart placeholder with bars/lines
-         - if chat: 8+ message bubbles alternating sender/agent with timestamps + typing indicator at bottom + tool-use card embedded between messages
-         The mock should reach ~6,000-9,000 chars on its own. This is the single most important visual element.
+      ...HERO MOCK (~6,000-9,000 chars on its own — the single most important visual element). The KIND of mock is dictated by the SITE TYPE PACK in the user prompt:
+         - if the pack describes a SaaS / Developer-Tool / Fintech / Education product: faux terminal OR dashboard OR code-editor with 18+ rows of CONTEXTUAL content (SQL + results, log lines, JSON, table rows, chart bars). Window chrome (3 dot circles + URL bar). Syntax-highlight colored spans.
+         - if Restaurant / Coffee / Bakery: a styled menu card OR reservation widget OR "Today's pour-over" featured-product card with 6-10 menu items (name + price + 1-line description + dietary icons), styled as a vintage menu / cafe board / takeaway slip with serif type and warm tones.
+         - if Ecommerce / DTC: a hero product card showing the actual SKU (product name + price + "Add to bag" CTA + 1-2 quick attributes + reviews-star count) AND/OR a 3-product mini-grid below it. Soft product-photography vibe via a colored gradient placeholder, not a code window.
+         - if Portfolio / Agency: a featured-case-study card with project name + client + 1-line outcome + a thumbnail block (large colored placeholder div with overlay label) OR a typographic showcase tile with the designer\'s name and 3 project chips.
+         - if Fitness / Wellness / Hotel: a service / class / room card with photo placeholder (gradient block) + name + price/duration/rate + booking CTA + 2-3 quick attributes (intensity / length / amenities). For Wellness add session-time bullets. For Hotel add "from $X/night + room features".
+         - if Real Estate: a property listing card with photo placeholder + price + beds/baths/sqft + neighborhood + "Schedule a tour" CTA.
+         - if Nonprofit: an impact-stat block + donation widget mock (suggested amounts + impact-per-amount captions).
+         For non-SaaS verticals the mock must NOT look like a terminal/dashboard/code editor — that signals "B2B SaaS" and breaks the vertical fit. Use evocative photography placeholder blocks (bg-gradient-to-br with rich color stops + a low-opacity overlay label), styled menu/card chrome, or typographic showcases instead.
     </section>
     <section id="stats">
-      ...subtitle row ("Trusted at scale")
-      ...4 stat columns: text-4xl/5xl number with data-counter data-counter-target + label + 1-line context note
+      ...subtitle row appropriate to the vertical (e.g. "Trusted at scale" for SaaS; "Loved by [thousands of locals/members/guests]" for consumer; "Featured in [press]" for portfolio/agency)
+      ...4 stat columns: text-4xl/5xl number with data-counter data-counter-target + label + 1-line context note. Numbers MUST be vertical-appropriate — SaaS uses uptime/latency/deploys; restaurant uses cups-served/years-roasting/origins; fitness uses members/classes/calories; hotel uses rooms/awards/years; ecommerce uses orders-shipped/repeat-buyers/countries. NEVER use SaaS technical metrics ("99.99% uptime", "API requests/sec") on non-SaaS verticals.
     </section>
 ${SPLIT_MARKER}
 
-That marker ends your output. NOTHING after it — Part B and Part C produce features/how-it-works/logos/testimonials/pricing/faq/cta/footer/IIFE/closing tags. DO NOT close body or html. Target 12,000-18,000 chars for your portion. Quality of hero product-UI mock is the most important detail — make it visually rich with believable content.`
+That marker ends your output. NOTHING after it — Part B and Part C produce features/how-it-works/logos/testimonials/pricing/faq/cta/footer/IIFE/closing tags. DO NOT close body or html. Target 12,000-18,000 chars for your portion. Quality of hero mock is the most important detail — make it visually rich with believable, vertical-appropriate content.`
 
 const SYSTEM_PART_B3 = HOMEPAGE_SYSTEM_LEAN + `
 
-PARALLEL-3-SPLIT MODE — PART B (features + use-cases + how-it-works + logos + testimonials):
-Part A already produced: <!DOCTYPE>, <head>, <body opening>, <header>, hero, stats. Part C will produce pricing, faq, cta, footer, IIFE, closing tags. Your job: the 5 middle sections.
+PARALLEL-3-SPLIT MODE — PART B (5 middle sections — exact section types depend on the SITE TYPE PACK):
+Part A already produced: <!DOCTYPE>, <head>, <body opening>, <header>, hero, stats. Part C will produce pricing/menu/booking + faq + cta + footer + IIFE + closing tags. Your job: 5 middle sections appropriate to the vertical.
 
-Output EXACTLY:
+CRITICAL: read the SITE TYPE PACK in the user prompt. The default 5 sections below are the SaaS shape; for other verticals, swap to the PACK's prescription. Common mappings:
+  - SaaS / Developer / Fintech: features grid (12 cards) | use-cases (4 personas) | how-it-works (4 steps with code) | logos grid | testimonials
+  - Ecommerce / DTC: featured products (8-card grid with price + add-to-cart) | shop-by-category (3-4 collection tiles) | ingredient/material story OR press strip | bestsellers (4-card) | reviews
+  - Restaurant / Coffee: our story (chef/founder bio with portrait) | menu categories (3-5: brunch/lunch/dinner/drinks/specials) | featured menu items (6-8 dishes with name + description + price + dietary tag) | press / awards strip | gallery (6-photo grid placeholder)
+  - Portfolio / Agency: about/services (capabilities strip) | case studies grid (6-9 projects with thumbnail + client + outcome) | client logo grid (real brand names plausible for the niche) | our process (4-step methodology) | testimonials with client name + outcome
+  - Fitness / Wellness: class/treatment types (4-6 categories with description + duration + intensity/benefits) | trainer/practitioner profiles (3-4 with photo + bio + speciality + certifications) | class schedule grid OR client journey | transformation/recovery stories (3 with testimonial + member name) | facility / amenities strip
+  - Hotel: property story | rooms & suites grid (4-8 room types with photo + amenities + nightly price) | amenities strip | dining outlets OR experiences | location guide
+
+LOGO GRID brands: pull EXACTLY from the SITE TYPE PACK's brandAnchors field. DO NOT default to Linear/Vercel/Stripe/Cloudflare/Notion/Anthropic/OpenAI/Hashnode unless the PACK explicitly lists them (those are SaaS-only). For a restaurant the logo grid is press logos (NYT, Eater, Bon Appétit) or supplier brands (Counter Culture, Stumptown); for a hotel it's awards (Conde Nast Hot List, Travel + Leisure, Michelin Keys); for an agency it's past client logos. NEVER include B2B SaaS dev-tool logos in non-SaaS verticals.
+
+TESTIMONIAL author affiliations: again pull from the PACK's brandAnchors. Restaurant testimonials should be from food writers / regulars / local press. Fitness testimonials from members. Wellness testimonials from clients citing recovery outcomes. Hotel testimonials from guests citing specific stays. NEVER fabricate "CTO @ Linear" for a coffee shop.
+
+Output EXACTLY (marker first, then 5 sections, then closing marker):
 ${SPLIT_MARKER}
-  <section id="features">
-    ...heading + 2-line subheading
-    ...12 feature cards in 3-column grid; each card: icon + heading + 3-line description + sub-bullet list of 2-3 specific capabilities.
-  </section>
-  <section id="use-cases">
-    ...heading "Built for [target users]" + 2-line subheading
-    ...4 use-case cards in 2-column grid (NOT same shape as features — wider, with named persona/team + scenario sentence + 3-bullet "what they get" list + small avatar/icon + outcome metric line). Each ~80-100 words.
-  </section>
-  <section id="how-it-works">
-    ...heading + 2-line subheading
-    ...4 numbered steps with icon + step heading + 3-sentence description + code/command snippet OR row of sub-points per step
-  </section>
-  <section id="logos">
-    ...heading "Trusted by teams at" + 2-line subheading
-    ...grid of 8+ NAMED REAL B2B SaaS brands (Linear, Vercel, Stripe, Resend, Notion, Cloudflare, Hashnode, Supabase, Anthropic, OpenAI Platform, ElevenLabs, Hume AI, Clay, Base44, Relevance AI — pick from variation block anchors). Styled text in grayscale, hover to color.
-  </section>
-  <section id="testimonials">
-    ...heading + 2-line subheading + 3 cards in lg:grid-cols-3
-    ...each card: ★★★★★ row (5 inline lucide star icons or chars), 3-line quote, colored-circle initial + name + role @ named real B2B SaaS brand (different per card)
-  </section>
+  ...5 sections in order, matching the SITE TYPE PACK prescription (or the SaaS default above when the brief is SaaS). Each section ≥3,500 chars. Total ≥28,000 chars across all 5.
 ${SPLIT_MARKER_BC}
 
-Marker is FIRST line, ${SPLIT_MARKER_BC} is LAST line. NO doctype/html/head/body opening/header/hero/stats at start. NO pricing/faq/cta/footer/script after. Target 28,000-34,000 chars. Use Lucide icons from the safe list.`
+Marker is FIRST line, ${SPLIT_MARKER_BC} is LAST line. NO doctype/html/head/body opening/header/hero/stats at start. NO pricing/menu-pricing/faq/cta/footer/script after. Target 28,000-34,000 chars. Use Lucide icons from the safe list.`
 
 const SYSTEM_PART_C3 = HOMEPAGE_SYSTEM_LEAN + `
 
-PARALLEL-3-SPLIT MODE — PART C (pricing + faq + cta + footer + IIFE + closing tags):
-Parts A and B already produced everything from <!DOCTYPE> through the end of the testimonials section. Your job: the rest of the page.
+PARALLEL-3-SPLIT MODE — PART C (closing 4 sections: commerce/booking + faq + cta + footer + IIFE + closing tags):
+Parts A and B already produced <!DOCTYPE> through the testimonials/reviews section. Your job: the rest of the page.
+
+CRITICAL: read the SITE TYPE PACK in the user prompt. The first section after the marker is NOT always "pricing" — it depends on the vertical:
+  - SaaS / Developer / Fintech / Education / Wellness / Fitness: <section id="pricing"> with 3 tiers, monthly/yearly toggle (data-pricing-billing), data-show-monthly/data-show-yearly, middle tier scale-105 md:scale-110 ring-2 ring-primary + "Most popular" pill + elevated shadow. 7 feature lines per tier. CTA button per tier (one data-magnet). Prices appropriate to vertical — for SaaS use $/mo; for fitness/wellness use class packs OR $/mo memberships with sensible numbers; never put "API requests/mo" on a fitness page.
+  - Ecommerce / DTC: <section id="shop-grid"> — 4-6 SKU cards (product image placeholder + product name + price + 1-line description + "Add to bag" CTA + reviews-star count). NO subscription tiers, NO monthly toggle. Optional "Subscribe & save" banner above the grid.
+  - Restaurant / Coffee / Bakery: <section id="menu"> with 2-3 menu categories (e.g. "Single Origins", "Blends", "Subscriptions" OR "Brunch", "Lunch", "Dinner"). Each category 4-6 items with name + 2-line description + price + dietary/origin tags. NO monthly/yearly toggle. Add an "Order online" or "Reserve a table" CTA above or below.
+  - Portfolio: <section id="contact"> — contact form OR email CTA + 4-6 social/professional links + "Available for new projects" status indicator. NO pricing tiers.
+  - Agency: <section id="start-project"> — "Start a project" form/CTA + service-tier guide rails OR engagement-model cards (Sprint $X / Full Engagement / Retainer) WITHOUT subscription toggle. Could include "Average engagement: 8 weeks" stats inline.
+  - Hotel: <section id="rooms-rates"> — room type cards with photo placeholder + name + "from $X/night" + amenities + "Book this room" CTA. NO monthly toggle. Add date-range picker / availability widget mock above.
+  - Real Estate / Nonprofit: vertical-specific — listings grid / donation tiers respectively.
 
 Output EXACTLY (marker first, no preamble):
 ${SPLIT_MARKER_BC}
-  <section id="pricing">
-    ...heading + 2-line subheading + monthly/yearly toggle (data-pricing-billing) + "save 20%" pill on yearly
-    ...3 tiers, middle tier scale-105 md:scale-110 ring-2 ring-primary + "Most popular" pill + elevated shadow
-    ...each tier: name + price ([data-show-monthly]/[data-show-yearly]) + 1-line description + 7 feature lines with check icons + CTA button (one data-magnet)
-  </section>
+  ...vertical-appropriate commerce/booking section (see above) — ≥7,000 chars with real concrete content.
   <section id="faq">
-    ...heading + 2-line subheading + 6 data-accordion items with data-accordion-trigger + 2-3 sentence answer (concrete examples)
+    ...heading + 2-line subheading + 6 data-accordion items with data-accordion-trigger + 2-3 sentence answer per FAQ. FAQ topics should fit the vertical (refund policy + shipping for ecommerce; booking + cancellation + dietary accommodations for restaurant; class trials + injuries + scheduling for fitness; etc.).
   </section>
   <section id="cta-final">
-    ...penultimate CTA band: heading + subheading + 2 CTAs + trust line
+    ...penultimate CTA band: heading + subheading + 2 CTAs + trust line. Tone matches the COPY VOICE in the SITE TYPE PACK.
   </section>
   <footer>
-    ...4 columns: Product/Resources/Company/Legal, each 4-5 links; logo + tagline column on left; copyright + secondary nav strip + social icons (inline <svg viewBox="0 0 24 24"> for brand glyphs)
+    ...4 columns appropriate to vertical (e.g. for restaurant: Visit / Order / About / Press; for hotel: Stay / Dine / Experience / Contact; for SaaS: Product / Resources / Company / Legal). Logo + tagline column on left; copyright + social icons (inline <svg viewBox="0 0 24 24"> for brand glyphs).
   </footer>
   <script>(function(){
     ...single IIFE, null-guarded querySelectors. Concise — single helpers, no redundancy.
     ...wire data-mobile-nav + data-mobile-nav-toggle (is-open class)
     ...wire data-accordion items (click toggles is-open)
-    ...wire data-pricing-billing (toggle [data-show-monthly]/[data-show-yearly])
+    ...wire data-pricing-billing (toggle [data-show-monthly]/[data-show-yearly]) — only if the commerce section uses a toggle
     ...wire data-counter (IntersectionObserver → count-up over 1.2s)
     ...wire data-magnet (pointer parallax: translate by mouse offset * 0.15)
     ...hero-canvas particle loop (respect prefers-reduced-motion)

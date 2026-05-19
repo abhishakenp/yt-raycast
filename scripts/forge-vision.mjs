@@ -58,9 +58,130 @@ The score MUST equal hierarchy + harmony + spacing + copy + artDirection (NOT in
 function imageBlock(filePath) {
   const buf = readFileSync(filePath)
   const b64 = buf.toString('base64')
+  // Detect MIME from file extension so JPEG thumbs (used by visionJudgeCompare
+  // to stay under Groq's multi-image request size limit) are sent correctly.
+  const lower = filePath.toLowerCase()
+  const mime = lower.endsWith('.jpg') || lower.endsWith('.jpeg') ? 'image/jpeg' : 'image/png'
   return {
     type: 'image_url',
-    image_url: { url: `data:image/png;base64,${b64}` },
+    image_url: { url: `data:${mime};base64,${b64}` },
+  }
+}
+
+/**
+ * Comparative vision judge — picks the best among N screenshots for the
+ * same brief. Designed for Best-of-K selection where the absolute scorer
+ * (visionJudge below) saturates at 100 and can't discriminate.
+ *
+ * Input: array of screenshot paths (≥2), optional context string.
+ * Output: { winner: idx (0-indexed), ranking: [idxs best→worst],
+ *           winnerReasons: [...], loserCritiques: [{ variant, issues }] }
+ *
+ * Latency ~5-8s for N=3 (multi-image vision call).
+ *
+ * ⚠ EXPERIMENTAL — used by scripts/forge-best-of-k.mjs only. NOT in the
+ * default forge path. Reason: tested 2026-05-19, llama-4-scout-17b's
+ * aesthetic preferences do NOT match the human reviewer's. Comparative
+ * judging works (it discriminates and returns concrete reasoning) but it
+ * picks variants the human wouldn't choose. See the header comment on
+ * scripts/forge-best-of-k.mjs for the full trace + next steps.
+ */
+const COMPARE_RUBRIC_SYSTEM = `You are a senior product-design critic comparing AI-generated marketing homepage screenshots.
+
+You will see N screenshots labeled "VARIANT 1", "VARIANT 2", ..., generated for the SAME brief. Pick the BEST one and explain why in concrete design terms (typography hierarchy, color/surface harmony, spacing rhythm, copy specificity, art-direction distinctiveness).
+
+Be DISCRIMINATING — there IS a best among these, even if all look competent. Identify the subtle differences: which has more deliberate art direction? Which has stronger hierarchy? Which has the most credible copy? Which feels most like a real production site vs a template? Don't say "all are equal".
+
+Return EXACTLY this JSON (1-indexed variant numbers):
+{"winner":N,"ranking":[N,N,N],"winnerReasons":["why winner wins #1","#2","#3"],"loserCritiques":[{"variant":N,"issues":["concrete failure","..."]},...]}
+
+winnerReasons: 2-4 concrete short reasons (≤100 chars each) why the winner wins.
+loserCritiques: one entry per non-winner variant, with 2-3 specific failures each.`
+
+export async function visionJudgeCompare(shotPaths, context = '') {
+  if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
+  if (!Array.isArray(shotPaths) || shotPaths.length < 2) {
+    throw new Error('visionJudgeCompare needs ≥2 screenshots')
+  }
+  for (const p of shotPaths) {
+    if (!existsSync(p)) throw new Error(`shot not found: ${p}`)
+  }
+
+  const userContent = [
+    {
+      type: 'text',
+      text: `Compare ${shotPaths.length} homepage variants for the same brief. ${context ? `Context: ${context}.` : ''} Pick the best, rank all, explain. Return JSON only.`,
+    },
+  ]
+  for (let i = 0; i < shotPaths.length; i++) {
+    userContent.push({ type: 'text', text: `VARIANT ${i + 1}:` })
+    userContent.push(imageBlock(shotPaths[i]))
+  }
+
+  const body = {
+    model: VISION_MODEL,
+    messages: [
+      { role: 'system', content: COMPARE_RUBRIC_SYSTEM },
+      { role: 'user', content: userContent },
+    ],
+    temperature: 0.2,
+    max_tokens: 900,
+    response_format: { type: 'json_object' },
+    stream: false,
+  }
+
+  const t0 = Date.now()
+  const res = await fetch(`${GROQ_HOST}/openai/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${GROQ_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+  const ms = Date.now() - t0
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    return { winner: 0, ms, error: `vision-compare ${res.status}: ${text.slice(0, 200)}` }
+  }
+  const data = await res.json()
+  const raw = data.choices?.[0]?.message?.content ?? ''
+  let parsed = null
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    const m = raw.match(/\{[\s\S]*\}/)
+    if (m) {
+      try {
+        parsed = JSON.parse(m[0])
+      } catch {}
+    }
+  }
+  if (!parsed) {
+    return { winner: 0, ms, error: 'vision-compare: bad JSON', raw: raw.slice(0, 300) }
+  }
+  // Convert 1-indexed to 0-indexed; clamp to valid range.
+  const N = shotPaths.length
+  const toIdx = (v) => {
+    const n = Number(v)
+    return Number.isFinite(n) && n >= 1 && n <= N ? n - 1 : 0
+  }
+  const winner = toIdx(parsed.winner)
+  const ranking = Array.isArray(parsed.ranking)
+    ? parsed.ranking.map(toIdx).filter((v, i, arr) => arr.indexOf(v) === i)
+    : [winner]
+  return {
+    winner,
+    ranking,
+    winnerReasons: Array.isArray(parsed.winnerReasons) ? parsed.winnerReasons.slice(0, 4) : [],
+    loserCritiques: Array.isArray(parsed.loserCritiques)
+      ? parsed.loserCritiques.map((c) => ({
+          variant: toIdx(c.variant),
+          issues: Array.isArray(c.issues) ? c.issues.slice(0, 3) : [],
+        }))
+      : [],
+    ms,
+    model: VISION_MODEL,
   }
 }
 
