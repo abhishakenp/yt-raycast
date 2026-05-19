@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "packageManager": "bun@1.2.5",
   "type": "module",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "main": "src/index.js",
   "scripts": {
     "dev": "bash -c 'kill $(lsof -t -i:7430) 2>/dev/null || true; sleep 0.3; NODE_ENV=development DASHBOARD_PORT=7430 bun --watch src/index.js'",
@@ -11,6 +13,9 @@
     "start": "DASHBOARD_PORT=7430 node src/index.js",
     "build:scripts": "bun run scripts/build-browser-scripts.ts",
     "build": "bun run build:scripts",
+    "studio:install": "cd studio && bun install --no-frozen-lockfile",
+    "studio:build": "cd studio && bun run studio:build",
+    "studio:dev": "cd studio && bun run dev",
     "format": "prettier --write \"src/**/*.{js,ts,tsx}\"",
     "verify:site-spec": "node scripts/verify-site-spec.js",
     "sync:medusa-catalog": "node scripts/sync-ecommerce-to-medusa.js",
