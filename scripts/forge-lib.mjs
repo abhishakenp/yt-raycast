@@ -456,6 +456,173 @@ export function temperatureForIter(i) {
 }
 
 /**
+ * ⚠ EXPERIMENTAL — see scripts/forge-twostage.mjs header for why this is
+ *   kept for reference and NOT the default. Short version: Llama 3.1 8B
+ *   is too weak to fully reject SaaS-default patterns in the planning
+ *   step (e.g. picks mockType="terminal" for a coffee shop), and the
+ *   human reviewer preferred single-shot output on a side-by-side test.
+ *
+ * Two-stage generation: small/fast model produces a structural skeleton
+ * (JSON plan), then GPT-OSS-120B does the heavy HTML lift conditioned on
+ * that skeleton.
+ *
+ * Why: GPT-OSS-120B spends a chunk of its reasoning budget on "what
+ * sections do I need? what anchors? what palette?" before generating
+ * HTML. Llama 3.1 8B on Groq runs at ~700 tok/s — it can decide that
+ * structure in 1-2s, leaving the 120B model with a tighter, more focused
+ * task: "expand this approved plan into dense HTML".
+ *
+ * Stage A (Llama 3.1 8B): brief → strict JSON skeleton
+ *   { siteType, hero: {headline, accentPhrase, mockType, subheadline, ctas},
+ *     sections: [{ id, kind, intent, headingText, brandAnchors?, contentHints }],
+ *     theme: { palette, fontDisplay, fontBody, accent }, voice }
+ *   Latency: ~1-3s on Groq.
+ *
+ * Stage B (GPT-OSS-120B via split3): the same forgeGenerateSplit3 call,
+ *   but the user prompt has the skeleton JSON injected as an
+ *   "APPROVED SKELETON" block above the brief. The split3 system prompts
+ *   already read user-prompt blocks; the skeleton becomes the most-
+ *   specific source of truth (overrides SITE TYPE PACK defaults where
+ *   they conflict).
+ *
+ * Wall-clock: stage A (~2s) + stage B (~16s) = ~18s. Sometimes net-faster
+ * than single-stage because the 120B has less divergent thinking to do.
+ *
+ * Returns: { content, ms, stageAMs, stageBMs, skeleton, ... }
+ */
+const SKELETON_SYSTEM = `You are a senior product designer planning the structure of a marketing homepage. Output ONLY strict JSON, no prose, no markdown fences.
+
+Given a brief, produce a concrete JSON plan another model will use to generate the full HTML. Be specific — name the brands, name the headlines, name the section intents. The model that consumes your plan will hallucinate less when your plan is more concrete.
+
+Return EXACTLY this shape:
+{
+  "siteType": "saas" | "ecommerce" | "restaurant" | "portfolio" | "agency" | "fitness" | "wellness" | "hotel" | "fintech" | "education" | "realestate" | "nonprofit",
+  "hero": {
+    "headline": "verb-led, ≤8 words. Two-tone: base text + accent word/phrase.",
+    "accentPhrase": "the part of the headline that should render in the accent color",
+    "subheadline": "1-2 sentences naming the user + the outcome",
+    "mockType": "terminal" | "dashboard" | "chat" | "menu-card" | "product-card" | "case-study-card" | "room-card" | "class-card" | "treatment-card",
+    "mockHints": "1-2 sentences describing what content the mock should show (e.g. 'SQL query with results table', 'reservation card with Friday 7pm', '4-product grid')",
+    "ctas": ["primary CTA verb-led", "secondary CTA"]
+  },
+  "stats": [
+    { "value": "real-feeling number with unit", "label": "what it measures", "context": "1-line note" },
+    "...(4 stats total, vertical-appropriate metrics — uptime/req-s for SaaS; cups/orders/years for restaurant; members/classes for fitness)"
+  ],
+  "sections": [
+    { "id": "kebab-case", "kind": "features|how-it-works|use-cases|logos|testimonials|menu|gallery|case-studies|capabilities|process|rooms-grid|class-types|trainer-profiles|treatments|pricing|shop-grid|contact|booking|story", "intent": "what this section delivers", "headingText": "actual heading", "contentHints": "concrete content to include (3-5 sentences of specifics)" },
+    "...(5-8 sections in order appropriate to siteType)"
+  ],
+  "logoGrid": ["6-10 real brand names appropriate to the vertical (e.g. for restaurant: Stumptown, Blue Bottle, Sweetgreen, OpenTable, Resy, Eater, NYT, Bon Appetit; for fitness: Equinox, Barry's, Strava, Whoop; never SaaS dev tools for non-SaaS verticals)"],
+  "testimonials": [
+    { "stars": 5, "quote": "2-3 line specific quote with named outcome", "author": "name", "role": "role @ named real company in this vertical" },
+    "...(3 testimonials)"
+  ],
+  "theme": {
+    "palette": "describe in one phrase (e.g. 'warm cream + forest green + ochre accent on parchment')",
+    "fontDisplay": "google font name",
+    "fontBody": "google font name (often Inter)",
+    "fontMono": "google font name or null",
+    "accent": "primary accent color name + hex"
+  },
+  "voice": "1 sentence describing copy voice (e.g. 'evocative, sensory, place-based — chef voice in first person plural')"
+}
+
+The siteType MUST be detected from the brief. Sections MUST suit the vertical (no pricing tiers for restaurant/ecommerce/portfolio; no API integrations for non-SaaS; menu for restaurant; shop-grid for ecommerce; case-studies for portfolio/agency; rooms-grid for hotel). Brands MUST be vertical-appropriate. Be opinionated — the model downstream needs concrete decisions, not options.`
+
+const SKELETON_MODEL = process.env.FORGE_SKELETON_MODEL || 'llama-3.1-8b-instant'
+
+export async function forgeGenerateTwoStage({
+  prompt = FORGE_DEFAULT_PROMPT,
+  temperature = LLM_CONFIG.homepage.temperature,
+  signal,
+} = {}) {
+  if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
+
+  // ---- Stage A: skeleton plan via Llama 3.1 8B ----
+  const tA = Date.now()
+  const skeletonRes = await fetch(URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${GROQ_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: SKELETON_MODEL,
+      messages: [
+        { role: 'system', content: SKELETON_SYSTEM },
+        { role: 'user', content: `Brief: ${prompt}\n\nReturn the JSON plan only.` },
+      ],
+      temperature: 0.3,
+      max_tokens: 2500,
+      response_format: { type: 'json_object' },
+      stream: false,
+    }),
+    signal,
+  })
+  const stageAMs = Date.now() - tA
+  if (!skeletonRes.ok) {
+    const text = await skeletonRes.text().catch(() => '')
+    return { content: '', ms: stageAMs, stageAMs, error: `stage A ${skeletonRes.status}: ${text.slice(0, 200)}` }
+  }
+  const skeletonData = await skeletonRes.json()
+  const skeletonRaw = skeletonData.choices?.[0]?.message?.content ?? '{}'
+  let skeleton
+  try {
+    skeleton = JSON.parse(skeletonRaw)
+  } catch {
+    const m = skeletonRaw.match(/\{[\s\S]*\}/)
+    if (m) {
+      try {
+        skeleton = JSON.parse(m[0])
+      } catch {}
+    }
+  }
+  if (!skeleton || typeof skeleton !== 'object') {
+    return { content: '', ms: stageAMs, stageAMs, error: 'stage A: skeleton JSON parse failed', skeletonRaw: skeletonRaw.slice(0, 500) }
+  }
+
+  // Skeleton injected as the highest-priority block in the stage B prompt.
+  // The split3 system prompts already accept user-prompt blocks like
+  // SITE TYPE PACK — this APPROVED SKELETON is more concrete and wins.
+  const skeletonBlock = `── APPROVED SKELETON (stage-A plan, follow it concretely) ──
+${JSON.stringify(skeleton, null, 2)}
+
+Use the headline / accent phrase / mockType / mockHints / sections / brand names / stats / theme / voice from this plan VERBATIM where they are specified. Expand each section's contentHints into the actual HTML — do not invent different section kinds or replace named brands. If any field is missing from the plan, fall back to the SITE TYPE PACK defaults below.`
+
+  // Build the user prompt by injecting skeleton ABOVE the standard
+  // SITE TYPE PACK + reference + mobbin/rigor blocks. The default
+  // buildVariantPrompt is reused so all the existing scaffolding stays.
+  const userPromptBase = buildVariantPrompt(prompt, 0, { includeReference: true })
+  const userPrompt = `${skeletonBlock}\n\n${userPromptBase}`
+
+  // ---- Stage B: dense HTML via GPT-OSS-120B split3 ----
+  const tB = Date.now()
+  const stageBResult = await forgeGenerateSplit3({
+    prompt: userPrompt,
+    temperature,
+    signal,
+  })
+  const stageBMs = Date.now() - tB
+
+  return {
+    content: stageBResult.content,
+    ms: stageAMs + stageBMs,
+    stageAMs,
+    stageBMs,
+    skeleton,
+    skeletonRaw,
+    stageBMsA: stageBResult.msA,
+    stageBMsB: stageBResult.msB,
+    stageBMsC: stageBResult.msC,
+    partAChars: stageBResult.partAChars,
+    partBChars: stageBResult.partBChars,
+    partCChars: stageBResult.partCChars,
+    error: stageBResult.error,
+  }
+}
+
+/**
  * Direct call to Groq.
  */
 export async function forgeGenerate({

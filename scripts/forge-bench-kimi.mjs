@@ -130,18 +130,19 @@ async function generateWithForge(brief, briefDir) {
   // Split3 mode: 3 parallel Groq calls, stitched. ~15-19s wall vs ~20s for
   // single call, ~55K chars vs ~30K. Opt-out via FORGE_NO_SPLIT3=1 to use
   // single-call legacy path for comparison.
+  // T=0.55 — human-preferred floor (see forge-once.mjs comment).
   let result
   if (process.env.FORGE_NO_SPLIT3 !== '1') {
     result = await forgeGenerateSplit3({
       prompt: userPrompt,
-      temperature: 0.62,
+      temperature: 0.55,
     })
   } else {
     result = await forgeGenerate({
       prompt: userPrompt,
       reasoningEffort: 'low',
       maxTokens: 20000,
-      temperature: 0.62,
+      temperature: 0.55,
     })
   }
   const html = String(result?.content || '')

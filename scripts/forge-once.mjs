@@ -38,7 +38,10 @@ const positional = process.argv.slice(2).filter((a) => !a.startsWith('--'))
 const prompt = positional[0] || FORGE_DEFAULT_PROMPT
 const effort = arg('--effort', 'low')
 const maxTokens = parseInt(arg('--max', '16000'), 10)
-const temperature = parseFloat(arg('--temp', '0.65'))
+// Default T=0.55 — picked by the human reviewer (Livio) twice over higher-T
+// variants (0.65, 0.75) on 2026-05-19. Lower T produces cleaner, less
+// SaaS-templated output for non-SaaS verticals.
+const temperature = parseFloat(arg('--temp', '0.55'))
 const PORT = parseInt(arg('--port', '9907'), 10)
 const outDir = arg('--out', join(process.cwd(), '.forge', 'once', String(Date.now())))
 

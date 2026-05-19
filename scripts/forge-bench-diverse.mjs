@@ -133,7 +133,8 @@ try {
     writeFileSync(join(briefDir, 'prompt.txt'), userPrompt, 'utf8')
 
     const t0 = Date.now()
-    const result = await forgeGenerateSplit3({ prompt: userPrompt, temperature: 0.62 })
+    // T=0.55 — human-preferred floor (see forge-once.mjs comment).
+    const result = await forgeGenerateSplit3({ prompt: userPrompt, temperature: 0.55 })
     const ms = Date.now() - t0
     const html = String(result?.content || '')
     writeFileSync(join(briefDir, 'index.html'), html, 'utf8')
