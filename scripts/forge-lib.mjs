@@ -1344,6 +1344,8 @@ export async function forgeGenerateSplit3({
   maxTokensC = 8500,
   reasoningEffort = 'low',
   signal,
+  genomeHint = null,
+  siteTypeHint = null,
 } = {}) {
   if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not set')
 
@@ -1434,13 +1436,84 @@ export async function forgeGenerateSplit3({
     }
   }
 
-  const stitched = `${cleanA}\n${cleanB}\n${cleanC}`
+  let html = `${cleanA}\n${cleanB}\n${cleanC}`
+
+  // ---- Post-Stage-B pipeline (mirrors forgeGenerateTwoStage) ----
+  let mergeMs = 0
+  let mergeApplied = null
+  let critiqueIssues = []
+  let critiqueMs = 0
+  let repairMs = 0
+  let repairBackend = null
+  let repairSkipped = false
+  let repairSkipReason = null
+
+  // ---- Stage C: deterministic genome-aware token rewrite ----
+  if (process.env.FORGE_USE_GENOME_MERGE === '1' && genomeHint && html) {
+    try {
+      const { mergeWithGenome, GENOME_NAMES } = await import('./forge-genomes.mjs')
+      if (GENOME_NAMES.includes(genomeHint)) {
+        const tMerge = Date.now()
+        const merged = mergeWithGenome(html, genomeHint)
+        mergeMs = Date.now() - tMerge
+        if (merged && typeof merged === 'string' && merged.length > 0) {
+          html = merged
+          mergeApplied = genomeHint
+        }
+      }
+    } catch (e) {
+      mergeMs = -1
+    }
+  }
+
+  // ---- Stage D: heuristic critic (zero-LLM) ----
+  if (process.env.FORGE_USE_CRITIC === '1' && html) {
+    try {
+      const { critique, repair } = await import('./forge-critic.mjs')
+      const tCrit = Date.now()
+      critiqueIssues =
+        critique(html, {
+          siteType: siteTypeHint,
+          brief: prompt,
+          genome: genomeHint,
+        }) || []
+      critiqueMs = Date.now() - tCrit
+
+      // ---- Stage E: targeted repair (single LLM call, only if issues found) ----
+      if (critiqueIssues.length > 0) {
+        const tRep = Date.now()
+        const repairRes = await repair(html, critiqueIssues, {
+          brief: prompt,
+          siteType: siteTypeHint,
+          genome: genomeHint,
+        })
+        repairMs = Date.now() - tRep
+        if (repairRes?.skipped) {
+          repairSkipped = true
+          repairSkipReason = repairRes.skipReason || 'skipped'
+        } else if (repairRes?.html && repairRes.html.length > 100) {
+          html = repairRes.html
+          repairBackend = repairRes.model || repairRes.backend || 'groq'
+          // Re-apply genome merge so the deterministic palette wins.
+          if (mergeApplied) {
+            try {
+              const { mergeWithGenome } = await import('./forge-genomes.mjs')
+              const reMerged = mergeWithGenome(html, mergeApplied)
+              if (reMerged && reMerged.length > 0) html = reMerged
+            } catch { /* keep repaired html */ }
+          }
+        }
+      }
+    } catch (e) {
+      critiqueMs = -1
+    }
+  }
 
   const sum = (k) =>
     (resA.data.usage?.[k] ?? 0) + (resB.data.usage?.[k] ?? 0) + (resC.data.usage?.[k] ?? 0)
   return {
-    content: stitched,
-    ms,
+    content: html,
+    ms: ms + mergeMs + critiqueMs + repairMs,
     msA: resA.ms,
     msB: resB.ms,
     msC: resC.ms,
@@ -1451,6 +1524,14 @@ export async function forgeGenerateSplit3({
     outputTokens: sum('completion_tokens'),
     cost: 0,
     model,
+    mergeMs,
+    mergeApplied,
+    critiqueMs,
+    critiqueIssues,
+    repairMs,
+    repairBackend,
+    repairSkipped,
+    repairSkipReason,
   }
 }
 
