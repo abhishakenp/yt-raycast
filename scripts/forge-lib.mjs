@@ -678,7 +678,7 @@ export function temperatureForIter(i) {
 // Lazy-built so the imports settle at module load time but the prompt string
 // can use them.
 let _SKELETON_SYSTEM_CACHE = null
-async function getSkeletonSystem() {
+export async function getSkeletonSystem() {
   if (_SKELETON_SYSTEM_CACHE) return _SKELETON_SYSTEM_CACHE
   const { describePrimitives, PRIMITIVE_IDS } = await import('./forge-primitives.mjs')
   const { describeGenomes, GENOME_NAMES } = await import('./forge-genomes.mjs')
