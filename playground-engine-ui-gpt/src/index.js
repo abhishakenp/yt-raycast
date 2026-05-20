@@ -1,0 +1,6 @@
+export { generateGptHomepage } from './engine.js'
+export { compareSignatures, detectVisualSignature, runDeterministicAudits, validateFullWidthSections } from './audits.js'
+export { buildRunVariety, inferSiteHint, selectAnchorPair } from './router.js'
+export { parseJsonObject, normalizeGenome } from './planner.js'
+export { composeAppShellHtml, parseIslandJson } from './shell.js'
+export { auditMobbinCoverage, detectVerbatimAnchorCopy, scoreMobbinCoverage } from './mobbin-score.js'
