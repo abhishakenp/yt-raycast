@@ -25,8 +25,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { execSync } from 'node:child_process'
-import { buildSiteTypeBlock, forgeGenerate } from './forge-lib.mjs'
-import { mergeWithGenome } from './forge-genomes.mjs'
+import { detectSiteType, forgeGenerate } from './forge-lib.mjs'
 
 const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
 if (!API_KEY) {
@@ -52,22 +51,64 @@ const BRIEFS = [
   { slug: 'hotel', brief: 'Homepage for Stoneholm, a 24-room boutique hotel on the Oregon coast. Cliffside cedar architecture, ocean-view rooms, on-site restaurant focused on Pacific Northwest cuisine. Spa, fire pits, hiking trails.' },
 ]
 
-// siteType → genome (mirrors the engine's pickGenome buckets).
-const SITE_TYPE_TO_GENOME = {
-  saas: 'vercel-apple', fintech: 'stripe-resend',
-  ecommerce: 'boutique-organic', restaurant: 'editorial-warm',
-  portfolio: 'vercel-apple', agency: 'vercel-apple',
-  fitness: 'bold-conversion', wellness: 'boutique-organic',
-  hotel: 'editorial-warm',
+// Creative-director planner. Cheap + fast + high-temperature so it invents a
+// DIFFERENT page kind + visual world each run, instead of a fixed hero+genome.
+const PLANNER_MODEL = process.env.PLANNER_MODEL || 'llama-3.3-70b-versatile'
+
+const PLANNER_SYSTEM =
+  'You are a daring art director and product designer with broad taste across eras and disciplines. You decide what a brand\'s primary web page should actually BE, then invent a distinctive visual world for it. Output ONLY compact JSON, no prose, no markdown fences.'
+
+function plannerUser(brief) {
+  return `Brief: ${brief}
+
+Decide, with taste and surprise, the best front-door web page for this brand. Look BEYOND the default "marketing landing page with a centered hero". Depending on the brand, the most fitting page is often the actual product itself rendered as a real, working-looking interface:
+- a product app UI — a dashboard, a kanban board, a deploy console with a project/deployment list, a data table, a code editor, an analytics view, an inbox;
+- a gallery / lookbook / case-study wall;
+- an editorial long-read or manifesto;
+- an interactive catalog or storefront;
+- or, only if it genuinely fits best, a marketing homepage.
+Pick whatever a great team would actually ship as the front door for THIS brand.
+
+Then invent a DISTINCTIVE visual identity — deliberately different from a generic SaaS template and different from what you'd pick for a neighbouring brand. Vary the GROUND boldly across brands: sometimes a dark/near-black canvas, sometimes a saturated or jewel-toned ground, sometimes warm paper/cream, sometimes high-key white — avoid defaulting to the same light grey (#f7f7f7) every time. Choose an unexpected-but-harmonious palette (exact hex), a real Google-Fonts typographic pairing that is NOT just Inter/Montserrat unless it truly fits, a corner/edge language, a layout philosophy (grid, density, whitespace, asymmetry), a mood, and a design reference/era.
+
+Then break the page into EXACTLY 3 build chunks that stack vertically into one scrollable document. Chunk 1 is the identity-defining opening region (for an app archetype this is the app shell / top bar / primary view header, NOT a marketing hero) — keep chunk 1 COMPACT and focused (it will be built first and must render fast). Put the BULK of the content (long tables, big grids, repeated cards, secondary panels) into chunks 2 and 3, which are heavier. Make all 3 concrete.
+
+Output ONLY this JSON shape:
+{
+  "archetype": "short label of the kind of page (e.g. 'kanban app UI', 'deploy console', 'editorial lookbook', 'marketing homepage')",
+  "art": {
+    "bg": "#hex", "surface": "#hex", "text": "#hex", "muted": "#hex",
+    "accent": "#hex", "accent2": "#hex or null",
+    "fontDisplay": "Google Font name", "fontBody": "Google Font name",
+    "radius": "edge language e.g. 'sharp / 0px' | 'rounded-2xl' | 'pill'",
+    "mood": "3-6 words", "layout": "one-sentence layout philosophy", "reference": "a concrete design reference"
+  },
+  "chunks": [
+    { "role": "what chunk 1 is", "contains": "concrete elements to build, specific to this brand" },
+    { "role": "chunk 2", "contains": "..." },
+    { "role": "chunk 3 (ends with footer)", "contains": "..." }
+  ]
+}`
 }
-// genome → concrete palette + font contract (what BOTH legs must obey).
-const GENOME_STYLE = {
-  'vercel-apple': { palette: 'white + light neutral surfaces, neutral-900 text, ONE confident dark/near-black accent. No chromatic noise.', fonts: '"Inter" display + "Inter" body', bg: 'bg-white' },
-  'linear-raycast': { palette: 'near-black bg (#0b0b0f), zinc-50 text, electric violet-500 accent, hairline zinc-800 borders, no shadows.', fonts: '"Inter" display + "JetBrains Mono" for code/labels', bg: 'bg-[#0b0b0f]' },
-  'stripe-resend': { palette: 'slate-50 bg, slate-900 text, indigo-600 accent (hover indigo-700), soft elevated shadows.', fonts: '"Sora" display + "Inter" body', bg: 'bg-slate-50' },
-  'editorial-warm': { palette: 'warm cream/parchment surfaces, deep stone-900 text, ONE warm accent (terracotta/amber-700). Photography-led.', fonts: '"Fraunces" display + "Inter" body', bg: 'bg-stone-50' },
-  'boutique-organic': { palette: 'soft emerald-tinted cream surfaces, emerald-950 text, emerald-700 accent, very rounded corners.', fonts: '"Fraunces" display + "Inter" body', bg: 'bg-emerald-50/40' },
-  'bold-conversion': { palette: 'white bg, pure black text + black accent blocks, thick 2px black borders, hard offset shadows, punchy.', fonts: '"Space Grotesk" display + "Inter" body', bg: 'bg-white' },
+
+function parseJson(text) {
+  try { return JSON.parse(text) } catch {}
+  const m = String(text).match(/\{[\s\S]*\}/)
+  if (m) { try { return JSON.parse(m[0]) } catch {} }
+  return null
+}
+
+async function planArtDirection(brief) {
+  const t0 = Date.now()
+  const res = await forgeGenerate({
+    prompt: plannerUser(brief),
+    system: PLANNER_SYSTEM,
+    model: PLANNER_MODEL,
+    temperature: 0.95,
+    maxTokens: 1100,
+  })
+  const plan = parseJson(res.content)
+  return { plan, ms: Date.now() - t0 }
 }
 
 async function geminiGenerate({ user, maxOut = 6000, temperature = 0.5 }) {
@@ -90,74 +131,87 @@ const stripFences = (s) => String(s || '').replace(/^```[a-z]*\n?/i, '').replace
 
 async function buildOne({ slug, brief }) {
   const t0 = Date.now()
-  // Use the pack ONLY for vertical-correct section/anchor/voice data — NOT the
-  // full site-type block, which mandates ≥45K chars and slows GPT-OSS down.
-  const { type: siteType, pack } = buildSiteTypeBlock(brief)
-  const genome = SITE_TYPE_TO_GENOME[siteType] || 'vercel-apple'
-  const style = GENOME_STYLE[genome]
-  const anchors = (pack.brandAnchors || []).slice(0, 10).join(', ')
+  const siteType = detectSiteType(brief) // informational only — design is planner-driven
 
-  const contract = `Brand brief: ${brief}
+  // ── Creative direction (the only "decision" step; everything downstream
+  //    just executes the plan, so variety lives here, not in hardcoded rules).
+  const { plan, ms: plannerMs } = await planArtDirection(brief)
+  if (!plan?.art || !Array.isArray(plan.chunks) || plan.chunks.length < 3) {
+    throw new Error('planner produced no usable plan')
+  }
+  const a = plan.art
+  const archetype = plan.archetype || 'web page'
+  const accent2 = a.accent2 && a.accent2 !== 'null' ? `, secondary accent ${a.accent2}` : ''
 
-SHARED DESIGN CONTRACT — every part of the page MUST obey this so the page is visually unified:
-- Single-file HTML. Tailwind via <script src="https://cdn.tailwindcss.com"></script>.
-- Palette: ${style.palette}
-- Fonts: ${style.fonts} (load via Google Fonts <link> + define in an inline tailwind.config).
-- Site type: ${siteType}. ${pack.aesthetic}
-- Voice: ${pack.voice}
-- Rounded-2xl cards, generous py-20+ section spacing, real specific copy (no lorem). Keep markup tight — quality over raw length.`
+  // Shared visual contract built ENTIRELY from the planner's invented world —
+  // exact hex tokens so the 3 independently-built chunks fuse seamlessly.
+  const contract = `Brand: ${brief}
 
-  const heroUser = `${contract}
+This page is a "${archetype}". Build it as a real, polished, working-looking ${archetype} — NOT a generic marketing landing unless that is literally the archetype.
 
-Produce ONLY the top of the page and STOP: <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts links + inline tailwind.config defining the fonts + base ${style.bg} on body), then the <body ...> opening tag, a sticky <nav> with logo + 4-5 links + a primary CTA button, and exactly ONE <section> hero appropriate to a ${siteType} site (two-tone headline ≤9 words with an accent <span>, subheadline naming the user + outcome, two CTAs, and a strong visual — for image-led verticals use a relevant Unsplash image URL; for SaaS/devtools use a faux UI mock with realistic content). Do NOT close </body> or </html>. Do NOT add any section after the hero.`
+SHARED VISUAL WORLD — obey EXACTLY so the 3 chunks form one coherent page:
+- Background ${a.bg}; surfaces ${a.surface}; text ${a.text}; muted ${a.muted}; accent ${a.accent}${accent2}.
+- Use Tailwind arbitrary values with these exact hexes, e.g. bg-[${a.bg}], text-[${a.text}], bg-[${a.accent}], border-[${a.muted}]. Tailwind via <script src="https://cdn.tailwindcss.com"></script>.
+- Fonts: "${a.fontDisplay}" for display + "${a.fontBody}" for body (Google Fonts <link> + inline tailwind.config).
+- Edge language: ${a.radius}. Mood: ${a.mood}. Layout: ${a.layout}. Reference: ${a.reference}.
+- Real, specific content — no lorem, no placeholder text. Single-file HTML.`
 
-  const bodyTopUser = `${contract}
+  const chunkUser = (idx, opening) => `${contract}
 
-This is a ${pack.label}. The full intended section flow is:
-${pack.sections}
+${opening}
 
-You are writing the TOP HALF of the body. The <head>, <nav>, and hero ALREADY EXIST — do NOT repeat them and do NOT output <!DOCTYPE>/<head>/<nav>/hero. Output the FIRST 3-4 sections from the flow above (the early ones), starting directly with the first <section>. Use these real brand names where logos/press/affiliations appear: ${anchors}. Do NOT close </body> or </html>. Obey the palette + fonts. Aim for 3-4 well-built sections, not maximum length.`
+THIS CHUNK:
+ROLE: ${plan.chunks[idx].role}
+CONTAINS: ${plan.chunks[idx].contains}
 
-  const bodyBottomUser = `${contract}
+Build only this chunk, fully realised in the visual world above. Quality over raw length.`
 
-This is a ${pack.label}. The full intended section flow is:
-${pack.sections}
+  const c1 = chunkUser(
+    0,
+    `Build ONLY CHUNK 1 and STOP. Output <!DOCTYPE html>, a <head> (Tailwind CDN + Google Fonts links + inline tailwind.config with the two fonts + base background ${a.bg} and text ${a.text} on <body>), then the <body ...> opening tag, then chunk 1's region. Keep chunk 1 COMPACT — roughly 120-200 lines of HTML; it is the opening only, the rest of the page comes later. Do NOT close </body> or </html>. Do NOT build later chunks.`,
+  )
+  const c2 = chunkUser(
+    1,
+    `The <head>, <body> opening, and CHUNK 1 ALREADY EXIST — do NOT repeat them, do NOT output <!DOCTYPE>/<head>/<body>. Start directly with this chunk's top-level container. Do NOT close </body> or </html>.`,
+  )
+  const c3 = chunkUser(
+    2,
+    `The <head>, <body>, CHUNK 1 and CHUNK 2 ALREADY EXIST — do NOT repeat them. Start directly with this chunk's top-level container. End with a matching <footer>, then close </body></html>.`,
+  )
 
-You are writing the BOTTOM HALF of the body. The head, nav, hero, and the first few sections ALREADY EXIST — do NOT repeat them. Output the LATER sections from the flow (social proof / testimonials / pricing-or-equivalent / final CTA), then a full multi-column <footer>, then close </body></html>. Start directly with the first <section>. Use these real brand names where relevant: ${anchors}. Obey the palette + fonts. Aim for 3-4 well-built sections, not maximum length.`
-
-  const [hero, top, bottom] = await Promise.all([
-    geminiGenerate({ user: heroUser, maxOut: 5000, temperature: 0.5 }),
-    forgeGenerate({ prompt: bodyTopUser, temperature: 0.55, maxTokens: 4800, reasoningEffort: 'low' }),
-    forgeGenerate({ prompt: bodyBottomUser, temperature: 0.55, maxTokens: 4800, reasoningEffort: 'low' }),
+  // Gemini builds chunk 1 (the identity-defining region — its quality shines);
+  // GPT-OSS builds chunks 2 & 3 in parallel.
+  const [r1, r2, r3] = await Promise.all([
+    geminiGenerate({ user: c1, maxOut: 2200, temperature: 0.65 }),
+    forgeGenerate({ prompt: c2, temperature: 0.7, maxTokens: 4200, reasoningEffort: 'low' }),
+    forgeGenerate({ prompt: c3, temperature: 0.7, maxTokens: 4200, reasoningEffort: 'low' }),
   ])
 
-  // Guard: a GPT-OSS body leg occasionally refuses ("I'm sorry, but I can't
-  // fulfill that request.") or returns near-empty. Don't stitch that text into
-  // the page — drop the leg. The hero + the surviving half still render.
+  // Guard: a GPT-OSS leg occasionally refuses or returns near-empty. Don't
+  // stitch that text into the page — drop the leg.
   const REFUSAL = /\b(i'?m sorry|i can(?:'|no)t (?:fulfill|help|assist|comply|create)|as an ai|unable to (?:fulfill|comply))/i
   const badLeg = (s) => {
     const t = stripFences(s)
-    const sections = (t.match(/<section\b/gi) || []).length
-    return !t || t.length < 400 || (REFUSAL.test(t) && sections === 0)
+    const blocks = (t.match(/<(section|div|main|header|article|nav)\b/gi) || []).length
+    return !t || t.length < 400 || (REFUSAL.test(t) && blocks === 0)
   }
   const dropped = []
-  let heroHtml = stripFences(hero.text).replace(/<\/body>\s*<\/html>\s*$/i, '')
-  let topHtml = badLeg(top.content) ? (dropped.push('top'), '') : stripFences(top.content).replace(/<\/body>\s*<\/html>\s*$/i, '')
-  let bottomHtml = badLeg(bottom.content) ? (dropped.push('bottom'), '') : stripFences(bottom.content)
-  // Strip any stray refusal sentence that slipped in alongside real markup.
-  topHtml = topHtml.replace(/^[^<]*?(i'?m sorry[^<]*)/i, '')
-  bottomHtml = bottomHtml.replace(/(i'?m sorry[^<]*)$/i, '')
-  if (!/<\/html>/i.test(bottomHtml)) bottomHtml += '\n</body></html>'
-  let html = `${heroHtml}\n${topHtml}\n${bottomHtml}`
-  // Deterministic palette unification across the Gemini↔GPT-OSS seam.
-  html = mergeWithGenome(html, genome)
+  let c1Html = stripFences(r1.text).replace(/<\/body>\s*<\/html>\s*$/i, '')
+  let c2Html = badLeg(r2.content) ? (dropped.push('c2'), '') : stripFences(r2.content).replace(/<\/body>\s*<\/html>\s*$/i, '')
+  let c3Html = badLeg(r3.content) ? (dropped.push('c3'), '') : stripFences(r3.content)
+  c2Html = c2Html.replace(/^[^<]*?(i'?m sorry[^<]*)/i, '')
+  c3Html = c3Html.replace(/(i'?m sorry[^<]*)$/i, '')
+  if (!/<\/html>/i.test(c3Html)) c3Html += '\n</body></html>'
+  const html = `${c1Html}\n${c2Html}\n${c3Html}`
 
   const wall = Date.now() - t0
   const file = join(OUT_DIR, `${slug}.html`)
   writeFileSync(file, html)
+  writeFileSync(join(OUT_DIR, `${slug}.plan.json`), JSON.stringify(plan, null, 2))
   return {
-    slug, siteType, genome, wall, chars: html.length, file,
-    geminiHeroMs: hero.ms, ossTopMs: top.ms, ossBottomMs: bottom.ms,
+    slug, siteType, archetype, wall, chars: html.length, file,
+    palette: `${a.bg}/${a.accent}`, fonts: `${a.fontDisplay}+${a.fontBody}`,
+    plannerMs, geminiMs: r1.ms, ossC2Ms: r2.ms, ossC3Ms: r3.ms,
     dropped: dropped.length ? dropped.join('+') : null,
   }
 }
@@ -220,16 +274,17 @@ try {
 
 // ── Table ─────────────────────────────────────────────────────────────────────
 console.log(`\n[playground] === RESULTS (runId ${RUN_ID}) ===\n`)
-const head = `${'FILE'.padEnd(16)}${'TYPE'.padEnd(12)}${'GENOME'.padEnd(18)}${'WALL'.padStart(8)}${'CHARS'.padStart(9)}   STATUS`
+const head = `${'FILE'.padEnd(16)}${'ARCHETYPE'.padEnd(24)}${'PALETTE/FONTS'.padEnd(34)}${'WALL'.padStart(8)}   STATUS`
 console.log(head)
 console.log('-'.repeat(head.length + 4))
 for (const r of results) {
   if (r.error) {
-    console.log(`${(r.slug + '.html').padEnd(16)}${''.padEnd(12)}${''.padEnd(18)}${''.padStart(8)}${''.padStart(9)}   ❌ ${r.error.slice(0, 50)}`)
+    console.log(`${(r.slug + '.html').padEnd(16)}${''.padEnd(24)}${''.padEnd(34)}${''.padStart(8)}   ❌ ${r.error.slice(0, 50)}`)
     continue
   }
   const status = r.wall < 12000 ? '✅ <12s' : r.wall < 20000 ? '🟡 <20s' : '❌ slow'
-  console.log(`${(r.slug + '.html').padEnd(16)}${r.siteType.padEnd(12)}${r.genome.padEnd(18)}${(r.wall + 'ms').padStart(8)}${String(r.chars).padStart(9)}   ${status}`)
+  const design = `${r.palette} ${r.fonts}`.slice(0, 33)
+  console.log(`${(r.slug + '.html').padEnd(16)}${String(r.archetype).slice(0, 23).padEnd(24)}${design.padEnd(34)}${(r.wall + 'ms').padStart(8)}   ${status}${r.dropped ? ' (drop ' + r.dropped + ')' : ''}`)
 }
 const ok = results.filter((r) => r.wall)
 if (ok.length) {
