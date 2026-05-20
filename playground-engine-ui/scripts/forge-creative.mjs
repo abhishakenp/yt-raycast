@@ -125,7 +125,55 @@ SHARED VISUAL WORLD — obey EXACTLY so the parts form one coherent page:
 - Fonts: "${a.fontDisplay}" for display + "${a.fontBody}" for body (Google Fonts <link> + inline tailwind.config).
 - Edge language: ${a.radius}. Mood: ${a.mood}. Layout: ${a.layout}. Reference: ${a.reference}.
 - DECOR (apply it — this is what gives the page craft): ${a.decor || 'tasteful texture and depth'}.
-- Real, specific content — no lorem, no placeholder text. Single-file HTML.`
+- Real, specific content — no lorem, no placeholder text. Single-file HTML.
+
+STRUCTURE & FRAMEWORK RULES (strict — these matter more than decoration):
+- Tailwind utility classes ONLY. Do NOT write a <style> block or any custom CSS, and do NOT use @apply. Stay on the framework so every page shares one system.
+- FULL-WIDTH BANDS: every top-level section is full-bleed — <section class="w-full ..."> — with ONE inner content wrapper <div class="mx-auto max-w-7xl px-6 ..."> (use max-w-screen-2xl for app dashboards). NEVER constrain a top-level section to a fixed pixel width. NEVER put w-80 / w-96 / w-[400px] / max-w-md on a structural band — fixed widths belong only to small inner UI atoms (a badge, an avatar). This is the #1 rule: if a section is not full width with a centered max-w inner wrapper, it is wrong.
+- Layout with responsive grid/flex (grid-cols-* + gap-*, flex). Inner wrappers carry the max-width, sections carry the background.
+- ICONS: NEVER draw <svg>. Use Lucide placeholders: <i data-lucide="rocket"></i> (kebab-case lucide names), sized with Tailwind (w-5 h-5 etc.). Icons are injected downstream — spend ZERO tokens on icon paths.
+- IMAGES: NEVER inline an image, data-URI, or SVG illustration. Where a photo/graphic goes, output a placeholder box: <div data-img="3-6 word subject description" class="w-full aspect-[4/3] bg-[${a.muted}] rounded-... overflow-hidden"></div>. The real pipeline fills these from Pexels. Spend ZERO tokens drawing graphics.
+- Put ALL your effort into STRUCTURE, real copy, hierarchy, spacing, and responsive layout — not graphics.`
+}
+
+// Inject the Lucide runtime so data-lucide placeholders render in preview
+// (production injects its own icon mechanism). Idempotent.
+function ensureLucidePreview(html) {
+  if (!/data-lucide=/.test(html)) return html
+  if (/unpkg\.com\/lucide|lucide@/.test(html)) return html
+  const tag = `<script src="https://unpkg.com/lucide@latest"></script><script>window.addEventListener('load',()=>{try{lucide.createIcons()}catch(e){}})</script>`
+  return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, `${tag}\n</body>`) : html + tag
+}
+
+// ── Single-pass builder: ONE GPT-OSS call builds the whole page ──────────────
+// No stitching → no chunk-collision (the failure mode that squished sections
+// into narrow columns). Cheap now that output is structure-only (placeholders
+// for icons/images), so a full page fits one fast call. Used for vertical-doc.
+async function buildSinglePass(brief, plan, _opts) {
+  const contract = buildContract(brief, plan)
+  const c = plan.chunks
+  const user = `${contract}
+
+Build the COMPLETE page as ONE single self-contained HTML document and close it. Output <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts <link> + inline tailwind.config with the two fonts + base background + text on <body>), the full <body>, then </body></html>.
+
+The page is a vertical stack of FULL-WIDTH bands (each <section class="w-full"> with one inner <div class="mx-auto max-w-7xl px-6">), in this order, all in the ONE coherent visual world:
+1. ${c[0].role} — ${c[0].contains}
+2. ${c[1].role} — ${c[1].contains}
+3. ${c[2].role} — ${c[2].contains}
+Then a full-width multi-column <footer>.
+Add a sticky top <nav> band above section 1. Build 6-9 substantial full-width sections total (split the regions above into real sections). Apply the DECOR. Remember: Tailwind only, no <style>, no <svg>, data-lucide icons, data-img placeholder boxes. Pour your tokens into structure, real copy, and responsive layout.`
+
+  let r = await forgeGenerate({ prompt: user, temperature: 0.7, maxTokens: 7200, reasoningEffort: 'low' })
+  let ms = r.ms
+  // One retry if GPT-OSS returns empty / a refusal / a stub (transient).
+  if (badLeg(r.content)) {
+    const retry = await forgeGenerate({ prompt: user, temperature: 0.6, maxTokens: 7200, reasoningEffort: 'low' })
+    ms += retry.ms
+    if (!badLeg(retry.content)) r = retry
+  }
+  let html = stripRefusal(stripFences(r.content))
+  if (!/<\/html>/i.test(html)) html += '\n</body></html>'
+  return { html, legMs: { geminiMs: 0, ossC2Ms: ms, ossC3Ms: 0 }, dropped: null }
 }
 
 // ── Single vertical-stitch builder for BOTH modes ────────────────────────────
@@ -220,7 +268,9 @@ export async function generateCreativeHomepage(brief, opts = {}) {
   const built =
     layoutMode === 'app-shell'
       ? await buildAppShellSingle(brief, plan, { apiKey, model })
-      : await buildStacked(brief, plan, { apiKey, model })
+      : await buildSinglePass(brief, plan, { apiKey, model })
+
+  built.html = ensureLucidePreview(built.html)
 
   return {
     html: built.html,
