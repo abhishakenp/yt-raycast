@@ -197,9 +197,10 @@ const list = (arr) => arr.map((s, i) => `${i + 1}. ${s.role} — ${s.contains}`)
 async function buildVertical(brief, p) {
   const c = contract(brief, p)
   const secs = p.sections || []
-  // Gemini owns the hero + roughly the first half (min 2, so the money-shot
-  // above-the-fold + first scroll are its high-craft work).
-  const topN = Math.max(2, Math.ceil(secs.length / 2))
+  // Gemini owns the hero + the first 2-3 sections (the money-shot above-the-
+  // fold + first scroll). Capped at 3 so the Gemini call stays fast (it's the
+  // wall) and doesn't truncate; GPT-OSS takes the denser tail.
+  const topN = Math.min(3, Math.max(2, Math.ceil(secs.length / 2)))
   const top = secs.slice(0, topN)
   const tail = secs.slice(topN)
 
