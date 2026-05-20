@@ -1,0 +1,237 @@
+#!/usr/bin/env bun
+/**
+ * NEW PATH — "Gemini-native": bet on Gemini's Kimi-close design taste, made
+ * fast by (a) banning SVG/image generation (placeholders only, like the real
+ * pipeline) so token counts collapse, and (b) parallelising the page into
+ * full-width stacked chunks so wall ≈ the slowest chunk, not the sum.
+ *
+ * North star: final HTML < 20s AND visually close to Kimi K2.5. Nothing else.
+ *
+ * Pipeline:
+ *   1. Planner (GPT-OSS-120B, fast) → JSON: archetype, layoutMode, art, sections[].
+ *   2a. vertical-doc → 3 concurrent Gemini calls, each builds a slice of the
+ *       full-width section stack; chunk 1 also emits <head>+<body>+nav.
+ *   2b. app-shell → ONE Gemini call builds the whole coherent 2D interface.
+ *   3. Stitch (plain concat — every chunk is independent full-width sections,
+ *      so no cross-chunk container can collide), inject Lucide for preview.
+ *
+ * Constraints (match the real project): Tailwind via CDN only, NO custom CSS,
+ * NO <svg> (use <i data-lucide>), NO inline images (use <div data-img>).
+ *
+ * Usage:
+ *   bun playground-engine-ui/scripts/forge-gemini-native.mjs [brief-slug...]
+ *   GEMINI_CHUNKS=3   number of parallel Gemini build calls (vertical-doc)
+ */
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { execSync } from 'node:child_process'
+import { forgeGenerate } from './forge-lib.mjs'
+
+const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
+if (!API_KEY) { console.error('[gn] GEMINI_API_KEY/GOOGLE_API_KEY not set'); process.exit(1) }
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
+const PLANNER_MODEL = process.env.PLANNER_MODEL || 'openai/gpt-oss-120b'
+const N_CHUNKS = Math.max(1, Math.min(4, parseInt(process.env.GEMINI_CHUNKS || '3', 10)))
+
+const ROOT = process.cwd()
+const RUN_ID = String(Date.now())
+const OUT_DIR = join(ROOT, '.forge', 'gemini-native', RUN_ID)
+mkdirSync(OUT_DIR, { recursive: true })
+
+const BRIEFS = [
+  { slug: 'fleet', brief: 'Helmsman — a fleet operations console for autonomous delivery robots. Operators watch a live city map, per-robot battery and route status, an incident timeline, and can hand off to remote teleoperation. B2B, sold to logistics companies.' },
+  { slug: 'riso', brief: 'Riso Press — a Brooklyn risograph print studio and zine shop. Bold, playful, ink-on-paper craft. Sells limited-run art prints and zines, runs weekend printing workshops, takes custom client commissions.' },
+  { slug: 'music', brief: 'Tessellate — an independent electronic music label and warehouse event series in Berlin. Vinyl + digital releases, a roster of 12 artists, a calendar of upcoming warehouse parties, and a small merch + record shop.' },
+  { slug: 'butchery', brief: 'Marrow — a nose-to-tail butchery and supper club in Lisbon. Weekly changing set menus, hands-on butchery classes, whole-animal provenance from a single farm, a small counter selling cuts and charcuterie.' },
+]
+
+// ── Planner (GPT-OSS) ────────────────────────────────────────────────────────
+const PLANNER_SYSTEM =
+  'You are a world-class art director + product designer. Decide what the brand\'s front door should BE, invent a distinctive visual world, and lay out its sections. Output ONLY compact JSON.'
+
+function plannerUser(brief) {
+  return `Brief: ${brief}
+
+Decide the best front-door page. Look beyond "marketing landing": it may be the actual product UI (dashboard/console), a gallery, an editorial spread, a catalog, an events wall, etc. Pick what a great team would ship for THIS brand.
+
+layoutMode: "app-shell" ONLY for genuine operational software (dashboard/console/admin with live data + persistent controls); "vertical-doc" for everything else (default).
+
+Invent a distinctive identity: bold, harmonious palette (exact hex — vary the GROUND across brands: dark, jewel-toned, paper/cream, or high-key), a real Google-Fonts pairing (avoid generic Inter/Roboto unless apt), an edge language, a mood, a reference, and a concrete DECOR treatment (grain, duotone, tape/sticker, hard shadows, hairline rules, glow, halftone, etc.).
+
+Then list 6-9 SECTIONS for a vertical-doc (or the key regions for an app-shell), each a full-width band, in order, concrete to this brand.
+
+Output ONLY:
+{
+  "archetype": "...", "layoutMode": "vertical-doc"|"app-shell",
+  "art": { "bg":"#hex","surface":"#hex","text":"#hex","muted":"#hex","accent":"#hex","accent2":"#hex|null",
+           "fontDisplay":"...","fontBody":"...","radius":"...","mood":"...","reference":"...","decor":"..." },
+  "sections": [ { "role":"...", "contains":"concrete content (real, specific)" }, ... ]
+}`
+}
+
+function parseJson(t) {
+  try { return JSON.parse(t) } catch {}
+  const m = String(t).match(/\{[\s\S]*\}/); if (m) { try { return JSON.parse(m[0]) } catch {} }
+  return null
+}
+
+async function plan(brief) {
+  const t0 = Date.now()
+  const r = await forgeGenerate({ prompt: plannerUser(brief), system: PLANNER_SYSTEM, model: PLANNER_MODEL, temperature: 0.9, maxTokens: 1600 })
+  return { plan: parseJson(r.content), ms: Date.now() - t0 }
+}
+
+// ── Gemini ───────────────────────────────────────────────────────────────────
+async function gemini({ user, maxOut = 3000, temperature = 0.6 }) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${API_KEY}`
+  const t0 = Date.now()
+  const res = await fetch(url, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: user }] }], generationConfig: { temperature, maxOutputTokens: maxOut, thinkingConfig: { thinkingBudget: 0 } } }),
+  })
+  const ms = Date.now() - t0
+  const raw = await res.text()
+  if (!res.ok) throw new Error(`gemini ${res.status}: ${raw.slice(0, 200)}`)
+  const d = JSON.parse(raw)
+  return { text: d?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '', ms }
+}
+
+const strip = (s) => String(s || '').replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
+
+function contract(brief, p) {
+  const a = p.art
+  const acc2 = a.accent2 && a.accent2 !== 'null' ? `, secondary ${a.accent2}` : ''
+  return `Brand: ${brief}
+This page is a "${p.archetype}". Build it like a world-class designer would — aim for the polish of the very best Tailwind sites (Linear, Vercel, Stripe, Kimi-grade craft).
+
+VISUAL WORLD (obey EXACTLY so independently-built parts fuse):
+- Palette: bg ${a.bg}, surface ${a.surface}, text ${a.text}, muted ${a.muted}, accent ${a.accent}${acc2}. Use Tailwind arbitrary hex values: bg-[${a.bg}], text-[${a.text}], bg-[${a.accent}], border-[${a.muted}].
+- Fonts: "${a.fontDisplay}" display + "${a.fontBody}" body (Google Fonts <link> + inline tailwind.config). Use a confident type scale (large, tight-tracked display headings).
+- Edge: ${a.radius}. Mood: ${a.mood}. Reference: ${a.reference}.
+- DECOR — apply it for craft/depth: ${a.decor}.
+
+HARD RULES:
+- Tailwind utilities ONLY (Tailwind CDN). NO <style>, NO custom CSS.
+- Every section is a FULL-WIDTH band: <section class="w-full ..."> with ONE inner <div class="mx-auto max-w-7xl px-6 ...">. NO fixed-width structural blocks (no w-80/w-[400px] on layout). Each section is independently full-width and self-contained — do NOT open a flex/grid container in one part that another part must close.
+- GRID RULE (critical — prevents broken narrow columns): any COLLECTION of items (products, cards, artists, prints, menu items, posts, stat tiles, team) MUST be a responsive grid that SPANS THE FULL inner width — e.g. <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">. A section's content ALWAYS fills the max-w-7xl inner wrapper edge to edge. NEVER render a collection as a single narrow column, and never leave half the row empty. If a section has one feature item, make it a full-width 2-column split (text + visual), not a narrow card.
+- ICONS: never <svg>; use <i data-lucide="name"> sized with Tailwind.
+- IMAGES: never inline images/SVG; use <div data-img="short subject" class="w-full aspect-... bg-[${a.muted}] rounded-..."></div>.
+- Real, specific copy (no lorem). Generous spacing (py-20+). Pour effort into hierarchy, rhythm, and craft.`
+}
+
+function ensureLucide(html) {
+  if (!/data-lucide=/.test(html) || /lucide@/.test(html)) return html
+  const tag = `<script src="https://unpkg.com/lucide@latest"></script><script>window.addEventListener('load',()=>{try{lucide.createIcons()}catch(e){}})</script>`
+  return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, `${tag}\n</body>`) : html + tag
+}
+
+// ── vertical-doc HYBRID: Gemini builds the visually-critical TOP (head+nav+
+//    hero + first sections) in ONE coherent call; GPT-OSS builds the TAIL
+//    (remaining sections + footer) in parallel. Top = Kimi-grade craft +
+//    reliable (no chunk-isolation narrow columns); tail = fast + reliably
+//    full-width. wall ≈ Gemini's top call (~13s). The two share the contract
+//    so palette/fonts/decor match across the seam.
+const list = (arr) => arr.map((s, i) => `${i + 1}. ${s.role} — ${s.contains}`).join('\n')
+
+async function buildVertical(brief, p) {
+  const c = contract(brief, p)
+  const secs = p.sections || []
+  // Gemini owns the hero + roughly the first half (min 2, so the money-shot
+  // above-the-fold + first scroll are its high-craft work).
+  const topN = Math.max(2, Math.ceil(secs.length / 2))
+  const top = secs.slice(0, topN)
+  const tail = secs.slice(topN)
+
+  const geminiCall = gemini({
+    user: `${c}
+
+Build the TOP of the page in ONE coherent pass: <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts links + inline tailwind.config + base background ${p.art.bg} and text ${p.art.text} on <body>), the <body ...> opening tag, a sticky full-width <nav> (brand + links + a primary action), a STUNNING full-width hero, THEN these full-width sections:
+${list(top)}
+This is the part users judge first — make it gorgeous: confident large display type, strong hierarchy, generous rhythm, the DECOR applied. Do NOT close </body> or </html>.`,
+    maxOut: 3400, temperature: 0.6,
+  })
+
+  const ossCall = tail.length
+    ? forgeGenerate({
+        prompt: `${c}
+
+The <head>, <body>, sticky <nav>, hero, and the first ${topN} sections ALREADY EXIST above — do NOT repeat them, do NOT output <!DOCTYPE>/<head>/<body>/<nav>. Append these remaining FULL-WIDTH sections (each a self-contained <section class="w-full"> with an inner mx-auto max-w-7xl wrapper), then a full-width multi-column <footer>, then close </body></html>:
+${list(tail)}
+Match the palette + fonts + DECOR EXACTLY. Use the GRID RULE for any collection. Start directly with the first <section>.`,
+        temperature: 0.6, maxTokens: 5000, reasoningEffort: 'low',
+      })
+    : Promise.resolve({ content: '\n</body></html>', ms: 0 })
+
+  const [g, o] = await Promise.all([geminiCall, ossCall])
+  let topHtml = strip(g.text).replace(/<\/body>\s*<\/html>\s*$/i, '')
+  let tailHtml = strip(o.content || '')
+  // refusal/empty guard on the tail
+  if (!tailHtml || tailHtml.length < 200 || /\bi'?m sorry\b/i.test(tailHtml.slice(0, 120))) tailHtml = ''
+  if (!/<\/html>/i.test(tailHtml)) tailHtml += '\n</body></html>'
+  let html = `${topHtml}\n${tailHtml}`
+  return { html, legMs: [g.ms, o.ms] }
+}
+
+// ── app-shell: single Gemini pass ────────────────────────────────────────────
+async function buildApp(brief, p) {
+  const c = contract(brief, p)
+  const regions = (p.sections || []).map((s) => `- ${s.role}: ${s.contains}`).join('\n')
+  const r = await gemini({ user: `${c}\n\nBuild the COMPLETE coherent operational interface as ONE document: <!DOCTYPE html>, <head>, full <body>, </body></html>. ONE consistent layout (top bar + optional sidebar + primary canvas + panels), live-looking data, status pills, tables/charts. Regions:\n${regions}\nMake it feel like one real production tool.`, maxOut: 4000, temperature: 0.55 })
+  let html = strip(r.text)
+  if (!/<\/html>/i.test(html)) html += '\n</body></html>'
+  return { html, legMs: [r.ms] }
+}
+
+async function generate(brief) {
+  const t0 = Date.now()
+  const { plan: p, ms: planMs } = await plan(brief)
+  if (!p?.art || !Array.isArray(p.sections)) throw new Error('bad plan')
+  const layoutMode = p.layoutMode === 'app-shell' ? 'app-shell' : 'vertical-doc'
+  const built = layoutMode === 'app-shell' ? await buildApp(brief, p) : await buildVertical(brief, p)
+  const html = ensureLucide(built.html)
+  return { html, plan: p, layoutMode, wall: Date.now() - t0, planMs, legMs: built.legMs, chars: html.length, archetype: p.archetype }
+}
+
+// ── run ──────────────────────────────────────────────────────────────────────
+const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))
+const briefs = args.length ? BRIEFS.filter((b) => args.includes(b.slug)) : BRIEFS
+console.log(`[gn] runId=${RUN_ID} model=${GEMINI_MODEL} planner=${PLANNER_MODEL} chunks=${N_CHUNKS} briefs=${briefs.length}`)
+const results = []
+for (const { slug, brief } of briefs) {
+  process.stdout.write(`[gn] ${slug} … `)
+  try {
+    const r = await generate(brief)
+    const file = join(OUT_DIR, `${slug}.html`)
+    writeFileSync(file, r.html); writeFileSync(join(OUT_DIR, `${slug}.plan.json`), JSON.stringify(r.plan, null, 2))
+    results.push({ slug, ok: true, file, ...r })
+    console.log(`${r.wall}ms · ${r.layoutMode} · legs[${r.legMs.join(',')}] · ${r.chars}c · ${r.archetype}`)
+  } catch (e) {
+    results.push({ slug, ok: false, error: String(e?.message || e) })
+    console.log(`FAILED: ${e?.message || e}`)
+  }
+}
+
+try {
+  const { chromium } = await import('playwright')
+  const b = await chromium.launch()
+  for (const r of results) {
+    if (!r.file) continue
+    const pg = await b.newPage({ viewport: { width: 1440, height: 900 } })
+    await pg.goto(`file://${r.file}`, { waitUntil: 'networkidle', timeout: 25000 }).catch(() => {})
+    await pg.waitForTimeout(500)
+    await pg.screenshot({ path: r.file.replace(/\.html$/, '.png'), fullPage: true }).catch(() => {})
+    await pg.close()
+  }
+  await b.close()
+} catch (e) { console.error(`[gn] shots failed: ${e?.message || e}`) }
+
+console.log(`\n[gn] === RESULTS (${RUN_ID}) ===`)
+for (const r of results) {
+  if (!r.ok) { console.log(`  ${r.slug.padEnd(9)} ❌ ${r.error}`); continue }
+  const flag = r.wall < 20000 ? '✅' : '❌'
+  console.log(`  ${r.slug.padEnd(9)} ${flag} ${String(r.wall + 'ms').padStart(7)} ${r.layoutMode.padEnd(12)} ${String(r.chars).padStart(6)}c  ${r.archetype}`)
+  console.log(`            open: file://${r.file}`)
+}
+writeFileSync(join(OUT_DIR, 'results.json'), JSON.stringify(results.map(({ html, ...r }) => r), null, 2))
+console.log(`[gn] artifacts: ${OUT_DIR}`)
+for (const r of results) if (r.file && existsSync(r.file)) { try { execSync(`open "${r.file}"`) } catch {} }
