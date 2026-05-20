@@ -132,15 +132,31 @@ HARD RULES:
 - Tailwind utilities ONLY (Tailwind CDN). NO <style>, NO custom CSS.
 - Every section is a FULL-WIDTH band: <section class="w-full ..."> with ONE inner <div class="mx-auto max-w-7xl px-6 ...">. NO fixed-width structural blocks (no w-80/w-[400px] on layout). Each section is independently full-width and self-contained — do NOT open a flex/grid container in one part that another part must close.
 - GRID RULE (critical — prevents broken narrow columns): any COLLECTION of items (products, cards, artists, prints, menu items, posts, stat tiles, team) MUST be a responsive grid that SPANS THE FULL inner width — e.g. <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">. A section's content ALWAYS fills the max-w-7xl inner wrapper edge to edge. NEVER render a collection as a single narrow column, and never leave half the row empty. If a section has one feature item, make it a full-width 2-column split (text + visual), not a narrow card.
+- PROSE RULE (critical): NEVER place a long paragraph inside a narrow grid cell or skinny column — that produces an ugly tall thread of text. Cards in a grid carry only SHORT copy (a heading + a ≤2-line description). Any long-form prose (a story, a description block) lives in its OWN block: a centered max-w-2xl/max-w-3xl text column, or one half of a balanced 2-column (prose + image) split — never one tall narrow cell beside short cards. All cells in a grid row should be roughly equal height.
+- NO JAVASCRIPT: do NOT write <script> tags. Do NOT use scroll-triggered reveal animations, IntersectionObserver, lightboxes, or any initial opacity-0 / -translate / invisible state that needs JS to appear. The page MUST be fully visible and fully styled on load with ZERO JavaScript. (Hover-only CSS transitions are fine.)
 - ICONS: never <svg>; use <i data-lucide="name"> sized with Tailwind.
 - IMAGES: never inline images/SVG; use <div data-img="short subject" class="w-full aspect-... bg-[${a.muted}] rounded-..."></div>.
 - Real, specific copy (no lorem). Generous spacing (py-20+). Pour effort into hierarchy, rhythm, and craft.`
 }
 
-function ensureLucide(html) {
-  if (!/data-lucide=/.test(html) || /lucide@/.test(html)) return html
-  const tag = `<script src="https://unpkg.com/lucide@latest"></script><script>window.addEventListener('load',()=>{try{lucide.createIcons()}catch(e){}})</script>`
-  return /<\/body>/i.test(html) ? html.replace(/<\/body>/i, `${tag}\n</body>`) : html + tag
+// Strip model-authored <script> (rogue reveal/lightbox JS that leaves content
+// hidden) and <style> (custom CSS we don't want), then inject ONLY our Lucide
+// loader + a preview safety-net that forces any reveal/opacity-0 content
+// visible (the real pipeline owns icon+behavior injection downstream).
+function sanitize(html) {
+  let h = String(html || '')
+  // Strip <style> blocks (custom CSS / reveal opacity-0 rules we don't want).
+  h = h.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+  // Strip ONLY rogue <script> — KEEP the Tailwind CDN loader + tailwind.config.
+  h = h.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (m, attrs, body) => {
+    if (/cdn\.tailwindcss\.com|tailwindcss/i.test(attrs)) return m // Tailwind CDN
+    if (/tailwind\s*\.\s*config|tailwind\s*=\s*\{/i.test(body)) return m // inline config
+    return '' // rogue reveal/lightbox/etc JS
+  })
+  const inject = `<script src="https://unpkg.com/lucide@latest"></script>
+<style>[data-reveal],.opacity-0,[class*="reveal"],[class*="fade"]{opacity:1!important;transform:none!important;visibility:visible!important}</style>
+<script>window.addEventListener('load',()=>{try{lucide.createIcons()}catch(e){}})</script>`
+  return /<\/body>/i.test(h) ? h.replace(/<\/body>/i, `${inject}\n</body>`) : h + inject
 }
 
 // ── vertical-doc HYBRID: Gemini builds the visually-critical TOP (head+nav+
@@ -206,7 +222,7 @@ async function generate(brief) {
   if (!p?.art || !Array.isArray(p.sections)) throw new Error('bad plan')
   const layoutMode = p.layoutMode === 'app-shell' ? 'app-shell' : 'vertical-doc'
   const built = layoutMode === 'app-shell' ? await buildApp(brief, p) : await buildVertical(brief, p)
-  const html = ensureLucide(built.html)
+  const html = sanitize(built.html)
   return { html, plan: p, layoutMode, wall: Date.now() - t0, planMs, legMs: built.legMs, chars: html.length, archetype: p.archetype }
 }
 
