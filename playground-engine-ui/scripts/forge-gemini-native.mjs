@@ -116,6 +116,25 @@ async function gemini({ user, maxOut = 3000, temperature = 0.6 }) {
 
 const strip = (s) => String(s || '').replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
 
+// Repair malformed attributes the model sometimes hallucinates, e.g.
+// `<div class Portland="flex ...">` → `<div class="flex ...">` (a stray word
+// jammed between `class` and `=` silently kills the element's classes).
+function repairAttrs(html) {
+  return String(html || '').replace(/\bclass\s+[A-Za-z][\w-]*\s*=/g, 'class=')
+}
+
+// Balance <div> tags in the Gemini-top so an unclosed container can't swallow
+// the GPT-OSS tail (the #1 cause of whole-page collapse: later sections nest
+// inside an earlier half-width column). The <body> tag stays open (the tail
+// closes it). Any net-unclosed <div>s are closed here at the seam so the tail
+// appends as a sibling at body level, not nested.
+function balanceTopDivs(topHtml) {
+  const opens = (topHtml.match(/<div\b/gi) || []).length
+  const closes = (topHtml.match(/<\/div>/gi) || []).length
+  const deficit = opens - closes
+  return deficit > 0 ? topHtml + '\n' + '</div>'.repeat(deficit) : topHtml
+}
+
 function contract(brief, p) {
   const a = p.art
   const acc2 = a.accent2 && a.accent2 !== 'null' ? `, secondary ${a.accent2}` : ''
@@ -132,10 +151,12 @@ HARD RULES:
 - Tailwind utilities ONLY (Tailwind CDN). NO <style>, NO custom CSS.
 - Every section is a FULL-WIDTH band: <section class="w-full ..."> with ONE inner <div class="mx-auto max-w-7xl px-6 ...">. NO fixed-width structural blocks (no w-80/w-[400px] on layout). Each section is independently full-width and self-contained — do NOT open a flex/grid container in one part that another part must close.
 - GRID RULE (critical — prevents broken narrow columns): any COLLECTION of items (products, cards, artists, prints, menu items, posts, stat tiles, team) MUST be a responsive grid that SPANS THE FULL inner width — e.g. <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">. A section's content ALWAYS fills the max-w-7xl inner wrapper edge to edge. NEVER render a collection as a single narrow column, and never leave half the row empty. If a section has one feature item, make it a full-width 2-column split (text + visual), not a narrow card.
+- SIMPLE-LAYOUT RULE (critical for robustness): use straightforward grids and vertical stacks. Do NOT use position:absolute/fixed, negative margins, rotation, translate, or overlapping/stacked/fanned cards "for effect" — they break across viewports. Cards sit in a clean responsive grid, evenly spaced. Keep DOM nesting shallow and every <div> properly closed.
 - PROSE RULE (critical): NEVER place a long paragraph inside a narrow grid cell or skinny column — that produces an ugly tall thread of text. Cards in a grid carry only SHORT copy (a heading + a ≤2-line description). Any long-form prose (a story, a description block) lives in its OWN block: a centered max-w-2xl/max-w-3xl text column, or one half of a balanced 2-column (prose + image) split — never one tall narrow cell beside short cards. All cells in a grid row should be roughly equal height.
 - NO JAVASCRIPT: do NOT write <script> tags. Do NOT use scroll-triggered reveal animations, IntersectionObserver, lightboxes, or any initial opacity-0 / -translate / invisible state that needs JS to appear. The page MUST be fully visible and fully styled on load with ZERO JavaScript. (Hover-only CSS transitions are fine.)
 - ICONS: never <svg>; use <i data-lucide="name"> sized with Tailwind.
-- IMAGES: never inline images/SVG; use <div data-img="short subject" class="w-full aspect-... bg-[${a.muted}] rounded-..."></div>.
+- IMAGES: never inline images/SVG; use <div data-img="short subject" class="w-full aspect-[4/3] bg-[${a.muted}] rounded-..."></div>. ALWAYS give an image box a sensible aspect ratio (aspect-[4/3], aspect-video, aspect-square) — NEVER a giant full-bleed empty block, and never an image box taller than ~70vh. A section must never be just a wall of empty image boxes: pair images with real copy (titles, captions, prices).
+- HERO: keep it clean and legible — a headline, subhead, and 1-2 CTAs (optionally one visual on the side). Do NOT cram a form, a long list, or dense widgets into the hero.
 - Real, specific copy (no lorem). Generous spacing (py-20+). Pour effort into hierarchy, rhythm, and craft.`
 }
 
@@ -144,7 +165,7 @@ HARD RULES:
 // loader + a preview safety-net that forces any reveal/opacity-0 content
 // visible (the real pipeline owns icon+behavior injection downstream).
 function sanitize(html) {
-  let h = String(html || '')
+  let h = repairAttrs(String(html || ''))
   // Strip <style> blocks (custom CSS / reveal opacity-0 rules we don't want).
   h = h.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
   // Strip ONLY rogue <script> — KEEP the Tailwind CDN loader + tailwind.config.
@@ -154,7 +175,13 @@ function sanitize(html) {
     return '' // rogue reveal/lightbox/etc JS
   })
   const inject = `<script src="https://unpkg.com/lucide@latest"></script>
-<style>[data-reveal],.opacity-0,[class*="reveal"],[class*="fade"]{opacity:1!important;transform:none!important;visibility:visible!important}</style>
+<style>
+[data-reveal],.opacity-0,[class*="reveal"],[class*="fade"]{opacity:1!important;transform:none!important;visibility:visible!important}
+/* Preview-only: make image placeholders read as intentional image slots (the
+   real pipeline swaps these for Pexels photos), so empty boxes don't look broken. */
+[data-img]{position:relative!important;background:repeating-linear-gradient(135deg,#dfe3e8,#dfe3e8 14px,#d4d9df 14px,#d4d9df 28px)!important;min-height:8rem}
+[data-img]::after{content:"\\1F5BC  "attr(data-img);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1rem;font:600 .68rem/1.35 ui-sans-serif,system-ui,sans-serif;letter-spacing:.04em;color:#64748b;background:rgba(255,255,255,.35)}
+</style>
 <script>window.addEventListener('load',()=>{try{lucide.createIcons()}catch(e){}})</script>`
   return /<\/body>/i.test(h) ? h.replace(/<\/body>/i, `${inject}\n</body>`) : h + inject
 }
@@ -197,7 +224,7 @@ Match the palette + fonts + DECOR EXACTLY. Use the GRID RULE for any collection.
     : Promise.resolve({ content: '\n</body></html>', ms: 0 })
 
   const [g, o] = await Promise.all([geminiCall, ossCall])
-  let topHtml = strip(g.text).replace(/<\/body>\s*<\/html>\s*$/i, '')
+  let topHtml = balanceTopDivs(repairAttrs(strip(g.text).replace(/<\/body>\s*<\/html>\s*$/i, '')))
   let tailHtml = strip(o.content || '')
   // refusal/empty guard on the tail
   if (!tailHtml || tailHtml.length < 200 || /\bi'?m sorry\b/i.test(tailHtml.slice(0, 120))) tailHtml = ''
