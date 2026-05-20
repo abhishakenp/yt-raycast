@@ -38,12 +38,24 @@ const RUN_ID = String(Date.now())
 const OUT_DIR = join(ROOT, '.forge', 'gemini-native', RUN_ID)
 mkdirSync(OUT_DIR, { recursive: true })
 
+// The canonical 8-vertical breadth set (saas/ecommerce/restaurant/portfolio/
+// agency/fitness/wellness/hotel), plus the 4 stress briefs available by slug.
 const BRIEFS = [
+  { slug: 'saas', brief: 'Homepage for KubeMeter, an open-source Kubernetes cost-attribution platform that breaks down spend by pod, namespace, and team in real time. Self-hosted, alternative to Datadog Cost Management.' },
+  { slug: 'ecommerce', brief: 'Homepage for Aerie Skincare, a plant-based DTC face oil line. Three products: Restore, Glow, Calm. Founded by herbalists. Subscribe and save, recyclable packaging, made in small batches in Vermont.' },
+  { slug: 'restaurant', brief: 'Homepage for Sumida, a single-origin coffee roaster in Tokyo. Subscriptions, retail bags, wholesale to cafes. Family-run since 1987. Curated Ethiopian and Colombian beans, slow-roasted in small batches.' },
+  { slug: 'portfolio', brief: 'Personal portfolio for Maya Chen, a freelance brand designer working with early-stage startups and indie creators. Based in Brooklyn. Past clients include Linear, Vercel, and Pitch.' },
+  { slug: 'agency', brief: 'Homepage for Sutter Creative, a brand identity and digital design agency working with consumer startups. 12-person team in Portland. Clients include Olipop, Necessaire, Allbirds.' },
+  { slug: 'fitness', brief: 'Homepage for Vertex Fitness, a HIIT and strength training studio in Brooklyn. Class packs, monthly memberships, drop-in rates. Six trainers, three classes per day, signature workout: VTX45.' },
+  { slug: 'wellness', brief: 'Homepage for Halo Wellness, a meditation and sound bath studio in Los Angeles. 60-min and 90-min sessions, private and group, monthly membership available. Founded by certified meditation teachers.' },
+  { slug: 'hotel', brief: 'Homepage for Stoneholm, a 24-room boutique hotel on the Oregon coast. Cliffside cedar architecture, ocean-view rooms, on-site restaurant focused on Pacific Northwest cuisine. Spa, fire pits, hiking trails.' },
+  // stress briefs (run explicitly by slug)
   { slug: 'fleet', brief: 'Helmsman — a fleet operations console for autonomous delivery robots. Operators watch a live city map, per-robot battery and route status, an incident timeline, and can hand off to remote teleoperation. B2B, sold to logistics companies.' },
   { slug: 'riso', brief: 'Riso Press — a Brooklyn risograph print studio and zine shop. Bold, playful, ink-on-paper craft. Sells limited-run art prints and zines, runs weekend printing workshops, takes custom client commissions.' },
   { slug: 'music', brief: 'Tessellate — an independent electronic music label and warehouse event series in Berlin. Vinyl + digital releases, a roster of 12 artists, a calendar of upcoming warehouse parties, and a small merch + record shop.' },
   { slug: 'butchery', brief: 'Marrow — a nose-to-tail butchery and supper club in Lisbon. Weekly changing set menus, hands-on butchery classes, whole-animal provenance from a single farm, a small counter selling cuts and charcuterie.' },
 ]
+const DEFAULT_8 = ['saas', 'ecommerce', 'restaurant', 'portfolio', 'agency', 'fitness', 'wellness', 'hotel']
 
 // ── Planner (GPT-OSS) ────────────────────────────────────────────────────────
 const PLANNER_SYSTEM =
@@ -77,8 +89,14 @@ function parseJson(t) {
 
 async function plan(brief) {
   const t0 = Date.now()
-  const r = await forgeGenerate({ prompt: plannerUser(brief), system: PLANNER_SYSTEM, model: PLANNER_MODEL, temperature: 0.9, maxTokens: 1600 })
-  return { plan: parseJson(r.content), ms: Date.now() - t0 }
+  let r = await forgeGenerate({ prompt: plannerUser(brief), system: PLANNER_SYSTEM, model: PLANNER_MODEL, temperature: 0.9, maxTokens: 1600 })
+  let p = parseJson(r.content)
+  // Retry once at lower temperature if the planner emitted unparseable JSON.
+  if (!p?.art || !Array.isArray(p.sections)) {
+    r = await forgeGenerate({ prompt: plannerUser(brief) + '\n\nReturn ONLY valid JSON, no prose, no markdown fences.', system: PLANNER_SYSTEM, model: PLANNER_MODEL, temperature: 0.4, maxTokens: 1600 })
+    p = parseJson(r.content)
+  }
+  return { plan: p, ms: Date.now() - t0 }
 }
 
 // ── Gemini ───────────────────────────────────────────────────────────────────
@@ -194,7 +212,7 @@ async function generate(brief) {
 
 // ── run ──────────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))
-const briefs = args.length ? BRIEFS.filter((b) => args.includes(b.slug)) : BRIEFS
+const briefs = args.length ? BRIEFS.filter((b) => args.includes(b.slug)) : BRIEFS.filter((b) => DEFAULT_8.includes(b.slug))
 console.log(`[gn] runId=${RUN_ID} model=${GEMINI_MODEL} planner=${PLANNER_MODEL} chunks=${N_CHUNKS} briefs=${briefs.length}`)
 const results = []
 for (const { slug, brief } of briefs) {
