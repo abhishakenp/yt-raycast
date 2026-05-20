@@ -19,7 +19,15 @@
 
 import { forgeGenerate } from './forge-lib.mjs'
 
-const PLANNER_MODEL = process.env.PLANNER_MODEL || 'llama-3.3-70b-versatile'
+// Default planner: GPT-OSS-120B. Chosen by A/B (forge-planner-ab.mjs) over
+// gemini-3.5-flash and qwen3-32b: most reliable (no parse failures), fastest
+// (12-17s vs gemini's up-to-20s), no Gemini quota, and clearly stronger plans
+// than the prior llama-3.3-70b. Set PLANNER_MODEL=gemini-3.5-flash for the
+// most imaginative archetypes (it invented a techno-sequencer label page),
+// at +~3s and a Gemini API call. qwen3-32b rejected — leaked reasoning broke
+// JSON parsing. Llama 3.1 8B must NEVER be used here (15/100 UI/UX, ignores
+// constraints, position:absolute everywhere — see the engineering report).
+const PLANNER_MODEL = process.env.PLANNER_MODEL || 'openai/gpt-oss-120b'
 
 const PLANNER_SYSTEM =
   'You are a daring art director and product designer with broad taste across eras and disciplines. You decide what a brand\'s primary web page should actually BE, then invent a distinctive visual world for it. Output ONLY compact JSON, no prose, no markdown fences.'
@@ -72,23 +80,41 @@ function parseJson(text) {
   return null
 }
 
-async function planArtDirection(brief) {
+async function planArtDirection(brief, opts = {}) {
+  const plannerModel = opts.plannerModel || PLANNER_MODEL
   const t0 = Date.now()
-  const res = await forgeGenerate({
-    prompt: plannerUser(brief),
-    system: PLANNER_SYSTEM,
-    model: PLANNER_MODEL,
-    temperature: 0.95,
-    maxTokens: 1300,
-  })
-  return { plan: parseJson(res.content), ms: Date.now() - t0 }
+  let content
+  if (/^gemini/i.test(plannerModel)) {
+    // Gemini planner uses the Google API (different from the Groq path).
+    const r = await geminiGenerate({
+      user: `${PLANNER_SYSTEM}\n\n${plannerUser(brief)}`,
+      maxOut: 1300,
+      temperature: 0.95,
+      apiKey: opts.apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY,
+      model: plannerModel,
+      json: true,
+    })
+    content = r.text
+  } else {
+    const res = await forgeGenerate({
+      prompt: plannerUser(brief),
+      system: PLANNER_SYSTEM,
+      model: plannerModel,
+      temperature: 0.95,
+      maxTokens: 1300,
+    })
+    content = res.content
+  }
+  return { plan: parseJson(content), ms: Date.now() - t0, plannerModel }
 }
 
-async function geminiGenerate({ user, maxOut = 6000, temperature = 0.5, apiKey, model }) {
+async function geminiGenerate({ user, maxOut = 6000, temperature = 0.5, apiKey, model, json = false }) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+  const generationConfig = { temperature, maxOutputTokens: maxOut, thinkingConfig: { thinkingBudget: 0 } }
+  if (json) generationConfig.responseMimeType = 'application/json'
   const body = {
     contents: [{ role: 'user', parts: [{ text: user }] }],
-    generationConfig: { temperature, maxOutputTokens: maxOut, thinkingConfig: { thinkingBudget: 0 } },
+    generationConfig,
   }
   const t0 = Date.now()
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -257,7 +283,10 @@ export async function generateCreativeHomepage(brief, opts = {}) {
   if (!apiKey) throw new Error('GEMINI_API_KEY / GOOGLE_API_KEY not set')
 
   const t0 = Date.now()
-  const { plan, ms: plannerMs } = await planArtDirection(brief)
+  const { plan, ms: plannerMs, plannerModel } = await planArtDirection(brief, {
+    plannerModel: opts.plannerModel,
+    apiKey,
+  })
   if (!plan?.art || !Array.isArray(plan.chunks) || plan.chunks.length < 3) {
     throw new Error('planner produced no usable plan')
   }
@@ -284,6 +313,7 @@ export async function generateCreativeHomepage(brief, opts = {}) {
       palette: `${a.bg}/${a.accent}`,
       fonts: `${a.fontDisplay}+${a.fontBody}`,
       decor: a.decor || null,
+      plannerModel,
       plannerMs,
       ...built.legMs,
       dropped: built.dropped?.length ? built.dropped.join('+') : null,
