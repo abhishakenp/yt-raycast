@@ -43,9 +43,9 @@ import {
   passesHomepagePublicDesignVerification,
   scoreRalphHomepage,
 } from '@ship-fast/engine/pipeline/ralph-homepage-score.js'
-import { renderAudit } from './forge-render-audit.mjs'
-import { visionJudge } from './forge-vision.mjs'
-import { validateLucideIcons, ensureLucideRegistry } from './forge-lucide-validate.mjs'
+import { renderAudit } from '../playground-engine-ui/scripts/forge-render-audit.mjs'
+import { visionJudge } from '../playground-engine-ui/scripts/forge-vision.mjs'
+import { validateLucideIcons, ensureLucideRegistry } from '../playground-engine-ui/scripts/forge-lucide-validate.mjs'
 
 const ROUNDS = parseInt(process.env.RALPH_ROUNDS || '5', 10)
 const TIME_BUDGET_MS = parseInt(process.env.RALPH_TIME_MS || '60000', 10)

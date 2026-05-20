@@ -19,7 +19,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { fetchMobbinReferences, preflightCheck, MOBBIN_STATUS, getMobbinStatus } from './forge-mobbin.mjs'
+import { fetchMobbinReferences, preflightCheck, MOBBIN_STATUS, getMobbinStatus } from '../playground-engine-ui/scripts/forge-mobbin.mjs'
 
 // Vibe → Mobbin app categories. Best-effort mapping derived from the
 // references already cited in theme-contrast.js comments. Multiple categories
