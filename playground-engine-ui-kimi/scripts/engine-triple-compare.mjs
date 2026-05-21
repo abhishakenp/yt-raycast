@@ -175,17 +175,47 @@ for (const engine of ENGINES) {
 
 await captureShots(results.filter((r) => r.ok).map((r) => ({ htmlPath: r.htmlPath, pngPath: r.pngPath })))
 
+function formatGenTime(r) {
+  const ms = r.ok ? (r.metrics?.wall ?? r.elapsed) : r.elapsed
+  if (!ms && ms !== 0) return '—'
+  return `${(ms / 1000).toFixed(1)}s`
+}
+
+function escapeHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+const genTotalSec = results
+  .filter((r) => r.ok)
+  .reduce((sum, r) => sum + (r.metrics?.wall ?? r.elapsed ?? 0), 0) / 1000
+
 const briefPreview = brief.length > 220 ? `${brief.slice(0, 217)}…` : brief
 const cards = results.map((r) => {
+  const genTime = formatGenTime(r)
   if (!r.ok) {
-    return `<article class="card error"><h2>${r.label}</h2><p class="err">${escapeHtml(r.error)}</p></article>`
+    return `<article class="card error">
+  <header>
+    <div class="card-title-row">
+      <h2>${escapeHtml(r.label)}</h2>
+      <span class="gen-time" title="Generation time">${genTime}</span>
+    </div>
+    <p class="err">${escapeHtml(r.error)}</p>
+  </header>
+</article>`
   }
   const hasPng = existsSync(r.pngPath)
   return `<article class="card">
   <header>
-    <h2>${escapeHtml(r.label)}</h2>
+    <div class="card-title-row">
+      <h2>${escapeHtml(r.label)}</h2>
+      <span class="gen-time" title="Generation time">${genTime}</span>
+    </div>
     <p class="sub">${escapeHtml(r.subtitle)}</p>
-    <p class="meta">${r.metrics.wall}ms · score ${r.metrics.score} · ${escapeHtml(String(r.metrics.buildMode))} · ${r.metrics.chars}c</p>
+    <p class="meta">score ${r.metrics.score} · ${escapeHtml(String(r.metrics.buildMode))} · ${r.metrics.chars}c</p>
     <p class="meta">${escapeHtml(String(r.metrics.palette || ''))}</p>
     <a href="${r.htmlRel}" target="_blank" rel="noopener">Open full page ↗</a>
   </header>
@@ -212,7 +242,9 @@ const indexHtml = `<!DOCTYPE html>
     .card { background: #171a21; border: 1px solid #2a2f3a; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; min-height: 24rem; }
     .card.error { border-color: #7f1d1d; }
     .card header { padding: .85rem 1rem; border-bottom: 1px solid #2a2f3a; }
-    .card h2 { margin: 0 0 .25rem; font-size: .95rem; }
+    .card-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .25rem; }
+    .card h2 { margin: 0; font-size: .95rem; flex: 1; min-width: 0; }
+    .gen-time { flex-shrink: 0; font-size: .78rem; font-weight: 600; font-variant-numeric: tabular-nums; color: #fbbf24; background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.25); padding: .15rem .5rem; border-radius: 999px; white-space: nowrap; }
     .sub { margin: 0 0 .35rem; font-size: .75rem; color: #7dd3fc; }
     .meta { margin: 0 0 .2rem; font-size: .72rem; color: #9aa3b2; }
     .card a { font-size: .72rem; color: #7dd3fc; }
@@ -226,7 +258,7 @@ const indexHtml = `<!DOCTYPE html>
   <header class="page">
     <h1>Engine triple compare</h1>
     <p><strong>Brief:</strong> ${escapeHtml(briefPreview)}</p>
-    <p>Run ${runId} · ${DESKTOP_WIDTH}px full-page screenshots · kimi | forge-gemini-native | gpt</p>
+    <p>Run ${runId} · ${DESKTOP_WIDTH}px full-page screenshots · kimi | forge-gemini-native | gpt · generation total ~${genTotalSec.toFixed(1)}s</p>
   </header>
   <main class="grid">${cards}</main>
 </body>
@@ -309,12 +341,4 @@ if (shouldServe) {
   } else {
     console.log(`Serve: bun ${join(outDir, 'serve.mjs')}`)
   }
-}
-
-function escapeHtml(s) {
-  return String(s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
 }
