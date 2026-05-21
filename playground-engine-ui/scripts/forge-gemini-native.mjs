@@ -254,7 +254,13 @@ async function generate(brief) {
   return { html, plan: p, layoutMode, wall: Date.now() - t0, planMs, legMs: built.legMs, chars: html.length, archetype: p.archetype }
 }
 
-// ── run ──────────────────────────────────────────────────────────────────────
+/** Programmatic entry — used by engine-triple-compare and tests. */
+export async function generateGeminiNativeHomepage(brief) {
+  return generate(brief)
+}
+
+const isMain = import.meta.main ?? process.argv[1]?.endsWith('forge-gemini-native.mjs')
+if (isMain) {
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))
 const briefs = args.length ? BRIEFS.filter((b) => args.includes(b.slug)) : BRIEFS.filter((b) => DEFAULT_8.includes(b.slug))
 console.log(`[gn] runId=${RUN_ID} model=${GEMINI_MODEL} planner=${PLANNER_MODEL} chunks=${N_CHUNKS} briefs=${briefs.length}`)
@@ -297,3 +303,4 @@ for (const r of results) {
 writeFileSync(join(OUT_DIR, 'results.json'), JSON.stringify(results.map(({ html, ...r }) => r), null, 2))
 console.log(`[gn] artifacts: ${OUT_DIR}`)
 for (const r of results) if (r.file && existsSync(r.file)) { try { execSync(`open "${r.file}"`) } catch {} }
+}
