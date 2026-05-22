@@ -30,14 +30,22 @@ export function writeRenderedFiles(baseDir, files) {
   }
 }
 
-export function renderPreviewToWorkspace(siteSpec, workspace, session) {
+/**
+ * @param {object} [options]
+ * @param {boolean} [options.preserveLlmHomepage] — skip writing index.html (keep hybrid/LLM homepage)
+ * @param {string[]} [options.skipFiles] — additional relative paths to skip
+ */
+export function renderPreviewToWorkspace(siteSpec, workspace, session, options = {}) {
   prepareSiteSpecForReliableRender(siteSpec)
   const { files } = renderHtmlProject(siteSpec)
-  writeRenderedFiles(workspace, files)
-  return { files }
+  const skip = new Set(options.skipFiles || [])
+  if (options.preserveLlmHomepage) skip.add('index.html')
+  const filtered = Object.fromEntries(Object.entries(files).filter(([path]) => !skip.has(path)))
+  writeRenderedFiles(workspace, filtered)
+  return { files: filtered }
 }
 
 /** Vanilla project is HTML-only — this is a no-op kept for runner compatibility. */
-export function writeNextAppToWorkspace(siteSpec, workspace, session) {
-  return renderPreviewToWorkspace(siteSpec, workspace, session)
+export function writeNextAppToWorkspace(siteSpec, workspace, session, options = {}) {
+  return renderPreviewToWorkspace(siteSpec, workspace, session, options)
 }

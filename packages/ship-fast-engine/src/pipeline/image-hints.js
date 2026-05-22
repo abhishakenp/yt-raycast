@@ -952,12 +952,17 @@ function subjectKeyFromPrompt(prompt) {
   return null
 }
 
-async function fetchPexelsPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
+async function fetchPexelsPhotos(
+  query,
+  subjectKey,
+  keep = KEEP_PER_QUERY,
+  orientation = 'landscape',
+) {
   if (!query || !PEXELS_API_KEY) return []
   const url = new URL(PEXELS_API_URL)
   url.searchParams.set('query', query)
   url.searchParams.set('per_page', String(FETCH_PAGE_SIZE))
-  url.searchParams.set('orientation', 'landscape')
+  if (orientation) url.searchParams.set('orientation', orientation)
 
   const controller = new AbortController()
   const timeout = setTimeout(() => {
@@ -1068,11 +1073,11 @@ async function fetchUnsplashPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
   }
 }
 
-async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY) {
+async function fetchPhotos(query, subjectKey, keep = KEEP_PER_QUERY, orientation = 'landscape') {
   if (!query || keep <= 0) return []
 
   const [pexels, unsplash] = await Promise.all([
-    fetchPexelsPhotos(query, subjectKey, keep),
+    fetchPexelsPhotos(query, subjectKey, keep, orientation),
     fetchUnsplashPhotos(query, subjectKey, keep),
   ])
 
@@ -1557,14 +1562,14 @@ function realignObjectImageUrls(html, photos, usage) {
   })
 }
 
-export function alignGeneratedImagesToContext(html, imageHints = null) {
+export async function alignGeneratedImagesToContext(html, imageHints = null) {
   const photos = imageHints?.photos ?? []
   const videos = imageHints?.videos ?? []
   if (!html || typeof html !== 'string') return html
 
   let next = html
   if (/\bdata-img\s*=/.test(next)) {
-    next = hydrateDataImgSlots(next, imageHints)
+    next = await hydrateDataImgSlots(next, imageHints)
   }
 
   const usage = new Map()
@@ -1653,6 +1658,311 @@ function stockPhotosForHydration(imageHints = null) {
 }
 
 const DATA_IMG_OPEN_RE = /<div\b([^>]*\bdata-img=["']([^"']*)["'][^>]*)>/gi
+const MAX_DATA_IMG_FETCHES = 14
+const DATA_IMG_FETCH_KEEP = 3
+const MIN_DATA_IMG_RELEVANCE = 14
+
+const FAKE_NAME_TOKENS = new Set([
+  'jane',
+  'john',
+  'doe',
+  'smith',
+  'alex',
+  'sam',
+  'kim',
+  'lee',
+  'pat',
+  'mia',
+  'chen',
+  'ali',
+  'khan',
+  'quantix',
+  'nexar',
+  'zenith',
+  'aetheris',
+  'acme',
+  'corp',
+  'inc',
+  'ltd',
+  'llc',
+])
+
+const DATA_IMG_INTENT_TOKENS = new Set([
+  'headshot',
+  'portrait',
+  'avatar',
+  'profile',
+  'logo',
+  'brand',
+  'press',
+  'award',
+  'badge',
+  'trophy',
+  'dashboard',
+  'interface',
+  'screen',
+  'analytics',
+  'software',
+  'platform',
+  'hero',
+  'banner',
+  'product',
+  'team',
+  'office',
+  'magazine',
+  'media',
+  'publication',
+  'techcrunch',
+  'forbes',
+  'wired',
+  'nytimes',
+  'gartner',
+  'company',
+  'startup',
+  'innovation',
+  'solution',
+  'feature',
+  'device',
+  'hardware',
+  'certified',
+  'partner',
+  'testimonial',
+  'investor',
+])
+
+const PORTRAIT_MATCH_RE =
+  /\b(portrait|headshot|face|person|people|businessman|businesswoman|professional|executive|model|smiling)\b/i
+const LOGO_MATCH_RE = /\b(logo|brand|symbol|icon|typography|minimal|abstract|monogram)\b/i
+const UI_MATCH_RE =
+  /\b(dashboard|screen|interface|analytics|software|ui|app|data visualization|chart|monitor|workspace)\b/i
+const TECH_DESK_RE =
+  /\b(laptop|macbook|computer|coding|programmer|developer|office desk|keyboard|monitor display)\b/i
+const MEDIA_MATCH_RE = /\b(magazine|award|trophy|badge|certificate|media|publication|newspaper|editorial)\b/i
+
+function extractPromptVisualCore(promptCtx = '', maxWords = 5) {
+  const words = tokenizeForMatch(promptCtx).filter((w) => !LOW_SIGNAL_QUERY_WORDS.has(w))
+  return words.slice(0, maxWords).join(' ')
+}
+
+function inferDomainTermsFromPrompt(prompt = '') {
+  const p = normalizeText(prompt)
+  if (/\b(ai|artificial intelligence|machine learning|ml|llm|neural|cognitive)\b/.test(p)) {
+    return 'artificial intelligence technology innovation'
+  }
+  if (/\b(startup|saas|software|platform|cloud|api|tech)\b/.test(p)) {
+    return 'technology startup modern office'
+  }
+  if (/\b(restaurant|food|cafe|coffee|ramen|kitchen|chef|bakery)\b/.test(p)) {
+    return phraseFromPrompt(prompt, 4) || 'restaurant food photography'
+  }
+  if (/\b(hospital|clinic|healthcare|medical|doctor)\b/.test(p)) {
+    return 'healthcare medical professional'
+  }
+  if (/\b(fashion|boutique|retail|ecommerce|shop|store)\b/.test(p)) {
+    return phraseFromPrompt(prompt, 4) || 'retail brand photography'
+  }
+  return extractPromptVisualCore(prompt, 5)
+}
+
+function semanticDataImgTokens(subject = '') {
+  const tokens = tokenizeForMatch(String(subject).replace(/-/g, ' '))
+  return tokens.filter(
+    (t) => DATA_IMG_INTENT_TOKENS.has(t) || (t.length > 4 && !FAKE_NAME_TOKENS.has(t)),
+  )
+}
+
+function parseDataImgIntent(subject = '', classes = '') {
+  const s = normalizeText(String(subject).replace(/-/g, ' '))
+  const cls = normalizeText(classes)
+  const smallSquare = /\bw-(?:8|10|12|16|20|24)\b/.test(cls) && /\bh-(?:8|10|12|16|20|24)\b/.test(cls)
+  const isRound = /\brounded-full\b/.test(cls)
+
+  if (
+    /\b(headshot|portrait|avatar|profile|team member|founder|ceo|testimonial|investor)\b/.test(s) ||
+    (smallSquare && isRound)
+  )
+    return 'headshot'
+  if (/\b(logo|brand mark|wordmark|icon)\b/.test(s) || (smallSquare && !isRound)) return 'logo'
+  if (/\b(press|techcrunch|forbes|wired|nytimes|bloomberg|guardian|media outlet)\b/.test(s))
+    return 'press'
+  if (/\b(award|badge|trophy|certified|gartner|fast company)\b/.test(s)) return 'award'
+  if (/\b(dashboard|interface|ui|screen|analytics|software|platform|app|saas)\b/.test(s)) return 'ui'
+  if (
+    /\b(hero|banner|cover|background)\b/.test(s) ||
+    /\b(?:aspect-\[21|aspect-video|min-h-\[)/.test(cls)
+  )
+    return 'hero'
+  if (/\b(product|device|hardware|solution|feature)\b/.test(s)) return 'product'
+  return 'scene'
+}
+
+function dataImgOrientation(intent) {
+  if (intent === 'headshot') return 'portrait'
+  if (intent === 'logo' || intent === 'award') return 'square'
+  return 'landscape'
+}
+
+function buildDataImgSearchQuery(subject, intent, promptCtx) {
+  const core = inferDomainTermsFromPrompt(promptCtx)
+  const tokens = semanticDataImgTokens(subject)
+  const subjectPhrase = tokens.join(' ')
+
+  switch (intent) {
+    case 'headshot':
+      return (
+        uniqueValues([
+          `professional business headshot portrait ${core}`,
+          'corporate executive headshot studio portrait',
+        ])[0] || 'professional business headshot portrait'
+      )
+    case 'logo':
+      return `minimal ${core || subjectPhrase || 'technology'} brand logo abstract`.trim()
+    case 'press':
+      if (/\btechcrunch\b/.test(subject)) return `technology startup news media ${core}`.trim()
+      if (/\bforbes\b/.test(subject)) return 'business finance magazine publication logo'
+      if (/\bwired\b/.test(subject)) return 'technology magazine editorial media'
+      if (/\bnytimes\b/.test(subject)) return 'newspaper news media editorial'
+      return `business media publication ${core}`.trim()
+    case 'award':
+      return `corporate award badge trophy ${core}`.trim()
+    case 'ui':
+      return `${subjectPhrase || core || 'saas analytics'} dashboard software interface`.trim()
+    case 'hero':
+      return `${core || subjectPhrase || 'modern professional'} hero banner photography`.trim()
+    case 'product':
+      return `${subjectPhrase || core} product photography commercial`.trim()
+    default:
+      return `${subjectPhrase} ${core} professional photography editorial`.trim().slice(0, 96)
+  }
+}
+
+function dataImgRelevanceScore(photo, label, intent, usageCount = 0) {
+  let score = labelRelevanceScore(photo, label, usageCount)
+  const matchText = normalizeText(
+    [photo?.query || '', photo?.alt || '', photo?.matchText || ''].filter(Boolean).join(' '),
+  )
+  const photoQuery = normalizeText(photo?.query || '')
+  const labelCore = extractPromptVisualCore(label, 8)
+  if (photoQuery && overlapCount(queryMatchTokens(labelCore).core, photoQuery) > 0) score += 10
+
+  if (intent === 'headshot') {
+    if (PORTRAIT_MATCH_RE.test(matchText)) score += 18
+    if (TECH_DESK_RE.test(matchText) && !PORTRAIT_MATCH_RE.test(matchText)) score -= 24
+    if (PRODUCT_PHOTO_RE.test(matchText) && !PORTRAIT_MATCH_RE.test(matchText)) score -= 10
+  } else if (intent === 'logo') {
+    if (LOGO_MATCH_RE.test(matchText)) score += 14
+    if (LIFESTYLE_PHOTO_RE.test(matchText) && !LOGO_MATCH_RE.test(matchText)) score -= 12
+  } else if (intent === 'ui') {
+    if (UI_MATCH_RE.test(matchText)) score += 18
+    if (/\b(nature|landscape|food|restaurant|beach|mountain|flower)\b/.test(matchText)) score -= 18
+  } else if (intent === 'press' || intent === 'award') {
+    if (MEDIA_MATCH_RE.test(matchText)) score += 14
+    if (PORTRAIT_MATCH_RE.test(matchText) && intent === 'award') score -= 8
+  } else if (intent === 'hero') {
+    if (/\b(office|team|technology|innovation|startup|modern|workspace|city)\b/.test(matchText))
+      score += 10
+  } else if (intent === 'product') {
+    if (PRODUCT_PHOTO_RE.test(matchText)) score += 12
+  }
+
+  return score
+}
+
+function extractDataImgSlots(html, promptCtx = '') {
+  const slots = []
+  const openRe = new RegExp(DATA_IMG_OPEN_RE.source, 'gi')
+  let m
+  while ((m = openRe.exec(html)) !== null) {
+    const attrs = m[1]
+    const subject = m[2]
+    const classMatch = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)
+    const classes = classMatch?.[1] ?? ''
+    const intent = parseDataImgIntent(subject, classes, promptCtx)
+    slots.push({ subject, classes, intent })
+  }
+  return slots
+}
+
+async function prefetchDataImgPhotoCache(slots, promptCtx, subjectKey) {
+  if (!PEXELS_API_KEY && !UNSPLASH_ACCESS_KEY) return new Map()
+  const planned = new Map()
+  for (const slot of slots) {
+    const query = buildDataImgSearchQuery(slot.subject, slot.intent, promptCtx)
+    const orient = dataImgOrientation(slot.intent)
+    const key = `${query}\0${orient}`
+    if (!planned.has(key)) planned.set(key, { query, orient })
+  }
+
+  const cache = new Map()
+  const entries = [...planned.values()].slice(0, MAX_DATA_IMG_FETCHES)
+  await Promise.all(
+    entries.map(async ({ query, orient }) => {
+      const list = await fetchPhotos(query, subjectKey, DATA_IMG_FETCH_KEEP, orient)
+      if (list.length) cache.set(query, list)
+    }),
+  )
+  return cache
+}
+
+function mergePhotoPool(basePhotos = [], queryCache = new Map()) {
+  const seen = new Set()
+  const merged = []
+  for (const list of queryCache.values()) {
+    for (const photo of list) {
+      if (!photo?.url || seen.has(photo.url)) continue
+      seen.add(photo.url)
+      merged.push(photo)
+    }
+  }
+  for (const photo of basePhotos) {
+    if (!photo?.url || seen.has(photo.url)) continue
+    seen.add(photo.url)
+    merged.push(photo)
+  }
+  return merged
+}
+
+function pickPhotoForDataImg(subject, intent, promptCtx, photos, queryCache, usage) {
+  if (!photos.length) return null
+  const query = buildDataImgSearchQuery(subject, intent, promptCtx)
+  const label = [semanticDataImgTokens(subject).join(' '), inferDomainTermsFromPrompt(promptCtx)]
+    .filter(Boolean)
+    .join(' ')
+  const dedicated = queryCache.get(query) || []
+  const pool = dedicated.length ? [...dedicated, ...photos] : photos
+  const seen = new Set()
+  const deduped = []
+  for (const photo of pool) {
+    if (!photo?.url || seen.has(photo.url)) continue
+    seen.add(photo.url)
+    deduped.push(photo)
+  }
+
+  let best = null
+  let bestScore = -Infinity
+  for (const photo of deduped) {
+    const score = dataImgRelevanceScore(photo, label, intent, usage.get(photo.url) || 0)
+    if (score > bestScore) {
+      bestScore = score
+      best = photo
+    }
+  }
+
+  if (best && bestScore >= MIN_DATA_IMG_RELEVANCE) return best
+  if (dedicated.length) {
+    let dedicatedBest = dedicated[0]
+    let dedicatedScore = -Infinity
+    for (const photo of dedicated) {
+      const score = dataImgRelevanceScore(photo, label, intent, usage.get(photo.url) || 0)
+      if (score > dedicatedScore) {
+        dedicatedScore = score
+        dedicatedBest = photo
+      }
+    }
+    return dedicatedBest
+  }
+  return best
+}
 
 function dataImgClassesForPhoto(rawClasses = '') {
   let cls = String(rawClasses || '')
@@ -1711,28 +2021,34 @@ function replaceDataImgDivBlocks(html, onMatch) {
 }
 
 /** Hybrid/forge pages emit `<div data-img="subject">` placeholders — swap for Pexels `<img>`. */
-export function hydrateDataImgSlots(html, imageHints = null) {
+export async function hydrateDataImgSlots(html, imageHints = null) {
   if (!html || typeof html !== 'string') return html
   if (!/\bdata-img\s*=/.test(html)) return html
 
-  const photos = stockPhotosForHydration(imageHints)
+  const basePhotos = stockPhotosForHydration(imageHints)
+  const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '')
+  const subjectKey = subjectKeyFromPrompt(promptCtx)
+  const slots = extractDataImgSlots(html, promptCtx)
+  const queryCache = slots.length
+    ? await prefetchDataImgPhotoCache(slots, promptCtx, subjectKey)
+    : new Map()
+  const photos = mergePhotoPool(basePhotos, queryCache)
   if (!photos.length) return html
 
   const usage = new Map()
-  const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 160)
 
   let next = replaceDataImgDivBlocks(html, (attrs, subject) => {
     const classMatch = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)
     const classes = dataImgClassesForPhoto(classMatch?.[1])
-    const label = [String(subject).replace(/-/g, ' ').trim(), promptCtx].filter(Boolean).join(' ')
-    const pick = pickPhotoForImg(label, photos, usage)
+    const intent = parseDataImgIntent(subject, classMatch?.[1] ?? '', promptCtx)
+    const pick = pickPhotoForDataImg(subject, intent, promptCtx, photos, queryCache, usage)
     const url = pick?.url ?? photos[0].url
     usage.set(url, (usage.get(url) || 0) + 1)
     const alt = escapeHtmlAttribute(String(subject).replace(/-/g, ' ').trim() || 'Photo')
     const pexelsId = url.match(/\/photos\/(\d+)\//)?.[1]
     const stockAttr = pexelsId ? ` data-sf-stock-src="pexels:${pexelsId}"` : ''
     const isHero = /\b(?:min-h-\[|h-\[|aspect-\[21|aspect-video|hero)\b/i.test(classes)
-    const loading = isHero ? 'eager' : 'lazy'
+    const loading = isHero || intent === 'headshot' ? 'eager' : 'lazy'
     return `<img src="${url}" alt="${alt}" class="${escapeHtmlAttribute(classes)}" loading="${loading}" decoding="async"${stockAttr} />`
   })
 

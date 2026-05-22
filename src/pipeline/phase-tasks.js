@@ -26,7 +26,7 @@ const htmlFromGroqResponse = async (r, imageHints, log, indiaMode) => {
   return ensureLucideIconRuntime(
     injectEcommerceHeroResponsiveCss(
       await verifyTrustedStockImageUrls(
-        hydrateStorefrontGradientSlots(alignGeneratedImagesToContext(html, imageHints), imageHints),
+        hydrateStorefrontGradientSlots(await alignGeneratedImagesToContext(html, imageHints), imageHints),
       ),
     ),
     log,
@@ -173,7 +173,7 @@ async function processResults(
     const content = ensureLucideIconRuntime(
       await verifyTrustedStockImageUrls(
         hydrateStorefrontGradientSlots(
-          alignGeneratedImagesToContext(stripFences(r.content), imageHints),
+          await alignGeneratedImagesToContext(stripFences(r.content), imageHints),
           imageHints,
         ),
       ),

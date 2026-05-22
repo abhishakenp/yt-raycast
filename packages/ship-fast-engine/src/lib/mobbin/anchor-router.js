@@ -5,8 +5,52 @@
  *
  * Cost target: ~500 input + 80 output tokens, gpt-oss-120b low effort, ~600ms.
  */
+import { SHIPFAST_MOBBIN } from '../../config.js'
 import { groq } from '../../llm/groq.js'
 import { listDnaAppNames, resolveDna, resolveCopyExamples } from './dna.js'
+
+export function isMobbinEnabled() {
+  return SHIPFAST_MOBBIN
+}
+
+const ECOMMERCE_BRIEF_RE =
+  /\b(ecommerce|e-commerce|online store|web store|shop|storefront|retail|boutique|catalog|merchandise|product grid|add to cart|shopping cart|gadget|gadgets|early adopter|consumer tech|tech store|buy now|shop now|free shipping|wishlist|pdp|sku)\b/i
+
+const FINTECH_ANCHOR_RE = /^(Stripe|Mercury|Plaid)$/i
+const GENERIC_SAAS_ANCHOR_RE = /^(Linear|Vercel|Notion|Sentry|Posthog|HubSpot|Cloudflare|Supabase)$/i
+
+function normalizeBriefText(brief = '', projectContext = {}) {
+  return [
+    brief,
+    projectContext.project_name,
+    projectContext.tagline,
+    projectContext.site_type,
+    projectContext.style_keywords,
+    ...(projectContext.features || []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+}
+
+/** Block anchors whose DNA contradicts the user's actual product category. */
+export function anchorMatchesBrief(brief, projectContext = {}, app = '') {
+  const name = String(app || '').trim()
+  if (!name) return false
+  const text = normalizeBriefText(brief, projectContext)
+  const ecommerce =
+    ECOMMERCE_BRIEF_RE.test(text) || String(projectContext.site_type || '').toLowerCase() === 'ecommerce'
+
+  if (ecommerce && (FINTECH_ANCHOR_RE.test(name) || GENERIC_SAAS_ANCHOR_RE.test(name))) return false
+
+  if (/\b(gadget|gadgets|consumer tech|tech store|product comparison|interactive demo)\b/i.test(text)) {
+    if (FINTECH_ANCHOR_RE.test(name) || GENERIC_SAAS_ANCHOR_RE.test(name)) return false
+  }
+
+  return true
+}
 
 const SYSTEM = `You are an expert design router. Given a user brief for a website and a project context, pick the ONE app from the supplied list whose marketing-site DNA (palette / typography / layout / copy register) is the closest natural fit.
 
@@ -34,7 +78,8 @@ Warm-accent anchors carry saturated orange / coral / red / amber / pink brand co
   Heuristic: if the brief uses words like "SaaS", "B2B", "platform", "tool", "dashboard", "API", "developer", "engineering", "infrastructure", "analytics", "workspace", "tech", or "polished/clean/professional" without a domain-warm signal — pick a COOL anchor. Generic "homepage for X" with no warm-domain signal should ALSO go cool.
 
   Anti-pattern: do NOT pick HubSpot for any generic marketing/SaaS brief just because it mentions "client logos" or "conversions" — pick Linear/Stripe/Vercel/Notion instead. HubSpot is reserved for actual marketing-CRM products.
-  Anti-pattern: do NOT pick Cloudflare for generic infra/SaaS — pick Vercel or Supabase instead. Cloudflare is reserved for actual CDN/edge-networking products.`
+  Anti-pattern: do NOT pick Cloudflare for generic infra/SaaS — pick Vercel or Supabase instead. Cloudflare is reserved for actual CDN/edge-networking products.
+  Anti-pattern: do NOT pick Stripe/Mercury/Plaid for ecommerce, retail, gadget shops, product catalogs, or consumer product stores — even if the brief mentions "checkout" or "secure payments". Those are store UX concerns, not fintech marketing DNA. For ecommerce/retail/gadget briefs pick Apple, Nike, Allbirds, Glossier, or return null if none fit.`
 
 function categoryOf(app) {
   const norm = app.toLowerCase()
@@ -60,6 +105,7 @@ function categoryOf(app) {
  * @returns {Promise<null | {app: string, category: string, dna: object, copyExamples: object|null, accents: string[], reason: string}>}
  */
 export async function inferMobbinAnchor({ brief, projectContext = {} } = {}) {
+  if (!SHIPFAST_MOBBIN) return null
   if (!brief || typeof brief !== 'string' || brief.trim().length < 8) return null
 
   const appNames = listDnaAppNames()
@@ -105,6 +151,7 @@ Return JSON only.`
     return null
   }
   if (!parsed?.app || typeof parsed.app !== 'string') return null
+  if (!anchorMatchesBrief(brief, projectContext, parsed.app)) return null
 
   const dna = resolveDna(parsed.app)
   if (!dna) return null

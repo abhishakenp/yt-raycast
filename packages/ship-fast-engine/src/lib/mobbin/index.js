@@ -10,5 +10,5 @@
 export { COPY_EXAMPLES, listDnaAppNames, resolveCopyExamples, resolveDna, synthesizeDna } from './dna.js'
 export { mobbinDoctrineBlock, mobbinSessionBlock, resolveAnchor } from './prompt-blocks.js'
 export { anchorAvoidsAurora, anchorAvoidsSaasMarketing, detectVerbatimAnchorCopy, relaxAuroraAuditForAnchor, scoreMobbinCoverage } from './score.js'
-export { inferMobbinAnchor } from './anchor-router.js'
+export { inferMobbinAnchor, isMobbinEnabled } from './anchor-router.js'
 export { readMobbinAnchorFromWorkspace, writeMobbinAnchorToWorkspace } from './workspace.js'

@@ -17,6 +17,8 @@ export const HYBRID_PLANNER_MODEL =
 /** Default on when GEMINI_API_KEY is set; set SHIPFAST_HYBRID_ENGINE=0 to force legacy Groq-only. */
 export const SHIPFAST_HYBRID_ENGINE =
   process.env.SHIPFAST_HYBRID_ENGINE !== '0' && Boolean(GEMINI_API_KEY)
+/** Mobbin Pro DNA anchors — on by default; set SHIPFAST_MOBBIN=0 to disable. */
+export const SHIPFAST_MOBBIN = process.env.SHIPFAST_MOBBIN !== '0'
 /** OpenUI `home.openui` generation (matches streaming default for predictable layouts). */
 export const OPENUI_HOME_MODEL =
   (process.env.OPENUI_HOME_MODEL ?? '').trim() || 'openai/gpt-oss-120b'

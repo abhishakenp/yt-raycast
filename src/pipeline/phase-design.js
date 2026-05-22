@@ -5,6 +5,7 @@ import { designBriefPrompt } from '@ship-fast/engine/prompts/design-brief.js'
 import { readDesignReferenceUrlsFromWorkspace } from './ecommerce-design-references.js'
 import {
   inferMobbinAnchor,
+  isMobbinEnabled,
   readMobbinAnchorFromWorkspace,
   writeMobbinAnchorToWorkspace,
 } from '@ship-fast/engine/lib/mobbin/index.js'
@@ -28,7 +29,7 @@ export async function generateDesignBrief(prompt, workspace, log, indiaMode = nu
   // generateDesignBrief is called standalone (no upstream runner), fall back to
   // inferring here. Fail-soft: a null anchor lets downstream skip Mobbin.
   let mobbinAnchor = readMobbinAnchorFromWorkspace(workspace)
-  if (!mobbinAnchor?.app) {
+  if (!mobbinAnchor?.app && isMobbinEnabled()) {
     const projectContext = readProjectContext(workspace)
     try {
       mobbinAnchor = await inferMobbinAnchor({ brief: prompt, projectContext })

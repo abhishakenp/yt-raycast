@@ -7,6 +7,7 @@ import { generateDesignBrief } from './phase-design.js'
 import { detectSiteType } from './phase-detect.js'
 import {
   inferMobbinAnchor,
+  isMobbinEnabled,
   writeMobbinAnchorToWorkspace,
 } from '@ship-fast/engine/lib/mobbin/index.js'
 import { generateContext } from './phase-context.js'
@@ -295,17 +296,18 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   _status('Plotting launch trajectory…', 'spec')
 
   // Resolve the Mobbin Pro DNA anchor BEFORE the design/site-spec/homepage
-  // promises fan out. All three phases read mobbin-anchor.json from the
-  // workspace; doing inference up-front ensures the homepage phase (which runs
-  // in parallel with design) sees the same anchor as the design phase. Fail-
-  // soft: a null anchor means downstream falls through to the legacy path.
+  // promises fan out. All three phases read mobbin-anchor.json from the workspace.
   try {
-    const mobbinAnchor = await inferMobbinAnchor({ brief: pipelinePrompt, projectContext: {} })
-    if (mobbinAnchor?.app) {
-      writeMobbinAnchorToWorkspace(workspace, mobbinAnchor)
-      _log(`  mobbin anchor: ${mobbinAnchor.app} (${mobbinAnchor.category}) — ${mobbinAnchor.reason}`)
+    if (!isMobbinEnabled()) {
+      _log('  mobbin anchor: disabled (SHIPFAST_MOBBIN=0)')
     } else {
-      _log('  mobbin anchor: none (brief did not match any DNA entry)')
+      const mobbinAnchor = await inferMobbinAnchor({ brief: pipelinePrompt, projectContext: {} })
+      if (mobbinAnchor?.app) {
+        writeMobbinAnchorToWorkspace(workspace, mobbinAnchor)
+        _log(`  mobbin anchor: ${mobbinAnchor.app} (${mobbinAnchor.category}) — ${mobbinAnchor.reason}`)
+      } else {
+        _log('  mobbin anchor: none (brief did not match any DNA entry)')
+      }
     }
   } catch (e) {
     _log(`  mobbin anchor: skipped (${e?.message || 'error'})`)
@@ -435,7 +437,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       injectEcommerceHeroResponsiveCss(
         await verifyTrustedStockImageUrls(
           hydrateStorefrontGradientSlots(
-            alignGeneratedImagesToContext(homepage, imageHints),
+            await alignGeneratedImagesToContext(homepage, imageHints),
             imageHints,
           ),
         ),
@@ -445,10 +447,11 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     writeFile(workspace, 'index.html', homepage)
   }
 
+  let keptLlmHomepage = false
+
   // Inject design system colors into the homepage now that both are ready
   if (homepage && designBrief) {
     homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
-    if (siteSpec) writeNextAppToWorkspace(siteSpec, workspace, sessionCtx)
     const withSwiper = injectLLMHomepageSwiper(homepage, siteSpec)
     if (withSwiper !== homepage) {
       homepage = withSwiper
@@ -471,19 +474,27 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     const mobbinAnchorActive = existsSync(join(workspace, 'mobbin-anchor.json'))
     const replaceLlmWithRenderer =
       wouldReplaceLlmWithRenderer && !hasUserDesignReferences && !mobbinAnchorActive
+    keptLlmHomepage = Boolean(homepage && !replaceLlmWithRenderer)
     if (siteSpec?.pages?.length && replaceLlmWithRenderer) {
       _log('  homepage: LLM page body looks too sparse; rendering homepage from site spec instead')
       const recovered = renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)
       homepage = recovered.files['index.html'] ?? homepage
       writeFile(workspace, 'index.html', homepage)
-    } else if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && hasUserDesignReferences) {
-      _log(
-        '  homepage: keeping LLM HTML — layout inspiration references set (skipping spec renderer substitution for sparse output)',
-      )
-    } else if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && mobbinAnchorActive) {
-      _log(
-        '  homepage: keeping LLM HTML — Mobbin Pro anchor active (skipping renderer fallback to preserve anchor-driven layout)',
-      )
+    } else {
+      if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && hasUserDesignReferences) {
+        _log(
+          '  homepage: keeping LLM HTML — layout inspiration references set (skipping spec renderer substitution for sparse output)',
+        )
+      } else if (siteSpec?.pages?.length && wouldReplaceLlmWithRenderer && mobbinAnchorActive) {
+        _log(
+          '  homepage: keeping LLM HTML — Mobbin Pro anchor active (skipping renderer fallback to preserve anchor-driven layout)',
+        )
+      }
+      if (siteSpec?.pages?.length) {
+        writeNextAppToWorkspace(siteSpec, workspace, sessionCtx, {
+          preserveLlmHomepage: keptLlmHomepage,
+        })
+      }
     }
     if (homepage) {
       homepage = injectStorefrontCartUi(injectEcommerceHeroResponsiveCss(homepage), { workspace })
@@ -509,7 +520,9 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
         const themed = applyBrandPaletteToSiteSpec(siteSpec, profile)
         if (updated || themed) {
           saveSiteSpec(workspace, siteSpec)
-          renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)
+          if (!keptLlmHomepage) {
+            renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)
+          }
         }
         const logoInjected = injectBrandLogoIntoHomepageHtml(workspace, profile)
         const paletteInjected = injectBrandPaletteIntoHomepageHtml(workspace, profile)

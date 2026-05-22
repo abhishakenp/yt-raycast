@@ -83,9 +83,17 @@ function looksLikeSubstantialEcommerceHomepage(html) {
   return false
 }
 
+function looksLikeHybridLlmHomepage(html) {
+  const h = String(html || '')
+  if (!/cdn\.tailwindcss\.com/i.test(h)) return false
+  if (h.length < 12000) return false
+  return /<(section|nav|footer)\b/i.test(h)
+}
+
 export function shouldReplaceLlmHomepageWithRenderer(html, siteSpec) {
   if (!html || typeof html !== 'string') return true
   if (!siteSpec?.pages?.length) return false
+  if (looksLikeHybridLlmHomepage(html)) return false
   if (siteSpecLooksEcommerce(siteSpec) && looksLikeSubstantialEcommerceHomepage(html)) return false
 
   if (looksLikeThreeJsGame(html)) return false

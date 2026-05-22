@@ -225,7 +225,7 @@ export async function generateHomepage(
     log(`  homepage: keeping LLM output despite pre-image degeneracy flag — Mobbin Pro anchor ${mobbinAnchor.app} active`)
   }
 
-  html = alignGeneratedImagesToContext(html, imageHints)
+  html = await alignGeneratedImagesToContext(html, imageHints)
   html = hydrateStorefrontGradientSlots(html, imageHints)
   html = await verifyTrustedStockImageUrls(html)
   html = injectEcommerceHeroResponsiveCss(html)
