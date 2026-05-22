@@ -25,6 +25,7 @@ import {
   loadSiteSpec,
   saveSiteSpec,
   stripSiteSpecBlueprints,
+  supplementSiteSpecPages,
 } from '../spec/index.js'
 import { renderPreviewToWorkspace, writeNextAppToWorkspace } from '../renderers/index.js'
 import { detectLanguage } from './detect-language.js'
@@ -487,6 +488,18 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
   }
 
   tick('derive_start')
+  if (siteSpec && ctx?.pages?.length) {
+    const supplemented = supplementSiteSpecPages(siteSpec, ctx)
+    if (supplemented !== siteSpec) {
+      siteSpec = supplemented
+      saveSiteSpec(workspace, siteSpec)
+      sessionCtx.setSiteSpec?.(siteSpec)
+      const pageCount = siteSpec.pages?.filter((p) => p.route !== '/').length ?? 0
+      _log(
+        `  site-spec: supplemented ${pageCount} secondary page(s) from project context (Mobbin collapsed spec to homepage-only)`,
+      )
+    }
+  }
   const tasks = deriveTasks(siteSpec || ctx)
   sessionCtx.setTasks(tasks)
   writeFile(workspace, 'tasks.json', JSON.stringify({ tasks }, null, 2))
@@ -514,7 +527,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
   tick('gen_end')
 
   tick('navfix_start')
-  const navFixStats = (await fixHomepageNav(genStats.navList, workspace, _log)) ?? {
+  const navFixStats = (await fixHomepageNav(genStats.navList, workspace, _log, tasks)) ?? {
     count: 0,
     inputTokens: 0,
     outputTokens: 0,

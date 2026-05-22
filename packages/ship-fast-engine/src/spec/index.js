@@ -18,6 +18,7 @@ export {
   stripSiteSpecBlueprints,
 } from './blueprints.js'
 export { ensureCompatibleSiteSpec } from './compatibility.js'
+export { supplementSiteSpecPages } from './supplement-pages.js'
 
 export function loadSiteSpec(workspace) {
   const filePath = join(workspace, 'site-spec.json')
