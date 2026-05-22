@@ -1562,8 +1562,12 @@ export function alignGeneratedImagesToContext(html, imageHints = null) {
   const videos = imageHints?.videos ?? []
   if (!html || typeof html !== 'string') return html
 
-  const usage = new Map()
   let next = html
+  if (/\bdata-img\s*=/.test(next)) {
+    next = hydrateDataImgSlots(next, imageHints)
+  }
+
+  const usage = new Map()
   if (photos.length) {
     next = enforceVerifiedPhotoSources(next, photos, usage)
     next = realignObjectImageUrls(next, photos, usage)
@@ -1646,6 +1650,96 @@ function stockPhotosForHydration(imageHints = null) {
   const fromApi = imageHints?.photos
   if (Array.isArray(fromApi) && fromApi.length) return fromApi
   return buildSyntheticFallbackPhotos(cat)
+}
+
+const DATA_IMG_OPEN_RE = /<div\b([^>]*\bdata-img=["']([^"']*)["'][^>]*)>/gi
+
+function dataImgClassesForPhoto(rawClasses = '') {
+  let cls = String(rawClasses || '')
+    .replace(/\bbg-\[[^\]]+\]/gi, '')
+    .replace(
+      /\bbg-(?:gradient-to-[^\s]+|(?:gray|slate|zinc|neutral|stone|muted)-(?:\d{2,3}|[\w-]+))/gi,
+      '',
+    )
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!cls) cls = 'w-full aspect-[4/3]'
+  if (!/\bobject-cover\b/.test(cls)) cls = `${cls} object-cover`.trim()
+  if (!/\bblock\b/.test(cls) && !/\binline\b/.test(cls)) cls = `${cls} block`.trim()
+  return cls
+}
+
+function replaceDataImgDivBlocks(html, onMatch) {
+  const openRe = new RegExp(DATA_IMG_OPEN_RE.source, 'gi')
+  let result = ''
+  let lastIndex = 0
+  let m
+  while ((m = openRe.exec(html)) !== null) {
+    result += html.slice(lastIndex, m.index)
+    const attrs = m[1]
+    const subject = m[2]
+    const start = m.index + m[0].length
+    let depth = 1
+    let i = start
+    let closed = false
+    while (i < html.length && depth > 0) {
+      const nextOpen = html.indexOf('<div', i)
+      const nextClose = html.indexOf('</div>', i)
+      if (nextClose === -1) break
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth += 1
+        i = nextOpen + 4
+        continue
+      }
+      depth -= 1
+      if (depth === 0) {
+        result += onMatch(attrs, subject)
+        lastIndex = nextClose + 6
+        closed = true
+        break
+      }
+      i = nextClose + 6
+    }
+    if (!closed) {
+      result += m[0]
+      lastIndex = m.index + m[0].length
+    }
+    openRe.lastIndex = lastIndex
+  }
+  result += html.slice(lastIndex)
+  return result
+}
+
+/** Hybrid/forge pages emit `<div data-img="subject">` placeholders — swap for Pexels `<img>`. */
+export function hydrateDataImgSlots(html, imageHints = null) {
+  if (!html || typeof html !== 'string') return html
+  if (!/\bdata-img\s*=/.test(html)) return html
+
+  const photos = stockPhotosForHydration(imageHints)
+  if (!photos.length) return html
+
+  const usage = new Map()
+  const promptCtx = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '').slice(0, 160)
+
+  let next = replaceDataImgDivBlocks(html, (attrs, subject) => {
+    const classMatch = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)
+    const classes = dataImgClassesForPhoto(classMatch?.[1])
+    const label = [String(subject).replace(/-/g, ' ').trim(), promptCtx].filter(Boolean).join(' ')
+    const pick = pickPhotoForImg(label, photos, usage)
+    const url = pick?.url ?? photos[0].url
+    usage.set(url, (usage.get(url) || 0) + 1)
+    const alt = escapeHtmlAttribute(String(subject).replace(/-/g, ' ').trim() || 'Photo')
+    const pexelsId = url.match(/\/photos\/(\d+)\//)?.[1]
+    const stockAttr = pexelsId ? ` data-sf-stock-src="pexels:${pexelsId}"` : ''
+    const isHero = /\b(?:min-h-\[|h-\[|aspect-\[21|aspect-video|hero)\b/i.test(classes)
+    const loading = isHero ? 'eager' : 'lazy'
+    return `<img src="${url}" alt="${alt}" class="${escapeHtmlAttribute(classes)}" loading="${loading}" decoding="async"${stockAttr} />`
+  })
+
+  if (next !== html) {
+    next = next.replace(/<style[^>]*>[\s\S]*?\[data-img\][\s\S]*?<\/style>\s*/gi, '')
+  }
+  return next
 }
 
 function injectStockHydrationCss(html) {

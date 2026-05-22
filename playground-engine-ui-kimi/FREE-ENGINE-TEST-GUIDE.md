@@ -53,7 +53,13 @@ bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "Homepage for Au
 # Flag form — useful when brief contains hyphens
 bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --prompt "Homepage for Aura Analytics…"
 
-# Skip Playwright screenshots (faster, no browser required)
+# Vision gate — Groq Llama-4 Scout scores each screenshot (recommended for design decisions)
+bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "…" --vision --no-open
+
+# Vision + comparative ranking across the three variants
+bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "…" --vision --vision-compare --no-open
+
+# Skip Playwright screenshots (faster, no browser required — vision disabled without PNGs)
 bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "…" --skip-shots
 
 # Serve the compare page on a local port after generation
@@ -65,9 +71,32 @@ bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "…" --no-open
 
 Output lands in `.forge/engine-triple/<runId>/`. The compare page shows each engine's card with:
 - **Generation time** badge (amber pill)
-- Quality score, build mode, character count
+- kimi-score, build mode, character count
+- **Vision score** when `--vision` is set (pass/fail vs `FORGE_VISION_MIN`, default 75)
 - Full-page PNG thumbnail (when Playwright is present)
 - Link to open the isolated HTML page
+
+---
+
+## 2b · Phase 1 benchmark — `engine-benchmark.mjs`
+
+Batch triple-compare across the **8 canonical verticals** (same briefs as `kimi-native.mjs`). Produces a leaderboard at `.forge/benchmark/<runId>/`.
+
+```sh
+# Full 8-vertical benchmark with vision gate (~45–60 min)
+bun playground-engine-ui-kimi/scripts/engine-benchmark.mjs --vision --no-open
+
+# Subset + comparative vision ranking
+bun playground-engine-ui-kimi/scripts/engine-benchmark.mjs saas restaurant portfolio --vision --vision-compare --no-open
+
+# Heuristic-only (faster, no vision API calls)
+bun playground-engine-ui-kimi/scripts/engine-benchmark.mjs --no-open
+
+# Serve leaderboard
+bun playground-engine-ui-kimi/scripts/engine-benchmark.mjs --vision --serve --port 7422
+```
+
+Per brief: `.forge/benchmark/<runId>/<slug>/` contains the same artifacts as a single triple-compare run. Root `summary.json` aggregates wins, mean kimi-score, and mean vision score per engine.
 
 ---
 
@@ -157,7 +186,8 @@ bun playground-engine-ui-kimi/scripts/kimi-eval-richness.mjs .forge/kimi-native/
 
 | Variable | Used by | Notes |
 |----------|---------|-------|
-| `GROQ_API_KEY` | kimi, triple-compare | Llama-3 tail calls via Groq |
-| `GEMINI_API_KEY` | kimi quality path, gemini engine, triple-compare | Also accepted as `GOOGLE_API_KEY` |
+| `GROQ_API_KEY` | kimi, triple-compare, benchmark, vision | Llama-3 tail calls via Groq; vision judge uses Llama-4 Scout |
+| `GEMINI_API_KEY` | kimi quality path, gemini engine, triple-compare, benchmark | Also accepted as `GOOGLE_API_KEY` |
+| `FORGE_VISION_MIN` | triple-compare `--vision`, benchmark | Vision pass threshold (default 75) |
 | `KIMI_APP_SHELL_MODE=gemini-full` | kimi-native | Force full Gemini 2D app-shell (~18 s) |
 | `KIMI_VARIETY_COUNT` | kimi-bench-variety | Number of variants to generate (default 3) |

@@ -10,6 +10,13 @@ export const GROQ_MODEL = process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b'
 /** Slug, translation, language detection — default smaller Groq model. */
 export const GROQ_AUX_MODEL = (process.env.GROQ_AUX_MODEL ?? '').trim() || 'llama-3.3-70b-versatile'
 export const HOMEPAGE_MODEL = (process.env.HOMEPAGE_MODEL ?? '').trim() || GROQ_MODEL
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
+export const GEMINI_MODEL = (process.env.GEMINI_MODEL ?? '').trim() || 'gemini-3.5-flash'
+export const HYBRID_PLANNER_MODEL =
+  (process.env.HYBRID_PLANNER_MODEL ?? process.env.PLANNER_MODEL ?? '').trim() || HOMEPAGE_MODEL
+/** Default on when GEMINI_API_KEY is set; set SHIPFAST_HYBRID_ENGINE=0 to force legacy Groq-only. */
+export const SHIPFAST_HYBRID_ENGINE =
+  process.env.SHIPFAST_HYBRID_ENGINE !== '0' && Boolean(GEMINI_API_KEY)
 /** OpenUI `home.openui` generation (matches streaming default for predictable layouts). */
 export const OPENUI_HOME_MODEL =
   (process.env.OPENUI_HOME_MODEL ?? '').trim() || 'openai/gpt-oss-120b'

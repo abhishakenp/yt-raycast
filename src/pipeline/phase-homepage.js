@@ -1,4 +1,5 @@
-import { groqHomepage } from '@ship-fast/engine/llm/groq.js'
+import { generateHomepageHtml, resolveHomepageEngineStrategy } from '@ship-fast/engine/llm/homepage-engine.js'
+import { passesHybridHomepageVerification } from '@ship-fast/engine/pipeline/hybrid-homepage-verify.js'
 import { readDesignRefFromWorkspace } from '@ship-fast/engine/prompts/design-refs.js'
 import {
   anchorAvoidsAurora,
@@ -100,6 +101,16 @@ export async function generateHomepage(
   if (promptBase.length > (prompt || '').length)
     log('  homepage: vague-prompt reference-tier expansion (density + anti-template)')
 
+  const engineStrategy = resolveHomepageEngineStrategy({
+    prompt: promptBase,
+    siteType,
+    hasDesignReferenceUrls,
+    mobbinAnchor,
+  })
+  const useHybrid = engineStrategy.startsWith('hybrid')
+  if (useHybrid) log(`  homepage: hybrid engine (${engineStrategy})`)
+  else log('  homepage: groq single-pass engine')
+
   const shellAfterGroq = (raw) => {
     let h = stripFences(raw)
     h = stripDestructiveEmptyDesignTheme(h)
@@ -119,18 +130,34 @@ export async function generateHomepage(
     const promptForModel = ralphFeedback
       ? `${promptBase}\n\n── MANDATORY REVISION (failed reference-tier verification) ──\n${ralphFeedback}\n── END REVISION ──`
       : promptBase
-    result = await groqHomepage(
+    result = await generateHomepageHtml(
       promptForModel,
-      imageHints,
-      indiaMode,
-      brandProfile,
-      hasDesignReferenceUrls,
-      resolvedDesignRef,
-      businessProfile,
-      contentPlanRef,
-      thinJson,
-      mobbinAnchor,
+      [
+        imageHints,
+        indiaMode,
+        brandProfile,
+        hasDesignReferenceUrls,
+        resolvedDesignRef,
+        businessProfile,
+        contentPlanRef,
+        thinJson,
+        mobbinAnchor,
+      ],
+      {
+        engine: engineStrategy,
+        specAppend: thinJson ? `\n\nStructured homepage spec (align sections and theme tokens):\n${thinJson}` : '',
+        revision: ralphFeedback,
+      },
     )
+    if (result?.hybridFallback) {
+      log(`  homepage: hybrid failed — ${result.hybridError}; used groq fallback`)
+    } else if (result?.engine === 'hybrid') {
+      log(`  homepage: hybrid ${result.layoutMode} · ${result.archetype ?? 'page'} · ${result.wall ?? '?'}ms`)
+      if (result.stitchValidation && !result.stitchValidation.ok) {
+        log(`  homepage: hybrid stitch warnings — ${result.stitchValidation.issues.join('; ')}`)
+      }
+      if (result.topTruncated) log('  homepage: hybrid top was truncated — tail retried with seam repair')
+    }
     if (!result?.content || result.error) {
       log(`  ❌ homepage generation failed: ${result?.error ?? 'empty response'}`)
       throw new Error(`Homepage generation failed: ${result?.error}`)
@@ -139,8 +166,9 @@ export async function generateHomepage(
     tokenAgg.outputTokens += result.outputTokens ?? 0
     tokenAgg.cost += result.cost ?? 0
     html = shellAfterGroq(result.content)
-    let ver =
-      exemplarPath && !hasDesignReferenceUrls
+    let ver = useHybrid
+      ? passesHybridHomepageVerification(html, prompt, siteType)
+      : exemplarPath && !hasDesignReferenceUrls
         ? passesHomepagePublicDesignVerification(html, prompt, exemplarPath, siteType)
         : { ok: !htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) }), feedback: 'Output failed degeneracy or marketing bar checks.' }
     // When the active anchor's DNA explicitly rejects aurora visuals
@@ -162,11 +190,12 @@ export async function generateHomepage(
     ralphFeedback = ver.feedback || 'Match the public design exemplar for this site type in the system prompt.'
     log(`  homepage: reference-tier verification failed — attempt ${attempt}/${maxRalph}`)
     if (attempt === maxRalph) {
-      // When Mobbin anchor is active, the renderer fallback is a worse
-      // outcome than imperfect LLM output (it strips all anchor inheritance).
-      // Keep going with the LLM HTML rather than throwing.
-      if (mobbinAnchor?.app) {
-        log(`  homepage: keeping LLM output despite verification failure — Mobbin Pro anchor ${mobbinAnchor.app} active`)
+      // When Mobbin anchor or hybrid engine is active, the renderer fallback is a worse
+      // outcome than imperfect LLM output (it strips craft / anchor inheritance).
+      if (mobbinAnchor?.app || useHybrid) {
+        log(
+          `  homepage: keeping LLM output despite verification failure — ${useHybrid ? 'hybrid engine' : `Mobbin Pro anchor ${mobbinAnchor.app}`} active`,
+        )
         break
       }
       throw new Error(`Homepage failed reference-tier verification after ${maxRalph} attempts: ${ralphFeedback}`)

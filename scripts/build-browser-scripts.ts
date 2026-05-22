@@ -24,6 +24,7 @@ await build({
   platform: 'browser',
   sourcemap: false,
   minify: false,
+  external: ['firebase/app', 'firebase/auth', 'franc-min'],
   // Keep .js extension for output
   outExtension: { '.js': '.js' },
   // Match React's NODE_ENV: dev/undefined builds get dev affordances; production build must not.
