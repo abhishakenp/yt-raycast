@@ -1,4 +1,5 @@
 import { groqHomepage } from '../llm/groq.js'
+import { generateKimiEngineHomepage, kimiEngineAvailable } from '../llm/kimi-homepage.js'
 import { readDesignRefFromWorkspace } from '../prompts/design-refs.js'
 import {
   VAGUE_MARKETING_HOMEPAGE_APPENDIX,
@@ -139,6 +140,24 @@ export async function generateHomepage(
       .replace(/<link[^>]*href="styles\.css"[^>]*>/g, '')
       .replace(/<script[^>]*>\s*const\s+\{[^}]*\}\s*=\s*\{[^}]*\};\s*<\/script>\n?/g, '')
     return injectShipFastFooterBranding(h, log)
+  }
+
+  if (kimiEngineAvailable()) {
+    log('  homepage: hybrid engine (hybrid)')
+    try {
+      const kimiResult = await generateKimiEngineHomepage(prompt, { seed: String(workspace) })
+      let html = shellAfterGroq(kimiResult.content)
+      html = alignGeneratedImagesToContext(html, imageHints)
+      html = hydrateStorefrontGradientSlots(html, imageHints)
+      html = await verifyTrustedStockImageUrls(html)
+      html = injectEcommerceHeroResponsiveCss(html)
+      html = ensureLucideIconRuntime(html, log)
+      writeFile(workspace, 'index.html', html)
+      log(`  index.html: ${html.length} chars`)
+      return { html, inputTokens: 0, outputTokens: 0, cost: kimiResult.cost ?? 0 }
+    } catch (err) {
+      log(`  homepage: hybrid failed — ${err.message}; used groq fallback`)
+    }
   }
 
   let ralphFeedback = ''
