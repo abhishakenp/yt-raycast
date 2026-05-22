@@ -15,7 +15,7 @@ function cleanSubject(subject, index) {
     .replace(/\b(placeholder|brand asset|image|photo|visual surface)\b/gi, '')
     .replace(/\s+/g, ' ')
     .trim()
-  return cleaned || `feature composition ${index + 1}`
+  return cleaned || `visual study ${index + 1}`
 }
 
 function palette(plan) {
@@ -81,8 +81,9 @@ function shell(label, className, plan, index, route, kind, inner) {
   const safe = esc(label)
   const hint = route?.siteHint || 'homepage'
   return `<div data-img="${safe}" data-visual="art-surface" data-visual-kind="${kind}" data-site-hint="${hint}" aria-label="${safe}" class="relative w-full ${aspect} ${rounded} overflow-hidden border border-[${a.accent}]/25 bg-gradient-to-br from-[${from}] via-[${via}] to-[${to}] shadow-xl shadow-black/10">
-  <div class="absolute -left-10 top-8 h-32 w-32 rounded-full bg-[${a.accent}]/55 blur-3xl"></div>
-  <div class="absolute -right-6 bottom-6 h-36 w-36 rounded-full bg-[${a.accent2}]/45 blur-3xl"></div>
+  <div class="absolute inset-0 opacity-20 [background-image:linear-gradient(90deg,rgba(255,255,255,.16)_1px,transparent_1px),linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:28px_28px]"></div>
+  <div class="absolute left-0 top-0 h-full w-1 bg-[${a.accent}]/70"></div>
+  <div class="absolute right-5 top-5 h-20 w-20 rounded-full border border-white/20 bg-white/10"></div>
   ${inner}
 </div>`
 }
@@ -138,7 +139,7 @@ function productStillLife(label, a) {
       <div class="absolute inset-x-3 bottom-5 rounded-md bg-[${a.bg}]/70 p-2 text-center text-[10px] uppercase tracking-[0.18em] text-[${a.text}]">${item === 0 ? 'Calm' : item === 1 ? esc(label).slice(0, 12) : 'Glow'}</div>
     </div>`).join('')}
     <div class="absolute left-5 top-5 rounded-lg border border-white/20 bg-[${a.bg}]/70 p-3 text-xs text-[${a.text}]">Small batch · batch 042</div>
-    <div class="absolute right-6 top-10 h-16 w-28 rounded-full border border-white/20 bg-white/20 blur-sm"></div>
+    <div class="absolute right-6 top-10 h-16 w-28 rounded-full border border-white/20 bg-white/20"></div>
   </div>`
 }
 
@@ -179,23 +180,51 @@ function brandCaseWall(label, a, cells = 9) {
   const cols = cells <= 4 ? 2 : 3
   return `<div class="absolute inset-4 grid grid-cols-${cols} gap-3">
     ${Array.from({ length: cells }, (_, index) => `<div class="relative overflow-hidden rounded-lg border border-white/15 bg-[${index % 3 === 0 ? a.bg : index % 3 === 1 ? a.surface : a.accent}]/75 p-3">
-      <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-[${index % 2 ? a.accent2 : a.accent}]/60 blur-xl"></div>
-      <p class="relative text-xs uppercase tracking-[0.16em] text-[${a.text}]">${index === 0 ? esc(label).slice(0, 18) : `Case ${index + 1}`}</p>
+      <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full border border-white/20 bg-[${index % 2 ? a.accent2 : a.accent}]/35"></div>
+      <p class="relative text-xs uppercase tracking-[0.16em] text-[${a.text}]">${index === 0 ? esc(label).slice(0, 18) : `Study ${index + 1}`}</p>
       <div class="relative mt-8 h-2 rounded-full bg-white/35"></div>
       <div class="relative mt-2 h-2 w-2/3 rounded-full bg-white/20"></div>
     </div>`).join('')}
   </div>`
 }
 
-function editorialSpread(label, a) {
-  return `<div class="absolute inset-5 grid grid-cols-[1fr_0.75fr] gap-5">
+function editorialSpread(label, a, index = 0) {
+  const sideNotes = [
+    ['Policy signal', 'Data brief', 'Reporter file'],
+    ['Archive lead', 'Carbon desk', 'Reader memo'],
+    ['Field dispatch', 'Market note', 'Weekly column'],
+  ][index % 3]
+  const featureTitle = esc(label).slice(0, 34)
+  const lineStack = Array.from({ length: 7 }, (_, row) => `<div class="h-1.5 rounded-full bg-[${a.text}]/${row % 3 === 0 ? '65' : row % 3 === 1 ? '35' : '20'}" style="width:${row % 4 === 0 ? 86 : row % 4 === 1 ? 64 : row % 4 === 2 ? 72 : 48}%"></div>`).join('')
+  const miniIndex = ['Policy', 'Energy', 'Cities', 'AI'].map((tag, tagIndex) => `<div class="rounded-md border border-white/15 bg-white/10 px-2 py-1 text-[9px] uppercase tracking-[0.16em] text-[${a.text}]">${tag}<span class="ml-1 text-[${a.muted}]">${tagIndex + 3}</span></div>`).join('')
+  if (index % 3 === 1) {
+    return `<div class="absolute inset-5 grid grid-cols-[0.85fr_1.15fr] gap-5">
+    <div class="space-y-3">${sideNotes.map((row, noteIndex) => `<div class="rounded-lg border border-white/15 bg-[${a.surface}]/75 p-4"><p class="text-sm font-semibold text-[${a.text}]">${row}</p><p class="mt-2 text-xs text-[${a.muted}]">${12 + noteIndex * 7} minute read</p><div class="mt-3 grid grid-cols-3 gap-1">${[0, 1, 2].map((cell) => `<span class="h-5 rounded bg-[${cell % 2 ? a.accent2 : a.accent}]/35"></span>`).join('')}</div></div>`).join('')}</div>
     <div class="rounded-lg border border-white/15 bg-[${a.bg}]/75 p-6">
       <p class="text-xs uppercase tracking-[0.2em] text-[${a.accent}]">${esc(label)}</p>
-      <div class="mt-16 h-3 w-3/4 rounded-full bg-[${a.text}]/80"></div>
-      <div class="mt-3 h-3 w-1/2 rounded-full bg-[${a.text}]/45"></div>
-      <div class="mt-10 grid grid-cols-2 gap-3"><div class="h-24 rounded-md bg-[${a.accent}]/50"></div><div class="h-24 rounded-md bg-[${a.accent2}]/50"></div></div>
+      <div class="mt-8 grid grid-cols-3 gap-2">${[0, 1, 2, 3, 4, 5].map((cell) => `<div class="h-16 rounded-md bg-[${cell % 2 ? a.accent2 : a.accent}]/45"></div>`).join('')}</div>
+      <div class="mt-6 space-y-2">${lineStack}</div>
+      <div class="mt-5 grid grid-cols-2 gap-2">${miniIndex}</div>
     </div>
-    <div class="space-y-3">${['Issue note', 'Field quote', 'Release card'].map((row) => `<div class="rounded-lg border border-white/15 bg-[${a.surface}]/75 p-4"><p class="text-sm font-semibold text-[${a.text}]">${row}</p><div class="mt-4 h-2 rounded-full bg-white/25"></div></div>`).join('')}</div>
+  </div>`
+  }
+  if (index % 3 === 2) {
+    return `<div class="absolute inset-5 grid grid-cols-3 gap-4">
+    <div class="col-span-2 rounded-lg border border-white/15 bg-[${a.bg}]/75 p-6">
+      <p class="text-xs uppercase tracking-[0.2em] text-[${a.accent}]">${featureTitle}</p>
+      <div class="mt-8 grid grid-cols-[1.25fr_0.75fr] gap-3"><div class="h-28 rounded-md bg-[${a.accent}]/50"></div><div class="grid gap-2">${[0, 1, 2].map((cell) => `<span class="rounded-md border border-white/15 bg-[${cell % 2 ? a.accent2 : a.surface}]/45"></span>`).join('')}</div></div>
+      <div class="mt-6 space-y-2">${lineStack}</div>
+    </div>
+    <div class="space-y-3">${sideNotes.map((row) => `<div class="rounded-lg border border-white/15 bg-[${a.surface}]/75 p-4"><p class="text-sm font-semibold text-[${a.text}]">${row}</p><div class="mt-3 space-y-1.5"><div class="h-1.5 rounded-full bg-white/35"></div><div class="h-1.5 w-2/3 rounded-full bg-white/20"></div></div></div>`).join('')}</div>
+  </div>`
+  }
+  return `<div class="absolute inset-5 grid grid-cols-[1fr_0.75fr] gap-5">
+    <div class="rounded-lg border border-white/15 bg-[${a.bg}]/75 p-6">
+      <p class="text-xs uppercase tracking-[0.2em] text-[${a.accent}]">${featureTitle}</p>
+      <div class="mt-10 grid grid-cols-[1fr_0.6fr] gap-3"><div class="h-28 rounded-md bg-[${a.accent}]/50"></div><div class="space-y-2">${miniIndex}</div></div>
+      <div class="mt-7 space-y-2">${lineStack}</div>
+    </div>
+    <div class="space-y-3">${sideNotes.map((row, noteIndex) => `<div class="rounded-lg border border-white/15 bg-[${a.surface}]/75 p-4"><p class="text-sm font-semibold text-[${a.text}]">${row}</p><p class="mt-2 text-xs text-[${a.muted}]">Desk ${noteIndex + 1} · ${18 + noteIndex * 4} signals</p><div class="mt-3 h-2 rounded-full bg-white/25"></div></div>`).join('')}</div>
   </div>`
 }
 
@@ -218,6 +247,6 @@ export function renderArtDirectedImageSurface(subject, className, plan, index, r
   const render = innerByKind[kind] || productConsole
   const inner = kind === 'brand-case-wall' && heroCompact
     ? brandCaseWall(label, a, 4)
-    : render(label, a)
+    : render(label, a, index)
   return shell(label, className, plan, index, route, kind, inner)
 }

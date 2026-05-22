@@ -272,7 +272,7 @@ export function looksLikeBadLeg(value) {
   return !html || html.length < 300 || (REFUSAL.test(html) && blocks === 0)
 }
 
-const USE_ART_SURFACES = process.env.KIMI_ART_SURFACES === '1'
+const USE_ART_SURFACES = process.env.KIMI_ART_SURFACES !== '0'
 
 export function sanitizeHtml(value, plan, route) {
   let html = forceCloseHtml(stripRefusal(stripFences(value)))

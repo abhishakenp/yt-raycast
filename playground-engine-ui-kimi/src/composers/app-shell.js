@@ -6,6 +6,18 @@ import { applyGenomeMerge } from '../utils/genome-merge.js'
 import { sanitizeHtml, sanitizeIslandFragment } from '../utils/postprocess.js'
 import { injectMissingSections } from '../utils/section-inject.js'
 
+const GEMINI_QUOTA_RE = /\bgemini\s+429\b|quota|spending cap|rate limit|resource_exhausted/i
+
+function isGeminiQuotaError(error) {
+  return GEMINI_QUOTA_RE.test(String(error?.message || error || ''))
+}
+
+function appShellLooksIncomplete(html) {
+  const source = String(html || '')
+  const sections = (source.match(/<section\b/gi) || []).length
+  return source.length < 8000 || !/<body\b/i.test(source) || (!/<main\b/i.test(source) && sections < 4)
+}
+
 export async function composeAppShell({ brief, plan, route, variety, grammar, mode = 'hybrid' }) {
   const contract = buildSharedContract(brief, plan, route, variety, grammar)
 
@@ -13,24 +25,50 @@ export async function composeAppShell({ brief, plan, route, variety, grammar, mo
     const regions = (plan.sections || plan.appIslands || [])
       .map((s) => `- ${s.role || s.slot}: ${s.contains}`)
       .join('\n')
-    const result = await completeGemini({
-      prompt: `${contract}
+    try {
+      const result = await completeGemini({
+        prompt: `${contract}
 
 Build the COMPLETE coherent 2D operational interface as ONE document.
 True sidebar + top bar + main canvas + data panels. Regions:
 ${regions}
-Use lg:grid lg:grid-cols-[17rem_1fr] for sidebar layout. Realistic live data. </body></html> required.`,
-      maxOutputTokens: 4200,
-      temperature: 0.55,
-    })
-    let html = result.content.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
-    if (!/<\/html>/i.test(html)) html += '\n</body></html>'
-    const sectionCountGF = (html.match(/<section\b/gi) || []).length
-    if (sectionCountGF < 4) html = injectMissingSections(html, plan, 4 - sectionCountGF)
-    html = applyGenomeMerge(html, plan)
-    return {
-      html: sanitizeHtml(html, plan, route),
-      metrics: { buildMode: 'app-shell-gemini-full', geminiMs: result.ms },
+Use lg:grid lg:grid-cols-[17rem_1fr] for sidebar layout. Realistic live data. Keep markup dense and concise; prefer compact repeated rows over verbose copy. </body></html> required.`,
+        maxOutputTokens: 3600,
+        temperature: 0.55,
+      })
+      let html = result.content.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
+      if (appShellLooksIncomplete(html)) {
+        const fallback = await composeAppShell({ brief, plan, route, variety, grammar, mode: 'hybrid' })
+        return {
+          ...fallback,
+          metrics: {
+            ...fallback.metrics,
+            buildMode: `${fallback.metrics.buildMode}-incomplete-fallback`,
+            geminiFallback: 'incomplete-app-shell',
+            geminiMs: result.ms,
+          },
+        }
+      }
+      if (!/<\/html>/i.test(html)) html += '\n</body></html>'
+      const sectionCountGF = (html.match(/<section\b/gi) || []).length
+      if (sectionCountGF < 4) html = injectMissingSections(html, plan, 4 - sectionCountGF)
+      html = applyGenomeMerge(html, plan)
+      return {
+        html: sanitizeHtml(html, plan, route),
+        metrics: { buildMode: 'app-shell-gemini-full', geminiMs: result.ms },
+      }
+    } catch (error) {
+      if (!isGeminiQuotaError(error)) throw error
+      const fallback = await composeAppShell({ brief, plan, route, variety, grammar, mode: 'hybrid' })
+      return {
+        ...fallback,
+        metrics: {
+          ...fallback.metrics,
+          buildMode: `${fallback.metrics.buildMode}-quota-fallback`,
+          geminiFallback: 'quota',
+          geminiError: String(error?.message || error).slice(0, 240),
+        },
+      }
     }
   }
 

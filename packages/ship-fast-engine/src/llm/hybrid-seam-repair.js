@@ -79,6 +79,9 @@ export function sealTopBeforeTail(topHtml, tailHtml) {
 export function trimIncompleteSuffix(html) {
   let s = String(html ?? '').trim()
   if (!s || !isTruncatedFragment(s)) return s
+  const brokenClassOpeners = [...s.matchAll(/<[^<>\n]*\bclass\s*=\s*"[^">\n]*(?=\n|$)/gi)]
+  const brokenClass = brokenClassOpeners[brokenClassOpeners.length - 1]
+  if (brokenClass?.index > 80) return s.slice(0, brokenClass.index).trim()
   const lastSection = s.lastIndexOf('</section>')
   if (lastSection > 80) return s.slice(0, lastSection + '</section>'.length).trim()
   const lastClose = Math.max(s.lastIndexOf('</div>'), s.lastIndexOf('</p>'), s.lastIndexOf('</h4>'))

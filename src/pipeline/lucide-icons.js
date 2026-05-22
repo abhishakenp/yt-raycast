@@ -458,7 +458,12 @@ function stripExistingBootstrap(html) {
 
   const orphanIndex = orphanMatch.index ?? next.indexOf(orphanMatch[0])
   const bodyCloseIdx = next.search(/<\/body>/i)
-  if (bodyCloseIdx === -1) return next.slice(0, orphanIndex)
+  if (bodyCloseIdx === -1) {
+    const afterOpen = orphanIndex + orphanMatch[0].length
+    const resume = next.slice(afterOpen).search(/<(?:main|section|aside|footer|div|\/html)\b/i)
+    if (resume >= 0) return `${next.slice(0, orphanIndex)}${next.slice(afterOpen + resume)}`
+    return next.slice(0, orphanIndex)
+  }
   return `${next.slice(0, orphanIndex)}${next.slice(bodyCloseIdx)}`
 }
 

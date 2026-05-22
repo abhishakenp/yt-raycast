@@ -37,6 +37,7 @@ function grammarPool(siteHint, pageKind) {
 
 const GRAMMAR_BY_SITE_HINT = {
   blog: 'editorial-blog-index',
+  editorial: 'editorial-newsroom',
   portfolio: 'gallery-masonry',
   agency: 'hero-editorial-split',
   fitness: 'timeline-led',

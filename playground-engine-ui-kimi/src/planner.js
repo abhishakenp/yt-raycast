@@ -124,6 +124,7 @@ export function fallbackGenome(brief, route, variety, grammar) {
   const palette = primary?.palette || []
   const appShell = route.siteHint === 'ops-console' && !/\bhomepage\b/i.test(brief)
   const blog = route.siteHint === 'blog'
+  const editorial = route.siteHint === 'editorial'
   return {
     pageKind: appShell ? 'app-shell' : 'vertical-doc',
     archetype: appShell ? 'operator command surface' : blog ? 'blog home index' : `${route.siteHint} homepage`,
@@ -155,14 +156,23 @@ export function fallbackGenome(brief, route, variety, grammar) {
           'newsletter signup band',
           'footer with archive links',
         ]
+      : editorial
+      ? [
+          'masthead nav with essays, topics, writers, newsletter',
+          'featured long-form essay with byline, deck, read time, and editorial visual',
+          'latest article grid with 6 named stories across technology, climate, and policy',
+          'topic rail for climate finance, infrastructure, AI policy, energy markets',
+          'writer masthead with 8 staff writers and 12 contributors',
+          'weekly newsletter signup and issue archive',
+        ]
       : [
-      'nav with specific product links',
-      'identity-defining hero or shell header',
-      'proof strip using real numbers or named entities',
-      'deep product/content surface',
-      'secondary feature/catalog/editorial sections',
-      'penultimate CTA and footer',
-    ],
+          'nav with specific product links',
+          'identity-defining hero or shell header',
+          'proof strip using real numbers or named entities',
+          'deep product/content surface',
+          'secondary feature/catalog/editorial sections',
+          'penultimate CTA and footer',
+        ],
     sections: blog
       ? [
           { role: 'featured', contains: 'nav + featured post masthead (cover, title, byline, date, excerpt, read link)' },
@@ -172,15 +182,26 @@ export function fallbackGenome(brief, route, variety, grammar) {
           { role: 'newsletter', contains: 'email signup with concrete promise' },
           { role: 'footer', contains: 'archive, about, subscribe links' },
         ]
+      : editorial
+      ? [
+          { role: 'news hero', contains: 'masthead nav, issue date, featured essay, editor note, primary editorial visual' },
+          { role: 'featured story', contains: 'lead long-form article with byline, category, read time, pull quote, and related stories' },
+          { role: 'latest grid', contains: '6 article cards with titles, authors, categories, dates, read times, and concrete climate/technology/policy topics' },
+          { role: 'topics', contains: 'dense topic index for AI policy, carbon markets, grid infrastructure, climate finance, and cities' },
+          { role: 'masthead', contains: '8 staff writers, 12 contributors, editorial desk roles, and named beats' },
+          { role: 'archive', contains: 'recent issues, newsletter cadence, subscriber count, and issue archive modules' },
+          { role: 'subscribe', contains: 'weekly newsletter CTA with sample issue details and reader promise' },
+          { role: 'footer', contains: 'multi-column footer with essays, topics, writers, newsletter, contact' },
+        ]
       : [
-      { role: 'opening', contains: 'nav, hero, primary visual surface' },
-      { role: 'proof', contains: 'numbers, names, product artifacts, or location details' },
-      { role: 'depth', contains: 'feature grid, catalog wall, table, event calendar, or editorial modules' },
-      { role: 'story', contains: 'brand-specific narrative with concrete nouns' },
-      { role: 'social', contains: 'reviews, logos, or named clients' },
-      { role: 'conversion', contains: 'CTA, pricing path, booking, or signup' },
-      { role: 'footer', contains: 'multi-column footer with real links' },
-    ],
+          { role: 'opening', contains: 'nav, hero, primary visual surface' },
+          { role: 'proof', contains: 'numbers, names, product artifacts, or location details' },
+          { role: 'depth', contains: 'feature grid, catalog wall, table, event calendar, or editorial modules' },
+          { role: 'story', contains: 'brand-specific narrative with concrete nouns' },
+          { role: 'social', contains: 'reviews, logos, or named clients' },
+          { role: 'conversion', contains: 'CTA, pricing path, booking, or signup' },
+          { role: 'footer', contains: 'multi-column footer with real links' },
+        ],
     appIslands: [
       { slot: 'identity', contains: 'status strip with live indicators' },
       { slot: 'primary', contains: 'main operational surface with realistic rows' },
@@ -227,12 +248,17 @@ export function normalizeGenome(raw, { brief, route, variety, grammar } = {}) {
     },
     contentInventory: Array.isArray(raw?.contentInventory) && raw.contentInventory.length ? raw.contentInventory.slice(0, 10) : base.contentInventory,
     sections: (() => {
-      const rawSecs = Array.isArray(raw?.sections) && raw.sections.length >= 4 ? raw.sections.slice(0, 9) : base.sections
-      const footerSecs = rawSecs.filter((s) => s.role === 'footer')
-      const contentSecs = rawSecs.filter((s) => s.role !== 'footer')
-      // Editorial/blog verticals naturally use 4-5 sections — don't pollute them with generic homepage filler.
+      const rawSecs = Array.isArray(raw?.sections) && raw.sections.length >= 4
+        ? raw.sections
+            .filter((s) => s && typeof s === 'object' && typeof s.role === 'string' && typeof s.contains === 'string')
+            .slice(0, 9)
+        : base.sections
+      const usableSecs = rawSecs.length >= 4 ? rawSecs : base.sections
+      const footerSecs = usableSecs.filter((s) => s.role === 'footer')
+      const contentSecs = usableSecs.filter((s) => s.role !== 'footer')
+      // Editorial/blog verticals need enough real modules to read as a publication.
       const isEditorial = route?.siteHint === 'editorial'
-      const minContent = isEditorial ? 4 : 6
+      const minContent = isEditorial ? 7 : 6
       if (contentSecs.length < minContent) {
         // Prefer roles from the grammar's section rhythm so padding stays domain-appropriate.
         const grammarRoles = (grammar?.sectionRhythm || []).filter((r) => r !== 'footer')
@@ -244,7 +270,7 @@ export function normalizeGenome(raw, { brief, route, variety, grammar } = {}) {
         const toAdd = paddingPool.slice(0, minContent - contentSecs.length)
         return [...contentSecs, ...toAdd, ...(footerSecs.length ? footerSecs : [{ role: 'footer', contains: 'multi-column footer with real links' }])]
       }
-      return rawSecs
+      return usableSecs
     })(),
     appIslands: Array.isArray(raw?.appIslands) && raw.appIslands.length >= 2 ? raw.appIslands.slice(0, 5) : base.appIslands,
     signatureMoves: Array.isArray(raw?.signatureMoves) && raw.signatureMoves.length ? raw.signatureMoves.slice(0, 8) : base.signatureMoves,
@@ -275,6 +301,8 @@ ${route.siteHint === 'blog' ? 'This is a BLOG/PUBLICATION home — plan an artic
 List ${quality ? '7-9' : '5-6'} concrete SECTIONS (vertical-doc) or app islands (app-shell), each a full-width band with brand-specific content. For vertical-doc, always include a footer section as the last entry. MINIMUM 7 sections for vertical-doc — never fewer, even for simple brands, so the builder always has enough material.
 
 Each section's "contains" MUST reference at least one concrete brand-specific element: a named product, a real person, a price, a count, a schedule item, a location. Bad: "features section". Good: "3-tier pricing: Starter $29/mo, Studio $79/mo, Agency $199/mo".
+
+If Site hint is editorial/blog/publication/newsletter, the page MUST read as a publication: masthead, featured essay, article grid, topic index, bylines, writer masthead, newsletter, and archive. Avoid ecommerce/lookbook stockist sections unless the brief is explicitly a shop.
 
 Return only JSON:
 {

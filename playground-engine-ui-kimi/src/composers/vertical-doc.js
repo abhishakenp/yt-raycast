@@ -14,6 +14,7 @@ import {
 } from '../utils/seam-repair.js'
 
 const REFUSAL = /\bi'?m sorry\b/i
+const GEMINI_QUOTA_RE = /\bgemini\s+429\b|quota|spending cap|rate limit|resource_exhausted/i
 
 function strip(html) {
   return stripFences(html).replace(/<\/body>\s*<\/html>\s*$/i, '')
@@ -132,7 +133,10 @@ The <head>, <body>, sticky <nav>, hero, and the first ${topCount} section(s) ALR
 Append EXACTLY ${sections.length} separate <section> elements — one per role below — then a multi-column <footer>, then </body></html>:
 ${sectionList(sections)}
 
-CRITICAL: Each role above MUST be its own <section class="w-full ..."> ... </section> block. Never merge two roles into one <section>. Every section must be complete and fully closed before starting the next. Match palette, fonts, and decor EXACTLY. Use the GRID RULE for collections.`
+CRITICAL: Each role above MUST be its own <section class="w-full ..."> ... </section> block. Never merge two roles into one <section>. Every section must be complete and fully closed before starting the next. Match palette, fonts, and decor EXACTLY. Use the GRID RULE for collections.
+
+DENSITY RULE: Make the lower page feel inhabited, not flat. Each non-footer section needs a clear editorial/product heading, 3-6 named cards/items/rows, one concrete metric or date where appropriate, and at least one meaningful visual surface or structured table/list. Use compact layered grids and sidebars instead of large empty vertical gaps.
+BLOG/EDITORIAL RULE: For publications, include bylines, categories, read times, issue/archive modules, writer or contributor references, newsletter framing, and article grids that visibly read as a publication.`
   return completeGroq({
     system: BUILDER_SYSTEM,
     prompt,
@@ -152,7 +156,7 @@ function stitch(topHtml, tailHtml) {
   return `${top}\n${tail}`
 }
 
-/** Quality path: Gemini top (3 sections) + up to 3 parallel Groq section workers + footer + section padding. */
+/** Quality path: Gemini top + coherent Groq tail, with isolated workers kept as an opt-out fallback. */
 async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   const contract = buildSharedContract(brief, plan, route, variety, grammar)
   const secs = (plan.sections || []).slice(0, 9)
@@ -166,10 +170,47 @@ async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   // Separate footer role from real content sections
   const footerSec = allTailSecs.find((s) => s.role === 'footer') || null
   const contentTailSecs = allTailSecs.filter((s) => s.role !== 'footer').slice(0, 4)
+  const denseTail = process.env.KIMI_DENSE_TAIL !== '0'
 
   const t0 = Date.now()
 
-  // All workers run in parallel: Gemini top + up to 3 content workers + footer worker
+  if (denseTail && allTailSecs.length) {
+    const [topResult, tailResult] = await Promise.all([
+      buildGeminiTop(contract, plan, topSecs),
+      buildTail(contract, allTailSecs, topN),
+    ])
+    const parallelMs = Date.now() - t0
+    let topHtml = trimIncompleteSuffix(strip(topResult.content))
+    let tailHtml = trimIncompleteSuffix(strip(tailResult.content))
+    if (badLeg(tailHtml)) tailHtml = '\n<footer class="w-full py-8"></footer>\n</body></html>'
+
+    let html = stitch(topHtml, tailHtml)
+    const sectionCount = (html.match(/<section\b/gi) || []).length
+    const minSections = plan?.pageKind === 'app-shell' ? 4 : route?.siteHint === 'editorial' ? 4 : 6
+    if (sectionCount < minSections) {
+      html = injectMissingSections(html, plan, minSections - sectionCount)
+    }
+
+    const validation = validateStitchedHtml(html)
+    html = applyGenomeMerge(html, plan)
+    html = sanitizeHtml(html, plan, route)
+
+    return {
+      html,
+      metrics: {
+        buildMode: 'vertical-doc-gemini-dense-tail',
+        geminiMs: topResult.ms || 0,
+        ossMs: tailResult.ms || 0,
+        parallelMs,
+        topSections: topSecs.length,
+        tailSections: allTailSecs.length,
+        stitchOk: validation.ok,
+        stitchIssues: validation.issues,
+      },
+    }
+  }
+
+  // Compatibility path: Gemini top + isolated section workers + footer worker.
   const [topResult, ...workerResults] = await Promise.all([
     buildGeminiTop(contract, plan, topSecs, route, grammar),
     ...contentTailSecs.map((sec) => buildSingleSection(contract, sec)),
@@ -225,6 +266,10 @@ async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   }
 }
 
+function isGeminiQuotaError(error) {
+  return GEMINI_QUOTA_RE.test(String(error?.message || error || ''))
+}
+
 /** Fast bench path: parallel Groq only (lower craft). */
 async function composeFastParallel({ brief, plan, route, variety, grammar }) {
   const contract = buildSharedContract(brief, plan, route, variety, grammar)
@@ -265,5 +310,19 @@ async function composeFastParallel({ brief, plan, route, variety, grammar }) {
 
 export async function composeVerticalDoc(args) {
   if (FAST_MODE) return composeFastParallel(args)
-  return composeQualityHybrid(args)
+  try {
+    return await composeQualityHybrid(args)
+  } catch (error) {
+    if (!isGeminiQuotaError(error)) throw error
+    const fallback = await composeFastParallel(args)
+    return {
+      ...fallback,
+      metrics: {
+        ...fallback.metrics,
+        buildMode: `${fallback.metrics.buildMode}-quota-fallback`,
+        geminiFallback: 'quota',
+        geminiError: String(error?.message || error).slice(0, 240),
+      },
+    }
+  }
 }

@@ -17,6 +17,9 @@ export const HYBRID_PLANNER_MODEL =
 /** Default on when GEMINI_API_KEY is set; set SHIPFAST_HYBRID_ENGINE=0 to force legacy Groq-only. */
 export const SHIPFAST_HYBRID_ENGINE =
   process.env.SHIPFAST_HYBRID_ENGINE !== '0' && Boolean(GEMINI_API_KEY)
+/** Kimi-target homepage compiler — default on when Gemini+Groq are available; set SHIPFAST_KIMI_ENGINE=0 to force the older hybrid/Groq path. */
+export const SHIPFAST_KIMI_ENGINE =
+  process.env.SHIPFAST_KIMI_ENGINE !== '0' && Boolean(GROQ_API_KEY && GEMINI_API_KEY)
 /** Mobbin Pro DNA anchors — on by default; set SHIPFAST_MOBBIN=0 to disable. */
 export const SHIPFAST_MOBBIN = process.env.SHIPFAST_MOBBIN !== '0'
 /** OpenUI `home.openui` generation (matches streaming default for predictable layouts). */

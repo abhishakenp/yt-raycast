@@ -3,7 +3,13 @@ const INTERNAL_TERMS = ['Mobbin DNA', 'Signature moves:', 'deterministic shell',
 const SCHEMATIC_TERMS = ['feature composition', 'issue note', 'field quote', 'release card', 'case 2', 'case 3']
 
 function visibleText(html) {
-  return String(html ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  return String(html ?? '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function countMatches(text, pattern) {

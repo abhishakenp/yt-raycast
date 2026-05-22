@@ -108,7 +108,9 @@ export async function generateHomepage(
     mobbinAnchor,
   })
   const useHybrid = engineStrategy.startsWith('hybrid')
-  if (useHybrid) log(`  homepage: hybrid engine (${engineStrategy})`)
+  const useKimi = engineStrategy === 'kimi'
+  if (useKimi) log('  homepage: kimi engine')
+  else if (useHybrid) log(`  homepage: hybrid engine (${engineStrategy})`)
   else log('  homepage: groq single-pass engine')
 
   const shellAfterGroq = (raw) => {
@@ -151,6 +153,12 @@ export async function generateHomepage(
     )
     if (result?.hybridFallback) {
       log(`  homepage: hybrid failed — ${result.hybridError}; used groq fallback`)
+    } else if (result?.kimiFallback) {
+      log(`  homepage: kimi engine failed — ${result.kimiError}; used ${result.engine ?? 'fallback'} engine`)
+    } else if (result?.engine === 'kimi') {
+      log(
+        `  homepage: kimi ${result.layoutMode ?? 'page'} · ${result.archetype ?? 'page'} · score ${result.kimiScore ?? '?'} · ${result.wall ?? '?'}ms`,
+      )
     } else if (result?.engine === 'hybrid') {
       log(`  homepage: hybrid ${result.layoutMode} · ${result.archetype ?? 'page'} · ${result.wall ?? '?'}ms`)
       if (result.stitchValidation && !result.stitchValidation.ok) {
@@ -166,7 +174,17 @@ export async function generateHomepage(
     tokenAgg.outputTokens += result.outputTokens ?? 0
     tokenAgg.cost += result.cost ?? 0
     html = shellAfterGroq(result.content)
-    let ver = useHybrid
+    let ver = useKimi
+      ? {
+          ok:
+            (result.kimiScore ?? 0) >= 90 &&
+            !htmlLooksDegenerate(html, {
+              prompt,
+              skipNovaMarketingBar: true,
+            }),
+          feedback: `Kimi engine score ${result.kimiScore ?? 0}; target >=90 and non-degenerate HTML.`,
+        }
+      : useHybrid
       ? passesHybridHomepageVerification(html, prompt, siteType)
       : exemplarPath && !hasDesignReferenceUrls
         ? passesHomepagePublicDesignVerification(html, prompt, exemplarPath, siteType)
@@ -192,9 +210,9 @@ export async function generateHomepage(
     if (attempt === maxRalph) {
       // When Mobbin anchor or hybrid engine is active, the renderer fallback is a worse
       // outcome than imperfect LLM output (it strips craft / anchor inheritance).
-      if (mobbinAnchor?.app || useHybrid) {
+      if (mobbinAnchor?.app || useHybrid || useKimi) {
         log(
-          `  homepage: keeping LLM output despite verification failure — ${useHybrid ? 'hybrid engine' : `Mobbin Pro anchor ${mobbinAnchor.app}`} active`,
+          `  homepage: keeping LLM output despite verification failure — ${useKimi ? 'kimi engine' : useHybrid ? 'hybrid engine' : `Mobbin Pro anchor ${mobbinAnchor.app}`} active`,
         )
         break
       }
@@ -217,12 +235,14 @@ export async function generateHomepage(
     }
   }
 
-  if (htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) })) {
+  if (htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app || useKimi) })) {
     log('  ❌ homepage: degeneracy flag tripped before image pass')
-    if (!mobbinAnchor?.app) {
+    if (!mobbinAnchor?.app && !useKimi) {
       throw new Error('Homepage output failed quality check')
     }
-    log(`  homepage: keeping LLM output despite pre-image degeneracy flag — Mobbin Pro anchor ${mobbinAnchor.app} active`)
+    log(
+      `  homepage: keeping LLM output despite pre-image degeneracy flag — ${useKimi ? 'kimi engine' : `Mobbin Pro anchor ${mobbinAnchor.app}`} active`,
+    )
   }
 
   html = await alignGeneratedImagesToContext(html, imageHints)
@@ -237,15 +257,17 @@ export async function generateHomepage(
   try {
     writeFile(workspace, 'index.llm.html', html)
   } catch {}
-  if (htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) })) {
+  if (htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app || useKimi) })) {
     log('  ❌ homepage: degeneracy flag tripped (repetition or invalid HTML)')
     // When Mobbin anchor is active, trust the LLM output even if it's
     // structurally lean — the renderer fallback strips all anchor inheritance,
     // which is a far worse outcome than a slightly thin LLM page.
-    if (!mobbinAnchor?.app) {
+    if (!mobbinAnchor?.app && !useKimi) {
       throw new Error('Homepage output failed quality check')
     }
-    log(`  homepage: keeping LLM output despite degeneracy flag — Mobbin Pro anchor ${mobbinAnchor.app} active`)
+    log(
+      `  homepage: keeping LLM output despite degeneracy flag — ${useKimi ? 'kimi engine' : `Mobbin Pro anchor ${mobbinAnchor.app}`} active`,
+    )
   }
 
   writeFile(workspace, 'index.html', html)
