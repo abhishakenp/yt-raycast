@@ -67,9 +67,14 @@ export async function generateHomepageHtml(prompt, groqArgs, { engine, specAppen
 
   if (strategy === 'kimi') {
     try {
-      return await generateKimiEngineHomepage(
+      const KIMI_TIMEOUT_MS = parseInt(process.env.SHIPFAST_KIMI_TIMEOUT_MS || '30000', 10)
+      const kimiCall = generateKimiEngineHomepage(
         specAppend ? `${prompt}\n\nStructured homepage spec:\n${specAppend}` : prompt,
       )
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`kimi timeout (${KIMI_TIMEOUT_MS}ms)`)), KIMI_TIMEOUT_MS),
+      )
+      return await Promise.race([kimiCall, timeout])
     } catch (err) {
       if (process.env.SHIPFAST_KIMI_FALLBACK === '0') throw err
       const fallbackStrategy = hybridEngineAvailable() ? 'hybrid' : 'groq'

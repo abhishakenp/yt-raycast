@@ -141,7 +141,7 @@ BLOG/EDITORIAL RULE: For publications, include bylines, categories, read times, 
     system: BUILDER_SYSTEM,
     prompt,
     temperature: 0.58,
-    maxTokens: 7000,
+    maxTokens: 4500,
     reasoningEffort: 'low',
   })
 }
