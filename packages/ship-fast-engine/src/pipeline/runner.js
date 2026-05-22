@@ -42,6 +42,7 @@ import { withLanguageEnforcementBlock } from './prompt-language.js'
 import { applyGenomeMerge } from './genome-merge.js'
 import { getWorkspacePreferredLanguage } from '../session-prefs.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
+import { SHIPFAST_KIMI_ENGINE } from '../config.js'
 import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt.js'
 import { enrichBrandProfile } from './brand-profile.js'
 import {
@@ -288,8 +289,11 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
   )
 
   const specPromise = (async () => {
+    // Kimi engine handles design planning internally — skip the 5s design-brief LLM call
     const [designStats, detectStats] = await Promise.all([
-      generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
+      SHIPFAST_KIMI_ENGINE
+        ? Promise.resolve({ brief: '', inputTokens: 0, outputTokens: 0, cost: 0 })
+        : generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
       detectSiteType(pipelinePrompt, _log),
     ])
     tick('design_end')
@@ -382,12 +386,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
   if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
   sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
-  const richImageHints = await resolvePexelsImageHints({
-    prompt: normalizedPrompt,
-    hydrationPrompt: normalizedPrompt,
-    ctx,
-    siteSpec,
-  })
+
+  // Kimi engine already hydrates images and bakes its own design system — skip the
+  // expensive second Pexels round-trip and design-brief colour injection for that path.
+  const richImageHints = SHIPFAST_KIMI_ENGINE
+    ? homepageStats.imageHints ?? { hydrationPrompt: normalizedPrompt, prompt: normalizedPrompt }
+    : await resolvePexelsImageHints({
+        prompt: normalizedPrompt,
+        hydrationPrompt: normalizedPrompt,
+        ctx,
+        siteSpec,
+      })
   const imageHints = {
     ...mergeImageHintLists(homepageStats.imageHints, richImageHints),
     hydrationPrompt: normalizedPrompt,
@@ -419,8 +428,9 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
     writeFile(workspace, 'index.html', homepage)
   }
 
-  // Inject design system colors into the homepage now that both are ready
-  if (homepage && designBrief) {
+  // Inject design system colors into the homepage now that both are ready.
+  // Kimi already has a complete tailwind.config baked in — skip colour injection for it.
+  if (homepage && designBrief && !SHIPFAST_KIMI_ENGINE) {
     homepage = injectDesignIntoHomepage(homepage, designBrief, workspace, _log)
     if (siteSpec) writeNextAppToWorkspace(siteSpec, workspace, sessionCtx)
     const withSwiper = injectLLMHomepageSwiper(homepage, siteSpec)
@@ -444,6 +454,10 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
       homepage = injectStorefrontCartUi(injectEcommerceHeroResponsiveCss(homepage), { workspace })
       writeFile(workspace, 'index.html', homepage)
     }
+    sessionCtx.signalHomepageReady()
+  } else if (homepage && SHIPFAST_KIMI_ENGINE) {
+    // Kimi path: homepage is complete, signal immediately
+    if (siteSpec) writeNextAppToWorkspace(siteSpec, workspace, sessionCtx)
     sessionCtx.signalHomepageReady()
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)

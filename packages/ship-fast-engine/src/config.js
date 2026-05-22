@@ -58,7 +58,7 @@ export const LLM_CONFIG = {
   },
   parallel: {
     temperature: 0.3,
-    maxTokens: 8000,
+    maxTokens: 5000,
   },
   game: {
     temperature: 0.5,

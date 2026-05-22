@@ -250,8 +250,10 @@ export async function generateAllTasks(
     return { pages: { count: 0 }, backend: { count: 0 }, navList }
   }
 
-  // Generate all pages with Groq (quality), translate with hex-1 if India mode
-  let pageResults = pageCalls.length > 0 ? await groqParallel(pageCalls) : []
+  // Generate all pages AND backend in one parallel batch — backend no longer waits for pages
+  const allResults = allCalls.length > 0 ? await groqParallel(allCalls) : []
+  let pageResults = allResults.slice(0, pageCalls.length)
+  const backendResults = allResults.slice(pageCalls.length)
 
   if (
     indiaMode?.code &&
@@ -272,8 +274,6 @@ export async function generateAllTasks(
     })
     pageResults = pageResults.map((r, i) => ({ ...r, content: translatedHtmls[i] }))
   }
-
-  const backendResults = backendCalls.length > 0 ? await groqParallel(backendCalls) : []
 
   if (pageTasks.length > 0) {
     await processResults(
