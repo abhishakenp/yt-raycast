@@ -37,5 +37,5 @@ export function mediaStrategyBlock(siteHint, variety, grammar) {
 - Decor hints: ${(preset.decorHints || []).join('; ')}
 - Proof patterns: ${(preset.proofPatterns || []).join('; ')}
 - Treatment this run: ${variety?.mediaTreatment || 'clean-glass'}
-- Every data-img must use data-visual="art-surface" and a specific data-visual-kind.`
+- Image placeholders: <div data-img="[concrete subject]" class="w-full aspect-[4/3] rounded-xl bg-[surface]/40 border border-[muted]/30"></div> — use 2–4 per page. NEVER add data-visual or data-visual-kind attributes.`
 }

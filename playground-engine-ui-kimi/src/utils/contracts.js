@@ -28,13 +28,16 @@ function qualityLayoutRules(a) {
 - Every section: <section class="w-full ..."> with ONE inner <div class="mx-auto max-w-7xl px-6 ...">. Sections are siblings — never nest a new <section> inside an open grid from above.
 - GRID RULE: collections (products, cases, classes, rooms, posts) use a responsive grid spanning the full inner width (e.g. grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6). Never a lone narrow column or half-empty row.
 - SIMPLE-LAYOUT: straightforward grids and stacks only. No rotation, negative margins, or fanned/overlapping cards for effect. Shallow DOM; every <div> closed.
+- NO BLUR ORBS: Never use blur-3xl or blur-2xl as decorative background effects. No ambient glow blobs. Achieve depth via solid surface colors, borders, and box-shadow only.
+- NO ROTATIONS: Never use -rotate- on any element. No tilted cards. Use color and border weight for visual accent.
 - PROSE RULE: long copy in max-w-2xl/3xl or a balanced 2-col split — never a tall narrow paragraph cell beside short cards.
 - NO page JS except harmless hover transitions. Everything visible on load — no opacity-0 reveal states.
 - ICONS: <i data-lucide="name" class="w-5 h-5"></i> only — never <svg>.
 - IMAGES: <div data-img="short concrete subject" class="w-full aspect-[4/3] rounded-xl bg-[${a.muted}]/40 border border-[${a.muted}]/30"></div> — never <img>, never raw URLs in tags. Pair each image box with real titles/captions; never a wall of empty boxes.
 - HERO: headline, subhead, 1-2 CTAs, optional ONE side visual. No forms or dense widgets in hero.
 - STICKY NAV: if sticky, every <section> needs scroll-mt-24.
-- Real specific copy (no lorem, no generic SaaS filler). Generous vertical rhythm (py-16–py-24).`
+- Real specific copy (no lorem, no generic SaaS filler). Generous vertical rhythm (py-16–py-24).
+- SPECIFICITY (REQUIRED): Include at least 6 concrete data points — real named people ("Yuki Nakamura, Head Brewer"), real numbers ("37 seasonal varieties", "$24 per flight", "Since 1987"), real locations, real product names. Never write "Team Member Name", "00%", "$0.00", or generic filler.`
 }
 
 export function buildSharedContract(brief, plan, route, variety, grammar) {

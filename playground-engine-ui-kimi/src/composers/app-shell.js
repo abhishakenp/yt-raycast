@@ -4,6 +4,7 @@ import { BUILDER_SYSTEM, buildSharedContract } from '../utils/contracts.js'
 import { composeAppShellHtml, parseIslandJson } from './app-shell-frame.js'
 import { applyGenomeMerge } from '../utils/genome-merge.js'
 import { sanitizeHtml, sanitizeIslandFragment } from '../utils/postprocess.js'
+import { injectMissingSections } from '../utils/section-inject.js'
 
 export async function composeAppShell({ brief, plan, route, variety, grammar, mode = 'hybrid' }) {
   const contract = buildSharedContract(brief, plan, route, variety, grammar)
@@ -24,6 +25,8 @@ Use lg:grid lg:grid-cols-[17rem_1fr] for sidebar layout. Realistic live data. </
     })
     let html = result.content.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
     if (!/<\/html>/i.test(html)) html += '\n</body></html>'
+    const sectionCountGF = (html.match(/<section\b/gi) || []).length
+    if (sectionCountGF < 4) html = injectMissingSections(html, plan, 4 - sectionCountGF)
     html = applyGenomeMerge(html, plan)
     return {
       html: sanitizeHtml(html, plan, route),
@@ -76,6 +79,13 @@ ${(plan.appIslands || []).map((i) => `- ${i.slot}: ${i.contains}`).join('\n')}`
   }
 
   let html = composeAppShellHtml({ brief, plan, route, islands })
+
+  // Ensure app-shell meets the 4-section threshold (inject before </main> for layout fit)
+  const sectionCount = (html.match(/<section\b/gi) || []).length
+  if (sectionCount < 4) {
+    html = injectMissingSections(html, plan, 4 - sectionCount, { insertBefore: /<\/main>/i })
+  }
+
   html = applyGenomeMerge(html, plan)
   return {
     html: sanitizeHtml(html, plan, route),

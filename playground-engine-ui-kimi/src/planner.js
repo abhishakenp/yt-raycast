@@ -193,7 +193,26 @@ export function normalizeGenome(raw, { brief, route, variety, grammar } = {}) {
       contentStrategy: raw?.mediaStrategy?.contentStrategy || variety.contentStrategy,
     },
     contentInventory: Array.isArray(raw?.contentInventory) && raw.contentInventory.length ? raw.contentInventory.slice(0, 10) : base.contentInventory,
-    sections: Array.isArray(raw?.sections) && raw.sections.length >= 4 ? raw.sections.slice(0, 6) : base.sections,
+    sections: (() => {
+      const rawSecs = Array.isArray(raw?.sections) && raw.sections.length >= 4 ? raw.sections.slice(0, 9) : base.sections
+      const footerSecs = rawSecs.filter((s) => s.role === 'footer')
+      const contentSecs = rawSecs.filter((s) => s.role !== 'footer')
+      // Editorial/blog verticals naturally use 4-5 sections — don't pollute them with generic homepage filler.
+      const isEditorial = route?.siteHint === 'editorial'
+      const minContent = isEditorial ? 4 : 6
+      if (contentSecs.length < minContent) {
+        // Prefer roles from the grammar's section rhythm so padding stays domain-appropriate.
+        const grammarRoles = (grammar?.sectionRhythm || []).filter((r) => r !== 'footer')
+        const paddingPool = grammarRoles.length
+          ? grammarRoles
+              .filter((role) => !contentSecs.some((s) => s.role === role))
+              .map((role) => base.sections.find((bs) => bs.role === role) || { role, contains: `${role} content for this brand` })
+          : base.sections.filter((bs) => bs.role !== 'footer' && !contentSecs.some((s) => s.role === bs.role))
+        const toAdd = paddingPool.slice(0, minContent - contentSecs.length)
+        return [...contentSecs, ...toAdd, ...(footerSecs.length ? footerSecs : [{ role: 'footer', contains: 'multi-column footer with real links' }])]
+      }
+      return rawSecs
+    })(),
     appIslands: Array.isArray(raw?.appIslands) && raw.appIslands.length >= 2 ? raw.appIslands.slice(0, 5) : base.appIslands,
     signatureMoves: Array.isArray(raw?.signatureMoves) && raw.signatureMoves.length ? raw.signatureMoves.slice(0, 8) : base.signatureMoves,
   }
@@ -219,7 +238,9 @@ ${mobbinSessionBlock(route.primary, route.secondary)}
 
 Decide the best front-door page for this brand. If the brief says "homepage", pageKind MUST be "vertical-doc" (rich marketing story; product UI as a demo section inside the page, not nested app chrome). pageKind "app-shell" ONLY for live operator consoles (fleet ops, incident desk).
 
-List ${quality ? '6-9' : '5-6'} concrete SECTIONS (vertical-doc) or app islands (app-shell), each a full-width band with brand-specific content.
+List ${quality ? '7-9' : '5-6'} concrete SECTIONS (vertical-doc) or app islands (app-shell), each a full-width band with brand-specific content. For vertical-doc, always include a footer section as the last entry. MINIMUM 7 sections for vertical-doc — never fewer, even for simple brands, so the builder always has enough material.
+
+Each section's "contains" MUST reference at least one concrete brand-specific element: a named product, a real person, a price, a count, a schedule item, a location. Bad: "features section". Good: "3-tier pricing: Starter $29/mo, Studio $79/mo, Agency $199/mo".
 
 Return only JSON:
 {

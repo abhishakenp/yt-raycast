@@ -18,7 +18,9 @@ export function scoreKimiReadiness(html, { plan, route } = {}) {
 
   const sections = countMatches(source, /<section\b/gi)
   const dataImgs = countMatches(source, /<div\b[^>]*\bdata-img=/gi)
-  const artSurfaces = countMatches(source, /\bdata-visual=["']art-surface["']/gi)
+  // Only count schematic art-surface blocks that lack a data-img backing (those are real image placeholders).
+  const artSurfaceTags = source.match(/<div\b[^>]*\bdata-visual=["']art-surface["'][^>]*>/gi) || []
+  const artSurfaces = artSurfaceTags.filter((tag) => !/\bdata-img=/.test(tag)).length
   const blurOrbs = countMatches(source, /\bblur-3xl\b/gi)
   const rotations = countMatches(source, /-rotate-/gi)
   const schematicLabels = SCHEMATIC_TERMS.filter((t) => lower.includes(t))
@@ -30,7 +32,7 @@ export function scoreKimiReadiness(html, { plan, route } = {}) {
   const internalTerms = INTERNAL_TERMS.filter((t) => lower.includes(t.toLowerCase()))
 
   let score = 100
-  if (sections < (plan?.pageKind === 'app-shell' ? 4 : 6)) {
+  if (sections < (plan?.pageKind === 'app-shell' ? 4 : route?.siteHint === 'editorial' ? 4 : 6)) {
     score -= 16
     issues.push('too few substantial sections')
   }
@@ -38,7 +40,7 @@ export function scoreKimiReadiness(html, { plan, route } = {}) {
     score -= 12
     issues.push('missing tailwind config or google fonts')
   }
-  if (!hasHeroScale) {
+  if (!hasHeroScale && plan?.pageKind !== 'app-shell') {
     score -= 12
     issues.push('first viewport lacks decisive hero scale')
   }

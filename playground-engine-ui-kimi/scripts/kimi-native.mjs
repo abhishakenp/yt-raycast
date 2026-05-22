@@ -28,6 +28,7 @@ const BRIEFS = [
   { slug: 'riso', brief: 'Riso Press — a Brooklyn risograph print studio and zine shop. Bold, playful, ink-on-paper craft. Limited-run art prints and weekend workshops.' },
   { slug: 'music', brief: 'Tessellate — an independent electronic music label and warehouse event series in Berlin. Vinyl + digital releases, 12 artists, upcoming parties, merch shop.' },
   { slug: 'butchery', brief: 'Marrow — a nose-to-tail butchery and supper club in Lisbon. Weekly changing set menus, butchery classes, whole-animal provenance from a single farm.' },
+  { slug: 'blog', brief: 'Dispatch — an independent editorial publication covering the intersection of technology, climate, and policy. Long-form essays, weekly newsletter, 8 staff writers, 12 contributors.' },
 ]
 const DEFAULT_8 = ['saas', 'ecommerce', 'restaurant', 'portfolio', 'agency', 'fitness', 'wellness', 'hotel']
 
