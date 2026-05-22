@@ -1,0 +1,22 @@
+{
+  "fleet-console": {
+    "brief": "Helmsman — fleet operations console for autonomous delivery robots.",
+    "patterns": ["true 2D sidebar", "live city map", "KPI strip", "incident feed", "fleet table"],
+    "qualityMarkers": ["lg:grid-cols-[17rem_1fr]", "status pills", "dense tables", "layered map"]
+  },
+  "riso-catalog": {
+    "brief": "Riso Press — Brooklyn risograph print studio and zine shop.",
+    "patterns": ["duotone blocks", "tape/sticker accents", "bold ink-on-paper", "catalog wall"],
+    "qualityMarkers": ["hard offset shadows", "halftone", "playful type scale", "limited-run products"]
+  },
+  "butchery-supper": {
+    "brief": "Marrow — nose-to-tail butchery and supper club in Lisbon.",
+    "patterns": ["editorial warm ground", "menu storytelling", "provenance proof", "reservation CTA"],
+    "qualityMarkers": ["warm paper palette", "specific dish names", "farm provenance", "class booking"]
+  },
+  "music-label": {
+    "brief": "Tessellate — independent electronic music label in Berlin.",
+    "patterns": ["release grid", "artist roster", "event calendar", "merch band"],
+    "qualityMarkers": ["vinyl artifacts", "warehouse party dates", "artist names", "editorial rhythm"]
+  }
+}

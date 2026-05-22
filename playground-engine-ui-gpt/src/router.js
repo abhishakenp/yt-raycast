@@ -38,6 +38,7 @@ const SITE_ANCHOR_ALLOWLIST = {
   commerce: ['Glossier', 'Apple', 'Nike', 'Lululemon', 'Patagonia', 'Stripe', 'Airbnb', 'Vogue', 'Headspace', 'Calm', 'Spotify'],
   portfolio: ['Figma', 'Substack', 'Vogue', 'Apple', 'Linear', 'Vercel', 'Notion', 'MasterClass'],
   editorial: ['Substack', 'Vogue', 'NYT', 'Spotify', 'MasterClass', 'Patagonia', 'Apple'],
+  blog: ['Substack', 'NYT', 'Vogue', 'MasterClass', 'Patagonia', 'Apple'],
   software: COOL_DEFAULTS,
   'ops-console': ['Linear', 'Sentry', 'Cursor', 'GitHub', 'Posthog', 'Databricks', 'Vercel', 'OpenAI'],
 }
@@ -72,6 +73,7 @@ export function inferSiteHint(brief) {
   if (/shop|store|ecommerce|product|skincare|apparel|merch|record|zine|print/.test(text)) return 'commerce'
   if (/restaurant|coffee|cafe|butchery|supper|hotel|booking|studio|class|workshop/.test(text)) return 'local-experience'
   if (/portfolio|agency|designer|case stud/.test(text)) return 'portfolio'
+  if (/\bblog\b|\bblogs\b|\bnewsletter\b|\bsubstack\b|\bpost archive\b/.test(text)) return 'blog'
   if (/music|label|event|editorial|magazine|publication/.test(text)) return 'editorial'
   if (/saas|b2b|api|developer|platform|analytics/.test(text)) return 'software'
   return 'general'

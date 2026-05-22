@@ -151,10 +151,40 @@ Overall average: **60-90% token reduction** on common development operations.
 - **Hosting:** [Coolify](https://coolify.io) on `159.195.70.194`
 - **Operations:** Deployments and services are managed via the [Coolify CLI](https://coolify.io/docs/installation); configure the CLI against that Coolify instance per upstream docs.
 
+## Homepage engine (playground vs production)
+
+| Path | Role |
+|------|------|
+| `playground-engine-ui-ship/` | Unified homepage compiler (router, planner, composers, audits) |
+| `packages/ship-fast-engine/src/pipeline/phase-homepage.js` | Production entry — `groqHomepage` by default; `SHIPFAST_HOMEPAGE_ENGINE=ship` loads the ship playground engine |
+| `.forge/ship-native/` | Local generation artifacts |
+| `.forge/ship-gallery/` + port **7420** | Desktop screenshot grid for bench runs |
+
+Gallery workflow:
+
+```bash
+bun playground-engine-ui-ship/scripts/ship-native.mjs
+bun playground-engine-ui-ship/scripts/ship-gallery-build.mjs --skip-shots
+bun .forge/ship-gallery/serve.mjs   # http://localhost:7420/
+```
+
+Single-brief preview: add `--run=<runId>` to the gallery build step.
+
+### Design rule: generic engine, not infinite special cases
+
+Users can request any kind of website; we **cannot** maintain hardcoded rules per vertical, slug, or demo brief. Engine changes must be **global**:
+
+- Infer **site kind** and **page grammar** from the prompt (blog, ecommerce, SaaS, portfolio, ops console, …).
+- Encode layout expectations in **shared contracts** and **audits** (structure and density), not in lists of known projects.
+- Use **structural repair** when stitch/LLM drops a required band (e.g. archive grid on publication homes)—keyed on site kind + missing pattern, not on `"blog-dogs"` or `"Paws & Tales"`.
+- Keep named stress briefs (`blog-dogs`, canonical 8 verticals) in **scripts/tests/gallery only**; production logic must generalize.
+
+**Do not** add: per-slug conditionals, fixed copy for one customer story, or “if brief mentions dogs” branches in core engine code. **Do** add: routers, grammars, planners, and validators that scale to unseen inputs.
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ship-fast** (8799 symbols, 16030 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ship-fast** (15133 symbols, 25758 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

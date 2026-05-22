@@ -12,7 +12,7 @@ const SITE_TO_FILE = {
   institutional: 'design-01-government-portal.html',
   dashboard: 'design-02-admin-panel.html',
   portfolio: 'design-03-saas-homepage.html',
-  blog: 'design-03-saas-homepage.html',
+  blog: '',
   marketplace: 'design-03-saas-homepage.html',
   community: 'design-03-saas-homepage.html',
 }
@@ -25,7 +25,7 @@ const maxChars = () => {
 
 export const getPublicDesignExemplarPath = (siteType) => {
   const st = String(siteType || '').toLowerCase()
-  if (st === 'game') return ''
+  if (st === 'game' || st === 'blog') return ''
   const file = SITE_TO_FILE[st] || SITE_TO_FILE.landing
   const p = join(ROOT, file)
   return existsSync(p) ? p : ''
@@ -43,7 +43,7 @@ export const publicDesignExemplarAppendix = ({
     if (m) st = m[1].toLowerCase()
   }
   if (!st) st = 'landing'
-  if (st === 'game') return ''
+  if (st === 'game' || st === 'blog') return ''
   const file = SITE_TO_FILE[st] || SITE_TO_FILE.landing
   const p = join(ROOT, file)
   if (!existsSync(p)) return ''

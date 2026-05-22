@@ -57,9 +57,10 @@ export function fallbackGenome(brief, route, variety) {
   const primary = route.primary
   const palette = primary?.palette || []
   const appShell = route.siteHint === 'ops-console'
+  const blog = route.siteHint === 'blog'
   return {
     pageKind: appShell ? 'app-shell' : 'vertical-doc',
-    archetype: appShell ? 'operator command surface' : `${route.siteHint} homepage`,
+    archetype: appShell ? 'operator command surface' : blog ? 'blog home index' : `${route.siteHint} homepage`,
     visualWorld: {
       bg: cleanHex(palette[1], appShell ? '#08090a' : '#f8f4ec'),
       surface: cleanHex(palette[2], appShell ? '#15161d' : '#ffffff'),
@@ -73,7 +74,16 @@ export function fallbackGenome(brief, route, variety) {
       decor: `${variety.motion}; ${variety.proofRhythm}; ${variety.layoutGrammar}`,
       layoutGrammar: variety.layoutGrammar,
     },
-    contentInventory: [
+    contentInventory: blog
+      ? [
+          'nav with Home, Archive, About, Subscribe',
+          'featured post masthead with title, byline, date, excerpt',
+          'latest posts grid with categories and read links',
+          'topics/tags or series band',
+          'newsletter signup band',
+          'footer with archive links',
+        ]
+      : [
       'nav with specific product links',
       'identity-defining hero or shell header',
       'proof strip using real numbers or named entities',
@@ -81,7 +91,16 @@ export function fallbackGenome(brief, route, variety) {
       'secondary feature/catalog/editorial sections',
       'penultimate CTA and footer',
     ],
-    sections: [
+    sections: blog
+      ? [
+          { role: 'featured', contains: 'nav + featured post masthead (cover, title, byline, date, excerpt, read link)' },
+          { role: 'latest', contains: 'grid of 6+ recent posts with category chips and short excerpts' },
+          { role: 'topics', contains: 'topic/tag chips or series list' },
+          { role: 'about', contains: 'short author/publication blurb' },
+          { role: 'newsletter', contains: 'email signup with concrete promise' },
+          { role: 'footer', contains: 'archive, about, subscribe links' },
+        ]
+      : [
       { role: 'opening', contains: 'nav, hero, primary visual surface' },
       { role: 'proof', contains: 'numbers, names, product artifacts, or location details' },
       { role: 'depth', contains: 'feature grid, catalog wall, table, event calendar, or editorial modules' },
@@ -146,6 +165,7 @@ ${mobbinDoctrineBlock()}
 ${mobbinSessionBlock(route.primary, route.secondary)}
 
 Decide a compact page genome. Avoid deterministic site-type packs; use the hint only to avoid category mistakes. Prefer vertical-doc unless the brief is truly an operational tool that a logged-in operator stares at all day.
+${route.siteHint === 'blog' ? '\nThis is a BLOG/PUBLICATION home — plan an article index (featured post + post grid), not a SaaS landing or open-source developer platform.' : ''}
 
 Return only JSON:
 {

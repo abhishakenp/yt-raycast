@@ -3,10 +3,10 @@
  * Run one brief through all three homepage engines and open a 3-column compare page.
  *
  * Usage:
- *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "Homepage for …"
- *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --prompt "…" --vision
- *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --vision --vision-compare "…"
- *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --prompt "…" --port 7421 --serve
+ *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "Homepage for ..."
+ *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --prompt "..." --vision
+ *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --vision --vision-compare "..."
+ *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --prompt "..." --port 7421 --serve
  *   bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs --skip-shots --no-open
  *
  * Requires: GROQ_API_KEY, GEMINI_API_KEY (or GOOGLE_API_KEY)
@@ -44,8 +44,8 @@ function parseBrief() {
 
 const brief = parseBrief()
 if (!brief || brief.length < 12) {
-  console.error(`Usage: bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "Your homepage brief…"`)
-  console.error('   or: bun …/engine-triple-compare.mjs --prompt "Your brief…" [--vision]')
+  console.error(`Usage: bun playground-engine-ui-kimi/scripts/engine-triple-compare.mjs "Your homepage brief..."`)
+  console.error('   or: bun .../engine-triple-compare.mjs --prompt "Your brief..." [--vision]')
   process.exit(2)
 }
 

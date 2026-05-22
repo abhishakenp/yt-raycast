@@ -81,7 +81,7 @@ export function compareSignatures(a, b) {
   }
 }
 
-export function runDeterministicAudits(html, { plan, route, seed } = {}) {
+export function runDeterministicAudits(html, { plan, route, seed, brief } = {}) {
   const structure = validateFullWidthSections(html, {
     minSections: plan?.pageKind === 'app-shell' ? 4 : 6,
     maxSections: plan?.pageKind === 'app-shell' ? 8 : 11,
@@ -98,7 +98,7 @@ export function runDeterministicAudits(html, { plan, route, seed } = {}) {
     })),
     overflowCount: 0,
   })
-  const kimi = scoreKimiReadiness(html, { plan, route })
+  const kimi = scoreKimiReadiness(html, { plan, route, brief })
   return {
     ok: structure.ok && mobbin.ok && visual.ok && kimi.ok,
     structure,

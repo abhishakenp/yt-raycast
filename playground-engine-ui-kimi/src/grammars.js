@@ -31,11 +31,12 @@ export function getEditorialGrammars() {
 
 function grammarPool(siteHint, pageKind) {
   if (pageKind === 'app-shell') return getAppShellGrammars()
-  if (siteHint === 'editorial') return [...getEditorialGrammars(), ...getVerticalGrammars()]
+  if (siteHint === 'blog' || siteHint === 'editorial') return [...getEditorialGrammars(), ...getVerticalGrammars()]
   return getVerticalGrammars()
 }
 
 const GRAMMAR_BY_SITE_HINT = {
+  blog: 'editorial-blog-index',
   portfolio: 'gallery-masonry',
   agency: 'hero-editorial-split',
   fitness: 'timeline-led',

@@ -139,7 +139,7 @@ export async function generateGptHomepage(brief, opts = {}) {
     })
     : await buildVerticalDoc({ brief, plan, route, variety, llm })
 
-  const audits = runDeterministicAudits(built.html, { plan, route, seed })
+  const audits = runDeterministicAudits(built.html, { plan, route, seed, brief })
   const wall = Date.now() - startedAt
 
   return {

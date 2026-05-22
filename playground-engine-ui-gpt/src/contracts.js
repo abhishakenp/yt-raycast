@@ -2,6 +2,17 @@ import { mobbinDoctrineBlock, mobbinSessionBlock } from './mobbin-blocks.js'
 
 const BUILDER_SYSTEM = `You are a senior frontend designer and HTML compiler. Output raw HTML only. No markdown fences, no prose.`
 
+function siteKindRules(route, brief = '') {
+  if (route?.siteHint === 'blog') {
+    return `BLOG/PUBLICATION HOME (critical):
+- This is an article index, NOT a SaaS landing or open-source developer platform.
+- Lead with a featured post masthead (title, byline, date, excerpt, read link) then a dense latest-posts grid.
+- NO split hero with code/repo mockup, NO Features/Testimonials nav, NO "Explore the repo" CTA.
+- Nav should read like a publication: Home, Archive, About, Subscribe.`
+  }
+  return ''
+}
+
 export { BUILDER_SYSTEM }
 
 export function buildSharedContract(brief, plan, route, variety) {
@@ -23,6 +34,7 @@ VISUAL WORLD
 
 ${mobbinDoctrineBlock()}
 ${mobbinSessionBlock(route.primary, route.secondary)}
+${siteKindRules(route, brief)}
 
 STRICT OUTPUT RULES
 - One self-contained HTML file with Tailwind CDN: <script src="https://cdn.tailwindcss.com"></script>.
@@ -31,7 +43,8 @@ STRICT OUTPUT RULES
 - Use Lucide placeholders only for icons: <i data-lucide="rocket" class="w-5 h-5"></i>. Do not draw SVG paths.
 - Use data-img render surfaces instead of img tags: <div data-img="short concrete subject" class="relative w-full aspect-[4/3] overflow-hidden rounded-lg bg-gradient-to-br from-[${a.surface}] via-[${a.accent}] to-[${a.accent2}]"></div>. Do not use img tags or data URIs.
 - A data-img block is a finished visual artifact, not a placeholder. Make each one look like the real product/place/service: dashboard panels, product bottles, room/window compositions, menu boards, schedule tiles, editorial spreads, maps, or brand boards. Never render a flat gray rectangle and never print the word "placeholder".
-- First viewport must feel designed at Kimi/K2 quality: decisive hero scale, one memorable visual object, concrete named copy, and no generic SaaS filler.
+- First viewport must feel designed at Kimi/K2 quality: decisive scale, one memorable visual object, concrete named copy, and no generic SaaS filler.
+- For blog/publication briefs: the first viewport is a featured post masthead or publication index opener — not a product marketing hero.
 - Real, specific copy. No lorem, no fake placeholder company names, no generic SaaS slogans, no exclamation marks.
 - The page must be visible without JavaScript. Small inline JS is allowed only for harmless toggles and lucide.createIcons().
 `

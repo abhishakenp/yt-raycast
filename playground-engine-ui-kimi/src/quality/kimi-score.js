@@ -10,7 +10,51 @@ function countMatches(text, pattern) {
   return (String(text ?? '').match(pattern) || []).length
 }
 
-export function scoreKimiReadiness(html, { plan, route } = {}) {
+function isPublicationBrief(brief, route) {
+  const text = String(brief ?? '').toLowerCase()
+  return route?.siteHint === 'blog' || (route?.siteHint === 'editorial' && /\bblog\b/.test(text))
+}
+
+function scorePublicationFit(html, brief, route) {
+  if (!isPublicationBrief(brief, route)) return { penalty: 0, issues: [] }
+  const source = String(html ?? '')
+  const text = visibleText(source)
+  const lower = text.toLowerCase()
+  const issues = []
+  let penalty = 0
+
+  const articleTags = countMatches(source, /<article\b/gi)
+  const postMeta = countMatches(source, /\b(?:read (?:more|the (?:post|article|story|essay))|min read|posted on|published|byline|cover story|featured (?:post|essay|story)|issue no\.|from the archive|latest posts|recent posts)\b/gi)
+  const hasPostGrid = countMatches(source, /\bgrid-cols-(?:2|3|4)\b/g) >= 1
+    && (articleTags >= 2 || postMeta >= 3)
+  const featuredPostOpener = /\b(?:cover story|featured (?:post|essay|story)|issue no\.|volume [ivx\d]+)\b/i.test(text)
+    && /\b(?:min read|by [A-Z][a-z]+|read (?:the )?(?:post|story|essay))\b/i.test(text)
+  const saasDrift = /\b(?:open.?source|github|repository|pull request|platform|dashboard|telemetry|api docs|features|testimonials|explore the repo)\b/i.test(text)
+  const marketingHero = /\bmin-h-\[(?:7[0-9]|8[0-9])vh\]|min-h-screen\b/.test(source)
+    && !hasPostGrid
+    && !featuredPostOpener
+
+  if (saasDrift) {
+    penalty += 28
+    issues.push('blog brief drifted into SaaS/platform language')
+  }
+  if (marketingHero) {
+    penalty += 18
+    issues.push('blog home uses generic marketing hero instead of featured post index')
+  }
+  if (!hasPostGrid && articleTags < 2 && postMeta < 3) {
+    penalty += 10
+    issues.push('blog home lacks a dense latest-posts grid')
+  }
+  if (!featuredPostOpener && !postMeta) {
+    penalty += 8
+    issues.push('blog home lacks publication/post metadata cues')
+  }
+
+  return { penalty, issues }
+}
+
+export function scoreKimiReadiness(html, { plan, route, brief } = {}) {
   const source = String(html ?? '')
   const text = visibleText(source)
   const lower = text.toLowerCase()
@@ -32,8 +76,9 @@ export function scoreKimiReadiness(html, { plan, route } = {}) {
   const internalTerms = INTERNAL_TERMS.filter((t) => lower.includes(t.toLowerCase()))
 
   let score = 100
-  if (sections < (plan?.pageKind === 'app-shell' ? 4 : route?.siteHint === 'editorial' ? 4 : 6)) {
-    score -= 16
+  const publication = isPublicationBrief(brief, route)
+  if (sections < (plan?.pageKind === 'app-shell' ? 4 : publication ? 5 : 6)) {
+    score -= publication ? 10 : 16
     issues.push('too few substantial sections')
   }
   if (!hasTailwindConfig || !hasFontLink) {
@@ -41,8 +86,10 @@ export function scoreKimiReadiness(html, { plan, route } = {}) {
     issues.push('missing tailwind config or google fonts')
   }
   if (!hasHeroScale && plan?.pageKind !== 'app-shell') {
-    score -= 12
-    issues.push('first viewport lacks decisive hero scale')
+    score -= publication ? 4 : 12
+    issues.push(publication
+      ? 'publication opener lacks strong featured-post scale'
+      : 'first viewport lacks decisive hero scale')
   }
   if (!hasRealSpecificity) {
     score -= 10
@@ -75,6 +122,12 @@ export function scoreKimiReadiness(html, { plan, route } = {}) {
   if (dataImgs > 0 && dataImgs < 2 && sections >= 6) {
     score -= 6
     issues.push('thin visual storytelling')
+  }
+
+  const publicationFit = scorePublicationFit(source, brief, route)
+  if (publicationFit.penalty) {
+    score -= publicationFit.penalty
+    issues.push(...publicationFit.issues)
   }
 
   const bounded = Math.max(0, Math.min(100, score))

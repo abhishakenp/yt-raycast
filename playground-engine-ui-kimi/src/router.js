@@ -27,6 +27,7 @@ const SITE_ANCHOR_ALLOWLIST = {
   wellness: ['Headspace', 'Calm', 'Glossier', 'Patagonia', 'Airbnb', 'MasterClass'],
   hotel: ['Airbnb', 'Patagonia', 'Apple', 'Vogue', 'MasterClass'],
   editorial: ['Substack', 'Vogue', 'NYT', 'Spotify', 'MasterClass', 'Patagonia', 'Apple'],
+  blog: ['Substack', 'NYT', 'Vogue', 'MasterClass', 'Patagonia', 'Apple'],
   software: COOL_DEFAULTS,
   'ops-console': ['Linear', 'Sentry', 'Posthog', 'Vercel', 'OpenAI'],
 }
@@ -64,7 +65,8 @@ export function inferSiteHint(brief) {
   if (/\b(agency|creative studio|design agency|brand identity and digital)\b/.test(text) && !/\b(freelance|personal portfolio|my work)\b/.test(text)) return 'agency'
   if (/\b(personal portfolio|freelance (?:brand )?designer|my portfolio)\b/.test(text) || (/portfolio/.test(text) && !/agency/.test(text))) return 'portfolio'
   if (/restaurant|coffee|cafe|butchery|supper|booking|workshop/.test(text)) return 'local-experience'
-  if (/music|label|event|editorial|magazine|publication|blog/.test(text)) return 'editorial'
+  if (/\bblog\b|\bblogs\b|\bnewsletter\b|\bsubstack\b|\bpost archive\b/.test(text)) return 'blog'
+  if (/music|label|event|editorial|magazine|publication/.test(text)) return 'editorial'
   if (/saas|b2b|api|developer|platform|analytics/.test(text)) return 'software'
   return 'general'
 }

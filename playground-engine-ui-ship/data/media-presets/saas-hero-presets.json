@@ -1,0 +1,5 @@
+{
+  "heroKinds": ["product-console", "brand-case-wall"],
+  "decorHints": ["subtle grid noise", "glass panel depth", "accent glow on KPI cards"],
+  "proofPatterns": ["integration logos", "uptime percentage", "named teams"]
+}

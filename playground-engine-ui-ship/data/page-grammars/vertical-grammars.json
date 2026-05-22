@@ -1,0 +1,56 @@
+[
+  {
+    "id": "hero-editorial-split",
+    "label": "Editorial split hero",
+    "pageKind": "vertical-doc",
+    "heroPattern": "Large display headline left, art-directed media right in a balanced 2-column split.",
+    "sectionRhythm": ["identity hero", "proof strip", "editorial depth", "artifact gallery", "conversion band", "footer"],
+    "mediaKinds": ["editorial-spread", "brand-case-wall", "product-still-life"],
+    "siteHints": ["agency", "editorial", "general"]
+  },
+  {
+    "id": "hero-product-grid",
+    "label": "Product grid hero",
+    "pageKind": "vertical-doc",
+    "heroPattern": "Confident headline with 3-4 product or feature cards in a responsive grid beneath or beside the hero.",
+    "sectionRhythm": ["product hero", "proof numbers", "feature grid", "comparison or catalog", "social proof", "CTA", "footer"],
+    "mediaKinds": ["product-still-life", "product-console", "brand-case-wall"],
+    "siteHints": ["commerce", "software", "saas"]
+  },
+  {
+    "id": "hero-immersive",
+    "label": "Immersive experience hero",
+    "pageKind": "vertical-doc",
+    "heroPattern": "Full-bleed atmospheric media with overlay headline and booking or visit CTA.",
+    "sectionRhythm": ["immersive hero", "experience story", "offerings grid", "location or schedule", "testimonials", "reserve CTA", "footer"],
+    "mediaKinds": ["hotel-room", "destination-map", "coffee-packaging", "editorial-spread"],
+    "siteHints": ["local-experience", "hotel", "restaurant", "wellness", "fitness"]
+  },
+  {
+    "id": "catalog-wall",
+    "label": "Catalog wall",
+    "pageKind": "vertical-doc",
+    "heroPattern": "Compact identity band then a dense responsive catalog wall spanning full inner width.",
+    "sectionRhythm": ["compact hero", "category filters feel", "catalog wall", "material proof", "maker story", "footer"],
+    "mediaKinds": ["product-still-life", "coffee-packaging", "editorial-spread"],
+    "siteHints": ["commerce", "editorial", "commerce"]
+  },
+  {
+    "id": "gallery-masonry",
+    "label": "Gallery masonry",
+    "pageKind": "vertical-doc",
+    "heroPattern": "Minimal nav + bold typographic hero, then masonry-style visual grid of work or releases.",
+    "sectionRhythm": ["typographic hero", "selected work grid", "process notes", "client or artist proof", "contact CTA", "footer"],
+    "mediaKinds": ["brand-case-wall", "editorial-spread", "product-still-life"],
+    "siteHints": ["portfolio", "editorial"]
+  },
+  {
+    "id": "timeline-led",
+    "label": "Timeline led",
+    "pageKind": "vertical-doc",
+    "heroPattern": "Hero with live schedule, release calendar, or event timeline as the primary visual object.",
+    "sectionRhythm": ["timeline hero", "featured item", "upcoming grid", "community proof", "subscribe CTA", "footer"],
+    "mediaKinds": ["fitness-schedule", "editorial-spread", "product-console"],
+    "siteHints": ["fitness", "wellness", "editorial", "local-experience"]
+  }
+]

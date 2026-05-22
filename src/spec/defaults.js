@@ -629,6 +629,42 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
   if (siteType === 'institutional') {
     return buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
   }
+  if (siteType === 'blog') {
+    return [
+      {
+        id: 'blog-list',
+        type: 'blog-list',
+        variant: 'featured-grid',
+        headline: 'Latest writing',
+        items: [
+          {
+            title: 'Shipping velocity without chaos',
+            body: 'A playbook for keeping product execution aligned as your team scales.',
+            href: '#',
+          },
+          {
+            title: 'Design systems that stay useful',
+            body: 'How to keep tokens and components practical instead of ornamental.',
+            href: '#',
+          },
+        ],
+      },
+      {
+        id: 'newsletter',
+        type: 'newsletter',
+        variant: 'inline',
+        headline: 'Subscribe for new posts',
+        body: 'Get the latest articles in your inbox.',
+      },
+      {
+        id: 'about-blurb',
+        type: 'content',
+        variant: 'simple',
+        headline: `About ${projectName}`,
+        body: tagline || 'Notes, guides, and stories from the author.',
+      },
+    ]
+  }
   const sections = [
     defaultHero(projectName, tagline, siteType, ctx?.features || [], pageNames),
     {
@@ -652,26 +688,7 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
     },
   ]
 
-  if (siteType === 'blog') {
-    sections.push({
-      id: 'blog-list',
-      type: 'blog-list',
-      variant: 'featured-grid',
-      headline: 'Latest writing',
-      items: [
-        {
-          title: 'Shipping velocity without chaos',
-          body: 'A playbook for keeping product execution aligned as your team scales.',
-          href: '#',
-        },
-        {
-          title: 'Design systems that stay useful',
-          body: 'How to keep tokens and components practical instead of ornamental.',
-          href: '#',
-        },
-      ],
-    })
-  } else if (siteType === 'docs') {
+  if (siteType === 'docs') {
     sections.push({
       id: 'docs-content',
       type: 'docs-content',

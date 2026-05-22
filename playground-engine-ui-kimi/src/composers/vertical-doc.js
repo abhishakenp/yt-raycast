@@ -28,28 +28,43 @@ function balanceTopDivs(topHtml) {
   return closeTopSegmentSafely(String(topHtml ?? ''), { maxClose: 8 })
 }
 
+function isPublicationRoute(route, grammar) {
+  return route?.siteHint === 'blog' || grammar?.id === 'editorial-blog-index' || grammar?.id === 'editorial-newsroom'
+}
 
-async function buildGeminiTop(contract, plan, topSections) {
+function topOpenerInstruction({ route, grammar }) {
+  if (isPublicationRoute(route, grammar)) {
+    return `a publication index opener (${grammar?.heroPattern || 'featured post masthead + latest posts preview'} — NOT a SaaS marketing hero or product demo)`
+  }
+  return 'a STUNNING full-width hero'
+}
+
+async function buildGeminiTop(contract, plan, topSections, route, grammar) {
   const a = plan.visualWorld
+  const opener = topOpenerInstruction({ route, grammar })
+  const publication = isPublicationRoute(route, grammar)
   const prompt = `${contract}
 
-Build the TOP of the page: <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts + tailwind.config + <body class="bg-[${a.bg}] text-[${a.text}]">), sticky full-width <nav>, then EXACTLY ${topSections.length} separate <section> elements — one per role:
+Build the TOP of the page in ONE coherent pass: <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts + tailwind.config + <body class="bg-[${a.bg}] text-[${a.text}]">), sticky full-width <nav>, ${opener}, THEN these full-width sections:
 ${sectionList(topSections)}
 
 CRITICAL SECTION RULE: Each role above MUST be its own <section class="w-full ..."> ... </section> block. Never merge two roles into one <section>. The first section IS the hero — make it stunning with min-h-[76vh] and decisive display typography.
-HERO SCALE (NON-NEGOTIABLE): The hero section MUST carry min-h-[76vh] and the primary headline MUST use text-5xl md:text-7xl tracking-tight (or larger: text-8xl). This is a hard quality gate.
+${publication
+    ? 'PUBLICATION RULE: this is not a marketing hero. Use a compact featured masthead, normal section height, byline/date/excerpt, and continue into the archive grid.'
+    : 'HERO SCALE (NON-NEGOTIABLE): The hero section MUST carry min-h-[76vh] and the primary headline MUST use text-5xl md:text-7xl tracking-tight (or larger: text-8xl). This is a hard quality gate.'}
 Gorgeous hierarchy, generous rhythm, DECOR applied with restraint. Do NOT close </body> or </html>.`
   return completeGemini({ prompt, maxOutputTokens: 3200, temperature: 0.6 })
 }
 
-async function buildGroqTop(contract, plan, topSections) {
+async function buildGroqTop(contract, plan, topSections, route, grammar) {
   const a = plan.visualWorld
+  const opener = topOpenerInstruction({ route, grammar })
   const prompt = `${contract}
 
-Build TOP ONLY: <!DOCTYPE html>, <head>, <body>, sticky <nav>, hero.
+Build TOP ONLY: <!DOCTYPE html>, <head>, <body>, sticky <nav>, ${opener}.
 ${sectionList(topSections)}
 
-STOP after nav + hero (+ first section if listed). Close every tag. Do NOT close </body></html>.`
+STOP after nav + opener (+ first section if listed). Close every tag. Do NOT close </body></html>.`
   return completeGroq({
     system: BUILDER_SYSTEM,
     prompt,
@@ -156,7 +171,7 @@ async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
 
   // All workers run in parallel: Gemini top + up to 3 content workers + footer worker
   const [topResult, ...workerResults] = await Promise.all([
-    buildGeminiTop(contract, plan, topSecs),
+    buildGeminiTop(contract, plan, topSecs, route, grammar),
     ...contentTailSecs.map((sec) => buildSingleSection(contract, sec)),
     buildFooter(contract, footerSec),
   ])
@@ -219,7 +234,7 @@ async function composeFastParallel({ brief, plan, route, variety, grammar }) {
 
   const t0 = Date.now()
   const [topResult, tailResult] = await Promise.all([
-    buildGroqTop(contract, plan, topSecs),
+    buildGroqTop(contract, plan, topSecs, route, grammar),
     tailSecs.length ? buildTail(contract, tailSecs, 1) : Promise.resolve({ content: '\n</body></html>', ms: 0 }),
   ])
   const parallelMs = Date.now() - t0

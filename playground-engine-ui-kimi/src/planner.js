@@ -83,6 +83,20 @@ function adaptVisualWorldForBrief(world, { brief, route } = {}) {
       mood: 'high-energy training floor',
     }
   }
+  if (route?.siteHint === 'blog') {
+    return {
+      ...world,
+      bg: cleanHex(world.bg, '#faf7f2'),
+      surface: '#ffffff',
+      text: '#1c1917',
+      muted: '#78716c',
+      accent: '#b45309',
+      accent2: '#0369a1',
+      fontDisplay: 'Fraunces',
+      fontBody: 'Source Serif 4',
+      mood: 'warm editorial reading room',
+    }
+  }
   if (route?.siteHint === 'software' || /kubernetes|saas|b2b|developer|platform|open-?source|infrastructure|datadog/i.test(text)) {
     return {
       ...world,
@@ -109,9 +123,10 @@ export function fallbackGenome(brief, route, variety, grammar) {
   const primary = route.primary
   const palette = primary?.palette || []
   const appShell = route.siteHint === 'ops-console' && !/\bhomepage\b/i.test(brief)
+  const blog = route.siteHint === 'blog'
   return {
     pageKind: appShell ? 'app-shell' : 'vertical-doc',
-    archetype: appShell ? 'operator command surface' : `${route.siteHint} homepage`,
+    archetype: appShell ? 'operator command surface' : blog ? 'blog home index' : `${route.siteHint} homepage`,
     grammarId: grammar?.id || 'hero-editorial-split',
     visualWorld: {
       bg: cleanHex(palette[1], appShell ? '#08090a' : '#f8f4ec'),
@@ -131,7 +146,16 @@ export function fallbackGenome(brief, route, variety, grammar) {
       treatment: variety.mediaTreatment,
       contentStrategy: variety.contentStrategy,
     },
-    contentInventory: [
+    contentInventory: blog
+      ? [
+          'nav with Home, Archive, About, Subscribe',
+          'featured post masthead with title, byline, date, excerpt',
+          'latest posts grid with categories and read links',
+          'topics/tags or series band',
+          'newsletter signup band',
+          'footer with archive links',
+        ]
+      : [
       'nav with specific product links',
       'identity-defining hero or shell header',
       'proof strip using real numbers or named entities',
@@ -139,7 +163,16 @@ export function fallbackGenome(brief, route, variety, grammar) {
       'secondary feature/catalog/editorial sections',
       'penultimate CTA and footer',
     ],
-    sections: [
+    sections: blog
+      ? [
+          { role: 'featured', contains: 'nav + featured post masthead (cover, title, byline, date, excerpt, read link)' },
+          { role: 'latest', contains: 'grid of 6+ recent posts with category chips and short excerpts' },
+          { role: 'topics', contains: 'topic/tag chips or series list' },
+          { role: 'about', contains: 'short author/publication blurb' },
+          { role: 'newsletter', contains: 'email signup with concrete promise' },
+          { role: 'footer', contains: 'archive, about, subscribe links' },
+        ]
+      : [
       { role: 'opening', contains: 'nav, hero, primary visual surface' },
       { role: 'proof', contains: 'numbers, names, product artifacts, or location details' },
       { role: 'depth', contains: 'feature grid, catalog wall, table, event calendar, or editorial modules' },
@@ -237,6 +270,7 @@ ${mediaStrategyBlock(route.siteHint, variety, grammar)}
 ${mobbinSessionBlock(route.primary, route.secondary)}
 
 Decide the best front-door page for this brand. If the brief says "homepage", pageKind MUST be "vertical-doc" (rich marketing story; product UI as a demo section inside the page, not nested app chrome). pageKind "app-shell" ONLY for live operator consoles (fleet ops, incident desk).
+${route.siteHint === 'blog' ? 'This is a BLOG/PUBLICATION home — plan an article index (featured post + post grid), not a SaaS landing or product dashboard.' : ''}
 
 List ${quality ? '7-9' : '5-6'} concrete SECTIONS (vertical-doc) or app islands (app-shell), each a full-width band with brand-specific content. For vertical-doc, always include a footer section as the last entry. MINIMUM 7 sections for vertical-doc — never fewer, even for simple brands, so the builder always has enough material.
 

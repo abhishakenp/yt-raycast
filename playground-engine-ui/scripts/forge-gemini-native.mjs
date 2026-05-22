@@ -62,9 +62,11 @@ const PLANNER_SYSTEM =
   'You are a world-class art director + product designer. Decide what the brand\'s front door should BE, invent a distinctive visual world, and lay out its sections. Output ONLY compact JSON.'
 
 function plannerUser(brief) {
+  const blog = /\bblog\b/i.test(brief)
   return `Brief: ${brief}
 
 Decide the best front-door page. Look beyond "marketing landing": it may be the actual product UI (dashboard/console), a gallery, an editorial spread, a catalog, an events wall, etc. Pick what a great team would ship for THIS brand.
+${blog ? '\nThis brief is a BLOG/PUBLICATION home — plan an article index (featured post + post grid), not a SaaS landing or open-source developer platform.' : ''}
 
 layoutMode: "app-shell" ONLY for genuine operational software (dashboard/console/admin with live data + persistent controls); "vertical-doc" for everything else (default).
 
@@ -138,8 +140,10 @@ function balanceTopDivs(topHtml) {
 function contract(brief, p) {
   const a = p.art
   const acc2 = a.accent2 && a.accent2 !== 'null' ? `, secondary ${a.accent2}` : ''
+  const blog = /\bblog\b/i.test(brief)
   return `Brand: ${brief}
 This page is a "${p.archetype}". Build it like a world-class designer would — aim for the polish of the very best Tailwind sites (Linear, Vercel, Stripe, Kimi-grade craft).
+${blog ? '\nBLOG/PUBLICATION HOME: article index, not a product landing. Lead with a featured post masthead (title, byline, date, excerpt, read link) then a dense latest-posts grid. NO SaaS hero, NO repo/code mockup, NO Features/Testimonials nav.\n' : ''}
 
 VISUAL WORLD (obey EXACTLY so independently-built parts fuse):
 - Palette: bg ${a.bg}, surface ${a.surface}, text ${a.text}, muted ${a.muted}, accent ${a.accent}${acc2}. Use Tailwind arbitrary hex values: bg-[${a.bg}], text-[${a.text}], bg-[${a.accent}], border-[${a.muted}].
@@ -157,6 +161,7 @@ HARD RULES:
 - ICONS: never <svg>; use <i data-lucide="name"> sized with Tailwind.
 - IMAGES: never inline images/SVG; use <div data-img="short subject" class="w-full aspect-[4/3] bg-[${a.muted}] rounded-..."></div>. ALWAYS give an image box a sensible aspect ratio (aspect-[4/3], aspect-video, aspect-square) — NEVER a giant full-bleed empty block, and never an image box taller than ~70vh. A section must never be just a wall of empty image boxes: pair images with real copy (titles, captions, prices).
 - HERO: keep it clean and legible — a headline, subhead, and 1-2 CTAs (optionally one visual on the side). Do NOT cram a form, a long list, or dense widgets into the hero.
+- For blog/publication briefs: the first viewport is a featured post masthead or publication index opener — not a product marketing hero.
 - Real, specific copy (no lorem). Generous spacing (py-20+). Pour effort into hierarchy, rhythm, and craft.`
 }
 
@@ -197,6 +202,10 @@ const list = (arr) => arr.map((s, i) => `${i + 1}. ${s.role} — ${s.contains}`)
 async function buildVertical(brief, p) {
   const c = contract(brief, p)
   const secs = p.sections || []
+  const blog = /\bblog\b/i.test(brief)
+  const opener = blog
+    ? 'a publication index opener (featured post masthead + latest posts preview — NOT a SaaS marketing hero or product demo)'
+    : 'a STUNNING full-width hero'
   // Gemini owns the hero + the first 2-3 sections (the money-shot above-the-
   // fold + first scroll). Capped at 3 so the Gemini call stays fast (it's the
   // wall) and doesn't truncate; GPT-OSS takes the denser tail.
@@ -207,7 +216,7 @@ async function buildVertical(brief, p) {
   const geminiCall = gemini({
     user: `${c}
 
-Build the TOP of the page in ONE coherent pass: <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts links + inline tailwind.config + base background ${p.art.bg} and text ${p.art.text} on <body>), the <body ...> opening tag, a sticky full-width <nav> (brand + links + a primary action), a STUNNING full-width hero, THEN these full-width sections:
+Build the TOP of the page in ONE coherent pass: <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts links + inline tailwind.config + base background ${p.art.bg} and text ${p.art.text} on <body>), the <body ...> opening tag, a sticky full-width <nav> (brand + links + a primary action), ${opener}, THEN these full-width sections:
 ${list(top)}
 This is the part users judge first — make it gorgeous: confident large display type, strong hierarchy, generous rhythm, the DECOR applied. Do NOT close </body> or </html>.`,
     maxOut: 3400, temperature: 0.6,

@@ -9,7 +9,10 @@ export const BUILDER_SYSTEM =
 /** Fast bench path only — set KIMI_FAST=1 */
 export const FAST_MODE = process.env.KIMI_FAST === '1'
 
-function siteKindRules(route) {
+function siteKindRules(route, brief = '') {
+  if (route?.siteHint === 'blog') {
+    return 'BLOG/PUBLICATION HOME: article index, not a product landing. Lead with a featured post masthead (title, byline, date, excerpt, read link) then a dense latest-posts grid. NO SaaS hero, NO open-source repo mockup, NO dashboard/code panel, NO Features/Testimonials nav. Nav: Home, Archive, About, Subscribe.'
+  }
   if (route?.siteHint === 'portfolio') {
     return 'PORTFOLIO: solo freelance designer — typographic hero + ONE tasteful visual. Never a Designers/Engineers/PM persona trio.'
   }
@@ -18,6 +21,9 @@ function siteKindRules(route) {
   }
   if (route?.siteHint === 'fitness') {
     return 'FITNESS: schedule-first hero with class times and membership CTA. High-energy training floor, not spa/hotel.'
+  }
+  if (route?.siteHint === 'editorial' && /\bblog\b/i.test(brief)) {
+    return 'PUBLICATION: treat this as a blog/newsletter home — featured story + post grid. Avoid generic marketing hero CTAs.'
   }
   return ''
 }
@@ -52,7 +58,7 @@ Archetype: ${plan.archetype} · ${grammar.id}
 Palette: bg ${a.bg}, surface ${a.surface}, text ${a.text}, muted ${a.muted}, accent ${a.accent}, accent2 ${a.accent2}
 Fonts: "${a.fontDisplay}" + "${a.fontBody}" (Google Fonts + tailwind.config)
 Mood: ${a.mood} · Decor: ${a.decor}
-${siteKindRules(route)}
+${siteKindRules(route, brief)}
 Rules: Tailwind CDN only; <i data-lucide>; simple <div data-img> with aspect ratio; full-width sections; real copy; tags closed.`
   }
 
@@ -68,7 +74,7 @@ ${grammarPromptBlock(grammar, variety)}
 ${mediaStrategyBlock(route.siteHint, variety, grammar)}
 ${mobbinSessionBlock(route.primary, route.secondary)}
 
-${siteKindRules(route)}
+${siteKindRules(route, brief)}
 ${qualityLayoutRules(a)}
 ${mobbinDoctrineBlock()}
 

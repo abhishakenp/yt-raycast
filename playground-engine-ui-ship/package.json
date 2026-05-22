@@ -1,0 +1,22 @@
+{
+  "name": "playground-engine-ui-ship",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "ship": "bun scripts/ship-native.mjs",
+    "judge": "bun scripts/run-ship-severe-judge.mjs",
+    "judge:fast": "SHIP_FAST=1 bun scripts/run-ship-severe-judge.mjs --fast",
+    "quad": "bun scripts/engine-quad-judge.mjs",
+    "quad:fast": "SHIP_FAST=1 bun scripts/engine-quad-judge.mjs --engines=ship,kimi,forge,gpt",
+    "improve": "bun scripts/ship-improve-loop.mjs",
+    "improve:fast": "SHIP_FAST=1 bun scripts/ship-improve-loop.mjs --fast --target=90 --max=0",
+    "gallery": "bun scripts/ship-gallery-build.mjs",
+    "gallery:serve": "bun ../.forge/ship-gallery/serve.mjs",
+    "compare": "bun scripts/ship-vs-production.mjs"
+  },
+  "devDependencies": {
+    "acpx": "^0.8.0",
+    "vitest": "^3.2.4"
+  }
+}

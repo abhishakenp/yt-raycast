@@ -21,6 +21,7 @@ import { getPublicDesignExemplarPath } from '../prompts/public-design-exemplar-a
 import { stripDestructiveEmptyDesignTheme } from './homepage-theme-sanitize.js'
 import { writeFile } from './workspace.js'
 import { buildHomepageSpecSliceJson } from '../spec/homepage-spec-slice.js'
+import { generateShipEngineHomepage, isShipHomepageEngineEnabled } from './ship-homepage-engine.js'
 
 const SHIPFAST_FOOTER_MARKER = 'data-sf-footer-branding'
 
@@ -76,6 +77,42 @@ export async function generateHomepage(
   thinSiteSpec = null,
 ) {
   log('  homepage: generating from scratch (LLM)...')
+
+  if (isShipHomepageEngineEnabled()) {
+    log('  homepage: unified ship engine (playground-engine-ui-ship)')
+    const ship = await generateShipEngineHomepage(prompt, {
+      seed: thinSiteSpec?.slug || workspace?.sessionId || prompt,
+    })
+    let html = injectShipFastFooterBranding(stripDestructiveEmptyDesignTheme(ship.html), log)
+
+    if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation) {
+      log(`  homepage: translating to ${indiaMode.name || indiaMode.language?.name} via Groq...`)
+      try {
+        const translated = await translateHtml(html, indiaMode)
+        if (translated?.content && !translated.error) {
+          html = translated.content
+          log(`  homepage: translation complete — ${translated.translatedCount} strings translated`)
+        }
+      } catch (err) {
+        log(`  homepage: translation error — ${err.message}, keeping original`)
+      }
+    }
+
+    html = alignGeneratedImagesToContext(html, imageHints)
+    html = hydrateStorefrontGradientSlots(html, imageHints)
+    html = await verifyTrustedStockImageUrls(html)
+    html = injectEcommerceHeroResponsiveCss(html)
+    html = ensureLucideIconRuntime(html, log)
+
+    if (htmlLooksDegenerate(html, { prompt })) {
+      log('  ❌ homepage: ship engine output failed degeneracy check')
+      throw new Error('Homepage output failed quality check')
+    }
+
+    writeFile(workspace, 'index.html', html)
+    log(`  index.html: ${html.length} chars | ship engine ${ship.metrics.wall}ms kimi=${ship.metrics.kimiScore}`)
+    return { html, inputTokens: 0, outputTokens: 0, cost: 0 }
+  }
 
   const hasDesignReferenceUrls = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   const resolvedDesignRef = designRef ?? readDesignRefFromWorkspace(workspace)

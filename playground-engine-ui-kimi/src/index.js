@@ -26,6 +26,9 @@ function pickComposer(plan, route, grammar) {
   if (route.siteHint === 'editorial' && grammar?.id?.startsWith('editorial')) {
     return composeEditorial
   }
+  if (route.siteHint === 'blog') {
+    return composeEditorial
+  }
   if (route.siteHint === 'portfolio' && grammar?.id === 'gallery-masonry') {
     return composeGallery
   }
@@ -55,7 +58,7 @@ export async function generateKimiHomepage(brief, opts = {}) {
   let html = injectAmbientStyles(sanitizeHtml(built.html, plan, route), plan.mediaStrategy?.treatment || variety.mediaTreatment)
   const stitchCheck = validateStitchedHtml(html)
 
-  const audits = runDeterministicAudits(html, { plan, route, seed })
+  const audits = runDeterministicAudits(html, { plan, route, seed, brief })
   const wall = Date.now() - startedAt
 
   return {

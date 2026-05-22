@@ -11,11 +11,11 @@ export function validateFullWidthSections(html, { minSections = 6 } = {}) {
   return { ok: issues.length === 0, issues, sectionCount: sections.length }
 }
 
-export function runDeterministicAudits(html, { plan, route, seed } = {}) {
+export function runDeterministicAudits(html, { plan, route, seed, brief } = {}) {
   const structure = validateFullWidthSections(html, {
-    minSections: plan?.pageKind === 'app-shell' ? 4 : 6,
+    minSections: plan?.pageKind === 'app-shell' ? 4 : route?.siteHint === 'blog' ? 5 : 6,
   })
-  const kimi = scoreKimiReadiness(html, { plan, route })
+  const kimi = scoreKimiReadiness(html, { plan, route, brief })
   const richness = scoreVisualRichness(html, { plan })
   const signature = detectVisualSignature(html, { plan, route, seed })
   return {
