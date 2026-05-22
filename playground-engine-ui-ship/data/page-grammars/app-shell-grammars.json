@@ -1,0 +1,34 @@
+[
+  {
+    "id": "app-sidebar-canvas",
+    "label": "Sidebar + command canvas",
+    "pageKind": "app-shell",
+    "layoutPattern": "True 2D: left rail navigation, top status bar, primary canvas with live data panels.",
+    "islands": ["identity strip", "primary map or table", "secondary queue", "tertiary controls"],
+    "siteHints": ["ops-console", "software"]
+  },
+  {
+    "id": "app-dense-ops",
+    "label": "Dense operations grid",
+    "pageKind": "app-shell",
+    "layoutPattern": "Top bar + KPI strip + two-column main grid (wide primary + stacked secondary panels).",
+    "islands": ["KPI strip", "primary surface", "incident feed", "registry table"],
+    "siteHints": ["ops-console"]
+  },
+  {
+    "id": "app-analytics-hub",
+    "label": "Analytics hub",
+    "pageKind": "app-shell",
+    "layoutPattern": "Sidebar + header + chart-forward canvas with filter rail and data table below.",
+    "islands": ["filters", "chart canvas", "breakdown table", "alerts"],
+    "siteHints": ["software", "ops-console"]
+  },
+  {
+    "id": "app-workspace-split",
+    "label": "Workspace split",
+    "pageKind": "app-shell",
+    "layoutPattern": "Left nav + center work surface + right contextual inspector panel.",
+    "islands": ["workspace list", "main editor surface", "inspector", "activity log"],
+    "siteHints": ["software"]
+  }
+]
