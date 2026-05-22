@@ -45,6 +45,7 @@ import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { withLanguageEnforcementBlock } from './prompt-language.js'
 import { getWorkspacePreferredLanguage } from '../server/sessions.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
+import { SHIPFAST_KIMI_ENGINE } from '../config.js'
 import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt.js'
 import { enrichBrandProfile } from './brand-profile.js'
 import { syncSiteSettingsFromSiteSpec } from '../sanity/cms-sync.js'
@@ -296,22 +297,21 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   _status('Plotting launch trajectory…', 'spec')
 
-  // Resolve the Mobbin Pro DNA anchor BEFORE the design/site-spec/homepage
-  // promises fan out. All three phases read mobbin-anchor.json from the workspace.
-  try {
-    if (!isMobbinEnabled()) {
-      _log('  mobbin anchor: disabled (SHIPFAST_MOBBIN=0)')
-    } else {
-      const mobbinAnchor = await inferMobbinAnchor({ brief: pipelinePrompt, projectContext: {} })
-      if (mobbinAnchor?.app) {
-        writeMobbinAnchorToWorkspace(workspace, mobbinAnchor)
-        _log(`  mobbin anchor: ${mobbinAnchor.app} (${mobbinAnchor.category}) — ${mobbinAnchor.reason}`)
-      } else {
-        _log('  mobbin anchor: none (brief did not match any DNA entry)')
-      }
-    }
-  } catch (e) {
-    _log(`  mobbin anchor: skipped (${e?.message || 'error'})`)
+  // Kimi handles its own design planning — Mobbin DNA anchor is not used by the kimi engine.
+  // For non-kimi paths, resolve the anchor non-blocking so spec/homepage can start immediately.
+  if (!SHIPFAST_KIMI_ENGINE && isMobbinEnabled()) {
+    inferMobbinAnchor({ brief: pipelinePrompt, projectContext: {} })
+      .then((mobbinAnchor) => {
+        if (mobbinAnchor?.app) {
+          writeMobbinAnchorToWorkspace(workspace, mobbinAnchor)
+          _log(`  mobbin anchor: ${mobbinAnchor.app} (${mobbinAnchor.category}) — ${mobbinAnchor.reason}`)
+        } else {
+          _log('  mobbin anchor: none (brief did not match any DNA entry)')
+        }
+      })
+      .catch((e) => _log(`  mobbin anchor: skipped (${e?.message || 'error'})`))
+  } else if (!isMobbinEnabled()) {
+    _log('  mobbin anchor: disabled (SHIPFAST_MOBBIN=0)')
   }
 
   const bootstrapImageHintsPromise = resolvePexelsImageHints(
@@ -329,7 +329,9 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   const specPromise = (async () => {
     const [designStats, detectStats] = await Promise.all([
-      generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
+      SHIPFAST_KIMI_ENGINE
+        ? Promise.resolve({ brief: '', inputTokens: 0, outputTokens: 0, cost: 0 })
+        : generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
       detectSiteType(pipelinePrompt, _log),
     ])
     tick('design_end')
