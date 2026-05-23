@@ -228,7 +228,9 @@ export function rerenderPreviewFromSiteSpec(session) {
   if (!siteSpec) throw new Error('Unable to build a canonical site spec for this session')
   const exactCloneStatus = getExactCloneStatus(session.workspace, siteSpec)
   if (!exactCloneStatus.ready) throw new Error(exactCloneStatus.reason)
-  return renderPreviewToWorkspace(siteSpec, session.workspace)
+  return renderPreviewToWorkspace(siteSpec, session.workspace, session, {
+    preserveLlmHomepage: true,
+  })
 }
 
 export async function syncSessionPreviewFromSanity(session) {
@@ -247,5 +249,7 @@ export async function syncSessionPreviewFromSanity(session) {
   const merged = mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings)
   saveSiteSpec(session.workspace, merged)
   session.siteSpecReady = true
-  return renderPreviewToWorkspace(merged, session.workspace, session)
+  return renderPreviewToWorkspace(merged, session.workspace, session, {
+    preserveLlmHomepage: true,
+  })
 }

@@ -38,6 +38,21 @@ const FOOD_PROMPT_RE =
 const SNACK_PROMPT_RE =
   /\b(snack|snacks|healthy snack|protein snack|millet snack|baked snack|kids snack|travel snack|trail mix|granola|chips|cookies|bars?|bites)\b/i
 
+const TRAVEL_PROMPT_RE =
+  /\b(travel|trip|trips|adventure|cinematic|destination|vacation|tour|tourism|safari|backpack|wander|explorer|getaway|itinerary|traveler|booking funnel|exotic|landing page)\b/i
+
+const TRAVEL_PHOTO_PEXELS_IDS = [
+  4640881, 4074420, 9951672, 2901209, 3250612, 2387861, 3601422, 1320684, 2487979, 3155667,
+  2166553, 457882, 1450360, 2666218, 346885,
+]
+
+const TRAVEL_VIDEO_FALLBACK = {
+  url: 'https://videos.pexels.com/video-files/7470764/7470764-hd_1920_1080_25fps.mp4',
+  posterUrl:
+    'https://images.pexels.com/videos/7470764/pexels-photo-7470764.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=630&w=1200',
+  alt: 'Cinematic travel destination',
+}
+
 const GENERIC_FEATURE_RE =
   /\b(user|auth|login|password|session|token|api|database|stripe|payment|checkout|cart|wishlist|order|tracking|returns?|shipping|delivery|search|filter|sort|dashboard|admin|responsive|mobile|navigation|footer|header|faq|newsletter|testimonial|review|support|contact|export|import|upload|parse|excel|spreadsheet|inventory|subscription|analytics|notification|account)\b/i
 
@@ -1567,7 +1582,7 @@ export async function alignGeneratedImagesToContext(html, imageHints = null) {
   const videos = imageHints?.videos ?? []
   if (!html || typeof html !== 'string') return html
 
-  let next = html
+  let next = polishGeneratedMediaHtml(html, imageHints)
   if (/\bdata-img\s*=/.test(next)) {
     next = await hydrateDataImgSlots(next, imageHints)
   }
@@ -1615,6 +1630,7 @@ function detectHydrationRetailCategory(prompt = '') {
     return 'tea'
   if (/\b(coffee|espresso|latte|cappuccino|roast|arabica|coffee beans?)\b/i.test(p)) return 'coffee'
   if (/\b(leather|wallet|tote|handbag|satchel|accessories)\b/i.test(p)) return 'leather'
+  if (TRAVEL_PROMPT_RE.test(p)) return 'travel'
   return 'generic'
 }
 
@@ -1633,6 +1649,11 @@ function buildSyntheticFallbackPhotos(category) {
   } else if (category === 'leather') {
     blob = HYDRATION_MATCH_BLOB.leather
     query = 'leather goods product'
+  } else if (category === 'travel') {
+    ids = TRAVEL_PHOTO_PEXELS_IDS
+    blob =
+      'travel adventure destination landscape beach mountain safari city exotic cinematic vacation trip explorer wander'
+    query = 'cinematic travel destination'
   }
   return ids.map((id) => ({
     url: formatImageUrl(id, 1400, 900),
@@ -1649,12 +1670,196 @@ function escapeHtmlAttribute(value = '') {
 function stockPhotosForHydration(imageHints = null) {
   const prompt = imageHints?.hydrationPrompt ?? imageHints?.prompt ?? ''
   const cat = detectHydrationRetailCategory(prompt)
-  if (cat === 'tea' || cat === 'coffee' || cat === 'leather') {
+  const fromApi = imageHints?.photos
+  if (Array.isArray(fromApi) && fromApi.length) {
+    if (cat === 'travel' && fromApi.length < 6) {
+      return [...fromApi, ...buildSyntheticFallbackPhotos('travel')].filter(
+        (photo, index, list) => list.findIndex((item) => item.url === photo.url) === index,
+      )
+    }
+    return fromApi
+  }
+  if (cat === 'tea' || cat === 'coffee' || cat === 'leather' || cat === 'travel') {
     return buildSyntheticFallbackPhotos(cat)
   }
-  const fromApi = imageHints?.photos
-  if (Array.isArray(fromApi) && fromApi.length) return fromApi
   return buildSyntheticFallbackPhotos(cat)
+}
+
+function repairMalformedTailwindClasses(html) {
+  if (!html || typeof html !== 'string') return html
+  let next = html.replace(/\bclassrelative\b/g, 'class="relative"')
+  next = next.replace(/\bclass\s*=\s*(["'])([^"']*)\1/g, (full, quote, classes) => {
+    const fixed = classes.replace(/\s+\/\d+\b/g, '').replace(/\s{2,}/g, ' ').trim()
+    return fixed === classes ? full : `class=${quote}${fixed}${quote}`
+  })
+  return next
+}
+
+function isEmptyArtSurfaceInner(inner) {
+  const stripped = String(inner || '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .trim()
+  return !stripped || !/<(?:img|video|picture|svg|iframe)\b/i.test(stripped)
+}
+
+const ART_SURFACE_OPEN_RE = /<div\b([^>]*\bdata-visual=["']art-surface["'][^>]*)>/gi
+
+function replaceArtSurfaceDivBlocks(html, onMatch) {
+  const openRe = new RegExp(ART_SURFACE_OPEN_RE.source, 'gi')
+  let result = ''
+  let lastIndex = 0
+  let m
+  while ((m = openRe.exec(html)) !== null) {
+    result += html.slice(lastIndex, m.index)
+    const attrs = m[1]
+    const start = m.index + m[0].length
+    let depth = 1
+    let i = start
+    let closed = false
+    while (i < html.length && depth > 0) {
+      const nextOpen = html.indexOf('<div', i)
+      const nextClose = html.indexOf('</div>', i)
+      if (nextClose === -1) break
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth += 1
+        i = nextOpen + 4
+        continue
+      }
+      depth -= 1
+      if (depth === 0) {
+        const inner = html.slice(start, nextClose)
+        result += onMatch(attrs, inner)
+        lastIndex = nextClose + 6
+        closed = true
+        break
+      }
+      i = nextClose + 6
+    }
+    if (!closed) {
+      result += m[0]
+      lastIndex = m.index + m[0].length
+    }
+    openRe.lastIndex = lastIndex
+  }
+  result += html.slice(lastIndex)
+  return result
+}
+
+function hydrateArtSurfaceSlots(html, imageHints = null) {
+  if (!html || typeof html !== 'string' || !/\bdata-visual=["']art-surface["']/i.test(html)) return html
+  const photos = stockPhotosForHydration(imageHints)
+  const videos = Array.isArray(imageHints?.videos) ? imageHints.videos : []
+  const usage = new Map()
+
+  return replaceArtSurfaceDivBlocks(html, (attrs, inner) => {
+    if (!isEmptyArtSurfaceInner(inner)) return `<div${attrs}>${inner}</div>`
+    const kind = attrs.match(/\bdata-visual-kind=["']([^"']+)["']/i)?.[1] || 'editorial-spread'
+    if (/video|destination|cinematic|hero/i.test(kind)) {
+      const video = videos[0] || TRAVEL_VIDEO_FALLBACK
+      const poster = video.posterUrl ? ` poster="${video.posterUrl}"` : ''
+      return `<div${attrs}><video${poster} autoplay muted loop playsinline class="w-full h-full object-cover"><source src="${video.url}" type="video/mp4"></video></div>`
+    }
+    const label = kind.replace(/-/g, ' ')
+    const pick = pickPhotoForImg(label, photos, usage) || photos[0]
+    if (!pick?.url) return `<div${attrs}>${inner}</div>`
+    usage.set(pick.url, (usage.get(pick.url) || 0) + 1)
+    const alt = escapeHtmlAttribute(pick.alt || label)
+    return `<div${attrs}><img src="${pick.url}" alt="${alt}" class="w-full h-full object-cover" loading="eager" decoding="async" /></div>`
+  })
+}
+
+function hydrateHeroGradientBackgrounds(html, imageHints = null) {
+  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html)) return html
+  const photos = stockPhotosForHydration(imageHints)
+  if (!photos.length) return html
+  const usage = new Map()
+  const prompt = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? 'travel hero cinematic')
+  const heroUrl = pickPhotoForImg(prompt, photos, usage)?.url ?? photos[0].url
+
+  return html.replace(
+    /(<section\b[^>]*class="[^"]*(?:min-h-screen|min-h-\[(?:60|70|76|80|90))[^"]*"[^>]*>)([\s\S]*?)(<\/section>)/gi,
+    (full, open, body, close) => {
+      if (/<(?:img|video)\b[^>]*\bsrc=/i.test(body)) return full
+      if (!/\bbg-gradient-to/i.test(body)) return full
+      const backdrop =
+        body.match(
+          /<div\b[^>]*class="[^"]*\babsolute\b[^"]*\binset-0\b[^"]*\bbg-gradient-to[^"]*"[^>]*>\s*<\/div>/i,
+        )?.[0] || ''
+      if (!backdrop) return full
+      const injected = `<img src="${heroUrl}" alt="" class="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="async" /><div class="absolute inset-0 bg-black/45"></div>${backdrop}`
+      return `${open}${body.replace(backdrop, injected)}${close}`
+    },
+  )
+}
+
+function hydrateGradientCardMedia(html, imageHints = null) {
+  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html)) return html
+  const photos = stockPhotosForHydration(imageHints)
+  if (!photos.length) return html
+  const usage = new Map()
+
+  return html.replace(
+    /<(div|article)\b([^>]*\bbg-gradient-to[^>]*)>([\s\S]*?)<\/\1>/gi,
+    (full, tag, attrs, inner) => {
+      if (/<img\b/i.test(full)) return full
+      if (/footer-branding|data-sf-|sr-only|intro-media/i.test(full)) return full
+      const label =
+        inner.match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
+        inner.match(/<p[^>]*>([\s\S]*?)<\/p>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
+        'travel destination'
+      const pick = pickPhotoForImg(label, photos, usage)
+      const url = pick?.url ?? photos[0].url
+      usage.set(url, (usage.get(url) || 0) + 1)
+      const alt = escapeHtmlAttribute(label.slice(0, 80) || 'Destination')
+      const relAttrs = /\bclass\s*=/.test(attrs)
+        ? attrs.replace(/\bclass\s*=\s*(["'])([^"']*)\1/, (_, q, cls) => {
+            const nextCls = cls.includes('relative') ? cls : `relative overflow-hidden ${cls}`
+            return `class=${q}${nextCls}${q}`
+          })
+        : `${attrs} class="relative overflow-hidden"`
+      return `<${tag}${relAttrs}><img src="${url}" alt="${alt}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" /><div class="absolute inset-0 bg-black/45"></div><div class="relative">${inner}</div></${tag}>`
+    },
+  )
+}
+
+function dedupeRedundantHeroSections(html) {
+  if (!html || typeof html !== 'string') return html
+  const bookingHeroRe =
+    /<section\b[\s\S]*?(?:placeholder="Where|Where to\?|placeholder="Destination)[\s\S]*?<\/section>/gi
+  const heroes = [...html.matchAll(bookingHeroRe)]
+  if (heroes.length < 2 || heroes[0].index > 15000) return html
+
+  let keepIndex = 0
+  let bestScore = -1
+  for (let i = 0; i < heroes.length; i++) {
+    const block = heroes[i][0]
+    let score = 0
+    if (/min-h-screen/i.test(block)) score += 3
+    if (/<video\b/i.test(block)) score += 2
+    if (/<img\b/i.test(block)) score += 1
+    if (/\bdata-visual=["']art-surface["']/i.test(block) && !/<(?:video|img)\b/i.test(block)) score -= 2
+    if (score > bestScore) {
+      bestScore = score
+      keepIndex = i
+    }
+  }
+
+  let next = html
+  for (let i = heroes.length - 1; i >= 0; i--) {
+    if (i === keepIndex) continue
+    const block = heroes[i][0]
+    next = next.slice(0, heroes[i].index) + next.slice(heroes[i].index + block.length)
+  }
+  return next
+}
+
+export function polishGeneratedMediaHtml(html, imageHints = null) {
+  let next = repairMalformedTailwindClasses(html)
+  next = dedupeRedundantHeroSections(next)
+  next = hydrateArtSurfaceSlots(next, imageHints)
+  next = hydrateHeroGradientBackgrounds(next, imageHints)
+  next = hydrateGradientCardMedia(next, imageHints)
+  return next
 }
 
 const DATA_IMG_OPEN_RE = /<div\b([^>]*\bdata-img=["']([^"']*)["'][^>]*)>/gi

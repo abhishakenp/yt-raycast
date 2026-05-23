@@ -45,8 +45,8 @@ function topOpenerInstruction({ route, grammar }) {
  */
 function resolveHeroComboSplit(secs, { route, grammar }) {
   if (isPublicationRoute(route, grammar)) {
-    const topN = 1
-    return { topN, topSecs: secs.slice(0, topN), tailSecs: secs.slice(topN), heroOnly: false }
+    const topN = Math.min(1, secs.length)
+    return { topN, topSecs: secs.slice(0, topN), tailSecs: secs.slice(topN), heroOnly: true }
   }
   return { topN: 0, topSecs: [], tailSecs: secs, heroOnly: true }
 }
@@ -65,15 +65,19 @@ function firstViewportLabel(route, grammar, { heroOnly } = {}) {
 
 function minSectionThreshold(plan, route) {
   if (plan?.pageKind === 'app-shell') return 4
+  if (isPublicationRoute(route)) return 4
   if (route?.siteHint === 'editorial') return 4
   return 6
 }
 
 function padSectionDensity(html, plan, route) {
+  if (isPublicationRoute(route)) return html
   const minSections = minSectionThreshold(plan, route)
   const sectionCount = (html.match(/<section\b/gi) || []).length
   if (sectionCount < minSections) {
-    return injectMissingSections(html, plan, minSections - sectionCount)
+    return injectMissingSections(html, plan, minSections - sectionCount, {
+      insertBefore: /<footer\b/i,
+    })
   }
   return html
 }
@@ -91,11 +95,14 @@ Build the TOP of the page in ONE coherent pass:
 - ${opener}
 ${sectionBlock}
 ${publication
-    ? 'PUBLICATION: compact featured masthead, normal section height, no min-h-screen bands.'
+    ? `PUBLICATION INDEX (critical):
+- Nav links: Home, Archive, About, Subscribe — NOT category/topic names in nav.
+- Build ONE <section id="featured"> with compact featured post split (cover photo LEFT, title/byline/excerpt/read link RIGHT). Normal section height — no min-h-screen, no marketing billboard, no separate masthead/tagline band.
+- Use h2 for the featured headline (not h1).`
     : `HERO SCALE (NON-NEGOTIABLE): hero MUST use min-h-[76vh], primary headline text-5xl md:text-7xl tracking-tight (or text-8xl), subhead + 1-2 CTAs, optional side visual. Kimi / Linear grade craft.`}
 ${heroOnly ? 'STOP after the hero </section>. Do NOT add feature/pricing/testimonial bands — Groq builds those next.' : ''}
 Do NOT close </body> or </html>.`
-  return completeGemini({ prompt, maxOutputTokens: heroOnly ? 2000 : 2400, temperature: 0.6 })
+  return completeGemini({ prompt, maxOutputTokens: heroOnly ? 2600 : 2800, temperature: 0.6 })
 }
 
 async function buildGroqTop(contract, plan, topSections, route, grammar) {
@@ -139,13 +146,13 @@ CRITICAL: Each role = its own closed <section>. Match palette, fonts, decor EXAC
     system: BUILDER_SYSTEM,
     prompt,
     temperature: 0.58,
-    maxTokens: dense ? Math.min(4500, 1200 + sections.length * 700) : Math.min(5000, 1400 + sections.length * 650),
+    maxTokens: dense ? 4500 : 5000,
     reasoningEffort: 'low',
   })
 }
 
 async function buildTailParallel(contract, sections, topCount, ctx) {
-  if (sections.length <= 4) {
+  if (sections.length <= 6) {
     return buildTail(contract, sections, topCount, ctx)
   }
   const mid = Math.ceil(sections.length / 2)
@@ -174,27 +181,51 @@ function sleep(ms) {
 }
 
 const geminiHeroTimeoutMs = () =>
-  parseInt(process.env.SHIP_GEMINI_HERO_TIMEOUT_MS || '14000', 10)
+  parseInt(process.env.SHIP_GEMINI_HERO_TIMEOUT_MS || process.env.SHIP_GEMINI_TIMEOUT_MS || '17000', 10)
+
+const geminiHeroRetryTimeoutMs = () =>
+  parseInt(process.env.SHIP_GEMINI_HERO_RETRY_MS || '8000', 10)
+
+function heroTopLooksUsable(html) {
+  const body = String(html ?? '')
+  return body.length > 700 && /<nav\b/i.test(body) && (/<section\b/i.test(body) || /<h1\b/i.test(body))
+}
 
 async function resolveHeroTop({ brief, contract, heroContract, plan, topSecs, route, grammar, variety, heroOnly }) {
   const timeoutMs = geminiHeroTimeoutMs()
   const groqTopPromise = buildGroqTop(contract, plan, topSecs, route, grammar)
-  const geminiTopPromise = buildGeminiTop(heroContract, plan, topSecs, route, grammar, { heroOnly })
+  const buildGemini = () => buildGeminiTop(heroContract, plan, topSecs, route, grammar, { heroOnly })
 
-  try {
-    const topResult = await Promise.race([
-      geminiTopPromise,
-      sleep(timeoutMs).then(() => {
-        const err = new Error(`gemini hero timeout after ${timeoutMs}ms`)
+  const waitGemini = (ms) =>
+    Promise.race([
+      buildGemini(),
+      sleep(ms).then(() => {
+        const err = new Error(`gemini hero timeout after ${ms}ms`)
         err.code = 'GEMINI_TIMEOUT'
         throw err
       }),
     ])
-    return { topResult, topSource: 'gemini', geminiMs: topResult.ms || 0, groqTopMs: 0 }
+
+  try {
+    const topResult = await waitGemini(timeoutMs)
+    if (heroTopLooksUsable(topResult.content)) {
+      return { topResult, topSource: 'gemini', geminiMs: topResult.ms || 0, groqTopMs: 0 }
+    }
   } catch {
-    const topResult = await groqTopPromise
-    return { topResult, topSource: 'groq-fallback', geminiMs: 0, groqTopMs: topResult.ms || 0 }
+    // fall through to retry / groq insurance
   }
+
+  try {
+    const retryResult = await waitGemini(geminiHeroRetryTimeoutMs())
+    if (heroTopLooksUsable(retryResult.content)) {
+      return { topResult: retryResult, topSource: 'gemini-retry', geminiMs: retryResult.ms || 0, groqTopMs: 0 }
+    }
+  } catch {
+    // fall through to groq insurance
+  }
+
+  const topResult = await groqTopPromise
+  return { topResult, topSource: 'groq-fallback', geminiMs: 0, groqTopMs: topResult.ms || 0 }
 }
 
 /** Production: Gemini hero+nav ∥ Groq body — forge combo, hard-capped at ~14s for hero leg. */
@@ -231,14 +262,16 @@ async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   let html = stitch(topHtml, tailHtml)
   html = padSectionDensity(html, plan, route)
   const validation = validateStitchedHtml(html)
-  html = applyGenomeMerge(html, plan)
+  html = applyGenomeMerge(html, plan, route)
   html = sanitizeHtml(html, plan, route, brief)
 
   return {
     html,
     metrics: {
       buildMode:
-        topSource === 'gemini' ? 'vertical-doc-gemini-hero-combo' : 'vertical-doc-gemini-hero-combo-groq-fallback',
+        topSource === 'gemini' || topSource === 'gemini-retry'
+          ? 'vertical-doc-gemini-hero-combo'
+          : 'vertical-doc-gemini-hero-combo-groq-fallback',
       heroTopSource: topSource,
       geminiMs,
       groqTopMs,
@@ -273,7 +306,7 @@ async function composeFastParallel({ brief, plan, route, variety, grammar }) {
 
   let html = stitch(topHtml, tailHtml)
   const validation = validateStitchedHtml(html)
-  html = applyGenomeMerge(html, plan)
+  html = applyGenomeMerge(html, plan, route)
   html = sanitizeHtml(html, plan, route, brief)
 
   return {

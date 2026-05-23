@@ -1,7 +1,7 @@
 import { decorPromptLine } from './media/ambient-effects.js'
 import { grammarPromptBlock } from './grammars.js'
 import { mediaStrategyBlock } from './media/media-presets.js'
-import { mobbinDoctrineBlock, mobbinSessionBlock } from './utils/mobbin-blocks.js'
+import { mobbinDoctrineBlock, mobbinHeroBlock, mobbinSessionBlock } from './utils/mobbin-blocks.js'
 import { isPublicationRoute } from './utils/publication-route.js'
 
 export const BUILDER_SYSTEM =
@@ -20,7 +20,9 @@ function siteKindRules(route, brief = '') {
 - Use <div class="img w-full h-48 bg-cover bg-center rounded-md"></div> or <img class="w-full h-48 object-cover rounded-md" src="..."> for every card thumbnail — NEVER leave empty gray placeholder boxes.
 - NEVER a marketing hero: no min-h-screen, no min-h-[70vh+], no full-viewport billboard, no aurora blobs, no dual signup CTAs above the fold.
 - NO split marketing hero, NO repo/code mockup, NO dashboard panel, NO Features/Pricing nav, NO pricing tiers.
-- Nav: Home, Archive, About, Subscribe (or topic-based: Articles, Breeds, Adoption, Reviews). Do not use the word "hero" in section comments.`
+- Nav: Home, Archive, About, Subscribe ONLY — never put category/topic names in the nav (those belong in the topics band).
+- NEVER add a separate marketing masthead / tagline billboard above the featured post. The featured post split IS the opener.
+- Featured section MUST use id="featured". Use h2 for the featured headline (only one h1 allowed on page — in nav logo text or omit h1).`
   }
   if (route?.siteHint === 'portfolio') {
     return 'PORTFOLIO: solo freelance designer — typographic hero + ONE tasteful visual. Never a Designers/Engineers/PM persona trio.'
@@ -63,6 +65,7 @@ export function buildSharedContract(brief, plan, route, variety, grammar) {
   const acc2 = a.accent2 && a.accent2 !== a.bg ? `, secondary ${a.accent2}` : ''
   const treatment = plan.mediaStrategy?.treatment || variety.mediaTreatment
   const reference = plan.reference || a.reference || route.primary?.app || 'category-leading craft'
+  const signatureMoves = (plan.signatureMoves || []).slice(0, 5).map((move) => `- ${move}`).join('\n')
 
   if (FAST_MODE) {
     return `Brand: ${brief}
@@ -81,29 +84,36 @@ VISUAL WORLD (obey EXACTLY so stitched parts fuse):
 - Palette: bg ${a.bg}, surface ${a.surface}, text ${a.text}, muted ${a.muted}, accent ${a.accent}${acc2}. Use arbitrary hex: bg-[${a.bg}], text-[${a.text}], bg-[${a.accent}], border-[${a.muted}].
 - Fonts: "${a.fontDisplay}" display + "${a.fontBody}" body (Google Fonts <link> + inline tailwind.config). Confident type scale — large, tight-tracked display headings.
 - Mood: ${a.mood}. Reference: ${reference}. DECOR (apply for depth, not noise): ${a.decor}.
-
+${signatureMoves ? `- Signature moves:\n${signatureMoves}\n` : ''}
 ${grammarPromptBlock(grammar, variety, route, brief)}
 ${mediaStrategyBlock(route.siteHint, variety, grammar, brief)}
-${isPublicationRoute(route, brief) ? '' : mobbinSessionBlock(route.primary, route.secondary)}
+${mobbinSessionBlock(route.primary, route.secondary)}
 
 ${siteKindRules(route, brief)}
 ${qualityLayoutRules(a, route, brief)}
-${isPublicationRoute(route, brief) ? '' : mobbinDoctrineBlock()}
+${mobbinDoctrineBlock()}
 
 Treatment hint: ${decorPromptLine(treatment, { publication: isPublicationRoute(route, brief) })}`
 }
 
-/** Slim contract for Gemini hero leg only — keeps input small so hero stays under ~12s. */
+/** Slim contract for Gemini hero leg — includes release-quality hero rules without full Mobbin block. */
 export function buildHeroContract(brief, plan, route, variety, grammar) {
   const a = plan.visualWorld
   const reference = plan.reference || a.reference || route.primary?.app || 'Linear / Vercel grade'
+  const publication = isPublicationRoute(route, brief)
+  const heroRule = publication
+    ? 'FIRST VIEWPORT: compact featured post masthead — normal section height (py-16 max), never min-h-screen.'
+    : 'HERO SCALE (NON-NEGOTIABLE): min-h-[76vh], headline text-5xl md:text-7xl tracking-tight (or text-8xl), subhead + 1-2 CTAs, optional side visual. Kimi / Linear grade craft — not a wireframe.'
+  const signatureMoves = (plan.signatureMoves || []).slice(0, 4).map((move) => `- ${move}`).join('\n')
   return `Brand: ${brief}
 Archetype: ${plan.archetype} · ${grammar?.id || plan.grammarId || 'vertical-doc'}
 Palette: bg ${a.bg}, surface ${a.surface}, text ${a.text}, muted ${a.muted}, accent ${a.accent}, accent2 ${a.accent2}
 Fonts: "${a.fontDisplay}" + "${a.fontBody}" (Google Fonts + tailwind.config)
 Mood: ${a.mood}. Decor: ${a.decor}. Reference: ${reference}.
-${siteKindRules(route, brief)}
-Rules: Tailwind CDN only; <i data-lucide>; real specific copy; generous hero typography; tags closed.`
+${mobbinHeroBlock(route.primary, { publication })}
+${signatureMoves ? `Signature moves:\n${signatureMoves}\n` : ''}${siteKindRules(route, brief)}
+${heroRule}
+Rules: Tailwind CDN only; <i data-lucide>; real specific copy with named metrics; generous hero typography; tags closed; no lorem or placeholder text.`
 }
 
 export function buildVerticalDocPrompt(brief, plan, route, variety, grammar) {

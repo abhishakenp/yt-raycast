@@ -3,6 +3,7 @@ import { mediaStrategyBlock } from './media/media-presets.js'
 import { isMarketingLandingBrief, isFrontDoorVerticalDoc, isOpsConsoleBrief } from './router.js'
 import { isPublicationRoute } from './utils/publication-route.js'
 import { mobbinDoctrineBlock, mobbinSessionBlock } from './utils/mobbin-blocks.js'
+import { applyMobbinAnchorToPlan } from './utils/mobbin-anchor-plan.js'
 
 const PLANNER_SYSTEM = `You are a fast art director for a Kimi-grade homepage engine. Return only compact JSON. No prose, no markdown.`
 
@@ -198,7 +199,7 @@ export function fallbackGenome(brief, route, variety, grammar) {
     ],
     sections: blog
       ? [
-          { role: 'featured', contains: 'nav + featured post masthead (cover, title, byline, date, excerpt, read link)' },
+          { role: 'featured', contains: 'compact featured post split — cover photo left, title + byline + date + excerpt + read link right (id="featured")' },
           { role: 'latest', contains: 'grid of 6+ recent posts with category chips and short excerpts' },
           { role: 'topics', contains: 'topic/tag chips or series list' },
           { role: 'about', contains: 'short author/publication blurb' },
@@ -246,30 +247,34 @@ export function normalizeGenome(raw, { brief, route, variety, grammar } = {}) {
     decor: String(art.decor || base.visualWorld.decor).slice(0, 180),
     layoutGrammar: String(art.layoutGrammar || base.visualWorld.layoutGrammar).slice(0, 80),
   }, { brief, route })
-  return {
-    ...base,
-    ...raw,
-    pageKind,
-    grammarId: raw?.grammarId || grammar?.id || base.grammarId,
-    archetype: String(raw?.archetype || base.archetype).slice(0, 80),
-    reference: String(raw?.reference || raw?.visualWorld?.reference || '').slice(0, 80),
-    visualWorld,
-    mediaStrategy: {
-      ...base.mediaStrategy,
-      ...(raw?.mediaStrategy || {}),
-      treatment: raw?.mediaStrategy?.treatment || variety.mediaTreatment,
-      contentStrategy: raw?.mediaStrategy?.contentStrategy || variety.contentStrategy,
+  return applyMobbinAnchorToPlan(
+    {
+      ...base,
+      ...raw,
+      pageKind,
+      grammarId: raw?.grammarId || grammar?.id || base.grammarId,
+      archetype: String(raw?.archetype || base.archetype).slice(0, 80),
+      reference: String(raw?.reference || raw?.visualWorld?.reference || '').slice(0, 80),
+      visualWorld,
+      mediaStrategy: {
+        ...base.mediaStrategy,
+        ...(raw?.mediaStrategy || {}),
+        treatment: raw?.mediaStrategy?.treatment || variety.mediaTreatment,
+        contentStrategy: raw?.mediaStrategy?.contentStrategy || variety.contentStrategy,
+      },
+      contentInventory: Array.isArray(raw?.contentInventory) && raw.contentInventory.length ? raw.contentInventory.slice(0, 10) : base.contentInventory,
+      sections:
+        route?.siteHint === 'blog'
+          ? base.sections
+          : Array.isArray(raw?.sections) && raw.sections.length >= 4
+            ? raw.sections.slice(0, 9)
+            : base.sections,
+      appIslands: Array.isArray(raw?.appIslands) && raw.appIslands.length >= 2 ? raw.appIslands.slice(0, 5) : base.appIslands,
+      signatureMoves: Array.isArray(raw?.signatureMoves) && raw.signatureMoves.length ? raw.signatureMoves.slice(0, 8) : base.signatureMoves,
     },
-    contentInventory: Array.isArray(raw?.contentInventory) && raw.contentInventory.length ? raw.contentInventory.slice(0, 10) : base.contentInventory,
-    sections:
-      route?.siteHint === 'blog'
-        ? base.sections
-        : Array.isArray(raw?.sections) && raw.sections.length >= 4
-          ? raw.sections.slice(0, 9)
-          : base.sections,
-    appIslands: Array.isArray(raw?.appIslands) && raw.appIslands.length >= 2 ? raw.appIslands.slice(0, 5) : base.appIslands,
-    signatureMoves: Array.isArray(raw?.signatureMoves) && raw.signatureMoves.length ? raw.signatureMoves.slice(0, 8) : base.signatureMoves,
-  }
+    route,
+    brief,
+  )
 }
 
 export function buildPlannerPrompt(brief, route, variety, grammar) {
@@ -287,20 +292,19 @@ ${varietyBlock}
 
 ${grammarPromptBlock(grammar, variety, route, brief)}
 ${mediaStrategyBlock(route.siteHint, variety, grammar)}
-
-${isPublicationRoute(route, brief) ? '' : mobbinSessionBlock(route.primary, route.secondary)}
+${mobbinSessionBlock(route.primary, route.secondary)}
 
 Decide the best front-door page for this brand. If the brief says "homepage", pageKind MUST be "vertical-doc" (rich marketing story; product UI as a demo section inside the page, not nested app chrome). pageKind "app-shell" ONLY for live operator consoles (fleet ops, incident desk).
 ${isPublicationRoute(route, brief) ? 'This is a BLOG/PUBLICATION home — plan an article index (compact featured post masthead + latest posts grid). NEVER plan a marketing hero, viewport billboard, or SaaS landing sections.' : ''}
 
-List ${quality ? '6-9' : '5-6'} concrete SECTIONS (vertical-doc) or app islands (app-shell), each a full-width band with brand-specific content.
+List ${quality ? '7-9' : '5-6'} concrete SECTIONS (vertical-doc) or app islands (app-shell), each a full-width band with brand-specific content. MINIMUM 7 sections for vertical-doc — never fewer, even for simple brands.
 
 Return only JSON:
 {
   "pageKind": "vertical-doc" | "app-shell",
   "grammarId": "${grammar.id}",
   "archetype": "short concrete label",
-  "reference": "named design reference (product/site/magazine)",
+  "reference": "named design reference (product/site/magazine — prefer ${route.primary?.app || 'category leader'})",
   "visualWorld": {
     "bg": "#hex", "surface": "#hex", "text": "#hex", "muted": "#hex",
     "accent": "#hex", "accent2": "#hex",

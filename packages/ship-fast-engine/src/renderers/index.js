@@ -5,6 +5,7 @@ import { renderReactProject } from './react/index.js'
 import { renderNextProject } from './nextjs/index.js'
 import { renderProjectReadme } from './shared.js'
 import { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
+import { shouldPreserveLlmHomepage } from '../pipeline/llm-homepage-guard.js'
 
 export { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 
@@ -49,10 +50,14 @@ export function writeNextAppToWorkspace(siteSpec, workspace, session) {
   writeRenderedFiles(root, rendered.files)
 }
 
-export function renderPreviewToWorkspace(siteSpec, workspace, session) {
+export function renderPreviewToWorkspace(siteSpec, workspace, session, options = {}) {
   prepareSiteSpecForReliableRender(siteSpec)
   const { files } = renderHtmlProject(siteSpec)
-  writeRenderedFiles(workspace, files)
+  const preserve = options.preserveLlmHomepage || shouldPreserveLlmHomepage(workspace)
+  const skip = new Set(options.skipFiles || [])
+  if (preserve) skip.add('index.html')
+  const filtered = Object.fromEntries(Object.entries(files).filter(([path]) => !skip.has(path)))
+  writeRenderedFiles(workspace, filtered)
   writeNextAppToWorkspace(siteSpec, workspace, session)
-  return { files }
+  return { files: filtered }
 }

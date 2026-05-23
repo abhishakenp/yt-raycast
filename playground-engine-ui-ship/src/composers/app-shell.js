@@ -24,7 +24,7 @@ Use lg:grid lg:grid-cols-[17rem_1fr] for sidebar layout. Realistic live data. </
     })
     let html = result.content.replace(/^```[a-z]*\n?/i, '').replace(/```\s*$/i, '').trim()
     if (!/<\/html>/i.test(html)) html += '\n</body></html>'
-    html = applyGenomeMerge(html, plan)
+    html = applyGenomeMerge(html, plan, route)
     return {
       html: sanitizeHtml(html, plan, route),
       metrics: { buildMode: 'app-shell-gemini-full', geminiMs: result.ms },
@@ -76,7 +76,7 @@ ${(plan.appIslands || []).map((i) => `- ${i.slot}: ${i.contains}`).join('\n')}`
   }
 
   let html = composeAppShellHtml({ brief, plan, route, islands })
-  html = applyGenomeMerge(html, plan)
+  html = applyGenomeMerge(html, plan, route)
   return {
     html: sanitizeHtml(html, plan, route),
     metrics: {

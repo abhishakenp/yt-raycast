@@ -1,7 +1,7 @@
 /**
  * Inject deterministic <section> blocks when the HTML is under the section threshold.
  */
-export function injectMissingSections(html, plan, needed, { insertBefore = /<\/body>/i } = {}) {
+export function injectMissingSections(html, plan, needed, { insertBefore = /<footer\b/i } = {}) {
   if (needed <= 0) return html
   const a = plan.visualWorld || {}
   const bg = a.bg || '#0a0a0a'
@@ -53,6 +53,10 @@ export function injectMissingSections(html, plan, needed, { insertBefore = /<\/b
   const insertPoint = String(html).search(insertBefore)
   if (insertPoint >= 0) {
     return html.slice(0, insertPoint) + injected.join('\n') + '\n' + html.slice(insertPoint)
+  }
+  const bodyPoint = String(html).search(/<\/body>/i)
+  if (bodyPoint >= 0) {
+    return html.slice(0, bodyPoint) + injected.join('\n') + '\n' + html.slice(bodyPoint)
   }
   return html + injected.join('\n')
 }

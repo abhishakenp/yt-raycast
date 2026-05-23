@@ -1,5 +1,5 @@
 const DEFAULT_GEMINI_TIMEOUT_MS = () =>
-  parseInt(process.env.SHIP_GEMINI_TIMEOUT_MS || '14000', 10)
+  parseInt(process.env.SHIP_GEMINI_TIMEOUT_MS || process.env.SHIP_GEMINI_HERO_TIMEOUT_MS || '17000', 10)
 
 export async function completeGemini({
   prompt,

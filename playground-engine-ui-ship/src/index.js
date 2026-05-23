@@ -8,15 +8,75 @@ import { completeGroq } from './llm/groq.js'
 import { planPageGenome } from './planner.js'
 import { runDeterministicAudits } from './quality/audits.js'
 import { buildRunVariety, isOpsConsoleBrief, selectAnchorPair } from './router.js'
+import { enrichAnchorWithLiveMobbin, isMobbinLiveEnabled } from '@ship-fast/engine/lib/mobbin/index.js'
 import { normalizeSeed } from './utils/hash.js'
 import { sanitizeHtml, ensureBlogPublicationIndex } from './utils/postprocess.js'
-import { hydratePublicationImages } from './media/publication-hydration.js'
+import { hydratePublicationImagesAsync } from './media/publication-hydration.js'
 import { validateStitchedHtml } from './utils/seam-repair.js'
 
 export { scoreKimiReadiness } from './quality/kimi-score.js'
 export { compareSignatures, varietyDistance, detectVisualSignature } from './quality/variety-metrics.js'
 export { runDeterministicAudits } from './quality/audits.js'
 export { inferSiteHint } from './router.js'
+export { mobbinAnchorFromRoute } from './utils/mobbin-anchor-plan.js'
+
+const MIN_KIMI_SCORE = () => parseInt(process.env.SHIP_MIN_KIMI_SCORE || '90', 10)
+const QUALITY_RETRIES = () => parseInt(process.env.SHIP_QUALITY_RETRIES || '1', 10)
+
+function finalizeHtml(built, plan, route, brief, variety) {
+  return injectAmbientStyles(
+    ensureBlogPublicationIndex(sanitizeHtml(built.html, plan, route, brief), plan, route, brief),
+    plan.mediaStrategy?.treatment || variety?.mediaTreatment,
+  )
+}
+
+async function hydrateBlogImages(html, route, brief) {
+  if (route.siteHint === 'blog' || (route.siteHint === 'editorial' && /\bblog\b/i.test(brief))) {
+    return hydratePublicationImagesAsync(html, brief)
+  }
+  return html
+}
+
+async function buildHomepageAttempt({ brief, seed, llm, planOverride }) {
+  let route = selectAnchorPair(brief, { seed })
+  if (isMobbinLiveEnabled() && route.primary?.app) {
+    try {
+      route = {
+        ...route,
+        primary: await enrichAnchorWithLiveMobbin(route.primary),
+      }
+    } catch {
+      /* live Mobbin is best-effort */
+    }
+  }
+  const variety = buildRunVariety(brief, seed)
+  const grammar = route.grammar
+
+  const planResult = planOverride
+    ? { plan: planOverride, plannerMs: 0, plannerModel: 'provided' }
+    : await planPageGenome({ brief, route, variety, grammar, llm })
+
+  const plan = { ...planResult.plan, brief, grammarId: planResult.plan.grammarId || grammar.id }
+  const compose = pickComposer(plan, route, grammar, brief)
+  const built = await compose({ brief, plan, route, variety, grammar, llm })
+
+  let html = finalizeHtml(built, plan, route, brief, variety)
+  html = await hydrateBlogImages(html, route, brief)
+  const stitchCheck = validateStitchedHtml(html)
+  const audits = runDeterministicAudits(html, { plan, route, seed, brief })
+
+  return {
+    html,
+    plan,
+    route,
+    variety,
+    grammar,
+    built,
+    audits,
+    stitchCheck,
+    planResult,
+  }
+}
 
 function pickComposer(plan, route, grammar, brief) {
   const useAppShell =
@@ -48,33 +108,35 @@ export async function generateShipHomepage(brief, opts = {}) {
   const llm = opts.llm || completeGroq
   const startedAt = Date.now()
 
-  const route = selectAnchorPair(brief, { seed })
-  const variety = buildRunVariety(brief, seed)
-  const grammar = route.grammar
+  let attempt = await buildHomepageAttempt({
+    brief,
+    seed,
+    llm,
+    planOverride: opts.plan,
+  })
 
-  const planResult = opts.plan
-    ? { plan: opts.plan, plannerMs: 0, plannerModel: 'provided' }
-    : await planPageGenome({ brief, route, variety, grammar, llm })
-
-  const plan = { ...planResult.plan, brief, grammarId: planResult.plan.grammarId || grammar.id }
-  const compose = pickComposer(plan, route, grammar, brief)
-  const built = await compose({ brief, plan, route, variety, grammar, llm })
-
-  let html = injectAmbientStyles(
-    ensureBlogPublicationIndex(
-      sanitizeHtml(built.html, plan, route, brief),
-      plan,
-      route,
-      brief,
-    ),
-    plan.mediaStrategy?.treatment || variety.mediaTreatment,
-  )
-  if (route.siteHint === 'blog' || (route.siteHint === 'editorial' && /\bblog\b/i.test(brief))) {
-    html = hydratePublicationImages(html, brief)
+  const minScore = MIN_KIMI_SCORE()
+  const maxRetries = QUALITY_RETRIES()
+  let qualityRetriesUsed = 0
+  if (
+    !FAST_MODE &&
+    !opts.skipQualityRetry &&
+    attempt.audits.kimi.score < minScore &&
+    maxRetries > 0
+  ) {
+    for (let retry = 1; retry <= maxRetries; retry++) {
+      qualityRetriesUsed = retry
+      const retrySeed = `${seed}-quality-${retry}`
+      const retryAttempt = await buildHomepageAttempt({ brief, seed: retrySeed, llm })
+      if (retryAttempt.audits.kimi.score >= attempt.audits.kimi.score) {
+        attempt = retryAttempt
+      }
+      if (attempt.audits.kimi.score >= minScore) break
+    }
   }
-  const stitchCheck = validateStitchedHtml(html)
 
-  const audits = runDeterministicAudits(html, { plan, route, seed, brief })
+  const { html, plan, route, variety, grammar, built, audits, stitchCheck, planResult: resolvedPlanResult } =
+    attempt
   const wall = Date.now() - startedAt
 
   return {
@@ -87,9 +149,11 @@ export async function generateShipHomepage(brief, opts = {}) {
       wall,
       chars: html.length,
       seed,
-      plannerMs: planResult.plannerMs,
-      plannerModel: planResult.plannerModel,
+      plannerMs: resolvedPlanResult?.plannerMs ?? 0,
+      plannerModel: resolvedPlanResult?.plannerModel ?? 'unknown',
       anchor: route.primary?.app || null,
+      anchorSecondary: route.secondary?.app || null,
+      mobbinDna: Boolean(route.primary?.dna),
       grammarId: grammar.id,
       pageKind: plan.pageKind,
       siteHint: route.siteHint,
@@ -97,6 +161,8 @@ export async function generateShipHomepage(brief, opts = {}) {
       fonts: `${plan.visualWorld.fontDisplay}+${plan.visualWorld.fontBody}`,
       treatment: plan.mediaStrategy?.treatment,
       under20s: wall < 20000,
+      qualityTarget: minScore,
+      qualityRetries: qualityRetriesUsed,
       qualityMode:
         built.metrics?.buildMode === 'vertical-doc-gemini-hero-combo' ||
         built.metrics?.buildMode === 'vertical-doc-gemini-hybrid'

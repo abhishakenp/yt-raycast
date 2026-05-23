@@ -42,7 +42,7 @@ export async function composeFastVerticalDoc({ brief, plan, route, variety, gram
       html = retryHtml
     }
   }
-  html = applyGenomeMerge(html, plan)
+  html = applyGenomeMerge(html, plan, route)
   html = ensureMinimumVerticalSections(html, plan, minSections, route, brief)
   html = ensureBlogPublicationIndex(html, plan, route, brief)
   return {

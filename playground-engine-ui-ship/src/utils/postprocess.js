@@ -1,4 +1,4 @@
-import { hydratePublicationImages } from '../media/publication-hydration.js'
+import { publicationPhotoForQuery, buildPhotoQuery, hydratePublicationImages } from '../media/publication-hydration.js'
 import { inferVisualKind, renderArtDirectedImageSurface } from '../media/content-imagery.js'
 import { isPublicationRoute } from './publication-route.js'
 import { stripOrphanCloseBurst } from './seam-repair.js'
@@ -829,6 +829,163 @@ function navOnlyPublicationHeader(navSection, a) {
 </header>`
 }
 
+function stripPostFooterInjectedSections(html) {
+  const source = String(html ?? '')
+  const footerMatch = source.match(/<footer\b[\s\S]*?<\/footer>/i)
+  if (!footerMatch) return source
+  const footerEnd = source.indexOf(footerMatch[0]) + footerMatch[0].length
+  const tail = source.slice(footerEnd)
+  if (!/<section\b/i.test(tail)) return source
+  const injectedTail =
+    /\bKey Point One\b/i.test(tail) ||
+    /\bnav \+ featured post masthead\b/i.test(tail) ||
+    /\bgrid of 6\+ recent posts\b/i.test(tail) ||
+    /Concrete brand-specific detail that supports this section's purpose/i.test(tail)
+  if (!injectedTail) return source
+  return source.slice(0, footerEnd) + tail.replace(/<section\b[\s\S]*?<\/section>/gi, '').replace(/\n{3,}/g, '\n\n')
+}
+
+function repairPublicationNav(html, identity, a) {
+  let out = String(html ?? '')
+  const navLinks = ['Home', 'Archive', 'About']
+    .map((label) => `<a href="#" class="text-sm font-medium text-[${a.text}] hover:text-[${a.accent}]">${label}</a>`)
+    .join('\n          ')
+  const navMarkup = `<nav class="sticky top-0 z-50 w-full border-b border-[${a.muted}]/20 bg-[${a.bg}]/95 backdrop-blur scroll-mt-24">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <a href="#" class="font-heading text-lg font-semibold text-[${a.text}]">${escapeHtml(identity.brand)}</a>
+    <div class="hidden items-center gap-6 md:flex">
+      ${navLinks}
+      <a href="#" class="text-sm font-semibold text-[${a.accent}]">Subscribe</a>
+    </div>
+  </div>
+</nav>`
+  if (!/<nav\b/i.test(out)) {
+    return out.replace(/<body([^>]*)>/i, `<body$1>\n${navMarkup}`)
+  }
+  return out.replace(/<nav\b[\s\S]*?<\/nav>/i, navMarkup)
+}
+
+function isFeaturedPostSection(block) {
+  const text = plainText(block)
+  if (/\bid=["']masthead["']/i.test(block)) return false
+  if (/\bid=["']latest["']/i.test(block)) return false
+  return (
+    /<img\b/i.test(block) &&
+    /<h[12]\b/i.test(block) &&
+    (/\b(?:min read|By [A-Z][a-z]+|read (?:the )?(?:story|article|post|more))/i.test(text) ||
+      /\bFeatured\b/i.test(block))
+  )
+}
+
+function stripPublicationMasthead(html) {
+  return String(html ?? '').replace(/<section\b[^>]*\bid=["']masthead["'][\s\S]*?<\/section>/gi, '')
+}
+
+function stripPseudoFooterSections(html) {
+  let out = String(html ?? '')
+  if (!/<footer\b/i.test(out)) return out
+  out = out.replace(/<section\b[^>]*class="[^"]*bg-\[#1c1917\][^"]*"[\s\S]*?<\/section>/gi, '')
+  out = out.replace(
+    /<section\b[^>]*>[\s\S]*?<h[23][^>]*>\s*(?:Navigate|Stay Connected|Quick Links)[\s\S]*?<\/section>/gi,
+    '',
+  )
+  return out
+}
+
+function tagFeaturedSection(html) {
+  let out = String(html ?? '')
+  if (/\bid=["']featured["']/i.test(out)) {
+    return out.replace(
+      /(<section\b[^>]*\bid=["']featured["'][\s\S]*?)<h1\b/gi,
+      '$1<h2',
+    ).replace(
+      /(<section\b[^>]*\bid=["']featured["'][\s\S]*?)<\/h1>/gi,
+      '$1</h2>',
+    )
+  }
+  const latestIdx = out.search(/\bid=["']latest["']/i)
+  const searchArea = latestIdx >= 0 ? out.slice(0, latestIdx) : out
+  const sections = [...searchArea.matchAll(/<section\b[\s\S]*?<\/section>/gi)]
+  for (let i = sections.length - 1; i >= 0; i--) {
+    const block = sections[i][0]
+    if (!isFeaturedPostSection(block)) continue
+    let tagged = block.includes('id=')
+      ? block.replace(/\bid=["'][^"']*["']/i, 'id="featured"')
+      : block.replace(/<section\b/i, '<section id="featured"')
+    tagged = tagged.replace(/<h1\b/gi, '<h2').replace(/<\/h1>/gi, '</h2>')
+    return out.replace(block, tagged)
+  }
+  return out
+}
+
+function dedupePublicationBands(html) {
+  let out = String(html ?? '')
+  const seen = new Set()
+  const bandMatchers = [
+    /\bExplore topics\b|\bid=["']topics["']/i,
+    /\bJoin our newsletter\b|\bid=["']newsletter["']/i,
+    /\bAbout (?:the )?(?:editorial|publication|team|blog)\b/i,
+  ]
+  out = out.replace(/<section\b[\s\S]*?<\/section>/gi, (block) => {
+    const label = bandMatchers.findIndex((re) => re.test(block))
+    if (label < 0) return block
+    if (seen.has(label)) return ''
+    seen.add(label)
+    if (/\bExplore topics\b/i.test(block) && !/\bid=["']topics["']/i.test(block)) {
+      return block.replace(/<section\b/i, '<section id="topics"')
+    }
+    if (/\bJoin our newsletter\b/i.test(block) && !/\bid=["']newsletter["']/i.test(block)) {
+      return block.replace(/<section\b/i, '<section id="newsletter"')
+    }
+    return block
+  })
+  return out.replace(/\n{3,}/g, '\n\n')
+}
+
+function padLatestPostGrid(html, brief, plan) {
+  const source = String(html ?? '')
+  const latestMatch = source.match(/<section\b[^>]*\bid=["']latest["'][\s\S]*?<\/section>/i)
+  if (!latestMatch) return source
+  const block = latestMatch[0]
+  const articles = (block.match(/<article\b/gi) || []).length
+  if (articles >= 6) return source
+
+  const gridMatch = block.match(/(<div\b[^>]*\bgrid[^>]*>)([\s\S]*?)(\s*<\/div>)/i)
+  if (!gridMatch) return source
+
+  const a = plan?.visualWorld || {}
+  const stubs = publicationPostStubs(brief).slice(articles, 6)
+  if (!stubs.length) return source
+  const cards = stubs
+    .map(
+      ([title, excerpt, , category, meta]) => `<article class="rounded-xl border border-[${a.muted}]/30 overflow-hidden bg-[${a.surface}]">
+        <div class="img w-full h-48 bg-cover bg-center"></div>
+        <div class="p-4">
+          <span class="text-xs uppercase tracking-wider text-[${a.accent}] font-semibold">${category}</span>
+          <h3 class="mt-2 text-xl font-semibold text-[${a.text}]">${title}</h3>
+          <p class="mt-2 text-xs text-[${a.muted}]">${meta}</p>
+          <p class="mt-2 text-sm text-[${a.muted}]">${excerpt}</p>
+          <a href="#" class="mt-4 inline-flex text-sm font-medium text-[${a.accent}]">Read more →</a>
+        </div>
+      </article>`,
+    )
+    .join('\n')
+  const paddedBlock = block.replace(gridMatch[0], `${gridMatch[1]}${gridMatch[2]}\n${cards}${gridMatch[3]}`)
+  return source.replace(block, paddedBlock)
+}
+
+/** Enforce publication index anatomy: nav → featured split → latest grid → topics → newsletter → footer. */
+export function normalizePublicationStructure(html, plan, route, brief) {
+  if (!isPublicationBrief(brief || plan?.brief, route)) return html
+  let out = String(html ?? '')
+  out = stripPublicationMasthead(out)
+  out = tagFeaturedSection(out)
+  out = stripPseudoFooterSections(out)
+  out = dedupePublicationBands(out)
+  out = padLatestPostGrid(out, brief || plan?.brief, plan)
+  return out
+}
+
 export function polishPublicationIdentity(html, plan, route, brief) {
   if (!isPublicationBrief(brief || plan?.brief, route)) return html
   const identity = extractPublicationIdentity(brief || plan?.brief)
@@ -851,35 +1008,9 @@ export function polishPublicationIdentity(html, plan, route, brief) {
     .replace(/\bAbout\s+(?:Dog Blog|Pet Blog|The Blog|Blog Home)\b/gi, `About ${identity.brand}`)
     .replace(/\b©\s*(\d{4})\s+(?:Dog Blog|Pet Blog|The Blog|Blog Home)\b/gi, `© $1 ${identity.brand}`)
 
-  const navLinks = identity.topics
-    .slice(0, 4)
-    .map((topic) => `<a href="#" class="hover:text-[${a.accent}]">${escapeHtml(topic)}</a>`)
-    .join('\n        ')
-  out = out.replace(/<nav\b([^>]*)>[\s\S]*?<\/nav>/i, `<nav$1>
-        ${navLinks}
-        <a href="#" class="hover:text-[${a.accent}]">Subscribe</a>
-      </nav>`)
+  out = repairPublicationNav(out, identity, a)
 
-  if (/\bid=["']masthead["']/i.test(out)) {
-    out = out.replace(/<section\b[^>]*\bid=["']masthead["'][\s\S]*?<\/section>/i, buildPublicationMasthead(identity, a))
-  } else if (!hasScopedPublicationMasthead(out, identity)) {
-    const masthead = buildPublicationMasthead(identity, a)
-    if (/<\/nav>/i.test(out)) {
-      const navSection = out.match(/<section\b[\s\S]*?<\/section>/i)?.[0]
-      if (navSection && /<nav\b/i.test(navSection)) {
-        const navOnly = !/<(?:img|article)\b/i.test(navSection) && /\bFeatured story\b/i.test(plainText(navSection))
-          ? navOnlyPublicationHeader(navSection, a)
-          : navSection
-        out = out.replace(navSection, `${navOnly}\n${masthead}`)
-      } else {
-        out = out.replace(/<\/nav>/i, `</nav>\n${masthead}`)
-      }
-    } else {
-      out = out.replace(/<body([^>]*)>/i, `<body$1>\n${masthead}`)
-    }
-  }
-
-  return normalizeLatestPostsBand(out)
+  return normalizeLatestPostsBand(normalizePublicationStructure(out, plan, route, brief))
 }
 
 /** Strip marketing-hero viewport treatment from blog/publication homes (article index, not landing page). */
@@ -1025,17 +1156,18 @@ function ensurePublicationFooter(html, plan, route, brief) {
 }
 
 function hasStrongFeaturedOpener(html) {
-  const source = String(html ?? '')
   const featured =
-    source.match(/<section\b[^>]*\bid=["']featured["'][\s\S]*?<\/section>/i)?.[0] ||
-    source.match(/<section\b[^>]*>[\s\S]*?\b(?:Featured post|Featured story|Cover story)[\s\S]*?<\/section>/i)?.[0] ||
+    html.match(/<section\b[^>]*\bid=["']featured["'][\s\S]*?<\/section>/i)?.[0] ||
+    [...String(html ?? '').matchAll(/<section\b[\s\S]*?<\/section>/gi)].map((m) => m[0]).find(isFeaturedPostSection) ||
     ''
   if (!featured) return false
   const text = plainText(featured)
-  return /<img\b[^>]*\bsrc=["']https?:\/\//i.test(featured) &&
-    /\b(?:By [A-Z][a-z]+|min read|Read (?:the )?(?:story|post|article))\b/i.test(text) &&
+  return (
+    /<img\b[^>]*\bsrc=["']https?:\/\//i.test(featured) &&
+    /\b(?:By [A-Z][a-z]+|min read|Read (?:the )?(?:story|post|article|more))/i.test(text) &&
     /<h[12]\b/i.test(featured) &&
-    text.length > 180
+    text.length > 120
+  )
 }
 
 function buildPublicationFeaturedOpener(plan, brief) {
@@ -1055,9 +1187,19 @@ function buildPublicationFeaturedOpener(plan, brief) {
   const excerpt = dog
     ? 'A practical opener on decompression, leash routines, food transitions, and the small signals that tell a new dog owner when to slow down.'
     : `A reported lead story connecting ${identity.topics.slice(0, 3).map((t) => t.toLowerCase()).join(', ')} with concrete reader decisions.`
+  const featuredQuery = buildPhotoQuery(
+    {
+      title: dog ? 'What a rescue dog needs in the first seven days' : `${identity.topics[0] || 'Field notes'} that changed how readers plan the week`,
+      category: 'Featured',
+      alt: 'featured cover',
+      brief: brief || plan?.brief,
+    },
+    brief || plan?.brief,
+  )
+  const featuredPhoto = publicationPhotoForQuery(featuredQuery, 0)
   return `<section id="featured" class="w-full bg-[${a.bg}] py-14 scroll-mt-24">
   <div class="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-[0.95fr_1.05fr] md:items-center">
-    <img class="w-full aspect-[16/10] rounded-xl object-cover" src="https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=900&h=560&fit=crop" alt="${escapeHtml(title)}" loading="eager" decoding="async" />
+    <img class="w-full aspect-[16/10] rounded-xl object-cover" src="${featuredPhoto.url}" alt="${escapeHtml(title)}" loading="eager" decoding="async" />
     <div>
       <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">Featured post</p>
       <h2 class="mt-3 font-heading text-3xl font-semibold leading-tight text-[${a.text}] md:text-5xl">${escapeHtml(title)}</h2>
@@ -1119,7 +1261,12 @@ function publicationPostStubs(brief) {
 export function ensureBlogPublicationIndex(html, plan, route, brief) {
   if (!isPublicationBrief(brief || plan?.brief, route)) return html
   let base = ensurePublicationFeaturedOpener(html, plan, route, brief)
-  if (blogHasPostGrid(base)) return ensurePublicationFooter(ensurePublicationSupportBands(base, plan, route, brief), plan, route, brief)
+  if (blogHasPostGrid(base)) {
+    return hydratePublicationImages(
+      ensurePublicationFooter(ensurePublicationSupportBands(base, plan, route, brief), plan, route, brief),
+      brief,
+    )
+  }
   const a = plan.visualWorld
   const cards = publicationPostStubs(brief)
     .map(
@@ -1144,7 +1291,10 @@ export function ensureBlogPublicationIndex(html, plan, route, brief) {
   const withLatest = /<footer\b/i.test(base)
     ? base.replace(/<footer\b/i, `${section}\n<footer`)
     : base.replace(/<\/body>/i, `${section}\n</body>`)
-  return ensurePublicationFooter(ensurePublicationSupportBands(withLatest, plan, route, brief), plan, route, brief)
+  return hydratePublicationImages(
+    ensurePublicationFooter(ensurePublicationSupportBands(withLatest, plan, route, brief), plan, route, brief),
+    brief,
+  )
 }
 
 export function sanitizeHtml(value, plan, route, brief) {
@@ -1171,7 +1321,7 @@ export function sanitizeHtml(value, plan, route, brief) {
   html = normalizePublicationLayout(html, plan, route, resolvedBrief)
   if (publication) {
     html = polishPublicationIdentity(html, plan, route, resolvedBrief)
-    html = hydratePublicationImages(html, resolvedBrief)
+    html = stripPostFooterInjectedSections(html)
   }
   html = normalizeSoftwarePalette(html, route, resolvedBrief)
   html = normalizeFontUtilityAliases(html)

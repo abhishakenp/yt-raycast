@@ -12,3 +12,19 @@ export { mobbinDoctrineBlock, mobbinSessionBlock, resolveAnchor } from './prompt
 export { anchorAvoidsAurora, anchorAvoidsSaasMarketing, detectVerbatimAnchorCopy, relaxAuroraAuditForAnchor, scoreMobbinCoverage } from './score.js'
 export { inferMobbinAnchor, isMobbinEnabled } from './anchor-router.js'
 export { readMobbinAnchorFromWorkspace, writeMobbinAnchorToWorkspace } from './workspace.js'
+export {
+  authFilePath,
+  autocompleteMobbinApp,
+  buildMobbinCookieHeader,
+  fetchLiveScreensForApp,
+  fetchMobbinScreens,
+  fetchPopularMobbinApps,
+  fetchSearchableApps,
+  importSessionFromBrowserCookie,
+  isMobbinLiveEnabled,
+  mobbinSessionStatus,
+  resolveMobbinAppByName,
+  validateMobbinSession,
+  writeAuthToDisk,
+} from './session.js'
+export { enrichAnchorWithLiveMobbin } from './live-enrich.js'

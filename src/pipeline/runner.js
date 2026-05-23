@@ -32,12 +32,17 @@ import {
 } from '../spec/index.js'
 import { supplementSiteSpecPages } from '@ship-fast/engine/spec/index.js'
 import { renderPreviewToWorkspace, writeNextAppToWorkspace } from '../renderers/index.js'
+import {
+  restoreLlmHomepageIfNeeded,
+  writeLlmHomepageBackup,
+} from './llm-homepage-guard.js'
 import { detectLanguage } from './detect-language.js'
 import {
   alignGeneratedImagesToContext,
   hydrateStorefrontGradientSlots,
   injectEcommerceHeroResponsiveCss,
   mergeImageHintLists,
+  polishGeneratedMediaHtml,
   resolvePexelsImageHints,
   verifyTrustedStockImageUrls,
 } from './image-hints.js'
@@ -85,12 +90,14 @@ async function publishHomepagePreview({
   }
 
   if (deferSpecWork && usesUnifiedHomepageEngine()) {
+    homepage = polishGeneratedMediaHtml(homepage, {
+      hydrationPrompt: normalizedPrompt,
+      prompt: normalizedPrompt,
+    })
     homepage = injectEcommerceHeroResponsiveCss(homepage)
     homepage = ensureLucideIconRuntime(homepage, _log)
+    writeLlmHomepageBackup(workspace, homepage)
     writeFile(workspace, 'index.html', homepage)
-    try {
-      writeFile(workspace, 'index.llm.html', homepage)
-    } catch {}
     sessionCtx.signalHomepageReady()
     return { homepage, keptLlmHomepage: true, imageHints, deferImageHydration: true }
   }
@@ -366,6 +373,7 @@ async function runSecondaryPipeline({
     writeNextAppToWorkspace(siteSpec, workspace, sessionCtx, {
       preserveLlmHomepage: true,
     })
+    homepage = restoreLlmHomepageIfNeeded(workspace, _log) || homepage
   }
 
   if (published?.deferImageHydration && homepage && published.imageHints) {
@@ -393,6 +401,8 @@ async function runSecondaryPipeline({
       _log(`  homepage: deferred image hydration skipped — ${err?.message || 'error'}`)
     }
   }
+
+  homepage = restoreLlmHomepageIfNeeded(workspace, _log) || homepage
 
   void brandProfilePromise.then((profile) => {
     if (!profile?.logo) return
@@ -614,8 +624,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   _status('Plotting launch trajectory…', 'spec')
 
-  // Kimi handles its own design planning — Mobbin DNA anchor is not used by the kimi engine.
-  // For non-kimi paths, resolve the anchor non-blocking so spec/homepage can start immediately.
+  // Ship engine resolves Mobbin DNA inline (selectAnchorPair) — anchor written during homepage gen.
   if (!usesUnifiedHomepageEngine() && isMobbinEnabled()) {
     inferMobbinAnchor({ brief: pipelinePrompt, projectContext: {} })
       .then((mobbinAnchor) => {
@@ -900,17 +909,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   } else if (homepage && usesUnifiedHomepageEngine()) {
     // Unified ship/kimi engine skips the Groq design brief — keep the LLM homepage instead of
     // falling through to the spec renderer (which produces generic site.css shells).
-    try {
-      writeFile(workspace, 'index.llm.html', homepage)
-    } catch {}
+    writeLlmHomepageBackup(workspace, homepage)
     keptLlmHomepage = true
     if (siteSpec?.pages?.length) {
       writeNextAppToWorkspace(siteSpec, workspace, sessionCtx, {
         preserveLlmHomepage: true,
       })
     }
+    homepage = restoreLlmHomepageIfNeeded(workspace, _log) || homepage
     homepage = injectStorefrontCartUi(injectEcommerceHeroResponsiveCss(homepage), { workspace })
     writeFile(workspace, 'index.html', homepage)
+    writeLlmHomepageBackup(workspace, homepage)
     sessionCtx.signalHomepageReady()
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)

@@ -43,6 +43,33 @@ export function mobbinDoctrineBlock() {
 - No lorem, no generic SaaS filler, no exclamation marks.`
 }
 
+/** Compact Mobbin DNA for Gemini hero leg — high signal, ~250 tokens max. */
+export function mobbinHeroBlock(primary, { publication = false } = {}) {
+  if (!primary?.app) return ''
+  const dna = primary.dna
+  const palette = primary.palette?.length ? primary.palette : dna?.accents || []
+  const lines = [
+    '',
+    `MOBBIN ANCHOR — ${primary.app}: inherit this app's visual signature (palette, typography, layout grammar). Not a generic template.`,
+  ]
+  if (palette.length) {
+    lines.push(`Palette (verbatim in arbitrary hex): ${formatPaletteLine(palette)}`)
+    const roleHint = paletteRoleHint(palette)
+    if (roleHint) lines.push(`Roles: ${roleHint}`)
+  }
+  if (dna?.display) lines.push(`Display type: ${String(dna.display).slice(0, 90)}`)
+  if (dna?.body) lines.push(`Body type: ${String(dna.body).slice(0, 90)}`)
+  if (dna?.layout) lines.push(`Layout: ${String(dna.layout).slice(0, publication ? 180 : 220)}`)
+  if (dna?.copy) lines.push(`Copy: ${String(dna.copy).slice(0, publication ? 120 : 160)}`)
+  if (Array.isArray(dna?.doctrine)) {
+    for (const line of dna.doctrine.slice(0, publication ? 3 : 4)) lines.push(`Must: ${line}`)
+  }
+  if (Array.isArray(dna?.avoid)) {
+    lines.push(`Reject: ${dna.avoid.slice(0, 4).join('; ')}`)
+  }
+  return lines.join('\n')
+}
+
 export function mobbinSessionBlock(primary, secondary = null) {
   if (!primary?.app) return ''
   const lines = []
@@ -60,6 +87,14 @@ export function mobbinSessionBlock(primary, secondary = null) {
   }
 
   for (const line of dnaImperatives(primary.dna, primary.app)) lines.push(line)
+  if (primary.dna?.composition) {
+    lines.push(
+      `Composition (follow surface-by-surface): ${String(primary.dna.composition).slice(0, 520)}`,
+    )
+  }
+  lines.push(
+    `Inheritance: palette hex MUST appear literally in Tailwind arbitrary classes; ≥3 doctrine moves visible; zero anti-patterns; thumbnail-glance should read as ${primary.app}-family craft.`,
+  )
   if (secondary?.app) {
     lines.push(`SECONDARY ANCHOR: ${secondary.app}`)
     for (const line of dnaImperatives(secondary.dna, secondary.app).slice(0, 2)) lines.push(line)

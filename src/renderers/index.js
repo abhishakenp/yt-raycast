@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import { renderHtmlProject } from './html/index.js'
 import { renderProjectReadme } from './shared.js'
 import { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
+import { shouldPreserveLlmHomepage } from '../pipeline/llm-homepage-guard.js'
 
 export { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 
@@ -38,8 +39,9 @@ export function writeRenderedFiles(baseDir, files) {
 export function renderPreviewToWorkspace(siteSpec, workspace, session, options = {}) {
   prepareSiteSpecForReliableRender(siteSpec)
   const { files } = renderHtmlProject(siteSpec)
+  const preserve = options.preserveLlmHomepage || shouldPreserveLlmHomepage(workspace)
   const skip = new Set(options.skipFiles || [])
-  if (options.preserveLlmHomepage) skip.add('index.html')
+  if (preserve) skip.add('index.html')
   const filtered = Object.fromEntries(Object.entries(files).filter(([path]) => !skip.has(path)))
   writeRenderedFiles(workspace, filtered)
   return { files: filtered }

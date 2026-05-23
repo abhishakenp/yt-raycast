@@ -23,6 +23,8 @@ import { stripDestructiveEmptyDesignTheme } from './homepage-theme-sanitize.js'
 import { writeFile } from './workspace.js'
 import { buildHomepageSpecSliceJson } from '../spec/homepage-spec-slice.js'
 import { generateShipEngineHomepage, isShipHomepageEngineEnabled } from './ship-homepage-engine.js'
+import { writeMobbinAnchorToWorkspace } from '../lib/mobbin/index.js'
+import { writeLlmHomepageBackup } from './llm-homepage-guard.js'
 
 const SHIPFAST_FOOTER_MARKER = 'data-sf-footer-branding'
 
@@ -86,6 +88,22 @@ export async function generateHomepage(
     })
     let html = injectShipFastFooterBranding(stripDestructiveEmptyDesignTheme(ship.html), log)
 
+    const shipAnchor = ship.route?.primary?.app
+      ? {
+          app: ship.route.primary.app,
+          category: ship.route.primary.category || null,
+          palette: ship.route.primary.palette?.length
+            ? ship.route.primary.palette
+            : ship.route.primary.dna?.accents || [],
+          accents: ship.route.primary.dna?.accents || ship.route.primary.palette || [],
+          reason: `ship-engine:${ship.route.siteHint}`,
+        }
+      : null
+    if (shipAnchor) {
+      writeMobbinAnchorToWorkspace(workspace, shipAnchor)
+      log(`  homepage: Mobbin DNA anchor ${shipAnchor.app} (${ship.route.siteHint})`)
+    }
+
     if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation) {
       log(`  homepage: translating to ${indiaMode.name || indiaMode.language?.name} via Groq...`)
       try {
@@ -106,16 +124,18 @@ export async function generateHomepage(
     html = ensureLucideIconRuntime(html, log)
 
     const kimiScore = ship.metrics.kimiScore ?? ship.audits?.kimi?.score ?? 0
-    if (
-      kimiScore < 85 &&
-      htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: true })
-    ) {
-      log(`  ❌ homepage: ship engine output failed structural check (kimi=${kimiScore})`)
+    const minKimiScore = parseInt(process.env.SHIP_MIN_KIMI_SCORE || '90', 10)
+    const degenerate = htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: true })
+    if (kimiScore < minKimiScore || degenerate) {
+      log(
+        `  ❌ homepage: ship engine output failed quality gate (kimi=${kimiScore}, target>=${minKimiScore}, degenerate=${degenerate})`,
+      )
       throw new Error('Homepage output failed quality check')
     }
 
     writeFile(workspace, 'index.html', html)
-    log(`  index.html: ${html.length} chars | ship engine ${ship.metrics.wall}ms kimi=${ship.metrics.kimiScore}`)
+    writeLlmHomepageBackup(workspace, html)
+    log(`  index.html: ${html.length} chars | ship engine ${ship.metrics.wall}ms kimi=${ship.metrics.kimiScore} anchor=${ship.metrics.anchor || shipAnchor?.app || 'none'}`)
     return { html, inputTokens: 0, outputTokens: 0, cost: 0 }
   }
 

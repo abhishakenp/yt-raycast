@@ -6,6 +6,7 @@ import {
   ensureBlogPublicationIndex,
   ensureHeroScale,
   normalizePublicationLayout,
+  normalizePublicationStructure,
   polishPublicationIdentity,
   sanitizeHtml,
 } from '../src/utils/postprocess.js'
@@ -38,11 +39,24 @@ describe('hydratePublicationImages', () => {
     expect(hydratePublicationImages(html, BLOG_PLAN.brief)).toBe(html)
   })
 
-  it('replaces non-pexels publication photos with brief-aware pexels images', () => {
-    const html = `<article><img src="https://images.unsplash.com/photo-broken" alt="dog grooming tools" class="w-full h-48 object-cover"></article>`
+  it('replaces non-pexels publication photos with topic-aware pexels images', () => {
+    const html = `<article><h3>Stop leash pulling without turning walks into a fight</h3><img src="https://images.unsplash.com/photo-broken" alt="dog grooming tools" class="w-full h-48 object-cover"></article>`
     const out = hydratePublicationImages(html, BLOG_PLAN.brief)
-    expect(out).toMatch(/src="https:\/\/images\.pexels\.com/)
-    expect(out).toMatch(/alt="dog grooming tools"/)
+    expect(out).toMatch(/src="https:\/\/images\.pexels\.com\/photos\/1805164\//)
+  })
+
+  it('maps different article topics to different photo pools', () => {
+    const training = hydratePublicationImages(
+      `<article><span class="uppercase">Training</span><h3>Leash training basics</h3><div class="img w-full h-48"></div></article>`,
+      BLOG_PLAN.brief,
+    )
+    const breed = hydratePublicationImages(
+      `<article><span class="uppercase">Breed guides</span><h3>Golden Retriever temperament guide</h3><div class="img w-full h-48"></div></article>`,
+      BLOG_PLAN.brief,
+    )
+    const trainingUrl = training.match(/src="([^"]+)"/)?.[1] || ''
+    const breedUrl = breed.match(/src="([^"]+)"/)?.[1] || ''
+    expect(trainingUrl).not.toBe(breedUrl)
   })
 })
 
@@ -75,8 +89,8 @@ describe('ensureBlogPublicationIndex', () => {
 </body></html>`
     const out = ensureBlogPublicationIndex(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
     expect((out.match(/id="latest"/g) || []).length).toBe(0)
-    expect(out).toMatch(/<article><h3>One<\/h3>/)
-    expect(out).toMatch(/<article><h3>Three<\/h3>/)
+    expect(out).toMatch(/<h3>One<\/h3>/)
+    expect(out).toMatch(/<h3>Three<\/h3>/)
   })
 
   it('adds topic and newsletter bands around an existing post grid', () => {
@@ -112,7 +126,8 @@ ${Array.from({ length: 4 }, (_, i) => `<article><h3>Guide ${i}</h3><a href="#">R
       BLOG_ROUTE,
       'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
     )
-    expect((twice.match(/id="masthead"/g) || []).length).toBe(1)
+    expect((twice.match(/id="masthead"/g) || []).length).toBe(0)
+    expect((twice.match(/id="featured"/g) || []).length).toBeGreaterThanOrEqual(1)
     expect((twice.match(/lucide\.createIcons/g) || []).length).toBe(1)
     expect(twice).toMatch(/The Dog Owner&#39;s Field Guide|The Dog Owner's Field Guide/)
     expect(twice).toMatch(/Independent editorial desk/)
@@ -142,10 +157,57 @@ describe('publication layout normalization', () => {
     expect(out).not.toMatch(/<section<section/)
   })
 
+  it('does not inject placeholder sections after the footer on publication pages', () => {
+    const html = `<!DOCTYPE html><html><body>
+<section id="latest"><div class="grid grid-cols-3 gap-6">
+${Array.from({ length: 4 }, (_, i) => `<article><h3>Guide ${i}</h3><a href="#">Read more</a></article>`).join('')}
+</div></section>
+<footer><p>© 2026</p></footer>
+<section class="w-full py-16"><h2>Featured</h2><p>nav + featured post masthead (cover, title, byline)</p><h3>Key Point One</h3></section>
+</body></html>`
+    const out = sanitizeHtml(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
+    expect(out).not.toMatch(/Key Point One/)
+    expect(out).not.toMatch(/nav \+ featured post masthead/)
+    expect(out.indexOf('</footer>')).toBeLessThan(out.lastIndexOf('</body>'))
+    expect((out.match(/<section\b/gi) || []).length).toBeLessThanOrEqual(2)
+  })
+
+  it('repairs publication nav with Home/Archive/About links', () => {
+    const html = `<!DOCTYPE html><html><body>
+<nav class="sticky top-0"><a>Training tips</a><a>Subscribe</a></nav>
+<section id="latest"><article><a>Read more</a></article></section>
+</body></html>`
+    const out = polishPublicationIdentity(
+      html,
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    expect(out).toMatch(/max-w-7xl/)
+    expect(out).toMatch(/items-center justify-between/)
+    expect(out).toMatch(/>Home</)
+    expect(out).toMatch(/>Archive</)
+    expect(out).not.toMatch(/>Training tips</)
+  })
+
+  it('removes marketing masthead and tags featured post split', () => {
+    const html = `<!DOCTYPE html><html><body>
+<nav><a>Home</a></nav>
+<section id="masthead"><h1>Training tips, breed guides, adoption stories for dog owners</h1></section>
+<section><img src="https://images.pexels.com/photos/1/x.jpeg" /><h1>Rescue dog first week</h1><p>By Mara Singh · 7 min read</p><a>Read the story</a></section>
+<section id="latest"><article><a>Read more</a></article></section>
+</body></html>`
+    const out = normalizePublicationStructure(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
+    expect(out).not.toMatch(/id="masthead"/)
+    expect(out).toMatch(/id="featured"/)
+    expect(out).not.toMatch(/<h1[^>]*>Training tips, breed guides/)
+  })
+
   it('adds scoped masthead while preserving a distinctive model brand', () => {
     const html = `<!DOCTYPE html><html><head><title>Dog Blog</title></head><body>
 <section><a class="font-bold">Paws &amp; Pages</a><nav><a>Home</a></nav></section>
-<section><h2>Latest Articles</h2><div class="grid md:grid-cols-3"><article><a>Read more</a></article></div></section>
+<section id="featured"><img src="https://images.pexels.com/photos/1/x.jpeg" /><h2>Featured rescue story</h2><p>By Mara · 7 min read</p><a>Read the story</a></section>
+<section id="latest"><h2>Latest Articles</h2><div class="grid md:grid-cols-3"><article><a>Read more</a></article></div></section>
 </body></html>`
     const out = polishPublicationIdentity(
       html,
@@ -154,7 +216,8 @@ describe('publication layout normalization', () => {
       'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
     )
     expect(out).toMatch(/<title>Paws &amp; Pages - Training tips, Breed guides, Adoption stories, and Product reviews<\/title>/)
-    expect(out).toMatch(/<h1[^>]*>Training tips, breed guides, adoption stories, and product reviews for dog owners<\/h1>/)
+    expect(out).not.toMatch(/id="masthead"/)
+    expect(out).toMatch(/id="featured"/)
     expect(out).toMatch(/id="latest"/)
     expect(out).toMatch(/>Latest posts</)
   })
