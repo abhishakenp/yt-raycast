@@ -71,6 +71,8 @@ export function scoreKimiReadiness(html, { plan, route, brief } = {}) {
   const sections = countMatches(source, /<section\b/gi)
   const dataImgs = countMatches(source, /<div\b[^>]*\bdata-img=/gi)
   const artSurfaces = countMatches(source, /\bdata-visual=["']art-surface["']/gi)
+  const richVisualKinds = [...source.matchAll(/\bdata-visual-kind=["']([^"']+)["']/gi)].map((match) => match[1])
+  const uniqueRichKinds = new Set(richVisualKinds)
   const blurOrbs = countMatches(source, /\bblur-3xl\b/gi)
   const rotations = countMatches(source, /-rotate-/gi)
   const schematicLabels = SCHEMATIC_TERMS.filter((t) => lower.includes(t))
@@ -103,9 +105,9 @@ export function scoreKimiReadiness(html, { plan, route, brief } = {}) {
     score -= 10
     issues.push('copy lacks concrete names or numbers')
   }
-  if (artSurfaces > 2 && !isPublicationBrief(brief, route)) {
+  if (artSurfaces > 2 && uniqueRichKinds.size < 2 && !isPublicationBrief(brief, route)) {
     score -= Math.min(28, 8 + artSurfaces * 3)
-    issues.push('over-reliance on schematic art-surface blocks')
+    issues.push('over-reliance on repeated schematic art-surface blocks')
   }
   if (isPublicationBrief(brief, route)) {
     const photoCount = countMatches(source, /<img\b[^>]*\bsrc=["']https?:\/\//gi)
@@ -157,6 +159,7 @@ export function scoreKimiReadiness(html, { plan, route, brief } = {}) {
       sections,
       dataImgCount: dataImgs,
       artSurfaces,
+      richVisualKinds: [...uniqueRichKinds],
       blurOrbs,
       rotations,
       hasHeroScale,

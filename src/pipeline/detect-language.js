@@ -74,6 +74,7 @@ export function resolveLanguageModeFromPreference(preferredLanguage) {
 export async function detectLanguage(prompt, preferredLanguage) {
   const fromPref = resolveLanguageModeFromPreference(preferredLanguage)
   if (fromPref.code !== 'en') return fromPref
+  if (String(preferredLanguage || '').trim().toLowerCase() === 'en') return ENGLISH_MODE
   if (!prompt) return ENGLISH_MODE
 
   const mixHint = preferMixedEnglishBcp47FromSnippet(prompt)

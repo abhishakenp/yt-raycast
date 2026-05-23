@@ -12,7 +12,7 @@ export function kimiEngineAvailable() {
 export async function generateKimiEngineHomepage(brief, { seed = '' } = {}) {
   if (!kimiEngineAvailable()) throw new Error('Kimi homepage engine requires GROQ_API_KEY and GEMINI_API_KEY')
 
-  const { generateKimiHomepage } = await import('../../../../playground-engine-ui-kimi/src/index.js')
+  const { generateKimiHomepage } = await import('../../../../playground-engine-ui-ship/src/index.js')
   const result = await generateKimiHomepage(brief, {
     seed: seed || `ship-${Date.now()}`,
   })

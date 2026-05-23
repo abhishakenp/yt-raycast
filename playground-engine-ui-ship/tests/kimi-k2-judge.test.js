@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseJudgeVerdict } from '../src/quality/kimi-k2-judge.js'
+import { parseJudgeVerdict, resolveJudgeBackend } from '../src/quality/kimi-k2-judge.js'
 import { analyzeBriefFidelity } from '../src/quality/brief-fidelity.js'
 
 describe('kimi-k2-judge', () => {
@@ -15,6 +15,18 @@ describe('kimi-k2-judge', () => {
     const raw = '{"verdict":"pass","score":95,"critical_defects":["empty hero"],"issues":[]}'
     const v = parseJudgeVerdict(raw, { passThreshold: 90 })
     expect(v.pass).toBe(false)
+  })
+
+  it('honors SHIP_JUDGE_BACKEND when caller does not pass a backend', () => {
+    const prev = process.env.SHIP_JUDGE_BACKEND
+    process.env.SHIP_JUDGE_BACKEND = 'cursor'
+    try {
+      expect(resolveJudgeBackend()).toBe('cursor')
+      expect(resolveJudgeBackend('openrouter')).toBe('openrouter')
+    } finally {
+      if (prev == null) delete process.env.SHIP_JUDGE_BACKEND
+      else process.env.SHIP_JUDGE_BACKEND = prev
+    }
   })
 })
 

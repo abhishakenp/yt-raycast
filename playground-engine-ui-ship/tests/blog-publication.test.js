@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { hydratePublicationImages, countPublicationPhotos } from '../src/media/publication-hydration.js'
+import { runDeterministicAudits } from '../src/quality/audits.js'
 import { auditPublicationHomepage } from '../src/quality/publication-audit.js'
 import {
   ensureBlogPublicationIndex,
@@ -60,7 +61,7 @@ describe('ensureBlogPublicationIndex', () => {
     expect(out).toMatch(/id="latest"/)
     expect((out.match(/<article\b/gi) || []).length).toBeGreaterThanOrEqual(6)
     expect(out).toMatch(/grid-cols-2/)
-    expect(out).toMatch(/Guide:/)
+    expect(out).toMatch(/Stop leash pulling without turning walks into a fight/)
     expect(out).toMatch(/images\.pexels\.com/)
   })
 
@@ -73,7 +74,49 @@ describe('ensureBlogPublicationIndex', () => {
 </div></section>
 </body></html>`
     const out = ensureBlogPublicationIndex(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
-    expect(out).toBe(html)
+    expect((out.match(/id="latest"/g) || []).length).toBe(0)
+    expect(out).toMatch(/<article><h3>One<\/h3>/)
+    expect(out).toMatch(/<article><h3>Three<\/h3>/)
+  })
+
+  it('adds topic and newsletter bands around an existing post grid', () => {
+    const html = `<!DOCTYPE html><html><body>
+<section><h1>Training tips for dog owners</h1></section>
+<section><div class="grid grid-cols-3 gap-6">
+${Array.from({ length: 4 }, (_, i) => `<article><h3>Guide ${i}</h3><a href="#">Read more</a></article>`).join('')}
+</div></section>
+</body></html>`
+    const out = ensureBlogPublicationIndex(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
+    expect(out).toMatch(/id="topics"/)
+    expect(out).toMatch(/id="newsletter"/)
+    expect((out.match(/<section\b/gi) || []).length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('keeps recovered publication chrome stable across repeated sanitization', () => {
+    const raw = `<!DOCTYPE html><html><head>
+<title>Dog Blog</title>
+<script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={}</script>
+</head><body>
+<section class="w-full py-16"><div class="mx-auto max-w-7xl px-6"><nav><a>Home</a><a>Archive</a></nav><h1>Featured story</h1><p>By Mara Singh · May 12 · 7 min read</p></div></section>
+<footer></footer>
+</body></html>`
+    const once = ensureBlogPublicationIndex(
+      sanitizeHtml(raw, BLOG_PLAN, BLOG_ROUTE, 'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.'),
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    const twice = ensureBlogPublicationIndex(
+      sanitizeHtml(once, BLOG_PLAN, BLOG_ROUTE, 'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.'),
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    expect((twice.match(/id="masthead"/g) || []).length).toBe(1)
+    expect((twice.match(/lucide\.createIcons/g) || []).length).toBe(1)
+    expect(twice).toMatch(/The Dog Owner&#39;s Field Guide|The Dog Owner's Field Guide/)
+    expect(twice).toMatch(/Independent editorial desk/)
+    expect(twice).not.toMatch(/<h1[^>]*>Featured story<\/h1>/)
   })
 })
 
@@ -140,6 +183,28 @@ ${Array.from({ length: 4 }, (_, i) => `<article><img src="https://images.pexels.
 <section id="latest"><h2>Latest posts</h2><div class="grid grid-cols-3 gap-6">${cards}</div></section>`
     const audit = auditPublicationHomepage(html, { brief: BLOG_PLAN.brief, route: BLOG_ROUTE })
     expect(audit.ok).toBe(true)
+  })
+
+  it('allows real img thumbnails in full deterministic audits for publication pages', () => {
+    const cards = Array.from({ length: 6 }, (_, i) => `<article><img src="https://images.pexels.com/photos/${1000 + i}/x.jpeg" class="w-full h-48 object-cover" /><h3>Training guide ${i}</h3><p>Breed advice, adoption story, and product review notes for dog owners ${i}.</p><a href="#">Read more</a></article>`).join('')
+    const html = `<!DOCTYPE html><html><head>
+<title>The Dog Owner's Field Guide - Training tips, Breed guides, Adoption stories, and Product reviews</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={}</script>
+</head><body>
+<section id="masthead" class="w-full py-10"><div class="mx-auto max-w-7xl px-6"><h1 class="text-4xl">Training tips, breed guides, adoption stories, and product reviews for dog owners</h1></div></section>
+<section id="featured" class="w-full py-16"><div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6"><img src="https://images.pexels.com/photos/1/x.jpeg" class="w-full h-64 object-cover" /><div><p>Featured post</p><h2>How to read a rescue dog's first week</h2><p>By Mara Singh · May 12 · 7 min read</p><a href="#">Read the story</a></div></div></section>
+<section id="latest" class="w-full py-16"><div class="mx-auto max-w-7xl px-6"><h2>Latest posts</h2><div class="grid grid-cols-3 gap-6">${cards}</div></div></section>
+<section class="w-full py-12"><div class="mx-auto max-w-7xl px-6">Training Breed Adoption Reviews</div></section>
+<section class="w-full py-12"><div class="mx-auto max-w-7xl px-6">Newsletter for dog owners every Friday.</div></section>
+</body></html>`
+    const audits = runDeterministicAudits(html, {
+      plan: { pageKind: 'vertical-doc', visualWorld: BLOG_PLAN.visualWorld },
+      route: BLOG_ROUTE,
+      brief: 'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    })
+    expect(audits.structure.issues).not.toContain('img tag')
+    expect(audits.publication.ok).toBe(true)
   })
 })
 

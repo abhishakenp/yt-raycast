@@ -107,3 +107,7 @@ export function judgeModeForBrief(brief) {
     ? 'publication'
     : 'general'
 }
+
+export function judgeMeetsTarget(judge, target = 90) {
+  return Boolean(judge?.pass === true && Number(judge?.score ?? 0) >= Number(target))
+}

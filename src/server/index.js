@@ -984,7 +984,10 @@ export async function startServer(sessionsDir) {
     activeGenerations.set(generationKey, (activeGenerations.get(generationKey) || 0) + 1)
 
     generation
-      .then(async () => {
+      .then(async (tailPromise) => {
+        if (tailPromise && typeof tailPromise.then === 'function') {
+          await tailPromise
+        }
         setSessionStatus(session.id, 'done')
         activeGenerations.set(
           generationKey,
@@ -1019,7 +1022,10 @@ export async function startServer(sessionsDir) {
 
     if (req.user) {
       generation
-        .then(() => {
+        .then(async (tailPromise) => {
+          if (tailPromise && typeof tailPromise.then === 'function') {
+            await tailPromise
+          }
           for (const target of ['html', 'react', 'nextjs']) {
             try {
               generateSessionExport(session, target)

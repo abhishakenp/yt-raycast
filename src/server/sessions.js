@@ -700,6 +700,7 @@ export function makeSessionState(session) {
   }
 
   const signalHomepageReady = () => {
+    if (session.homepageReady) return
     session.homepageReady = true
     invalidatePublicGallery()
     broadcast({ type: 'homepage_ready' })

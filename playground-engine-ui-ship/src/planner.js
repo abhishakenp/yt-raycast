@@ -1,5 +1,6 @@
 import { grammarPromptBlock } from './grammars.js'
 import { mediaStrategyBlock } from './media/media-presets.js'
+import { isMarketingLandingBrief, isFrontDoorVerticalDoc, isOpsConsoleBrief } from './router.js'
 import { isPublicationRoute } from './utils/publication-route.js'
 import { mobbinDoctrineBlock, mobbinSessionBlock } from './utils/mobbin-blocks.js'
 
@@ -87,7 +88,7 @@ function adaptVisualWorldForBrief(world, { brief, route } = {}) {
   if (route?.siteHint === 'blog') {
     return {
       ...world,
-      bg: cleanHex(world.bg, '#faf7f2'),
+      bg: '#faf7f2',
       surface: '#ffffff',
       text: '#1c1917',
       muted: '#78716c',
@@ -98,7 +99,32 @@ function adaptVisualWorldForBrief(world, { brief, route } = {}) {
       mood: 'warm editorial reading room',
     }
   }
+  if (/white[- ]background|light[- ]background|clean white|bg-white|enterprise saas design with a white/i.test(text)) {
+    return {
+      ...world,
+      bg: '#ffffff',
+      surface: '#f8fafc',
+      text: '#0f172a',
+      muted: '#64748b',
+      accent: cleanHex(world.accent, '#2563eb'),
+      accent2: cleanHex(world.accent2, '#0ea5e9'),
+      fontDisplay: world.fontDisplay || 'Manrope',
+      fontBody: world.fontBody || 'Inter',
+      mood: world.mood || 'clean enterprise SaaS, investor-ready',
+    }
+  }
   if (route?.siteHint === 'software' || /kubernetes|saas|b2b|developer|platform|open-?source|infrastructure|datadog/i.test(text)) {
+    if (isMarketingLandingBrief(brief)) {
+      return {
+        ...world,
+        bg: '#ffffff',
+        surface: '#f8fafc',
+        text: '#0f172a',
+        muted: '#64748b',
+        accent: cleanHex(world.accent, '#2563eb'),
+        accent2: cleanHex(world.accent2, '#0ea5e9'),
+      }
+    }
     return {
       ...world,
       bg: cleanHex(world.bg === '#ffffff' || world.bg === '#0a0a0a' ? undefined : world.bg, '#0d1b2a'),
@@ -115,16 +141,15 @@ function adaptVisualWorldForBrief(world, { brief, route } = {}) {
 }
 
 function resolvePageKind(plannerKind, brief, route) {
-  if (route?.siteHint === 'blog') return 'vertical-doc'
-  if (/\bhomepage\b/i.test(brief)) return 'vertical-doc'
-  if (route?.siteHint === 'ops-console') return 'app-shell'
-  return plannerKind === 'app-shell' ? 'app-shell' : 'vertical-doc'
+  if (isFrontDoorVerticalDoc(route, brief)) return 'vertical-doc'
+  if (route?.siteHint === 'ops-console' && isOpsConsoleBrief(brief)) return 'app-shell'
+  return plannerKind === 'app-shell' && isOpsConsoleBrief(brief) ? 'app-shell' : 'vertical-doc'
 }
 
 export function fallbackGenome(brief, route, variety, grammar) {
   const primary = route.primary
   const palette = primary?.palette || []
-  const appShell = route.siteHint === 'ops-console' && !/\bhomepage\b/i.test(brief)
+  const appShell = route.siteHint === 'ops-console' && isOpsConsoleBrief(brief) && !isMarketingLandingBrief(brief)
   const blog = isPublicationRoute(route, brief)
   return {
     pageKind: appShell ? 'app-shell' : 'vertical-doc',

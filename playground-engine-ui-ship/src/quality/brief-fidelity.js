@@ -7,15 +7,26 @@ function extractTitleTag(html) {
   return m ? m[1].replace(/\s+/g, ' ').trim() : ''
 }
 
+function decodeText(value) {
+  return String(value ?? '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .trim()
+}
+
 function extractVisibleBrand(html) {
   const navBrand = String(html ?? '').match(
     /<(?:a|span|div|h1)[^>]*class="[^"]*(?:logo|brand|font-heading|font-display)[^"]*"[^>]*>([^<]{2,80})</i,
   )
-  if (navBrand) return navBrand[1].replace(/&amp;/g, '&').trim()
+  if (navBrand) return decodeText(navBrand[1])
   const firstBold = String(html ?? '').match(
     /<a[^>]*class="[^"]*font-bold[^"]*"[^>]*>([^<]{2,60})</i,
   )
-  return firstBold ? firstBold[1].replace(/&amp;/g, '&').trim() : ''
+  return firstBold ? decodeText(firstBold[1]) : ''
 }
 
 function extractPageH1(html) {
@@ -38,12 +49,8 @@ function looksGenericBrand(brand, brief) {
   const lower = b.toLowerCase()
   const generic = /^(dog blog|pet blog|the blog|my blog|blog home|homepage|untitled)$/i.test(lower)
   if (generic) return true
-  const briefTokens = tokenize(brief)
   const brandTokens = tokenize(b)
-  if (brandTokens.length <= 2 && briefTokens.length >= 4) {
-    const noun = brandTokens.find((t) => briefTokens.includes(t))
-    if (noun && brandTokens.every((t) => t === noun || t === 'blog' || t === 'the')) return true
-  }
+  if (brandTokens.length <= 2 && brandTokens.some((t) => t === 'blog' || t === 'publication')) return true
   return false
 }
 
@@ -57,10 +64,11 @@ export function analyzeBriefFidelity(html, brief) {
   if (!pageH1 && !visibleBrand) issues.push('No visible page H1 or branded masthead title')
 
   if (titleTag && visibleBrand) {
-    const titleCore = titleTag.split(/[–—|-]/)[0]?.trim().toLowerCase()
-    const brandCore = visibleBrand.toLowerCase()
-    if (titleCore && brandCore && titleCore !== brandCore && !titleTag.toLowerCase().includes(brandCore)) {
-      issues.push(`Browser title ("${titleTag.slice(0, 80)}") does not match visible brand ("${visibleBrand}")`)
+    const normalizedTitle = decodeText(titleTag).toLowerCase()
+    const titleCore = normalizedTitle.split(/[–—|-]/)[0]?.trim()
+    const brandCore = decodeText(visibleBrand).toLowerCase()
+    if (titleCore && brandCore && titleCore !== brandCore && !normalizedTitle.includes(brandCore)) {
+      issues.push(`Browser title ("${decodeText(titleTag).slice(0, 80)}") does not match visible brand ("${visibleBrand}")`)
     }
   }
 

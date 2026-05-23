@@ -29,6 +29,7 @@ import { getPublicDesignExemplarPath } from '@ship-fast/engine/prompts/public-de
 import { stripDestructiveEmptyDesignTheme } from '@ship-fast/engine/pipeline/homepage-theme-sanitize.js'
 import { writeFile } from './workspace.js'
 import { buildHomepageSpecSliceJson } from '../spec/homepage-spec-slice.js'
+import { generateShipEngineHomepage, isShipHomepageEngineEnabled } from '@ship-fast/engine/pipeline/ship-homepage-engine.js'
 
 const SHIPFAST_FOOTER_MARKER = 'data-sf-footer-branding'
 
@@ -84,6 +85,54 @@ export async function generateHomepage(
   thinSiteSpec = null,
 ) {
   log('  homepage: generating from scratch (LLM)...')
+
+  if (isShipHomepageEngineEnabled()) {
+    log('  homepage: unified ship engine (playground-engine-ui-ship)')
+    const ship = await generateShipEngineHomepage(prompt, {
+      seed: thinSiteSpec?.slug || workspace?.sessionId || prompt,
+    })
+    let html = injectShipFastFooterBranding(stripDestructiveEmptyDesignTheme(ship.html), log)
+
+    if (indiaMode?.code && indiaMode.code !== 'en' && !indiaMode.skipFullTranslation) {
+      log(`  homepage: translating to ${indiaMode.name || indiaMode.language?.name} via Groq...`)
+      try {
+        const translated = await translateHtml(html, indiaMode)
+        if (translated?.content && !translated.error) {
+          html = translated.content
+          log(`  homepage: translation complete — ${translated.translatedCount} strings translated`)
+        }
+      } catch (err) {
+        log(`  homepage: translation error — ${err.message}, keeping original`)
+      }
+    }
+
+    html = injectEcommerceHeroResponsiveCss(html)
+    html = ensureLucideIconRuntime(html, log)
+
+    const kimiScore = ship.metrics.kimiScore ?? ship.audits?.kimi?.score ?? 0
+    if (
+      kimiScore < 85 &&
+      htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: true })
+    ) {
+      log(`  ❌ homepage: ship engine output failed structural check (kimi=${kimiScore})`)
+      throw new Error('Homepage output failed quality check')
+    }
+
+    writeFile(workspace, 'index.html', html)
+    if (sessionCtx?.signalHomepageReady) sessionCtx.signalHomepageReady()
+    log(
+      `  index.html: ${html.length} chars | ship engine ${ship.metrics.wall}ms kimi=${ship.metrics.kimiScore}${ship.metrics.under20s ? ' ✓<20s' : ''} (planner ${ship.metrics.plannerMs ?? 0}ms · hero ${ship.metrics.heroTopSource || 'gemini'} · gemini ${ship.metrics.geminiMs ?? 0}ms · compose ${ship.metrics.parallelMs ?? 0}ms)`,
+    )
+    return {
+      html,
+      inputTokens: 0,
+      outputTokens: 0,
+      cost: 0,
+      engineWall: ship.metrics.wall,
+      kimiScore: ship.metrics.kimiScore,
+      buildMode: ship.metrics.buildMode,
+    }
+  }
 
   const hasDesignReferenceUrls = readDesignReferenceUrlsFromWorkspace(workspace).length > 0
   const resolvedDesignRef = designRef ?? readDesignRefFromWorkspace(workspace)

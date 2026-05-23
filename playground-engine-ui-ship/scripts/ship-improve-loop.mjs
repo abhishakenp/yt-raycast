@@ -22,6 +22,7 @@ import {
   screenshotHtmlPlaywright,
   buildPreflight,
   judgeModeForBrief,
+  judgeMeetsTarget,
 } from './lib/judge-artifacts.mjs'
 
 const ROOT = process.cwd()
@@ -113,7 +114,7 @@ while (attempt < maxAttempts) {
   const row = {
     attempt,
     score: judge.score,
-    pass: judge.score >= target && judge.pass !== false,
+    pass: judgeMeetsTarget(judge, target),
     wall,
     dir,
     htmlPath,
@@ -138,7 +139,7 @@ while (attempt < maxAttempts) {
     ),
   )
 
-  if (row.pass || judge.score >= target) {
+  if (row.pass) {
     console.log(`\n[improve] TARGET MET — score ${judge.score} ≥ ${target}`)
     console.log(`  html: ${htmlPath}`)
     console.log(`  dir:  ${dir}`)

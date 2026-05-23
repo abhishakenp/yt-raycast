@@ -1,7 +1,8 @@
 import { completeGemini } from '../llm/gemini.js'
 import { completeGroq } from '../llm/groq.js'
-import { BUILDER_SYSTEM, buildSharedContract, FAST_MODE, sectionList } from '../utils/contracts.js'
+import { BUILDER_SYSTEM, buildHeroContract, buildSharedContract, FAST_MODE, sectionList } from '../utils/contracts.js'
 import { applyGenomeMerge } from '../utils/genome-merge.js'
+import { injectMissingSections } from '../utils/section-inject.js'
 import { repairAttrs, sanitizeHtml } from '../utils/postprocess.js'
 import {
   closeTopSegmentSafely,
@@ -27,49 +28,74 @@ function balanceTopDivs(topHtml) {
   return closeTopSegmentSafely(String(topHtml ?? ''), { maxClose: 8 })
 }
 
-function topOpenerInstruction({ route, grammar }) {
-  if (route?.siteHint === 'blog' || grammar?.id === 'editorial-blog-index' || grammar?.id === 'editorial-newsroom') {
-    return `a publication index opener (${grammar?.heroPattern || 'featured post masthead only'} — NOT a SaaS marketing hero or product demo)`
-  }
-  return 'a STUNNING full-width hero'
-}
-
 function isPublicationRoute(route, grammar) {
   return route?.siteHint === 'blog' || grammar?.id === 'editorial-blog-index' || grammar?.id === 'editorial-newsroom'
 }
 
-/** Blog homes must keep latest grid in the tail — Gemini top often eats the token budget on featured alone. */
-function resolveSectionSplit(secs, { route, grammar }) {
+function topOpenerInstruction({ route, grammar }) {
   if (isPublicationRoute(route, grammar)) {
-    return { topN: 1, topSecs: secs.slice(0, 1), tailSecs: secs.slice(1) }
+    return `a publication index opener (${grammar?.heroPattern || 'featured post masthead + latest posts preview'} — NOT a SaaS marketing hero or product demo)`
   }
-  const topN = Math.min(3, Math.max(2, Math.ceil(secs.length / 2)))
-  return { topN, topSecs: secs.slice(0, topN), tailSecs: secs.slice(topN) }
+  return 'ONE stunning full-width hero <section>'
+}
+
+/**
+ * Forge hero-combo split: Gemini owns ONLY nav + head + hero (above-the-fold craft).
+ * Groq owns every content band below — run in parallel so wall ≈ max(gemini, groq).
+ */
+function resolveHeroComboSplit(secs, { route, grammar }) {
+  if (isPublicationRoute(route, grammar)) {
+    const topN = 1
+    return { topN, topSecs: secs.slice(0, topN), tailSecs: secs.slice(topN), heroOnly: false }
+  }
+  return { topN: 0, topSecs: [], tailSecs: secs, heroOnly: true }
 }
 
 function tailBlogGridReminder(route, grammar) {
   if (!isPublicationRoute(route, grammar)) return ''
   return `
 
-MANDATORY BLOG INDEX: include a "Latest posts" <section id="latest"> with a responsive grid (grid-cols-2 md:grid-cols-3 gap-6) of 6+ <article> cards. Each card needs: <div data-img="..."> thumbnail, category chip, title, excerpt, and read link. Match ship-fast.devliv.io publication index density — NOT a lone featured hero with no archive grid.`
+MANDATORY BLOG INDEX: include a "Latest posts" <section id="latest"> with a responsive grid (grid-cols-2 md:grid-cols-3 gap-6) of 6+ <article> cards. Each card needs: thumbnail, category chip, title, excerpt, and read link.`
 }
 
-function firstViewportLabel(route, grammar) {
+function firstViewportLabel(route, grammar, { heroOnly } = {}) {
   if (isPublicationRoute(route)) return 'featured post masthead (article opener)'
-  return 'hero'
+  return heroOnly ? 'hero section' : 'hero'
 }
 
-async function buildGeminiTop(contract, plan, topSections, route, grammar) {
+function minSectionThreshold(plan, route) {
+  if (plan?.pageKind === 'app-shell') return 4
+  if (route?.siteHint === 'editorial') return 4
+  return 6
+}
+
+function padSectionDensity(html, plan, route) {
+  const minSections = minSectionThreshold(plan, route)
+  const sectionCount = (html.match(/<section\b/gi) || []).length
+  if (sectionCount < minSections) {
+    return injectMissingSections(html, plan, minSections - sectionCount)
+  }
+  return html
+}
+
+async function buildGeminiTop(heroContract, plan, topSections, route, grammar, { heroOnly = false } = {}) {
   const a = plan.visualWorld
   const opener = topOpenerInstruction({ route, grammar })
-  const prompt = `${contract}
+  const publication = isPublicationRoute(route, grammar)
+  const sectionBlock = topSections.length ? `THEN these full-width sections:\n${sectionList(topSections)}\n` : ''
+  const prompt = `${heroContract}
 
-Build the TOP of the page in ONE coherent pass: <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts + tailwind.config + <body class="bg-[${a.bg}] text-[${a.text}]">), sticky full-width <nav>, ${opener}, THEN these full-width sections:
-${sectionList(topSections)}
-
-Never use the word "hero" in comments or headings for publication/blog pages. No min-h-screen or min-h-[70vh+] viewport bands.
-This is what users judge first — gorgeous hierarchy, generous rhythm, DECOR applied with restraint. Do NOT close </body> or </html>.`
-  return completeGemini({ prompt, maxOutputTokens: 3400, temperature: 0.6 })
+Build the TOP of the page in ONE coherent pass:
+- <!DOCTYPE html>, <head> (Tailwind CDN + Google Fonts + tailwind.config), <body class="bg-[${a.bg}] text-[${a.text}]">
+- sticky full-width <nav> with inner <div class="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between"> — logo left, links center/right, never bare floating links
+- ${opener}
+${sectionBlock}
+${publication
+    ? 'PUBLICATION: compact featured masthead, normal section height, no min-h-screen bands.'
+    : `HERO SCALE (NON-NEGOTIABLE): hero MUST use min-h-[76vh], primary headline text-5xl md:text-7xl tracking-tight (or text-8xl), subhead + 1-2 CTAs, optional side visual. Kimi / Linear grade craft.`}
+${heroOnly ? 'STOP after the hero </section>. Do NOT add feature/pricing/testimonial bands — Groq builds those next.' : ''}
+Do NOT close </body> or </html>.`
+  return completeGemini({ prompt, maxOutputTokens: heroOnly ? 2000 : 2400, temperature: 0.6 })
 }
 
 async function buildGroqTop(contract, plan, topSections, route, grammar) {
@@ -80,8 +106,7 @@ async function buildGroqTop(contract, plan, topSections, route, grammar) {
 Build TOP ONLY: <!DOCTYPE html>, <head>, <body>, sticky <nav>, ${opener}.
 ${sectionList(topSections)}
 
-Never label this a "hero" on publication/blog pages. No min-h-screen or min-h-[70vh+] bands.
-STOP after nav + opener (+ first section if listed). Close every tag. Do NOT close </body></html>.`
+STOP after nav + opener. Close every tag. Do NOT close </body></html>.`
   return completeGroq({
     system: BUILDER_SYSTEM,
     prompt,
@@ -91,23 +116,47 @@ STOP after nav + opener (+ first section if listed). Close every tag. Do NOT clo
   })
 }
 
-async function buildTail(contract, sections, topCount, { route, grammar } = {}) {
-  const existing = firstViewportLabel(route, grammar)
+async function buildTail(contract, sections, topCount, { route, grammar, dense = false, heroOnly = false, closeDoc = true } = {}) {
+  const existing = firstViewportLabel(route, grammar, { heroOnly })
+  const densityBlock = dense
+    ? `
+
+DENSITY RULE: Each section needs a clear heading, 3-6 named cards/items/rows, concrete metrics or dates where appropriate, and meaningful visual surfaces. No empty vertical gaps.
+BLOG/EDITORIAL: bylines, categories, read times, article grids that read as a publication.`
+    : ''
+  const footerBlock = closeDoc
+    ? ' (one per role), then multi-column <footer>, then </body></html>'
+    : ' (one per role). Do NOT add footer or close </body></html> yet.'
   const prompt = `${contract}
 
-The <head>, <body>, sticky <nav>, ${existing}, and the first ${topCount} section(s) ALREADY EXIST — do NOT repeat them.
-Append these FULL-WIDTH sections (each <section class="w-full"> with inner mx-auto max-w-7xl), then multi-column <footer>, then </body></html>:
+The <head>, <body>, sticky <nav>, and ${existing} ALREADY EXIST — do NOT repeat them.
+Append EXACTLY ${sections.length} separate <section class="w-full"> elements${footerBlock}:
 ${sectionList(sections)}
-${tailBlogGridReminder(route, grammar)}
+${closeDoc ? tailBlogGridReminder(route, grammar) : ''}
 
-Match palette, fonts, and decor EXACTLY. Use the GRID RULE for collections. Start with the first new <section>.`
+CRITICAL: Each role = its own closed <section>. Match palette, fonts, decor EXACTLY. Use responsive grids for collections.${densityBlock}`
   return completeGroq({
     system: BUILDER_SYSTEM,
     prompt,
     temperature: 0.58,
-    maxTokens: 5000,
+    maxTokens: dense ? Math.min(4500, 1200 + sections.length * 700) : Math.min(5000, 1400 + sections.length * 650),
     reasoningEffort: 'low',
   })
+}
+
+async function buildTailParallel(contract, sections, topCount, ctx) {
+  if (sections.length <= 4) {
+    return buildTail(contract, sections, topCount, ctx)
+  }
+  const mid = Math.ceil(sections.length / 2)
+  const first = sections.slice(0, mid)
+  const second = sections.slice(mid)
+  const [firstResult, secondResult] = await Promise.all([
+    buildTail(contract, first, topCount, { ...ctx, closeDoc: false }),
+    buildTail(contract, second, topCount + mid, { ...ctx, closeDoc: true }),
+  ])
+  const content = `${strip(firstResult.content)}\n${strip(secondResult.content)}`
+  return { content, ms: Math.max(firstResult.ms || 0, secondResult.ms || 0) }
 }
 
 function stitch(topHtml, tailHtml) {
@@ -120,19 +169,59 @@ function stitch(topHtml, tailHtml) {
   return `${top}\n${tail}`
 }
 
-/** Quality path: Gemini top (hero + first bands) + Groq tail — matches forge-gemini-native. */
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+const geminiHeroTimeoutMs = () =>
+  parseInt(process.env.SHIP_GEMINI_HERO_TIMEOUT_MS || '14000', 10)
+
+async function resolveHeroTop({ brief, contract, heroContract, plan, topSecs, route, grammar, variety, heroOnly }) {
+  const timeoutMs = geminiHeroTimeoutMs()
+  const groqTopPromise = buildGroqTop(contract, plan, topSecs, route, grammar)
+  const geminiTopPromise = buildGeminiTop(heroContract, plan, topSecs, route, grammar, { heroOnly })
+
+  try {
+    const topResult = await Promise.race([
+      geminiTopPromise,
+      sleep(timeoutMs).then(() => {
+        const err = new Error(`gemini hero timeout after ${timeoutMs}ms`)
+        err.code = 'GEMINI_TIMEOUT'
+        throw err
+      }),
+    ])
+    return { topResult, topSource: 'gemini', geminiMs: topResult.ms || 0, groqTopMs: 0 }
+  } catch {
+    const topResult = await groqTopPromise
+    return { topResult, topSource: 'groq-fallback', geminiMs: 0, groqTopMs: topResult.ms || 0 }
+  }
+}
+
+/** Production: Gemini hero+nav ∥ Groq body — forge combo, hard-capped at ~14s for hero leg. */
 async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   const contract = buildSharedContract(brief, plan, route, variety, grammar)
-  const secs = (plan.sections || []).slice(0, 8)
-  const { topN, topSecs, tailSecs } = resolveSectionSplit(secs, { route, grammar })
+  const heroContract = buildHeroContract(brief, plan, route, variety, grammar)
+  const secs = (plan.sections || []).slice(0, 9)
+  const split = resolveHeroComboSplit(secs, { route, grammar })
+  const { topN, topSecs, tailSecs, heroOnly } = split
 
   const t0 = Date.now()
-  const [topResult, tailResult] = await Promise.all([
-    buildGeminiTop(contract, plan, topSecs, route, grammar),
-    tailSecs.length
-      ? buildTail(contract, tailSecs, topN, { route, grammar })
-      : Promise.resolve({ content: '\n</body></html>', ms: 0 }),
-  ])
+  const tailPromise = tailSecs.length
+    ? buildTailParallel(contract, tailSecs, topN, { route, grammar, dense: true, heroOnly })
+    : Promise.resolve({ content: '\n</body></html>', ms: 0 })
+
+  const { topResult, topSource, geminiMs, groqTopMs } = await resolveHeroTop({
+    brief,
+    contract,
+    heroContract,
+    plan,
+    topSecs,
+    route,
+    grammar,
+    variety,
+    heroOnly,
+  })
+  const tailResult = await tailPromise
   const parallelMs = Date.now() - t0
 
   let topHtml = trimIncompleteSuffix(strip(topResult.content))
@@ -140,6 +229,7 @@ async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   if (badLeg(tailHtml)) tailHtml = '\n<footer class="w-full py-8"></footer>\n</body></html>'
 
   let html = stitch(topHtml, tailHtml)
+  html = padSectionDensity(html, plan, route)
   const validation = validateStitchedHtml(html)
   html = applyGenomeMerge(html, plan)
   html = sanitizeHtml(html, plan, route, brief)
@@ -147,11 +237,14 @@ async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   return {
     html,
     metrics: {
-      buildMode: 'vertical-doc-gemini-hybrid',
-      geminiMs: topResult.ms || 0,
-      ossMs: tailResult.ms || 0,
+      buildMode:
+        topSource === 'gemini' ? 'vertical-doc-gemini-hero-combo' : 'vertical-doc-gemini-hero-combo-groq-fallback',
+      heroTopSource: topSource,
+      geminiMs,
+      groqTopMs,
+      ossMs: (groqTopMs || 0) + (tailResult.ms || 0),
       parallelMs,
-      topSections: topSecs.length,
+      topSections: topSecs.length + (heroOnly ? 1 : 0),
       tailSections: tailSecs.length,
       stitchOk: validation.ok,
       stitchIssues: validation.issues,
@@ -159,11 +252,13 @@ async function composeQualityHybrid({ brief, plan, route, variety, grammar }) {
   }
 }
 
-/** Fast bench path: parallel Groq only (lower craft). */
+/** Bench-only: Groq-only parallel (lower hero craft). */
 async function composeFastParallel({ brief, plan, route, variety, grammar }) {
   const contract = buildSharedContract(brief, plan, route, variety, grammar)
   const secs = (plan.sections || []).slice(0, 6)
-  const { topN, topSecs, tailSecs } = resolveSectionSplit(secs, { route, grammar })
+  const topN = Math.min(2, secs.length)
+  const topSecs = secs.slice(0, topN)
+  const tailSecs = secs.slice(topN)
 
   const t0 = Date.now()
   const [topResult, tailResult] = await Promise.all([

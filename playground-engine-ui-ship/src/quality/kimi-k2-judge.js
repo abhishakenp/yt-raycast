@@ -191,6 +191,10 @@ async function runTextJudge(prompt, { backend }) {
   return { raw: r.content, judgeModel: r.model, judgeMs: r.ms, judgeBackend: 'openrouter' }
 }
 
+export function resolveJudgeBackend(backend) {
+  return backend || process.env.SHIP_JUDGE_BACKEND || 'openrouter'
+}
+
 export async function judgeHomepage({
   brief,
   html,
@@ -201,7 +205,7 @@ export async function judgeHomepage({
   previousFeedback = '',
   heuristicScore = null,
   passThreshold = SEVERE_JUDGE_PASS_SCORE,
-  backend = 'openrouter',
+  backend = null,
 } = {}) {
   const htmlExcerpt = truncateHtml(html)
   const briefFidelity = analyzeBriefFidelity(html, brief)
@@ -218,7 +222,7 @@ export async function judgeHomepage({
       : buildGeneralJudgePrompt({ brief, htmlExcerpt, screenshotPath, engineId, briefFidelity })
 
   try {
-    const textResult = await runTextJudge(prompt, { backend })
+    const textResult = await runTextJudge(prompt, { backend: resolveJudgeBackend(backend) })
     const parsed = parseJudgeVerdict(textResult.raw, { passThreshold })
 
     return {

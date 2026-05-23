@@ -74,7 +74,7 @@ bun playground-engine-ui-ship/scripts/ship-gallery-build.mjs --skip-shots
 
 ## Production integration
 
-Set `SHIPFAST_HOMEPAGE_ENGINE=ship` to use this engine in the main pipeline (`phase-homepage.js`).
+The main pipeline uses this engine by default when `GROQ_API_KEY` and `GEMINI_API_KEY`/`GOOGLE_API_KEY` are available. Use `SHIPFAST_HOMEPAGE_ENGINE=0` to roll back to the legacy homepage path. `SHIPFAST_HOMEPAGE_ENGINE=ship` still forces this engine for local experiments.
 
 ## Relation to other playgrounds
 

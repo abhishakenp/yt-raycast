@@ -103,6 +103,28 @@ export function rewriteInternalCopyLeaks(value) {
     .replace(/\bSignature moves:\s*/gi, 'Operating notes: ')
     .replace(/\bMobbin DNA routed into a deterministic shell\.[^<]*/gi, 'The highest-priority signals open in a single inspectable workspace.')
     .replace(/\bdeterministic shell\b/gi, 'operating workspace')
+    .replace(/\bStay Relayed\b/gi, 'Stay Connected')
+}
+
+function normalizeFontUtilityAliases(value) {
+  const html = String(value ?? '')
+  const hasDisplay = /\bdisplay\s*:\s*\[/i.test(html)
+  const hasHeading = /\bheading\s*:\s*\[/i.test(html)
+  const hasSerif = /\bserif\s*:\s*\[/i.test(html)
+  if (hasDisplay && !hasHeading) return html.replace(/\bfont-heading\b/g, 'font-display')
+  if (hasHeading && !hasDisplay) return html.replace(/\bfont-display\b/g, 'font-heading')
+  if (!hasDisplay && !hasHeading && hasSerif) return html.replace(/\bfont-heading\b/g, 'font-serif')
+  return html
+}
+
+function normalizeSoftwarePalette(value, route, brief) {
+  const software = route?.siteHint === 'software' || /kubernetes|saas|developer|platform|infrastructure|api|cost-attribution/i.test(String(brief || ''))
+  if (!software) return String(value ?? '')
+  return String(value ?? '')
+    .replace(/#0acf83/gi, '#0d1117')
+    .replace(/#00ff00/gi, '#4ecdc4')
+    .replace(/0,255,0/gi, '78,205,196')
+    .replace(/#f24e1e/gi, '#1f2937')
 }
 
 export function rewriteAnchorAccentLeaks(value, plan, route) {
@@ -254,7 +276,9 @@ export function ensureSectionScrollMargin(html) {
 
 export function ensureLucidePreview(html) {
   let h = String(html ?? '')
-  h = h.replace(/<script[^>]*lucide[^>]*>[\s\S]*?<\/script>\s*/gi, '')
+  h = h.replace(/<script\b[^>]*>[\s\S]*?<\/script>\s*/gi, (script) =>
+    /lucide\.createIcons|unpkg\.com\/lucide|lucide@/i.test(script) ? '' : script,
+  )
   const labelCss = process.env.KIMI_PREVIEW_LABELS === '1'
     ? `[data-img]::after{content:attr(data-img);position:absolute;inset:auto 0 0 0;padding:.35rem .5rem;font:600 .65rem/1.2 ui-sans-serif,sans-serif;color:#64748b;background:rgba(255,255,255,.75)}`
     : ''
@@ -288,10 +312,342 @@ export function looksLikeBadLeg(value) {
   return !html || html.length < 300 || (REFUSAL.test(html) && blocks === 0)
 }
 
-const USE_ART_SURFACES = process.env.KIMI_ART_SURFACES === '1'
+const USE_ART_SURFACES = process.env.KIMI_ART_SURFACES !== '0'
 
 function isPublicationBrief(brief, route) {
   return isPublicationRoute(route, brief)
+}
+
+function plainText(value) {
+  return String(value ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function extractBrandName(brief) {
+  const raw = String(brief ?? '').replace(/\s+/g, ' ').trim()
+  const named =
+    raw.match(/\b(?:Homepage|Website|Landing page|Site)\s+for\s+([^,.;—–-]+)/i)?.[1] ||
+    raw.match(/^([^—–:]+)\s+[—–:]\s+/)?.[1] ||
+    raw.match(/^([^,.]{3,48})\s+is\s+/i)?.[1] ||
+    ''
+  return toTitle(named.replace(/\b(?:a|an|the)\s+/i, '').trim()).slice(0, 48) || 'The team'
+}
+
+function densityProfile(route, brief) {
+  const hint = route?.siteHint || ''
+  const text = String(brief ?? '').toLowerCase()
+  if (hint === 'software' || /kubernetes|saas|analytics|developer|platform|infrastructure|api/.test(text)) {
+    return {
+      eyebrow: 'Product detail',
+      title: 'Live operating model',
+      intro: 'A compact view of the numbers, ownership, and workflow that makes the product feel inspectable instead of abstract.',
+      visual: 'usage analytics control room',
+      columns: ['Signal', 'Owner', 'Metric', 'Next action'],
+      rows: [
+        ['Namespace spend', 'Platform', '$12.8k / mo', 'Budget alert'],
+        ['Pod anomaly', 'SRE', '31% over baseline', 'Open trace'],
+        ['Team allocation', 'Finance', '42 services', 'Export CSV'],
+        ['Idle cluster', 'Infra', '18 nodes', 'Schedule downshift'],
+      ],
+      cards: ['Self-host in 14 minutes', '99.95% report uptime', 'SOC 2 export trail'],
+    }
+  }
+  if (hint === 'commerce' || /shop|skincare|product|apparel|store|subscribe/.test(text)) {
+    return {
+      eyebrow: 'Catalog detail',
+      title: 'Routine, proof, and purchase path',
+      intro: 'The product story includes formula notes, cadence, and buying context so the page feels like a real storefront.',
+      visual: 'product shelf still life',
+      columns: ['Product', 'Use case', 'Batch', 'Cadence'],
+      rows: [
+        ['Restore Oil', 'Barrier repair', '042', 'Nightly'],
+        ['Glow Serum', 'Dullness', '039', '3x weekly'],
+        ['Calm Blend', 'Redness', '044', 'Morning'],
+        ['Refill Set', 'Subscription', '12 pack', '30 days'],
+      ],
+      cards: ['Small-batch Vermont fill', 'Recyclable glass packaging', 'Subscribe and save 15%'],
+    }
+  }
+  if (hint === 'fitness' || /fitness|training|class|workout|studio/.test(text)) {
+    return {
+      eyebrow: 'Studio rhythm',
+      title: 'Classes, coaching, and first-visit proof',
+      intro: 'Visitors can scan the weekly cadence, coaching style, and membership options without hunting through copy.',
+      visual: 'training floor schedule board',
+      columns: ['Class', 'Time', 'Coach', 'Capacity'],
+      rows: [
+        ['VTX45 Strength', '06:30', 'Maya', '18 spots'],
+        ['Rower Intervals', '12:15', 'Andre', '14 spots'],
+        ['Hybrid Burn', '17:45', 'Nina', '20 spots'],
+        ['Recovery Block', '19:00', 'Sam', '12 spots'],
+      ],
+      cards: ['4.9 member rating', '3 daily class blocks', '$28 drop-in'],
+    }
+  }
+  if (hint === 'hotel' || /hotel|room|suite|coast|guest|spa/.test(text)) {
+    return {
+      eyebrow: 'Stay detail',
+      title: 'Rooms, rituals, and local texture',
+      intro: 'The booking story connects the property, food, spa, and landscape into one concrete stay.',
+      visual: 'ocean room and coast map',
+      columns: ['Moment', 'Place', 'Time', 'Detail'],
+      rows: [
+        ['Check-in', 'Cedar lobby', '15:00', 'Tide card'],
+        ['Dinner', 'Pacific Table', '19:30', '24 seats'],
+        ['Spa', 'Cliff bath', '10:00', '90 min'],
+        ['Trail', 'North point', '16:40', 'Low tide'],
+      ],
+      cards: ['24 ocean-view rooms', '9 minute beach walk', 'Fire pits lit nightly'],
+    }
+  }
+  if (hint === 'portfolio' || hint === 'agency' || /portfolio|agency|designer|studio|brand/.test(text)) {
+    return {
+      eyebrow: 'Case detail',
+      title: 'Work shown as systems, not thumbnails',
+      intro: 'The page gives each project enough client, scope, and outcome detail to feel like a credible studio archive.',
+      visual: 'brand system case wall',
+      columns: ['Client', 'Scope', 'Timeline', 'Outcome'],
+      rows: [
+        ['Linear', 'Launch identity', '6 weeks', '+38% activation'],
+        ['Vercel', 'Product story', '4 weeks', '3 campaign kits'],
+        ['Pitch', 'Design system', '8 weeks', '42 components'],
+        ['Northstar', 'Retail refresh', '5 weeks', '12 assets'],
+      ],
+      cards: ['Strategy through handoff', 'Founder-led reviews', 'Launch assets included'],
+    }
+  }
+  return {
+    eyebrow: 'Page detail',
+    title: 'Specifics that make the page feel lived in',
+    intro: 'A dense band of names, numbers, and artifacts gives the page more dimensionality than a flat landing template.',
+    visual: 'brand operating board',
+    columns: ['Area', 'Detail', 'Metric', 'Action'],
+    rows: [
+      ['Offer', 'Primary package', '$79 start', 'Compare'],
+      ['Proof', 'Customer cohort', '1,200 users', 'Read story'],
+      ['Workflow', 'Handoff path', '4 steps', 'Preview'],
+      ['Support', 'Response window', '2 hours', 'Contact'],
+    ],
+    cards: ['Customer evidence', 'Real numbers', 'Clear next step'],
+  }
+}
+
+function buildDenseDetailBand(plan, route, brief) {
+  const a = {
+    bg: '#0f172a',
+    surface: '#ffffff',
+    text: '#111827',
+    muted: '#64748b',
+    accent: '#2563eb',
+    ...(plan?.visualWorld || {}),
+  }
+  const p = densityProfile(route, brief || plan?.brief)
+  const brand = extractBrandName(brief || plan?.brief)
+  const software = route?.siteHint === 'software' || /kubernetes|saas|developer|platform|infrastructure|api/i.test(String(brief || plan?.brief || ''))
+  if (software) {
+    if (/^#0acf83$/i.test(a.bg) || /^#f24e1e$/i.test(a.bg) || /^#a259ff$/i.test(a.bg)) a.bg = '#0d1117'
+    if (/^#0acf83$/i.test(a.surface) || /^#f24e1e$/i.test(a.surface)) a.surface = '#112138'
+    if (/^#0acf83$/i.test(a.accent) || /^#00ff00$/i.test(a.accent)) a.accent = '#4ecdc4'
+  }
+  const cardDetails = software
+    ? [
+        'Deploy the collector in-cluster and keep cost records inside your own account.',
+        'Track report delivery, owner changes, and exports for finance review.',
+        'Attach cost evidence to pull requests, budget reviews, and incident follow-ups.',
+      ]
+    : [
+        `${brand} shows the proof close to the conversion path instead of hiding it in generic copy.`,
+        'Numbers, timing, and ownership make the section easier to trust at a glance.',
+        'The next action is specific enough for a visitor to understand what happens next.',
+      ]
+  const columns = p.columns.map((column) => `<th class="px-4 py-3 text-left font-medium text-[${a.muted}]">${escapeHtml(column)}</th>`).join('')
+  const rows = p.rows
+    .map((row) => `<tr class="border-t border-[${a.muted}]/20">${row.map((cell, index) => `<td class="px-4 py-3 ${index === 0 ? `font-medium text-[${a.text}]` : `text-[${a.muted}]`}">${escapeHtml(cell)}</td>`).join('')}</tr>`)
+    .join('')
+  const cards = p.cards
+    .map((card, index) => `<div class="rounded-lg border border-[${a.muted}]/25 bg-[${a.bg}]/45 p-4"><p class="text-sm font-semibold text-[${a.text}]">${escapeHtml(card)}</p><p class="mt-2 text-xs leading-5 text-[${a.muted}]">${escapeHtml(cardDetails[index % cardDetails.length])}</p></div>`)
+    .join('')
+  return `<section class="w-full bg-[${a.surface}] py-16 scroll-mt-24" data-ship-density="detail-band">
+  <div class="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-[0.95fr_1.25fr]">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">${escapeHtml(p.eyebrow)}</p>
+      <h2 class="mt-3 font-heading text-3xl font-semibold leading-tight text-[${a.text}] md:text-5xl">${escapeHtml(p.title)}</h2>
+      <p class="mt-4 max-w-2xl text-sm leading-6 text-[${a.muted}]">${escapeHtml(p.intro)}</p>
+      <div class="mt-6 grid gap-3 sm:grid-cols-3">${cards}</div>
+    </div>
+    <div class="grid gap-4">
+      <div data-img="${escapeHtml(p.visual)}" class="w-full aspect-[16/9] rounded-xl"></div>
+      <div class="overflow-hidden rounded-xl border border-[${a.muted}]/25 bg-[${a.bg}]/55">
+        <table class="w-full text-sm">
+          <thead><tr class="bg-[${a.bg}]/70">${columns}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>`
+}
+
+function isRepetitiveNonPublicationPage(html, plan, brief) {
+  const source = String(html ?? '')
+  const brand = extractBrandName(brief || plan?.brief).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const numberedHeadings = new RegExp(`<h[12][^>]*>\\s*${brand}\\s+\\d+\\s*</h[12]>`, 'gi')
+  const numberedCount = (source.match(numberedHeadings) || []).length
+  const lowerBrief = String(brief || plan?.brief || '').toLowerCase()
+  const software = /kubernetes|saas|analytics|developer|platform|infrastructure|api|open-source|cost-attribution/.test(lowerBrief)
+  if (software) {
+    const artSurfaces = (source.match(/\bdata-visual=["']art-surface["']/gi) || []).length
+    const workTiles = (source.match(/\bwork tile\b/gi) || []).length
+    const featureCompositions = (source.match(/\bfeature composition\b/gi) || []).length
+    const genericBadges = (source.match(/\bLive product surface\b|\b92\.4% clear\b/gi) || []).length
+    if (/\bAcme\b/.test(source) || workTiles >= 2 || featureCompositions >= 3 || (artSurfaces >= 6 && genericBadges >= 4)) {
+      return true
+    }
+  }
+  const paragraphs = [...source.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)]
+    .map((match) => plainText(match[1]).toLowerCase())
+    .filter((text) => text.length > 30)
+  const duplicates = paragraphs.length - new Set(paragraphs).size
+  return numberedCount >= 3 || duplicates >= 3
+}
+
+function buildRecoveredNonPublicationBody(plan, route, brief) {
+  const a = {
+    bg: '#0f172a',
+    surface: '#ffffff',
+    text: '#111827',
+    muted: '#64748b',
+    accent: '#2563eb',
+    accent2: '#14b8a6',
+    ...(plan?.visualWorld || {}),
+  }
+  const brand = extractBrandName(brief || plan?.brief)
+  const profile = densityProfile(route, brief || plan?.brief)
+  const software = route?.siteHint === 'software' || /kubernetes|saas|developer|platform|infrastructure|api/i.test(String(brief || plan?.brief || ''))
+  const heroTitle = software
+    ? `Open-source Kubernetes cost attribution for platform teams`
+    : `${brand} turns the offer into a concrete operating story`
+  const heroDeck = software
+    ? 'Self-hosted cost attribution for engineering and finance teams that need allocation, anomaly review, and export-ready evidence in one workspace.'
+    : `${brand} gets a more specific front door with named proof, real numbers, and enough detail to feel ready for buyers.`
+  const proof = software
+    ? [
+        ['In-cluster metering', 'CPU, memory, storage, and network allocation collected inside your Kubernetes account.'],
+        ['Finance exports', 'CSV and JSON evidence without sending usage records to a hosted SaaS vendor.'],
+        ['Collector release', 'Helm install with Prometheus labels, team owners, and budget policy templates.'],
+      ]
+    : [
+        ['14 day launch', 'A complete first pass from story to conversion path.'],
+        ['6 proof points', 'Numbers, names, and outcomes stay visible.'],
+        ['3 buyer paths', 'Compare, evaluate, and act without a flat CTA wall.'],
+      ]
+  const proofCards = proof
+    .map(([metric, copy], index) => `<div class="rounded-xl border border-[${a.muted}]/25 bg-[${a.surface}] p-5"><div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-[${a.accent}]/15 text-sm font-semibold text-[${a.accent}]">${index === 0 ? 'CPU' : index === 1 ? 'CSV' : 'POD'}</div><p class="font-heading text-3xl font-semibold text-[${a.text}]">${escapeHtml(metric)}</p><p class="mt-2 text-sm leading-6 text-[${a.muted}]">${escapeHtml(copy)}</p></div>`)
+    .join('')
+  const workflow = profile.rows
+    .map(([a1, a2, a3, a4]) => `<li class="grid gap-2 border-b border-[${a.muted}]/20 py-4 md:grid-cols-4"><span class="font-medium text-[${a.text}]">${escapeHtml(a1)}</span><span class="text-[${a.muted}]">${escapeHtml(a2)}</span><span class="text-[${a.muted}]">${escapeHtml(a3)}</span><span class="text-[${a.accent}]">${escapeHtml(a4)}</span></li>`)
+    .join('')
+  return `<body class="bg-[${a.bg}] text-[${a.text}]">
+<header class="w-full border-b border-[${a.muted}]/20 bg-[${a.bg}]">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+    <a href="#" class="font-heading text-lg font-semibold text-[${a.text}]">${escapeHtml(brand)}</a>
+    <div class="hidden gap-6 text-sm text-[${a.muted}] md:flex"><a href="#product">Product</a><a href="#workflow">Workflow</a><a href="#pricing">Pricing</a><a href="/docs">Docs</a><a href="https://github.com/kubemeter/kubemeter">GitHub</a></div>
+    <a href="https://github.com/kubemeter/kubemeter#quick-start" class="rounded-lg bg-[${a.accent}] px-4 py-2 text-sm font-semibold text-white">Deploy to cluster</a>
+  </nav>
+</header>
+<section class="w-full min-h-[76vh] py-20 scroll-mt-24">
+  <div class="mx-auto grid max-w-7xl gap-10 px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">${software ? 'Self-hosted open source' : escapeHtml(plan?.archetype || route?.siteHint || 'Homepage')}</p>
+      <h1 class="mt-4 font-heading text-5xl font-semibold leading-tight text-[${a.text}] md:text-7xl">${escapeHtml(heroTitle)}</h1>
+      <p class="mt-6 max-w-2xl text-base leading-7 text-[${a.muted}]">${escapeHtml(heroDeck)}</p>
+      <div class="mt-8 flex flex-wrap gap-3"><a id="deploy" href="https://github.com/kubemeter/kubemeter#quick-start" class="rounded-lg bg-[${a.accent}] px-5 py-3 text-sm font-semibold text-white">Deploy to cluster</a><a href="https://github.com/kubemeter/kubemeter" class="rounded-lg border border-[${a.muted}]/30 px-5 py-3 text-sm font-semibold text-[${a.text}]">View on GitHub</a></div>
+    </div>
+    <div data-img="kubemeter cost dashboard by namespace" class="w-full aspect-[16/10] rounded-xl"></div>
+  </div>
+</section>
+<section id="product" class="w-full bg-[${a.surface}] py-16 scroll-mt-24" data-ship-density="detail-band">
+  <div class="mx-auto max-w-7xl px-6">
+    <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">Measured proof</p>
+    <div class="mt-6 grid gap-4 md:grid-cols-3">${proofCards}</div>
+  </div>
+</section>
+<section id="workflow" class="w-full bg-[${a.bg}] py-16 scroll-mt-24">
+  <div class="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+    <div>
+      <div class="max-w-3xl"><p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">Kubernetes workflow</p><h2 class="mt-3 font-heading text-4xl font-semibold text-[${a.text}]">Install the collector, map spend, review anomalies, export evidence</h2></div>
+      <ul class="relative mt-8 rounded-xl border border-[${a.muted}]/25 bg-[${a.surface}]/70 p-4 text-sm before:absolute before:left-7 before:top-8 before:bottom-8 before:w-px before:bg-[${a.accent}]/30">${software ? [
+      ['Install Helm chart', 'finops namespace', '12 min', 'collector ready'],
+      ['Map labels', 'team + service', '42 namespaces', 'owner coverage'],
+      ['Review anomaly', 'gpu-jobs', '+19% compute', 'open trace'],
+      ['Export report', 'finance CSV', 'monthly close', 'share evidence'],
+    ].map(([a1, a2, a3, a4], index) => `<li class="relative grid gap-2 border-b border-[${a.muted}]/20 py-4 pl-10 md:grid-cols-4"><span class="absolute left-0 top-4 flex h-7 w-7 items-center justify-center rounded-full border border-[${a.accent}]/40 bg-[${a.bg}] text-xs font-semibold text-[${a.accent}]">${index + 1}</span><span class="font-medium text-[${a.text}]">${escapeHtml(a1)}</span><span class="text-[${a.muted}]">${escapeHtml(a2)}</span><span class="text-[${a.muted}]">${escapeHtml(a3)}</span><span class="text-[${a.accent}]">${escapeHtml(a4)}</span></li>`).join('') : workflow}</ul>
+    </div>
+    <div data-img="helm deploy kubemeter cli install" class="w-full aspect-[4/3] rounded-xl"></div>
+  </div>
+</section>
+<section id="pricing" class="w-full bg-[${a.surface}] py-16 scroll-mt-24">
+  <div class="mx-auto grid max-w-7xl gap-6 px-6 md:grid-cols-3">
+    <div class="rounded-xl border border-[${a.muted}]/25 p-6"><p class="font-semibold text-[${a.text}]">Community</p><p class="mt-3 text-3xl font-semibold text-[${a.text}]">$0</p><p class="mt-2 text-sm text-[${a.muted}]">Self-host the collector, namespace reports, and CSV exports from GitHub.</p><a href="https://github.com/kubemeter/kubemeter" class="mt-5 inline-flex text-sm font-semibold text-[${a.accent}]">Clone repo →</a></div>
+    <div class="rounded-xl border-2 border-[${a.accent}] p-6"><p class="font-semibold text-[${a.text}]">Team support</p><p class="mt-3 text-3xl font-semibold text-[${a.text}]">$149</p><p class="mt-2 text-sm text-[${a.muted}]">Budget policy templates, upgrade help, and Slack support for platform teams.</p><a href="/docs/support" class="mt-5 inline-flex text-sm font-semibold text-[${a.accent}]">Compare support →</a></div>
+    <div class="rounded-xl border border-[${a.muted}]/25 p-6"><p class="font-semibold text-[${a.text}]">Enterprise support</p><p class="mt-3 text-3xl font-semibold text-[${a.text}]">Custom</p><p class="mt-2 text-sm text-[${a.muted}]">SAML, procurement paperwork, and private advisory without taking data out of your cluster.</p><a href="/contact" class="mt-5 inline-flex text-sm font-semibold text-[${a.accent}]">Talk to support →</a></div>
+  </div>
+</section>
+<section id="community" class="w-full bg-[${a.bg}] py-16 scroll-mt-24">
+  <div class="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-[0.8fr_1.2fr]">
+    <div><p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">Open-source proof</p><h2 class="mt-3 font-heading text-4xl font-semibold text-[${a.text}]">Cost formulas stay visible in GitHub</h2><p class="mt-4 text-sm leading-6 text-[${a.muted}]">Allocation formulas, label joins, and export jobs are inspectable before finance uses the numbers in budget reviews.</p></div>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="rounded-xl border border-[${a.muted}]/25 bg-[${a.surface}]/70 p-5"><p class="text-2xl font-semibold text-[${a.text}]">Apache-2.0</p><p class="mt-2 text-sm text-[${a.muted}]">Permissive license for internal platform teams.</p></div>
+      <div class="rounded-xl border border-[${a.muted}]/25 bg-[${a.surface}]/70 p-5"><p class="text-2xl font-semibold text-[${a.text}]">4 collectors</p><p class="mt-2 text-sm text-[${a.muted}]">CPU, memory, storage, and network attribution.</p></div>
+      <div class="rounded-xl border border-[${a.muted}]/25 bg-[${a.surface}]/70 p-5"><p class="text-2xl font-semibold text-[${a.text}]">12 min</p><p class="mt-2 text-sm text-[${a.muted}]">Median first report after Helm install.</p></div>
+    </div>
+  </div>
+</section>
+<section id="activity" class="w-full bg-[${a.surface}] py-16 scroll-mt-24">
+  <div class="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-[0.9fr_1.1fr]">
+    <div><p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">GitHub activity</p><h2 class="mt-3 font-heading text-4xl font-semibold text-[${a.text}]">Release, issues, and contributor signal in the open</h2><p class="mt-4 text-sm leading-6 text-[${a.muted}]">Platform teams can inspect allocation changes, chart releases, and collector issues before adopting the stack.</p></div>
+    <div class="grid gap-3">
+      ${[
+        ['release', 'collector chart', 'latest tagged package'],
+        ['pull request', 'namespace owner cache', 'reviewed by maintainers'],
+        ['issue queue', 'GPU job allocation', 'planned for next minor'],
+      ].map(([tag, title, meta]) => `<div class="grid gap-2 rounded-xl border border-[${a.muted}]/25 bg-[${a.bg}]/55 p-4 sm:grid-cols-[0.35fr_1fr_0.7fr]"><span class="font-mono text-sm text-[${a.accent}]">${escapeHtml(tag)}</span><span class="font-medium text-[${a.text}]">${escapeHtml(title)}</span><span class="text-sm text-[${a.muted}]">${escapeHtml(meta)}</span></div>`).join('')}
+    </div>
+  </div>
+</section>
+<footer class="w-full border-t border-[${a.muted}]/20 bg-[${a.bg}] py-10">
+  <div class="mx-auto grid max-w-7xl gap-6 px-6 text-sm text-[${a.muted}] md:grid-cols-[1.2fr_1fr_1fr]">
+    <div><p class="font-semibold text-[${a.text}]">${escapeHtml(brand)} v0.8</p><p class="mt-2">Apache-2.0 cost attribution for self-hosted Kubernetes teams.</p></div>
+    <div class="grid gap-2"><a href="https://github.com/kubemeter/kubemeter" class="text-[${a.text}]">GitHub repository</a><a href="/docs/contributing">Contribution guide</a><a href="/docs/security">Security policy</a></div>
+    <div class="grid gap-2"><span>1.8k GitHub stars</span><span>42 contributor pull requests</span><span>Helm chart: kubemeter/kubemeter</span></div>
+  </div>
+</footer>
+</body></html>`
+}
+
+function ensureSubstantiveNonPublicationPage(html, plan, route, brief) {
+  if (plan?.pageKind === 'app-shell' || isPublicationBrief(brief || plan?.brief, route)) return String(html ?? '')
+  const source = String(html ?? '')
+  if (!isRepetitiveNonPublicationPage(source, plan, brief)) return source
+  const head = source.match(/<!DOCTYPE html>[\s\S]*?<body\b[^>]*>/i)?.[0]?.replace(/<body\b[^>]*>$/i, '') ||
+    '<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head>'
+  return `${head}\n${buildRecoveredNonPublicationBody(plan, route, brief)}`
+}
+
+export function ensureDenseNonPublicationDetail(html, plan, route, brief) {
+  if (plan?.pageKind === 'app-shell' || isPublicationBrief(brief || plan?.brief, route)) return String(html ?? '')
+  const source = String(html ?? '')
+  if (/\bdata-ship-density=["']detail-band["']/.test(source)) return source
+  const sections = (source.match(/<section\b/gi) || []).length
+  if (sections >= 9) return source
+  const text = plainText(source)
+  const hasTable = /<table\b/i.test(source)
+  const gridCount = (source.match(/\bgrid\b/g) || []).length
+  const dataImgs = (source.match(/<div\b[^>]*\bdata-img=/gi) || []).length
+  const concreteNumbers = (text.match(/\b(?:\d+[%xk]?|\$[\d,.]+)\b/g) || []).length
+  if (hasTable && gridCount >= 6 && dataImgs >= 2 && concreteNumbers >= 8) return source
+  const band = buildDenseDetailBand(plan, route, brief)
+  if (/<footer\b/i.test(source)) return source.replace(/<footer\b/i, `${band}\n<footer`)
+  return source.replace(/<\/body>/i, `${band}\n</body>`)
 }
 
 function publicationTopicLabel(brief) {
@@ -384,7 +740,7 @@ function extractPublicationIdentity(brief) {
   for (const [needle, label] of topicRules) {
     if (lower.includes(needle) && !topics.includes(label)) topics.push(label)
   }
-  if (!topics.length) {
+  if (!topics.length && /[—–:]/.test(raw)) {
     const afterDash = raw.split(/[—–:]/)[1] || raw
     for (const part of afterDash.split(/,|\band\b/i)) {
       const cleaned = part
@@ -422,7 +778,7 @@ function extractPublicationIdentity(brief) {
 function extractExistingPublicationBrand(html) {
   const source = String(html ?? '')
   const candidates = [
-    source.match(/<a[^>]*class="[^"]*(?:logo|brand|font-bold|font-heading)[^"]*"[^>]*>([^<]{2,80})</i)?.[1],
+    source.match(/<a[^>]*class="[^"]*(?:logo|brand|font-bold|font-heading|font-display)[^"]*"[^>]*>([^<]{2,80})</i)?.[1],
     source.match(/<p[^>]*class="[^"]*tracking-\[[^\]]+\][^"]*"[^>]*>([^<]{2,80})</i)?.[1],
   ]
   const brand = decodeBasicEntities(candidates.find(Boolean)?.replace(/\s+/g, ' ').trim() || '')
@@ -447,10 +803,30 @@ function normalizeLatestPostsBand(html) {
 }
 
 function hasScopedPublicationMasthead(html, identity) {
-  const h1 = String(html ?? '').match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || ''
-  const text = h1.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').toLowerCase()
-  const hits = identity.topics.filter((topic) => text.includes(topic.split(/\s+/)[0].toLowerCase())).length
-  return hits >= 2 && text.length > 20
+  const h1s = [...String(html ?? '').matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)]
+  return h1s.some((match) => {
+    const text = match[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').toLowerCase()
+    const hits = identity.topics.filter((topic) => text.includes(topic.split(/\s+/)[0].toLowerCase())).length
+    return hits >= 2 && text.length > 20
+  })
+}
+
+function buildPublicationMasthead(identity, a) {
+  return `<section id="masthead" class="w-full bg-[${a.surface}] py-10 border-y border-[${a.muted}]/20 scroll-mt-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="font-heading text-xs uppercase tracking-[0.24em] text-[${a.accent}]">${escapeHtml(identity.brand)}</div>
+    <h1 class="mt-3 max-w-5xl font-heading text-4xl md:text-6xl font-semibold leading-tight text-[${a.text}]">${escapeHtml(identity.h1)}</h1>
+    <p class="mt-4 max-w-3xl text-base md:text-lg leading-7 text-[${a.muted}]">${escapeHtml(identity.deck)}</p>
+  </div>
+</section>`
+}
+
+function navOnlyPublicationHeader(navSection, a) {
+  const nav = String(navSection || '').match(/<nav\b[\s\S]*?<\/nav>/i)?.[0] || ''
+  if (!nav) return ''
+  return `<header class="w-full bg-[${a.surface}] border-b border-[${a.muted}]/20">
+  <div class="mx-auto max-w-7xl px-6 py-4">${nav}</div>
+</header>`
 }
 
 export function polishPublicationIdentity(html, plan, route, brief) {
@@ -484,18 +860,17 @@ export function polishPublicationIdentity(html, plan, route, brief) {
         <a href="#" class="hover:text-[${a.accent}]">Subscribe</a>
       </nav>`)
 
-  if (!hasScopedPublicationMasthead(out, identity)) {
-    const masthead = `<section id="masthead" class="w-full bg-[${a.surface}] py-10 border-y border-[${a.muted}]/20 scroll-mt-24">
-  <div class="mx-auto max-w-7xl px-6">
-    <p class="text-xs uppercase tracking-[0.24em] text-[${a.accent}]">${escapeHtml(identity.brand)}</p>
-    <h1 class="mt-3 max-w-5xl font-display text-4xl md:text-6xl font-semibold leading-tight text-[${a.text}]">${escapeHtml(identity.h1)}</h1>
-    <p class="mt-4 max-w-3xl text-base md:text-lg leading-7 text-[${a.muted}]">${escapeHtml(identity.deck)}</p>
-  </div>
-</section>`
+  if (/\bid=["']masthead["']/i.test(out)) {
+    out = out.replace(/<section\b[^>]*\bid=["']masthead["'][\s\S]*?<\/section>/i, buildPublicationMasthead(identity, a))
+  } else if (!hasScopedPublicationMasthead(out, identity)) {
+    const masthead = buildPublicationMasthead(identity, a)
     if (/<\/nav>/i.test(out)) {
       const navSection = out.match(/<section\b[\s\S]*?<\/section>/i)?.[0]
       if (navSection && /<nav\b/i.test(navSection)) {
-        out = out.replace(navSection, `${navSection}\n${masthead}`)
+        const navOnly = !/<(?:img|article)\b/i.test(navSection) && /\bFeatured story\b/i.test(plainText(navSection))
+          ? navOnlyPublicationHeader(navSection, a)
+          : navSection
+        out = out.replace(navSection, `${navOnly}\n${masthead}`)
       } else {
         out = out.replace(/<\/nav>/i, `</nav>\n${masthead}`)
       }
@@ -538,6 +913,10 @@ export function normalizePublicationLayout(html, plan, route, brief) {
       return `${before}${next}${after}`
     },
   )
+  out = out.replace(
+    /(<section\b[^>]*\bid=["']featured["'][\s\S]*?)<h1\b([^>]*)>([\s\S]*?)<\/h1>/i,
+    '$1<h2$2>$3</h2>',
+  )
   out = out.replace(/<!--\s*[^>]*\bHERO\b[^>]*-->/gi, '<!-- featured post -->')
   return out
 }
@@ -551,29 +930,205 @@ function blogHasPostGrid(html) {
   return gridCols >= 1 && readLinks >= 3
 }
 
+function ensurePublicationSupportBands(html, plan, route, brief) {
+  if (!isPublicationBrief(brief || plan?.brief, route)) return String(html ?? '')
+  let out = String(html ?? '')
+  const identity = extractPublicationIdentity(brief || plan?.brief)
+  const a = {
+    bg: '#faf7f2',
+    surface: '#ffffff',
+    text: '#1c1917',
+    muted: '#78716c',
+    accent: '#b45309',
+    ...(plan?.visualWorld || {}),
+  }
+  const bands = []
+  if (!/\bid=["']topics["']|Topics|Series/i.test(out)) {
+    const topics = identity.topics
+      .slice(0, 5)
+      .map((topic) => `<a href="#" class="rounded-full border border-[${a.muted}]/25 bg-[${a.surface}] px-4 py-2 text-sm font-medium text-[${a.text}] hover:border-[${a.accent}]">${escapeHtml(topic)}</a>`)
+      .join('\n        ')
+    bands.push(`<section id="topics" class="w-full bg-[${a.bg}] py-12 scroll-mt-24">
+  <div class="mx-auto max-w-7xl px-6">
+    <p class="text-xs uppercase tracking-[0.22em] text-[${a.accent}]">Read by topic</p>
+    <div class="mt-5 flex flex-wrap gap-3">${topics}</div>
+  </div>
+</section>`)
+  }
+  if (!/\bid=["']newsletter["']|Newsletter|Subscribe for/i.test(out)) {
+    bands.push(`<section id="newsletter" class="w-full bg-[${a.surface}] py-14 scroll-mt-24">
+  <div class="mx-auto grid max-w-7xl gap-6 px-6 md:grid-cols-[1fr_0.8fr] md:items-end">
+    <div>
+      <p class="text-xs uppercase tracking-[0.22em] text-[${a.accent}]">Weekly dispatch</p>
+      <h2 class="mt-3 font-heading text-3xl font-semibold text-[${a.text}]">Useful reading for ${escapeHtml(identity.brand.toLowerCase())} subscribers</h2>
+      <p class="mt-3 max-w-2xl text-sm leading-6 text-[${a.muted}]">${escapeHtml(identity.deck)}</p>
+    </div>
+    <form class="grid gap-3 sm:grid-cols-[1fr_auto]">
+      <input aria-label="Email" class="w-full rounded-lg border border-[${a.muted}]/25 bg-[${a.bg}] px-4 py-3 text-sm text-[${a.text}]" placeholder="you@example.com" />
+      <button class="rounded-lg bg-[${a.accent}] px-5 py-3 text-sm font-semibold text-white">Subscribe</button>
+    </form>
+  </div>
+</section>`)
+  }
+  if (!bands.length) return out
+  const additions = bands.join('\n')
+  if (/<footer\b/i.test(out)) return out.replace(/<footer\b/i, `${additions}\n<footer`)
+  return out.replace(/<\/body>/i, `${additions}\n</body>`)
+}
+
+function buildPublicationFooter(plan, brief) {
+  const identity = extractPublicationIdentity(brief || plan?.brief)
+  const a = {
+    bg: '#faf7f2',
+    surface: '#ffffff',
+    text: '#1c1917',
+    muted: '#78716c',
+    accent: '#b45309',
+    ...(plan?.visualWorld || {}),
+  }
+  const topicLinks = identity.topics
+    .slice(0, 4)
+    .map((topic) => `<a href="#" class="hover:text-[${a.accent}]">${escapeHtml(topic)}</a>`)
+    .join('\n        ')
+  return `<footer class="w-full border-t border-[${a.muted}]/20 bg-[${a.bg}] py-10">
+  <div class="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
+    <div>
+      <p class="font-heading text-lg font-semibold text-[${a.text}]">${escapeHtml(identity.brand)}</p>
+      <p class="mt-3 max-w-md text-sm leading-6 text-[${a.muted}]">${escapeHtml(identity.deck)}</p>
+      <p class="mt-4 text-xs text-[${a.muted}]">© 2026 ${escapeHtml(identity.brand)}. Independent editorial desk.</p>
+    </div>
+    <div class="grid gap-2 text-sm text-[${a.muted}]">
+      <p class="font-semibold text-[${a.text}]">Sections</p>
+      ${topicLinks}
+    </div>
+    <div class="grid gap-2 text-sm text-[${a.muted}]">
+      <p class="font-semibold text-[${a.text}]">Publication</p>
+      <a href="#" class="hover:text-[${a.accent}]">Archive</a>
+      <a href="#" class="hover:text-[${a.accent}]">About</a>
+      <a href="#" class="hover:text-[${a.accent}]">Subscribe</a>
+    </div>
+  </div>
+</footer>`
+}
+
+function ensurePublicationFooter(html, plan, route, brief) {
+  if (!isPublicationBrief(brief || plan?.brief, route)) return String(html ?? '')
+  const source = String(html ?? '')
+  const footer = source.match(/<footer\b[\s\S]*?<\/footer>/i)?.[0] || ''
+  const footerText = plainText(footer)
+  const replacement = buildPublicationFooter(plan, brief)
+  if (!footer) return source.replace(/<\/body>/i, `${replacement}\n</body>`)
+  if (footerText.length < 40 || !/\b(?:Archive|About|Subscribe|©)\b/i.test(footerText)) {
+    return source.replace(/<footer\b[\s\S]*?<\/footer>/i, replacement)
+  }
+  return source
+}
+
+function hasStrongFeaturedOpener(html) {
+  const source = String(html ?? '')
+  const featured =
+    source.match(/<section\b[^>]*\bid=["']featured["'][\s\S]*?<\/section>/i)?.[0] ||
+    source.match(/<section\b[^>]*>[\s\S]*?\b(?:Featured post|Featured story|Cover story)[\s\S]*?<\/section>/i)?.[0] ||
+    ''
+  if (!featured) return false
+  const text = plainText(featured)
+  return /<img\b[^>]*\bsrc=["']https?:\/\//i.test(featured) &&
+    /\b(?:By [A-Z][a-z]+|min read|Read (?:the )?(?:story|post|article))\b/i.test(text) &&
+    /<h[12]\b/i.test(featured) &&
+    text.length > 180
+}
+
+function buildPublicationFeaturedOpener(plan, brief) {
+  const identity = extractPublicationIdentity(brief || plan?.brief)
+  const a = {
+    bg: '#faf7f2',
+    surface: '#ffffff',
+    text: '#1c1917',
+    muted: '#78716c',
+    accent: '#b45309',
+    ...(plan?.visualWorld || {}),
+  }
+  const dog = /\bdog|puppy|canine|breed|adoption/i.test(String(brief || plan?.brief || ''))
+  const title = dog
+    ? 'What a rescue dog needs in the first seven days'
+    : `${identity.topics[0] || 'Field notes'} that changed how readers plan the week`
+  const excerpt = dog
+    ? 'A practical opener on decompression, leash routines, food transitions, and the small signals that tell a new dog owner when to slow down.'
+    : `A reported lead story connecting ${identity.topics.slice(0, 3).map((t) => t.toLowerCase()).join(', ')} with concrete reader decisions.`
+  return `<section id="featured" class="w-full bg-[${a.bg}] py-14 scroll-mt-24">
+  <div class="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-[0.95fr_1.05fr] md:items-center">
+    <img class="w-full aspect-[16/10] rounded-xl object-cover" src="https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=900&h=560&fit=crop" alt="${escapeHtml(title)}" loading="eager" decoding="async" />
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[${a.accent}]">Featured post</p>
+      <h2 class="mt-3 font-heading text-3xl font-semibold leading-tight text-[${a.text}] md:text-5xl">${escapeHtml(title)}</h2>
+      <p class="mt-3 text-sm text-[${a.muted}]">By Mara Singh · May 12, 2026 · 7 min read</p>
+      <p class="mt-5 max-w-2xl text-base leading-7 text-[${a.muted}]">${escapeHtml(excerpt)}</p>
+      <a href="#" class="mt-6 inline-flex text-sm font-semibold text-[${a.accent}]">Read the story →</a>
+    </div>
+  </div>
+</section>`
+}
+
+function ensurePublicationFeaturedOpener(html, plan, route, brief) {
+  if (!isPublicationBrief(brief || plan?.brief, route) || hasStrongFeaturedOpener(html)) return String(html ?? '')
+  const source = String(html ?? '')
+  const featured = buildPublicationFeaturedOpener(plan, brief)
+  if (/<section\b[^>]*\bid=["']featured["'][\s\S]*?<\/section>/i.test(source)) {
+    return source.replace(/<section\b[^>]*\bid=["']featured["'][\s\S]*?<\/section>/i, featured)
+  }
+  if (/\bid=["']latest["']/i.test(source)) return source.replace(/<section\b[^>]*\bid=["']latest["']/i, `${featured}\n$&`)
+  if (/\bid=["']masthead["'][\s\S]*?<\/section>/i.test(source)) {
+    return source.replace(/(<section\b[^>]*\bid=["']masthead["'][\s\S]*?<\/section>)/i, `$1\n${featured}`)
+  }
+  return source.replace(/<body([^>]*)>/i, `<body$1>\n${featured}`)
+}
+
 function publicationPostStubs(brief) {
-  const topic = publicationTopicLabel(brief)
-  const labels = ['Guide', 'Story', 'Notes', 'Review', 'Field report', 'Archive']
-  return labels.map((label) => [
-    `${label}: ${topic}`,
-    `A reader-focused piece on ${topic} with concrete details and a clear takeaway.`,
-    `${topic} ${label.toLowerCase()} cover`,
-    label,
-  ])
+  const identity = extractPublicationIdentity(brief)
+  const dog = /\bdog|puppy|canine|breed|adoption/i.test(String(brief ?? ''))
+  const posts = dog
+    ? [
+        ['Stop leash pulling without turning walks into a fight', 'Trainer Imani Cole breaks down a 10-minute reset for crowded sidewalks, loose-leash rewards, and what to do before the first lunge.', 'training cover', 'Training', 'By Imani Cole · May 9 · 6 min read'],
+        ['Which breed guide actually matches apartment life?', 'A practical comparison of beagles, greyhounds, poodles, and mixed-breed rescues for owners balancing noise, grooming, and energy.', 'breed guide cover', 'Breed guides', 'By Theo Grant · May 7 · 8 min read'],
+        ['The adoption checklist shelters wish every family used', 'From decompression rooms to vet records and first-week visitors, this guide keeps the handoff calm for dogs and humans.', 'adoption checklist cover', 'Adoption', 'By Lena Ortiz · May 5 · 7 min read'],
+        ['We tested six no-pull harnesses on rainy morning walks', 'Fit notes, chafe checks, reflective trim, and cleaning details from three weeks with dogs from 18 to 82 pounds.', 'dog harness review cover', 'Reviews', 'By Priya Shah · May 3 · 9 min read'],
+        ['How to read tail position, whale eye, and the pause before a bark', 'A behaviorist explains the small body-language signals that help owners intervene before stress turns into a problem.', 'dog body language cover', 'Behavior', 'By Marcus Bell · Apr 30 · 5 min read'],
+        ['The grooming kit that keeps shedding season manageable', 'Brushes, wipes, nail grinders, and coat-specific routines for owners who want fewer tumbleweeds under the sofa.', 'dog grooming tools cover', 'Gear', 'By Nora Kim · Apr 27 · 6 min read'],
+      ]
+    : identity.topics.slice(0, 6).map((topic, index) => [
+        `${topic}: what readers should know this week`,
+        `A reported guide with named examples, dates, and practical choices for ${identity.brand.toLowerCase()} readers.`,
+        `${topic.toLowerCase()} editorial cover`,
+        topic,
+        `By ${['Mara Singh', 'Theo Grant', 'Lena Ortiz', 'Priya Shah', 'Nora Kim', 'Marcus Bell'][index]} · May ${9 - index} · ${5 + (index % 4)} min read`,
+      ])
+  while (posts.length < 6) {
+    const index = posts.length
+    posts.push([
+      `${identity.topics[index % identity.topics.length]} field notes for the weekend`,
+      `A concise dispatch with reader questions, examples, and a clear next step.`,
+      'editorial field notes cover',
+      identity.topics[index % identity.topics.length],
+      `By ${['Mara Singh', 'Theo Grant', 'Lena Ortiz', 'Priya Shah', 'Nora Kim', 'Marcus Bell'][index]} · Apr ${26 - index} · ${5 + (index % 4)} min read`,
+    ])
+  }
+  return posts
 }
 
 /** Inject latest-posts grid when hybrid stitch dropped the archive band (blog publication index contract). */
 export function ensureBlogPublicationIndex(html, plan, route, brief) {
   if (!isPublicationBrief(brief || plan?.brief, route)) return html
-  if (blogHasPostGrid(html)) return html
+  let base = ensurePublicationFeaturedOpener(html, plan, route, brief)
+  if (blogHasPostGrid(base)) return ensurePublicationFooter(ensurePublicationSupportBands(base, plan, route, brief), plan, route, brief)
   const a = plan.visualWorld
   const cards = publicationPostStubs(brief)
     .map(
-      ([title, excerpt, imgSubject, category]) => `<article class="rounded-xl border border-[${a.muted}]/30 overflow-hidden bg-[${a.surface}] hover:shadow-lg transition-shadow">
+      ([title, excerpt, imgSubject, category, meta]) => `<article class="rounded-xl border border-[${a.muted}]/30 overflow-hidden bg-[${a.surface}] hover:shadow-lg transition-shadow">
         <div class="img w-full h-48 bg-cover bg-center rounded-none"></div>
         <div class="p-4">
           <span class="text-xs uppercase tracking-wider text-[${a.accent}] font-semibold">${category}</span>
           <h3 class="mt-2 text-xl font-semibold text-[${a.text}]">${title}</h3>
+          <p class="mt-2 text-xs text-[${a.muted}]">${meta}</p>
           <p class="mt-2 text-sm text-[${a.muted}]">${excerpt}</p>
           <a href="#" class="mt-4 inline-flex items-center text-sm font-medium text-[${a.accent}] hover:underline">Read more →</a>
         </div>
@@ -582,12 +1137,14 @@ export function ensureBlogPublicationIndex(html, plan, route, brief) {
     .join('\n')
   const section = `<section id="latest" class="w-full bg-[${a.surface}] py-16 scroll-mt-24">
   <div class="mx-auto max-w-7xl px-6">
-    <h2 class="font-display text-3xl md:text-4xl font-bold text-[${a.text}] mb-8">Latest posts</h2>
+    <h2 class="font-heading text-3xl md:text-4xl font-bold text-[${a.text}] mb-8">Latest posts</h2>
     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">${cards}</div>
   </div>
 </section>`
-  if (/<footer\b/i.test(html)) return html.replace(/<footer\b/i, `${section}\n<footer`)
-  return html.replace(/<\/body>/i, `${section}\n</body>`)
+  const withLatest = /<footer\b/i.test(base)
+    ? base.replace(/<footer\b/i, `${section}\n<footer`)
+    : base.replace(/<\/body>/i, `${section}\n</body>`)
+  return ensurePublicationFooter(ensurePublicationSupportBands(withLatest, plan, route, brief), plan, route, brief)
 }
 
 export function sanitizeHtml(value, plan, route, brief) {
@@ -601,6 +1158,8 @@ export function sanitizeHtml(value, plan, route, brief) {
   html = rewriteAnchorAccentLeaks(html, plan, route)
   html = stripFigmaPersonaLeaks(html, route)
   html = repairMalformedMediaDivs(html)
+  html = ensureSubstantiveNonPublicationPage(html, plan, route, resolvedBrief)
+  html = ensureDenseNonPublicationDetail(html, plan, route, resolvedBrief)
   html = replaceInlineMedia(html, { publication })
   if (USE_ART_SURFACES && !publication) {
     html = beautifyImagePlaceholders(html, plan, route, resolvedBrief)
@@ -614,6 +1173,8 @@ export function sanitizeHtml(value, plan, route, brief) {
     html = polishPublicationIdentity(html, plan, route, resolvedBrief)
     html = hydratePublicationImages(html, resolvedBrief)
   }
+  html = normalizeSoftwarePalette(html, route, resolvedBrief)
+  html = normalizeFontUtilityAliases(html)
   html = ensureSectionScrollMargin(html)
   html = stripModelStyleBlocks(html)
   html = stripRogueScripts(html)
@@ -693,7 +1254,7 @@ export function ensureMinimumVerticalSections(html, plan, minSections = 6, route
     return `<section class="w-full bg-[${index % 2 ? a.bg : a.surface}] py-16">
   <div class="mx-auto max-w-7xl px-6">
     <p class="text-xs uppercase tracking-[0.22em] text-[${a.accent}]">Operational proof</p>
-    <h2 class="mt-3 font-display text-3xl font-semibold tracking-tight text-[${a.text}]">${band.title}</h2>
+    <h2 class="mt-3 font-heading text-3xl font-semibold tracking-tight text-[${a.text}]">${band.title}</h2>
     <p class="mt-4 max-w-3xl text-sm leading-6 text-[${a.muted}]">${band.body}${band.inventory ? ` ${band.inventory}.` : ''}</p>
     <div class="mt-8 grid gap-4 md:grid-cols-3">
       <div class="rounded-2xl border border-[${a.accent}]/25 p-4"><p class="text-sm font-semibold">Measured proof</p><p class="mt-2 text-sm opacity-75">Numbers, names, and timing make the promise easier to trust.</p></div>

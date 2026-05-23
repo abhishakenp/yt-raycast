@@ -1,3 +1,19 @@
+export function formatHomepagePhaseReport(elapsed, homepageChars, homepageStats = null) {
+  const engineMs = homepageStats?.engineWall ?? null
+  const kimi = homepageStats?.kimiScore
+  const timingDetail =
+    engineMs != null
+      ? ` (engine ${(engineMs / 1000).toFixed(1)}s${kimi != null ? `, kimi ${kimi}` : ''})`
+      : ''
+  return `
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                   HOMEPAGE READY (<20s path)                    │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  Landing page                 ${String(elapsed).padStart(6)}s   ${homepageChars} chars${timingDetail}  │
+  │  Secondary pages + backend    queued (background)                 │
+  └─────────────────────────────────────────────────────────────────┘`
+}
+
 export function formatRunAllReport(timings, stats) {
   const {
     elapsed,

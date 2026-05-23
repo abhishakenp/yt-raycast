@@ -55,20 +55,65 @@ function scoreApp(brief, app) {
   return score
 }
 
+/** Marketing landing briefs that mention dashboards as hero visuals — not operator consoles. */
+export function isMarketingLandingBrief(brief) {
+  const text = String(brief ?? '')
+  if (/\blanding(?:\s+|-)?(?:page|homepage|site|website)\b/i.test(text)) return true
+  if (/\bhomepage\b/i.test(text)) return true
+  if (/\bmarketing (?:site|page|website|landing)\b/i.test(text)) return true
+  if (/\binvestor-ready\b/i.test(text)) return true
+  if (/\bhero section\b/i.test(text) && /\b(?:problem|solution|workflow|impact metrics|final cta)\s section/i.test(text)) {
+    return true
+  }
+  if (/\bprimary cta\b/i.test(text) && /\b(?:secondary cta|final cta)\b/i.test(text)) return true
+  if (/\bwhite[- ]background\b|\blight[- ]background\b|\bclean enterprise saas\b/i.test(text)) return true
+  if (
+    /\b(hospitality|hotel|resort|travel|bakery|restaurant|cafe|portfolio|storefront|shop|ecommerce|fitness|wellness|agency|publication)\b/i.test(
+      text,
+    ) &&
+    /\b(landing|homepage|website|site|page|booking|showcase|reservation|tours)\b/i.test(text)
+  ) {
+    return true
+  }
+  return false
+}
+
+/** True operator-console briefs — NOT marketing pages that mention dashboards/monitors in passing. */
+export function isOpsConsoleBrief(brief) {
+  const text = String(brief ?? '').toLowerCase()
+  if (isMarketingLandingBrief(brief)) return false
+  if (/\b(operator console|ops console|control room|incident desk|fleet ops|teleoperation|noc dashboard|live operator)\b/.test(text)) {
+    return true
+  }
+  if (/\b(admin console|ops dashboard|monitoring console|incident timeline)\b/.test(text)) return true
+  return false
+}
+
+/** All public marketing front doors use the fast vertical-doc hero-combo path (<20s). */
+export function isFrontDoorVerticalDoc(route, brief) {
+  if (isMarketingLandingBrief(brief)) return true
+  if (/\b(?:homepage|landing(?:\s|-)?(?:page|homepage|site))\b/i.test(String(brief ?? ''))) return true
+  const hint = route?.siteHint
+  if (hint && hint !== 'ops-console') return true
+  if (hint === 'ops-console' && !isOpsConsoleBrief(brief)) return true
+  return false
+}
+
 export function inferSiteHint(brief) {
   const text = String(brief ?? '').toLowerCase()
-  if (/operator|ops|console|dashboard|monitor|incident|admin|teleoperation|fleet|robot/.test(text)) return 'ops-console'
   if (/\bblog\b|\bblogs\b|\bnewsletter\b|\bsubstack\b|\bpost archive\b/.test(text)) return 'blog'
   if (/shop|store|ecommerce|online store|skincare|apparel|merch|record|zine|print/.test(text) || (/\bproducts?\b/.test(text) && !/product reviews?/.test(text))) return 'commerce'
   if (/\b(fitness|gym|hiit|crossfit|strength training|workout studio|class packs|drop-in rates)\b/.test(text)) return 'fitness'
   if (/\b(wellness|meditation|sound bath|mindfulness studio)\b/.test(text)) return 'wellness'
-  if (/\b(boutique hotel|ocean-view rooms?|guest rooms?|cliffside|hospitality)\b/.test(text)) return 'hotel'
+  if (/\b(boutique hotel|ocean-view rooms?|guest rooms?|cliffside|hospitality|luxury hospitality)\b/.test(text)) return 'hotel'
+  if (/\b(travel|tours?|itinerary|temple stays|cherry blossom)\b/.test(text)) return 'local-experience'
   if (/\b(agency|creative studio|design agency|brand identity and digital)\b/.test(text) && !/\b(freelance|personal portfolio|my work)\b/.test(text)) return 'agency'
   if (/\b(personal portfolio|freelance (?:brand )?designer|my portfolio)\b/.test(text) || (/portfolio/.test(text) && !/agency/.test(text))) return 'portfolio'
   if (/restaurant|coffee|cafe|butchery|supper|booking|workshop/.test(text)) return 'local-experience'
-  if (/\bblog\b|\bblogs\b|\bnewsletter\b|\bsubstack\b|\bpost archive\b/.test(text)) return 'blog'
   if (/music|label|event|editorial|magazine|publication/.test(text)) return 'editorial'
+  if (isMarketingLandingBrief(brief)) return 'software'
   if (/saas|b2b|api|developer|platform|analytics/.test(text)) return 'software'
+  if (isOpsConsoleBrief(brief)) return 'ops-console'
   return 'general'
 }
 

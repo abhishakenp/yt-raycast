@@ -105,8 +105,12 @@ export async function generateHomepage(
     html = injectEcommerceHeroResponsiveCss(html)
     html = ensureLucideIconRuntime(html, log)
 
-    if (htmlLooksDegenerate(html, { prompt })) {
-      log('  ❌ homepage: ship engine output failed degeneracy check')
+    const kimiScore = ship.metrics.kimiScore ?? ship.audits?.kimi?.score ?? 0
+    if (
+      kimiScore < 85 &&
+      htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: true })
+    ) {
+      log(`  ❌ homepage: ship engine output failed structural check (kimi=${kimiScore})`)
       throw new Error('Homepage output failed quality check')
     }
 

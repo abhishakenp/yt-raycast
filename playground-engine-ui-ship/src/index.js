@@ -1,6 +1,5 @@
 import { composeAppShell } from './composers/app-shell.js'
 import { composeEditorial } from './composers/editorial.js'
-import { composeFastVerticalDoc } from './composers/fast-vertical-doc.js'
 import { composeGallery } from './composers/gallery.js'
 import { composeVerticalDoc } from './composers/vertical-doc.js'
 import { FAST_MODE } from './contracts.js'
@@ -8,7 +7,7 @@ import { injectAmbientStyles } from './media/ambient-effects.js'
 import { completeGroq } from './llm/groq.js'
 import { planPageGenome } from './planner.js'
 import { runDeterministicAudits } from './quality/audits.js'
-import { buildRunVariety, selectAnchorPair } from './router.js'
+import { buildRunVariety, isOpsConsoleBrief, selectAnchorPair } from './router.js'
 import { normalizeSeed } from './utils/hash.js'
 import { sanitizeHtml, ensureBlogPublicationIndex } from './utils/postprocess.js'
 import { hydratePublicationImages } from './media/publication-hydration.js'
@@ -19,19 +18,15 @@ export { compareSignatures, varietyDistance, detectVisualSignature } from './qua
 export { runDeterministicAudits } from './quality/audits.js'
 export { inferSiteHint } from './router.js'
 
-function pickComposer(plan, route, grammar) {
-  if (plan.pageKind === 'app-shell') {
+function pickComposer(plan, route, grammar, brief) {
+  const useAppShell =
+    plan.pageKind === 'app-shell' && route?.siteHint === 'ops-console' && isOpsConsoleBrief(brief)
+  if (useAppShell) {
     return (args) =>
       composeAppShell({
         ...args,
-        mode: process.env.SHIP_APP_SHELL_MODE || process.env.KIMI_APP_SHELL_MODE || 'gemini-full',
+        mode: process.env.SHIP_APP_SHELL_MODE || process.env.KIMI_APP_SHELL_MODE || 'hybrid',
       })
-  }
-  if (FAST_MODE) {
-    if (route.siteHint === 'blog' || (route.siteHint === 'editorial' && grammar?.id?.startsWith('editorial'))) {
-      return (args) => composeFastVerticalDoc(args)
-    }
-    return composeFastVerticalDoc
   }
   if (route.siteHint === 'editorial' && grammar?.id?.startsWith('editorial')) {
     return composeEditorial
@@ -62,7 +57,7 @@ export async function generateShipHomepage(brief, opts = {}) {
     : await planPageGenome({ brief, route, variety, grammar, llm })
 
   const plan = { ...planResult.plan, brief, grammarId: planResult.plan.grammarId || grammar.id }
-  const compose = pickComposer(plan, route, grammar)
+  const compose = pickComposer(plan, route, grammar, brief)
   const built = await compose({ brief, plan, route, variety, grammar, llm })
 
   let html = injectAmbientStyles(
@@ -102,7 +97,13 @@ export async function generateShipHomepage(brief, opts = {}) {
       fonts: `${plan.visualWorld.fontDisplay}+${plan.visualWorld.fontBody}`,
       treatment: plan.mediaStrategy?.treatment,
       under20s: wall < 20000,
-      qualityMode: FAST_MODE ? 'fast-gpt-single' : 'gemini-hybrid',
+      qualityMode:
+        built.metrics?.buildMode === 'vertical-doc-gemini-hero-combo' ||
+        built.metrics?.buildMode === 'vertical-doc-gemini-hybrid'
+          ? 'gemini-hero-combo'
+          : built.metrics?.buildMode === 'vertical-doc-fast-groq'
+            ? 'groq-parallel-bench'
+            : 'gemini-hero-combo',
       kimiScore: audits.kimi.score,
       richnessScore: audits.richness.score,
       stitchOk: stitchCheck.ok,

@@ -93,6 +93,19 @@ ${isPublicationRoute(route, brief) ? '' : mobbinDoctrineBlock()}
 Treatment hint: ${decorPromptLine(treatment, { publication: isPublicationRoute(route, brief) })}`
 }
 
+/** Slim contract for Gemini hero leg only — keeps input small so hero stays under ~12s. */
+export function buildHeroContract(brief, plan, route, variety, grammar) {
+  const a = plan.visualWorld
+  const reference = plan.reference || a.reference || route.primary?.app || 'Linear / Vercel grade'
+  return `Brand: ${brief}
+Archetype: ${plan.archetype} · ${grammar?.id || plan.grammarId || 'vertical-doc'}
+Palette: bg ${a.bg}, surface ${a.surface}, text ${a.text}, muted ${a.muted}, accent ${a.accent}, accent2 ${a.accent2}
+Fonts: "${a.fontDisplay}" + "${a.fontBody}" (Google Fonts + tailwind.config)
+Mood: ${a.mood}. Decor: ${a.decor}. Reference: ${reference}.
+${siteKindRules(route, brief)}
+Rules: Tailwind CDN only; <i data-lucide>; real specific copy; generous hero typography; tags closed.`
+}
+
 export function buildVerticalDocPrompt(brief, plan, route, variety, grammar) {
   const sections = (plan.sections || [])
     .map((section, index) => `${index + 1}. ${section.role}: ${section.contains}`)

@@ -22,7 +22,7 @@ import { shouldReplaceLlmHomepageWithRenderer } from '@ship-fast/engine/pipeline
 import { injectLLMHomepageSwiper } from '@ship-fast/engine/pipeline/homepage-swiper.js'
 import { deriveTasks, generateAllTasks } from './phase-tasks.js'
 import { fixHomepageNav } from './phase-navfix.js'
-import { formatRunAllReport, formatEditReport } from './report.js'
+import { formatHomepagePhaseReport, formatRunAllReport, formatEditReport } from './report.js'
 import { editPrompt } from '@ship-fast/engine/prompts/edit.js'
 import {
   enrichSiteSpecWithWorkspaceBlueprints,
@@ -46,6 +46,7 @@ import { withLanguageEnforcementBlock } from './prompt-language.js'
 import { getWorkspacePreferredLanguage } from '../server/sessions.js'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 import { SHIPFAST_KIMI_ENGINE } from '../config.js'
+import { isShipHomepageEngineEnabled } from '@ship-fast/engine/pipeline/ship-homepage-engine.js'
 import { normalizePromptText, promptSnippet, requirePromptText } from '../prompt.js'
 import { enrichBrandProfile } from './brand-profile.js'
 import { syncSiteSettingsFromSiteSpec } from '../sanity/cms-sync.js'
@@ -58,6 +59,56 @@ import {
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
   sessionCtx.broadcast({ type: 'log', message: msg })
+}
+
+const usesUnifiedHomepageEngine = () => SHIPFAST_KIMI_ENGINE || isShipHomepageEngineEnabled()
+
+/** Landing-first: ship homepage in ~20s, generate pages/backend afterward. Opt out with SHIPFAST_DEFER_PAGES=0 */
+const shouldDeferSecondaryGeneration = () =>
+  process.env.SHIPFAST_DEFER_PAGES !== '0' && usesUnifiedHomepageEngine()
+
+async function publishHomepagePreview({
+  homepageStats,
+  workspace,
+  sessionCtx,
+  normalizedPrompt,
+  deferSpecWork = false,
+  _log,
+}) {
+  let homepage = homepageStats?.html
+  if (!homepage) return { homepage: null, keptLlmHomepage: false, imageHints: null }
+
+  const imageHints = {
+    ...(homepageStats.imageHints ?? { hydrationPrompt: normalizedPrompt, prompt: normalizedPrompt }),
+    hydrationPrompt: normalizedPrompt,
+    prompt: normalizedPrompt,
+  }
+
+  if (deferSpecWork && usesUnifiedHomepageEngine()) {
+    homepage = injectEcommerceHeroResponsiveCss(homepage)
+    homepage = ensureLucideIconRuntime(homepage, _log)
+    writeFile(workspace, 'index.html', homepage)
+    try {
+      writeFile(workspace, 'index.llm.html', homepage)
+    } catch {}
+    sessionCtx.signalHomepageReady()
+    return { homepage, keptLlmHomepage: true, imageHints, deferImageHydration: true }
+  }
+
+  homepage = injectStorefrontCartUi(
+    injectEcommerceHeroResponsiveCss(
+      await verifyTrustedStockImageUrls(
+        hydrateStorefrontGradientSlots(
+          await alignGeneratedImagesToContext(homepage, imageHints),
+          imageHints,
+        ),
+      ),
+    ),
+    { workspace },
+  )
+  writeFile(workspace, 'index.html', homepage)
+
+  return { homepage, keptLlmHomepage: false, imageHints, needsFullMerge: true }
 }
 
 const status = (sessionCtx) => (message, phase) => {
@@ -256,6 +307,272 @@ export async function runEdit({ prompt, workspace, sessionCtx }) {
   })
 }
 
+async function runSecondaryPipeline({
+  specPromise,
+  homepageStats,
+  published,
+  deferredPexelsPromise = null,
+  t0,
+  timings,
+  tick,
+  workspace,
+  sessionCtx,
+  normalizedPrompt,
+  hasUserDesignReferences,
+  brandProfilePromise,
+  brandProfileCached,
+  indiaMode,
+  _log,
+  _status,
+}) {
+  const specResult = await specPromise
+  const { designStats, detectStats, ctxStats, siteSpecStats } = specResult
+  const designBrief = designStats.brief
+  let ctx = ctxStats.ctx
+  let siteSpec = siteSpecStats.siteSpec
+  siteSpec = sanitizeSiteSpec(
+    siteSpec,
+    { projectName: 'Project' },
+    {
+      fallbackOnInvalid: true,
+      fallback: {
+        pages: [],
+        components: [],
+        metadata: { title: 'Generated Project' },
+        version: '1.0.0',
+        design: { theme: 'light' },
+        exportTargets: ['html'],
+      },
+    },
+  ).spec
+  if (!siteSpec) {
+    siteSpec = {
+      pages: [],
+      components: [],
+      metadata: { title: 'Generated Project' },
+      version: '1.0.0',
+      design: { theme: 'light' },
+      exportTargets: ['html'],
+    }
+  }
+  if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
+  sessionCtx.setSiteSpec?.(siteSpec)
+
+  let homepage = published.homepage
+  let keptLlmHomepage = published.keptLlmHomepage
+  const imageHints = published.imageHints
+
+  if (siteSpec?.pages?.length && usesUnifiedHomepageEngine()) {
+    writeNextAppToWorkspace(siteSpec, workspace, sessionCtx, {
+      preserveLlmHomepage: true,
+    })
+  }
+
+  if (published?.deferImageHydration && homepage && published.imageHints) {
+    try {
+      const pexelsHints = deferredPexelsPromise ? await deferredPexelsPromise : {}
+      const richHints = {
+        ...mergeImageHintLists(published.imageHints, pexelsHints),
+        hydrationPrompt: normalizedPrompt,
+        prompt: normalizedPrompt,
+      }
+      homepage = injectStorefrontCartUi(
+        injectEcommerceHeroResponsiveCss(
+          await verifyTrustedStockImageUrls(
+            hydrateStorefrontGradientSlots(
+              await alignGeneratedImagesToContext(homepage, richHints),
+              richHints,
+            ),
+          ),
+        ),
+        { workspace },
+      )
+      writeFile(workspace, 'index.html', homepage)
+      sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
+    } catch (err) {
+      _log(`  homepage: deferred image hydration skipped — ${err?.message || 'error'}`)
+    }
+  }
+
+  void brandProfilePromise.then((profile) => {
+    if (!profile?.logo) return
+    const tryStitch = (attempt = 0) => {
+      try {
+        const updated = applyBrandLogoToSiteSpec(siteSpec, profile)
+        const themed = applyBrandPaletteToSiteSpec(siteSpec, profile)
+        if (updated || themed) {
+          saveSiteSpec(workspace, siteSpec)
+          if (!keptLlmHomepage) {
+            renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)
+          }
+        }
+        const logoInjected = injectBrandLogoIntoHomepageHtml(workspace, profile)
+        const paletteInjected = injectBrandPaletteIntoHomepageHtml(workspace, profile)
+        if (logoInjected || paletteInjected) {
+          sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
+          return
+        }
+        if (attempt < 6) setTimeout(() => tryStitch(attempt + 1), 450)
+      } catch (e) {
+        _log(`  brand-logo: rerender failed — ${e?.message || 'error'}`)
+      }
+    }
+    tryStitch(0)
+  })
+
+  const ctxPages = ctx.pages?.length ?? 0
+  const homepageChars = homepage?.length ?? 0
+
+  if (!homepage) {
+    _log('  Error: index.html not found')
+    return
+  }
+
+  tick('derive_start')
+  if (siteSpec && ctx?.pages?.length) {
+    const supplemented = supplementSiteSpecPages(siteSpec, ctx)
+    if (supplemented !== siteSpec) {
+      siteSpec = supplemented
+      saveSiteSpec(workspace, siteSpec)
+      sessionCtx.setSiteSpec?.(siteSpec)
+      const pageCount = siteSpec.pages?.filter((p) => p.route !== '/').length ?? 0
+      _log(
+        `  site-spec: supplemented ${pageCount} secondary page(s) from project context (Mobbin collapsed spec to homepage-only)`,
+      )
+    }
+  }
+  const tasks = deriveTasks(siteSpec || ctx)
+  sessionCtx.setTasks(tasks)
+  writeFile(workspace, 'tasks.json', JSON.stringify({ tasks }, null, 2))
+  _log(
+    `  Derived ${tasks.length} tasks (${tasks.filter((t) => t.filename).length} pages, ${tasks.filter((t) => String(t.id).startsWith('backend-')).length} backend)`,
+  )
+  tick('derive_end')
+
+  _status('Assembling the vessel…', 'generating')
+  tick('gen_start')
+  const taskCtx = { taskList: tasks, updateTask: sessionCtx.updateTask }
+  const genStats = await generateAllTasks(
+    tasks,
+    ctx,
+    homepage,
+    designBrief,
+    workspace,
+    _log,
+    _status,
+    taskCtx,
+    indiaMode,
+    imageHints,
+    brandProfileCached?.verified ? brandProfileCached : null,
+    hasUserDesignReferences,
+  )
+  tick('gen_end')
+
+  tick('navfix_start')
+  const navFixStats = (await fixHomepageNav(genStats.navList, workspace, _log, tasks)) ?? {
+    count: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+  }
+  tick('navfix_end')
+
+  if (siteSpec) {
+    siteSpec = enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace)
+    saveSiteSpec(workspace, siteSpec)
+    sessionCtx.setSiteSpec?.(siteSpec)
+    void syncSiteSettingsFromSiteSpec(siteSpec)
+    if (
+      siteSpec?.siteType === 'ecommerce' &&
+      siteSpec?.ecommerce?.products?.length &&
+      isMedusaSyncConfigured()
+    ) {
+      try {
+        const medusaResult = await syncProductsToMedusa(siteSpec.ecommerce.products, { workspace })
+        _status(
+          `Cargo synced: ${medusaResult.synced} unit(s) to station${medusaResult.errors.length ? ` (${medusaResult.errors.length} drift)` : ''}`,
+          'medusa_sync',
+        )
+        if (
+          homepage &&
+          medusaResult?.byTitle &&
+          Object.keys(medusaResult.byTitle).length &&
+          existsSync(join(workspace, 'index.html'))
+        ) {
+          let h = readFileSync(join(workspace, 'index.html'), 'utf8')
+          h = injectMedusaVariantDataAttributes(h, medusaResult.byTitle)
+          h = stripStorefrontCartUi(h)
+          h = injectStorefrontCartUi(h, { workspace, variantMap: medusaResult, force: true })
+          homepage = h
+          writeFile(workspace, 'index.html', homepage)
+        }
+      } catch (err) {
+        console.warn(`medusa: catalog auto-sync skipped – ${err.message}`)
+      }
+    }
+  }
+
+  const done = tasks.filter((t) => t.status === 'DONE').length
+  const total = tasks.length
+  const elapsed = ((Date.now() - t0) / 1000).toFixed(1)
+  const totalCost =
+    (designStats?.cost ?? 0) +
+    (detectStats?.cost ?? 0) +
+    (ctxStats?.cost ?? 0) +
+    (siteSpecStats?.cost ?? 0) +
+    (homepageStats?.cost ?? 0) +
+    (genStats?.pages?.cost ?? 0) +
+    (genStats?.backend?.cost ?? 0) +
+    (navFixStats?.cost ?? 0)
+  sessionCtx.setElapsed(Number.parseFloat(elapsed))
+  sessionCtx.setCost(totalCost)
+
+  sessionCtx.broadcast({
+    type: 'run_completed',
+    elapsed: Number.parseFloat(elapsed),
+    completed: done,
+    total,
+  })
+
+  const report = formatRunAllReport(timings, {
+    elapsed,
+    done,
+    total,
+    ctxPages,
+    homepageChars,
+    tasks,
+    designStats,
+    detectStats,
+    ctxStats,
+    siteSpecStats,
+    homepageStats,
+    genStats,
+    navFixStats,
+    indiaMode,
+  })
+
+  _log(report)
+  sessionCtx.broadcast({
+    type: 'run_completed',
+    elapsed: Number.parseFloat(elapsed),
+    completed: done,
+    total,
+    report,
+  })
+
+  _log('  Generating alternative design context...')
+  generateAlternativeDesign(normalizedPrompt, workspace, sessionCtx, _log)
+
+  try {
+    const homeDir = process.env.HOME
+    const logFile = join(homeDir, '.ship.log')
+    const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19)
+    const logEntry = `\n--- /ship-fast completed at ${timestamp} ---\n  prompt: ${promptSnippet(normalizedPrompt, 120)}\n  workspace: ${workspace}\n  result: ${done}/${total} tasks in ${elapsed}s\n${report}\n`
+    writeFileSync(logFile, readFileSync(logFile, 'utf-8') + logEntry)
+  } catch {
+    void 0
+  }
+}
+
 export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage }) {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
@@ -299,7 +616,7 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
 
   // Kimi handles its own design planning — Mobbin DNA anchor is not used by the kimi engine.
   // For non-kimi paths, resolve the anchor non-blocking so spec/homepage can start immediately.
-  if (!SHIPFAST_KIMI_ENGINE && isMobbinEnabled()) {
+  if (!usesUnifiedHomepageEngine() && isMobbinEnabled()) {
     inferMobbinAnchor({ brief: pipelinePrompt, projectContext: {} })
       .then((mobbinAnchor) => {
         if (mobbinAnchor?.app) {
@@ -314,52 +631,72 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
     _log('  mobbin anchor: disabled (SHIPFAST_MOBBIN=0)')
   }
 
-  const bootstrapImageHintsPromise = resolvePexelsImageHints(
-    { prompt: normalizedPrompt, hydrationPrompt: normalizedPrompt },
-    {
-      onProgress: (evt) =>
-        sessionCtx.broadcast({
-          type: 'stock_media_preview',
-          photos: evt.photos ?? [],
-          videos: evt.videos ?? [],
-          done: Boolean(evt.done),
-        }),
-    },
-  )
+  const bootstrapImageHintsPromise = usesUnifiedHomepageEngine()
+    ? Promise.resolve({ photos: [], videos: [], promptBlock: '' })
+    : resolvePexelsImageHints(
+        { prompt: normalizedPrompt, hydrationPrompt: normalizedPrompt },
+        {
+          onProgress: (evt) =>
+            sessionCtx.broadcast({
+              type: 'stock_media_preview',
+              photos: evt.photos ?? [],
+              videos: evt.videos ?? [],
+              done: Boolean(evt.done),
+            }),
+        },
+      )
 
-  const specPromise = (async () => {
-    const [designStats, detectStats] = await Promise.all([
-      SHIPFAST_KIMI_ENGINE
-        ? Promise.resolve({ brief: '', inputTokens: 0, outputTokens: 0, cost: 0 })
-        : generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
-      detectSiteType(pipelinePrompt, _log),
-    ])
-    tick('design_end')
-    tick('detect_end')
-    const ctxStats = await generateContext(
-      pipelinePrompt,
-      designStats.brief,
-      detectStats.siteType,
-      workspace,
-      _log,
-      brandProfileCached?.verified ? brandProfileCached : null,
-    )
-    tick('ctx_end')
-    const siteSpecStats = await generateSiteSpec({
-      prompt: pipelinePrompt,
-      ctx: ctxStats.ctx,
-      designBrief: designStats.brief,
-      siteType: detectStats.siteType,
-      workspace,
-      log: _log,
-      brandProfile: brandProfileCached?.verified ? brandProfileCached : null,
-    })
-    tick('site_spec_end')
-    return { designStats, detectStats, ctxStats, siteSpecStats }
-  })()
+  const deferredPexelsPromise = usesUnifiedHomepageEngine()
+    ? resolvePexelsImageHints(
+        { prompt: normalizedPrompt, hydrationPrompt: normalizedPrompt },
+        {
+          onProgress: (evt) =>
+            sessionCtx.broadcast({
+              type: 'stock_media_preview',
+              photos: evt.photos ?? [],
+              videos: evt.videos ?? [],
+              done: Boolean(evt.done),
+            }),
+        },
+      ).catch(() => ({ photos: [], videos: [], promptBlock: '' }))
+    : null
 
-  const homepagePromise = (async () => {
-    const baseHints = await bootstrapImageHintsPromise
+  const startSpecPipeline = () =>
+    (async () => {
+      const [designStats, detectStats] = await Promise.all([
+        usesUnifiedHomepageEngine()
+          ? Promise.resolve({ brief: '', inputTokens: 0, outputTokens: 0, cost: 0 })
+          : generateDesignBrief(pipelinePrompt, workspace, _log, indiaMode),
+        detectSiteType(pipelinePrompt, _log),
+      ])
+      tick('design_end')
+      tick('detect_end')
+      const ctxStats = await generateContext(
+        pipelinePrompt,
+        designStats.brief,
+        detectStats.siteType,
+        workspace,
+        _log,
+        brandProfileCached?.verified ? brandProfileCached : null,
+      )
+      tick('ctx_end')
+      const siteSpecStats = await generateSiteSpec({
+        prompt: pipelinePrompt,
+        ctx: ctxStats.ctx,
+        designBrief: designStats.brief,
+        siteType: detectStats.siteType,
+        workspace,
+        log: _log,
+        brandProfile: brandProfileCached?.verified ? brandProfileCached : null,
+      })
+      tick('site_spec_end')
+      return { designStats, detectStats, ctxStats, siteSpecStats }
+    })()
+
+  const runHomepagePhase = async () => {
+    const baseHints = usesUnifiedHomepageEngine()
+      ? { photos: [], videos: [], promptBlock: '' }
+      : await bootstrapImageHintsPromise
     const imageHints = {
       ...baseHints,
       hydrationPrompt: normalizedPrompt,
@@ -389,9 +726,63 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
         imageHints: null,
       }
     }
-  })()
+  }
 
-  const [specResult, homepageStats] = await Promise.all([specPromise, homepagePromise])
+  const deferSecondary = shouldDeferSecondaryGeneration()
+  let homepageStats = null
+
+  if (deferSecondary) {
+    tick('homepage_t0')
+    const homepageT0 = Date.now()
+    homepageStats = await runHomepagePhase()
+    const published = await publishHomepagePreview({
+      homepageStats,
+      workspace,
+      sessionCtx,
+      normalizedPrompt,
+      deferSpecWork: true,
+      _log,
+    })
+    if (published.homepage) {
+      const homepageElapsed = ((Date.now() - homepageT0) / 1000).toFixed(1)
+      tick('homepage_phase_end')
+      _log(formatHomepagePhaseReport(homepageElapsed, published.homepage.length, homepageStats))
+      _log('  ✓ Landing page ready — building secondary pages + backend in background…')
+      _status('Landing ready — building remaining pages…', 'pages')
+      sessionCtx.setElapsed(Number.parseFloat(homepageElapsed))
+      sessionCtx.broadcast({
+        type: 'homepage_phase_complete',
+        elapsed: Number.parseFloat(homepageElapsed),
+        homepageChars: published.homepage.length,
+      })
+      // Spec/context/site-spec are heavy Groq — start ONLY after homepage to avoid queue contention.
+      return runSecondaryPipeline({
+        specPromise: startSpecPipeline(),
+        homepageStats,
+        published,
+        deferredPexelsPromise,
+        t0,
+        timings,
+        tick,
+        workspace,
+        sessionCtx,
+        normalizedPrompt,
+        hasUserDesignReferences,
+        brandProfilePromise,
+        brandProfileCached,
+        indiaMode,
+        _log,
+        _status,
+      })
+    }
+    _log(`  homepage: defer path failed — ${homepageStats?.error || 'no HTML'}; running spec + homepage recovery`)
+  }
+
+  const specPromise = startSpecPipeline()
+  if (!homepageStats) {
+    homepageStats = await runHomepagePhase()
+  }
+  const specResult = await specPromise
 
   const { designStats, detectStats, ctxStats, siteSpecStats } = specResult
   const designBrief = designStats.brief
@@ -424,12 +815,14 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
   sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
-  const richImageHints = await resolvePexelsImageHints({
-    prompt: normalizedPrompt,
-    hydrationPrompt: normalizedPrompt,
-    ctx,
-    siteSpec,
-  })
+  const richImageHints = usesUnifiedHomepageEngine()
+    ? homepageStats.imageHints ?? { hydrationPrompt: normalizedPrompt, prompt: normalizedPrompt }
+    : await resolvePexelsImageHints({
+        prompt: normalizedPrompt,
+        hydrationPrompt: normalizedPrompt,
+        ctx,
+        siteSpec,
+      })
   const imageHints = {
     ...mergeImageHintLists(homepageStats.imageHints, richImageHints),
     hydrationPrompt: normalizedPrompt,
@@ -504,8 +897,8 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       writeFile(workspace, 'index.html', homepage)
     }
     sessionCtx.signalHomepageReady()
-  } else if (homepage && SHIPFAST_KIMI_ENGINE) {
-    // Kimi/hybrid skips the Groq design brief — keep the LLM homepage instead of
+  } else if (homepage && usesUnifiedHomepageEngine()) {
+    // Unified ship/kimi engine skips the Groq design brief — keep the LLM homepage instead of
     // falling through to the spec renderer (which produces generic site.css shells).
     try {
       writeFile(workspace, 'index.llm.html', homepage)

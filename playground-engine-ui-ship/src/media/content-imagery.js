@@ -64,9 +64,7 @@ function selectVisualKind(subject, context, index) {
     if (/\b(guest|story|portrait|review)\b/.test(subjectText)) return 'editorial-spread'
     return ['hotel-room', 'destination-map', 'editorial-spread', 'hotel-room'][index % 4]
   }
-  if (context?.route?.siteHint === 'software' && base === 'product-console') {
-    return ['product-console', 'brand-case-wall', 'product-console'][index % 3]
-  }
+  if (context?.route?.siteHint === 'software' && base === 'product-console') return 'product-console'
   return base
 }
 
@@ -81,13 +79,42 @@ function shell(label, className, plan, index, route, kind, inner) {
   const safe = esc(label)
   const hint = route?.siteHint || 'homepage'
   return `<div data-img="${safe}" data-visual="art-surface" data-visual-kind="${kind}" data-site-hint="${hint}" aria-label="${safe}" class="relative w-full ${aspect} ${rounded} overflow-hidden border border-[${a.accent}]/25 bg-gradient-to-br from-[${from}] via-[${via}] to-[${to}] shadow-xl shadow-black/10">
-  <div class="absolute -left-10 top-8 h-32 w-32 rounded-full bg-[${a.accent}]/55 blur-3xl"></div>
-  <div class="absolute -right-6 bottom-6 h-36 w-36 rounded-full bg-[${a.accent2}]/45 blur-3xl"></div>
+  <div class="absolute inset-0 opacity-25 [background-image:linear-gradient(90deg,rgba(255,255,255,.16)_1px,transparent_1px),linear-gradient(rgba(255,255,255,.12)_1px,transparent_1px)] [background-size:38px_38px]"></div>
+  <div class="absolute inset-x-8 top-8 h-px bg-white/30"></div>
+  <div class="absolute bottom-8 left-8 right-8 h-px bg-white/20"></div>
   ${inner}
 </div>`
 }
 
 function productConsole(label, a) {
+  const lower = String(label || '').toLowerCase()
+  if (/namespace|allocation|table|team/.test(lower)) {
+    return `<div class="absolute inset-4 rounded-lg border border-white/15 bg-[${a.bg}]/85 p-4 backdrop-blur">
+    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+      <div class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-red-400"></span><span class="h-2.5 w-2.5 rounded-full bg-amber-300"></span><span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span><p class="ml-3 text-xs uppercase tracking-[0.18em] text-[${a.accent}]">KubeMeter / namespace cost</p></div>
+      <span class="rounded bg-white/10 px-2 py-1 text-xs text-[${a.muted}]">refresh 30s</span>
+    </div>
+    <div class="mt-4 grid grid-cols-3 gap-2">
+      ${['$13.8k cluster', '42 namespaces', '7 teams'].map((stat, index) => `<div class="rounded-md border border-white/10 bg-white/5 p-2"><p class="text-[10px] uppercase tracking-[0.16em] text-[${a.muted}]">${index === 0 ? 'month' : index === 1 ? 'scope' : 'owners'}</p><p class="mt-1 text-sm font-semibold text-[${a.text}]">${stat}</p></div>`).join('')}
+    </div>
+    <div class="mt-3 overflow-hidden rounded-md border border-white/10">
+      ${['namespace,owner,cpu,storage,monthly,delta', 'checkout,core,$1.9k,$0.8k,$4.2k,+8%', 'search,growth,$1.1k,$0.4k,$2.8k,-3%', 'ml-batch,data,$3.2k,$1.4k,$5.7k,+31%', 'preview,infra,$0.6k,$0.2k,$1.1k,-18%', 'observability,sre,$0.3k,$1.5k,$2.0k,+4%'].map((row, index) => `<div class="grid grid-cols-6 gap-2 border-b border-white/10 px-3 py-1.5 text-[11px] ${index === 0 ? `bg-white/10 text-[${a.muted}]` : `text-[${a.text}]`}">${row.split(',').map((cell, cellIndex) => `<span class="${cellIndex === 5 && /^[+-]/.test(cell) ? (cell.startsWith('+') ? 'text-amber-300' : 'text-emerald-300') : ''}">${cell}</span>`).join('')}</div>`).join('')}
+    </div>
+    <div class="mt-3 grid grid-cols-3 gap-2"><span class="rounded bg-[${a.accent}]/20 px-2 py-1 text-xs text-[${a.text}]">pod labels joined</span><span class="rounded bg-[${a.accent2}]/20 px-2 py-1 text-xs text-[${a.text}]">team owners</span><span class="rounded bg-white/10 px-2 py-1 text-xs text-[${a.text}]">CSV export queued</span></div>
+  </div>`
+  }
+  if (/cli|install|helm|deploy/.test(lower)) {
+    return `<div class="absolute inset-4 rounded-lg border border-white/15 bg-[${a.bg}]/90 p-4 font-mono text-xs text-[${a.text}]">
+    <div class="mb-4 flex items-center justify-between border-b border-white/10 pb-3"><div class="flex gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-red-400"></span><span class="h-2.5 w-2.5 rounded-full bg-amber-300"></span><span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span></div><span class="text-[10px] uppercase tracking-[0.18em] text-[${a.muted}]">finops@cluster</span></div>
+    <p><span class="text-[${a.accent}]">finops %</span> helm repo add kubemeter ./charts</p>
+    <p class="mt-2"><span class="text-[${a.accent}]">finops %</span> helm install kubemeter --namespace finops</p>
+    <p class="mt-4 text-[${a.accent2}]">✓ collector/kubemeter-cost ready</p>
+    <p class="mt-1 text-[${a.accent2}]">✓ exporter/prometheus labels synced</p>
+    <p class="mt-1 text-[${a.accent2}]">✓ namespace owner map loaded</p>
+    <p class="mt-1 text-[${a.muted}]">first allocation report in 12m 04s</p>
+    <div class="mt-5 grid grid-cols-2 gap-3 font-sans"><div class="rounded border border-white/10 bg-white/5 p-3"><p class="text-[10px] uppercase tracking-[0.14em] text-[${a.muted}]">CPU meter</p><p class="mt-1 font-semibold">ready</p></div><div class="rounded border border-white/10 bg-white/5 p-3"><p class="text-[10px] uppercase tracking-[0.14em] text-[${a.muted}]">Storage meter</p><p class="mt-1 font-semibold">ready</p></div></div>
+  </div>`
+  }
   return `<div class="absolute inset-4 rounded-lg border border-white/15 bg-[${a.bg}]/80 p-4 backdrop-blur">
     <div class="flex items-center justify-between border-b border-white/10 pb-3">
       <div><p class="text-xs uppercase tracking-[0.18em] text-[${a.accent}]">${esc(label)}</p><p class="mt-1 text-sm font-semibold text-[${a.text}]">Live product surface</p></div>
@@ -177,10 +204,11 @@ function fitnessSchedule(label, a) {
 
 function brandCaseWall(label, a, cells = 9) {
   const cols = cells <= 4 ? 2 : 3
+  const labels = ['Launch', 'Identity', 'Motion', 'Retail', 'System', 'Growth', 'Print', 'Web', 'Handoff']
   return `<div class="absolute inset-4 grid grid-cols-${cols} gap-3">
     ${Array.from({ length: cells }, (_, index) => `<div class="relative overflow-hidden rounded-lg border border-white/15 bg-[${index % 3 === 0 ? a.bg : index % 3 === 1 ? a.surface : a.accent}]/75 p-3">
-      <div class="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-[${index % 2 ? a.accent2 : a.accent}]/60 blur-xl"></div>
-      <p class="relative text-xs uppercase tracking-[0.16em] text-[${a.text}]">${index === 0 ? esc(label).slice(0, 18) : `Case ${index + 1}`}</p>
+      <div class="absolute right-3 top-3 h-8 w-8 border border-white/30 bg-white/10"></div>
+      <p class="relative text-xs uppercase tracking-[0.16em] text-[${a.text}]">${index === 0 ? esc(label).slice(0, 18) : labels[index % labels.length]}</p>
       <div class="relative mt-8 h-2 rounded-full bg-white/35"></div>
       <div class="relative mt-2 h-2 w-2/3 rounded-full bg-white/20"></div>
     </div>`).join('')}
@@ -195,7 +223,7 @@ function editorialSpread(label, a) {
       <div class="mt-3 h-3 w-1/2 rounded-full bg-[${a.text}]/45"></div>
       <div class="mt-10 grid grid-cols-2 gap-3"><div class="h-24 rounded-md bg-[${a.accent}]/50"></div><div class="h-24 rounded-md bg-[${a.accent2}]/50"></div></div>
     </div>
-    <div class="space-y-3">${['Issue note', 'Field quote', 'Release card'].map((row) => `<div class="rounded-lg border border-white/15 bg-[${a.surface}]/75 p-4"><p class="text-sm font-semibold text-[${a.text}]">${row}</p><div class="mt-4 h-2 rounded-full bg-white/25"></div></div>`).join('')}</div>
+    <div class="space-y-3">${['Editor pick', 'Reader pullquote', 'Archive card'].map((row) => `<div class="rounded-lg border border-white/15 bg-[${a.surface}]/75 p-4"><p class="text-sm font-semibold text-[${a.text}]">${row}</p><div class="mt-4 h-2 rounded-full bg-white/25"></div></div>`).join('')}</div>
   </div>`
 }
 

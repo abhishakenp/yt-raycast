@@ -4114,11 +4114,8 @@ function connectWS() {
           isReconnect = true
           skipIntro()
         } else if (introActive) {
-          const delay = typingDone ? 600 : 1500
-          setTimeout(() => {
-            exitIntro()
-            setTimeout(openDrawer, 400)
-          }, delay)
+          exitIntro()
+          setTimeout(openDrawer, 200)
         } else if (drawerOpen) {
           reloadPreview()
         } else {
@@ -4147,6 +4144,15 @@ function connectWS() {
 
       case 'deployed':
         renderDeploymentState({ slug: ev.slug, url: ev.url, deployedAt: ev.deployedAt })
+        break
+
+      case 'homepage_phase_complete':
+        document.getElementById('phase-text').textContent =
+          `Landing ready in ${ev.elapsed}s — building pages…`
+        {
+          const timing = document.getElementById('gen-timing')
+          if (timing) timing.textContent = `⚡ Landing page in ${ev.elapsed}s — pages generating…`
+        }
         break
 
       case 'run_completed':
