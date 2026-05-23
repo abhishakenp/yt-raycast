@@ -504,6 +504,21 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
       writeFile(workspace, 'index.html', homepage)
     }
     sessionCtx.signalHomepageReady()
+  } else if (homepage && SHIPFAST_KIMI_ENGINE) {
+    // Kimi/hybrid skips the Groq design brief — keep the LLM homepage instead of
+    // falling through to the spec renderer (which produces generic site.css shells).
+    try {
+      writeFile(workspace, 'index.llm.html', homepage)
+    } catch {}
+    keptLlmHomepage = true
+    if (siteSpec?.pages?.length) {
+      writeNextAppToWorkspace(siteSpec, workspace, sessionCtx, {
+        preserveLlmHomepage: true,
+      })
+    }
+    homepage = injectStorefrontCartUi(injectEcommerceHeroResponsiveCss(homepage), { workspace })
+    writeFile(workspace, 'index.html', homepage)
+    sessionCtx.signalHomepageReady()
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })

@@ -67,7 +67,7 @@ export async function generateHomepageHtml(prompt, groqArgs, { engine, specAppen
 
   if (strategy === 'kimi') {
     try {
-      const KIMI_TIMEOUT_MS = parseInt(process.env.SHIPFAST_KIMI_TIMEOUT_MS || '30000', 10)
+      const KIMI_TIMEOUT_MS = parseInt(process.env.SHIPFAST_KIMI_TIMEOUT_MS || '120000', 10)
       const kimiCall = generateKimiEngineHomepage(
         specAppend ? `${prompt}\n\nStructured homepage spec:\n${specAppend}` : prompt,
       )

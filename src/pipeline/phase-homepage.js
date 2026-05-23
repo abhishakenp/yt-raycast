@@ -94,8 +94,11 @@ export async function generateHomepage(
   const siteTypeForVague = thinSiteSpec?.siteType
   const siteType = String(thinSiteSpec?.siteType || 'landing').toLowerCase()
   const exemplarPath = getPublicDesignExemplarPath(siteType)
-  const ralphDisabled = true // Disabled for UI improvements branch - no loops/retries
-  const maxRalph = 1 // Single generation only - no Ralph loop
+  const ralphDisabled = process.env.SHIPFAST_HOMEPAGE_RALPH === '0'
+  const maxRalph =
+    siteType === 'game' || ralphDisabled || hasDesignReferenceUrls
+      ? 1
+      : Math.max(1, Math.min(14, parseInt(process.env.SHIPFAST_HOMEPAGE_RALPH_MAX || '3', 10) || 3))
   const promptBase =
     shouldExpandVagueMarketing(prompt, siteTypeForVague) ? `${prompt}\n\n${VAGUE_MARKETING_HOMEPAGE_APPENDIX}` : prompt
   if (promptBase.length > (prompt || '').length)
@@ -174,21 +177,26 @@ export async function generateHomepage(
     tokenAgg.outputTokens += result.outputTokens ?? 0
     tokenAgg.cost += result.cost ?? 0
     html = shellAfterGroq(result.content)
-    let ver = useKimi
-      ? {
-          ok:
-            (result.kimiScore ?? 0) >= 90 &&
-            !htmlLooksDegenerate(html, {
-              prompt,
-              skipNovaMarketingBar: true,
-            }),
-          feedback: `Kimi engine score ${result.kimiScore ?? 0}; target >=90 and non-degenerate HTML.`,
-        }
-      : useHybrid
-      ? passesHybridHomepageVerification(html, prompt, siteType)
-      : exemplarPath && !hasDesignReferenceUrls
-        ? passesHomepagePublicDesignVerification(html, prompt, exemplarPath, siteType)
-        : { ok: !htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) }), feedback: 'Output failed degeneracy or marketing bar checks.' }
+    const effectiveEngine = result?.kimiFallback ? result.engine || engineStrategy : engineStrategy
+    let ver =
+      effectiveEngine === 'kimi'
+        ? {
+            ok:
+              (result.kimiScore ?? 0) >= 90 &&
+              !htmlLooksDegenerate(html, {
+                prompt,
+                skipNovaMarketingBar: true,
+              }),
+            feedback: `Kimi engine score ${result.kimiScore ?? 0}; target >=90 and non-degenerate HTML.`,
+          }
+        : effectiveEngine === 'hybrid' || effectiveEngine === 'hybrid-app-shell'
+          ? passesHybridHomepageVerification(html, prompt, siteType)
+          : exemplarPath && !hasDesignReferenceUrls
+            ? passesHomepagePublicDesignVerification(html, prompt, exemplarPath, siteType)
+            : {
+                ok: !htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: Boolean(mobbinAnchor?.app) }),
+                feedback: 'Output failed degeneracy or marketing bar checks.',
+              }
     // When the active anchor's DNA explicitly rejects aurora visuals
     // (Airbnb/Apple/Linear/Patagonia/etc), the engine's aurora-tier
     // verification rules become a quality regression — the LLM CORRECTLY
