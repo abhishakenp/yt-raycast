@@ -126,6 +126,7 @@ export async function generateHomepage(
 
     html = injectEcommerceHeroResponsiveCss(html)
     html = ensureLucideIconRuntime(html, log)
+    html = await alignGeneratedImagesToContext(html, imageHints)
 
     const kimiScore = ship.metrics.kimiScore ?? ship.audits?.kimi?.score ?? 0
     const minKimiScore = parseInt(process.env.SHIP_MIN_KIMI_SCORE || '90', 10)

@@ -754,6 +754,16 @@ function themedQueries(prompt) {
       'granola snack product close up',
     ]).slice(0, MAX_REQUESTS)
   }
+  if (TRAVEL_PROMPT_RE.test(p)) {
+    return uniqueValues([
+      'cinematic travel destination landscape',
+      'adventure travel mountain beach',
+      'luxury vacation resort travel',
+      'city travel tourism street photography',
+      'safari wildlife travel africa',
+      'beach sunset travel vacation',
+    ]).slice(0, MAX_REQUESTS)
+  }
   if (/\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(p)) {
     return uniqueValues([
       'modern hospital building healthcare',
@@ -1695,6 +1705,114 @@ function repairMalformedTailwindClasses(html) {
   return next
 }
 
+const DECORATIVE_GRADIENT_CLASS_RE =
+  /\b(?:h-1|h-px|h-0\b|h-0\.5|h-\[1px\])\b.*\bblur-|(?:\bblur-(?:2xl|3xl)\b.*\b(?:h-1|h-px|h-96|h-\[600px\])\b)/i
+
+function isDecorativeGradientBlob(attrs = '', inner = '') {
+  const cls = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1] || ''
+  if (!/\bbg-gradient-to/i.test(cls)) return false
+  if (DECORATIVE_GRADIENT_CLASS_RE.test(cls)) return true
+  if (/\bblur-3xl\b/.test(cls) && !/<h[1-4]\b/i.test(inner) && inner.replace(/<[^>]+>/g, '').trim().length < 24)
+    return true
+  return false
+}
+
+function stripDecorativeGradientMedia(html) {
+  if (!html || typeof html !== 'string' || !/\bbg-gradient-to/i.test(html)) return html
+  return html.replace(
+    /(<(?:div|article)\b([^>]*\bbg-gradient-to[^>]*)>)([\s\S]*?)(<\/(?:div|article)>)/gi,
+    (full, open, attrs, inner, close) => {
+      if (!isDecorativeGradientBlob(attrs, inner)) return full
+      const cleaned = inner
+        .replace(/<img\b[^>]*>/gi, '')
+        .replace(/<div class="absolute inset-0 bg-black\/45"><\/div>\s*/gi, '')
+        .replace(/<div class="relative"><\/div>\s*/gi, '')
+      return `${open}${cleaned}${close}`
+    },
+  )
+}
+
+function sectionHasVisibleHeroMedia(body = '') {
+  if (/<video\b/i.test(body)) return true
+  if (/\bdata-visual=["']art-surface["']/i.test(body)) return true
+  const imgRe = /<img\b[^>]*>/gi
+  let m
+  while ((m = imgRe.exec(body)) !== null) {
+    const before = body.slice(Math.max(0, m.index - 420), m.index)
+    if (!/\b(?:h-1|h-px|h-0\b|blur-3xl|blur-2xl)\b[^>]{0,220}$/i.test(before)) return true
+  }
+  return false
+}
+
+function sanitizeStockImageTags(html) {
+  if (!html || typeof html !== 'string') return html
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    if (isLikelyLogoTag(tag)) return tag
+    let next = tag
+    const cls = extractAttribute(next, 'class') || ''
+    const cleaned = cls
+      .split(/\s+/)
+      .filter(
+        (c) =>
+          c &&
+          !/^flex(?:-col|-row|-1|-none|-wrap|-grow|-shrink)?$/i.test(c) &&
+          !/^items-/.test(c) &&
+          !/^justify-/.test(c) &&
+          !/^self-/.test(c) &&
+          !/^from-/.test(c) &&
+          !/^via-/.test(c) &&
+          !/^to-/.test(c) &&
+          !/^bg-gradient-to-/.test(c),
+      )
+      .join(' ')
+      .trim()
+    const withCover = /\bobject-cover\b/i.test(cleaned) ? cleaned : `${cleaned} object-cover block`.trim()
+    if (withCover !== cls) {
+      next = next.replace(/\bclass\s*=\s*["'][^"']*["']/i, `class="${withCover}"`)
+    } else if (!/\bobject-cover\b/i.test(cls)) {
+      next = next.replace(/\bclass\s*=\s*(["'])/i, (m, q) => `class=${q}object-cover block `)
+    }
+    const src = extractAttribute(next, 'src')
+    if (src && /^pexels:\d+$/i.test(src.trim())) {
+      const id = src.match(/\d+/)?.[0]
+      if (id) next = setImgSrcAttribute(next, formatImageUrl(id, 1400, 900))
+    }
+    return next
+  })
+}
+
+function ensureHeroSectionMedia(html, imageHints = null) {
+  if (!html || !/\bmin-h-(?:screen|\[)/i.test(html)) return html
+  const photos = stockPhotosForHydration(imageHints)
+  if (!photos.length) return html
+  const prompt = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? 'hero editorial')
+  const usage = new Map()
+
+  return html.replace(
+    /<section\b([^>]*\bclass="[^"]*(?:min-h-screen|min-h-\[(?:60|70|76|80|90))[^"]*"[^>]*)>([\s\S]*?)<\/section>/gi,
+    (full, attrs, body) => {
+      if (sectionHasVisibleHeroMedia(body)) return full
+      const pick = pickPhotoForImg(prompt, photos, usage) || photos[0]
+      const heroUrl = pick?.url
+      if (!heroUrl) return full
+      usage.set(heroUrl, (usage.get(heroUrl) || 0) + 1)
+      const alt = escapeHtmlAttribute(pick.alt || extractPromptVisualCore(prompt, 5) || 'Hero image')
+      const media = `<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-2xl"><img src="${heroUrl}" alt="${alt}" class="w-full h-full object-cover" loading="eager" decoding="async" /></div>`
+
+      if (/<(?:pre|code)\b/i.test(body) || /overflow-auto\s+max-h/i.test(body)) {
+        const replaced = body.replace(
+          /<div class="[^"]*(?:overflow-auto|max-h-\d+|font-mono)[^"]*"[\s\S]*?<\/div>/i,
+          media,
+        )
+        if (replaced !== body) return `<section${attrs}>${replaced}</section>`
+      }
+
+      const backdrop = `<div aria-hidden="true" class="pointer-events-none absolute inset-0 z-0 overflow-hidden"><img src="${heroUrl}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-35" loading="eager" decoding="async" /><div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30"></div></div>`
+      return `<section${attrs}>${backdrop}<div class="relative z-10">${body}</div></section>`
+    },
+  )
+}
+
 function isEmptyArtSurfaceInner(inner) {
   const stripped = String(inner || '')
     .replace(/<!--[\s\S]*?-->/g, '')
@@ -1797,16 +1915,22 @@ function hydrateGradientCardMedia(html, imageHints = null) {
   const photos = stockPhotosForHydration(imageHints)
   if (!photos.length) return html
   const usage = new Map()
+  const promptFallback = extractPromptVisualCore(
+    imageHints?.hydrationPrompt ?? imageHints?.prompt ?? '',
+    5,
+  )
 
   return html.replace(
     /<(div|article)\b([^>]*\bbg-gradient-to[^>]*)>([\s\S]*?)<\/\1>/gi,
     (full, tag, attrs, inner) => {
       if (/<img\b/i.test(full)) return full
       if (/footer-branding|data-sf-|sr-only|intro-media/i.test(full)) return full
+      if (isDecorativeGradientBlob(attrs, inner)) return full
       const label =
         inner.match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
         inner.match(/<p[^>]*>([\s\S]*?)<\/p>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
-        'travel destination'
+        promptFallback ||
+        'featured image'
       const pick = pickPhotoForImg(label, photos, usage)
       const url = pick?.url ?? photos[0].url
       usage.set(url, (usage.get(url) || 0) + 1)
@@ -1855,10 +1979,13 @@ function dedupeRedundantHeroSections(html) {
 
 export function polishGeneratedMediaHtml(html, imageHints = null) {
   let next = repairMalformedTailwindClasses(html)
+  next = sanitizeStockImageTags(next)
+  next = stripDecorativeGradientMedia(next)
   next = dedupeRedundantHeroSections(next)
   next = hydrateArtSurfaceSlots(next, imageHints)
   next = hydrateHeroGradientBackgrounds(next, imageHints)
   next = hydrateGradientCardMedia(next, imageHints)
+  next = ensureHeroSectionMedia(next, imageHints)
   return next
 }
 
@@ -2379,29 +2506,7 @@ export function hydrateStorefrontGradientSlots(html, imageHints = null) {
 
 export async function verifyTrustedStockImageUrls(html) {
   if (!html || typeof html !== 'string') return html
-  const fallbacks = VERIFIED_FALLBACK_PEXELS_IDS.map((id) => formatImageUrl(id, 1400, 900))
-  let fi = 0
-  const re = /<img\b[^>]*>/gi
-  let m
-  let out = ''
-  let lastIndex = 0
-  while ((m = re.exec(html)) !== null) {
-    out += html.slice(lastIndex, m.index)
-    let tag = m[0]
-    const src = extractAttribute(tag, 'src')
-    if (looksLikeTrustedStockImageUrl(src) && !isLikelyLogoTag(tag)) {
-      const healthy = await isImageUrlHealthy(src)
-      if (!healthy) {
-        const rep = fallbacks[fi % fallbacks.length]
-        fi += 1
-        tag = stripSrcsetFromTag(setImgSrcAttribute(tag, rep))
-      }
-    }
-    out += tag
-    lastIndex = m.index + m[0].length
-  }
-  out += html.slice(lastIndex)
-  return markTrustedStockImagesEager(out)
+  return markTrustedStockImagesEager(sanitizeStockImageTags(html))
 }
 
 function markTrustedStockImagesEager(html) {

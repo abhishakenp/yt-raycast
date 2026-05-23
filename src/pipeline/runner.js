@@ -42,7 +42,6 @@ import {
   hydrateStorefrontGradientSlots,
   injectEcommerceHeroResponsiveCss,
   mergeImageHintLists,
-  polishGeneratedMediaHtml,
   resolvePexelsImageHints,
   verifyTrustedStockImageUrls,
 } from './image-hints.js'
@@ -90,7 +89,7 @@ async function publishHomepagePreview({
   }
 
   if (deferSpecWork && usesUnifiedHomepageEngine()) {
-    homepage = polishGeneratedMediaHtml(homepage, {
+    homepage = await alignGeneratedImagesToContext(homepage, {
       hydrationPrompt: normalizedPrompt,
       prompt: normalizedPrompt,
     })
@@ -824,14 +823,18 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage 
   if (indiaMode.isIndian && siteSpec) siteSpec._indiaMode = indiaMode
   sessionCtx.setSiteSpec?.(siteSpec)
   homepage = homepageStats.html
-  const richImageHints = usesUnifiedHomepageEngine()
-    ? homepageStats.imageHints ?? { hydrationPrompt: normalizedPrompt, prompt: normalizedPrompt }
-    : await resolvePexelsImageHints({
-        prompt: normalizedPrompt,
-        hydrationPrompt: normalizedPrompt,
-        ctx,
-        siteSpec,
-      })
+  const richImageHints = mergeImageHintLists(
+    homepageStats.imageHints ?? { hydrationPrompt: normalizedPrompt, prompt: normalizedPrompt },
+    await (usesUnifiedHomepageEngine() && deferredPexelsPromise
+      ? deferredPexelsPromise
+      : resolvePexelsImageHints({
+          prompt: normalizedPrompt,
+          hydrationPrompt: normalizedPrompt,
+          ctx,
+          siteSpec,
+        })
+    ).catch(() => ({ photos: [], videos: [], promptBlock: '' })),
+  )
   const imageHints = {
     ...mergeImageHintLists(homepageStats.imageHints, richImageHints),
     hydrationPrompt: normalizedPrompt,
