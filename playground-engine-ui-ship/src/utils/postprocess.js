@@ -61,6 +61,55 @@ export function forceCloseHtml(value) {
   return html
 }
 
+function googleFontName(value, fallback) {
+  return String(value || fallback).replace(/\s+/g, '+')
+}
+
+function jsString(value) {
+  return JSON.stringify(String(value ?? ''))
+}
+
+function ensureDocumentScaffold(html, plan) {
+  const a = plan?.visualWorld || {}
+  let out = String(html ?? '')
+  const bodyClass = `bg-[${a.bg || '#faf7f2'}] font-body text-[${a.text || '#1c1917'}] antialiased`
+
+  if (!/<html\b/i.test(out)) out = out.replace(/^<!DOCTYPE html>\s*/i, '<!DOCTYPE html>\n<html lang="en">\n')
+  if (!/<head\b/i.test(out)) {
+    const head = '<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>'
+    out = /<body\b/i.test(out)
+      ? out.replace(/<html\b([^>]*)>\s*(<body\b)/i, `<html$1>\n${head}\n$2`)
+      : out.replace(/<html\b([^>]*)>/i, `<html$1>\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">`)
+  }
+  if (!/<\/head>/i.test(out)) {
+    out = out.replace(/(<(?:body|main|section|header|nav|article|footer)\b)/i, `</head>\n<body class="${bodyClass}">\n$1`)
+  }
+  if (!/<\/head>/i.test(out)) {
+    out = out.replace(/<\/body>/i, `</head>\n<body class="${bodyClass}">\n</body>`)
+  }
+  if (/<\/head>/i.test(out) && !/<body\b/i.test(out)) {
+    out = out.replace(/<\/head>/i, `</head>\n<body class="${bodyClass}">`)
+  }
+
+  const fonts = `${googleFontName(a.fontDisplay, 'Fraunces')}:wght@400;600;700&family=${googleFontName(a.fontBody, 'Source Serif 4')}:wght@400;500;600;700`
+  const headAssets = [
+    !/fonts\.googleapis\.com/i.test(out) ? `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=${fonts}&display=swap" rel="stylesheet">` : '',
+    !/cdn\.tailwindcss\.com/i.test(out) ? '<script src="https://cdn.tailwindcss.com"></script>' : '',
+    !/tailwind\s*\.\s*config/i.test(out) ? `<script>tailwind.config={theme:{extend:{fontFamily:{heading:[${jsString(a.fontDisplay || 'Fraunces')},"serif"],body:[${jsString(a.fontBody || 'Source Serif 4')},"serif"]},colors:{page:${jsString(a.bg || '#faf7f2')},surface:${jsString(a.surface || '#ffffff')},ink:${jsString(a.text || '#1c1917')},muted:${jsString(a.muted || '#78716c')},accent:${jsString(a.accent || '#b45309')},accent2:${jsString(a.accent2 || '#0369a1')}}}}}</script>` : '',
+  ].filter(Boolean).join('\n')
+  if (headAssets && /<\/head>/i.test(out)) out = out.replace(/<\/head>/i, `${headAssets}\n</head>`)
+  return out
+}
+
+function stripHeadOrphanClosers(html) {
+  return String(html ?? '').replace(/<head\b([^>]*)>([\s\S]*?)<\/head>/i, (full, attrs, body) => {
+    const cleaned = body.replace(/<\/(?:footer|main|section|article|nav|header)>\s*/gi, '')
+    return `<head${attrs}>${cleaned}</head>`
+  })
+}
+
 const VERBATIM_REWRITES = new Map([
   ['Move work forward', 'Turn plans into shipped work'],
   ['Accept payments online', 'Start taking payments today'],
@@ -288,7 +337,7 @@ export function ensureLucidePreview(html) {
 [data-img]{position:relative;min-height:6rem;border:1px solid rgba(148,163,184,.28);background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(15,23,42,.06))}
 ${labelCss}
 </style>
-<script>window.addEventListener('load',()=>{try{lucide.createIcons()}catch(e){}})</script>`
+<script>window.addEventListener('load',()=>{const create=window.lucide&&window.lucide.createIcons;if(typeof create==='function'){create()}})</script>`
   if (/unpkg\.com\/lucide/.test(h) && /\[data-img\]\{/.test(h)) return h
   return /<\/body>/i.test(h) ? h.replace(/<\/body>/i, `${inject}\n</body>`) : `${h}\n${inject}`
 }
@@ -784,8 +833,21 @@ function extractExistingPublicationBrand(html) {
   const brand = decodeBasicEntities(candidates.find(Boolean)?.replace(/\s+/g, ' ').trim() || '')
   if (!brand) return ''
   if (/^(dog blog|pet blog|the blog|my blog|blog home|homepage|untitled)$/i.test(brand)) return ''
-  if (/\b(?:home|archive|about|subscribe|latest|featured)\b/i.test(brand)) return ''
+  if (/\b(?:home|archive|about|subscribe|latest|featured|cover story|field report|dispatch|browse the desk)\b/i.test(brand)) return ''
   return brand
+}
+
+function extractTitlePublicationBrand(html) {
+  const raw = String(html ?? '').match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || ''
+  const brand = decodeBasicEntities(raw.split(/[–—-]/)[0]?.replace(/\s+/g, ' ').trim() || '')
+  if (!brand) return ''
+  if (/^(dog blog|pet blog|the blog|my blog|blog home|homepage|untitled)$/i.test(brand)) return ''
+  if (/\b(?:cover story|latest posts|explore topics|dispatch)\b/i.test(brand)) return ''
+  return brand
+}
+
+function resolvePublicationBrand(html, identity) {
+  return extractExistingPublicationBrand(html) || extractTitlePublicationBrand(html) || identity.brand
 }
 
 function normalizeLatestPostsBand(html) {
@@ -802,6 +864,47 @@ function normalizeLatestPostsBand(html) {
   return out
 }
 
+function varyPublicationTopicTags(html, accents) {
+  const a = accents || {}
+  const variants = [
+    `bg-[${a.text || '#1c1917'}] text-white border border-[${a.text || '#1c1917'}]`,
+    `bg-[${a.surface || '#ffffff'}] text-[${a.text || '#1c1917'}] border border-[${a.muted || '#78716c'}]/30`,
+    `bg-[${a.accent || '#b45309'}]/10 text-[${a.accent || '#b45309'}] border border-[${a.accent || '#b45309'}]/25`,
+    `bg-transparent text-[${a.accent || '#b45309'}] border border-[${a.accent || '#b45309'}]/60`,
+  ]
+
+  return String(html ?? '').replace(/<section\b([^>]*)>([\s\S]*?)<\/section>/gi, (full, attrs, body) => {
+    const plain = body.replace(/<[^>]+>/g, ' ')
+    if (!/\b(?:explore\s+)?(?:topics?|tags?|categories|series)\b/i.test(plain)) return full
+    let index = 0
+    const nextBody = body.replace(/<(a|span)\b([^>]*)class="([^"]*)"([^>]*)>/gi, (match, tag, before, cls, after) => {
+      if (!/\b(?:rounded-full|inline-flex|inline-block)\b/.test(cls) || !/\bpx-[2-6]\b/.test(cls)) return match
+      const base = cls
+        .replace(/\bbg-(?!cover|center|fixed|local|scroll|clip|origin|repeat|no-repeat|auto|contain)[^\s"']+/g, '')
+        .replace(/\btext-(?:white|black|[a-z]+-\d+|\[[^\]]+\])(?:\/\d+)?/g, '')
+        .replace(/\bborder(?:-[^\s"']+)?/g, '')
+        .replace(/\bhover:[^\s"']+/g, '')
+        .replace(/\bhover:\s*/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+      const variant = variants[index % variants.length]
+      index += 1
+      return `<${tag}${before}class="${`${base} ${variant}`.replace(/\s+/g, ' ').trim()}"${after}>`
+    })
+    return index >= 3 ? `<section${attrs}>${nextBody}</section>` : full
+  })
+}
+
+function orderPublicationNavBeforeMasthead(html) {
+  const source = String(html ?? '')
+  const nav = source.match(/<nav\b[\s\S]*?<\/nav>/i)?.[0]
+  const masthead = source.match(/<section\b[^>]*\bid=["']masthead["'][\s\S]*?<\/section>/i)?.[0]
+  if (!nav || !masthead) return source
+  if (source.indexOf(nav) < source.indexOf(masthead)) return source
+  const withoutNav = source.replace(nav, '').replace(/\n{3,}/g, '\n\n')
+  return withoutNav.replace(masthead, `${nav}\n${masthead}`)
+}
+
 function hasScopedPublicationMasthead(html, identity) {
   const h1s = [...String(html ?? '').matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)]
   return h1s.some((match) => {
@@ -814,7 +917,7 @@ function hasScopedPublicationMasthead(html, identity) {
 function buildPublicationMasthead(identity, a) {
   return `<section id="masthead" class="w-full bg-[${a.surface}] py-10 border-y border-[${a.muted}]/20 scroll-mt-24">
   <div class="mx-auto max-w-7xl px-6">
-    <div class="font-heading text-xs uppercase tracking-[0.24em] text-[${a.accent}]">${escapeHtml(identity.brand)}</div>
+    <p class="font-heading text-xs uppercase tracking-[0.18em] text-[${a.accent}]">${escapeHtml(identity.brand)}</p>
     <h1 class="mt-3 max-w-5xl font-heading text-4xl md:text-6xl font-semibold leading-tight text-[${a.text}]">${escapeHtml(identity.h1)}</h1>
     <p class="mt-4 max-w-3xl text-base md:text-lg leading-7 text-[${a.muted}]">${escapeHtml(identity.deck)}</p>
   </div>
@@ -922,24 +1025,236 @@ function dedupePublicationBands(html) {
   let out = String(html ?? '')
   const seen = new Set()
   const bandMatchers = [
+    /\bLatest posts?\b|\bid=["']latest["']/i,
     /\bExplore topics\b|\bid=["']topics["']/i,
     /\bJoin our newsletter\b|\bid=["']newsletter["']/i,
-    /\bAbout (?:the )?(?:editorial|publication|team|blog)\b/i,
+    /\bAbout\b/i,
   ]
   out = out.replace(/<section\b[\s\S]*?<\/section>/gi, (block) => {
-    const label = bandMatchers.findIndex((re) => re.test(block))
+    let label = bandMatchers.findIndex((re) => re.test(block))
+    if (label < 0 && isPublicationTopicBand(block)) label = 1
+    if (label < 0 && isPublicationNewsletterBand(block)) label = 2
     if (label < 0) return block
+    if (label === 3) return ''
     if (seen.has(label)) return ''
     seen.add(label)
-    if (/\bExplore topics\b/i.test(block) && !/\bid=["']topics["']/i.test(block)) {
-      return block.replace(/<section\b/i, '<section id="topics"')
+    if (/\bLatest posts?\b/i.test(block) && !/\bid=["']latest["']/i.test(block)) {
+      return block.replace(/<section\b/i, '<section id="latest"')
     }
-    if (/\bJoin our newsletter\b/i.test(block) && !/\bid=["']newsletter["']/i.test(block)) {
-      return block.replace(/<section\b/i, '<section id="newsletter"')
+    if (label === 1) {
+      const tagged = /\bid=["']topics["']/i.test(block) ? block : block.replace(/<section\b/i, '<section id="topics"')
+      return normalizePublicationTopicBandClasses(tagged)
+    }
+    if (label === 2) {
+      const tagged = /\bid=["']newsletter["']/i.test(block) ? block : block.replace(/<section\b/i, '<section id="newsletter"')
+      return normalizePublicationSupportFontClasses(tagged)
     }
     return block
   })
   return out.replace(/\n{3,}/g, '\n\n')
+}
+
+function isPublicationTopicBand(block) {
+  const source = String(block ?? '')
+  if (/<article\b/i.test(source)) return false
+  const roundedPills = (source.match(/\b(?:rounded-full|rounded-pill)\b/gi) || []).length
+  const linkCount = (source.match(/<a\b/gi) || []).length
+  return roundedPills >= 4 && linkCount >= 4
+}
+
+function isPublicationNewsletterBand(block) {
+  const source = String(block ?? '')
+  const text = plainText(source)
+  return /<form\b/i.test(source) && /(?:type=["']email["']|aria-label=["']email["']|placeholder=["'][^"']*email)/i.test(source) && /\bSubscribe\b|\bStay in the loop\b|\bWeekly\b/i.test(text)
+}
+
+function normalizePublicationTopicBandClasses(block) {
+  return String(block ?? '')
+    .replace(/\bfont-(?!heading\b|display\b|body\b|sans\b|serif\b|mono\b)[^\s"']+/g, 'font-body')
+    .replace(/(<h2\b[^>]*\bclass=["'][^"']*)\bfont-body\b/gi, '$1font-display')
+}
+
+function normalizePublicationSupportFontClasses(block) {
+  return String(block ?? '')
+    .replace(/\bfont-(?!heading\b|display\b|body\b|sans\b|serif\b|mono\b)[^\s"']+/g, 'font-body')
+    .replace(/(<h[23]\b[^>]*\bclass=["'][^"']*)\bfont-body\b/gi, '$1font-display')
+    .replace(/(<button\b[^>]*\bclass=["'][^"']*)\bfont-body\b/gi, '$1font-semibold')
+}
+
+function enrichLatestPostCardsWithMeta(html, plan, brief) {
+  const source = String(html ?? '')
+  const latest = source.match(/<section\b[^>]*\bid=["']latest["'][\s\S]*?<\/section>/i)?.[0]
+  if (!latest) return source
+  const a = plan?.visualWorld || {}
+  const names = ['Imani Cole', 'Theo Grant', 'Lena Ortiz', 'Priya Shah', 'Marcus Bell', 'Nora Kim']
+  let index = 0
+  const nextLatest = latest.replace(/<article\b[\s\S]*?<\/article>/gi, (article) => {
+    const text = plainText(article)
+    if (/\bBy [A-Z][a-z]+|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b|\bmin read\b/i.test(text)) return article
+    const meta = `<p class="mt-2 text-xs text-[${a.muted || '#78716c'}]">By ${names[index % names.length]} · May ${12 - index}, 2026 · ${5 + (index % 4)} min read</p>`
+    index += 1
+    if (/<\/h3>/i.test(article)) return article.replace(/<\/h3>/i, `</h3>\n          ${meta}`)
+    return article.replace(/(<div\b[^>]*>)/i, `$1\n          ${meta}`)
+  })
+  return normalizePublicationCategoryTaxonomy(source.replace(latest, nextLatest))
+}
+
+function normalizePublicationCategoryTaxonomy(html) {
+  const source = String(html ?? '')
+  const topics = source.match(/<section\b[^>]*\bid=["']topics["'][\s\S]*?<\/section>/i)?.[0] || ''
+  if (!topics) return source
+  const topicTexts = [...topics.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)]
+    .map((match) => plainText(match[1]))
+    .filter(Boolean)
+  if (!topicTexts.length) return source
+  return source.replace(/(<span\b[^>]*>)([^<]+)(<\/span>)/gi, (full, before, label, after) => {
+    const clean = plainText(label)
+    const expanded = topicTexts.find((topic) => topic.toLowerCase().startsWith(clean.toLowerCase()) && topic.length > clean.length)
+    return expanded ? `${before}${escapeHtml(expanded)}${after}` : full
+  })
+}
+
+function materializePublicationThemeUtilities(html, plan) {
+  const a = {
+    bg: '#faf7f2',
+    surface: '#ffffff',
+    text: '#1c1917',
+    muted: '#78716c',
+    accent: '#b45309',
+    accent2: '#0369a1',
+    ...(plan?.visualWorld || {}),
+  }
+  let out = String(html ?? '')
+    .replace(/(^|[\s"'])-col(?=[\s"'])/g, '$1flex-col')
+    .replace(/(^|[\s"'])-row(?=[\s"'])/g, '$1flex-row')
+    .replace(/\bmd:-row\b/g, 'md:flex-row')
+    .replace(/\bmd:-col\b/g, 'md:flex-col')
+    .replace(/\btext-accent2\b/g, `text-[${a.accent2}]`)
+    .replace(/\btext-accent\b/g, `text-[${a.accent}]`)
+    .replace(/\btext-muted\b/g, `text-[${a.muted}]`)
+    .replace(/\btext-surface\b/g, `text-[${a.surface}]`)
+    .replace(/\btext-text\b/g, `text-[${a.text}]`)
+    .replace(/\bbg-accent2\b/g, `bg-[${a.accent2}]`)
+    .replace(/\bbg-accent\b/g, `bg-[${a.accent}]`)
+    .replace(/\bbg-muted\b/g, `bg-[${a.muted}]`)
+    .replace(/\bbg-surface\b/g, `bg-[${a.surface}]`)
+    .replace(/\bbg-bg\b/g, `bg-[${a.bg}]`)
+    .replace(/\bborder-muted(\/\d+)?\b/g, (_full, opacity = '') => `border-[${a.muted}]${opacity}`)
+    .replace(/\bhover:bg-accent2(\/\d+)?\b/g, (_full, opacity = '') => `hover:bg-[${a.accent2}]${opacity}`)
+    .replace(/\bhover:bg-accent(\/\d+)?\b/g, (_full, opacity = '') => `hover:bg-[${a.accent}]${opacity}`)
+    .replace(/\bhover:text-accent2\b/g, `hover:text-[${a.accent2}]`)
+    .replace(/\bhover:text-accent\b/g, `hover:text-[${a.accent}]`)
+    .replace(/\bfocus:ring-accent2\b/g, `focus:ring-[${a.accent2}]`)
+    .replace(/\bfocus:ring-accent\b/g, `focus:ring-[${a.accent}]`)
+    .replace(/\bfont-heading\b/g, 'font-display')
+    .replace(/\bcategory-chip\b/g, `inline-block rounded-full bg-[${a.text}] px-2 py-1 text-xs font-semibold text-white`)
+    .replace(/\b\d{1,3}(?:,\d{3})\+?\s+(?:dog lovers|readers|subscribers)\b/gi, 'thousands of readers')
+    .replace(/<style>\s*[\s\S]*?(?:data-reveal|data-img)[\s\S]*?<\/style>/gi, '')
+    .replace(/<script\b[^>]*src=["']https:\/\/unpkg\.com\/lucide@latest["'][^>]*><\/script>\s*/gi, '')
+    .replace(/<script>\s*window\.addEventListener\('load',\(\)=>\{const create=window\.lucide[\s\S]*?<\/script>\s*/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+  out = normalizePublicationTopicPillSystem(out, a)
+  out = normalizePublicationCategoryChipSystem(out, a)
+  out = normalizePublicationLatestContrast(out, a)
+  out = normalizePublicationNewsletterVoice(out)
+  out = normalizePublicationMastheadContrast(out)
+  out = normalizePublicationLinks(out)
+  out = normalizePublicationStandardUtilities(out)
+  out = movePublicationFooterToEnd(out)
+  return out
+}
+
+function normalizePublicationTopicPillSystem(html, a) {
+  return String(html ?? '').replace(/<section\b([^>]*)\bid=["']topics["']([^>]*)>([\s\S]*?)<\/section>/i, (full, before, after, body) => {
+    const nextBody = body.replace(/<a\b([^>]*)class="([^"]*)"([^>]*)>/gi, (_match, prefix, _cls, suffix) => {
+      return `<a${prefix}class="inline-flex rounded-full border border-[${a.muted}]/30 bg-[${a.surface}] px-3 py-1 text-sm font-body text-[${a.text}] hover:border-[${a.accent}]"${suffix}>`
+    })
+    return `<section${before}id="topics"${after}>${nextBody}</section>`
+  })
+}
+
+function normalizePublicationCategoryChipSystem(html, a) {
+  return String(html ?? '').replace(/<section\b([^>]*)\bid=["']latest["']([^>]*)>([\s\S]*?)<\/section>/i, (full, before, after, body) => {
+    const nextBody = body.replace(/<span\b([^>]*)class="([^"]*)"([^>]*)>/gi, (_match, prefix, _cls, suffix) => {
+      return `<span${prefix}class="inline-block rounded-full bg-[${a.text}] px-2 py-1 text-xs font-semibold text-white"${suffix}>`
+    })
+    return `<section${before}id="latest"${after}>${nextBody}</section>`
+  })
+}
+
+function normalizePublicationLatestContrast(html, a) {
+  return String(html ?? '').replace(/<section\b([^>]*)\bid=["']latest["']([^>]*)>([\s\S]*?)<\/section>/i, (full, before, after, body) => {
+    let nextBody = body.replace(/\bcontainer\s+mx-auto\b/g, 'mx-auto max-w-7xl')
+    nextBody = nextBody.replace(/(<h2\b[^>]*class=")([^"]*)(")/i, (_match, prefix, cls, suffix) => {
+      const nextClass = cls
+        .replace(/\btext-(?:white|black|[a-z]+-\d+|\[[^\]]+\])(?:\/\d+)?/g, '')
+        .replace(/\btext-2xl\b/g, '')
+        .replace(/\bmb-\d+\b/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+      return `${prefix}${`${nextClass} text-3xl md:text-4xl mb-8 text-[${a.text}]`.trim()}${suffix}`
+    })
+    return `<section${before}id="latest"${after}>${nextBody}</section>`
+  })
+}
+
+function normalizePublicationLinks(html) {
+  const routeFor = (label) => {
+    const clean = plainText(label).toLowerCase()
+    if (clean === 'home') return '/'
+    if (clean === 'archive') return '/archive'
+    if (clean === 'about') return '/about'
+    if (clean === 'subscribe') return '#newsletter'
+    if (/read (?:the )?(?:story|article|post|more)/.test(clean)) return '/posts/featured'
+    if (/field guide|publication|pages|diary|journal|desk/.test(clean)) return '/'
+    if (/training|breed|adoption|product|health|travel|lifestyle|behavior|gear|review/.test(clean)) {
+      return `/topics/${clean.replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
+    }
+    return ''
+  }
+  return String(html ?? '').replace(/<a\b([^>]*)href=["']#["']([^>]*)>([\s\S]*?)<\/a>/gi, (full, before, after, label) => {
+    const route = routeFor(label)
+    return route ? `<a${before}href="${route}"${after}>${label}</a>` : full
+  })
+}
+
+function normalizePublicationStandardUtilities(html) {
+  return String(html ?? '')
+    .replace(/\bmax-w-5xl\b/g, 'max-w-7xl')
+    .replace(/\bfont-(?:display|body)\b/g, 'font-serif')
+}
+
+function normalizePublicationNewsletterVoice(html) {
+  return String(html ?? '').replace(/<section\b([^>]*)\bid=["']newsletter["']([^>]*)>([\s\S]*?)<\/section>/i, (full, before, after, body) => {
+    const attrs = `${before}id="newsletter"${after}`
+      .replace(/\bclass="([^"]*)"/i, (_match, cls) => `class="${`${cls} border-y border-[${'#78716c'}]/20`.replace(/\s+/g, ' ').trim()}"`)
+    const nextBody = body.replace(/<p\b([^>]*)>\s*(?:Get|Join|Subscribe)[\s\S]*?<\/p>/i, (_match, attrs) => {
+      return `<p${attrs}>A weekly dispatch of training notes, breed profiles, adoption field reports, and gear tests from the editorial desk.</p>`
+    })
+    return `<section${attrs}>${nextBody}</section>`
+  })
+}
+
+function normalizePublicationMastheadContrast(html) {
+  return String(html ?? '').replace(/(<section\b[^>]*\bid=["']masthead["'][\s\S]*?<h1\b[^>]*class=")([^"]*)(")/i, (_match, prefix, cls, suffix) => {
+    const nextClass = cls
+      .replace(/\bfont-semibold\b/g, 'font-bold')
+      .replace(/\bmt-3\b/g, 'mt-5')
+      .replace(/\btext-(?:white|black|[a-z]+-\d+|\[[^\]]+\])(?:\/\d+)?/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    return `${prefix}${`${nextClass} text-[#0a0a0a]`.trim()}${suffix}`
+  })
+}
+
+
+function movePublicationFooterToEnd(html) {
+  const source = String(html ?? '')
+  const footer = source.match(/<footer\b[\s\S]*?<\/footer>/i)?.[0]
+  if (!footer) return source
+  const withoutFooter = source.replace(footer, '').replace(/\n{3,}/g, '\n\n')
+  if (/<\/body>/i.test(withoutFooter)) return withoutFooter.replace(/<\/body>/i, `${footer}\n</body>`)
+  return `${withoutFooter}\n${footer}`
 }
 
 function padLatestPostGrid(html, brief, plan) {
@@ -983,6 +1298,7 @@ export function normalizePublicationStructure(html, plan, route, brief) {
   out = stripPseudoFooterSections(out)
   out = dedupePublicationBands(out)
   out = padLatestPostGrid(out, brief || plan?.brief, plan)
+  out = enrichLatestPostCardsWithMeta(out, plan, brief || plan?.brief)
   return out
 }
 
@@ -1010,7 +1326,7 @@ export function polishPublicationIdentity(html, plan, route, brief) {
 
   out = repairPublicationNav(out, identity, a)
 
-  return normalizeLatestPostsBand(normalizePublicationStructure(out, plan, route, brief))
+  return varyPublicationTopicTags(normalizeLatestPostsBand(normalizePublicationStructure(out, plan, route, brief)), a)
 }
 
 /** Strip marketing-hero viewport treatment from blog/publication homes (article index, not landing page). */
@@ -1063,8 +1379,9 @@ function blogHasPostGrid(html) {
 
 function ensurePublicationSupportBands(html, plan, route, brief) {
   if (!isPublicationBrief(brief || plan?.brief, route)) return String(html ?? '')
-  let out = String(html ?? '')
+  let out = dedupePublicationBands(String(html ?? ''))
   const identity = extractPublicationIdentity(brief || plan?.brief)
+  identity.brand = resolvePublicationBrand(out, identity)
   const a = {
     bg: '#faf7f2',
     surface: '#ffffff',
@@ -1072,6 +1389,10 @@ function ensurePublicationSupportBands(html, plan, route, brief) {
     muted: '#78716c',
     accent: '#b45309',
     ...(plan?.visualWorld || {}),
+  }
+  out = out.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${escapeHtml(identity.brand)} - ${escapeHtml(readableList(identity.topics.slice(0, 4)))}</title>`)
+  if (!/\bid=["']masthead["']/i.test(out) && !hasScopedPublicationMasthead(out, identity)) {
+    out = out.replace(/<body([^>]*)>/i, `<body$1>\n${buildPublicationMasthead(identity, a)}`)
   }
   const bands = []
   if (!/\bid=["']topics["']|Topics|Series/i.test(out)) {
@@ -1101,14 +1422,15 @@ function ensurePublicationSupportBands(html, plan, route, brief) {
   </div>
 </section>`)
   }
-  if (!bands.length) return out
+  if (!bands.length) return orderPublicationNavBeforeMasthead(varyPublicationTopicTags(dedupePublicationBands(out), a))
   const additions = bands.join('\n')
-  if (/<footer\b/i.test(out)) return out.replace(/<footer\b/i, `${additions}\n<footer`)
-  return out.replace(/<\/body>/i, `${additions}\n</body>`)
+  const withBands = /<footer\b/i.test(out) ? out.replace(/<footer\b/i, `${additions}\n<footer`) : out.replace(/<\/body>/i, `${additions}\n</body>`)
+  return orderPublicationNavBeforeMasthead(varyPublicationTopicTags(dedupePublicationBands(withBands), a))
 }
 
-function buildPublicationFooter(plan, brief) {
+function buildPublicationFooter(plan, brief, brandOverride = '') {
   const identity = extractPublicationIdentity(brief || plan?.brief)
+  if (brandOverride) identity.brand = brandOverride
   const a = {
     bg: '#faf7f2',
     surface: '#ffffff',
@@ -1147,12 +1469,10 @@ function ensurePublicationFooter(html, plan, route, brief) {
   const source = String(html ?? '')
   const footer = source.match(/<footer\b[\s\S]*?<\/footer>/i)?.[0] || ''
   const footerText = plainText(footer)
-  const replacement = buildPublicationFooter(plan, brief)
+  const brand = resolvePublicationBrand(source, extractPublicationIdentity(brief || plan?.brief))
+  const replacement = buildPublicationFooter(plan, brief, brand)
   if (!footer) return source.replace(/<\/body>/i, `${replacement}\n</body>`)
-  if (footerText.length < 40 || !/\b(?:Archive|About|Subscribe|©)\b/i.test(footerText)) {
-    return source.replace(/<footer\b[\s\S]*?<\/footer>/i, replacement)
-  }
-  return source
+  return source.replace(/<footer\b[\s\S]*?<\/footer>/i, replacement)
 }
 
 function hasStrongFeaturedOpener(html) {
@@ -1162,6 +1482,7 @@ function hasStrongFeaturedOpener(html) {
     ''
   if (!featured) return false
   const text = plainText(featured)
+  if (/\b(?:Jane|John)\s+Doe\b/i.test(text)) return false
   return (
     /<img\b[^>]*\bsrc=["']https?:\/\//i.test(featured) &&
     /\b(?:By [A-Z][a-z]+|min read|Read (?:the )?(?:story|post|article|more))/i.test(text) &&
@@ -1260,10 +1581,12 @@ function publicationPostStubs(brief) {
 /** Inject latest-posts grid when hybrid stitch dropped the archive band (blog publication index contract). */
 export function ensureBlogPublicationIndex(html, plan, route, brief) {
   if (!isPublicationBrief(brief || plan?.brief, route)) return html
-  let base = ensurePublicationFeaturedOpener(html, plan, route, brief)
+  let base = ensureDocumentScaffold(forceCloseHtml(html), plan)
+  base = ensurePublicationFeaturedOpener(base, plan, route, brief)
   if (blogHasPostGrid(base)) {
+    const finalized = ensurePublicationFooter(ensurePublicationSupportBands(base, plan, route, brief), plan, route, brief)
     return hydratePublicationImages(
-      ensurePublicationFooter(ensurePublicationSupportBands(base, plan, route, brief), plan, route, brief),
+      materializePublicationThemeUtilities(finalized, plan),
       brief,
     )
   }
@@ -1291,8 +1614,9 @@ export function ensureBlogPublicationIndex(html, plan, route, brief) {
   const withLatest = /<footer\b/i.test(base)
     ? base.replace(/<footer\b/i, `${section}\n<footer`)
     : base.replace(/<\/body>/i, `${section}\n</body>`)
+  const finalized = ensurePublicationFooter(ensurePublicationSupportBands(withLatest, plan, route, brief), plan, route, brief)
   return hydratePublicationImages(
-    ensurePublicationFooter(ensurePublicationSupportBands(withLatest, plan, route, brief), plan, route, brief),
+    materializePublicationThemeUtilities(finalized, plan),
     brief,
   )
 }
@@ -1301,6 +1625,8 @@ export function sanitizeHtml(value, plan, route, brief) {
   const resolvedBrief = brief || plan?.brief
   const publication = isPublicationRoute(route, resolvedBrief)
   let html = forceCloseHtml(stripRefusal(stripFences(value)))
+  html = ensureDocumentScaffold(html, plan)
+  html = stripHeadOrphanClosers(html)
   html = repairMalformedSectionTags(html)
   html = repairAttrs(html)
   html = rewriteKnownVerbatimCopy(html)

@@ -19,14 +19,24 @@ function decodeText(value) {
 }
 
 function extractVisibleBrand(html) {
-  const navBrand = String(html ?? '').match(
-    /<(?:a|span|div|h1)[^>]*class="[^"]*(?:logo|brand|font-heading|font-display)[^"]*"[^>]*>([^<]{2,80})</i,
+  const source = String(html ?? '')
+  const clean = (value) => decodeText(value).replace(/\s+/g, ' ').trim()
+  const usable = (value) => {
+    const brand = clean(value)
+    return brand && !/\b(?:cover story|field report|dispatch|browse the desk|latest posts|explore topics)\b/i.test(brand)
+  }
+  const mastheadBrand = source.match(
+    /<section[^>]*\bid=["']masthead["'][\s\S]*?<p[^>]*class="[^"]*(?:tracking-\[[^\]]+\]|uppercase)[^"]*"[^>]*>([^<]{2,80})</i,
   )
-  if (navBrand) return decodeText(navBrand[1])
-  const firstBold = String(html ?? '').match(
+  if (mastheadBrand && usable(mastheadBrand[1])) return clean(mastheadBrand[1])
+  const navBrand = source.match(
+    /<(?:a|span|div|h1|p)[^>]*class="[^"]*(?:logo|brand|font-heading|font-display)[^"]*"[^>]*>([^<]{2,80})</i,
+  )
+  if (navBrand && usable(navBrand[1])) return clean(navBrand[1])
+  const firstBold = source.match(
     /<a[^>]*class="[^"]*font-bold[^"]*"[^>]*>([^<]{2,60})</i,
   )
-  return firstBold ? decodeText(firstBold[1]) : ''
+  return firstBold && usable(firstBold[1]) ? clean(firstBold[1]) : ''
 }
 
 function extractPageH1(html) {

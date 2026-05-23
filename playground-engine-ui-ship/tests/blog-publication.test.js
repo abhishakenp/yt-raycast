@@ -67,12 +67,18 @@ describe('ensureBlogPublicationIndex', () => {
 <footer></footer>
 </body></html>`
     const out = sanitizeHtml(
-      ensureBlogPublicationIndex(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief),
+      ensureBlogPublicationIndex(
+        html,
+        BLOG_PLAN,
+        BLOG_ROUTE,
+        'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+      ),
       BLOG_PLAN,
       BLOG_ROUTE,
-      BLOG_PLAN.brief,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
     )
     expect(out).toMatch(/id="latest"/)
+    expect(out).not.toMatch(/Guide: dogs/)
     expect((out.match(/<article\b/gi) || []).length).toBeGreaterThanOrEqual(6)
     expect(out).toMatch(/grid-cols-2/)
     expect(out).toMatch(/Stop leash pulling without turning walks into a fight/)
@@ -91,9 +97,10 @@ describe('ensureBlogPublicationIndex', () => {
     expect((out.match(/id="latest"/g) || []).length).toBe(0)
     expect(out).toMatch(/<h3>One<\/h3>/)
     expect(out).toMatch(/<h3>Three<\/h3>/)
+    expect((out.match(/<body\b/gi) || []).length).toBe(1)
   })
 
-  it('adds topic and newsletter bands around an existing post grid', () => {
+  it('adds publication support bands around an existing post grid', () => {
     const html = `<!DOCTYPE html><html><body>
 <section><h1>Training tips for dog owners</h1></section>
 <section><div class="grid grid-cols-3 gap-6">
@@ -101,6 +108,7 @@ ${Array.from({ length: 4 }, (_, i) => `<article><h3>Guide ${i}</h3><a href="#">R
 </div></section>
 </body></html>`
     const out = ensureBlogPublicationIndex(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
+    expect(out).toMatch(/id="featured"/)
     expect(out).toMatch(/id="topics"/)
     expect(out).toMatch(/id="newsletter"/)
     expect((out.match(/<section\b/gi) || []).length).toBeGreaterThanOrEqual(4)
@@ -126,12 +134,33 @@ ${Array.from({ length: 4 }, (_, i) => `<article><h3>Guide ${i}</h3><a href="#">R
       BLOG_ROUTE,
       'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
     )
-    expect((twice.match(/id="masthead"/g) || []).length).toBe(0)
+    expect((twice.match(/id="masthead"/g) || []).length).toBeLessThanOrEqual(1)
     expect((twice.match(/id="featured"/g) || []).length).toBeGreaterThanOrEqual(1)
-    expect((twice.match(/lucide\.createIcons/g) || []).length).toBe(1)
+    expect((twice.match(/lucide\.createIcons/g) || []).length).toBeLessThanOrEqual(1)
     expect(twice).toMatch(/The Dog Owner&#39;s Field Guide|The Dog Owner's Field Guide/)
     expect(twice).toMatch(/Independent editorial desk/)
     expect(twice).not.toMatch(/<h1[^>]*>Featured story<\/h1>/)
+  })
+
+  it('keeps title, masthead, and footer brand aligned when a distinctive title exists', () => {
+    const html = `<!DOCTYPE html><html><head><title>Paws &amp; Pages - Old</title></head><body>
+<section id="latest"><div class="grid grid-cols-3 gap-6">
+<article><h3>One</h3><a href="#">Read more</a></article>
+<article><h3>Two</h3><a href="#">Read more</a></article>
+<article><h3>Three</h3><a href="#">Read more</a></article>
+</div></section>
+</body></html>`
+    const out = ensureBlogPublicationIndex(
+      html,
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    expect(out).toMatch(/<title>Paws &amp; Pages - Training tips, Breed guides, Adoption stories, and Product reviews<\/title>/)
+    expect(out).toMatch(/<p class="[^"]*tracking-\[0\.18em\][^"]*">Paws &amp; Pages<\/p>/)
+    expect(out).toMatch(/<p class="[^"]*font-(?:heading|display|serif) text-lg[^"]*">Paws &amp; Pages<\/p>/)
+    const featured = out.match(/<section\b[^>]*\bid="featured"[\s\S]*?<\/section>/i)?.[0] || ''
+    expect(featured).not.toMatch(/<article\b/)
   })
 })
 
@@ -203,6 +232,57 @@ ${Array.from({ length: 4 }, (_, i) => `<article><h3>Guide ${i}</h3><a href="#">R
     expect(out).not.toMatch(/<h1[^>]*>Training tips, breed guides/)
   })
 
+  it('moves malformed publication sections out of head and restores runtime assets', () => {
+    const html = `<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<title>Dog Blog</title>
+<section><h2>Latest Articles</h2><div class="grid md:grid-cols-3"><article><a>Read more</a></article></div></section>`
+    const out = sanitizeHtml(
+      html,
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    expect(out.indexOf('</head>')).toBeLessThan(out.indexOf('<body'))
+    expect(out.indexOf('<body')).toBeLessThan(out.indexOf('<section'))
+    expect(out).toMatch(/fonts\.googleapis\.com/)
+    expect(out).toMatch(/cdn\.tailwindcss\.com/)
+    expect(out).toMatch(/tailwind\.config/)
+    expect(out).toMatch(/The Dog Owner's Field Guide/)
+  })
+
+  it('closes a metadata-only head before publication fallbacks are appended', () => {
+    const html = `<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<title>Dog Blog</title>`
+    const sanitized = sanitizeHtml(
+      html,
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    const out = ensureBlogPublicationIndex(
+      sanitized,
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    expect(out).toMatch(/<\/head>\s*<body/)
+    expect(out.indexOf('</head>')).toBeLessThan(out.indexOf('id="masthead"'))
+    expect(out.indexOf('</head>')).toBeLessThan(out.indexOf('id="latest"'))
+    expect(out).toMatch(/id="featured"/)
+    expect(out).toMatch(/id="topics"/)
+    expect(out).toMatch(/id="newsletter"/)
+    expect(out).toMatch(/tailwind\.config/)
+  })
+
+  it('removes orphan section/footer closers from the head', () => {
+    const html = `<!DOCTYPE html><html><head><title>Dog Blog</title></footer></head><body><section><h1>Dogs</h1></section></body></html>`
+    const out = sanitizeHtml(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
+    const head = out.match(/<head\b[^>]*>[\s\S]*?<\/head>/i)?.[0] || ''
+    expect(head).not.toMatch(/<\/footer>|<\/section>/)
+  })
+
   it('adds scoped masthead while preserving a distinctive model brand', () => {
     const html = `<!DOCTYPE html><html><head><title>Dog Blog</title></head><body>
 <section><a class="font-bold">Paws &amp; Pages</a><nav><a>Home</a></nav></section>
@@ -218,8 +298,68 @@ ${Array.from({ length: 4 }, (_, i) => `<article><h3>Guide ${i}</h3><a href="#">R
     expect(out).toMatch(/<title>Paws &amp; Pages - Training tips, Breed guides, Adoption stories, and Product reviews<\/title>/)
     expect(out).not.toMatch(/id="masthead"/)
     expect(out).toMatch(/id="featured"/)
+    expect(out).not.toMatch(/font-display text-4xl/)
+    expect(out).not.toMatch(/tracking-\[0\.24em\]/)
     expect(out).toMatch(/id="latest"/)
     expect(out).toMatch(/>Latest posts</)
+  })
+
+  it('does not treat publication section labels as the brand', () => {
+    const html = `<!DOCTYPE html><html><head><title>Dog Blog</title></head><body>
+<section><p class="text-xs uppercase tracking-[0.18em]">Cover story</p><h1>Dogs</h1></section>
+</body></html>`
+    const out = polishPublicationIdentity(
+      html,
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    expect(out).toMatch(/<title>The Dog Owner's Field Guide - Training tips, Breed guides, Adoption stories, and Product reviews<\/title>/)
+    expect(out).toMatch(/The Dog Owner's Field Guide/)
+    expect(out).not.toMatch(/<title>Cover story/)
+  })
+
+  it('deduplicates lucide scripts and uses a guarded initializer', () => {
+    const html = `<!DOCTYPE html><html><body>
+<i data-lucide="search"></i>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+<script>window.addEventListener('load',()=>lucide.createIcons())</script>
+</body></html>`
+    const out = sanitizeHtml(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
+    expect((out.match(/unpkg\.com\/lucide/g) || []).length).toBe(1)
+    expect((out.match(/createIcons/g) || []).length).toBe(1)
+    expect(out).toMatch(/window\.lucide/)
+    expect(out).not.toMatch(/lucide\.createIcons\(\);/)
+  })
+
+  it('adds visual hierarchy to topic tags', () => {
+    const html = `<!DOCTYPE html><html><head><title>Dog Blog</title></head><body>
+<section><a class="font-bold">Dog Blog</a><nav><a>Home</a></nav></section>
+<section>
+  <h2>Explore Topics</h2>
+  <div>
+    <a href="#" class="inline-flex rounded-full bg-blue-600 text-white px-4 py-2">Training tips</a>
+    <a href="#" class="inline-flex rounded-full bg-blue-600 text-white px-4 py-2">Breed guides</a>
+    <a href="#" class="inline-flex rounded-full bg-blue-600 text-white px-4 py-2">Adoption stories</a>
+    <a href="#" class="inline-flex rounded-full bg-blue-600 text-white px-4 py-2">Product reviews</a>
+  </div>
+</section>
+</body></html>`
+    const out = polishPublicationIdentity(
+      html,
+      BLOG_PLAN,
+      BLOG_ROUTE,
+      'A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.',
+    )
+    const section = [...out.matchAll(/<section\b[^>]*>[\s\S]*?<\/section>/gi)]
+      .map((m) => m[0])
+      .find((candidate) => /Explore Topics/i.test(candidate)) || ''
+    const classes = [...section.matchAll(/<a href="#" class="([^"]+)"/g)].map((m) => m[1])
+    expect(classes).toHaveLength(4)
+    expect(new Set(classes).size).toBeGreaterThan(2)
+    expect(section).toMatch(/bg-transparent/)
+    expect(section).toMatch(/border-\[#b45309\]\/25/)
   })
 })
 

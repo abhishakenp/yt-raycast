@@ -40,4 +40,19 @@ describe('brief-fidelity', () => {
     expect(f.issues.some((i) => i.includes('Generic publication'))).toBe(true)
     expect(f.issues.some((i) => i.includes('no H1'))).toBe(true)
   })
+
+  it('extracts masthead eyebrow brand without treating section labels as brand', () => {
+    const html = `<html><head><title>The Dog Owner's Field Guide - Training tips, Breed guides</title></head>
+<body>
+<section id="masthead">
+  <p class="text-xs uppercase tracking-[0.18em]">The Dog Owner's Field Guide</p>
+  <h1>Training tips, breed guides, adoption stories, and product reviews for dog owners</h1>
+</section>
+<section><p class="text-xs uppercase tracking-[0.16em]">Cover story</p></section>
+</body></html>`
+    const brief = 'A blog about dogs — training tips, breed guides, adoption stories, and product reviews.'
+    const f = analyzeBriefFidelity(html, brief)
+    expect(f.visibleBrand).toBe("The Dog Owner's Field Guide")
+    expect(f.issues).toEqual([])
+  })
 })
