@@ -430,8 +430,8 @@ export function renderHomePage(siteSettings = null) {
       </div>
     </noscript>
 
-    <script type="module" src="/scripts/top-actions-auth.js"></script>
-    <script type="module" src="/scripts/homepage.js"></script>
+    <script type="module" src="/scripts/top-actions-auth.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>
+    <script type="module" src="/scripts/homepage.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>
     ${DEV_HOME_HOT_RELOAD_SNIPPET}
   </body>
 </html>`
