@@ -104,14 +104,6 @@ const showShellForSession = (sessionId: string | number): void => {
 
 export const openEmbeddedSession = (sessionId: string | number): void => {
   const idStr: string = String(sessionId)
-  if (!isMarketingHomePath()) {
-    location.href = `/session/${idStr}`
-    return
-  }
-  ensureShell()
-  history.pushState({ [STATE_KEY]: idStr }, '', `/session/${idStr}`)
-  showShellForSession(idStr)
-  try {
-    frame?.focus()
-  } catch {}
+  sessionStorage.setItem('sf_return_home', '1')
+  location.href = `/session/${encodeURIComponent(idStr)}`
 }

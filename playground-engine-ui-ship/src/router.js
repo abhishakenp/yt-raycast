@@ -111,6 +111,7 @@ export function inferSiteHint(brief) {
   if (/\b(personal portfolio|freelance (?:brand )?designer|my portfolio)\b/.test(text) || (/portfolio/.test(text) && !/agency/.test(text))) return 'portfolio'
   if (/restaurant|coffee|cafe|butchery|supper|booking|workshop/.test(text)) return 'local-experience'
   if (/music|label|event|editorial|magazine|publication/.test(text)) return 'editorial'
+  if (/\b(app|tool|workspace|platform|editor|canvas|studio)\b/.test(text) && /\b(ai|image generation|generative|prompt|model|diffusion|render|creative|design)\b/.test(text)) return 'software'
   if (isMarketingLandingBrief(brief)) return 'software'
   if (/saas|b2b|api|developer|platform|analytics/.test(text)) return 'software'
   if (isOpsConsoleBrief(brief)) return 'ops-console'

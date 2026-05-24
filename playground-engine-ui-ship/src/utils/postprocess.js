@@ -179,6 +179,29 @@ function normalizeSoftwarePalette(value, route, brief) {
 export function rewriteAnchorAccentLeaks(value, plan, route) {
   const text = String(plan?.brief || '').toLowerCase()
   let html = String(value ?? '')
+  if (route?.primary?.app === 'Figma' && isCreativeAiToolBrief(text)) {
+    html = html
+      .replace(/\bbg-\[#0acf83\]/gi, 'bg-[#080b14]')
+      .replace(/\b(from|via|to)-\[#0acf83\]/gi, '$1-[#080b14]')
+      .replace(/\btext-\[#0acf83\]/gi, 'text-[#5eead4]')
+      .replace(/\bborder-\[#0acf83\]/gi, 'border-[#5eead4]')
+      .replace(/\bbg-\[#f24e1e\]/gi, 'bg-[#111827]')
+      .replace(/\b(from|via|to)-\[#f24e1e\]/gi, '$1-[#111827]')
+      .replace(/\btext-\[#f24e1e\]/gi, 'text-[#fb7185]')
+      .replace(/\bborder-\[#f24e1e\]/gi, 'border-[#fb7185]')
+      .replace(/\bbg-\[#1abcfe\]/gi, 'bg-[#0f172a]')
+      .replace(/\b(from|via|to)-\[#1abcfe\]/gi, '$1-[#0f172a]')
+      .replace(/\btext-\[#1abcfe\]/gi, 'text-[#38bdf8]')
+      .replace(/\bborder-\[#1abcfe\]/gi, 'border-[#38bdf8]')
+      .replace(/\bbg-\[#a259ff\]/gi, 'bg-[#7c3aed]')
+      .replace(/\b(from|via|to)-\[#a259ff\]/gi, '$1-[#7c3aed]')
+      .replace(/\btext-\[#a259ff\]/gi, 'text-[#f8fafc]')
+      .replace(/\bborder-\[#a259ff\]/gi, 'border-[#8b5cf6]')
+      .replace(/#0acf83/gi, '#080b14')
+      .replace(/#f24e1e/gi, '#111827')
+      .replace(/#a259ff/gi, '#f8fafc')
+      .replace(/#1abcfe/gi, '#38bdf8')
+  }
   if (route?.primary?.app === 'Airbnb' && /hotel|room|suite|coast|guest|spa/.test(text)) {
     const accent = plan?.visualWorld?.accent || '#0f766e'
     const accent2 = plan?.visualWorld?.accent2 || '#b45309'
@@ -258,7 +281,19 @@ export function stripFigmaPersonaLeaks(html, route) {
 
 export function beautifyImagePlaceholders(value, plan, route, brief) {
   if (isPublicationRoute(route, brief || plan?.brief)) return String(value ?? '')
-  const html = String(value ?? '')
+  const html = String(value ?? '').replace(
+    /<div\b((?=[^>]*\bdata-visual=["']art-surface["'])[^>]*)>\s*(?:<!--[\s\S]*?-->\s*)?<\/div>/gi,
+    (full, attrs) => {
+      const className = attrs.match(/\bclass=["']([^"']*)["']/i)?.[1] || ''
+      const visualKind = attrs.match(/\bdata-visual-kind=["']([^"']+)["']/i)?.[1] || ''
+      const subject =
+        attrs.match(/\bdata-img=["']([^"']+)["']/i)?.[1] ||
+        attrs.match(/\baria-label=["']([^"']+)["']/i)?.[1] ||
+        (visualKind === 'product-console' ? 'AI model console dashboard' : visualKind) ||
+        'product workspace'
+      return renderArtDirectedImageSurface(subject, className, plan, 0, route, { heroCompact: true })
+    },
+  )
   const open = /<div\b([^>]*\bdata-img=["']([^"']*)["'][^>]*)>/gi
   let out = ''
   let cursor = 0
@@ -381,9 +416,30 @@ function extractBrandName(brief) {
   return toTitle(named.replace(/\b(?:a|an|the)\s+/i, '').trim()).slice(0, 48) || 'The team'
 }
 
+function isCreativeAiToolBrief(brief) {
+  const text = String(brief ?? '').toLowerCase()
+  return /\b(app|tool|workspace|platform|editor|canvas|studio)\b/.test(text) && /\b(ai|image generation|generative|prompt|model|diffusion|render|creative|design)\b/.test(text)
+}
+
 function densityProfile(route, brief) {
   const hint = route?.siteHint || ''
   const text = String(brief ?? '').toLowerCase()
+  if (isCreativeAiToolBrief(brief)) {
+    return {
+      eyebrow: 'Creative workflow',
+      title: 'Model choice, prompt history, and review flow',
+      intro: 'The page shows the actual creative loop: configure a model, generate variations, compare outputs, and export the selected image.',
+      visual: 'dark image generation workspace',
+      columns: ['Step', 'Workspace surface', 'Signal', 'Next action'],
+      rows: [
+        ['Prompt', 'Composer', 'Style and aspect locked', 'Generate set'],
+        ['Render', 'Model queue', '4 variations ready', 'Compare outputs'],
+        ['Review', 'Gallery board', 'Version notes saved', 'Select image'],
+        ['Export', 'Asset panel', 'PNG and source prompt', 'Share link'],
+      ],
+      cards: ['4 model slots', 'Prompt history saved', 'Team review links'],
+    }
+  }
   if (hint === 'software' || /kubernetes|saas|analytics|developer|platform|infrastructure|api/.test(text)) {
     return {
       eyebrow: 'Product detail',
@@ -416,7 +472,7 @@ function densityProfile(route, brief) {
       cards: ['Small-batch Vermont fill', 'Recyclable glass packaging', 'Subscribe and save 15%'],
     }
   }
-  if (hint === 'fitness' || /fitness|training|class|workout|studio/.test(text)) {
+  if (hint === 'fitness' || /fitness|training|class packs|workout|gym|hiit|crossfit|workout studio/.test(text)) {
     return {
       eyebrow: 'Studio rhythm',
       title: 'Classes, coaching, and first-visit proof',
@@ -682,10 +738,37 @@ function ensureSubstantiveNonPublicationPage(html, plan, route, brief) {
   return `${head}\n${buildRecoveredNonPublicationBody(plan, route, brief)}`
 }
 
+export function stripDuplicateOpeningHero(html, plan, route, brief) {
+  if (isPublicationBrief(brief || plan?.brief, route)) return String(html ?? '')
+  const source = String(html ?? '')
+  const sections = [...source.matchAll(/<section\b[\s\S]*?<\/section>/gi)]
+  if (sections.length < 2) return source
+  const first = sections[0]
+  const second = sections[1]
+  if (first.index > 3000 || second.index - first.index > first[0].length + 800) return source
+  if (!/<h1\b/i.test(first[0]) || !/<h1\b/i.test(second[0])) return source
+  const firstTitle = plainText(first[0].match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || '')
+  const secondTitle = plainText(second[0].match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || '')
+  if (!firstTitle || !secondTitle) return source
+  const brand = extractBrandName(brief || plan?.brief).toLowerCase()
+  const secondLooksLikeRepeatedOpener =
+    secondTitle.length <= 64 &&
+    (secondTitle.toLowerCase() === brand ||
+      brand.includes(secondTitle.toLowerCase()) ||
+      /start|creating|demo|watch|learn more|get started/i.test(second[0]))
+  if (!secondLooksLikeRepeatedOpener) return source
+  return `${source.slice(0, second.index)}${source.slice(second.index + second[0].length)}`
+}
+
 export function ensureDenseNonPublicationDetail(html, plan, route, brief) {
   if (plan?.pageKind === 'app-shell' || isPublicationBrief(brief || plan?.brief, route)) return String(html ?? '')
-  const source = String(html ?? '')
-  if (/\bdata-ship-density=["']detail-band["']/.test(source)) return source
+  let source = String(html ?? '')
+  const profile = densityProfile(route, brief || plan?.brief)
+  const existingDetail = source.match(/<section\b[^>]*\bdata-ship-density=["']detail-band["'][\s\S]*?<\/section>/i)?.[0] || ''
+  if (existingDetail) {
+    if (plainText(existingDetail).includes(profile.title)) return source
+    source = source.replace(existingDetail, '')
+  }
   const sections = (source.match(/<section\b/gi) || []).length
   if (sections >= 9) return source
   const text = plainText(source)
@@ -1635,6 +1718,7 @@ export function sanitizeHtml(value, plan, route, brief) {
   html = stripFigmaPersonaLeaks(html, route)
   html = repairMalformedMediaDivs(html)
   html = ensureSubstantiveNonPublicationPage(html, plan, route, resolvedBrief)
+  html = stripDuplicateOpeningHero(html, plan, route, resolvedBrief)
   html = ensureDenseNonPublicationDetail(html, plan, route, resolvedBrief)
   html = replaceInlineMedia(html, { publication })
   if (USE_ART_SURFACES && !publication) {

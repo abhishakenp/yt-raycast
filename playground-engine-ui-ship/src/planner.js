@@ -31,8 +31,26 @@ function cleanHex(value, fallback) {
   return /^#[0-9a-f]{6}$/i.test(text) ? text : fallback
 }
 
+function isCreativeAiToolBrief(text) {
+  return /\b(app|tool|workspace|platform|editor|canvas|studio)\b/.test(text) && /\b(ai|image generation|generative|prompt|model|diffusion|render|creative|design)\b/.test(text)
+}
+
 function adaptVisualWorldForBrief(world, { brief, route } = {}) {
   const text = String(brief || '').toLowerCase()
+  if (isCreativeAiToolBrief(text)) {
+    return {
+      ...world,
+      bg: '#080b14',
+      surface: '#111827',
+      text: '#f8fafc',
+      muted: '#94a3b8',
+      accent: '#8b5cf6',
+      accent2: '#38bdf8',
+      fontDisplay: /inter/i.test(world.fontDisplay) && /inter/i.test(world.fontBody) ? 'Space Grotesk' : world.fontDisplay,
+      fontBody: /inter/i.test(world.fontDisplay) && /inter/i.test(world.fontBody) ? 'Inter' : world.fontBody,
+      mood: 'dark product studio, precise creative tooling',
+    }
+  }
   if (route?.siteHint === 'local-experience' && /hotel|room|suite|coast|guest|spa/.test(text)) {
     return {
       ...world,

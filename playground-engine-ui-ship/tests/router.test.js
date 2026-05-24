@@ -15,6 +15,13 @@ describe('router site hints', () => {
     expect(fitness).toBe('fitness')
   })
 
+  it('routes creative AI studios as software tools instead of fitness', () => {
+    const hint = inferSiteHint(
+      'This app is an image generation studio using various AI models to turn a prompt into images.',
+    )
+    expect(hint).toBe('software')
+  })
+
   it('routes blog before commerce product keywords', () => {
     const blog = inferSiteHint('A blog about dogs — training tips, breed guides, adoption stories, and product reviews for dog owners.')
     expect(blog).toBe('blog')

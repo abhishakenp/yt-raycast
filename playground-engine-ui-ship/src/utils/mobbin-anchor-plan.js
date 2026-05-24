@@ -48,6 +48,11 @@ export function extractGoogleFont(hint) {
   return match?.[1] || null
 }
 
+function isCreativeAiToolBrief(brief) {
+  const text = String(brief ?? '').toLowerCase()
+  return /\b(app|tool|workspace|platform|editor|canvas|studio)\b/.test(text) && /\b(ai|image generation|generative|prompt|model|diffusion|render|creative|design)\b/.test(text)
+}
+
 export function applyMobbinAnchorToPlan(plan, route, brief) {
   const primary = route?.primary
   if (!primary?.app) return plan
@@ -59,8 +64,9 @@ export function applyMobbinAnchorToPlan(plan, route, brief) {
 
   const world = { ...(plan.visualWorld || {}) }
   const publication = isPublicationRoute(route, brief)
+  const creativeAiTool = isCreativeAiToolBrief(brief)
 
-  if (accents.length) {
+  if (accents.length && !creativeAiTool) {
     world.accent = cleanHex(accents[0], world.accent)
     world.accent2 = cleanHex(accents[1] || accents[0], world.accent2)
 

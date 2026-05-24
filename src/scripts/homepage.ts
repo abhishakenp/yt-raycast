@@ -907,6 +907,23 @@ function syncSamplePromptVisibility(): void {
   }
 }
 
+function resetPromptForNextGeneration(): void {
+  if (!input) return
+  input.value = ''
+  input.removeAttribute('aria-invalid')
+  closePromptSuggestions()
+  hidePolicyViolation()
+  stopSamplePromptAnimation()
+  samplePromptLength = 0
+  samplePromptMode = 'typing'
+  renderSamplePrompt()
+  syncSamplePromptVisibility()
+  syncPromptLanguageRowVisibility()
+  resetSubmitCtaLabel()
+  submitButton?.classList.remove('loading')
+  syncSubmitButtonState()
+}
+
 function stepSamplePromptAnimation(): void {
   samplePromptTimer = null
 
@@ -1172,18 +1189,21 @@ renderSamplePrompt()
 syncSamplePromptVisibility()
 syncSubmitButtonState()
 
-if (isHomeDevPromptsEnabled()) {
-  const applyDevPrompt = (text: string) => {
-    input.value = text
-    validatePrompt(false)
-    syncSamplePromptVisibility()
-    syncSubmitButtonState()
-    lastPromptTrimLen = input.value.trim().length
-    syncPromptLanguageRowVisibility()
-    schedulePromptLanguageDetect()
-  }
+const applyPromptChip = (text: string): void => {
+  input.value = text
+  validatePrompt(false)
+  syncSamplePromptVisibility()
+  syncSubmitButtonState()
+  lastPromptTrimLen = input.value.trim().length
+  syncPromptLanguageRowVisibility()
+  schedulePromptLanguageDetect()
+}
 
-  const deleteSessionsWithPrompt = async (target: string): Promise<void> => {
+const homeDevPromptsEnabled = isHomeDevPromptsEnabled()
+let deleteDevSessionsWithPrompt: ((target: string) => Promise<void>) | null = null
+
+if (homeDevPromptsEnabled) {
+  deleteDevSessionsWithPrompt = async (target: string): Promise<void> => {
     const want = target.trim()
     if (!want) return
     try {
@@ -1231,43 +1251,64 @@ if (isHomeDevPromptsEnabled()) {
       if (!text) return
       event.preventDefault()
       event.stopPropagation()
-      applyDevPrompt(text)
+      applyPromptChip(text)
       input.focus()
     },
     true,
   )
+}
 
-  const IMAGE_STUDIO_PROMPT =
-    'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.'
+const IMAGE_STUDIO_PROMPT =
+  'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.'
 
-  const chipDefs: Array<{ label: string; text: string }> = [
-    { label: 'Image studio', text: IMAGE_STUDIO_PROMPT },
-    { label: 'Pet wellness', text: LOCAL_DEV_PROMPT_SHORTCUTS[1] },
-    { label: 'SaaS dashboard', text: LOCAL_DEV_PROMPT_SHORTCUTS[2] },
-    { label: 'Hindi gym site', text: LOCAL_DEV_PROMPT_SHORTCUTS[0] },
-  ]
+const chipDefs: Array<{ label: string; text: string }> = [
+  { label: 'Image studio', text: IMAGE_STUDIO_PROMPT },
+  { label: 'Pet wellness', text: LOCAL_DEV_PROMPT_SHORTCUTS[1] },
+  { label: 'SaaS dashboard', text: LOCAL_DEV_PROMPT_SHORTCUTS[2] },
+  { label: 'Hindi gym site', text: LOCAL_DEV_PROMPT_SHORTCUTS[0] },
+]
 
-  const chipBar = document.createElement('div')
-  chipBar.className = 'dev-prompt-chips dev-prompt-chips--glass'
-  chipBar.setAttribute('aria-label', 'Dev quick prompts')
-  chipDefs.forEach((def, i) => {
-    if (!def.text) return
-    const btn = document.createElement('button')
-    btn.type = 'button'
-    btn.className = 'dev-prompt-chip'
-    btn.title = def.text
-    btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`
-    btn.addEventListener('click', async () => {
-      btn.disabled = true
-      await deleteSessionsWithPrompt(def.text)
-      applyDevPrompt(def.text)
-      btn.disabled = false
+const chipBar = document.createElement('div')
+chipBar.className = 'dev-prompt-chips dev-prompt-chips--glass'
+chipBar.setAttribute('aria-label', 'Example prompts')
+chipDefs.forEach((def, i) => {
+  if (!def.text) return
+  const btn = document.createElement('button')
+  btn.type = 'button'
+  btn.className = 'dev-prompt-chip'
+  btn.title = def.text
+  btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`
+  btn.addEventListener('click', async () => {
+    btn.disabled = true
+    try {
+      if (deleteDevSessionsWithPrompt) await deleteDevSessionsWithPrompt(def.text)
+      applyPromptChip(def.text)
       form.requestSubmit()
-    })
-    chipBar.appendChild(btn)
+    } finally {
+      btn.disabled = false
+    }
   })
-  const heroCard = document.getElementById('hero-card')
-  heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling)
+  chipBar.appendChild(btn)
+})
+const heroCard = document.getElementById('hero-card')
+heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling)
+
+if (heroCard) {
+  const setHeroGlow = (x: string, y: string): void => {
+    heroCard.style.setProperty('--hero-glow-x', x)
+    heroCard.style.setProperty('--hero-glow-y', y)
+  }
+
+  heroCard.addEventListener('pointermove', (event: PointerEvent) => {
+    const rect = heroCard.getBoundingClientRect()
+    const x = ((event.clientX - rect.left) / rect.width) * 100
+    const y = ((event.clientY - rect.top) / rect.height) * 100
+    setHeroGlow(`${Math.max(0, Math.min(100, x)).toFixed(1)}%`, `${Math.max(0, Math.min(100, y)).toFixed(1)}%`)
+  })
+
+  heroCard.addEventListener('pointerleave', () => {
+    setHeroGlow('30%', '20%')
+  })
 }
 
 input.addEventListener('input', () => {
@@ -2296,6 +2337,7 @@ window.addEventListener('pageshow', (event) => {
   if (sessionStorage.getItem('sf_return_home') === '1') {
     sessionStorage.removeItem('sf_return_home')
   }
+  resetPromptForNextGeneration()
 
   const scheduleGalleryReload = () => {
     requestAnimationFrame(() => {

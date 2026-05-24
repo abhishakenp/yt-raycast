@@ -304,113 +304,14 @@ var LOCAL_DEV_PROMPT_SHORTCUTS = [
 ];
 
 // src/scripts/home-session-embed.ts
-var STATE_KEY = "sfEmbeddedSession";
-var shell = null;
-var frame = null;
-var listenersBound = false;
 var isMarketingHomePath = () => {
   const p = location.pathname;
   return p === "/" || p === "";
 };
-var setMainInert = (on) => {
-  if (!shell) return;
-  for (const el of Array.from(document.body.children)) {
-    if (el === shell) continue;
-    if (on) el.setAttribute("inert", "");
-    else el.removeAttribute("inert");
-  }
-};
-var hideShell = () => {
-  if (!shell) return;
-  shell.hidden = true;
-  setMainInert(false);
-};
-var clearStrayEmbedInert = () => {
-  const el = document.getElementById("sf-home-session-shell");
-  if (el && !el.hidden) return;
-  document.querySelectorAll("body > [inert]").forEach((node) => {
-    if (node.id !== "sf-home-session-shell") node.removeAttribute("inert");
-  });
-};
-var bindListeners = () => {
-  if (listenersBound) return;
-  listenersBound = true;
-  window.addEventListener("pageshow", clearStrayEmbedInert);
-  window.addEventListener("popstate", (ev) => {
-    const state = ev.state;
-    const id = state && state[STATE_KEY];
-    if (id) {
-      showShellForSession(String(id));
-      try {
-        frame?.focus();
-      } catch {
-      }
-    } else {
-      hideShell();
-    }
-  });
-  window.addEventListener("message", (ev) => {
-    if (ev.origin !== location.origin) return;
-    if (ev.data?.type === "sf-request-auth-overlay") {
-      window.dispatchEvent(new CustomEvent("sf-request-auth-overlay"));
-      return;
-    }
-    if (ev.data?.type !== "sf-close-embedded-session") return;
-    if (!shell || shell.hidden) return;
-    if (history.state?.[STATE_KEY]) {
-      history.back();
-    } else {
-      history.replaceState(null, "", "/");
-      hideShell();
-    }
-  });
-};
-var ensureShell = () => {
-  if (shell && frame) {
-    bindListeners();
-    return;
-  }
-  shell = document.createElement("div");
-  shell.id = "sf-home-session-shell";
-  shell.className = "sf-home-session-shell";
-  shell.hidden = true;
-  shell.setAttribute("role", "dialog");
-  shell.setAttribute("aria-modal", "true");
-  shell.setAttribute("aria-label", "Live session dashboard");
-  frame = document.createElement("iframe");
-  frame.className = "sf-home-session-frame";
-  frame.setAttribute("title", "Live session dashboard");
-  document.body.appendChild(shell);
-  shell.appendChild(frame);
-  bindListeners();
-};
-var showShellForSession = (sessionId) => {
-  ensureShell();
-  const idStr = String(sessionId);
-  const path = `/session/${encodeURIComponent(idStr)}?embed=1`;
-  const wasHidden = !!shell?.hidden;
-  if (frame && (frame.dataset.sfSessionId !== idStr || wasHidden)) {
-    frame.dataset.sfSessionId = idStr;
-    frame.src = path;
-  }
-  if (shell) {
-    shell.hidden = false;
-  }
-  setMainInert(true);
-};
 var openEmbeddedSession = (sessionId) => {
   const idStr = String(sessionId);
-  if (!isMarketingHomePath()) {
-    location.href = `/session/${idStr}`;
-    return;
-  }
-  ensureShell();
-  history.pushState({ [STATE_KEY]: idStr }, "", `/session/${idStr}`);
-  showShellForSession(idStr);
-  try {
-    frame?.focus();
-  } catch {
-  }
+  sessionStorage.setItem("sf_return_home", "1");
+  location.href = `/session/${encodeURIComponent(idStr)}`;
 };
 
 // src/scripts/homepage.ts
@@ -1170,6 +1071,22 @@ function syncSamplePromptVisibility() {
     scheduleSamplePromptStep(samplePromptLength === 0 ? 320 : 80);
   }
 }
+function resetPromptForNextGeneration() {
+  if (!input) return;
+  input.value = "";
+  input.removeAttribute("aria-invalid");
+  closePromptSuggestions();
+  hidePolicyViolation();
+  stopSamplePromptAnimation();
+  samplePromptLength = 0;
+  samplePromptMode = "typing";
+  renderSamplePrompt();
+  syncSamplePromptVisibility();
+  syncPromptLanguageRowVisibility();
+  resetSubmitCtaLabel();
+  submitButton?.classList.remove("loading");
+  syncSubmitButtonState();
+}
 function stepSamplePromptAnimation() {
   samplePromptTimer = null;
   if (input.value.length > 0) {
@@ -1390,17 +1307,19 @@ updateGenerationCounter();
 renderSamplePrompt();
 syncSamplePromptVisibility();
 syncSubmitButtonState();
-if (isHomeDevPromptsEnabled()) {
-  const applyDevPrompt = (text) => {
-    input.value = text;
-    validatePrompt(false);
-    syncSamplePromptVisibility();
-    syncSubmitButtonState();
-    lastPromptTrimLen = input.value.trim().length;
-    syncPromptLanguageRowVisibility();
-    schedulePromptLanguageDetect();
-  };
-  const deleteSessionsWithPrompt = async (target) => {
+var applyPromptChip = (text) => {
+  input.value = text;
+  validatePrompt(false);
+  syncSamplePromptVisibility();
+  syncSubmitButtonState();
+  lastPromptTrimLen = input.value.trim().length;
+  syncPromptLanguageRowVisibility();
+  schedulePromptLanguageDetect();
+};
+var homeDevPromptsEnabled = isHomeDevPromptsEnabled();
+var deleteDevSessionsWithPrompt = null;
+if (homeDevPromptsEnabled) {
+  deleteDevSessionsWithPrompt = async (target) => {
     const want = target.trim();
     if (!want) return;
     try {
@@ -1444,39 +1363,57 @@ if (isHomeDevPromptsEnabled()) {
       if (!text) return;
       event.preventDefault();
       event.stopPropagation();
-      applyDevPrompt(text);
+      applyPromptChip(text);
       input.focus();
     },
     true
   );
-  const IMAGE_STUDIO_PROMPT = "This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.";
-  const chipDefs = [
-    { label: "Image studio", text: IMAGE_STUDIO_PROMPT },
-    { label: "Pet wellness", text: LOCAL_DEV_PROMPT_SHORTCUTS[1] },
-    { label: "SaaS dashboard", text: LOCAL_DEV_PROMPT_SHORTCUTS[2] },
-    { label: "Hindi gym site", text: LOCAL_DEV_PROMPT_SHORTCUTS[0] }
-  ];
-  const chipBar = document.createElement("div");
-  chipBar.className = "dev-prompt-chips dev-prompt-chips--glass";
-  chipBar.setAttribute("aria-label", "Dev quick prompts");
-  chipDefs.forEach((def, i) => {
-    if (!def.text) return;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "dev-prompt-chip";
-    btn.title = def.text;
-    btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`;
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
-      await deleteSessionsWithPrompt(def.text);
-      applyDevPrompt(def.text);
-      btn.disabled = false;
+}
+var IMAGE_STUDIO_PROMPT = "This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.";
+var chipDefs = [
+  { label: "Image studio", text: IMAGE_STUDIO_PROMPT },
+  { label: "Pet wellness", text: LOCAL_DEV_PROMPT_SHORTCUTS[1] },
+  { label: "SaaS dashboard", text: LOCAL_DEV_PROMPT_SHORTCUTS[2] },
+  { label: "Hindi gym site", text: LOCAL_DEV_PROMPT_SHORTCUTS[0] }
+];
+var chipBar = document.createElement("div");
+chipBar.className = "dev-prompt-chips dev-prompt-chips--glass";
+chipBar.setAttribute("aria-label", "Example prompts");
+chipDefs.forEach((def, i) => {
+  if (!def.text) return;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "dev-prompt-chip";
+  btn.title = def.text;
+  btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`;
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    try {
+      if (deleteDevSessionsWithPrompt) await deleteDevSessionsWithPrompt(def.text);
+      applyPromptChip(def.text);
       form.requestSubmit();
-    });
-    chipBar.appendChild(btn);
+    } finally {
+      btn.disabled = false;
+    }
   });
-  const heroCard = document.getElementById("hero-card");
-  heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling);
+  chipBar.appendChild(btn);
+});
+var heroCard = document.getElementById("hero-card");
+heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling);
+if (heroCard) {
+  const setHeroGlow = (x, y) => {
+    heroCard.style.setProperty("--hero-glow-x", x);
+    heroCard.style.setProperty("--hero-glow-y", y);
+  };
+  heroCard.addEventListener("pointermove", (event) => {
+    const rect = heroCard.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / rect.width * 100;
+    const y = (event.clientY - rect.top) / rect.height * 100;
+    setHeroGlow(`${Math.max(0, Math.min(100, x)).toFixed(1)}%`, `${Math.max(0, Math.min(100, y)).toFixed(1)}%`);
+  });
+  heroCard.addEventListener("pointerleave", () => {
+    setHeroGlow("30%", "20%");
+  });
 }
 input.addEventListener("input", () => {
   hidePolicyViolation();
@@ -2375,6 +2312,7 @@ window.addEventListener("pageshow", (event) => {
   if (sessionStorage.getItem("sf_return_home") === "1") {
     sessionStorage.removeItem("sf_return_home");
   }
+  resetPromptForNextGeneration();
   const scheduleGalleryReload = () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
