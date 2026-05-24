@@ -117,9 +117,6 @@ export async function generateHomepage(
       }
     }
 
-    html = alignGeneratedImagesToContext(html, imageHints)
-    html = hydrateStorefrontGradientSlots(html, imageHints)
-    html = await verifyTrustedStockImageUrls(html)
     html = injectEcommerceHeroResponsiveCss(html)
     html = ensureLucideIconRuntime(html, log)
 
@@ -132,6 +129,10 @@ export async function generateHomepage(
       )
       throw new Error('Homepage output failed quality check')
     }
+
+    html = await alignGeneratedImagesToContext(html, imageHints)
+    html = hydrateStorefrontGradientSlots(html, imageHints)
+    html = await verifyTrustedStockImageUrls(html)
 
     writeFile(workspace, 'index.html', html)
     writeLlmHomepageBackup(workspace, html)

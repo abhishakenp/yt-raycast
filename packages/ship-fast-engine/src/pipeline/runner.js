@@ -462,12 +462,17 @@ export async function runAll({ prompt, workspace, sessionCtx, preferredLanguage,
   } else if (siteSpec) {
     const preview = renderPreviewToWorkspace(siteSpec, workspace, sessionCtx)
     sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
-    homepage = injectStorefrontCartUi(
-      injectEcommerceHeroResponsiveCss(preview.files['index.html'] ?? ''),
-      { workspace },
-    )
-    writeFile(workspace, 'index.html', homepage)
-    sessionCtx.signalHomepageReady()
+    const renderedHomepage = preview.files['index.html'] ?? ''
+    if (renderedHomepage.length > 400) {
+      homepage = injectStorefrontCartUi(
+        injectEcommerceHeroResponsiveCss(renderedHomepage),
+        { workspace },
+      )
+      writeFile(workspace, 'index.html', homepage)
+      sessionCtx.signalHomepageReady()
+    } else {
+      _log('  homepage: renderer produced no index.html — skipping empty preview write')
+    }
   }
 
   void brandProfilePromise.then((profile) => {

@@ -2335,7 +2335,13 @@ function replaceDataImgDivBlocks(html, onMatch) {
       }
       depth -= 1
       if (depth === 0) {
-        result += onMatch(attrs, subject)
+        const fullBlock = html.slice(m.index, nextClose + 6)
+        // Ship engine art-surface slots carry mock UI chrome — keep the block; polish hydrates media separately.
+        if (/\bdata-visual\s*=\s*["']art-surface["']/i.test(attrs)) {
+          result += fullBlock
+        } else {
+          result += onMatch(attrs, subject)
+        }
         lastIndex = nextClose + 6
         closed = true
         break

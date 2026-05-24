@@ -45,13 +45,15 @@ export function shouldPreserveLlmHomepage(workspace) {
   const backup = readLlmHomepageBackup(workspace)
   if (backup && looksLikeLlmTailwindHomepage(backup)) return true
   try {
-    const anchorPath = join(workspace, 'mobbin-anchor.json')
-    if (!existsSync(anchorPath)) return false
-    const anchor = JSON.parse(readFileSync(anchorPath, 'utf8'))
-    return Boolean(anchor?.app && String(anchor.reason || '').startsWith('ship-engine:'))
+    const indexPath = join(workspace, 'index.html')
+    if (existsSync(indexPath)) {
+      const current = readFileSync(indexPath, 'utf8')
+      if (looksLikeLlmTailwindHomepage(current) && current.length > 400) return true
+    }
   } catch {
-    return false
+    /* fall through */
   }
+  return false
 }
 
 /** Restore ship-engine LLM homepage if a renderer pass replaced index.html. */
