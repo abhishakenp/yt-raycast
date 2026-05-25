@@ -89,6 +89,17 @@ export function isOpsConsoleBrief(brief) {
   return false
 }
 
+export function isAppWorkspaceBrief(brief) {
+  const text = String(brief ?? '').toLowerCase()
+  if (isMarketingLandingBrief(brief)) return false
+  const appNoun = /\b(app|tool|workspace|editor|canvas|studio|dashboard|console|platform)\b/.test(text)
+  const workSurface =
+    /\b(mock(?:ed)?|no backend|interface|generate|generation|turns?|models?|prompt|workflow|workspace|editor|canvas|dashboard|console)\b/.test(
+      text,
+    )
+  return appNoun && workSurface
+}
+
 /** All public marketing front doors use the fast vertical-doc hero-combo path (<20s). */
 export function isFrontDoorVerticalDoc(route, brief) {
   if (isMarketingLandingBrief(brief)) return true
@@ -150,7 +161,12 @@ export function selectAnchorPair(brief, { seed = 'default' } = {}) {
     category: categoryOfApp(secondaryRow?.app),
   })
 
-  const grammar = pickGrammar({ brief, siteHint, seed })
+  const grammar = pickGrammar({
+    brief,
+    siteHint,
+    seed,
+    pageKind: isAppWorkspaceBrief(brief) || isOpsConsoleBrief(brief) ? 'app-shell' : undefined,
+  })
 
   return {
     seed,

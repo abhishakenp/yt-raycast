@@ -12,7 +12,14 @@ export const FAST_MODE = process.env.SHIP_FAST === '1' || process.env.KIMI_FAST 
 
 export { isPublicationRoute }
 
-function siteKindRules(route, brief = '') {
+function siteKindRules(route, brief = '', pageKind = 'vertical-doc') {
+  if (pageKind === 'app-shell') {
+    return `APP / WORKSPACE MOCKUP (critical):
+- Build the actual usable product surface, not a marketing landing page.
+- FIRST VIEWPORT: sidebar/topbar/work canvas/inspector or equivalent app chrome. No hero billboard, no above-fold sales pitch, no pricing/features nav.
+- Use realistic controls, labels, data states, model/status chips, tables, galleries, queues, or settings that match the brief.
+- Navigation should be product areas, not website links.`
+  }
   if (route?.siteHint === 'blog') {
     return `BLOG/PUBLICATION HOME (critical):
 - Article index, NOT a SaaS landing or open-source developer platform.
@@ -39,9 +46,12 @@ function siteKindRules(route, brief = '') {
   return ''
 }
 
-function qualityLayoutRules(a, route, brief) {
+function qualityLayoutRules(a, route, brief, pageKind = 'vertical-doc') {
   const publication = isPublicationRoute(route, brief)
-  const openerRule = publication
+  const appShell = pageKind === 'app-shell'
+  const openerRule = appShell
+    ? '- FIRST VIEWPORT: actual app workspace with persistent chrome and dense controls. No marketing hero, no min-h-[70vh+], no CTA billboard.'
+    : publication
     ? '- FIRST VIEWPORT: compact featured post masthead only — normal section height (py-16 max), never min-h-screen, never min-h-[70vh+], never a marketing hero billboard.'
     : '- HERO: headline, subhead, 1-2 CTAs, optional ONE side visual. No forms or dense widgets in hero.'
   return `HARD RULES (release-quality):
@@ -73,7 +83,7 @@ Archetype: ${plan.archetype} · ${grammar.id}
 Palette: bg ${a.bg}, surface ${a.surface}, text ${a.text}, muted ${a.muted}, accent ${a.accent}, accent2 ${a.accent2}
 Fonts: "${a.fontDisplay}" + "${a.fontBody}" (Google Fonts + tailwind.config)
 Mood: ${a.mood} · Decor: ${a.decor}
-${siteKindRules(route, brief)}
+${siteKindRules(route, brief, plan.pageKind)}
 Rules: Tailwind CDN only; <i data-lucide>; simple <div data-img> with aspect ratio; full-width sections; real copy; tags closed.`
   }
 
@@ -89,8 +99,8 @@ ${grammarPromptBlock(grammar, variety, route, brief)}
 ${mediaStrategyBlock(route.siteHint, variety, grammar, brief)}
 ${mobbinSessionBlock(route.primary, route.secondary)}
 
-${siteKindRules(route, brief)}
-${qualityLayoutRules(a, route, brief)}
+${siteKindRules(route, brief, plan.pageKind)}
+${qualityLayoutRules(a, route, brief, plan.pageKind)}
 ${mobbinDoctrineBlock()}
 
 Treatment hint: ${decorPromptLine(treatment, { publication: isPublicationRoute(route, brief) })}`

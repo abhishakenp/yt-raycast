@@ -62,6 +62,34 @@ function scorePublicationFit(html, brief, route) {
   return { penalty, issues }
 }
 
+function applyCalibrationCeiling(score, source, { plan, route, brief, richness } = {}, issues) {
+  let ceiling = 100
+  const addCap = (limit, reason) => {
+    if (ceiling > limit) ceiling = limit
+    if (!issues.includes(reason)) issues.push(reason)
+  }
+  const sections = countMatches(source, /<section\b/gi)
+  const typography = (source.match(/\btext-(?:5xl|6xl|7xl|8xl)/g) || []).length
+
+  if (richness < 45) addCap(86, 'score capped: sparse visual richness')
+  else if (richness < 65) addCap(90, 'score capped: moderate visual richness')
+  else if (richness < 82) addCap(94, 'score capped: strong but not exceptional visual richness')
+
+  if (plan?.pageKind === 'app-shell') {
+    if (sections <= 4) addCap(88, 'score capped: app shell is usable but shallow')
+    if (typography === 0) addCap(90, 'score capped: app shell lacks standout typography')
+  }
+
+  if (isPublicationBrief(brief, route)) {
+    const articleCount = countMatches(source, /<article\b/gi)
+    const readLinks = countMatches(source, /\bread (?:the )?(?:full )?(?:post|article|story|essay|more)\b/gi)
+    if (articleCount < 6) addCap(90, 'score capped: publication index has fewer than 6 article cards')
+    if (readLinks < 3) addCap(88, 'score capped: publication cards need more explicit read links')
+  }
+
+  return Math.min(score, ceiling)
+}
+
 export function scoreKimiReadiness(html, { plan, route, brief } = {}) {
   const source = String(html ?? '')
   const text = visibleText(source)
@@ -150,6 +178,9 @@ export function scoreKimiReadiness(html, { plan, route, brief } = {}) {
     issues.push(...publicationFit.issues)
   }
 
+  const richness = scoreVisualRichness(source, { plan }).score
+  score = applyCalibrationCeiling(score, source, { plan, route, brief, richness }, issues)
+
   const bounded = Math.max(0, Math.min(100, score))
   return {
     ok: bounded >= 72,
@@ -166,6 +197,7 @@ export function scoreKimiReadiness(html, { plan, route, brief } = {}) {
       hasTailwindConfig,
       hasFontLink,
       hasRealSpecificity,
+      richness,
     },
   }
 }

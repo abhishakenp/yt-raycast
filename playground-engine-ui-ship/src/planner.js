@@ -1,6 +1,6 @@
 import { grammarPromptBlock } from './grammars.js'
 import { mediaStrategyBlock } from './media/media-presets.js'
-import { isMarketingLandingBrief, isFrontDoorVerticalDoc, isOpsConsoleBrief } from './router.js'
+import { isAppWorkspaceBrief, isMarketingLandingBrief, isFrontDoorVerticalDoc, isOpsConsoleBrief } from './router.js'
 import { isPublicationRoute } from './utils/publication-route.js'
 import { mobbinDoctrineBlock, mobbinSessionBlock } from './utils/mobbin-blocks.js'
 import { applyMobbinAnchorToPlan } from './utils/mobbin-anchor-plan.js'
@@ -40,15 +40,15 @@ function adaptVisualWorldForBrief(world, { brief, route } = {}) {
   if (isCreativeAiToolBrief(text)) {
     return {
       ...world,
-      bg: '#080b14',
-      surface: '#111827',
-      text: '#f8fafc',
-      muted: '#94a3b8',
-      accent: '#8b5cf6',
-      accent2: '#38bdf8',
-      fontDisplay: /inter/i.test(world.fontDisplay) && /inter/i.test(world.fontBody) ? 'Space Grotesk' : world.fontDisplay,
-      fontBody: /inter/i.test(world.fontDisplay) && /inter/i.test(world.fontBody) ? 'Inter' : world.fontBody,
-      mood: 'dark product studio, precise creative tooling',
+      bg: '#050507',
+      surface: '#101014',
+      text: '#f5f3ff',
+      muted: '#a1a1aa',
+      accent: '#7c3aed',
+      accent2: '#d4d4d8',
+      fontDisplay: /inter/i.test(world.fontDisplay) && /inter/i.test(world.fontBody) ? 'Manrope' : world.fontDisplay,
+      fontBody: /inter/i.test(world.fontDisplay) && /inter/i.test(world.fontBody) ? 'DM Sans' : world.fontBody,
+      mood: 'Ship Fast noir, refined creative tooling',
     }
   }
   if (route?.siteHint === 'local-experience' && /hotel|room|suite|coast|guest|spa/.test(text)) {
@@ -160,6 +160,7 @@ function adaptVisualWorldForBrief(world, { brief, route } = {}) {
 }
 
 function resolvePageKind(plannerKind, brief, route) {
+  if (isAppWorkspaceBrief(brief)) return 'app-shell'
   if (isFrontDoorVerticalDoc(route, brief)) return 'vertical-doc'
   if (route?.siteHint === 'ops-console' && isOpsConsoleBrief(brief)) return 'app-shell'
   return plannerKind === 'app-shell' && isOpsConsoleBrief(brief) ? 'app-shell' : 'vertical-doc'
@@ -168,7 +169,10 @@ function resolvePageKind(plannerKind, brief, route) {
 export function fallbackGenome(brief, route, variety, grammar) {
   const primary = route.primary
   const palette = primary?.palette || []
-  const appShell = route.siteHint === 'ops-console' && isOpsConsoleBrief(brief) && !isMarketingLandingBrief(brief)
+  const creativeAiTool = isCreativeAiToolBrief(brief)
+  const appShell =
+    (route.siteHint === 'ops-console' && isOpsConsoleBrief(brief) && !isMarketingLandingBrief(brief)) ||
+    isAppWorkspaceBrief(brief)
   const blog = isPublicationRoute(route, brief)
   return {
     pageKind: appShell ? 'app-shell' : 'vertical-doc',
@@ -198,7 +202,15 @@ export function fallbackGenome(brief, route, variety, grammar) {
           treatment: variety.mediaTreatment,
           contentStrategy: variety.contentStrategy,
         },
-    contentInventory: blog
+    contentInventory: appShell
+      ? [
+          'persistent sidebar with workspace navigation',
+          creativeAiTool ? 'prompt composer with model picker and run controls' : 'primary workspace canvas with realistic controls',
+          creativeAiTool ? 'generation canvas with image variations and render states' : 'live work surface with realistic rows or panels',
+          creativeAiTool ? 'model comparison, prompt history, and asset gallery' : 'secondary inspector, queue, activity, or analytics panels',
+          'settings/status footer or compact account area',
+        ]
+      : blog
       ? [
           'nav with Home, Archive, About, Subscribe',
           'featured post masthead with title, byline, date, excerpt',
@@ -215,7 +227,9 @@ export function fallbackGenome(brief, route, variety, grammar) {
       'secondary feature/catalog/editorial sections',
       'penultimate CTA and footer',
     ],
-    sections: blog
+    sections: appShell
+      ? []
+      : blog
       ? [
           { role: 'featured', contains: 'compact featured post split — cover photo left, title + byline + date + excerpt + read link right (id="featured")' },
           { role: 'latest', contains: 'grid of 6+ recent posts with category chips and short excerpts' },
@@ -233,14 +247,28 @@ export function fallbackGenome(brief, route, variety, grammar) {
       { role: 'conversion', contains: 'CTA, pricing path, booking, or signup' },
       { role: 'footer', contains: 'multi-column footer with real links' },
     ],
-    appIslands: blog
-      ? []
-      : [
-      { slot: 'identity', contains: 'status strip with live indicators' },
-      { slot: 'primary', contains: 'main operational surface with realistic rows' },
-      { slot: 'secondary', contains: 'registry table, queue, or analytics panel' },
-      { slot: 'tertiary', contains: 'controls, timeline, alerts, or secondary proof' },
-    ],
+    appIslands: appShell
+      ? creativeAiTool
+        ? [
+            { slot: 'identity', contains: 'render status strip with model availability, queue depth, and saved prompt context' },
+            { slot: 'primary', contains: 'prompt-to-image generation canvas with prompt field, model tabs, aspect controls, and four image result tiles' },
+            { slot: 'secondary', contains: 'recent generations gallery with prompt snippets, model names, and refinement actions' },
+            { slot: 'tertiary', contains: 'right inspector for seed, style, negative prompt, upscale, and export settings' },
+          ]
+        : [
+            { slot: 'identity', contains: 'status strip with live indicators' },
+            { slot: 'primary', contains: 'main work surface with realistic rows' },
+            { slot: 'secondary', contains: 'registry table, queue, or analytics panel' },
+            { slot: 'tertiary', contains: 'controls, timeline, alerts, or secondary proof' },
+          ]
+      : blog
+        ? []
+        : [
+            { slot: 'identity', contains: 'status strip with live indicators' },
+            { slot: 'primary', contains: 'main operational surface with realistic rows' },
+            { slot: 'secondary', contains: 'registry table, queue, or analytics panel' },
+            { slot: 'tertiary', contains: 'controls, timeline, alerts, or secondary proof' },
+          ],
     signatureMoves: [variety.layoutGrammar, variety.proofRhythm, variety.edgeLanguage],
     brief,
   }

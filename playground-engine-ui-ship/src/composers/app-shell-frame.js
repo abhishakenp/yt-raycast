@@ -59,6 +59,10 @@ function defaultIsland(title, body, accent) {
   </div>`
 }
 
+function isCreativeAiToolBrief(text) {
+  return /\b(app|tool|workspace|platform|editor|canvas|studio)\b/i.test(text) && /\b(ai|image generation|generative|prompt|model|diffusion|render|creative|design)\b/i.test(text)
+}
+
 export function parseIslandJson(content) {
   const parsed = parseJsonObject(content)
   if (!parsed || typeof parsed !== 'object') return null
@@ -72,18 +76,26 @@ export function parseIslandJson(content) {
 
 export function composeAppShellHtml({ brief, plan, route, islands = {} }) {
   const a = plan.visualWorld
+  const creativeAiTool = isCreativeAiToolBrief(brief)
   const onBg = readableOn(a.bg)
   const onSurface = readableOn(a.surface)
   const primary = constrainIslandFragment(islands.primary || defaultIsland('primary', plan.appIslands?.[0]?.contains || brief, a.accent), 'primary')
   const secondary = constrainIslandFragment(islands.secondary || defaultIsland('registry', plan.appIslands?.[1]?.contains || brief, a.accent2), 'secondary')
   const tertiary = constrainIslandFragment(islands.tertiary || defaultIsland('controls', plan.appIslands?.[2]?.contains || brief, a.accent), 'tertiary')
-  const identity = islands.identity || `<div class="rounded-2xl border border-[${a.accent}]/30 bg-[${a.accent}]/10 p-4 text-sm text-[${a.text}]/75">The command view opens with live status, priority exceptions, and the next operator action in one readable frame.</div>`
+  const identity = islands.identity || `<div class="rounded-2xl border border-[${a.accent}]/30 bg-[${a.accent}]/10 p-4 text-sm text-[${a.text}]/75">${creativeAiTool ? 'The studio opens with model status, prompt memory, queue depth, and the next render action in one readable frame.' : 'The command view opens with live status, priority exceptions, and the next operator action in one readable frame.'}</div>`
   const fonts = encodeURIComponent(`${a.fontDisplay}:wght@400;500;600;700`) + '&family=' + encodeURIComponent(`${a.fontBody}:wght@400;500;600;700`)
-  const reportCards = [
-    ['Live Exceptions', plan.appIslands?.[0]?.contains || 'Highest-priority work stays visible.'],
-    ['Operator Flow', plan.appIslands?.[1]?.contains || 'Tables and logs stay close to the decision surface.'],
-    ['Recovery Path', plan.appIslands?.[2]?.contains || 'Controls and escalation paths stay one action away.'],
-  ]
+  const navItems = creativeAiTool ? ['Generate', 'Models', 'Gallery', 'Prompts', 'Exports'] : ['Command', 'Map', 'Queue', 'Signals', 'Reports']
+  const reportCards = creativeAiTool
+    ? [
+        ['Prompt Memory', plan.appIslands?.[0]?.contains || 'Saved prompts and negative prompts stay near the composer.'],
+        ['Model Flow', plan.appIslands?.[1]?.contains || 'Model choices, aspect ratios, and seeds stay close to each render.'],
+        ['Asset Path', plan.appIslands?.[2]?.contains || 'Upscale, export, and remix actions stay one click away.'],
+      ]
+    : [
+        ['Live Exceptions', plan.appIslands?.[0]?.contains || 'Highest-priority work stays visible.'],
+        ['Operator Flow', plan.appIslands?.[1]?.contains || 'Tables and logs stay close to the decision surface.'],
+        ['Recovery Path', plan.appIslands?.[2]?.contains || 'Controls and escalation paths stay one action away.'],
+      ]
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -108,17 +120,17 @@ export function composeAppShellHtml({ brief, plan, route, islands = {} }) {
         </div>
       </div>
       <nav class="mt-8 grid gap-2 text-sm">
-        ${['Command', 'Map', 'Queue', 'Signals', 'Reports'].map((item, index) => `<a class="flex items-center gap-3 rounded-xl px-3 py-2 ${index === 0 ? `bg-[${a.accent}]/15 text-[${a.accent}]` : `text-[${a.muted}] hover:bg-white/5 hover:text-[${a.text}]`}" href="#${item.toLowerCase()}"><i data-lucide="${index === 0 ? 'gauge' : 'layers'}" class="h-4 w-4"></i>${item}</a>`).join('\n        ')}
+        ${navItems.map((item, index) => `<a class="flex items-center gap-3 rounded-xl px-3 py-2 ${index === 0 ? `bg-[${a.accent}]/15 text-[${a.accent}]` : `text-[${a.muted}] hover:bg-white/5 hover:text-[${a.text}]`}" href="#${item.toLowerCase()}"><i data-lucide="${index === 0 ? (creativeAiTool ? 'sparkles' : 'gauge') : 'layers'}" class="h-4 w-4"></i>${item}</a>`).join('\n        ')}
       </nav>
     </aside>
     <main class="min-w-0">
       <header class="w-full border-b border-white/10 bg-[${a.bg}]/95">
         <div class="mx-auto flex max-w-screen-2xl items-center justify-between gap-4 px-6 py-4">
           <div>
-            <p class="text-xs uppercase tracking-[0.24em] text-[${a.accent}]">live command</p>
+            <p class="text-xs uppercase tracking-[0.24em] text-[${a.accent}]">${creativeAiTool ? 'image generation studio' : 'live command'}</p>
             <h1 class="font-display text-2xl font-semibold tracking-tight md:text-4xl">${esc(wordClamp(brief, 92))}</h1>
           </div>
-          <button class="rounded-full bg-[${a.accent}] px-4 py-2 text-sm font-semibold text-[${a.bg}]">Open run</button>
+          <button class="rounded-full bg-[${a.accent}] px-4 py-2 text-sm font-semibold text-[${a.bg}]">${creativeAiTool ? 'Render image' : 'Open run'}</button>
         </div>
       </header>
       <section id="command" class="w-full bg-[${a.bg}] py-6">
@@ -139,7 +151,7 @@ export function composeAppShellHtml({ brief, plan, route, islands = {} }) {
         <div class="mx-auto max-w-screen-2xl px-6">
           <div class="rounded-3xl border border-[${a.accent}]/25 bg-[${a.accent}]/10 p-6">
             <p class="text-xs uppercase tracking-[0.22em] text-[${a.accent}]">Operational cadence</p>
-            <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight">Status, context, and action stay in the same field of view.</h2>
+            <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight">${creativeAiTool ? 'Prompt, model, preview, and export stay in the same field of view.' : 'Status, context, and action stay in the same field of view.'}</h2>
             <div class="mt-6 grid gap-4 md:grid-cols-3">
               ${reportCards.map(([title, body]) => `<div class="rounded-2xl border border-white/10 bg-[${a.surface}]/70 p-4"><p class="text-sm font-semibold">${esc(title)}</p><p class="mt-2 text-sm leading-6 text-[${a.muted}]">${esc(wordClamp(body, 120))}</p></div>`).join('\n              ')}
             </div>
@@ -148,7 +160,7 @@ export function composeAppShellHtml({ brief, plan, route, islands = {} }) {
       </section>
       <footer class="w-full border-t border-white/10 bg-[${a.surface}] py-8">
         <div class="mx-auto grid max-w-screen-2xl gap-6 px-6 text-sm text-[${a.muted}] md:grid-cols-4">
-          <p>${esc(plan.archetype)}</p><p>Operations</p><p>Telemetry</p><p>Security</p>
+          <p>${esc(plan.archetype)}</p><p>${creativeAiTool ? 'Models' : 'Operations'}</p><p>${creativeAiTool ? 'Gallery' : 'Telemetry'}</p><p>${creativeAiTool ? 'Exports' : 'Security'}</p>
         </div>
       </footer>
     </main>

@@ -50,7 +50,7 @@ for (let attempt = 1; attempt <= maxAttempts; attempt++) {
   const imgTotal = (result.html.match(/<img\b[^>]*\bsrc=["']https?:\/\//gi) || []).length
   const score = result.audits.kimi.score
 
-  console.log(`  kimi=${score} publicationOk=${audit.ok} photos=${imgTotal} pexels=${photos}`)
+  console.log(`  readiness=${score} publicationOk=${audit.ok} photos=${imgTotal} pexels=${photos}`)
   if (audit.issues.length) console.log(`  issues: ${audit.issues.join('; ')}`)
 
   const pngPath = join(dir, 'blog-dogs.png')

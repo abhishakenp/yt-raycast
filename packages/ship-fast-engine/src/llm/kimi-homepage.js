@@ -29,7 +29,7 @@ export async function generateKimiEngineHomepage(brief, { seed = '' } = {}) {
     plan: result.plan,
     route: result.route,
     audits: result.audits,
-    kimiScore: result.audits?.kimi?.score ?? result.metrics?.kimiScore,
+    readinessScore: result.audits?.kimi?.score ?? result.metrics?.readinessScore,
     richnessScore: result.audits?.richness?.score ?? result.metrics?.richnessScore,
     buildMode: result.metrics?.buildMode,
     qualityMode: result.metrics?.qualityMode,

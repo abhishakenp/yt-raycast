@@ -9,6 +9,7 @@
 
 ## Learned Workspace Facts
 
+- Environment/secrets are managed with Doppler. For commands that need real env vars, prefer `doppler run -- <cmd>` rather than assuming `.env.local` has current keys; do not commit generated env files.
 - `.cursor/settings.json` may set `cursorProject.defaultUrl` to `http://localhost:7420/` but `autoOpenOnStart` should stay `false`.
 - Workspace has a GitHub MCP configuration in `.cursor/mcp.json` using `bunx` and `@modelcontextprotocol/server-github` with token env var.
 - Local MCP plugin metadata indicates a configured tldraw integration under `.cursor/projects/Users-livio-Documents-ship-fast/mcps/plugin-tldraw-tldraw`.
@@ -36,7 +37,7 @@ When adding engine behavior, ask: *“Does this work for the next arbitrary prom
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ship-fast** (15133 symbols, 25758 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ship-fast** (16276 symbols, 27905 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

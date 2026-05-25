@@ -236,7 +236,7 @@ for (const { slug, run, html } of sourceList) {
     wall: 0,
     pageKind: 'vertical-doc',
     grammarId: '—',
-    kimiScore: '—',
+    readinessScore: '—',
     anchor: '—',
   }
   verticalAssets.push({
@@ -250,7 +250,7 @@ for (const { slug, run, html } of sourceList) {
 const extraAssets = []
 for (const { slug, run, html } of resolveExtraSources()) {
   if (!existsSync(html)) continue
-  const meta = loadRunMeta(run)[slug] || { slug, ok: true, wall: 0, pageKind: 'vertical-doc', grammarId: '—', kimiScore: '—' }
+  const meta = loadRunMeta(run)[slug] || { slug, ok: true, wall: 0, pageKind: 'vertical-doc', grammarId: '—', readinessScore: '—' }
   extraAssets.push({
     ...meta,
     slug,
@@ -263,7 +263,7 @@ const featuredAssets = []
 if (featuredRun) {
   for (const { slug, run, html } of resolveRunSources(featuredRun)) {
     if (!existsSync(html)) continue
-    const meta = loadRunMeta(run)[slug] || { slug, ok: true, wall: 0, pageKind: 'vertical-doc', grammarId: '—', kimiScore: '—' }
+    const meta = loadRunMeta(run)[slug] || { slug, ok: true, wall: 0, pageKind: 'vertical-doc', grammarId: '—', readinessScore: '—' }
     featuredAssets.push({
       ...meta,
       slug,
@@ -301,7 +301,7 @@ const verticalCards = verticalAssets
   .map((r) =>
     desktopCard({
       title: r.slug,
-      meta: `${(r.wall / 1000).toFixed(1)}s · ${r.pageKind} · ${r.grammarId} · kimi ${r.kimiScore}${r.anchor && r.anchor !== '—' ? ` · ${r.anchor}` : ''}`,
+      meta: `${(r.wall / 1000).toFixed(1)}s · ${r.pageKind} · ${r.grammarId} · readiness ${r.readinessScore ?? r.kimiScore ?? '—'}${r.anchor && r.anchor !== '—' ? ` · ${r.anchor}` : ''}`,
       png: r.assets.png,
       html: r.assets.html,
       previewHeight: r.pageKind === 'app-shell' ? 420 : 360,
@@ -316,7 +316,7 @@ const extraCards = extraForDisplay
   .map((r) =>
     desktopCard({
       title: r.slug,
-      meta: `${(r.wall / 1000).toFixed(1)}s · ${r.pageKind} · ${r.grammarId} · kimi ${r.kimiScore} · run ${r.sourceRun}`,
+      meta: `${(r.wall / 1000).toFixed(1)}s · ${r.pageKind} · ${r.grammarId} · readiness ${r.readinessScore ?? r.kimiScore ?? '—'} · run ${r.sourceRun}`,
       png: r.assets.png,
       html: r.assets.html,
     }),
@@ -327,7 +327,7 @@ const featuredCards = featuredAssets
   .map((r) =>
     desktopCard({
       title: r.slug,
-      meta: `${(r.wall / 1000).toFixed(1)}s · ${r.pageKind} · ${r.grammarId} · kimi ${r.kimiScore} · run ${r.sourceRun}`,
+      meta: `${(r.wall / 1000).toFixed(1)}s · ${r.pageKind} · ${r.grammarId} · readiness ${r.readinessScore ?? r.kimiScore ?? '—'} · run ${r.sourceRun}`,
       png: r.assets.png,
       html: r.assets.html,
       previewHeight: r.pageKind === 'editorial-blog-index' ? 480 : 360,

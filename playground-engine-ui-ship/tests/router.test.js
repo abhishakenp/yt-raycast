@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inferSiteHint, selectAnchorPair } from '../src/router.js'
+import { inferSiteHint, isAppWorkspaceBrief, selectAnchorPair } from '../src/router.js'
 import { pickGrammar } from '../src/grammars.js'
 
 describe('router site hints', () => {
@@ -16,10 +16,14 @@ describe('router site hints', () => {
   })
 
   it('routes creative AI studios as software tools instead of fitness', () => {
-    const hint = inferSiteHint(
-      'This app is an image generation studio using various AI models to turn a prompt into images.',
-    )
+    const brief = 'This app is an image generation studio using various AI models to turn a prompt into images.'
+    const hint = inferSiteHint(brief)
+    const route = selectAnchorPair(brief, { seed: 'creative-tool' })
     expect(hint).toBe('software')
+    expect(isAppWorkspaceBrief(brief)).toBe(true)
+    expect(route.grammar.pageKind).toBe('app-shell')
+    expect(route.grammar.id).toMatch(/^app-/)
+    expect(isAppWorkspaceBrief('Homepage for an AI image generation studio')).toBe(false)
   })
 
   it('routes blog before commerce product keywords', () => {

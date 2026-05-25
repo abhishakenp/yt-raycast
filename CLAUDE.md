@@ -151,6 +151,11 @@ Overall average: **60-90% token reduction** on common development operations.
 - **Hosting:** [Coolify](https://coolify.io) on `159.195.70.194`
 - **Operations:** Deployments and services are managed via the [Coolify CLI](https://coolify.io/docs/installation); configure the CLI against that Coolify instance per upstream docs.
 
+## Environment
+
+- Secrets and environment files are managed with Doppler. Run env-dependent commands through `doppler run -- <cmd>` and do not assume `.env.local` contains current model/API keys.
+- Do not commit generated env files; update Doppler-managed configuration instead.
+
 ## Homepage engine (playground vs production)
 
 | Path | Role |
@@ -184,7 +189,7 @@ Users can request any kind of website; we **cannot** maintain hardcoded rules pe
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ship-fast** (15133 symbols, 25758 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ship-fast** (16276 symbols, 27905 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

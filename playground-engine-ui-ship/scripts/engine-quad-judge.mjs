@@ -205,7 +205,7 @@ if (!skipJudge && judgeRows.length) {
 }
 for (const row of generated.filter((r) => !r.ok)) scored.push({ ...row, judge: null })
 for (const row of generated.filter((r) => r.ok && skipJudge)) {
-  scored.push({ ...row, judge: { score: row.preflight.heuristicScore, skipped: true, judgeModel: 'heuristic' } })
+  scored.push({ ...row, judge: null })
 }
 
 scored.sort((a, b) => (b.judge?.score ?? b.preflight?.heuristicScore ?? 0) - (a.judge?.score ?? a.preflight?.heuristicScore ?? 0))
@@ -240,16 +240,17 @@ const summary = {
 
 writeFileSync(join(outDir, 'results.json'), JSON.stringify(summary, null, 2))
 
-console.log('\n[quad-judge] Kimi scores (ranked)')
+console.log(skipJudge ? '\n[quad-judge] Preflight readiness (Kimi judge skipped)' : '\n[quad-judge] Kimi Judge scores (ranked)')
 console.log('─'.repeat(56))
 for (const r of summary.results) {
   if (!r.ok) {
     console.log(`  ${r.id.padEnd(8)} FAILED — ${r.error?.slice(0, 60)}`)
     continue
   }
-  const score = r.kimiScore ?? r.heuristicScore
-  const mark = score >= targetScore ? '✓' : ' '
-  console.log(`  ${mark} ${r.id.padEnd(8)} ${String(score).padStart(3)}/100  (${((r.wall || 0) / 1000).toFixed(1)}s)  heuristic=${r.heuristicScore}`)
+  const score = skipJudge ? r.heuristicScore : r.kimiScore
+  const mark = !skipJudge && score >= targetScore ? '✓' : ' '
+  const scoreText = score == null ? 'no judge' : `${String(score).padStart(3)}/100`
+  console.log(`  ${mark} ${r.id.padEnd(8)} ${scoreText}  (${((r.wall || 0) / 1000).toFixed(1)}s)  readiness=${r.heuristicScore}`)
 }
 console.log('─'.repeat(56))
 console.log(`Artifacts: ${outDir}`)
@@ -261,4 +262,12 @@ if (shipRow?.kimiScore != null && shipRow.kimiScore < targetScore) {
   console.log(`Run improve loop: bun playground-engine-ui-ship/scripts/ship-improve-loop.mjs --target=${targetScore}`)
 }
 
-process.exit(summary.results.some((r) => r.id === 'ship' && r.kimiScore != null && r.kimiScore >= targetScore) ? 0 : 1)
+process.exit(
+  skipJudge
+    ? summary.results.some((r) => r.id === 'ship' && r.ok)
+      ? 0
+      : 1
+    : summary.results.some((r) => r.id === 'ship' && r.kimiScore != null && r.kimiScore >= targetScore)
+      ? 0
+      : 1,
+)

@@ -169,11 +169,12 @@ function normalizeFontUtilityAliases(value) {
 function normalizeSoftwarePalette(value, route, brief) {
   const software = route?.siteHint === 'software' || /kubernetes|saas|developer|platform|infrastructure|api|cost-attribution/i.test(String(brief || ''))
   if (!software) return String(value ?? '')
+  const creativeAiTool = isCreativeAiToolBrief(brief)
   return String(value ?? '')
-    .replace(/#0acf83/gi, '#0d1117')
-    .replace(/#00ff00/gi, '#4ecdc4')
-    .replace(/0,255,0/gi, '78,205,196')
-    .replace(/#f24e1e/gi, '#1f2937')
+    .replace(/#0acf83/gi, creativeAiTool ? '#050507' : '#0d1117')
+    .replace(/#00ff00/gi, creativeAiTool ? '#7c3aed' : '#4ecdc4')
+    .replace(/0,255,0/gi, creativeAiTool ? '124,58,237' : '78,205,196')
+    .replace(/#f24e1e/gi, creativeAiTool ? '#101014' : '#1f2937')
 }
 
 export function rewriteAnchorAccentLeaks(value, plan, route) {
@@ -181,26 +182,26 @@ export function rewriteAnchorAccentLeaks(value, plan, route) {
   let html = String(value ?? '')
   if (route?.primary?.app === 'Figma' && isCreativeAiToolBrief(text)) {
     html = html
-      .replace(/\bbg-\[#0acf83\]/gi, 'bg-[#080b14]')
-      .replace(/\b(from|via|to)-\[#0acf83\]/gi, '$1-[#080b14]')
-      .replace(/\btext-\[#0acf83\]/gi, 'text-[#5eead4]')
-      .replace(/\bborder-\[#0acf83\]/gi, 'border-[#5eead4]')
-      .replace(/\bbg-\[#f24e1e\]/gi, 'bg-[#111827]')
-      .replace(/\b(from|via|to)-\[#f24e1e\]/gi, '$1-[#111827]')
-      .replace(/\btext-\[#f24e1e\]/gi, 'text-[#fb7185]')
-      .replace(/\bborder-\[#f24e1e\]/gi, 'border-[#fb7185]')
-      .replace(/\bbg-\[#1abcfe\]/gi, 'bg-[#0f172a]')
-      .replace(/\b(from|via|to)-\[#1abcfe\]/gi, '$1-[#0f172a]')
-      .replace(/\btext-\[#1abcfe\]/gi, 'text-[#38bdf8]')
-      .replace(/\bborder-\[#1abcfe\]/gi, 'border-[#38bdf8]')
+      .replace(/\bbg-\[#0acf83\]/gi, 'bg-[#050507]')
+      .replace(/\b(from|via|to)-\[#0acf83\]/gi, '$1-[#050507]')
+      .replace(/\btext-\[#0acf83\]/gi, 'text-[#d4d4d8]')
+      .replace(/\bborder-\[#0acf83\]/gi, 'border-[#27272a]')
+      .replace(/\bbg-\[#f24e1e\]/gi, 'bg-[#101014]')
+      .replace(/\b(from|via|to)-\[#f24e1e\]/gi, '$1-[#101014]')
+      .replace(/\btext-\[#f24e1e\]/gi, 'text-[#d4d4d8]')
+      .replace(/\bborder-\[#f24e1e\]/gi, 'border-[#3f3f46]')
+      .replace(/\bbg-\[#1abcfe\]/gi, 'bg-[#18181b]')
+      .replace(/\b(from|via|to)-\[#1abcfe\]/gi, '$1-[#18181b]')
+      .replace(/\btext-\[#1abcfe\]/gi, 'text-[#d4d4d8]')
+      .replace(/\bborder-\[#1abcfe\]/gi, 'border-[#52525b]')
       .replace(/\bbg-\[#a259ff\]/gi, 'bg-[#7c3aed]')
       .replace(/\b(from|via|to)-\[#a259ff\]/gi, '$1-[#7c3aed]')
-      .replace(/\btext-\[#a259ff\]/gi, 'text-[#f8fafc]')
-      .replace(/\bborder-\[#a259ff\]/gi, 'border-[#8b5cf6]')
-      .replace(/#0acf83/gi, '#080b14')
-      .replace(/#f24e1e/gi, '#111827')
-      .replace(/#a259ff/gi, '#f8fafc')
-      .replace(/#1abcfe/gi, '#38bdf8')
+      .replace(/\btext-\[#a259ff\]/gi, 'text-[#f5f3ff]')
+      .replace(/\bborder-\[#a259ff\]/gi, 'border-[#7c3aed]')
+      .replace(/#0acf83/gi, '#050507')
+      .replace(/#f24e1e/gi, '#101014')
+      .replace(/#a259ff/gi, '#f5f3ff')
+      .replace(/#1abcfe/gi, '#d4d4d8')
   }
   if (route?.primary?.app === 'Airbnb' && /hotel|room|suite|coast|guest|spa/.test(text)) {
     const accent = plan?.visualWorld?.accent || '#0f766e'
@@ -1422,6 +1423,9 @@ export function normalizePublicationLayout(html, plan, route, brief) {
     /(<section\b[^>]*\bid=["']featured["'][^>]*\bclass=["'])([^"']*)(["'])/i,
     (_full, before, cls, after) => {
       const next = cls
+        .replace(/\bmax-w-7xl\s+mx-auto\b/g, 'mx-auto max-w-7xl')
+        .replace(/\bflex-col\b/g, 'grid')
+        .replace(/\bmd:flex-row\b/g, 'md:grid-cols-[0.95fr_1.05fr]')
         .replace(/\bflex\b/g, '')
         .replace(/\bitems-center\b/g, '')
         .replace(/\bjustify-center\b/g, '')

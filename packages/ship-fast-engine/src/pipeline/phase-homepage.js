@@ -120,12 +120,12 @@ export async function generateHomepage(
     html = injectEcommerceHeroResponsiveCss(html)
     html = ensureLucideIconRuntime(html, log)
 
-    const kimiScore = ship.metrics.kimiScore ?? ship.audits?.kimi?.score ?? 0
-    const minKimiScore = parseInt(process.env.SHIP_MIN_KIMI_SCORE || '90', 10)
+    const readinessScore = ship.metrics.readinessScore ?? ship.audits?.kimi?.score ?? 0
+    const minReadinessScore = parseInt(process.env.SHIP_MIN_KIMI_SCORE || '90', 10)
     const degenerate = htmlLooksDegenerate(html, { prompt, skipNovaMarketingBar: true })
-    if (kimiScore < minKimiScore || degenerate) {
+    if (readinessScore < minReadinessScore || degenerate) {
       log(
-        `  ❌ homepage: ship engine output failed quality gate (kimi=${kimiScore}, target>=${minKimiScore}, degenerate=${degenerate})`,
+        `  ❌ homepage: ship engine output failed readiness gate (readiness=${readinessScore}, target>=${minReadinessScore}, degenerate=${degenerate})`,
       )
       throw new Error('Homepage output failed quality check')
     }
@@ -136,7 +136,7 @@ export async function generateHomepage(
 
     writeFile(workspace, 'index.html', html)
     writeLlmHomepageBackup(workspace, html)
-    log(`  index.html: ${html.length} chars | ship engine ${ship.metrics.wall}ms kimi=${ship.metrics.kimiScore} anchor=${ship.metrics.anchor || shipAnchor?.app || 'none'}`)
+    log(`  index.html: ${html.length} chars | ship engine ${ship.metrics.wall}ms readiness=${readinessScore} anchor=${ship.metrics.anchor || shipAnchor?.app || 'none'}`)
     return { html, inputTokens: 0, outputTokens: 0, cost: 0 }
   }
 

@@ -5,8 +5,10 @@ import { composeAppShellHtml, parseIslandJson } from './app-shell-frame.js'
 import { applyGenomeMerge } from '../utils/genome-merge.js'
 import { sanitizeHtml, sanitizeIslandFragment } from '../utils/postprocess.js'
 
-export async function composeAppShell({ brief, plan, route, variety, grammar, mode = 'hybrid' }) {
+export async function composeAppShell({ brief, plan, route, variety, grammar, llm, mode = 'hybrid' }) {
   const contract = buildSharedContract(brief, plan, route, variety, grammar)
+  const islandLlm = llm || completeGroq
+  const identityLlm = llm || completeGemini
 
   if (mode === 'gemini-full') {
     const regions = (plan.sections || plan.appIslands || [])
@@ -48,21 +50,21 @@ Islands:
 ${(plan.appIslands || []).map((i) => `- ${i.slot}: ${i.contains}`).join('\n')}`
 
   const [islandResult, identityGemini] = await Promise.all([
-    completeGroq({
+    islandLlm({
       system: BUILDER_SYSTEM,
       prompt: islandPrompt,
       temperature: 0.62,
       maxTokens: 3600,
       reasoningEffort: 'low',
       responseFormat: { type: 'json_object' },
-    }).catch(() => completeGroq({
+    }).catch(() => islandLlm({
       system: BUILDER_SYSTEM,
       prompt: `${islandPrompt}\n\nReturn valid JSON only.`,
       temperature: 0.48,
       maxTokens: 3600,
       reasoningEffort: 'low',
     })),
-    completeGemini({
+    identityLlm({
       prompt: `${contract}\n\nOutput ONLY a tiny identity/status strip fragment (no html/head/body). Brand: ${brief}.`,
       maxOutputTokens: 700,
       temperature: 0.45,

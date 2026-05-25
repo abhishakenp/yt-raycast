@@ -69,7 +69,7 @@ const preflight = {
   pexelsPhotos,
   issues: [
     ...(publication.issues || []),
-    ...(heuristicScore < 72 ? [`heuristic kimi score too low (${heuristicScore})`] : []),
+    ...(heuristicScore < 72 ? [`readiness score too low (${heuristicScore})`] : []),
     ...(photoCount < 4 ? [`photo thumbnails (${photoCount} < 4)`] : []),
   ],
   score: heuristicScore,

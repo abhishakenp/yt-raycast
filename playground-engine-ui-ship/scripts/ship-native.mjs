@@ -29,7 +29,7 @@ const BRIEFS = [
   { slug: 'fleet', brief: 'Helmsman — a fleet operations console for autonomous delivery robots. Operators watch a live city map, per-robot battery and route status, an incident timeline, and can hand off to remote teleoperation.' },
   { slug: 'riso', brief: 'Riso Press — a Brooklyn risograph print studio and zine shop. Bold, playful, ink-on-paper craft. Limited-run art prints and weekend workshops.' },
 ]
-const DEFAULT_8 = ['saas', 'ecommerce', 'restaurant', 'portfolio', 'agency', 'fitness', 'wellness', 'hotel']
+const DEFAULT_8 = ['saas', 'ecommerce', 'blog-dogs', 'restaurant', 'portfolio', 'fitness', 'fleet', 'hotel']
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))
 const briefs = args.length ? BRIEFS.filter((b) => args.includes(b.slug)) : BRIEFS.filter((b) => DEFAULT_8.includes(b.slug))
@@ -52,11 +52,11 @@ for (const { slug, brief } of briefs) {
       ok: true,
       file,
       ...r.metrics,
-      kimiScore: r.audits.kimi.score,
+      readinessScore: r.audits.kimi.score,
       kimiIssues: r.audits.kimi.issues,
     })
     console.log(
-      `${r.metrics.wall}ms · ${r.metrics.pageKind} · ${r.metrics.grammarId} · kimi=${r.audits.kimi.score} · ${r.metrics.chars}c`,
+      `${r.metrics.wall}ms · ${r.metrics.pageKind} · ${r.metrics.grammarId} · readiness=${r.audits.kimi.score} · ${r.metrics.chars}c`,
     )
   } catch (e) {
     results.push({ slug, ok: false, error: String(e?.message || e) })

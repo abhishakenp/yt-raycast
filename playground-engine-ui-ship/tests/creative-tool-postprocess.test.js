@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { composeAppShellHtml } from '../src/composers/app-shell-frame.js'
+import { buildSharedContract } from '../src/contracts.js'
 import { pickGrammar } from '../src/grammars.js'
 import { normalizeGenome } from '../src/planner.js'
 import {
@@ -14,12 +16,12 @@ const brief =
 const plan = {
   brief,
   visualWorld: {
-    bg: '#080b14',
-    surface: '#111827',
-    text: '#f8fafc',
-    muted: '#94a3b8',
-    accent: '#8b5cf6',
-    accent2: '#38bdf8',
+    bg: '#050507',
+    surface: '#101014',
+    text: '#f5f3ff',
+    muted: '#a1a1aa',
+    accent: '#7c3aed',
+    accent2: '#d4d4d8',
   },
 }
 
@@ -49,11 +51,41 @@ describe('creative AI tool postprocessing', () => {
         grammar: pickGrammar({ siteHint: 'software', seed: 'creative-tool' }),
       },
     )
-    expect(normalized.visualWorld.bg).toBe('#080b14')
-    expect(normalized.visualWorld.surface).toBe('#111827')
-    expect(normalized.visualWorld.text).toBe('#f8fafc')
-    expect(normalized.visualWorld.accent).toBe('#8b5cf6')
-    expect(normalized.visualWorld.accent2).toBe('#38bdf8')
+    expect(normalized.visualWorld.bg).toBe('#050507')
+    expect(normalized.visualWorld.surface).toBe('#101014')
+    expect(normalized.visualWorld.text).toBe('#f5f3ff')
+    expect(normalized.visualWorld.accent).toBe('#7c3aed')
+    expect(normalized.visualWorld.accent2).toBe('#d4d4d8')
+    expect(normalized.pageKind).toBe('app-shell')
+    expect(normalized.appIslands.map((island) => island.contains).join(' ')).toContain('prompt-to-image generation canvas')
+  })
+
+  it('tells app workspace briefs to build the product surface instead of a hero', () => {
+    const contract = buildSharedContract(
+      brief,
+      { ...plan, pageKind: 'app-shell', archetype: 'AI image studio', mediaStrategy: {}, signatureMoves: [] },
+      route,
+      { mediaTreatment: 'clean-glass' },
+      pickGrammar({ siteHint: 'software', pageKind: 'app-shell', seed: 'creative-tool' }),
+    )
+    expect(contract).toContain('APP / WORKSPACE MOCKUP')
+    expect(contract).toContain('No hero billboard')
+    expect(contract).not.toContain('HERO: headline')
+  })
+
+  it('renders creative AI app-shell chrome instead of ops labels', () => {
+    const html = composeAppShellHtml({
+      brief,
+      plan: { ...plan, archetype: 'AI image studio', appIslands: [] },
+      route,
+      islands: {},
+    })
+    expect(html).toContain('image generation studio')
+    expect(html).toContain('Render image')
+    expect(html).toContain('Models')
+    expect(html).toContain('Gallery')
+    expect(html).not.toContain('live command')
+    expect(html).not.toContain('Open run')
   })
 
   it('uses creative workflow detail instead of fitness studio filler', () => {
@@ -101,10 +133,10 @@ describe('creative AI tool postprocessing', () => {
     const html =
       '<body class="bg-[#0acf83] text-[#a259ff]"><section style="background: linear-gradient(135deg, #f24e1e 0%, #0acf83 100%)"><p class="text-[#1abcfe]">Prompt queue</p></section></body>'
     const out = rewriteAnchorAccentLeaks(html, plan, route)
-    expect(out).toContain('bg-[#080b14]')
-    expect(out).toContain('text-[#f8fafc]')
-    expect(out).toContain('#111827')
-    expect(out).toContain('text-[#38bdf8]')
+    expect(out).toContain('bg-[#050507]')
+    expect(out).toContain('text-[#f5f3ff]')
+    expect(out).toContain('#101014')
+    expect(out).toContain('text-[#d4d4d8]')
     expect(out).not.toContain('#0acf83')
     expect(out).not.toContain('#f24e1e')
   })

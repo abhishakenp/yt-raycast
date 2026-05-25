@@ -1,9 +1,9 @@
 export function formatHomepagePhaseReport(elapsed, homepageChars, homepageStats = null) {
   const engineMs = homepageStats?.engineWall ?? null
-  const kimi = homepageStats?.kimiScore
+  const readiness = homepageStats?.readinessScore
   const timingDetail =
     engineMs != null
-      ? ` (engine ${(engineMs / 1000).toFixed(1)}s${kimi != null ? `, kimi ${kimi}` : ''})`
+      ? ` (engine ${(engineMs / 1000).toFixed(1)}s${readiness != null ? `, readiness ${readiness}` : ''})`
       : ''
   return `
   ┌─────────────────────────────────────────────────────────────────┐

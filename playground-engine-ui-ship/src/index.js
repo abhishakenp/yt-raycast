@@ -7,7 +7,7 @@ import { injectAmbientStyles } from './media/ambient-effects.js'
 import { completeGroq } from './llm/groq.js'
 import { planPageGenome } from './planner.js'
 import { runDeterministicAudits } from './quality/audits.js'
-import { buildRunVariety, isOpsConsoleBrief, selectAnchorPair } from './router.js'
+import { buildRunVariety, isAppWorkspaceBrief, isOpsConsoleBrief, selectAnchorPair } from './router.js'
 import { enrichAnchorWithLiveMobbin, isMobbinLiveEnabled } from '@ship-fast/engine/lib/mobbin/index.js'
 import { normalizeSeed } from './utils/hash.js'
 import { sanitizeHtml, ensureBlogPublicationIndex } from './utils/postprocess.js'
@@ -80,7 +80,8 @@ async function buildHomepageAttempt({ brief, seed, llm, planOverride }) {
 
 function pickComposer(plan, route, grammar, brief) {
   const useAppShell =
-    plan.pageKind === 'app-shell' && route?.siteHint === 'ops-console' && isOpsConsoleBrief(brief)
+    plan.pageKind === 'app-shell' &&
+    ((route?.siteHint === 'ops-console' && isOpsConsoleBrief(brief)) || isAppWorkspaceBrief(brief))
   if (useAppShell) {
     return (args) =>
       composeAppShell({
@@ -118,20 +119,21 @@ export async function generateShipHomepage(brief, opts = {}) {
   const minScore = MIN_KIMI_SCORE()
   const maxRetries = QUALITY_RETRIES()
   let qualityRetriesUsed = 0
+  const readinessScore = (attempt) => attempt.audits.kimi.score
   if (
     !FAST_MODE &&
     !opts.skipQualityRetry &&
-    attempt.audits.kimi.score < minScore &&
+    readinessScore(attempt) < minScore &&
     maxRetries > 0
   ) {
     for (let retry = 1; retry <= maxRetries; retry++) {
       qualityRetriesUsed = retry
       const retrySeed = `${seed}-quality-${retry}`
       const retryAttempt = await buildHomepageAttempt({ brief, seed: retrySeed, llm })
-      if (retryAttempt.audits.kimi.score >= attempt.audits.kimi.score) {
+      if (readinessScore(retryAttempt) >= readinessScore(attempt)) {
         attempt = retryAttempt
       }
-      if (attempt.audits.kimi.score >= minScore) break
+      if (readinessScore(attempt) >= minScore) break
     }
   }
 
@@ -170,7 +172,7 @@ export async function generateShipHomepage(brief, opts = {}) {
           : built.metrics?.buildMode === 'vertical-doc-fast-groq'
             ? 'groq-parallel-bench'
             : 'gemini-hero-combo',
-      kimiScore: audits.kimi.score,
+      readinessScore: audits.kimi.score,
       richnessScore: audits.richness.score,
       stitchOk: stitchCheck.ok,
       stitchIssues: stitchCheck.issues,

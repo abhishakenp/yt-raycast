@@ -180,6 +180,17 @@ describe('publication layout normalization', () => {
     expect(out).not.toMatch(/text-5xl md:text-7xl/)
   })
 
+  it('repairs featured publication split classes so the cover and story sit side by side', () => {
+    const html = `<section id="featured" class="max-w-7xl mx-auto flex-col md:flex-row gap-6 py-12 px-6">
+<div class="md:w-1/2"><img src="https://images.pexels.com/photos/1/x.jpeg" /></div>
+<div class="md:w-1/2"><h1>Featured rescue story</h1></div></section>`
+    const out = normalizePublicationLayout(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
+    expect(out).toContain('grid')
+    expect(out).toContain('md:grid-cols-[0.95fr_1.05fr]')
+    expect(out).not.toContain('flex-col')
+    expect(out).not.toContain('md:flex-row')
+  })
+
   it('repairs duplicated section open tags from stitch', () => {
     const html = `<section<section<section id="featured" class="py-16"><h1>Ok</h1></section>`
     const out = sanitizeHtml(html, BLOG_PLAN, BLOG_ROUTE, BLOG_PLAN.brief)
