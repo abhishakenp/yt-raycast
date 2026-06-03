@@ -156,6 +156,13 @@ Overall average: **60-90% token reduction** on common development operations.
 - Secrets and environment files are managed with Doppler. Run env-dependent commands through `doppler run -- <cmd>` and do not assume `.env.local` contains current model/API keys.
 - Do not commit generated env files; update Doppler-managed configuration instead.
 
+## Golden rule: local fixes first
+
+- If something can be fixed at the block or component level itself, do not touch other files.
+- For the LLM, this is like generating the data to fill up the form: if something is wrong, 90% of the time it is the system's fault, not the block's.
+- To verify a fix, do not regenerate by default. Fix the blocks, reload, and confirm the result.
+- Treat this as a standing golden rule. Do not wait for the same instruction to be repeated.
+
 ## Homepage engine (playground vs production)
 
 | Path | Role |
