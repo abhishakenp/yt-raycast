@@ -730,6 +730,14 @@ button.share-icon.pill {
   opacity: 0;
 }
 
+.prompt-placeholder.label-only {
+  bottom: auto;
+}
+
+.prompt-placeholder.label-only .prompt-placeholder-body {
+  display: none;
+}
+
 .prompt-placeholder-label {
   color: var(--accent-secondary);
   font-family: var(--font-sans);

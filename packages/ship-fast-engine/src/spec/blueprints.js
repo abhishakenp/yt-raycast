@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { buildFallbackPageFromHomepage } from '../pipeline/fallback-page.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
 
 function stripEditorArtifacts(source = '') {
@@ -181,33 +180,12 @@ export function enrichSiteSpecWithWorkspaceBlueprints(siteSpec, workspace) {
     pages: siteSpec.pages.map((page) => {
       const filename = routeToHtmlFile(page.route)
       const filePath = join(workspace, filename)
-      if (!existsSync(filePath)) {
-        if (filename !== 'index.html' && indexHtml) {
-          const stub = buildFallbackPageFromHomepage(indexHtml, {
-            title: page.title || page.name || 'Page',
-            description: page.description || '',
-          }, page.sections || [])
-          writeFileSync(filePath, stub, 'utf-8')
-        } else {
-          return { ...page, renderBlueprint: null }
-        }
-      }
+      if (!existsSync(filePath)) return { ...page, renderBlueprint: null }
 
       let html = readFileSync(filePath, 'utf-8')
       let blueprint = extractRenderBlueprintFromHtml(html, {
         title: page.seo?.title || page.title,
       })
-      if (!blueprint.bodyHtml?.trim() && filename !== 'index.html' && indexHtml) {
-        const stub = buildFallbackPageFromHomepage(indexHtml, {
-          title: page.title || page.name || 'Page',
-          description: page.description || '',
-        }, page.sections || [])
-        writeFileSync(filePath, stub, 'utf-8')
-        html = stub
-        blueprint = extractRenderBlueprintFromHtml(html, {
-          title: page.seo?.title || page.title,
-        })
-      }
       return {
         ...page,
         renderBlueprint: blueprint,

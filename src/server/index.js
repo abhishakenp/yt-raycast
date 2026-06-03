@@ -28,6 +28,8 @@ import {
 } from './medusa-provision.js'
 import { extractSessionProducts } from './extract-session-products.js'
 import { syncProductsToMedusa } from './sync-medusa-catalog.js'
+import { createDefaultPipelineIntegrations } from './pipeline-integrations.js'
+import { createMedusaStoreRouter } from './medusa-store-routes.js'
 import {
   loadSiteSpec,
   saveSiteSpec,
@@ -43,6 +45,7 @@ import {
   writeDesignReferencesFile,
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
+import { readOpenUIFileForRoute, readSiteSpecThemeColors } from '../pipeline/openui-artifacts.js'
 import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
@@ -74,7 +77,7 @@ import {
   syncSessionPreviewFromSanity,
 } from './exports.js'
 import { broadcastDevReload, setupWebSocket } from './websocket.js'
-import { runAll, runEdit, generateAlternativeDesign } from '../pipeline/runner.js'
+import { generateAlternativeDesign, runAll, runEdit } from '@ship-fast/engine/pipeline/runner.js'
 import { existsSync, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import multer from 'multer'
@@ -228,6 +231,10 @@ function setNoIndexHeaders(res) {
   // Keep preview URLs out of search while still allowing third-party image CDNs
   // to receive an origin referrer and serve assets inside the preview iframe.
   res.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+}
+
+export function canReadOpenUIArtifactWithoutOwner(session) {
+  return Boolean(session) && !session.userId && session.isPrivate !== true
 }
 
 function isGibberishPrompt(text) {
@@ -418,7 +425,7 @@ export async function startServer(sessionsDir) {
     const session = getSession(deployment.sessionId)
     if (!session) return res.status(404).send('Site not found')
 
-    express.static(session.workspace, { extensions: ['html'] })(req, res, () => {
+    express.static(session.workspace, { extensions: ['html'], redirect: false })(req, res, () => {
       res.status(404).send('Site not found')
     })
   })
@@ -427,6 +434,7 @@ export async function startServer(sessionsDir) {
     setNoIndexHeaders(res)
     next()
   })
+  app.use('/api/storefront', createMedusaStoreRouter())
 
   app.post(
     '/api/payments/razorpay/webhook',
@@ -953,6 +961,7 @@ export async function startServer(sessionsDir) {
     }
 
     const sessionCtx = makeSessionState(session)
+    const generationIntegrations = createDefaultPipelineIntegrations()
 
     // Determine edit vs generate mode
     let editMode = false
@@ -972,12 +981,18 @@ export async function startServer(sessionsDir) {
 
     // Fire and forget the generation
     const generation = editMode
-      ? runEdit({ prompt: session.prompt, workspace: session.workspace, sessionCtx })
+      ? runEdit({
+          prompt: session.prompt,
+          workspace: session.workspace,
+          sessionCtx,
+          integrations: generationIntegrations,
+        })
       : runAll({
           prompt: session.prompt,
           workspace: session.workspace,
           sessionCtx,
           preferredLanguage: session.preferredLanguage,
+          integrations: generationIntegrations,
         })
 
     const generationKey = req.user?.uid || clientIp
@@ -1091,9 +1106,6 @@ export async function startServer(sessionsDir) {
     if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
       return res.status(400).json({ error: 'sessionIds array is required' })
     }
-    if (sessionIds.length > 20) {
-      return res.status(400).json({ error: 'Maximum 20 sessions can be claimed at once' })
-    }
     const result = claimSessionsByIds(sessionIds, req.user.uid)
     res.json(result)
   })
@@ -1149,10 +1161,49 @@ export async function startServer(sessionsDir) {
       themeOverride: session.themeOverride ?? null,
       taskCount: session.tasks.length,
       done: session.tasks.filter((t) => t.status === 'DONE').length,
+      tasks: session.tasks,
+      elapsed: session.elapsed ?? null,
+      cost: session.cost ?? null,
       isAnonymous: !session.userId,
       ecommerce: false,
+      openuiReady: session.openuiReady ?? false,
+      integrations: {
+        sanity: {
+          enabled: Boolean(session.sanityConfig?.projectId || session.sanityConfig?.dataset),
+          config: session.sanityConfig
+            ? {
+                projectId: session.sanityConfig.projectId,
+                dataset: session.sanityConfig.dataset,
+                apiVersion: session.sanityConfig.apiVersion,
+              }
+            : null,
+        },
+        medusa: {
+          enabled: Boolean(session.medusaConfig?.backendUrl || session.medusaConfig?.adminBaseUrl),
+          config: session.medusaConfig
+            ? {
+                backendUrl: session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
+                storefrontUrl: session.medusaConfig.storefrontUrl || null,
+              }
+            : null,
+        },
+      },
       medusaAdminEmbed: { show: false, url: null },
     })
+  })
+
+  app.get('/api/sessions/:id/openui', optionalAuth, (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    const publicAnonymousPreview = canReadOpenUIArtifactWithoutOwner(session)
+    if (!publicAnonymousPreview && !ensureSessionArtifactAccess(req, res, session)) return
+    const route = typeof req.query?.route === 'string' ? req.query.route : '/'
+    const source = readOpenUIFileForRoute(session.workspace, route)
+    if (!source) {
+      return res.status(404).json({ error: 'OpenUI artifact not ready' })
+    }
+    const theme = readSiteSpecThemeColors(session.workspace)
+    res.json({ source, theme })
   })
 
   app.post('/api/sessions/:id/apply-palette', optionalAuth, (req, res) => {
@@ -1349,6 +1400,7 @@ export async function startServer(sessionsDir) {
     appendUserMessage(session.workspace, store, userLine, session.id)
 
     const sessionCtx = makeSessionState(session)
+    const generationIntegrations = createDefaultPipelineIntegrations()
     setSessionStatus(session.id, 'generating')
     const generationKey = req.user?.uid || clientIp
     if (!skipRateLimits) {
@@ -1357,7 +1409,12 @@ export async function startServer(sessionsDir) {
 
     const run = async () => {
       try {
-        await runEdit({ prompt: composed, workspace: session.workspace, sessionCtx })
+        await runEdit({
+          prompt: composed,
+          workspace: session.workspace,
+          sessionCtx,
+          integrations: generationIntegrations,
+        })
         const st = readChatStore(session.workspace)
         appendAssistantMessage(session.workspace, st, 'Edit applied. Preview updated.', session.id)
         setSessionStatus(session.id, 'done')
@@ -1391,6 +1448,52 @@ export async function startServer(sessionsDir) {
     if (!ensureSessionArtifactAccess(req, res, session)) return
     clearChatStore(session.workspace, session.id)
     res.json({ ok: true })
+  })
+
+  // Direct edit endpoint - bypasses chat store composition for faster edits
+  app.post('/api/sessions/:id/edit', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+
+    let raw = req.body?.prompt ?? req.body?.text ?? ''
+    if (typeof raw !== 'string') raw = ''
+
+    let text
+    try {
+      text = requirePromptText(raw)
+    } catch (e) {
+      return res.status(400).json({ error: e.message || 'Invalid prompt' })
+    }
+
+    if (!canSessionRunEdit(session.workspace)) {
+      return res.status(409).json({
+        error: 'Edit is available after the initial site is generated. Finish generation first.',
+      })
+    }
+
+    const sessionCtx = makeSessionState(session)
+    const generationIntegrations = createDefaultPipelineIntegrations()
+    setSessionStatus(session.id, 'generating')
+
+    const run = async () => {
+      try {
+        await runEdit({
+          prompt: text,
+          workspace: session.workspace,
+          sessionCtx,
+          integrations: generationIntegrations,
+        })
+        setSessionStatus(session.id, 'done')
+      } catch (err) {
+        const msg = err?.message ? String(err.message).slice(0, 500) : 'Edit failed'
+        setSessionStatus(session.id, 'failed')
+        sessionCtx.broadcast({ type: 'error', message: msg })
+      }
+    }
+
+    void run()
+    res.status(202).json({ ok: true, accepted: true })
   })
 
   app.post('/api/sessions/:id/deploy', optionalAuth, async (req, res) => {
@@ -2283,11 +2386,11 @@ export async function startServer(sessionsDir) {
               ),
             )
         } catch {
-          express.static(session.workspace, { extensions: ['html'] })(req, res, next)
+          express.static(session.workspace, { extensions: ['html'], redirect: false })(req, res, next)
         }
         return
       }
-      express.static(session.workspace, { extensions: ['html'] })(req, res, next)
+      express.static(session.workspace, { extensions: ['html'], redirect: false })(req, res, next)
     },
   )
 
@@ -2339,14 +2442,21 @@ export async function startCLISession(workspace, prompt) {
     `  MODE: ${editMode ? 'edit (applying changes to existing site)' : 'generate (fresh build)'}`,
   )
   console.log(`  Session: ${session.id}\n`)
+  const generationIntegrations = createDefaultPipelineIntegrations()
 
   const generation = editMode
-    ? runEdit({ prompt: normalizedPrompt, workspace, sessionCtx })
+    ? runEdit({
+        prompt: normalizedPrompt,
+        workspace,
+        sessionCtx,
+        integrations: generationIntegrations,
+      })
     : runAll({
         prompt: normalizedPrompt,
         workspace,
         sessionCtx,
         preferredLanguage: session.preferredLanguage,
+        integrations: generationIntegrations,
       })
 
   return { session, generation }

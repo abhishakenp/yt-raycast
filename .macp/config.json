@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "packageName": "macp-agent-mcp",
+  "projectRoot": "/Users/livio/Documents/ship-fast",
+  "projectId": "ship-fast",
+  "defaultChannel": "ship-fast",
+  "dbPath": "/Users/livio/Documents/ship-fast/.macp/ship-fast.macp.db",
+  "createdAt": "2026-06-03T03:20:59Z",
+  "updatedAt": "2026-06-03T03:20:59Z"
+}

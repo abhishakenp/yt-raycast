@@ -1,7 +1,22 @@
-import { Renderer } from '@openuidev/react-lang'
-import { shipFastOpenUILibrary } from '@/openui/library'
-import { preprocessOpenUIResponse } from '@ship-fast/engine/lib/openui-preprocess.js'
+import {
+  OpenUIIntegrationProviders,
+  QueryClient,
+  QueryClientProvider,
+  library as shipFastOpenUILibrary,
+  Renderer,
+} from '@ship-fast/blocks'
+import { preprocessOpenUIResponse } from '../../../packages/ship-fast-engine/src/lib/openui-preprocess'
 import { Component, type CSSProperties, type ReactNode } from 'react'
+
+const openUIQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+    },
+  },
+})
 
 class RendererErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -26,6 +41,8 @@ export default function OpenUIViewer({
   isStreaming,
   theme,
   embed,
+  sessionId,
+  integrations,
 }: {
   response: string
   isStreaming?: boolean
@@ -33,6 +50,18 @@ export default function OpenUIViewer({
   theme?: Record<string, string> | null
   /** Full-bleed session iframe: no rounded corners, no streaming border/dot overlay */
   embed?: boolean
+  /** Session id used by integration providers (for storefront and CMS scope). */
+  sessionId?: string
+  integrations?: {
+    sanity?: {
+      enabled: boolean
+      config?: Record<string, string | null> | null
+    } | null
+    medusa?: {
+      enabled: boolean
+      config?: Record<string, string | null> | null
+    } | null
+  } | null
 }) {
   const inEmbed = embed === true
   void theme
@@ -81,11 +110,19 @@ export default function OpenUIViewer({
             ) : null
           }
         >
-          <Renderer
-            response={preprocessOpenUIResponse(response)}
-            library={shipFastOpenUILibrary}
-            isStreaming={isStreaming}
-          />
+          <QueryClientProvider client={openUIQueryClient}>
+            <OpenUIIntegrationProviders
+              sanity={integrations?.sanity || { enabled: false }}
+              medusa={integrations?.medusa || { enabled: false }}
+              sessionId={sessionId}
+            >
+              <Renderer
+                response={preprocessOpenUIResponse(response, { resolveRefs: false })}
+                library={shipFastOpenUILibrary}
+                isStreaming={isStreaming}
+              />
+            </OpenUIIntegrationProviders>
+          </QueryClientProvider>
         </RendererErrorBoundary>
       </div>
     </div>

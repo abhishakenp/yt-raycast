@@ -1,0 +1,61 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+import { useNavigate } from "#/lib/use-navigate.tsx"
+
+/**
+ * EventPlannerLogos — understated "trusted by" partner-logo strip for an event
+ * agency. A muted, top-and-bottom-bordered band with a centered uppercase eyebrow
+ * line and a wrapping, lightly-dimmed row of thin word-mark brand names (luxury
+ * hotels / venues) rendered as clickable buttons routed through useNavigate. Use
+ * directly below the hero to add social proof for wedding/event planners or
+ * premium hospitality brands.
+ */
+export const EventPlannerLogos = defineComponent({
+  name: "EventPlannerLogos",
+  description:
+    "Understated 'trusted by' partner-logo strip for an event agency: a muted, top-and-bottom-bordered band with a centered uppercase eyebrow line and a wrapping, lightly-dimmed row of thin word-mark brand names (luxury hotels / venues) rendered as clickable buttons routed through useNavigate. Use directly below the hero to add social proof for wedding/event planners, gala organizers, or premium hospitality brands.",
+  props: z.object({
+    heading: z.string().optional(),
+    brands: z.array(z.string()).optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const go = useNavigate()
+    const logosHeading = props.heading ?? "Trusted by Leading Brands"
+    const logoBrands = props.brands?.length
+      ? props.brands
+      : [
+          "Fairmont",
+          "Four Seasons",
+          "Ritz-Carlton",
+          "St. Regis",
+          "Mandarin",
+          "Rosewood",
+        ]
+
+    return (
+      <section
+        className={cn("border-y border-border bg-muted py-12", props.className)}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p className="mb-8 text-center text-sm uppercase tracking-widest text-muted-foreground">
+            {logosHeading}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-12 opacity-60 lg:gap-20">
+            {logoBrands.map((b) => (
+              <button
+                key={b}
+                type="button"
+                onClick={() => go(b)}
+                className="text-xl font-light text-foreground"
+              >
+                {b}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  },
+})

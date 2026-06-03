@@ -4,8 +4,20 @@ import { groqParallel } from '@ship-fast/engine/llm/groq.js'
 import { stripFences, formatTps } from '@ship-fast/engine/llm/utils.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
 import { writeFile } from './workspace.js'
-import { sumTokens } from './phase-tasks.js'
 import { navfixPrompt } from '@ship-fast/engine/prompts/navfix.js'
+
+function sumTokens(results) {
+  let inputTokens = 0
+  let outputTokens = 0
+  let cost = 0
+  for (const r of results) {
+    if (!r) continue
+    inputTokens += r.inputTokens ?? 0
+    outputTokens += r.outputTokens ?? 0
+    cost += r.cost ?? 0
+  }
+  return { inputTokens, outputTokens, cost }
+}
 
 function slug(title = '') {
   return String(title)

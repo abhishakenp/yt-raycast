@@ -22,9 +22,10 @@ await build({
   format: 'esm',
   target: ['es2020'],
   platform: 'browser',
+  jsx: 'automatic',
   sourcemap: false,
   minify: false,
-  external: ['firebase/app', 'firebase/auth', 'franc-min'],
+  external: ['franc-min'],
   // Keep .js extension for output
   outExtension: { '.js': '.js' },
   // Match React's NODE_ENV: dev/undefined builds get dev affordances; production build must not.
@@ -33,4 +34,20 @@ await build({
   },
 })
 
-console.log(`Built ${entryPoints.length} scripts to ${outDir}/`)
+await build({
+  entryPoints: ['src/island/openui/entry.tsx'],
+  bundle: true,
+  outfile: 'public/scripts/openui-island.js',
+  format: 'esm',
+  target: ['es2020'],
+  platform: 'browser',
+  jsx: 'automatic',
+  sourcemap: false,
+  minify: false,
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'process.env': '{}',
+  },
+})
+
+console.log(`Built ${entryPoints.length + 1} scripts to ${outDir}/`)

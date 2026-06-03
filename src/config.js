@@ -7,8 +7,8 @@ export const RUNPOD_API_URL = (process.env.RUNPOD_API_URL ?? '').trim()
 export const RUNPOD_API_KEY = (process.env.RUNPOD_API_KEY ?? '').trim()
 export const RUNPOD_MODEL = (process.env.RUNPOD_MODEL ?? '').trim()
 
-/** Vanilla server port — distinct from the Next.js parent project (7420) so both can run side-by-side. */
-export const DASHBOARD_PORT = parseInt(process.env.DASHBOARD_PORT ?? '7430', 10)
+/** Vanilla server port. Local product and gallery entrypoint is 7420. */
+export const DASHBOARD_PORT = parseInt(process.env.DASHBOARD_PORT ?? '7420', 10)
 export const SITE_NAME = 'Ship Fast'
 export const SITE_URL = (process.env.SITE_URL ?? 'https://ship-fast.io').replace(/\/+$/, '')
 export const BASE_DOMAIN = process.env.BASE_DOMAIN ?? 'ship-fast.io'

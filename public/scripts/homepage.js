@@ -304,14 +304,112 @@ var LOCAL_DEV_PROMPT_SHORTCUTS = [
 ];
 
 // src/scripts/home-session-embed.ts
+var STATE_KEY = "sfEmbeddedSession";
+var shell = null;
+var frame = null;
+var listenersBound = false;
 var isMarketingHomePath = () => {
   const p = location.pathname;
   return p === "/" || p === "";
 };
+var setMainInert = (on) => {
+  if (!shell) return;
+  for (const el of Array.from(document.body.children)) {
+    if (el === shell) continue;
+    if (on) el.setAttribute("inert", "");
+    else el.removeAttribute("inert");
+  }
+};
+var hideShell = () => {
+  if (!shell) return;
+  const wasOpen = !shell.hidden;
+  shell.hidden = true;
+  setMainInert(false);
+  if (wasOpen) window.dispatchEvent(new CustomEvent("sf-home-session-closed"));
+};
+var clearStrayEmbedInert = () => {
+  const el = document.getElementById("sf-home-session-shell");
+  if (el && !el.hidden) return;
+  document.querySelectorAll("body > [inert]").forEach((node) => {
+    if (node.id !== "sf-home-session-shell") node.removeAttribute("inert");
+  });
+};
+var bindListeners = () => {
+  if (listenersBound) return;
+  listenersBound = true;
+  window.addEventListener("pageshow", clearStrayEmbedInert);
+  window.addEventListener("popstate", (ev) => {
+    const state = ev.state;
+    const id = state && state[STATE_KEY];
+    if (id) {
+      showShellForSession(String(id));
+      try {
+        frame?.focus();
+      } catch {
+      }
+    } else {
+      hideShell();
+    }
+  });
+  window.addEventListener("message", (ev) => {
+    if (ev.origin !== location.origin) return;
+    if (ev.data?.type === "sf-request-auth-overlay") {
+      window.dispatchEvent(new CustomEvent("sf-request-auth-overlay"));
+      return;
+    }
+    if (ev.data?.type !== "sf-close-embedded-session") return;
+    if (!shell || shell.hidden) return;
+    history.replaceState(null, "", "/");
+    hideShell();
+  });
+};
+var ensureShell = () => {
+  if (shell && frame) {
+    bindListeners();
+    return;
+  }
+  shell = document.createElement("div");
+  shell.id = "sf-home-session-shell";
+  shell.className = "sf-home-session-shell";
+  shell.hidden = true;
+  shell.setAttribute("role", "dialog");
+  shell.setAttribute("aria-modal", "true");
+  shell.setAttribute("aria-label", "Live session dashboard");
+  frame = document.createElement("iframe");
+  frame.className = "sf-home-session-frame";
+  frame.setAttribute("title", "Live session dashboard");
+  document.body.appendChild(shell);
+  shell.appendChild(frame);
+  bindListeners();
+};
+var showShellForSession = (sessionId) => {
+  ensureShell();
+  const idStr = String(sessionId);
+  const path = `/session/${encodeURIComponent(idStr)}?embed=1`;
+  const wasHidden = !!shell?.hidden;
+  if (frame && (frame.dataset.sfSessionId !== idStr || wasHidden)) {
+    frame.dataset.sfSessionId = idStr;
+    frame.src = path;
+  }
+  if (shell) {
+    shell.hidden = false;
+  }
+  setMainInert(true);
+};
 var openEmbeddedSession = (sessionId) => {
   const idStr = String(sessionId);
-  sessionStorage.setItem("sf_return_home", "1");
-  location.href = `/session/${encodeURIComponent(idStr)}`;
+  if (!isMarketingHomePath()) {
+    sessionStorage.setItem("sf_return_home", "1");
+    location.href = `/session/${encodeURIComponent(idStr)}`;
+    return;
+  }
+  ensureShell();
+  history.pushState({ [STATE_KEY]: idStr }, "", `/session/${encodeURIComponent(idStr)}`);
+  showShellForSession(idStr);
+  try {
+    frame?.focus();
+  } catch {
+  }
 };
 
 // src/scripts/homepage.ts
@@ -364,6 +462,9 @@ var SUBMIT_BTN_DEFAULT_LABEL = "Generate";
 var generationCounter = getTypedElement("gen-counter");
 var promptPlaceholder = getTypedElement("prompt-placeholder");
 var promptPlaceholderText = getTypedElement("prompt-placeholder-text");
+var promptPlaceholderLabel = promptPlaceholder.querySelector(
+  ".prompt-placeholder-label"
+);
 var promptSuggestions = getTypedElement("prompt-suggestions");
 var promptSuggestionsList = getTypedElement("prompt-suggestions-list");
 var privateGenRow = getTypedElement("private-gen-row");
@@ -594,6 +695,11 @@ var PROMPT_ENGLISH_LEXICON = new Set(
     /\s+/
   )
 );
+var PROMPT_FRENCH_LEXICON = new Set(
+  `un une des du de la le les et ou pour avec dans sur sous ce cette ces cet votre vos notre nos leur leurs mon ma mes ton ta tes son sa ses au aux par est sont etre \xEAtre \xE9t\xE9 avoir avez nous vous ils elles je tu il elle on qui que quoi dont quand comment pourquoi parce plus moins tres tr\xE8s site page accueil boutique restaurant agence marque produit produits service services client clients formulaire contact prix offre offres blog article articles galerie reservation r\xE9servation rendez-vous equipe \xE9quipe cr\xE9er cree cr\xE9e cr\xE9ez generer g\xE9n\xE9rer fran\xE7ais francaise fran\xE7aise rapide moderne \xE9l\xE9gant elegante responsive mobile application entreprise association \xE9cole ecole h\xF4tel hotel immobilier portfolio evenement \xE9v\xE9nement`.split(
+    /\s+/
+  )
+);
 function promptLatinEnglishLean(text) {
   const words = String(text || "").toLowerCase().match(/\b[a-z]{2,}\b/g);
   if (!words || words.length === 0) return { lean: 0, en: 0, hi: 0, n: 0 };
@@ -607,7 +713,25 @@ function promptLatinEnglishLean(text) {
   const lean = (en + rest * 0.22) / words.length;
   return { lean, en, hi, n: words.length };
 }
+function promptFrenchScore(text) {
+  const lower = String(text || "").toLowerCase();
+  const accented = /[àâçéèêëîïôûùüÿœæ]/i.test(lower);
+  const words = lower.match(/\b[a-zàâçéèêëîïôûùüÿœæ]{2,}\b/g) || [];
+  let hits = accented ? 2 : 0;
+  for (const word of words) {
+    if (PROMPT_FRENCH_LEXICON.has(word)) hits += 1;
+  }
+  return { score: words.length ? hits / words.length : 0, hits, words: words.length, accented };
+}
+function preferFrenchCode3ForPrompt(snippet, code3) {
+  const french = promptFrenchScore(snippet);
+  if (french.hits >= 3 && french.score >= 0.18) return "fra";
+  if (french.accented && french.hits >= 2 && french.words >= 4) return "fra";
+  if (code3 === "eng" && french.hits >= 2 && french.score >= 0.3) return "fra";
+  return code3;
+}
 function resolveFrancCode3ForPrompt(snippet, code3) {
+  code3 = preferFrenchCode3ForPrompt(snippet, code3);
   if (!code3 || code3 === "und") return code3;
   if (code3 === "eng" || PROMPT_DETECT_INDIAN_FRANC.has(code3)) return code3;
   const { lean, en, hi, n } = promptLatinEnglishLean(snippet);
@@ -824,9 +948,11 @@ function loadFranc() {
   return francLoadPromise;
 }
 async function detectSnippetLanguageBcp47(fullText) {
+  const snippet = String(fullText || "").slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX);
+  const frenchFirst = preferFrenchCode3ForPrompt(snippet, "und");
+  if (frenchFirst === "fra") return "fr";
   const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText);
   if (fromMixedHint) return fromMixedHint;
-  const snippet = String(fullText || "").slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX);
   let franc;
   try {
     franc = await loadFranc();
@@ -1062,11 +1188,17 @@ function scheduleSamplePromptStep(delay) {
 }
 function syncSamplePromptVisibility() {
   const hasValue = input.value.length > 0;
-  promptPlaceholder.classList.toggle("is-hidden", hasValue);
   if (hasValue) {
+    if (promptPlaceholderLabel) promptPlaceholderLabel.textContent = "Your prompt";
+    promptPlaceholderText.textContent = "";
+    promptPlaceholder.classList.add("label-only");
+    promptPlaceholder.classList.remove("is-hidden");
     stopSamplePromptAnimation();
     return;
   }
+  if (promptPlaceholderLabel) promptPlaceholderLabel.textContent = "Try a prompt like";
+  promptPlaceholder.classList.remove("label-only");
+  promptPlaceholder.classList.remove("is-hidden");
   if (samplePromptTimer === null) {
     scheduleSamplePromptStep(samplePromptLength === 0 ? 320 : 80);
   }
@@ -1376,16 +1508,7 @@ var chipDefs = [
   { label: "SaaS dashboard", text: LOCAL_DEV_PROMPT_SHORTCUTS[2] },
   { label: "Hindi gym site", text: LOCAL_DEV_PROMPT_SHORTCUTS[0] }
 ];
-var chipBar = document.createElement("div");
-chipBar.className = "dev-prompt-chips dev-prompt-chips--glass";
-chipBar.setAttribute("aria-label", "Example prompts");
-chipDefs.forEach((def, i) => {
-  if (!def.text) return;
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "dev-prompt-chip";
-  btn.title = def.text;
-  btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`;
+var wirePromptChipButton = (btn, def) => {
   btn.addEventListener("click", async () => {
     btn.disabled = true;
     try {
@@ -1396,10 +1519,32 @@ chipDefs.forEach((def, i) => {
       btn.disabled = false;
     }
   });
-  chipBar.appendChild(btn);
-});
+};
+var existingChipBar = document.querySelector(".dev-prompt-chips");
+var chipBar = existingChipBar || document.createElement("div");
+chipBar.className = "dev-prompt-chips dev-prompt-chips--glass";
+chipBar.setAttribute("aria-label", "Example prompts");
+if (existingChipBar) {
+  chipBar.querySelectorAll(".dev-prompt-chip").forEach((btn, i) => {
+    const text = btn.dataset.prompt || chipDefs[i]?.text || "";
+    if (!text) return;
+    btn.title = text;
+    wirePromptChipButton(btn, { text });
+  });
+} else {
+  chipDefs.forEach((def, i) => {
+    if (!def.text) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "dev-prompt-chip";
+    btn.title = def.text;
+    btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`;
+    wirePromptChipButton(btn, def);
+    chipBar.appendChild(btn);
+  });
+}
 var heroCard = document.getElementById("hero-card");
-heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling);
+if (!existingChipBar) heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling);
 if (heroCard) {
   const setHeroGlow = (x, y) => {
     heroCard.style.setProperty("--hero-glow-x", x);
@@ -1567,13 +1712,11 @@ function invalidateAnonSessionEntriesCache() {
   anonSessionEntriesCacheV = null;
 }
 function saveAnonSession(id, prompt, ownerSecret) {
-  const stored = JSON.parse(
-    localStorage.getItem(ANON_SESSIONS_KEY) || "[]"
-  );
+  const stored = JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || "[]").filter((session) => session?.id !== id);
   const entry = { id, prompt };
   if (ownerSecret) entry.secret = String(ownerSecret);
   stored.unshift(entry);
-  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)));
+  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored));
   invalidateAnonSessionEntriesCache();
 }
 function removeAnonSession(id) {
@@ -2296,6 +2439,26 @@ if (_autoOpenId) {
   openEmbeddedSession(_autoOpenId);
 }
 window.addEventListener("sf-sync-home-gallery", reloadHomeGalleryIfReady);
+window.addEventListener("sf-home-session-closed", () => {
+  resetPromptForNextGeneration();
+  const scheduleGalleryReload = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        void reloadHomeGalleryIfReady();
+      });
+    });
+  };
+  if (authResolved) scheduleGalleryReload();
+  else {
+    window.addEventListener(
+      "sf-home-auth-state",
+      () => {
+        scheduleGalleryReload();
+      },
+      { once: true }
+    );
+  }
+});
 window.addEventListener("pageshow", (event) => {
   applyHomeTabTitle();
   const nav = performance.getEntriesByType("navigation")[0];

@@ -1,0 +1,264 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+import { useNavigate } from "#/lib/use-navigate.tsx"
+
+/**
+ * FitnessPricing — 3-tier membership pricing block for a gym or fitness studio. A
+ * centered heading + lead paragraph above a 3-column grid of plan cards (the
+ * "popular" tier inverted to a primary-filled card with a corner ribbon), each with
+ * a name, tagline, big price + period, a check/cross feature list, and a full-width
+ * CTA button, plus a centered footnote underneath. CTAs route through useNavigate.
+ * Use for membership tiers / plans on gyms, fitness studios, yoga or boxing studios.
+ */
+export const FitnessPricing = defineComponent({
+  name: "FitnessPricing",
+  description:
+    "Three-tier membership pricing block for a gym or fitness studio: a centered heading and lead paragraph above a 3-column grid of plan cards (the 'popular' tier inverted to a primary-filled card with a corner ribbon), each with a name, tagline, big price plus period, a check / cross feature list and a full-width CTA button, plus a centered footnote underneath. CTAs route through useNavigate. Use for membership tiers, plans or pricing on gyms, fitness studios, CrossFit boxes, yoga, pilates, boxing or spin / cycle studios.",
+  props: z.object({
+    heading: z.string().optional(),
+    description: z.string().optional(),
+    footnote: z.string().optional(),
+    tiers: z
+      .array(
+        z.object({
+          name: z.string(),
+          tagline: z.string(),
+          price: z.string(),
+          period: z.string(),
+          cta: z.string(),
+          popular: z.boolean().optional(),
+          features: z.array(
+            z.object({ label: z.string(), included: z.boolean() }),
+          ),
+        }),
+      )
+      .optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const go = useNavigate()
+    const pricingHeading = props.heading ?? "Membership tiers"
+    const pricingDesc =
+      props.description ??
+      "Flexible options to fit your lifestyle. All plans include full facility access and app booking."
+    const pricingFootnote =
+      props.footnote ??
+      "All memberships include a 7-day free trial. No initiation fees. Cancel anytime."
+    const pricingTiers = props.tiers?.length
+      ? props.tiers
+      : [
+          {
+            name: "Base Access",
+            tagline: "Perfect for self-guided workouts",
+            price: "$79",
+            period: "/month",
+            cta: "Choose Base",
+            popular: false,
+            features: [
+              { label: "Full gym floor access", included: true },
+              { label: "Locker rooms & amenities", included: true },
+              { label: "App access for booking", included: true },
+              { label: "Group classes", included: false },
+              { label: "Personal training", included: false },
+            ],
+          },
+          {
+            name: "Unlimited",
+            tagline: "All classes, all the time",
+            price: "$149",
+            period: "/month",
+            cta: "Choose Unlimited",
+            popular: true,
+            features: [
+              { label: "Everything in Base Access", included: true },
+              { label: "Unlimited group classes", included: true },
+              { label: "Priority booking (7 days)", included: true },
+              { label: "Guest passes (2/month)", included: true },
+              { label: "Personal training", included: false },
+            ],
+          },
+          {
+            name: "Elite",
+            tagline: "Personalized training + classes",
+            price: "$299",
+            period: "/month",
+            cta: "Choose Elite",
+            popular: false,
+            features: [
+              { label: "Everything in Unlimited", included: true },
+              { label: "4 personal training sessions", included: true },
+              { label: "Quarterly fitness assessment", included: true },
+              { label: "Nutrition consultation", included: true },
+              { label: "Guest passes (4/month)", included: true },
+            ],
+          },
+        ]
+
+    const CheckIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 13l4 4L19 7" />
+      </svg>
+    )
+
+    const CrossIcon = ({ className }: { className?: string }) => (
+      <svg
+        className={className}
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    )
+
+    return (
+      <section className={cn("py-20 md:py-32", props.className)}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-16 max-w-2xl text-center">
+            <h2 className="mb-4 text-3xl font-semibold text-foreground md:text-4xl">
+              {pricingHeading}
+            </h2>
+            <p className="text-muted-foreground">{pricingDesc}</p>
+          </div>
+
+          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
+            {pricingTiers.map((tier) => (
+              <article
+                key={tier.name}
+                className={cn(
+                  "relative rounded-lg p-8",
+                  tier.popular
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border bg-card",
+                )}
+              >
+                {tier.popular ? (
+                  <div className="absolute right-0 top-0 rounded-bl-sm bg-primary-foreground/20 px-3 py-1 text-xs text-primary-foreground">
+                    Popular
+                  </div>
+                ) : null}
+                <h3
+                  className={cn(
+                    "mb-2 text-lg font-semibold",
+                    tier.popular
+                      ? "text-primary-foreground"
+                      : "text-card-foreground",
+                  )}
+                >
+                  {tier.name}
+                </h3>
+                <p
+                  className={cn(
+                    "mb-6 text-sm",
+                    tier.popular
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {tier.tagline}
+                </p>
+                <div className="mb-6">
+                  <span
+                    className={cn(
+                      "text-4xl font-semibold",
+                      tier.popular
+                        ? "text-primary-foreground"
+                        : "text-card-foreground",
+                    )}
+                  >
+                    {tier.price}
+                  </span>
+                  <span
+                    className={cn(
+                      tier.popular
+                        ? "text-primary-foreground/70"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {tier.period}
+                  </span>
+                </div>
+                <ul
+                  className={cn(
+                    "mb-8 space-y-3 text-sm",
+                    tier.popular
+                      ? "text-primary-foreground/90"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {tier.features.map((feature) => (
+                    <li key={feature.label} className="flex items-center gap-2">
+                      {feature.included ? (
+                        <CheckIcon
+                          className={cn(
+                            "size-4",
+                            tier.popular
+                              ? "text-primary-foreground"
+                              : "text-primary",
+                          )}
+                        />
+                      ) : (
+                        <CrossIcon
+                          className={cn(
+                            "size-4",
+                            tier.popular
+                              ? "text-primary-foreground/50"
+                              : "text-muted-foreground/50",
+                          )}
+                        />
+                      )}
+                      <span
+                        className={cn(
+                          !feature.included &&
+                            (tier.popular
+                              ? "text-primary-foreground/60"
+                              : "text-muted-foreground/70"),
+                        )}
+                      >
+                        {feature.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => go(tier.cta)}
+                  className={cn(
+                    "w-full rounded-sm py-3 text-sm font-medium transition-colors",
+                    tier.popular
+                      ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                      : "border border-input text-foreground hover:border-border",
+                  )}
+                >
+                  {tier.cta}
+                </button>
+              </article>
+            ))}
+          </div>
+
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            {pricingFootnote}
+          </p>
+        </div>
+      </section>
+    )
+  },
+})

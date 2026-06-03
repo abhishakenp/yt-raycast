@@ -225,7 +225,7 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
   const storeCorsBase = extractTemplateCors(
     template,
     'STORE_CORS',
-    'http://localhost:3000,http://localhost:7420,http://localhost:7430,http://127.0.0.1:3000,http://127.0.0.1:7420,http://127.0.0.1:7430',
+    'http://localhost:3000,http://localhost:7420,http://localhost:7421,http://127.0.0.1:3000,http://127.0.0.1:7420,http://127.0.0.1:7421',
   )
   const adminCorsBase = extractTemplateCors(
     template,

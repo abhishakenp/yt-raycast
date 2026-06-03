@@ -106,6 +106,38 @@ function renderStructuredData(descriptionOverride) {
   ])
 }
 
+const IMAGE_STUDIO_PROMPT =
+  'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.'
+const EXAMPLE_CHIP_PROMPTS = [
+  'Mere local gym ke liye ek powerful modern website banao with membership plans',
+  'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
+  'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
+]
+
+const renderExamplePromptChips = () => {
+  const chips = [
+    { label: 'Image studio', text: IMAGE_STUDIO_PROMPT },
+    { label: 'Pet wellness', text: EXAMPLE_CHIP_PROMPTS[1] },
+    { label: 'SaaS dashboard', text: EXAMPLE_CHIP_PROMPTS[2] },
+    { label: 'Hindi gym site', text: EXAMPLE_CHIP_PROMPTS[0] },
+  ].filter((chip) => chip.text)
+
+  return `<div class="dev-prompt-chips dev-prompt-chips--glass" aria-label="Example prompts">
+    ${chips
+      .map(
+        (chip, index) => `<button
+          type="button"
+          class="dev-prompt-chip"
+          title="${escapeHtml(chip.text)}"
+          data-prompt="${escapeHtml(chip.text)}"
+        ><span class="dev-prompt-chip-num">${index + 1}</span><span class="dev-prompt-chip-label">${escapeHtml(
+          chip.label,
+        )}</span></button>`,
+      )
+      .join('')}
+  </div>`
+}
+
 function renderLogo() {
   return `<div class="logo-block">
     <div class="logo">
@@ -395,6 +427,7 @@ export function renderHomePage(siteSettings = null) {
       </div>
       </div>
       </div>
+      ${renderExamplePromptChips()}
 
       <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
         <h2>See what other speedsters generated</h2>

@@ -18,7 +18,7 @@
       "@/lib/*": ["./src/lib/*"],
       "@/server/*": ["./src/server/*"],
       "@/billing/*": ["./src/billing/*"],
-      "@ship-fast/engine": ["./packages/ship-fast-engine/src/index.js"],
+      "@ship-fast/engine": ["./packages/ship-fast-engine/src/index.ts"],
       "@ship-fast/engine/*": ["./packages/ship-fast-engine/src/*"]
     }
   },

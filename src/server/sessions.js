@@ -110,6 +110,45 @@ function writeSessionMeta(workspace, metaPatch = {}) {
   }
 }
 
+function readJsonFileIfPresent(filePath) {
+  try {
+    if (!existsSync(filePath)) return null
+    return JSON.parse(readFileSync(filePath, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
+function recoverSessionPromptFromDisk(workspace) {
+  try {
+    const promptPath = join(workspace, 'prompt.txt')
+    if (existsSync(promptPath)) return readFileSync(promptPath, 'utf-8').trim()
+  } catch {
+    /* prompt file may not exist */
+  }
+
+  const meta = readJsonFileIfPresent(join(workspace, SESSION_META_FILE))
+  const metaPrompt = String(meta?.prompt || meta?.userPrompt || meta?.brief || '').trim()
+  if (metaPrompt) return metaPrompt
+
+  const spec = readJsonFileIfPresent(join(workspace, 'site-spec.json'))
+  const specPrompt = String(spec?.prompt || spec?.userPrompt || spec?.brief || '').trim()
+  if (specPrompt) return specPrompt
+
+  const brand = String(spec?.brand || spec?.projectName || spec?.title || '').trim()
+  const tagline = String(spec?.tagline || spec?.description || '').trim()
+  if (brand && tagline) return `${brand} - ${tagline}`
+  if (brand) return brand
+
+  return ''
+}
+
+function sessionWorkspaceHasRecoverableArtifact(workspace) {
+  return ['site-spec.json', 'index.html', 'home.openui', 'tasks.json'].some((name) =>
+    existsSync(join(workspace, name)),
+  )
+}
+
 export function getWorkspacePreferredLanguage(workspace) {
   if (!workspace) return DEFAULT_PREFERRED_LANGUAGE
   return readSessionMeta(workspace).preferredLanguage
@@ -183,6 +222,7 @@ export function createSession(baseDir, prompt, userId, options = {}) {
     isPrivate: sessionMeta.isPrivate,
     themeOverride: readSessionThemeOverride(workspace),
     lastStatus: null,
+    openuiStreams: {},
     wsClients: new Set(),
   }
   const session = normalizeSession(baseSession, { now: createdAt })
@@ -245,17 +285,10 @@ export function getSession(id) {
     /* user file may not exist */
   }
 
-  // Load prompt from disk
-  let prompt = ''
-  try {
-    const promptPath = join(workspace, 'prompt.txt')
-    if (existsSync(promptPath)) prompt = readFileSync(promptPath, 'utf-8').trim()
-  } catch {
-    /* prompt file may not exist */
-  }
+  const prompt = recoverSessionPromptFromDisk(workspace)
 
-  // Auto-delete session if prompt is empty
-  if (!prompt) {
+  // Auto-delete only truly empty workspaces. Older valid sessions may miss prompt.txt.
+  if (!prompt && !sessionWorkspaceHasRecoverableArtifact(workspace)) {
     try {
       rmSync(workspace, { recursive: true, force: true })
       sessions.delete(id)
@@ -347,6 +380,7 @@ export function getSession(id) {
     themeOverride: readSessionThemeOverride(workspace),
     deployment: null,
     lastStatus: null,
+    openuiStreams: {},
     wsClients: new Set(),
     sanityConfig: sessionConfig.sanityConfig || null,
     medusaConfig: sessionConfig.medusaConfig || null,
@@ -405,51 +439,56 @@ export function getAllSessions(userId) {
   for (const s of sessions.values()) {
     syncSessionFlagsFromDisk(s)
     if (!s.prompt || s.prompt.trim() === '') {
-      // Delete empty session
-      try {
-        rmSync(s.workspace, { recursive: true, force: true })
-        sessions.delete(s.id)
-      } catch (err) {
-        console.error(`Failed to delete empty session ${s.id}:`, err?.message)
-      }
-    } else {
-      // Lazy-load elapsed from disk if not in memory
-      if (s.elapsed == null) {
+      const recoveredPrompt = recoverSessionPromptFromDisk(s.workspace)
+      if (recoveredPrompt || sessionWorkspaceHasRecoverableArtifact(s.workspace)) {
+        s.prompt = recoveredPrompt || s.id
+      } else {
+        // Delete empty session
         try {
-          const elapsedPath = join(s.workspace, 'elapsed.txt')
-          if (existsSync(elapsedPath))
-            s.elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
-        } catch {
-          /* ignore */
+          rmSync(s.workspace, { recursive: true, force: true })
+          sessions.delete(s.id)
+        } catch (err) {
+          console.error(`Failed to delete empty session ${s.id}:`, err?.message)
         }
+        continue
       }
-      // Lazy-load cost from disk if not in memory
-      if (s.cost == null) {
-        try {
-          const costPath = join(s.workspace, 'cost.txt')
-          if (existsSync(costPath)) s.cost = parseFloat(readFileSync(costPath, 'utf-8').trim())
-        } catch {
-          /* ignore */
-        }
-      }
-      // Filter by userId if provided
-      if (userId && s.userId !== userId) continue
-      validSessions.push({
-        id: s.id,
-        prompt: s.prompt,
-        createdAt: s.createdAt,
-        deployment: s.deployment || null,
-        taskCount: s.tasks.length,
-        done: s.tasks.filter((t) => t.status === 'DONE').length,
-        homepageReady: s.homepageReady ?? false,
-        siteSpecReady: s.siteSpecReady ?? false,
-        elapsed: s.elapsed ?? null,
-        cost: s.cost ?? null,
-        preferredExportTarget: s.preferredExportTarget ?? DEFAULT_PREFERRED_EXPORT_TARGET,
-        preferredLanguage: s.preferredLanguage ?? DEFAULT_PREFERRED_LANGUAGE,
-        isPrivate: s.isPrivate ?? false,
-      })
     }
+    // Lazy-load elapsed from disk if not in memory
+    if (s.elapsed == null) {
+      try {
+        const elapsedPath = join(s.workspace, 'elapsed.txt')
+        if (existsSync(elapsedPath))
+          s.elapsed = parseFloat(readFileSync(elapsedPath, 'utf-8').trim())
+      } catch {
+        /* ignore */
+      }
+    }
+    // Lazy-load cost from disk if not in memory
+    if (s.cost == null) {
+      try {
+        const costPath = join(s.workspace, 'cost.txt')
+        if (existsSync(costPath)) s.cost = parseFloat(readFileSync(costPath, 'utf-8').trim())
+      } catch {
+        /* ignore */
+      }
+    }
+    // Filter by userId if provided
+    if (userId && s.userId !== userId) continue
+    validSessions.push({
+      id: s.id,
+      prompt: s.prompt,
+      createdAt: s.createdAt,
+      deployment: s.deployment || null,
+      taskCount: s.tasks.length,
+      done: s.tasks.filter((t) => t.status === 'DONE').length,
+      homepageReady: s.homepageReady ?? false,
+      siteSpecReady: s.siteSpecReady ?? false,
+      elapsed: s.elapsed ?? null,
+      cost: s.cost ?? null,
+      preferredExportTarget: s.preferredExportTarget ?? DEFAULT_PREFERRED_EXPORT_TARGET,
+      preferredLanguage: s.preferredLanguage ?? DEFAULT_PREFERRED_LANGUAGE,
+      isPrivate: s.isPrivate ?? false,
+    })
   }
   // Sort newest first
   validSessions.sort((a, b) => b.createdAt - a.createdAt)
@@ -658,10 +697,83 @@ export function getInterruptedSessions() {
 /** Broadcast a message to all WS clients in a session */
 export function sessionBroadcast(session, msg) {
   if (msg.type === 'status') session.lastStatus = msg
+  rememberOpenUIStreamMessage(session, msg)
   const data = JSON.stringify(msg)
   for (const ws of session.wsClients) {
     if (ws.readyState === 1) ws.send(data)
   }
+}
+
+function normalizeOpenUIStreamRoute(route) {
+  const value = typeof route === 'string' && route.trim() ? route.trim() : '/'
+  return value.startsWith('/') ? value : `/${value}`
+}
+
+function getOrCreateOpenUIStream(session, route) {
+  if (!session.openuiStreams || typeof session.openuiStreams !== 'object') {
+    session.openuiStreams = {}
+  }
+  const key = normalizeOpenUIStreamRoute(route)
+  if (!session.openuiStreams[key]) {
+    session.openuiStreams[key] = {
+      route: key,
+      source: '',
+      active: false,
+      done: false,
+      error: null,
+    }
+  }
+  return session.openuiStreams[key]
+}
+
+function rememberOpenUIStreamMessage(session, msg) {
+  if (!session || !msg || typeof msg !== 'object') return
+  const type = String(msg.type || '')
+  if (!type.startsWith('openui_') && type !== 'openui-error') return
+  const stream = getOrCreateOpenUIStream(session, msg.route)
+  if (msg.type === 'openui_stream_start') {
+    stream.source = ''
+    stream.active = true
+    stream.done = false
+    stream.error = null
+    return
+  }
+  if (msg.type === 'openui_stream_chunk') {
+    const source = typeof msg.source === 'string' ? msg.source : ''
+    const token = typeof msg.token === 'string' ? msg.token : ''
+    if (source) stream.source = source
+    else if (token) stream.source += token
+    stream.active = true
+    stream.done = false
+    stream.error = null
+    return
+  }
+  if (msg.type === 'openui_stream_done') {
+    const source = typeof msg.source === 'string' ? msg.source : ''
+    if (source) stream.source = source
+    stream.active = false
+    stream.done = true
+    stream.error = null
+    return
+  }
+  if (msg.type === 'openui-error') {
+    stream.active = false
+    stream.done = false
+    stream.error = typeof msg.error === 'string' ? msg.error : 'OpenUI generation failed'
+  }
+}
+
+export function getOpenUIStreamReplayMessages(session, route = '/') {
+  const key = normalizeOpenUIStreamRoute(route)
+  const stream = session?.openuiStreams?.[key]
+  if (!stream || (!stream.active && !stream.done && !stream.error)) return []
+  if (stream.error) {
+    return [{ type: 'openui-error', route: key, error: stream.error }]
+  }
+  const messages = [{ type: 'openui_stream_start', route: key }]
+  if (stream.source) messages.push({ type: 'openui_stream_chunk', route: key, source: stream.source })
+  if (stream.done) messages.push({ type: 'openui_stream_done', route: key, source: stream.source || '' })
+  return messages
 }
 
 export function broadcastToAllSessions(msg) {

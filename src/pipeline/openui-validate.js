@@ -1,10 +1,10 @@
 import { createParser } from '@openuidev/lang-core'
-import { shipFastOpenUIContractLibrary } from '../openui/library/contract.ts'
+import { library as shipFastOpenUILibrary } from '@ship-fast/blocks'
 
 let _parser = null
 function getParser() {
   if (!_parser) {
-    _parser = createParser(shipFastOpenUIContractLibrary.toJSONSchema())
+    _parser = createParser(shipFastOpenUILibrary.toJSONSchema())
   }
   return _parser
 }
@@ -20,9 +20,11 @@ export function validateOpenUISource(source) {
   if (!/\broot\s*=/.test(text)) {
     return { ok: false, errors: [{ message: 'Missing root assignment' }], hasRoot: false }
   }
+  if (!/^\s*root\s*=\s*Stack\s*\(\s*\[/m.test(text)) {
+    return { ok: false, errors: [{ message: 'Root must be Stack([childRefs], ...)' }], hasRoot: true }
+  }
   const result = getParser().parse(text)
   const errors = result.meta?.errors || []
-  const fatal = errors.filter((e) => e && String(e.code || '') !== 'unknown-component')
-  const ok = Boolean(result.root) && fatal.length === 0
+  const ok = Boolean(result.root) && errors.length === 0
   return { ok, errors, hasRoot: Boolean(result.root) }
 }

@@ -1,0 +1,104 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+import { useNavigate } from "#/lib/use-navigate.tsx"
+import { Image } from "#/lib/img.tsx"
+
+/**
+ * BeautyStoreNewsletter — a dark newsletter CTA band for a beauty / skincare /
+ * cosmetics storefront. A wide rounded-foreground card with a background image,
+ * a centered eyebrow, a serif heading, a supporting paragraph, and a real email-
+ * capture form (email input + submit button). Form submit routes through
+ * useNavigate. Use as a list-building / first-order-discount conversion block for
+ * e-commerce, beauty boxes, or DTC personal-care brands.
+ */
+export const BeautyStoreNewsletter = defineComponent({
+  name: "BeautyStoreNewsletter",
+  description:
+    "Dark newsletter CTA band for a beauty / skincare / cosmetics storefront: a wide rounded-foreground card with a background image, centered eyebrow, serif heading, supporting paragraph, and a real email-capture form (email input + submit button). Form submit routes through useNavigate. Use as a list-building / first-order-discount conversion block for e-commerce, beauty boxes, or DTC personal-care brands.",
+  props: z.object({
+    /** Eyebrow text above heading. */
+    eyebrow: z.string().optional(),
+    /** Section heading. */
+    heading: z.string().optional(),
+    /** Supporting paragraph under the heading. */
+    description: z.string().optional(),
+    /** Email field placeholder text. */
+    placeholder: z.string().optional(),
+    /** Submit button label. */
+    submit: z.string().optional(),
+    /** Fine-print note beneath the form. */
+    note: z.string().optional(),
+    /** Alt text driving the background image. */
+    imageAlt: z.string().optional(),
+    /** Navigation target for form submit. */
+    submitTarget: z.string().optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const go = useNavigate()
+    const eyebrow = props.eyebrow ?? "Limited Time Offer"
+    const heading = props.heading ?? "Join Our Beauty Community"
+    const description =
+      props.description ??
+      "Subscribe to receive 15% off your first order, exclusive access to new arrivals, and personalized beauty recommendations."
+    const placeholder = props.placeholder ?? "Enter your email"
+    const submit = props.submit ?? "Get 15% Off"
+    const note = props.note ?? "No spam, ever. Unsubscribe anytime."
+    const imageAlt =
+      props.imageAlt ??
+      "luxury skincare products arranged on dark marble surface"
+    const submitTarget = props.submitTarget ?? submit
+
+    return (
+      <section className={cn("py-20 lg:py-28", props.className)}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-xl bg-foreground">
+            <div aria-hidden="true" className="absolute inset-0 opacity-20">
+              <Image
+                alt={imageAlt}
+                w={1200}
+                h={600}
+                loading="lazy"
+                className="size-full object-cover"
+              />
+            </div>
+            <div className="relative px-8 py-16 text-center lg:px-16 lg:py-24">
+              <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-widest text-primary">
+                {eyebrow}
+              </span>
+              <h2 className="mx-auto mb-6 max-w-2xl font-serif text-3xl font-semibold text-background sm:text-4xl lg:text-5xl">
+                {heading}
+              </h2>
+              <p className="mx-auto mb-8 max-w-xl text-lg text-background/70">
+                {description}
+              </p>
+              <form
+                className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  go(submitTarget)
+                }}
+              >
+                <input
+                  type="email"
+                  required
+                  aria-label="Email address"
+                  placeholder={placeholder}
+                  className="flex-1 rounded-full border border-border bg-background/10 px-6 py-4 text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <button
+                  type="submit"
+                  className="whitespace-nowrap rounded-full bg-primary px-8 py-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  {submit}
+                </button>
+              </form>
+              <p className="mt-4 text-sm text-background/60">{note}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  },
+})

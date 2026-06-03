@@ -38,7 +38,7 @@ export function compactStyleFragmentHtml(html) {
 //   <think>…</think>                   — Qwen 3 chat template default
 //   <think>…</redacted_thinking>       — earlier Anthropic-style leak we hit
 //   <thinking>…</thinking>              — alt format some models emit
-//   <|thinking|>…<|/thinking|>          — Kimi-style channel markers
+//   <|thinking|>…<|/thinking|>          — provider-specific channel markers
 // Each gets a separate regex so a missing closing tag in one format doesn't
 // swallow the rest of the response.
 export function stripGroqReasoningLeak(text) {
@@ -59,7 +59,6 @@ export function stripFences(html) {
 
 const PRICING = {
   'openai/gpt-oss-120b': { in: 0.6, out: 0.8 },
-  'moonshotai/kimi-k2-instruct-0905': { in: 0.7, out: 1.4 },
   'llama3-70b-8192': { in: 0.59, out: 0.79 },
   'llama3-8b-8192': { in: 0.05, out: 0.08 },
   'llama-3.1-70b-versatile': { in: 0.59, out: 0.79 },

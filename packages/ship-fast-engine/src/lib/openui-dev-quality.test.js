@@ -6,17 +6,19 @@ describe('openUIDevQualityHints', () => {
     expect(openUIDevQualityHints('').some((h) => h.includes('Empty'))).toBe(true)
   })
 
-  it('is quiet for a rich dashboard-like stub', () => {
-    const body = `root = PageShell([app], "Acme", "Operations", "light")
-app = DashboardShell("Acme", "Alex", [{label: "Core", items: ["Overview", "Reports"]}, {label: "Settings", items: ["Team"]}], "Overview", "Daily operations snapshot with enough surface area for quality heuristics.", [m, t, f, c], "Export")
-m = MetricGrid([{label: "Requests", value: "120", detail: "24h", tone: "success"}, {label: "Errors", value: "2", detail: "24h", tone: "warning"}, {label: "Latency", value: "120ms", detail: "p95"}])
-t = ActivityTable("Recent activity", [{status: "Delivered", title: "Invoice #4401", detail: "Batch A", meta: "2m ago"}, {status: "Queued", title: "Invoice #4402", detail: "Batch B", meta: "5m ago"}, {status: "Failed", title: "Invoice #4390", detail: "Batch Z", meta: "1h ago"}])
-f = FeatureBento("Highlights", "What changed this week across regions and product lines.", [{title: "Throughput", description: "Up 12% WoW with stable error budget.", meta: "Ops"}, {title: "Latency", description: "P95 stable under load tests.", meta: "Perf"}, {title: "Cost", description: "Infra spend down 3% after cache tuning.", meta: "Fin"}])
-c = CampaignList("Rollouts", [{status: "Live", title: "Canary 5%", subtitle: "EU region only", metrics: ["OK", "0 rollbacks"]}, {status: "Planned", title: "Canary 25%", subtitle: "US next", metrics: ["Pending"]}])
+  it('is quiet for a rich registry-module stub', () => {
+    const body = `root = Stack([header, main, footer], "col", "none")
+header = AnalyticsHeader("Acme Ops", "Robotics fleet control", "Search robot ID", "Export", "/")
+main = Stack([hero, kpis, table, features], "col", "lg")
+hero = ManufacturingHero("Live", "Warehouse robotics command", "Track incidents, battery telemetry, pick rates, and dispatch queues from one operational surface.", "Open fleet", "Review incidents", "Robotics dashboard", "Fleet Health", "All shifts online", [{value: "128", label: "Active robots"}, {value: "96%", label: "Battery average"}])
+kpis = DashboardKpis([{label: "Pick rate", value: "12,420/hr", delta: "+8%", trendUp: true}, {label: "Incidents", value: "4", delta: "-2", trendUp: true}, {label: "Queue", value: "22", delta: "+1", trendUp: false}])
+table = DashboardOrdersTable("Active dispatch queue", [{id: "R-104", customer: "Forklift 104", status: "Paused", total: "Aisle 7", date: "2m ago"}, {id: "R-222", customer: "Forklift 222", status: "Charging", total: "Bay 3", date: "8m ago"}])
+features = ManufacturingFeatures("Operational controls", "Every module is tuned for warehouse teams, not a generic SaaS shell.", [{title: "Incident routing", description: "Escalate blocked paths before they stop pick flow."}, {title: "Battery telemetry", description: "Balance charging windows by shift demand."}, {title: "Dispatch queues", description: "Prioritize urgent replenishment tasks."}])
+footer = ManufacturingFooter("Acme Ops", ["Fleet", "Incidents", "Telemetry"])
 `
     const src = `${body}\n${' '.repeat(120)}\n`
     const hints = openUIDevQualityHints(src)
-    expect(hints.filter((h) => h.includes('primary layout'))).toHaveLength(0)
+    expect(hints.filter((h) => h.includes('primary registry'))).toHaveLength(0)
     expect(hints.filter((h) => h.includes('Few named'))).toHaveLength(0)
     expect(hints.filter((h) => h.includes('Short program'))).toHaveLength(0)
   })

@@ -12,14 +12,6 @@ export const GROQ_AUX_MODEL = (process.env.GROQ_AUX_MODEL ?? '').trim() || 'llam
 export const HOMEPAGE_MODEL = (process.env.HOMEPAGE_MODEL ?? '').trim() || GROQ_MODEL
 export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
 export const GEMINI_MODEL = (process.env.GEMINI_MODEL ?? '').trim() || 'gemini-3.5-flash'
-export const HYBRID_PLANNER_MODEL =
-  (process.env.HYBRID_PLANNER_MODEL ?? process.env.PLANNER_MODEL ?? '').trim() || HOMEPAGE_MODEL
-/** Default on when GEMINI_API_KEY is set; set SHIPFAST_HYBRID_ENGINE=0 to force legacy Groq-only. */
-export const SHIPFAST_HYBRID_ENGINE =
-  process.env.SHIPFAST_HYBRID_ENGINE !== '0' && Boolean(GEMINI_API_KEY)
-/** Kimi-target homepage compiler — default on when Gemini+Groq are available; set SHIPFAST_KIMI_ENGINE=0 to force the older hybrid/Groq path. */
-export const SHIPFAST_KIMI_ENGINE =
-  process.env.SHIPFAST_KIMI_ENGINE !== '0' && Boolean(GROQ_API_KEY && GEMINI_API_KEY)
 /** Mobbin Pro DNA anchors — on by default; set SHIPFAST_MOBBIN=0 to disable. */
 export const SHIPFAST_MOBBIN = process.env.SHIPFAST_MOBBIN !== '0'
 /** OpenUI `home.openui` generation (matches streaming default for predictable layouts). */

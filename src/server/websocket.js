@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws'
-import { getSession } from './sessions.js'
+import { getOpenUIStreamReplayMessages, getSession } from './sessions.js'
 
 let _wss = null
 const devReloadClients = new Set()
@@ -57,6 +57,9 @@ export function setupWebSocket(httpServer) {
     if (tasks.length > 0) ws.send(JSON.stringify({ type: 'tasks_loaded', tasks }))
     if (siteSpecReady) ws.send(JSON.stringify({ type: 'site_spec_ready', ready: true }))
     if (homepageReady) ws.send(JSON.stringify({ type: 'homepage_ready' }))
+    for (const message of getOpenUIStreamReplayMessages(session, '/')) {
+      ws.send(JSON.stringify(message))
+    }
     if (alternativeDesign)
       ws.send(JSON.stringify({ type: 'alternative_design_ready', design: alternativeDesign }))
     if (themeOverride)

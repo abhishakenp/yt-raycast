@@ -20,8 +20,10 @@ const setMainInert = (on: boolean): void => {
 
 const hideShell = (): void => {
   if (!shell) return
+  const wasOpen = !shell.hidden
   shell.hidden = true
   setMainInert(false)
+  if (wasOpen) window.dispatchEvent(new CustomEvent('sf-home-session-closed'))
 }
 
 const clearStrayEmbedInert = (): void => {
@@ -58,12 +60,8 @@ const bindListeners = (): void => {
 
     if (ev.data?.type !== 'sf-close-embedded-session') return
     if (!shell || shell.hidden) return
-    if ((history.state as Record<string, unknown> | null)?.[STATE_KEY]) {
-      history.back()
-    } else {
-      history.replaceState(null, '', '/')
-      hideShell()
-    }
+    history.replaceState(null, '', '/')
+    hideShell()
   })
 }
 
@@ -104,6 +102,15 @@ const showShellForSession = (sessionId: string | number): void => {
 
 export const openEmbeddedSession = (sessionId: string | number): void => {
   const idStr: string = String(sessionId)
-  sessionStorage.setItem('sf_return_home', '1')
-  location.href = `/session/${encodeURIComponent(idStr)}`
+  if (!isMarketingHomePath()) {
+    sessionStorage.setItem('sf_return_home', '1')
+    location.href = `/session/${encodeURIComponent(idStr)}`
+    return
+  }
+  ensureShell()
+  history.pushState({ [STATE_KEY]: idStr }, '', `/session/${encodeURIComponent(idStr)}`)
+  showShellForSession(idStr)
+  try {
+    frame?.focus()
+  } catch {}
 }

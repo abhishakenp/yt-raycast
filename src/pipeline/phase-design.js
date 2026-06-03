@@ -9,7 +9,6 @@ import {
   readMobbinAnchorFromWorkspace,
   writeMobbinAnchorToWorkspace,
 } from '@ship-fast/engine/lib/mobbin/index.js'
-import { isShipHomepageEngineEnabled } from '@ship-fast/engine/pipeline/ship-homepage-engine.js'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -30,7 +29,7 @@ export async function generateDesignBrief(prompt, workspace, log, indiaMode = nu
   // generateDesignBrief is called standalone (no upstream runner), fall back to
   // inferring here. Fail-soft: a null anchor lets downstream skip Mobbin.
   let mobbinAnchor = readMobbinAnchorFromWorkspace(workspace)
-  if (!mobbinAnchor?.app && isMobbinEnabled() && !isShipHomepageEngineEnabled()) {
+  if (!mobbinAnchor?.app && isMobbinEnabled()) {
     const projectContext = readProjectContext(workspace)
     try {
       mobbinAnchor = await inferMobbinAnchor({ brief: prompt, projectContext })

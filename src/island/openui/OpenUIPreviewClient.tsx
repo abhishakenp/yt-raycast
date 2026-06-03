@@ -3,6 +3,18 @@ import { OpenUIPreviewLaunchLoading } from './OpenUIPreviewLaunchLoading'
 import { openUIPreviewReadyToDisplay } from '@/lib/openui-preview-gate'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
+type OpenUIProviderConfig = Record<string, string | null>
+
+type OpenUIIntegrationPayload = {
+  enabled: boolean
+  config?: OpenUIProviderConfig | null
+}
+
+type OpenUISessionIntegrations = {
+  sanity?: OpenUIIntegrationPayload | null
+  medusa?: OpenUIIntegrationPayload | null
+}
+
 /**
  * Vanilla replacement for `useParams()` from next/navigation.
  * Express serves /preview/:id and /preview/:id/(.*) — parse them off pathname.
@@ -46,6 +58,47 @@ function getAnonOwnerHeader(sessionId: string): Record<string, string> {
   }
 }
 
+function normalizeOpenUIIntegrationConfig(raw: unknown): OpenUIProviderConfig {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  const result: OpenUIProviderConfig = {}
+  for (const [key, value] of Object.entries(raw)) {
+    if (typeof value === 'string') {
+      result[key] = value.trim() || null
+    }
+  }
+  return result
+}
+
+function normalizeOpenUISessionIntegrations(raw: unknown): OpenUISessionIntegrations {
+  const normalized: OpenUISessionIntegrations = {
+    sanity: { enabled: false, config: {} },
+    medusa: { enabled: false, config: {} },
+  }
+
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return normalized
+  const payload = raw as Record<string, unknown>
+
+  const sanity = payload.sanity
+  if (sanity && typeof sanity === 'object' && !Array.isArray(sanity)) {
+    const input = sanity as { enabled?: unknown; config?: unknown }
+    normalized.sanity = {
+      enabled: Boolean(input.enabled),
+      config: normalizeOpenUIIntegrationConfig(input.config),
+    }
+  }
+
+  const medusa = payload.medusa
+  if (medusa && typeof medusa === 'object' && !Array.isArray(medusa)) {
+    const input = medusa as { enabled?: unknown; config?: unknown }
+    normalized.medusa = {
+      enabled: Boolean(input.enabled),
+      config: normalizeOpenUIIntegrationConfig(input.config),
+    }
+  }
+
+  return normalized
+}
+
 function artFetch(path: string, sessionId: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers)
   for (const [k, v] of Object.entries(getAnonOwnerHeader(sessionId))) {
@@ -62,8 +115,14 @@ function artFetch(path: string, sessionId: string, init: RequestInit = {}) {
   })
 }
 
+function isAbortLike(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+  const name = 'name' in error ? String((error as { name?: unknown }).name || '') : ''
+  return name === 'AbortError'
+}
+
 /**
- * `/preview/:id/` — stream or load OpenUI, or embed legacy static HTML from the workspace.
+ * `/preview/:id/` — stream or load the OpenUI artifact for the session.
  */
 export function OpenUIPreviewClient() {
   const params = useParams()
@@ -81,6 +140,9 @@ export function OpenUIPreviewClient() {
   const [streamText, setStreamText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [bootError, setBootError] = useState<string | null>(null)
+  const [sessionIntegrations, setSessionIntegrations] = useState<OpenUISessionIntegrations | null>(
+    null,
+  )
   /** True while we know home.openui exists and are fetching it (no LLM stream). */
   const [loadingSavedPreview, setLoadingSavedPreview] = useState(false)
   /**
@@ -96,6 +158,17 @@ export function OpenUIPreviewClient() {
   /** Site-spec palette for OpenUIViewer — stable across streaming; do not clear when stream text updates. */
   const viewerPaletteRef = useRef<Record<string, string>>({})
   const [viewerPalette, setViewerPalette] = useState<Record<string, string>>({})
+
+  const stopArtifactLoadWait = () => {
+    if (artifactLoadTimeoutRef.current != null) {
+      clearTimeout(artifactLoadTimeoutRef.current)
+      artifactLoadTimeoutRef.current = null
+    }
+    if (pollRef.current) {
+      clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+  }
 
   const commitViewerPalette = (theme: Record<string, string>) => {
     if (!theme || typeof theme !== 'object' || Object.keys(theme).length === 0) return
@@ -147,22 +220,18 @@ export function OpenUIPreviewClient() {
       return tryConsumeOpenUIResponse(r)
     }
 
-    const clearArtifactLoadTimeout = () => {
-      if (artifactLoadTimeoutRef.current != null) {
-        clearTimeout(artifactLoadTimeoutRef.current)
-        artifactLoadTimeoutRef.current = null
-      }
-    }
-
     const tick = async () => {
-      const got = await tryLoadFinal()
-      if (got) {
-        clearArtifactLoadTimeout()
-        if (pollRef.current) {
-          clearInterval(pollRef.current)
-          pollRef.current = null
+      try {
+        const got = await tryLoadFinal()
+        if (got) {
+          stopArtifactLoadWait()
+          return
         }
-        return
+      } catch (error) {
+        if (ac.signal.aborted || isAbortLike(error)) return
+        setLoadingSavedPreview(false)
+        setIsStreaming(false)
+        setBootError('Could not load saved preview. Try refreshing this page.')
       }
     }
 
@@ -184,7 +253,11 @@ export function OpenUIPreviewClient() {
       }
       const session = (await sessionR.json()) as {
         openuiReady?: boolean
+        integrations?: OpenUISessionIntegrations
       }
+      setSessionIntegrations(
+        normalizeOpenUISessionIntegrations(session?.integrations ?? session),
+      )
 
       const artifactOnDisk = Boolean(session.openuiReady)
 
@@ -198,7 +271,7 @@ export function OpenUIPreviewClient() {
       // Saved OpenUI exists: never call /api/stream-openui on reload — only poll until GET succeeds
       // (transient errors, iframe race, or strict auth timing).
       if (artifactOnDisk) {
-        clearArtifactLoadTimeout()
+        stopArtifactLoadWait()
         artifactLoadTimeoutRef.current = setTimeout(() => {
           artifactLoadTimeoutRef.current = null
           if (settledRef.current || ac.signal.aborted) return
@@ -220,19 +293,17 @@ export function OpenUIPreviewClient() {
         pollRef.current = setInterval(tick, 1200)
       }
       void tick()
-    })()
+    })().catch((error) => {
+      if (ac.signal.aborted || isAbortLike(error)) return
+      setLoadingSavedPreview(false)
+      setIsStreaming(false)
+      setBootError('Could not load saved preview. Try refreshing this page.')
+    })
 
     return () => {
       ac.abort()
-      if (artifactLoadTimeoutRef.current != null) {
-        clearTimeout(artifactLoadTimeoutRef.current)
-        artifactLoadTimeoutRef.current = null
-      }
+      stopArtifactLoadWait()
       setLoadingSavedPreview(false)
-      if (pollRef.current) {
-        clearInterval(pollRef.current)
-        pollRef.current = null
-      }
     }
   }, [id, previewRoute])
 
@@ -240,7 +311,10 @@ export function OpenUIPreviewClient() {
     if (!id || previewRoute !== '/') return
     let closed = false
     let ws: WebSocket | null = null
-    const backendWs = process.env.NEXT_PUBLIC_SF_BACKEND_WS_HOST?.trim() || ''
+    const backendWs =
+      typeof process !== 'undefined'
+        ? process.env?.NEXT_PUBLIC_SF_BACKEND_WS_HOST?.trim() || ''
+        : ''
     const host =
       typeof location !== 'undefined' && location.port === '3000' && backendWs
         ? backendWs
@@ -249,7 +323,7 @@ export function OpenUIPreviewClient() {
     try {
       ws = new WebSocket(url)
       ws.onmessage = (event) => {
-        if (closed || settledRef.current) return
+        if (closed) return
         let message: {
           type?: string
           route?: string
@@ -263,7 +337,10 @@ export function OpenUIPreviewClient() {
           return
         }
         if (!message || message.route !== '/') return
+        if (settledRef.current && message.type !== 'openui_stream_start') return
         if (message.type === 'openui_stream_start') {
+          settledRef.current = false
+          stopArtifactLoadWait()
           // Keep `final` so the previously rendered UI stays visible until the new
           // stream has enough source to take over (see `liveSource` derivation).
           setStreamText('')
@@ -275,6 +352,8 @@ export function OpenUIPreviewClient() {
         if (message.type === 'openui_stream_chunk') {
           const source = typeof message.source === 'string' ? message.source : ''
           const token = typeof message.token === 'string' ? message.token : ''
+          settledRef.current = false
+          stopArtifactLoadWait()
           if (source) setStreamText(source)
           else if (token) setStreamText((current) => current + token)
           setIsStreaming(true)
@@ -284,6 +363,7 @@ export function OpenUIPreviewClient() {
         if (message.type === 'openui_stream_done') {
           const source = typeof message.source === 'string' ? message.source : ''
           if (source) {
+            settledRef.current = true
             const palette =
               Object.keys(viewerPaletteRef.current).length > 0
                 ? { ...viewerPaletteRef.current }
@@ -309,12 +389,16 @@ export function OpenUIPreviewClient() {
                 commitViewerPalette(t)
                 setFinal((prev) => (prev ? { ...prev, theme: t } : prev))
               })
+              .catch((error) => {
+                if (isAbortLike(error)) return
+                console.warn('[openui-island] failed to refresh preview theme:', error)
+              })
           }
           setIsStreaming(false)
         }
         if (message.type === 'openui-error') {
           const error = typeof message.error === 'string' ? message.error : 'OpenUI generation failed'
-          setBootError(`${error}. Falling back to legacy preview...`)
+          setBootError(error)
           setLoadingSavedPreview(false)
           setIsStreaming(false)
           setStreamText('')
@@ -410,7 +494,9 @@ export function OpenUIPreviewClient() {
             response={liveSource}
             theme={liveTheme}
             isStreaming={liveIsStreaming}
-            embed
+            embed={true}
+            sessionId={id}
+            integrations={sessionIntegrations || undefined}
           />
         ) : null}
         {showLoader ? <OpenUIPreviewLaunchLoading phase={loaderPhase} /> : null}

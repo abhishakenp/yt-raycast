@@ -1,0 +1,179 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+import { useNavigate } from "#/lib/use-navigate.tsx"
+
+/**
+ * FurnitureStoreNavbar — sticky, backdrop-blurred top navigation bar for a warm
+ * minimal furniture / home-decor e-commerce site. A bordered-bottom header pinned
+ * to the top: a decorative house-glyph logo tile + store name on the left, a
+ * horizontal set of category nav links (with a destructive-colored "Sale" link)
+ * in the center, and a set of search / account / cart icon buttons (cart shows a
+ * count badge) plus a mobile hamburger on the right. Links and icon buttons route
+ * through useNavigate for page-switching. Use as the sticky site header for
+ * furniture stores, home-decor or interiors brands, homewares retailers, or any
+ * warm boutique-retail landing page. Renders fully with no props via baked-in
+ * "Haven & Home" defaults.
+ */
+export const FurnitureStoreNavbar = defineComponent({
+  name: "FurnitureStoreNavbar",
+  description:
+    "Sticky backdrop-blurred top navigation bar for a warm minimal furniture / home-decor e-commerce site: bordered-bottom header pinned to the top with a house-glyph logo tile + store name on the left, horizontal category nav links (with a destructive-colored 'Sale' link) in the center, and search / account / cart icon buttons (cart shows a count badge) plus a mobile hamburger on the right. Links and icon buttons route through useNavigate for page-switching. Use as the sticky site header for furniture stores, home-decor or interiors brands, homewares retailers, or any warm boutique-retail landing page.",
+  props: z.object({
+    /** Brand / store name shown beside the logo tile. */
+    brand: z.string().optional(),
+    /** Top-level navbar link labels (must match site routes for page switching). */
+    nav: z.array(z.string()).optional(),
+    /** Cart item-count badge value. */
+    cartCount: z.string().optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const go = useNavigate()
+    const brand = props.brand ?? "Haven & Home"
+    const nav = props.nav?.length
+      ? props.nav
+      : ["Room Inspiration", "Furniture", "Decor", "New Arrivals", "Sale"]
+    const cartCount = props.cartCount ?? "3"
+
+    const LogoMark = ({ className }: { className?: string }) => (
+      <svg
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={className}
+        aria-hidden="true"
+      >
+        <path d="M12 2L2 9v11h8v-7h4v7h8V9L12 2z" />
+      </svg>
+    )
+
+    return (
+      <header
+        className={cn(
+          "sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm",
+          props.className,
+        )}
+      >
+        <nav
+          className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
+          aria-label="Main navigation"
+        >
+          <div className="flex h-16 items-center justify-between lg:h-20">
+            <button
+              type="button"
+              onClick={() => go(brand)}
+              className="flex items-center gap-2"
+              aria-label={`${brand} - Return to homepage`}
+            >
+              <LogoMark className="size-8 text-muted-foreground" />
+              <span className="text-xl font-semibold tracking-tight lg:text-2xl">
+                {brand}
+              </span>
+            </button>
+
+            <div className="hidden items-center gap-8 md:flex">
+              {nav.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => go(label)}
+                  className={cn(
+                    "text-sm font-medium transition-colors",
+                    label.toLowerCase() === "sale"
+                      ? "text-destructive hover:text-destructive/80"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => go("Search")}
+                className="rounded-full p-2 transition-colors hover:bg-muted"
+                aria-label="Search"
+              >
+                <svg
+                  className="size-5 text-muted-foreground"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => go("Account")}
+                className="hidden rounded-full p-2 transition-colors hover:bg-muted sm:flex"
+                aria-label="Account"
+              >
+                <svg
+                  className="size-5 text-muted-foreground"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => go("Cart")}
+                className="relative rounded-full p-2 transition-colors hover:bg-muted"
+                aria-label="Shopping cart"
+              >
+                <svg
+                  className="size-5 text-muted-foreground"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                  {cartCount}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => go(nav[0])}
+                className="rounded-full p-2 transition-colors hover:bg-muted md:hidden"
+                aria-label="Menu"
+                aria-expanded="false"
+              >
+                <svg
+                  className="size-5 text-muted-foreground"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </nav>
+      </header>
+    )
+  },
+})

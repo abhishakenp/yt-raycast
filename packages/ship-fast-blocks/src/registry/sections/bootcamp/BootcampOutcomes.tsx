@@ -1,0 +1,101 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+
+/**
+ * BootcampOutcomes — proven outcomes / stats band for a coding bootcamp /
+ * career-school landing page. A centered eyebrow, heading and description
+ * above a 4-up metrics grid of large bold figures, followed by a 3-column row
+ * of progress-bar cards showing salary before / after / increase. Use as the
+ * outcomes validation section for bootcamps, academies, or vocational programs
+ * that want to showcase placement rate and earning potential.
+ */
+export const BootcampOutcomes = defineComponent({
+  name: "BootcampOutcomes",
+  description:
+    "Proven outcomes / stats band for a coding bootcamp / career-school landing page: centered eyebrow, heading and description above a 4-up metrics grid of large bold figures, followed by a 3-column row of progress-bar cards showing salary before, after, and increase. Use as the outcomes validation section for bootcamps, academies, or vocational programs that want to showcase placement rate and earning potential.",
+  props: z.object({
+    /** Section eyebrow label. */
+    eyebrow: z.string().optional(),
+    /** Section heading. */
+    heading: z.string().optional(),
+    /** Lead paragraph under the heading. */
+    description: z.string().optional(),
+    /** Metric figures: value + label. */
+    stats: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
+    /** Salary progress bars: value, label, percentage width (0-100). */
+    bars: z
+      .array(z.object({ value: z.string(), label: z.string(), pct: z.number() }))
+      .optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const outcomesEyebrow = props.eyebrow ?? "Proven Outcomes"
+    const outcomesHeading =
+      props.heading ?? "Results that speak for themselves"
+    const outcomesDesc =
+      props.description ??
+      "Our graduates consistently achieve life-changing career outcomes within 6 months of completion."
+    const outcomeStats = props.stats?.length
+      ? props.stats
+      : [
+          { value: "89%", label: "Job placement rate within 6 months" },
+          { value: "$85k", label: "Average starting salary" },
+          { value: "2,400+", label: "Graduates placed since 2019" },
+          { value: "4.9/5", label: "Student satisfaction rating" },
+        ]
+    const outcomeBars = props.bars?.length
+      ? props.bars
+      : [
+          { value: "$52k", label: "Average student income before", pct: 55 },
+          { value: "$85k", label: "Average graduate salary after", pct: 85 },
+          { value: "$33k+", label: "Average salary increase", pct: 63 },
+        ]
+
+    return (
+      <section
+        className={cn("bg-background py-20 lg:py-32", props.className)}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-16 max-w-3xl text-center lg:mb-20">
+            <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-wider text-primary">
+              {outcomesEyebrow}
+            </span>
+            <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
+              {outcomesHeading}
+            </h2>
+            <p className="text-lg text-muted-foreground">{outcomesDesc}</p>
+          </div>
+          <div className="mb-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {outcomeStats.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="mb-2 text-5xl font-bold text-primary">
+                  {s.value}
+                </p>
+                <p className="text-muted-foreground">{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {outcomeBars.map((bar) => (
+              <div key={bar.label} className="rounded-xl bg-muted/60 p-6">
+                <p className="mb-1 text-3xl font-bold">{bar.value}</p>
+                <p className="mb-3 text-sm text-muted-foreground">
+                  {bar.label}
+                </p>
+                <div className="h-2 overflow-hidden rounded-full bg-border">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${bar.pct}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  },
+})

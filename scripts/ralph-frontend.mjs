@@ -20,7 +20,7 @@
  *   RALPH_PROMPT         (default brief)    prompt fed to /api/sessions
  *   RALPH_TIME_MS        (default 25000)    per-round budget
  *   RALPH_VISION_MIN     (default 75)
- *   RALPH_PORT           (default 7430)     ship-fast server port
+ *   RALPH_PORT           (default 7420)     ship-fast server port
  *   RALPH_AUTOSTART      (default 1)        boot bun src/index.js if port idle
  *   RALPH_KEEP_BEST      (default 1)        copy each round into .ralph/<run>/iter-NN/
  *   RALPH_STOP_ON_GREEN  (default 0)        stop after first all-gates-green round
@@ -50,7 +50,7 @@ import { validateLucideIcons, ensureLucideRegistry } from '../playground-engine-
 const ROUNDS = parseInt(process.env.RALPH_ROUNDS || '5', 10)
 const TIME_BUDGET_MS = parseInt(process.env.RALPH_TIME_MS || '60000', 10)
 const VISION_MIN = parseInt(process.env.RALPH_VISION_MIN || '75', 10)
-const PORT = parseInt(process.env.RALPH_PORT || '7430', 10)
+const PORT = parseInt(process.env.RALPH_PORT || '7420', 10)
 const AUTOSTART = process.env.RALPH_AUTOSTART !== '0'
 const KEEP_BEST = process.env.RALPH_KEEP_BEST !== '0'
 const STOP_ON_GREEN = process.env.RALPH_STOP_ON_GREEN === '1'

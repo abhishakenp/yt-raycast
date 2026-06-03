@@ -1,4 +1,4 @@
-import { openUIComponentOpenPatternSource } from '../openui/library/contract'
+import { openUIComponentOpenPatternSource } from '@ship-fast/blocks'
 
 /**
  * Heuristic: enough OpenUI source has arrived that the shell can show a first

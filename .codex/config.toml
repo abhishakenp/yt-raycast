@@ -1,2 +1,10 @@
 [features]
 codex_hooks = true
+
+[mcp_servers.macp]
+type = "stdio"
+command = "bash"
+args = ["/Users/livio/Documents/ship-fast/.macp/run-macp-agent-mcp.sh", "server"]
+
+[mcp_servers.macp.env]
+MACP_PROJECT_ROOT = "/Users/livio/Documents/ship-fast"

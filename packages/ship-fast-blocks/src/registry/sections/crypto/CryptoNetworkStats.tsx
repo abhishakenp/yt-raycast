@@ -1,0 +1,150 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+
+/**
+ * CryptoNetworkStats — inverted dark data-band for a crypto / DeFi
+ * infrastructure landing page. A `bg-foreground` section holding KPI counter
+ * cells (value + label), a 24h transaction volume mini bar chart with a
+ * change badge and update timestamp, and a network health panel with a live
+ * pulsing status dot plus metric rows (label/value pairs). Use as a trust-
+ * building stats band for protocols, chains, bridges, or staking networks.
+ */
+export const CryptoNetworkStats = defineComponent({
+  name: "CryptoNetworkStats",
+  description:
+    "Inverted dark data-band for a crypto / DeFi infrastructure landing page: bg-foreground section containing KPI counter cells (value + label), a 24h transaction volume mini bar chart with a change badge and update timestamp, and a network health panel with a live pulsing status dot plus metric rows (label/value pairs). Use as a trust-building stats band for protocols, chains, bridges, or staking networks.",
+  props: z.object({
+    /** Section heading. */
+    heading: z.string().optional(),
+    /** Section description. */
+    description: z.string().optional(),
+    /** KPI counters (value + label pairs). */
+    kpis: z
+      .array(z.object({ value: z.string(), label: z.string() }))
+      .optional(),
+    /** Volume chart panel heading. */
+    volumeLabel: z.string().optional(),
+    /** Volume change badge text. */
+    volumeChange: z.string().optional(),
+    /** Volume panel timestamp text. */
+    volumeUpdated: z.string().optional(),
+    /** Health panel heading. */
+    healthLabel: z.string().optional(),
+    /** Health status text. */
+    healthStatus: z.string().optional(),
+    /** Health metric rows (label + value pairs). */
+    health: z
+      .array(z.object({ label: z.string(), value: z.string() }))
+      .optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const heading = props.heading ?? "Network Statistics"
+    const description =
+      props.description ??
+      "Live data from the NexusChain mainnet and bridge infrastructure."
+    const kpis = props.kpis?.length
+      ? props.kpis
+      : [
+          { value: "$2.4B", label: "Total Value Locked" },
+          { value: "847K", label: "Daily Transactions" },
+          { value: "156", label: "Validators Active" },
+          { value: "$0.002", label: "Avg. Transaction Fee" },
+        ]
+    const volumeLabel =
+      props.volumeLabel ?? "Transaction Volume (24h)"
+    const volumeChange = props.volumeChange ?? "+8.3%"
+    const volumeUpdated =
+      props.volumeUpdated ?? "Updated: 2 minutes ago"
+    const healthLabel = props.healthLabel ?? "Network Health"
+    const healthStatus = props.healthStatus ?? "Operational"
+    const health = props.health?.length
+      ? props.health
+      : [
+          { label: "Block Time", value: "2.1s avg" },
+          { label: "Finality", value: "~400ms" },
+          { label: "Uptime (30d)", value: "99.97%" },
+          { label: "Active Validators", value: "156 / 156" },
+        ]
+
+    const volumeBars = [45, 60, 55, 70, 65, 80, 75, 90, 100]
+
+    return (
+      <section
+        className={cn(
+          "bg-foreground py-20 text-background lg:py-32",
+          props.className,
+        )}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-16 max-w-3xl text-center">
+            <h2 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              {heading}
+            </h2>
+            <p className="text-lg text-background/60">{description}</p>
+          </div>
+          <div className="mb-12 grid grid-cols-2 gap-8 lg:grid-cols-4">
+            {kpis.map((kpi) => (
+              <div key={kpi.label} className="text-center">
+                <p className="mb-2 text-4xl font-semibold lg:text-5xl">
+                  {kpi.value}
+                </p>
+                <p className="text-sm text-background/60">{kpi.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+            <div className="rounded-xl border border-background/20 bg-background/10 p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h4 className="font-medium text-background/90">
+                  {volumeLabel}
+                </h4>
+                <span className="text-sm text-primary">{volumeChange}</span>
+              </div>
+              <div className="flex h-24 items-end gap-2">
+                {volumeBars.map((h, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "flex-1 rounded-t",
+                      i === volumeBars.length - 1
+                        ? "bg-primary/80"
+                        : "bg-background/40",
+                    )}
+                    style={{ height: `${h}%` }}
+                  />
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-background/50">
+                {volumeUpdated}
+              </p>
+            </div>
+            <div className="rounded-xl border border-background/20 bg-background/10 p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h4 className="font-medium text-background/90">
+                  {healthLabel}
+                </h4>
+                <span className="flex items-center gap-2 text-sm text-primary">
+                  <span className="size-2 animate-pulse rounded-full bg-primary" />
+                  {healthStatus}
+                </span>
+              </div>
+              <div className="space-y-3">
+                {health.map((h) => (
+                  <div
+                    key={h.label}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-background/60">{h.label}</span>
+                    <span className="text-background">{h.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  },
+})

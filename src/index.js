@@ -9,7 +9,7 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { startServer, startCLISession } from './server/index.js'
 
-const PORT = Number(process.env.DASHBOARD_PORT) || 7430
+const PORT = Number(process.env.DASHBOARD_PORT) || 7420
 
 function cleanupPort() {
   try {

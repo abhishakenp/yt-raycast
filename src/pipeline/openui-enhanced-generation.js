@@ -40,14 +40,6 @@ export async function runOpenUIEnhancedGeneration({
       type: 'openui-error',
       error: err?.message ?? 'OpenUI generation failed',
     })
-
-    const { runAll } = await import('@ship-fast/engine')
-    return runAll({
-      prompt,
-      workspace,
-      sessionCtx,
-      preferredLanguage,
-      integrations,
-    })
+    throw err
   }
 }

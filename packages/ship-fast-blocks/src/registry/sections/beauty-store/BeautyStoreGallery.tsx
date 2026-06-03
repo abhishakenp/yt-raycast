@@ -1,0 +1,101 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+import { Image } from "#/lib/img.tsx"
+
+/**
+ * BeautyStoreGallery — a behind-the-scenes mosaic image gallery for a beauty /
+ * skincare storefront. Centered eyebrow, heading, and short paragraph above a
+ * responsive grid: a large feature image with an overlay gradient and caption
+ * (top-left tile, spans 2 columns and 2 rows on desktop), surrounded by smaller
+ * square images. Every image uses alt-driven lazy <Image>. Use for editorial product
+ * moments, brand storytelling, spa/lifestyle photography, or any cosmetics / wellness
+ * visual showcase block.
+ */
+export const BeautyStoreGallery = defineComponent({
+  name: "BeautyStoreGallery",
+  description:
+    "Behind-the-scenes mosaic image gallery for a beauty / skincare storefront: centered eyebrow, heading, and short paragraph above a responsive grid. A large feature image with an overlay gradient and caption (top-left tile, spanning 2 columns and 2 rows on desktop) surrounded by smaller square images. All images use alt-driven lazy <Image>. Use for editorial product moments, brand storytelling, spa/lifestyle photography, or any cosmetics / wellness visual showcase block.",
+  props: z.object({
+    /** Eyebrow text above heading. */
+    eyebrow: z.string().optional(),
+    /** Section heading. */
+    heading: z.string().optional(),
+    /** Supporting paragraph under the heading. */
+    description: z.string().optional(),
+    /** Caption overlaid on the large feature image. */
+    featureCaption: z.string().optional(),
+    /** Alt text for each gallery tile (first tile is the large feature). */
+    imageAlts: z.array(z.string()).optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const eyebrow = props.eyebrow ?? "Behind the Scenes"
+    const heading = props.heading ?? "Beauty in Every Detail"
+    const description =
+      props.description ??
+      "From our curated collections to your daily routine, discover moments of beauty that inspire."
+    const featureCaption = props.featureCaption ?? "Spa Experiences"
+    const imageAlts = props.imageAlts?.length
+      ? props.imageAlts
+      : [
+          "woman receiving facial treatment at luxury spa with soft ambient lighting",
+          "flat lay of organic skincare products with dried flowers",
+          "collection of colorful lipsticks arranged artistically",
+          "elegant perfume bottle with soft rose petals",
+          "minimalist skincare routine products on marble countertop",
+        ]
+
+    return (
+      <section className={cn("py-20 lg:py-28", props.className)}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-16 max-w-2xl text-center">
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-widest text-primary">
+              {eyebrow}
+            </span>
+            <h2 className="mb-4 font-serif text-3xl font-semibold text-foreground sm:text-4xl">
+              {heading}
+            </h2>
+            <p className="text-muted-foreground">{description}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {imageAlts.map((alt, i) =>
+              i === 0 ? (
+                <div
+                  key={alt}
+                  className="relative col-span-2 row-span-2 aspect-square overflow-hidden rounded-xl lg:aspect-auto"
+                >
+                  <Image
+                    alt={alt}
+                    w={800}
+                    h={800}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-foreground/40 to-transparent p-6">
+                    <span className="font-medium text-background">
+                      {featureCaption}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  key={alt}
+                  className="relative aspect-square overflow-hidden rounded-xl"
+                >
+                  <Image
+                    alt={alt}
+                    w={400}
+                    h={400}
+                    loading="lazy"
+                    className="size-full object-cover"
+                  />
+                </div>
+              ),
+            )}
+          </div>
+        </div>
+      </section>
+    )
+  },
+})

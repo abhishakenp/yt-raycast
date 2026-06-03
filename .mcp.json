@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "macp": {
+      "command": "bash",
+      "args": [
+        "/Users/livio/Documents/ship-fast/.macp/run-macp-agent-mcp.sh",
+        "server"
+      ],
+      "env": {
+        "MACP_PROJECT_ROOT": "/Users/livio/Documents/ship-fast"
+      }
+    }
+  }
+}

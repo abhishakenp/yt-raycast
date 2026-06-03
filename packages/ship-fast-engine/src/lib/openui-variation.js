@@ -12,21 +12,21 @@ export function buildOpenUIVariationBlock(seed, userPrompt) {
     h = Math.imul(h, 16777619)
   }
   const u = h >>> 0
+  const pick = (values, shift) => values[(u >>> shift) % values.length]
   const personas = ['balanced', 'airy', 'dense', 'bold']
-  const persona = personas[u % personas.length]
-  const heroPick = (u >> 3) % 2 === 0 ? 'EditorialHero' : 'SplitHero'
-  const orderIdx = (u >> 5) % 3
+  const persona = pick(personas, 0)
+  const heroPick = (u >>> 3) % 2 === 0 ? 'EditorialHero' : 'SplitHero'
   const orders = [
     'hero → social proof → features → pricing/FAQ',
     'features → hero → metrics → pricing/FAQ',
     'metrics strip → hero → features → conversion',
   ]
-  const editorialLayout = ['editorial', 'compact', 'spotlight'][(u >> 7) % 3]
+  const editorialLayout = pick(['editorial', 'compact', 'spotlight'], 7)
   const pageRhythm = ['default', 'airy', 'dense', 'bold'][
     persona === 'balanced' ? 0 : persona === 'airy' ? 1 : persona === 'dense' ? 2 : 3
   ]
-  const bentoMood = (u >> 9) % 2 === 0 ? 'even' : 'spotlight-first'
-  const fingerprint = (u ^ (u >>> 16)).toString(16).padStart(8, '0').slice(0, 8)
+  const bentoMood = (u >>> 9) % 2 === 0 ? 'even' : 'spotlight-first'
+  const fingerprint = ((u ^ (u >>> 16)) >>> 0).toString(16).padStart(8, '0').slice(0, 8)
   const omitPool = [
     'FAQBlock section',
     'TestimonialCard row',
@@ -34,8 +34,8 @@ export function buildOpenUIVariationBlock(seed, userPrompt) {
     'PricingTier grid',
     'PromoBand footer strip',
   ]
-  const omitHint = omitPool[(u >> 11) % omitPool.length]
-  const dashboardChrome = (u >> 13) % 2 === 0 ? 'default' : 'minimal'
+  const omitHint = pick(omitPool, 11)
+  const dashboardChrome = (u >>> 13) % 2 === 0 ? 'default' : 'minimal'
 
   return `
 ── VARIATION (session-specific; avoid generic clone layouts) ──
@@ -45,7 +45,7 @@ pageShellVisualRhythm: ${pageRhythm} (optional on PageShell; omit if brief confl
 preferredHeroFamily: ${heroPick} when a marketing hero fits the brief
 editorialHeroLayoutVariant: ${editorialLayout} when using EditorialHero
 featureBentoGridMood: ${bentoMood}
-sectionOrderHint: ${orders[orderIdx]}
+sectionOrderHint: ${pick(orders, 5)}
 dashboardShellChrome: ${dashboardChrome} when building DashboardShell
 compositionHint: consider omitting ${omitHint} if the brief still feels complete — vary section subset across runs, not only props
 rules:

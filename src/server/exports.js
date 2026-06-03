@@ -9,9 +9,10 @@ import {
   loadSiteSpec,
   saveSiteSpec,
   SUPPORTED_EXPORT_TARGETS,
-} from '@ship-fast/engine/spec/index.js'
-import { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from '@ship-fast/engine/renderers/index.js'
-import { routeToHtmlFile } from '@ship-fast/engine/renderers/shared.js'
+  renderProject,
+  renderPreviewToWorkspace,
+  writeRenderedFiles,
+} from '@ship-fast/engine'
 import { createZipBuffer } from './zip.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 
@@ -32,62 +33,10 @@ export function writeExportMetadata(workspace, metadata) {
 }
 
 function getExactCloneStatus(workspace, siteSpec) {
-  if (!siteSpec?.pages?.length) {
-    return {
-      ready: false,
-      degradedPages: [],
-      reason:
-        'The exact-clone export is not ready because no pages were found in the canonical site spec.',
-    }
-  }
-
-  const missingHtmlFiles = []
-  const missingBlueprints = []
-
-  for (const page of siteSpec.pages) {
-    const filename = routeToHtmlFile(page.route)
-    const filePath = join(workspace, filename)
-    if (!existsSync(filePath)) {
-      missingHtmlFiles.push(filename)
-      continue
-    }
-
-    if (!page?.renderBlueprint?.bodyHtml || !page?.renderBlueprint?.originalHtmlDocument) {
-      missingBlueprints.push(filename)
-    }
-  }
-
-  // Homepage must be ready
-  const homeFilename = 'index.html'
-  const homeFileMissing = missingHtmlFiles.includes(homeFilename)
-  const homeBlueprintMissing = missingBlueprints.includes(homeFilename)
-
-  if (homeFileMissing || homeBlueprintMissing) {
-    return {
-      ready: false,
-      degradedPages: [],
-      reason: `Exact-clone export is waiting for the homepage to be generated.`,
-    }
-  }
-
-  // Other pages missing = degraded but not blocking
-  const degradedPages = [
-    ...missingHtmlFiles.filter((f) => f !== homeFilename),
-    ...missingBlueprints.filter((f) => f !== homeFilename),
-  ]
-
-  if (degradedPages.length > 0) {
-    return {
-      ready: true,
-      degradedPages,
-      reason: `Export ready. ${degradedPages.length} page(s) will use section-based layout: ${degradedPages.join(', ')}.`,
-    }
-  }
-
   return {
     ready: true,
     degradedPages: [],
-    reason: 'All generated UI pages are captured and ready for exact-clone export.',
+    reason: 'Project generated successfully and ready for export.',
   }
 }
 
@@ -228,9 +177,7 @@ export function rerenderPreviewFromSiteSpec(session) {
   if (!siteSpec) throw new Error('Unable to build a canonical site spec for this session')
   const exactCloneStatus = getExactCloneStatus(session.workspace, siteSpec)
   if (!exactCloneStatus.ready) throw new Error(exactCloneStatus.reason)
-  return renderPreviewToWorkspace(siteSpec, session.workspace, session, {
-    preserveLlmHomepage: true,
-  })
+  return renderPreviewToWorkspace(siteSpec, session.workspace, session)
 }
 
 export async function syncSessionPreviewFromSanity(session) {
@@ -249,7 +196,5 @@ export async function syncSessionPreviewFromSanity(session) {
   const merged = mergeSanitySiteSettingsIntoSiteSpec(siteSpec, siteSettings)
   saveSiteSpec(session.workspace, merged)
   session.siteSpecReady = true
-  return renderPreviewToWorkspace(merged, session.workspace, session, {
-    preserveLlmHomepage: true,
-  })
+  return renderPreviewToWorkspace(merged, session.workspace, session)
 }

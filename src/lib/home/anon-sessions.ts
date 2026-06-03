@@ -19,11 +19,11 @@ export const readAnonSessions = (): AnonSessionEntry[] => {
 }
 
 export const saveAnonSession = (id: string, prompt: string, ownerSecret?: string) => {
-  const stored = readAnonSessions()
+  const stored = readAnonSessions().filter((session) => session.id !== id)
   const entry: AnonSessionEntry = { id, prompt }
   if (ownerSecret) entry.secret = String(ownerSecret)
   stored.unshift(entry)
-  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)))
+  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored))
 }
 
 export const removeAnonSession = (id: string) => {

@@ -100,6 +100,9 @@ const SUBMIT_BTN_DEFAULT_LABEL = 'Generate'
 const generationCounter = getTypedElement<HTMLElement>('gen-counter')!
 const promptPlaceholder = getTypedElement<HTMLElement>('prompt-placeholder')!
 const promptPlaceholderText = getTypedElement<HTMLElement>('prompt-placeholder-text')!
+const promptPlaceholderLabel = promptPlaceholder.querySelector(
+  '.prompt-placeholder-label',
+) as HTMLElement | null
 const promptSuggestions = getTypedElement<HTMLElement>('prompt-suggestions')!
 const promptSuggestionsList = getTypedElement<HTMLElement>('prompt-suggestions-list')!
 const privateGenRow = getTypedElement<HTMLElement>('private-gen-row')!
@@ -338,6 +341,12 @@ const PROMPT_ENGLISH_LEXICON = new Set<string>(
   ),
 )
 
+const PROMPT_FRENCH_LEXICON = new Set<string>(
+  `un une des du de la le les et ou pour avec dans sur sous ce cette ces cet votre vos notre nos leur leurs mon ma mes ton ta tes son sa ses au aux par est sont etre être été avoir avez nous vous ils elles je tu il elle on qui que quoi dont quand comment pourquoi parce plus moins tres très site page accueil boutique restaurant agence marque produit produits service services client clients formulaire contact prix offre offres blog article articles galerie reservation réservation rendez-vous equipe équipe créer cree crée créez generer générer français francaise française rapide moderne élégant elegante responsive mobile application entreprise association école ecole hôtel hotel immobilier portfolio evenement événement`.split(
+    /\s+/,
+  ),
+)
+
 function promptLatinEnglishLean(text: string): { lean: number; en: number; hi: number; n: number } {
   const words = String(text || '')
     .toLowerCase()
@@ -354,10 +363,38 @@ function promptLatinEnglishLean(text: string): { lean: number; en: number; hi: n
   return { lean, en, hi, n: words.length }
 }
 
+function promptFrenchScore(text: string): {
+  score: number
+  hits: number
+  words: number
+  accented: boolean
+} {
+  const lower = String(text || '').toLowerCase()
+  const accented = /[àâçéèêëîïôûùüÿœæ]/i.test(lower)
+  const words = lower.match(/\b[a-zàâçéèêëîïôûùüÿœæ]{2,}\b/g) || []
+  let hits = accented ? 2 : 0
+  for (const word of words) {
+    if (PROMPT_FRENCH_LEXICON.has(word)) hits += 1
+  }
+  return { score: words.length ? hits / words.length : 0, hits, words: words.length, accented }
+}
+
+function preferFrenchCode3ForPrompt(
+  snippet: string,
+  code3: string | null | undefined,
+): string | null | undefined {
+  const french = promptFrenchScore(snippet)
+  if (french.hits >= 3 && french.score >= 0.18) return 'fra'
+  if (french.accented && french.hits >= 2 && french.words >= 4) return 'fra'
+  if (code3 === 'eng' && french.hits >= 2 && french.score >= 0.3) return 'fra'
+  return code3
+}
+
 function resolveFrancCode3ForPrompt(
   snippet: string,
   code3: string | null | undefined,
 ): string | null | undefined {
+  code3 = preferFrenchCode3ForPrompt(snippet, code3)
   if (!code3 || code3 === 'und') return code3
   if (code3 === 'eng' || PROMPT_DETECT_INDIAN_FRANC.has(code3)) return code3
   const { lean, en, hi, n } = promptLatinEnglishLean(snippet)
@@ -627,9 +664,11 @@ function loadFranc(): Promise<FrancFn> {
 }
 
 async function detectSnippetLanguageBcp47(fullText: string): Promise<string | null> {
+  const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
+  const frenchFirst = preferFrenchCode3ForPrompt(snippet, 'und')
+  if (frenchFirst === 'fra') return 'fr'
   const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText)
   if (fromMixedHint) return fromMixedHint
-  const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
   let franc: FrancFn | undefined
   try {
     franc = await loadFranc()
@@ -895,12 +934,19 @@ function scheduleSamplePromptStep(delay: number): void {
 
 function syncSamplePromptVisibility(): void {
   const hasValue = input.value.length > 0
-  promptPlaceholder.classList.toggle('is-hidden', hasValue)
 
   if (hasValue) {
+    if (promptPlaceholderLabel) promptPlaceholderLabel.textContent = 'Your prompt'
+    promptPlaceholderText.textContent = ''
+    promptPlaceholder.classList.add('label-only')
+    promptPlaceholder.classList.remove('is-hidden')
     stopSamplePromptAnimation()
     return
   }
+
+  if (promptPlaceholderLabel) promptPlaceholderLabel.textContent = 'Try a prompt like'
+  promptPlaceholder.classList.remove('label-only')
+  promptPlaceholder.classList.remove('is-hidden')
 
   if (samplePromptTimer === null) {
     scheduleSamplePromptStep(samplePromptLength === 0 ? 320 : 80)
@@ -1268,16 +1314,7 @@ const chipDefs: Array<{ label: string; text: string }> = [
   { label: 'Hindi gym site', text: LOCAL_DEV_PROMPT_SHORTCUTS[0] },
 ]
 
-const chipBar = document.createElement('div')
-chipBar.className = 'dev-prompt-chips dev-prompt-chips--glass'
-chipBar.setAttribute('aria-label', 'Example prompts')
-chipDefs.forEach((def, i) => {
-  if (!def.text) return
-  const btn = document.createElement('button')
-  btn.type = 'button'
-  btn.className = 'dev-prompt-chip'
-  btn.title = def.text
-  btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`
+const wirePromptChipButton = (btn: HTMLButtonElement, def: { text: string }): void => {
   btn.addEventListener('click', async () => {
     btn.disabled = true
     try {
@@ -1288,10 +1325,33 @@ chipDefs.forEach((def, i) => {
       btn.disabled = false
     }
   })
-  chipBar.appendChild(btn)
-})
+}
+
+const existingChipBar = document.querySelector<HTMLElement>('.dev-prompt-chips')
+const chipBar = existingChipBar || document.createElement('div')
+chipBar.className = 'dev-prompt-chips dev-prompt-chips--glass'
+chipBar.setAttribute('aria-label', 'Example prompts')
+if (existingChipBar) {
+  chipBar.querySelectorAll<HTMLButtonElement>('.dev-prompt-chip').forEach((btn, i) => {
+    const text = btn.dataset.prompt || chipDefs[i]?.text || ''
+    if (!text) return
+    btn.title = text
+    wirePromptChipButton(btn, { text })
+  })
+} else {
+  chipDefs.forEach((def, i) => {
+    if (!def.text) return
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'dev-prompt-chip'
+    btn.title = def.text
+    btn.innerHTML = `<span class="dev-prompt-chip-num">${i + 1}</span><span class="dev-prompt-chip-label">${def.label}</span>`
+    wirePromptChipButton(btn, def)
+    chipBar.appendChild(btn)
+  })
+}
 const heroCard = document.getElementById('hero-card')
-heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling)
+if (!existingChipBar) heroCard?.parentElement?.insertBefore(chipBar, heroCard.nextSibling)
 
 if (heroCard) {
   const setHeroGlow = (x: string, y: string): void => {
@@ -1482,13 +1542,13 @@ function invalidateAnonSessionEntriesCache() {
 }
 
 function saveAnonSession(id: string, prompt: string, ownerSecret?: string): void {
-  const stored = JSON.parse(
-    localStorage.getItem(ANON_SESSIONS_KEY) || '[]',
-  ) as StoredAnonSessionEntry[]
+  const stored = (
+    JSON.parse(localStorage.getItem(ANON_SESSIONS_KEY) || '[]') as StoredAnonSessionEntry[]
+  ).filter((session) => session?.id !== id)
   const entry: StoredAnonSessionEntry = { id, prompt }
   if (ownerSecret) entry.secret = String(ownerSecret)
   stored.unshift(entry)
-  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored.slice(0, 20)))
+  localStorage.setItem(ANON_SESSIONS_KEY, JSON.stringify(stored))
   invalidateAnonSessionEntriesCache()
 }
 
@@ -2315,6 +2375,27 @@ if (_autoOpenId) {
 }
 
 window.addEventListener('sf-sync-home-gallery', reloadHomeGalleryIfReady)
+
+window.addEventListener('sf-home-session-closed', () => {
+  resetPromptForNextGeneration()
+  const scheduleGalleryReload = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        void reloadHomeGalleryIfReady()
+      })
+    })
+  }
+  if (authResolved) scheduleGalleryReload()
+  else {
+    window.addEventListener(
+      'sf-home-auth-state',
+      () => {
+        scheduleGalleryReload()
+      },
+      { once: true },
+    )
+  }
+})
 
 window.addEventListener('pageshow', (event) => {
   applyHomeTabTitle()

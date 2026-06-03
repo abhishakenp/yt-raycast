@@ -19,7 +19,7 @@ import { preprocessOpenUIResponse } from '@ship-fast/engine/lib/openui-preproces
 import { validateOpenUISource } from '@ship-fast/engine/pipeline/openui-validate.js'
 import { buildOpenUIVariationBlock } from '@ship-fast/engine/lib/openui-variation.js'
 import { openUIDevQualityHints } from '@ship-fast/engine/lib/openui-dev-quality.js'
-import { shipFastOpenUIContractLibrary } from '../src/openui/library/contract.ts'
+import { shipFastOpenUIContractLibrary } from '@ship-fast/blocks'
 
 function argValue(argv: string[], name: string): string | undefined {
   const i = argv.indexOf(name)

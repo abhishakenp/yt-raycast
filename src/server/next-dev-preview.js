@@ -8,7 +8,7 @@ import { getSession } from './sessions.js'
 const previewState = {
   sessionId: null,
   child: null,
-  port: Number(process.env.SHIP_FAST_NEXT_PREVIEW_PORT || 7430),
+  port: Number(process.env.SHIP_FAST_NEXT_PREVIEW_PORT || 7421),
 }
 
 const nextAppPath = (workspace) => join(workspace, 'next-app')

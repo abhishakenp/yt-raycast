@@ -1,0 +1,106 @@
+import { z } from "zod/v4"
+import { defineComponent } from "@openuidev/react-lang"
+import { cn } from "#/lib/utils.ts"
+
+/**
+ * MobileAppFaq — a narrow, centered FAQ accordion on a calm muted band. A
+ * centered heading + description sits above a stacked list of bordered
+ * card-style <details> rows; each summary shows the question with a chevron that
+ * rotates open, revealing a relaxed answer paragraph. Native disclosure, no
+ * JavaScript state, no links. Use as the questions / objection-handling section
+ * on a habit tracker, fitness / wellness app, productivity or to-do app, or any
+ * consumer app landing page. Renders fully with no props via baked-in defaults.
+ */
+export const MobileAppFaq = defineComponent({
+  name: "MobileAppFaq",
+  description:
+    "Narrow centered FAQ accordion on a calm muted band: a centered heading + description over a stacked list of bordered card-style <details> rows, each with a question summary and a chevron that rotates open to reveal a relaxed answer paragraph (native disclosure, no JS state). Use as the questions / objection-handling section on a habit tracker, fitness / wellness app, productivity or to-do app, or any consumer app landing page.",
+  props: z.object({
+    heading: z.string().optional(),
+    description: z.string().optional(),
+    items: z
+      .array(z.object({ question: z.string(), answer: z.string() }))
+      .optional(),
+    className: z.string().optional(),
+  }),
+  component: ({ props }) => {
+    const heading = props.heading ?? "Frequently asked questions"
+    const description =
+      props.description ?? "Everything you need to know about DailyFlow."
+    const items = props.items?.length
+      ? props.items
+      : [
+          {
+            question: "Can I switch between plans at any time?",
+            answer:
+              "Yes, absolutely. You can upgrade, downgrade, or cancel your subscription at any time. If you downgrade from Pro to Free, you'll keep your Pro features until the end of your billing period.",
+          },
+          {
+            question: "What happens to my data if I cancel?",
+            answer:
+              "Your data belongs to you. Even on the Free plan, we keep your last 7 days of history. If you decide to come back, everything will be right where you left it. You can also export all your data at any time.",
+          },
+          {
+            question: "Is there a daily reminder limit?",
+            answer:
+              "Free users get 1 reminder per habit per day. Pro users get unlimited smart reminders that adapt to your schedule. Our AI learns when you're most likely to complete a habit and optimizes reminder timing accordingly.",
+          },
+          {
+            question: "How do accountability groups work?",
+            answer:
+              "You can create or join a group of 3-5 people with similar goals. Everyone shares their daily progress, and you can send encouraging messages. Research shows this increases success rates by 65%.",
+          },
+          {
+            question: "Is my data private and secure?",
+            answer:
+              "We take privacy seriously. All data is encrypted at rest and in transit. We never sell your data to third parties. Your habit data is only visible to you (and your accountability group members, if you choose to share).",
+          },
+          {
+            question: "Do you offer student or nonprofit discounts?",
+            answer:
+              "Yes! Students with a valid .edu email get 50% off Pro. Registered nonprofits can get up to 75% off Teams plans. Contact our support team with proof of status to apply.",
+          },
+        ]
+
+    return (
+      <section
+        className={cn("bg-muted/50 py-20 lg:py-32", props.className)}
+        aria-labelledby="mobileapp-faq-heading"
+      >
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-16 text-center">
+            <h2
+              id="mobileapp-faq-heading"
+              className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+            >
+              {heading}
+            </h2>
+            <p className="text-lg text-muted-foreground">{description}</p>
+          </div>
+          <div className="space-y-4">
+            {items.map((item) => (
+              <details
+                key={item.question}
+                className="group overflow-hidden rounded-xl border border-border bg-card"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between p-6">
+                  <span className="font-semibold text-card-foreground">
+                    {item.question}
+                  </span>
+                  <span className="ml-4 text-muted-foreground transition-transform group-open:rotate-180">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" aria-hidden="true">
+                      <path d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </span>
+                </summary>
+                <div className="px-6 pb-6 leading-relaxed text-muted-foreground">
+                  {item.answer}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  },
+})

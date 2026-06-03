@@ -458,8 +458,10 @@ function debugLog(type, data) {
 // ─── State ─────────────────────────────────────────────────
 let tasks = []
 let genStartTime = Date.now()
+let persistedElapsed = null
 let taskMap = {}
 let allDone = false
+let hydratedComplete = false
 let drawerOpen = false
 let previewLoaded = false
 let nextPreviewActive = false
@@ -565,7 +567,7 @@ function applyMedusaAdminControls() {
       }
     }
     frame.addEventListener('load', sendSession)
-    setTimeout(sendSession, 500)
+    requestAnimationFrame(sendSession)
   }
 }
 
@@ -1665,8 +1667,21 @@ function generateAlternativeDesign() {
 
 // ─── Task classification ───────────────────────────────────
 function isFrontendTask(task) {
-  const files = task.files || []
-  return files.some((f) => f.endsWith('.html'))
+  const taskFiles = Array.isArray(task.files) && task.files.length > 0
+    ? task.files
+    : task.filename
+      ? [task.filename]
+      : []
+  return taskFiles.some(
+    (f) =>
+      f.endsWith('.html') ||
+      f.endsWith('.openui') ||
+      f.endsWith('.tsx') ||
+      f.endsWith('.jsx') ||
+      f.endsWith('.ts') ||
+      f.endsWith('.js') ||
+      f.endsWith('.css'),
+  )
 }
 
 function getTaskCounts() {
@@ -1681,6 +1696,26 @@ function getTaskCounts() {
     backendDone,
     totalDone: frontendDone + backendDone,
   }
+}
+
+function hasOpenUIArtifact(taskList = tasks) {
+  return taskList.some((task) => {
+    const files = Array.isArray(task.files) && task.files.length > 0
+      ? task.files
+      : task.filename
+        ? [task.filename]
+        : []
+    return files.some((file) => String(file || '').endsWith('.openui'))
+  })
+}
+
+function syncOpenUIActiveClass(session = {}) {
+  const sessionTasks = Array.isArray(session.tasks) ? session.tasks : tasks
+  const usesOpenUI =
+    Boolean(session.openuiReady) ||
+    String(session.preferredExportTarget || '').toLowerCase() === 'openui' ||
+    hasOpenUIArtifact(sessionTasks)
+  document.body.classList.toggle('sf-openui-active', usesOpenUI)
 }
 
 // ─── Dev mode ───────────────────────────────────────────────
@@ -1738,6 +1773,21 @@ function openDrawer() {
   rightPanel.style.width = '50%'
   leftPanel.style.width = '50%'
   loadPreview()
+}
+
+function expandPreviewForLiveOpenUI() {
+  if (!drawerOpen || splitPinned) return
+  const leftPanel = document.getElementById('left-panel')
+  const rightPanel = document.getElementById('right-panel')
+  const loading = document.getElementById('preview-loading')
+  if (!leftPanel || !rightPanel) return
+  frontendComplete = true
+  leftPanel.classList.add('collapsed')
+  rightPanel.classList.remove('open')
+  rightPanel.classList.add('expanded')
+  rightPanel.style.width = ''
+  leftPanel.style.width = ''
+  loading?.classList.add('hidden')
 }
 
 // ─── Update preview loading + dynamic split width ───────────
@@ -2590,29 +2640,30 @@ function startIntro() {
   const logo = document.getElementById('intro-logo')
   const phase = document.getElementById('intro-phase-label')
 
-  setTimeout(() => logo.classList.add('visible'), 200)
+  requestAnimationFrame(() => {
+    logo.classList.add('visible')
+    setTimeout(() => {
+      logo.classList.add('shaking')
+      emitExhaustParticles()
+      const sfx = document.getElementById('launch-sfx')
+      if (sfx) {
+        sfx.volume = 0.7
+        sfx.play().catch(() => {})
+      }
+    }, 600)
 
-  setTimeout(() => {
-    logo.classList.add('shaking')
-    emitExhaustParticles()
-    const sfx = document.getElementById('launch-sfx')
-    if (sfx) {
-      sfx.volume = 0.7
-      sfx.play().catch(() => {})
-    }
-  }, 1000)
+    setTimeout(() => {
+      logo.classList.remove('shaking')
+      logo.classList.add('settled')
+      phase.classList.add('visible')
+      emitLaunchBurst()
+    }, 1600)
 
-  setTimeout(() => {
-    logo.classList.remove('shaking')
-    logo.classList.add('settled')
-    phase.classList.add('visible')
-    emitLaunchBurst()
-  }, 2000)
-
-  setTimeout(() => {
-    document.getElementById('intro-typing').classList.add('visible')
-    startTyping()
-  }, 3000)
+    setTimeout(() => {
+      document.getElementById('intro-typing').classList.add('visible')
+      startTyping()
+    }, 2600)
+  })
 }
 
 function emitExhaustParticles() {
@@ -2644,7 +2695,7 @@ function emitExhaustParticles() {
     })
   }
   ensureAnimating()
-  exhaustTimerId = setTimeout(emitExhaustParticles, 80)
+  exhaustTimerId = setTimeout(emitExhaustParticles, 50)
 }
 
 function emitLaunchBurst() {
@@ -2673,7 +2724,7 @@ function emitLaunchBurst() {
 
 function startTyping() {
   if (!introPromptText) {
-    setTimeout(startTyping, 200)
+    setTimeout(startTyping, 100)
     return
   }
   const el = document.getElementById('typing-text')
@@ -2691,13 +2742,13 @@ function startTyping() {
         document.getElementById('intro-logo').classList.add('post-typing')
         document.getElementById('intro-typing').classList.add('post-typing')
         document.getElementById('intro-phase-label').classList.add('post-typing')
-      }, 1300)
+      }, 800)
       if (pendingStatus) {
         setPhaseLabel(pendingStatus)
         pendingStatus = ''
       }
     }
-  }, TYPING_SPEED_MS)
+  }, 25)
 }
 
 function setPhaseLabel(text) {
@@ -2707,7 +2758,7 @@ function setPhaseLabel(text) {
     setTimeout(() => {
       statusLabel.textContent = text
       statusLabel.classList.remove('switching')
-    }, 200)
+    }, 100)
   } else {
     statusLabel.textContent = text
     statusLabel.classList.add('visible')
@@ -2725,7 +2776,7 @@ function exitIntro() {
   document.body.classList.add('dashboard-active')
   overlay.classList.add('exiting')
   wrap.classList.add('active')
-  setTimeout(() => overlay.classList.add('hidden'), 1400)
+  setTimeout(() => overlay.classList.add('hidden'), 800)
 }
 
 function skipIntro() {
@@ -2952,18 +3003,26 @@ function updateStats() {
   const total = tasks.length
   const done = tasks.filter((t) => t.status === 'DONE').length
   const failed = tasks.filter((t) => t.status === 'FAILED').length
+  const finished = done + failed
 
   const timingEl = document.getElementById('gen-timing')
   if (timingEl && !allDone) {
     if (total === 0) {
       timingEl.textContent = 'Trajectory check…'
     } else {
-      const elapsed = Math.round((Date.now() - genStartTime) / 1000)
-      timingEl.textContent = `Main engine: ${done}/${total} pages · ${elapsed}s`
+      const elapsed =
+        persistedElapsed != null && finished >= total
+          ? persistedElapsed
+          : Math.round((Date.now() - genStartTime) / 1000)
+      const counts = getTaskCounts()
+      timingEl.textContent =
+        counts.frontendTotal > 0
+          ? `Main engine: ${counts.frontendDone}/${counts.frontendTotal} frontend tasks · ${elapsed}s`
+          : `Main engine: ${done}/${total} pages · ${elapsed}s`
     }
   }
 
-  const pct = total > 0 ? Math.round(((done + failed) / total) * 100) : 0
+  const pct = total > 0 ? Math.round((finished / total) * 100) : 0
   document.getElementById('progress-pct').textContent = pct + '%'
   const fill = document.getElementById('progress-fill')
   fill.style.width = pct + '%'
@@ -3580,10 +3639,10 @@ function initPreviewChat() {
     const stat = document.getElementById('preview-chat-status')
     if (stat) stat.textContent = ''
     try {
-      const res = await apiFetch(`/api/sessions/${SESSION_ID}/chat`, {
+      const res = await apiFetch(`/api/sessions/${SESSION_ID}/edit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: raw, attachmentPaths: paths }),
+        body: JSON.stringify({ prompt: raw }),
       })
       const data = await res.json().catch(() => ({}))
       if (res.status === 202) {
@@ -3989,7 +4048,7 @@ function initPreviewChat() {
         const quick = document.getElementById('preview-chat-cms-quick-panel')
         if (quick && !quick.hidden) document.getElementById('cms-homeTitle')?.focus()
       } else {
-        setTimeout(() => input?.focus(), 100)
+        requestAnimationFrame(() => input?.focus())
       }
     } else {
       setOpen(false)
@@ -4021,7 +4080,7 @@ function connectWS() {
   ws.onopen = () => {
     wsConnected = true
     debugLog('ws_connected', null)
-    if (!introActive) {
+    if (!introActive && !hydratedComplete) {
       document.getElementById('phase-text').textContent = 'Comm lock on'
     }
   }
@@ -4041,6 +4100,7 @@ function connectWS() {
         break
 
       case 'status':
+        if (hydratedComplete && !hasSeenLiveUpdate) break
         document.getElementById('phase-text').textContent = ev.message || ''
         if (introActive) {
           if (typingDone) {
@@ -4067,6 +4127,7 @@ function connectWS() {
         tasks.forEach((t) => {
           taskMap[t.id] = t
         })
+        syncOpenUIActiveClass({ tasks })
         genStartTime = Date.now()
         renderTasks()
         {
@@ -4090,6 +4151,7 @@ function connectWS() {
           tasks.push(updated)
           taskMap[updated.id] = updated
         }
+        syncOpenUIActiveClass({ tasks })
         renderTasks()
         if (updated.status === 'DONE') {
           triggerTeleport(updated.id)
@@ -4115,12 +4177,13 @@ function connectWS() {
           skipIntro()
         } else if (introActive) {
           exitIntro()
-          setTimeout(openDrawer, 200)
+          openDrawer()
         } else if (drawerOpen) {
           reloadPreview()
         } else {
           openDrawer()
         }
+        if (document.body.classList.contains('sf-openui-active')) expandPreviewForLiveOpenUI()
         break
 
       case 'site_spec_ready':
@@ -4155,12 +4218,39 @@ function connectWS() {
         }
         break
 
+      case 'openui_stream_start':
+        hasSeenLiveUpdate = true
+        syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
+        if (drawerOpen) {
+          loadPreview()
+          expandPreviewForLiveOpenUI()
+        }
+        break
+
+      case 'openui_stream_chunk':
+        hasSeenLiveUpdate = true
+        syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
+        if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
+        break
+
+      case 'openui_stream_done':
+        if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
+        break
+
       case 'run_completed':
+        hydratedComplete = true
+        persistedElapsed = Number.isFinite(Number(ev.elapsed)) ? Number(ev.elapsed) : persistedElapsed
         document.getElementById('phase-text').textContent = `Done in ${ev.elapsed}s`
         document.getElementById('toast-elapsed').textContent = ev.elapsed + 's'
         const timingFinal = document.getElementById('gen-timing')
-        if (timingFinal)
-          timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
+        const counts = getTaskCounts()
+        if (timingFinal) {
+          if (counts.frontendTotal > 0) {
+            timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${counts.frontendDone}/${counts.frontendTotal} frontend tasks`
+          } else {
+            timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
+          }
+        }
         resetPreviewToSessionHtml()
         checkAllDone()
         if (chatAwaitingEdit) {
@@ -4168,9 +4258,7 @@ function connectWS() {
           setChatBuilding(false)
         }
         void refreshChatHistory()
-        window.setTimeout(() => {
-          if (!deploymentState?.url) void retryDeployOnce()
-        }, 4500)
+        if (!deploymentState?.url) void retryDeployOnce()
         break
 
       case 'next_preview_ready':
@@ -4238,7 +4326,7 @@ function checkAllDone() {
   if (pending.length === 0 && !allDone) {
     document.getElementById('phase-text').textContent = 'Orbit achieved'
     if (drawerOpen) {
-      setTimeout(triggerCompletion, 1500)
+      triggerCompletion()
     }
   }
 }
@@ -4616,6 +4704,16 @@ function beginSessionDashboard(session) {
   if (session.prompt && !introPromptText) {
     introPromptText = session.prompt
   }
+  if (Array.isArray(session.tasks)) {
+    tasks = session.tasks
+    taskMap = {}
+    tasks.forEach((task) => {
+      taskMap[task.id] = task
+    })
+    updateTasks()
+  }
+  syncOpenUIActiveClass(session)
+  persistedElapsed = Number.isFinite(Number(session.elapsed)) ? Number(session.elapsed) : null
   if (session.deployment) {
     renderDeploymentState(session.deployment)
   } else {
@@ -4636,8 +4734,13 @@ function beginSessionDashboard(session) {
   }
   const isDone = session.taskCount > 0 && session.done === session.taskCount
   if (isDone) {
+    hydratedComplete = true
     const sfx = document.getElementById('launch-sfx')
     if (sfx) sfx.remove()
+    if (persistedElapsed != null) {
+      document.getElementById('phase-text').textContent = `Done in ${persistedElapsed}s`
+      document.getElementById('toast-elapsed').textContent = persistedElapsed + 's'
+    }
   }
   homepageReady = Boolean(session.homepageReady) || homepageReady
   siteSpecReady = Boolean(session.siteSpecReady) || siteSpecReady
@@ -4768,10 +4871,12 @@ document.getElementById('new-prompt-form').addEventListener('submit', async (e) 
       }
       if (!authed && data.anonOwnerSecret) {
         try {
-          const stored = JSON.parse(localStorage.getItem('sf_anon_sessions') || '[]')
+          const stored = JSON.parse(localStorage.getItem('sf_anon_sessions') || '[]').filter(
+            (session) => session?.id !== data.id,
+          )
           const entry = { id: data.id, prompt, secret: String(data.anonOwnerSecret) }
           stored.unshift(entry)
-          localStorage.setItem('sf_anon_sessions', JSON.stringify(stored.slice(0, 20)))
+          localStorage.setItem('sf_anon_sessions', JSON.stringify(stored))
         } catch {}
       }
       location.href = `/session/${data.id}`

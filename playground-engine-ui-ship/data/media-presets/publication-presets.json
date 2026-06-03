@@ -1,9 +1,0 @@
-{
-  "featuredKinds": ["editorial-spread", "article-cover"],
-  "decorHints": [
-    "compact featured post masthead with cover, title, byline, date, excerpt",
-    "hard shadow or hairline rules on article cards",
-    "category chips on archive grid cards"
-  ],
-  "proofPatterns": ["byline", "read time", "published date", "category labels"]
-}
