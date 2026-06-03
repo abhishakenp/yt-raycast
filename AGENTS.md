@@ -20,8 +20,8 @@
 
 - **Playground ship engine:** `playground-engine-ui-ship/` — local bench via `bun playground-engine-ui-ship/scripts/ship-native.mjs`. Artifacts: `.forge/ship-native/<runId>/`.
 - **Gallery grid:** `bun playground-engine-ui-ship/scripts/ship-gallery-build.mjs` then `bun .forge/ship-gallery/serve.mjs` → `http://localhost:7420/`. After a single-brief run, pass `--run=<runId>`.
-- **Production default:** sessions on ship-fast.devliv.io use `groqHomepage` in `packages/ship-fast-engine/src/pipeline/phase-homepage.js` unless `SHIPFAST_HOMEPAGE_ENGINE=ship` is set on the server.
-- **Parity check:** playground output and live session preview can differ when production is still on the legacy path or when the ship engine regresses structure (e.g. blog index missing a post grid). Compare `/preview/<sessionId>/` to gallery pages, not the dashboard shell.
+- **Production path:** sessions on ship-fast.devliv.io use `groqHomepage` in `packages/ship-fast-engine/src/pipeline/phase-homepage.js`.
+- **Parity check:** playground output and live session preview can differ when production is still on a legacy path or when the gallery/compiler changes structure (e.g. blog index missing a post grid). Compare `/preview/<sessionId>/` to gallery pages, not the dashboard shell.
 
 ## Engine design — general, not per-use-case
 
@@ -89,3 +89,19 @@ Before working on any task, read `codemap.md` to understand:
 - Data flow and integration points between modules
 
 For deep work on a specific folder, also read that folder's `codemap.md`.
+
+<!-- MACP-MCP:START -->
+## MACP Coordination
+
+MACP is active for this project. The shared project id is `ship-fast`. The MCP server auto-registers this session on startup and auto-joins the default channel `ship-fast`.
+
+Normal workflow:
+- do not run SQL directly
+- do not manually attach another MACP server inside the agent loop
+- call `macp_poll` regularly to stay aware of peer work
+- call `macp_send_channel` for shared updates and `macp_send_direct` for one-to-one requests
+- call `macp_ack` after acting on a delivery
+- use `macp_ext_claim_files`, shared memory, tasks, goals, and vault tools when this project requires them
+
+If this project uses shared memory, tasks, goals, or the vault, follow the local instructions in this file and use those tools as part of normal work.
+<!-- MACP-MCP:END -->

@@ -161,7 +161,7 @@ Overall average: **60-90% token reduction** on common development operations.
 | Path | Role |
 |------|------|
 | `playground-engine-ui-ship/` | Unified homepage compiler (router, planner, composers, audits) |
-| `packages/ship-fast-engine/src/pipeline/phase-homepage.js` | Production entry — `groqHomepage` by default; `SHIPFAST_HOMEPAGE_ENGINE=ship` loads the ship playground engine |
+| `packages/ship-fast-engine/src/pipeline/phase-homepage.js` | Production entry — `groqHomepage` path and hybrid fallback path only |
 | `.forge/ship-native/` | Local generation artifacts |
 | `.forge/ship-gallery/` + port **7420** | Desktop screenshot grid for bench runs |
 
@@ -229,3 +229,19 @@ This project is indexed by GitNexus as **ship-fast** (16276 symbols, 27905 relat
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+<!-- MACP-MCP:START -->
+## MACP Coordination
+
+MACP is active for this project. The shared project id is `ship-fast`. The MCP server auto-registers this session on startup and auto-joins the default channel `ship-fast`.
+
+Normal workflow:
+- do not run SQL directly
+- do not manually attach another MACP server inside the agent loop
+- call `macp_poll` regularly to stay aware of peer work
+- call `macp_send_channel` for shared updates and `macp_send_direct` for one-to-one requests
+- call `macp_ack` after acting on a delivery
+- use `macp_ext_claim_files`, shared memory, tasks, goals, and vault tools when this project requires them
+
+If this project uses shared memory, tasks, goals, or the vault, follow the local instructions in this file and use those tools as part of normal work.
+<!-- MACP-MCP:END -->

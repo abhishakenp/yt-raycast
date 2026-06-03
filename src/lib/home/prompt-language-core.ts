@@ -197,6 +197,12 @@ const PROMPT_ENGLISH_LEXICON = new Set(
   ),
 )
 
+const PROMPT_FRENCH_LEXICON = new Set(
+  `un une des du de la le les et ou pour avec dans sur sous ce cette ces cet votre vos notre nos leur leurs mon ma mes ton ta tes son sa ses au aux par est sont etre être été avoir avez nous vous ils elles je tu il elle on qui que quoi dont quand comment pourquoi parce plus moins tres très site page accueil boutique restaurant agence marque produit produits service services client clients formulaire contact prix offre offres blog article articles galerie reservation réservation rendez-vous equipe équipe créer cree crée créez generer générer français francaise française rapide moderne élégant elegante responsive mobile application entreprise association école ecole hôtel hotel immobilier portfolio evenement événement`.split(
+    /\s+/,
+  ),
+)
+
 const promptLatinEnglishLean = (text: string) => {
   const words = String(text || '')
     .toLowerCase()
@@ -213,7 +219,27 @@ const promptLatinEnglishLean = (text: string) => {
   return { lean, en, hi, n: words.length }
 }
 
+const promptFrenchScore = (text: string) => {
+  const lower = String(text || '').toLowerCase()
+  const accented = /[àâçéèêëîïôûùüÿœæ]/i.test(lower)
+  const words = lower.match(/\b[a-zàâçéèêëîïôûùüÿœæ]{2,}\b/g) || []
+  let hits = accented ? 2 : 0
+  for (const word of words) {
+    if (PROMPT_FRENCH_LEXICON.has(word)) hits += 1
+  }
+  return { score: words.length ? hits / words.length : 0, hits, words: words.length, accented }
+}
+
+const preferFrenchCode3ForPrompt = (snippet: string, code3: string) => {
+  const french = promptFrenchScore(snippet)
+  if (french.hits >= 3 && french.score >= 0.18) return 'fra'
+  if (french.accented && french.hits >= 2 && french.words >= 4) return 'fra'
+  if (code3 === 'eng' && french.hits >= 2 && french.score >= 0.3) return 'fra'
+  return code3
+}
+
 const resolveFrancCode3ForPrompt = (snippet: string, code3: string) => {
+  code3 = preferFrenchCode3ForPrompt(snippet, code3)
   if (!code3 || code3 === 'und') return code3
   if (code3 === 'eng' || PROMPT_DETECT_INDIAN_FRANC.has(code3)) return code3
   const { lean, en, hi, n } = promptLatinEnglishLean(snippet)
@@ -278,9 +304,11 @@ export const getLogoTaglineText = (bcp47: string) => {
 }
 
 export const detectSnippetLanguageBcp47 = async (fullText: string) => {
+  const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
+  const frenchFirst = preferFrenchCode3ForPrompt(snippet, 'und')
+  if (frenchFirst === 'fra') return 'fr'
   const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText)
   if (fromMixedHint) return fromMixedHint
-  const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
   let code3: string
   try {
     code3 = franc(snippet, { minLength: 10 }) || 'und'
