@@ -4,9 +4,6 @@ import { generateAndWriteOpenUIHome } from './phase-openui-home.ts'
 import { formatRunAllReport } from './report.js'
 import { loadSiteSpec } from '../spec/index.js'
 import { requirePromptText } from '../prompt.js'
-import { detectLanguage } from './detect-language.js'
-import { withLanguageEnforcementBlock } from './prompt-language.js'
-import { getWorkspacePreferredLanguage } from '../session-prefs.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -18,37 +15,16 @@ const status = (sessionCtx) => (message, phase) => {
   sessionCtx?.broadcast?.({ type: 'status', message, phase })
 }
 
-export async function buildOpenUIPromptContext({ prompt, workspace, preferredLanguage } = {}) {
-  const normalizedPrompt = requirePromptText(prompt)
-  const requestedLanguage = preferredLanguage || getWorkspacePreferredLanguage(workspace)
-  const languageMode = await detectLanguage(normalizedPrompt, requestedLanguage)
-  return {
-    originalPrompt: normalizedPrompt,
-    prompt: withLanguageEnforcementBlock(normalizedPrompt, languageMode),
-    languageMode,
-  }
-}
-
-export async function buildOpenUIPrompt({ prompt, workspace, preferredLanguage } = {}) {
-  return (await buildOpenUIPromptContext({ prompt, workspace, preferredLanguage })).prompt
-}
-
 export async function runAll({
   prompt,
   workspace,
   sessionCtx,
-  preferredLanguage,
   integrations,
 } = {}) {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()
   const normalizedPrompt = requirePromptText(prompt)
-  const openuiPromptContext = await buildOpenUIPromptContext({
-    prompt: normalizedPrompt,
-    workspace,
-    preferredLanguage,
-  })
   const timings = { t0 }
   const tasks = [
     {
@@ -77,9 +53,7 @@ export async function runAll({
     const openuiStats = await generateAndWriteOpenUIHome({
       workspace,
       siteSpec: loadSiteSpec(workspace),
-      prompt: openuiPromptContext.prompt,
-      userPrompt: openuiPromptContext.originalPrompt,
-      languageMode: openuiPromptContext.languageMode,
+      prompt: normalizedPrompt,
       log: _log,
       sessionCtx,
       variationSeed: sessionCtx?.id || workspace,

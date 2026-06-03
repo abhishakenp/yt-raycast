@@ -28,7 +28,6 @@ export type GenUIEvent =
   | { type: "theme"; name: string }
   | { type: "module_start"; id: string }
   | { type: "module_retry"; id: string; attempt: number }
-  | { type: "module_repair"; id: string }
   | { type: "module"; id: string; text: string; failed?: boolean }
   | { type: "done"; modules: number; ms: number }
   | { type: "error"; message: string }
@@ -182,16 +181,13 @@ function fallbackPlan(prompt: string, rng: () => number): Plan {
 }
 
 function pageUser(
-  fullPrompt: string,
   brand: string,
   navLabels: string[],
   page: PlannedPage,
   tagline: string,
 ): string {
   const navJson = JSON.stringify(navLabels)
-  return `Build request: ${fullPrompt}
-
-Brand: ${brand}
+  return `Brand: ${brand}
 Tagline: ${tagline}
 Site navigation (reuse VERBATIM): ${navJson}
 This page: "${page.label}" — ${page.brief}
@@ -205,32 +201,6 @@ Rules:
 - Write numbers/currency PLAINLY ($48 or 1,245) — never LaTeX or markdown.
 - NO styling, NO image src, NO urls, NO className. The block owns all design, images, and nav wiring.
 - Output openui-lang only. No markdown, no code fences, no extra statements.`
-}
-
-function repairPageUser(
-  fullPrompt: string,
-  brand: string,
-  navLabels: string[],
-  page: PlannedPage,
-  tagline: string,
-  previousText: string,
-): string {
-  return `${pageUser(fullPrompt, brand, navLabels, page, tagline)}
-
-Your previous output was invalid and could not be parsed:
-${previousText.slice(0, 1200)}
-
-Repair requirements:
-- Output ONE complete, valid statement for ${page.id}.
-- Keep props concise and close every quote, array, and object.
-- Do not include raw line breaks inside quoted strings.
-- Preserve the required language from the build request above.`
-}
-
-export function hasForeignTopLevelAssignment(text: string, expectedId: string): boolean {
-  const escaped = expectedId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-  const re = new RegExp(`(^|\\n)\\s*(?!${escaped}\\s*=)[A-Za-z][A-Za-z0-9_]*\\s*=`)
-  return re.test(text)
 }
 
 // Validate a generated page module. The model occasionally emits openui-lang that
@@ -258,14 +228,6 @@ function validateModule(
     .join("\n")
     .trim()
   const definesId = new RegExp(`(^|\\n)\\s*${page.id}\\s*=`).test(text)
-  if (hasForeignTopLevelAssignment(text, page.id)) {
-    return {
-      text: isKnownBlock(page.block)
-        ? `${page.id} = ${page.block}(${JSON.stringify(brand)}, ${JSON.stringify(labels)})`
-        : placeholderNode(page.block),
-      failed: true,
-    }
-  }
   if (definesId) {
     try {
       const probe = mergeStatements(`root = Box([${page.id}])`, text)
@@ -452,28 +414,14 @@ export async function* generateUI(
         const p = generateText(
           modelId,
           pageSystemPrompt(page.block),
-          pageUser(prompt, plan.brand, labels, page, plan.tagline),
+          pageUser(plan.brand, labels, page, plan.tagline),
           signal,
           SUBTREE_RETRIES,
           (attempt) => ch.push({ type: "module_retry", id: page.id, attempt }),
         )
-          .then(async (text) => {
-            const first = validateModule(page, text, plan.brand, labels)
-            if (!first.failed) {
-              ch.push({ type: "module", id: page.id, text: first.text, failed: false })
-              return
-            }
-
-            ch.push({ type: "module_repair", id: page.id })
-            const repaired = await generateText(
-              modelId,
-              pageSystemPrompt(page.block),
-              repairPageUser(prompt, plan.brand, labels, page, plan.tagline, text),
-              signal,
-              1,
-            )
-            const second = validateModule(page, repaired, plan.brand, labels)
-            ch.push({ type: "module", id: page.id, text: second.text, failed: second.failed })
+          .then((text) => {
+            const { text: safe, failed } = validateModule(page, text, plan.brand, labels)
+            ch.push({ type: "module", id: page.id, text: safe, failed })
           })
           .catch(() => {
             // On generation failure, render the chosen block with just brand+nav —

@@ -36,7 +36,7 @@ function extractTextNodes(html) {
  * Translate an array of English strings to the target Indian language via Groq.
  * Sends a JSON map {text: ''} and expects {text: 'translation'} back.
  */
-export async function translateTexts(texts, language) {
+async function translateTexts(texts, language) {
   if (texts.length === 0) return {}
 
   const payload = Object.fromEntries(texts.map((t) => [t, '']))
