@@ -3,6 +3,10 @@ import { writeFileSync, existsSync, readFileSync } from 'node:fs'
 import { runHomepageOrchestrator } from '../genui/run.ts'
 import { renderPreviewToWorkspace, writeStreamingShellToWorkspace } from '../renderers/index.ts'
 import { saveSiteSpec } from '../spec/index.ts'
+import {
+  buildLocalizedPrimitiveOpenUISource,
+  resolveLocalizedPrimitiveLabels,
+} from './openui-language-fallback.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
 const OPENUI_PAGES_DIR = 'pages'
@@ -87,6 +91,8 @@ export async function generateAndWriteOpenUIHome(p: {
   workspace: string
   siteSpec: any
   prompt: string
+  userPrompt?: string
+  languageMode?: any
   log?: (msg: string) => void
   sessionCtx?: any
   variationSeed?: any
@@ -149,12 +155,20 @@ export async function generateAndWriteOpenUIHome(p: {
     onSource,
   })
 
-  const source = result.source
+  let source = result.source
   const brand = result.brand || brandSoFar
   // The AI-picked theme name drives the preview palette (renderers/index.ts reads
   // it back from the site spec and applies the matching designed preset).
   const theme = result.theme || themeName || specThemeName || 'modern-minimal'
   const ms = Date.now() - startedAt
+  if (p.languageMode?.code && p.languageMode.code !== 'en') {
+    const labels = await resolveLocalizedPrimitiveLabels(p.languageMode)
+    source = buildLocalizedPrimitiveOpenUISource({
+      brand,
+      prompt: p.userPrompt || p.prompt,
+      labels: { ...labels, heading: brand },
+    })
+  }
   const project = { brand, tagline, theme, skeleton: '', modules: { home: source } }
 
   // Finalize: persist the complete program + shell (for reload), then close the
