@@ -166,7 +166,7 @@ ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
   <div id="openui-root"></div>
-  <script src="/scripts/openui-island.js" defer></script>
+  <script type="module" src="/scripts/openui-island.js"></script>
 </body>
 </html>`
 }
@@ -423,7 +423,7 @@ ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
   <div id="openui-root"></div>
-  <script src="/scripts/openui-island.js" defer></script>
+  <script type="module" src="/scripts/openui-island.js"></script>
 </body>
 </html>`
   writeRenderedFiles(workspace, { 'index.html': html })

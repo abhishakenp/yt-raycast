@@ -1,0 +1,36 @@
+{
+  "app": "Webflow",
+  "category": "website builder",
+  "dna": {
+    "display": "Inter Display 600 or Söhne (substitute Outfit 600)",
+    "body": "Inter 15-16px",
+    "weights": "precise",
+    "layout": "Mixed-bg sections — alternating warm cream and dark blue. Hero product preview is the editor itself with floating tooltips. Customer story carousels. Pricing as feature-row table.",
+    "copy": "No-code marketers ('Build the site you want'). Outcome-focused with named brand case studies.",
+    "accents": [
+      "#4353ff",
+      "#fff8eb"
+    ],
+    "doctrine": [
+      "Alternate section bgs — cream + blue, not all-dark or all-light",
+      "Include a customer-story band with named brand + measurable outcome",
+      "Use the editor screenshot as primary product proof"
+    ],
+    "avoid": [
+      "aurora gradients",
+      "single bg-color",
+      "generic dashboards"
+    ],
+    "_bankApp": "Webflow"
+  },
+  "copyExamples": null,
+  "accents": [
+    "#4353ff",
+    "#fff8eb"
+  ],
+  "palette": [
+    "#4353ff",
+    "#fff8eb"
+  ],
+  "reason": "generic consumer-facing restaurant homepage aligns with a neutral, site‑builder anchor"
+}

@@ -30,6 +30,7 @@ import { extractSessionProducts } from './extract-session-products.js'
 import { syncProductsToMedusa } from './sync-medusa-catalog.js'
 import { createDefaultPipelineIntegrations } from './pipeline-integrations.js'
 import { createMedusaStoreRouter } from './medusa-store-routes.js'
+import { pexelsImageHandler } from './pexels.js'
 import {
   loadSiteSpec,
   saveSiteSpec,
@@ -434,6 +435,7 @@ export async function startServer(sessionsDir) {
     setNoIndexHeaders(res)
     next()
   })
+  app.get('/api/pexels', pexelsImageHandler)
   app.use('/api/storefront', createMedusaStoreRouter())
 
   app.post(

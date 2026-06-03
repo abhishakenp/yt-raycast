@@ -1,0 +1,24 @@
+{
+  "requestedName": "Marrow — a nose-to-tail butchery and supper club in Lisbon",
+  "officialName": "Marrow — a nose-to-tail butchery and supper club in Lisbon",
+  "officialUrl": "",
+  "logoUrl": "",
+  "faviconUrl": "",
+  "logo": {
+    "kind": "svg",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 160 48\" role=\"img\" aria-label=\"Marrow — a nose-to-tail butchery and supper club in Lisbon logo\"><rect x=\"0\" y=\"0\" width=\"160\" height=\"48\" rx=\"14\" fill=\"hsl(26 78% 46%)\"/><text x=\"80\" y=\"31\" text-anchor=\"middle\" font-family=\"Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif\" font-size=\"20\" font-weight=\"800\" fill=\"white\" letter-spacing=\"-0.02em\">M—</text></svg>",
+    "provider": "fallback",
+    "confidence": 0.2,
+    "alt": "Marrow — a nose-to-tail butchery and supper club in Lisbon logo",
+    "dominantColor": "hsl(26 78% 46%)"
+  },
+  "description": "",
+  "emails": [],
+  "phones": [],
+  "addresses": [],
+  "socials": [],
+  "sourceUrls": [],
+  "confidence": 0.2,
+  "verified": false,
+  "retrievedAt": "2026-05-22T17:56:48.016Z"
+}
