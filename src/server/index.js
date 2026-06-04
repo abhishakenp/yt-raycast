@@ -951,6 +951,7 @@ export async function startServer(sessionsDir) {
       if (!skipRateLimits) {
         // Daily limit per IP for anonymous users — sign-in wall after limit (2, or 3 with share bonus)
         const anonLimit = getAnonDailyLimit(clientIp)
+        console.log('[RateLimit] Checking daily limit for IP:', clientIp, 'Whitelisted:', isIpWhitelisted(clientIp))
         if (!isIpWhitelisted(clientIp) && !checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)) {
           console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp} bonus=${hasIpShareBonus(clientIp)}`)
           return res.status(429).json({
