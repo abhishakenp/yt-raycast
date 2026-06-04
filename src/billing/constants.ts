@@ -39,3 +39,16 @@ export const MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
 
 /** Daily window (24 hours) */
 export const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
+
+/** IP addresses whitelisted from rate limiting (comma-separated in env, or array) */
+export const WHITELISTED_IPS = process.env.WHITELISTED_IPS
+  ? process.env.WHITELISTED_IPS.split(',').map((ip) => ip.trim())
+  : []
+
+/**
+ * Check if an IP address is whitelisted from rate limiting
+ */
+export function isIpWhitelisted(ip: string | null | undefined): boolean {
+  if (!ip) return false
+  return WHITELISTED_IPS.includes(ip)
+}

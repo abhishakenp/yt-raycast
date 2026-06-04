@@ -109,6 +109,7 @@ import {
   RATE_WINDOW_MS,
   MONTHLY_WINDOW_MS,
   DAILY_WINDOW_MS,
+  isIpWhitelisted,
 } from '../billing/constants'
 import {
   userHits,
@@ -907,7 +908,7 @@ export async function startServer(sessionsDir) {
         }
 
         // Concurrent generation limit
-        if ((activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER) {
+        if (!isIpWhitelisted(clientIp) && (activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER) {
           return res.status(429).json({
             error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
             remaining: 0,
@@ -950,7 +951,7 @@ export async function startServer(sessionsDir) {
       if (!skipRateLimits) {
         // Daily limit per IP for anonymous users — sign-in wall after limit (2, or 3 with share bonus)
         const anonLimit = getAnonDailyLimit(clientIp)
-        if (!checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)) {
+        if (!isIpWhitelisted(clientIp) && !checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)) {
           console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp} bonus=${hasIpShareBonus(clientIp)}`)
           return res.status(429).json({
             error: `Sign in to keep generating. Free anonymous users get ${MAX_ANON_PER_DAY} generations per day.`,
@@ -961,7 +962,7 @@ export async function startServer(sessionsDir) {
         }
 
         // 10-min rate limit per IP
-        if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
+        if (!isIpWhitelisted(clientIp) && !checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
           console.log(`[${ts}] RATE_LIMIT anon ip=${clientIp} reason=ip_10min`)
           return res.status(429).json({
             error: 'Rate limit: too many requests from this IP. Please wait.',
@@ -971,7 +972,7 @@ export async function startServer(sessionsDir) {
         }
 
         // Concurrent generation limit
-        if ((activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER) {
+        if (!isIpWhitelisted(clientIp) && (activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER) {
           return res.status(429).json({
             error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
             remaining: 0,
@@ -1445,7 +1446,7 @@ export async function startServer(sessionsDir) {
         return res.status(429).json({ error: 'Rate limit: too many edit requests. Please wait.' })
       }
       const generationKey = req.user?.uid || clientIp
-      if ((activeGenerations.get(generationKey) || 0) >= MAX_CONCURRENT_PER_USER) {
+      if (!isIpWhitelisted(clientIp) && (activeGenerations.get(generationKey) || 0) >= MAX_CONCURRENT_PER_USER) {
         return res.status(429).json({
           error: `You already have ${MAX_CONCURRENT_PER_USER} operations in progress. Please wait.`,
         })
