@@ -332,14 +332,23 @@ export function OpenUIPreviewClient() {
     if (!id || previewRoute !== '/') return
     let closed = false
     let ws: WebSocket | null = null
-    const backendWs =
-      typeof process !== 'undefined'
-        ? process.env?.NEXT_PUBLIC_SF_BACKEND_WS_HOST?.trim() || ''
-        : ''
-    const host =
-      typeof location !== 'undefined' && location.port === '3000' && backendWs
-        ? backendWs
-        : location.host
+    const resolveWSHost = () => {
+      const backendWs =
+        typeof process !== 'undefined'
+          ? process.env?.NEXT_PUBLIC_SF_BACKEND_WS_HOST?.trim() || ''
+          : ''
+      if (backendWs) return backendWs
+      if (typeof location === 'undefined') return ''
+      if (location.port === '3000' || location.port === '3001' || location.port === '') {
+        return `${location.hostname}:7420`
+      }
+      return location.host
+    }
+    const host = resolveWSHost()
+    if (!host) {
+      console.error('[WebSocket] Missing WS host')
+      return
+    }
     const url = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${host}?session=${encodeURIComponent(id)}`
     console.log('[WebSocket] Connecting to:', url)
     try {
@@ -366,9 +375,19 @@ export function OpenUIPreviewClient() {
         try {
           message = JSON.parse(String(event.data))
         } catch {
+          console.warn('[WebSocket] Non-JSON message:', event.data)
           return
         }
-        if (!message || message.route !== '/') return
+        const messageRoute =
+          typeof message.route === 'string' && message.route.trim() ? message.route.trim() : '/'
+        if (messageRoute !== previewRoute) {
+          console.log('[WebSocket] Ignored route mismatch', {
+            expected: previewRoute,
+            received: messageRoute,
+            type: message.type,
+          })
+          return
+        }
         if (settledRef.current && message.type !== 'openui_stream_start') return
         if (message.type === 'openui_stream_start') {
           console.log('[WebSocket] Stream start')

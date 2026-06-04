@@ -16,21 +16,34 @@ export function setupWebSocket(httpServer) {
 
   _wss.on('connection', (ws, req) => {
     const url = new URL(req.url, 'http://localhost')
+    const sessionId = url.searchParams.get('session')
+    console.log('[WebSocket] Incoming connection', {
+      rawUrl: req.url,
+      sessionId,
+      remoteAddress: req.socket?.remoteAddress || null,
+      headers: {
+        host: req.headers?.host,
+      },
+    })
     if (process.env.NODE_ENV !== 'production' && url.searchParams.get('devReload') === '1') {
       devReloadClients.add(ws)
       ws.on('close', () => devReloadClients.delete(ws))
       return
     }
-    const sessionId = url.searchParams.get('session')
     const session = sessionId ? getSession(sessionId) : null
 
     if (!session) {
+      console.warn('[WebSocket] Rejected connection: invalid or missing session', sessionId)
       ws.close(4001, 'Invalid session')
       return
     }
 
     ws.sessionId = sessionId
     session.wsClients.add(ws)
+    console.log('[WebSocket] Client attached', {
+      sessionId,
+      totalClients: session.wsClients.size,
+    })
 
     // Send current state to newly connected client
     const {
@@ -68,6 +81,7 @@ export function setupWebSocket(httpServer) {
       ws.send(JSON.stringify({ type: 'deployed', slug: deployment.slug, url: deployment.url }))
 
     ws.on('close', () => {
+      console.log('[WebSocket] Client closed', { sessionId, totalClients: session.wsClients.size - 1 })
       session.wsClients.delete(ws)
     })
   })

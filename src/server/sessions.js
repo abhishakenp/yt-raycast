@@ -699,6 +699,19 @@ export function sessionBroadcast(session, msg) {
   if (msg.type === 'status') session.lastStatus = msg
   rememberOpenUIStreamMessage(session, msg)
   const data = JSON.stringify(msg)
+  if (String(msg.type || '').startsWith('openui_') || msg.type === 'openui-error') {
+    const route = typeof msg.route === 'string' ? msg.route : '/'
+    const sourcePreview = typeof msg.source === 'string' ? msg.source.length : null
+    const tokenPreview = typeof msg.token === 'string' ? msg.token.length : null
+    console.log('[SessionBroadcast] openui', {
+      sessionId: session.id,
+      type: msg.type,
+      route,
+      sourceLen: sourcePreview,
+      tokenLen: tokenPreview,
+      recipients: session.wsClients?.size || 0,
+    })
+  }
   for (const ws of session.wsClients) {
     if (ws.readyState === 1) ws.send(data)
   }
@@ -766,6 +779,16 @@ function rememberOpenUIStreamMessage(session, msg) {
 export function getOpenUIStreamReplayMessages(session, route = '/') {
   const key = normalizeOpenUIStreamRoute(route)
   const stream = session?.openuiStreams?.[key]
+  if (stream && stream.source && stream.source.length > 0) {
+    console.log('[SessionBroadcast] replay_openui', {
+      sessionId: session.id,
+      route: key,
+      sourceLen: stream.source.length,
+      active: stream.active,
+      done: stream.done,
+      error: stream.error,
+    })
+  }
   if (!stream || (!stream.active && !stream.done && !stream.error)) return []
   if (stream.error) {
     return [{ type: 'openui-error', route: key, error: stream.error }]

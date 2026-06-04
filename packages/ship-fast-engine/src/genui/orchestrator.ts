@@ -3,7 +3,7 @@ import { generateText } from "../generate.ts"
 import { pageSystemPrompt, componentCatalog } from "./prompt.ts"
 import { stripFences } from "./parser.ts"
 import { DEFAULT_MODEL } from "./model-list.ts"
-import { BLOCK_TAXONOMY } from "@ship-fast/blocks"
+import { BLOCK_TAXONOMY, pickBlock } from "@ship-fast/blocks"
 import { THEME_CATALOG, isKnownTheme, pickRandomTheme } from "@ship-fast/blocks"
 
 // Server-side, SYSTEM-controlled site assembly.
@@ -116,22 +116,76 @@ Rules:
 const isKnownBlock = (name: unknown): name is string =>
   typeof name === "string" && name in BLOCK_TAXONOMY
 
+const BLOCK_NAME_INDEX = Object.keys(BLOCK_TAXONOMY)
+const BLOCK_NAME_KEY_INDEX = Object.fromEntries(
+  BLOCK_NAME_INDEX.map((name) => [name.toLowerCase(), name]),
+)
+const BLOCK_NAME_COMPACT_INDEX = Object.fromEntries(
+  BLOCK_NAME_INDEX.map((name) => [name.toLowerCase().replace(/[^a-z0-9]/g, ""), name]),
+)
+
+// Normalize model-returned block IDs so small format drift does not silently
+// collapse every page to placeholders.
+function normalizeBlockName(raw: string): string | undefined {
+  const cleaned = raw.trim().replace(/^[-*\s]*|[*`'"]$/g, "").trim()
+  if (!cleaned) return
+
+  const compact = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "")
+
+  if (isKnownBlock(cleaned)) return cleaned
+
+  const lowered = cleaned.toLowerCase()
+  if (BLOCK_NAME_KEY_INDEX[lowered]) return BLOCK_NAME_KEY_INDEX[lowered]
+
+  const compactMatch = BLOCK_NAME_COMPACT_INDEX[compact(cleaned)]
+  if (compactMatch) return compactMatch
+
+  const m = /^(.+?)(Page\d*)$/i.exec(cleaned)
+  if (m) {
+    const base = m[1]
+    const suffix = m[2]
+    if (!/kimi/i.test(base)) {
+      const kimiForm = `${base}Kimi${suffix}`
+      if (isKnownBlock(kimiForm)) return kimiForm
+    }
+    const baseMatch = BLOCK_NAME_COMPACT_INDEX[compact(`${base}Kimi${suffix}`)]
+    if (baseMatch) return baseMatch
+  }
+
+  return
+}
+
 // Random pick from an AI-returned shortlist (variety); fall back if none are valid.
 function pickFrom(rng: () => number, names: unknown, fallback: string): string {
-  const valid = Array.isArray(names) ? names.filter(isKnownBlock) : []
+  const normalized = Array.isArray(names)
+    ? names.map((name) => (typeof name === "string" ? normalizeBlockName(name) : undefined)).filter(
+        (name): name is string => Boolean(name),
+      )
+    : []
+
+  const valid = normalized.filter(isKnownBlock)
   if (!valid.length) return fallback
   return valid[Math.min(valid.length - 1, Math.floor(rng() * valid.length))]
 }
 
-// Sentinel returned when the AI gives no usable block for a page. It is NOT a
-// registered component — the orchestrator detects it (via isKnownBlock === false)
-// and emits a server-authored, unstyled "Coming soon" placeholder NODE built from
-// the Box+Text layout primitives. There is NO generic-home/legacy fallback and NO
-// selectable "ComingSoon" block exposed to the model. No prompt keyword inspection.
+// Sentinel fallback when the model cannot propose a valid block.
 const PLACEHOLDER_BLOCK = "__coming_soon__"
 const placeholderNode = (id: string) => `${id} = Box([Text("Coming soon")])`
-function fallbackBlock(_rng: () => number, _isHome: boolean): string {
-  return PLACEHOLDER_BLOCK
+
+function fallbackBlock(rng: () => number, isHome: boolean): string {
+  const navTypeFallback = isHome ? ["home", "landing"] : ["list", "index", "detail", "about", "contact"]
+  return (
+    pickBlock(
+      rng,
+      (meta) => {
+        if (isHome) {
+          return navTypeFallback.includes(meta.navPageType)
+        }
+        return meta.allowHero
+      },
+      PLACEHOLDER_BLOCK,
+    ) || PLACEHOLDER_BLOCK
+  )
 }
 
 // Parse the combined brief+selection call. For each page, random-pick from the
@@ -387,8 +441,7 @@ export async function* generateUI(
       }
 
       // 2. Pages + their AI-selected (random-picked) blocks are ready.
-      const _pages = plan.pages
-      const pages = _pages.map((p) => ({ ...p, id: p.block.replace(/Kimi.*Page$/, "") }))
+      const pages = plan.pages.map((p) => ({ ...p }))
       const labels = pages.map((p) => p.label)
       const ids = pages.map((p) => p.id)
 
