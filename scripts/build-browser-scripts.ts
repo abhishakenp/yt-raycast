@@ -24,7 +24,7 @@ await build({
   platform: 'browser',
   jsx: 'automatic',
   sourcemap: false,
-  minify: false,
+  minify: true,
   external: ['franc-min'],
   // Keep .js extension for output
   outExtension: { '.js': '.js' },
@@ -43,7 +43,7 @@ await build({
   platform: 'browser',
   jsx: 'automatic',
   sourcemap: false,
-  minify: false,
+  minify: true,
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
     'process.env': '{}',
