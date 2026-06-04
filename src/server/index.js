@@ -1105,6 +1105,7 @@ export async function startServer(sessionsDir) {
 
   // ─── API: GenUI streaming (SSE) - ported from Ship Faster ─────────
   app.post('/api/genui', optionalAuth, async (req, res) => {
+    console.log('[SSE Server] Received request to /api/genui')
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
@@ -1113,11 +1114,14 @@ export async function startServer(sessionsDir) {
     try {
       const body = req.body
       prompt = typeof body?.prompt === 'string' ? body.prompt : ''
+      console.log('[SSE Server] Prompt length:', prompt.length)
     } catch {
+      console.error('[SSE Server] Invalid body')
       res.write(`data: ${JSON.stringify({ type: 'error', message: 'invalid body' })}\n\n`)
       return res.end()
     }
     if (!prompt.trim()) {
+      console.error('[SSE Server] No prompt')
       res.write(`data: ${JSON.stringify({ type: 'error', message: 'prompt required' })}\n\n`)
       return res.end()
     }
@@ -1127,23 +1131,29 @@ export async function startServer(sessionsDir) {
     }
 
     try {
+      console.log('[SSE Server] Starting orchestrator')
       const result = await runHomepageOrchestrator({
         prompt,
         signal: req.signal,
         onEvent: (event) => {
+          console.log('[SSE Server] Sending event:', event.type)
           sendEvent(event)
         },
         onSource: (source) => {
           // Send the accumulated source as a skeleton event for compatibility
+          console.log('[SSE Server] Sending source, length:', source.length)
           sendEvent({ type: 'skeleton', text: source })
         },
       })
+      console.log('[SSE Server] Orchestrator completed')
       // Send done event
       sendEvent({ type: 'done', modules: 1, ms: 0 })
     } catch (e) {
+      console.error('[SSE Server] Error:', e)
       const message = e instanceof Error ? e.message : 'stream error'
       sendEvent({ type: 'error', message })
     } finally {
+      console.log('[SSE Server] Ending response')
       res.end()
     }
   })

@@ -335,11 +335,13 @@ export function OpenUIPreviewClient() {
 
     const fetchSessionAndStream = async () => {
       try {
+        console.log('[SSE Client] Starting fetch for session:', id)
         // First fetch the session to get the prompt
         const sessionResponse = await artFetch(`/api/sessions/${encodeURIComponent(id)}`, id, {
           signal: ac.signal,
         })
         if (!sessionResponse.ok) {
+          console.error('[SSE Client] Session fetch failed:', sessionResponse.status)
           setBootError('Session not found.')
           return
         }
@@ -347,10 +349,12 @@ export function OpenUIPreviewClient() {
         const prompt = session.prompt || ''
 
         if (!prompt.trim()) {
+          console.error('[SSE Client] No prompt in session')
           setBootError('No prompt found in session.')
           return
         }
 
+        console.log('[SSE Client] Got prompt, starting SSE stream')
         // Now stream from the SSE endpoint
         settledRef.current = false
         stopArtifactLoadWait()
@@ -366,7 +370,9 @@ export function OpenUIPreviewClient() {
           signal: ac.signal,
         })
 
+        console.log('[SSE Client] SSE response status:', response.status)
         if (!response.ok || !response.body) {
+          console.error('[SSE Client] SSE fetch failed:', response.status)
           throw new Error(`Stream failed (${response.status})`)
         }
 
