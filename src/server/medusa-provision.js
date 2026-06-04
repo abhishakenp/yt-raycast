@@ -213,8 +213,24 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
   const composeFilePath = getComposeFilePath(sessionId)
   const publicCfg = getPublicMedusaConfig(sessionId)
 
-  const jwtSecret = String(process.env.JWT_SECRET || '').trim() || generateSecret(32)
-  const cookieSecret = String(process.env.COOKIE_SECRET || '').trim() || generateSecret(32)
+  // JWT/cookie secrets must stay STICKY across re-provisions of the same
+  // session. A re-provision (pre-warm racing the user's click, or a retry)
+  // re-runs this function; if we minted a fresh random secret each time,
+  // `docker compose up -d` would recreate the container with a new JWT_SECRET
+  // and every token signed by the old one — admin invites, login sessions,
+  // cookies — would fail verification with a 401 (e.g. POST
+  // /admin/invites/accept). Same drift class as the seed admin password, so
+  // same fix: global env wins, else reuse the existing compose value, else
+  // generate once.
+  const existingSecrets = _readExistingComposeSecrets(composeFilePath)
+  const jwtSecret =
+    String(process.env.JWT_SECRET || '').trim() ||
+    existingSecrets?.jwtSecret ||
+    generateSecret(32)
+  const cookieSecret =
+    String(process.env.COOKIE_SECRET || '').trim() ||
+    existingSecrets?.cookieSecret ||
+    generateSecret(32)
   const dbPassword =
     String(
       process.env.MEDUSA_POSTGRES_PASSWORD ||
@@ -527,6 +543,29 @@ export function isMedusaProvisionInFlight(sessionId) {
 // up -d` recreates the container with the new env, but the DB user row from
 // the first attempt still has the original password — so login 401s
 // permanently and every retry walks us further from the truth.
+// Read previously-written JWT_SECRET / COOKIE_SECRET from an existing compose
+// file so a re-provision keeps the same secrets. Without this, every regen
+// rotates the secrets, the recreated container rejects any token signed with
+// the old JWT_SECRET, and admin invite acceptance / login 401s. Mirrors
+// _readExistingSeedCreds, but keyed on the compose path the caller already has.
+function _readExistingComposeSecrets(composeFilePath) {
+  if (!composeFilePath || !fs.existsSync(composeFilePath)) return null
+  try {
+    const existing = fs.readFileSync(composeFilePath, 'utf8')
+    const jwtMatch = existing.match(/JWT_SECRET:\s*(\S+)/)
+    const cookieMatch = existing.match(/COOKIE_SECRET:\s*(\S+)/)
+    if (jwtMatch || cookieMatch) {
+      return {
+        jwtSecret: jwtMatch ? jwtMatch[1] : null,
+        cookieSecret: cookieMatch ? cookieMatch[1] : null,
+      }
+    }
+  } catch {
+    /* fall through to fresh generation */
+  }
+  return null
+}
+
 function _readExistingSeedCreds(sessionId) {
   const composeFilePath = getComposeFilePath(sessionId)
   if (!fs.existsSync(composeFilePath)) return null
