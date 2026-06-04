@@ -14,8 +14,11 @@ const SF_EMBED_HOME = (() => {
 const PREVIEW_BASE = `${location.origin}/preview/${SESSION_ID}`
 const WS_HOST = (() => {
   // When served from Next.js (port 3000), Express WS is on port 7420
+  // In production (HTTPS), use hostname without port for WSS
   const h = location.hostname
   const p = location.port
+  const isHttps = location.protocol === 'https:'
+  if (isHttps) return h
   if (p === '3000' || p === '') return `${h}:7420`
   return location.host
 })()
