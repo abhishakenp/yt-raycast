@@ -341,9 +341,20 @@ export function OpenUIPreviewClient() {
         ? backendWs
         : location.host
     const url = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${host}?session=${encodeURIComponent(id)}`
+    console.log('[OpenUI WebSocket] Connecting to:', url)
     try {
       ws = new WebSocket(url)
+      ws.onopen = () => {
+        console.log('[OpenUI WebSocket] Connected')
+      }
+      ws.onerror = (error) => {
+        console.error('[OpenUI WebSocket] Error:', error)
+      }
+      ws.onclose = () => {
+        console.log('[OpenUI WebSocket] Closed')
+      }
       ws.onmessage = (event) => {
+        console.log('[OpenUI WebSocket] Message:', event.data)
         if (closed) return
         let message: {
           type?: string

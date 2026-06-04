@@ -136,9 +136,11 @@ export async function generateAndWriteOpenUIHome(p: {
       // preview, then open the stream so the client island takes over rendering.
       writeShell()
       shellWritten = true
+      console.log('[OpenUI Stream] First statement, broadcasting stream_start')
       ctx?.broadcast?.({ type: 'openui_stream_start', route })
       ctx?.signalHomepageReady?.()
     }
+    console.log('[OpenUI Stream] Broadcasting chunk, accumulated length:', accumulated.length)
     ctx?.broadcast?.({ type: 'openui_stream_chunk', route, source: accumulated })
   }
 
