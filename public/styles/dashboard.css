@@ -2189,7 +2189,7 @@ body.sf-session-exit.sf-session-exit--run .intro-overlay:not(.hidden) {
 }
 .preview-stage.sf-device-tablet .preview-device-shell,
 .preview-stage.sf-device-mobile .preview-device-shell {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   margin-left: auto;
   margin-right: auto;
   box-shadow:
@@ -2198,6 +2198,7 @@ body.sf-session-exit.sf-session-exit--run .intro-overlay:not(.hidden) {
   border-radius: 12px;
   overflow: hidden;
   max-height: 100%;
+  min-height: 0;
 }
 .preview-stage.sf-device-tablet .preview-device-shell {
   width: 100%;
@@ -2596,6 +2597,11 @@ body.sf-openui-active .preview-device-shell {
 }
 /* Match default `.preview-stage.sf-device-desktop` horizontal inset */
 body.sf-openui-active .preview-stage.sf-device-desktop {
+  padding: 0 8px !important;
+}
+/* Match default padding for tablet/mobile in OpenUI mode */
+body.sf-openui-active .preview-stage.sf-device-tablet,
+body.sf-openui-active .preview-stage.sf-device-mobile {
   padding: 0 8px !important;
 }
 
