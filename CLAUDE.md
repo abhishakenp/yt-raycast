@@ -1,3 +1,28 @@
+## CRITICAL RULE - CHECK GIT HISTORY FIRST
+
+**BEFORE IMPLEMENTING ANYTHING:**
+1. ALWAYS check git history to see if the feature/fix was already implemented
+2. If it exists in history, use that implementation - DO NOT reimplement
+3. If unsure whether it was done, ASK THE USER before implementing
+4. NEVER remove or change existing working functionality
+5. Implementation is the LAST resort, not the first action
+
+**Command to check history:** `git log --oneline -20` and `git show <commit>` to see what was done
+**Command to check if file was changed:** `git log --oneline -- <filename>`
+
+This rule exists because 95% of requests are for features that were already working and got broken by unnecessary reimplementation.
+
+## CRITICAL RULE - ALWAYS VERIFY YOUR WORK
+
+**AFTER IMPLEMENTING ANYTHING:**
+1. ALWAYS test your changes with the actual tool/mechanism (agent-browser, curl, etc.)
+2. NEVER claim something is fixed without verification
+3. If the user asks you to test with a specific tool (agent-browser), USE THAT TOOL
+4. Do NOT assume your fix works - verify it with real inputs
+5. If verification fails, DO NOT claim success - report the failure
+
+This rule exists because claiming unverified fixes wastes time and breaks trust.
+
 # RTK (Rust Token Killer) - Token-Optimized Commands
 
 ## Golden Rule
@@ -155,13 +180,6 @@ Overall average: **60-90% token reduction** on common development operations.
 
 - Secrets and environment files are managed with Doppler. Run env-dependent commands through `doppler run -- <cmd>` and do not assume `.env.local` contains current model/API keys.
 - Do not commit generated env files; update Doppler-managed configuration instead.
-
-## Golden rule: local fixes first
-
-- If something can be fixed at the block or component level itself, do not touch other files.
-- For the LLM, this is like generating the data to fill up the form: if something is wrong, 90% of the time it is the system's fault, not the block's.
-- To verify a fix, do not regenerate by default. Fix the blocks, reload, and confirm the result.
-- Treat this as a standing golden rule. Do not wait for the same instruction to be repeated.
 
 ## Homepage engine (playground vs production)
 

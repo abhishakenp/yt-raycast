@@ -18,7 +18,7 @@ const WATCH_TARGETS = [
   'package.json',
 ]
 const IGNORE =
-  /(^|\/)(\.next|node_modules|\.git|sessions|\.codex|\.worktrees|\.DS_Store|tsconfig\.tsbuildinfo)(\/|$)/
+  /(^|\/)(\.next|node_modules|\.git|sessions|\.codex|\.liza|\.worktrees|\.DS_Store|tsconfig\.tsbuildinfo)(\/|$)/
 const DEBOUNCE_MS = 400
 const PORT = process.env.PORT ?? '3000'
 

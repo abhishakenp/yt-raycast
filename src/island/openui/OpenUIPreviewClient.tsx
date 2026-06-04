@@ -272,6 +272,27 @@ export function OpenUIPreviewClient() {
       // (transient errors, iframe race, or strict auth timing).
       if (artifactOnDisk) {
         stopArtifactLoadWait()
+        // Check if there's a saved index.html with manual edits - load that instead of OpenUI source
+        try {
+          const htmlResponse = await artFetch(
+            `/api/sessions/${encodeURIComponent(id)}/preview-html?route=${encodeURIComponent(previewRoute)}`,
+            id,
+            { signal: ac.signal },
+          )
+          if (htmlResponse.ok) {
+            const htmlData = await htmlResponse.json() as { html?: string }
+            if (htmlData.html && htmlData.html.length > 100) {
+              setFinal({ source: htmlData.html, theme: {} })
+              setBootError(null)
+              setLoadingSavedPreview(false)
+              settledRef.current = true
+              setIsStreaming(false)
+              return
+            }
+          }
+        } catch {
+          // If HTML fetch fails, fall back to OpenUI polling
+        }
         artifactLoadTimeoutRef.current = setTimeout(() => {
           artifactLoadTimeoutRef.current = null
           if (settledRef.current || ac.signal.aborted) return
@@ -293,16 +314,15 @@ export function OpenUIPreviewClient() {
         pollRef.current = setInterval(tick, 1200)
       }
       void tick()
-    })().catch((error: unknown) => {
+    })().catch((error) => {
       if (ac.signal.aborted || isAbortLike(error)) return
-      if (settledRef.current) return
       setLoadingSavedPreview(false)
       setIsStreaming(false)
       setBootError('Could not load saved preview. Try refreshing this page.')
     })
 
     return () => {
-      ac.abort('component unmount')
+      ac.abort()
       stopArtifactLoadWait()
       setLoadingSavedPreview(false)
     }
