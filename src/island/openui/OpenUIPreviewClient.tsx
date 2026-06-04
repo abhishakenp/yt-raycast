@@ -293,15 +293,16 @@ export function OpenUIPreviewClient() {
         pollRef.current = setInterval(tick, 1200)
       }
       void tick()
-    })().catch((error) => {
+    })().catch((error: unknown) => {
       if (ac.signal.aborted || isAbortLike(error)) return
+      if (settledRef.current) return
       setLoadingSavedPreview(false)
       setIsStreaming(false)
       setBootError('Could not load saved preview. Try refreshing this page.')
     })
 
     return () => {
-      ac.abort()
+      ac.abort('component unmount')
       stopArtifactLoadWait()
       setLoadingSavedPreview(false)
     }
