@@ -45,6 +45,24 @@ function themeWords(text: string): string[] {
     .filter((word) => word.length > 2 && !THEME_STOP_WORDS.has(word))
 }
 
+// Convert a hex color (#fff or #ffffff) to bare RGB channels ("255 255 255").
+// Tailwind v3 CDN needs this format so opacity modifiers (text-bg/80) can
+// decompose the variable into channels: rgb(var(--bg) / <alpha-value>).
+function hexToRgbChannels(hex: string): string {
+  const h = hex.replace(/^#/, '')
+  const full = h.length === 3
+    ? h.split('').map((c) => c + c).join('')
+    : h
+  const n = parseInt(full, 16)
+  if (Number.isNaN(n)) return hex
+  return `${(n >> 16) & 0xff} ${(n >> 8) & 0xff} ${n & 0xff}`
+}
+
+// Returns true if the value looks like a hex color we can convert to channels.
+function isHexColor(v: string): boolean {
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.trim())
+}
+
 function readSiteThemeName(workspace: string): string | null {
   try {
     const spec = JSON.parse(readFileSync(join(workspace, 'site-spec.json'), 'utf8'))
@@ -107,15 +125,22 @@ function buildThemeHead(seedText: string, requested?: string | null): string {
   const themeName = pickThemeName(seedText, requested)
   const styles = resolveThemeStyles(themeName)
   const light: Record<string, string> = (styles?.light as Record<string, string>) || {}
+  // Convert hex colors to bare RGB channels so Tailwind v3 CDN opacity
+  // modifiers (text-background/80, bg-primary/50, …) can decompose them.
   const rootVars = THEME_VAR_KEYS
     .filter((key) => light[key] != null)
-    .map((key) => `--${key}: ${light[key]};`)
+    .map((key) => {
+      const raw = light[key]
+      const val = isHexColor(raw) ? hexToRgbChannels(raw) : raw
+      return `--${key}: ${val};`
+    })
     .join(' ')
   const radius = light['radius'] ? `--radius: ${light['radius']};` : '--radius: 0.5rem;'
   const fontSans = light['font-sans'] || 'ui-sans-serif, system-ui, sans-serif'
   const fontSerif = light['font-serif'] || 'Georgia, serif'
+  // Use rgb(var(--X) / <alpha-value>) so Tailwind v3 can apply opacity modifiers.
   const tailwindColors = JSON.stringify(
-    Object.fromEntries(THEME_VAR_KEYS.map((key) => [key, `var(--${key})`])),
+    Object.fromEntries(THEME_VAR_KEYS.map((key) => [key, `rgb(var(--${key}) / <alpha-value>)`])),
   )
   return `${googleFontLink(styles)}
   <script>
@@ -128,7 +153,7 @@ function buildThemeHead(seedText: string, requested?: string | null): string {
   </script>
   <style>
     :root { ${rootVars} ${radius} }
-    body { font-family: ${fontSans}; background-color: var(--background); color: var(--foreground); }
+    body { font-family: ${fontSans}; background-color: rgb(var(--background)); color: rgb(var(--foreground)); }
   </style>`
 }
 
