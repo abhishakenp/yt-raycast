@@ -1,12 +1,15 @@
 import {
   OpenUIIntegrationProviders,
   QueryClient,
-  QueryClientProvider,
+  PersistQueryClientProvider,
   library as shipFastOpenUILibrary,
   Renderer,
 } from '@ship-fast/blocks'
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
+import { get, set, del } from 'idb-keyval'
 import { preprocessOpenUIResponse } from '../../../packages/ship-fast-engine/src/lib/openui-preprocess'
 import { Component, type CSSProperties, type ReactNode } from 'react'
+import { I18nProvider, T } from './_providers/translation';
 
 const openUIQueryClient = new QueryClient({
   defaultOptions: {
@@ -14,8 +17,18 @@ const openUIQueryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
+      gcTime: Infinity,
     },
   },
+})
+
+const idbPersister = createAsyncStoragePersister({
+  storage: {
+    getItem: (key) => get(key),
+    setItem: (key, value) => set(key, value),
+    removeItem: (key) => del(key),
+  },
+  key: 'ship-fast-openui-cache',
 })
 
 class RendererErrorBoundary extends Component<
@@ -40,6 +53,7 @@ export default function OpenUIViewer({
   response,
   isStreaming,
   theme,
+  locale,
   embed,
   sessionId,
   integrations,
@@ -48,6 +62,8 @@ export default function OpenUIViewer({
   isStreaming?: boolean
   /** Merged site-spec + session theme colors (server keys: primary, accent, background, …) */
   theme?: Record<string, string> | null
+  /** AI-detected locale (ISO 639-1 code) — drives translation provider. */
+  locale?: string
   /** Full-bleed session iframe: no rounded corners, no streaming border/dot overlay */
   embed?: boolean
   /** Session id used by integration providers (for storefront and CMS scope). */
@@ -67,29 +83,29 @@ export default function OpenUIViewer({
   void theme
   const rootStyle: CSSProperties = inEmbed
     ? {
-        flex: 1,
-        alignSelf: 'stretch',
-        width: '100%',
-        minWidth: 0,
-        minHeight: '100dvh',
-        height: '100%',
-        borderRadius: 0,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: 'none',
-      }
+      flex: 1,
+      alignSelf: 'stretch',
+      width: '100%',
+      minWidth: 0,
+      minHeight: '100dvh',
+      height: '100%',
+      borderRadius: 0,
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: 'none',
+    }
     : {
-        height: '100%',
-        minHeight: 0,
-        borderRadius: '0 0 12px 12px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: isStreaming
-          ? '0 0 0 1px color-mix(in srgb, #22d3ee 55%, transparent) inset'
-          : '0 0 0 1px rgba(255,255,255,0.08) inset',
-      }
+      height: '100%',
+      minHeight: 0,
+      borderRadius: '0 0 12px 12px',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: isStreaming
+        ? '0 0 0 1px color-mix(in srgb, #22d3ee 55%, transparent) inset'
+        : '0 0 0 1px rgba(255,255,255,0.08) inset',
+    }
   return (
     <div style={{ height: '100%', width: '100%', ...rootStyle }}>
       {isStreaming && !inEmbed ? <div className="streaming-indicator" aria-hidden="true" /> : null}
@@ -110,19 +126,29 @@ export default function OpenUIViewer({
             ) : null
           }
         >
-          <QueryClientProvider client={openUIQueryClient}>
+          <PersistQueryClientProvider
+            client={openUIQueryClient}
+            persistOptions={{
+              persister: idbPersister,
+              maxAge: Infinity,
+            }}
+          >
             <OpenUIIntegrationProviders
               sanity={integrations?.sanity || { enabled: false }}
               medusa={integrations?.medusa || { enabled: false }}
               sessionId={sessionId}
             >
-              <Renderer
-                response={preprocessOpenUIResponse(response, { resolveRefs: false })}
-                library={shipFastOpenUILibrary}
-                isStreaming={isStreaming}
-              />
+              <I18nProvider locale={locale || "en"}>
+                <T>
+                  <Renderer
+                    response={preprocessOpenUIResponse(response, { resolveRefs: false })}
+                    library={shipFastOpenUILibrary}
+                    isStreaming={isStreaming}
+                  />
+                </T>
+              </I18nProvider>
             </OpenUIIntegrationProviders>
-          </QueryClientProvider>
+          </PersistQueryClientProvider>
         </RendererErrorBoundary>
       </div>
     </div>

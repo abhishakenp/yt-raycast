@@ -26,6 +26,7 @@ export type GenUIEvent =
   | { type: "skeleton"; text: string }
   | { type: "plan"; ids: string[] }
   | { type: "theme"; name: string }
+  | { type: "locale"; code: string }
   | { type: "module_start"; id: string }
   | { type: "module_retry"; id: string; attempt: number }
   | { type: "module"; id: string; text: string; failed?: boolean }
@@ -52,6 +53,7 @@ interface Plan {
   brand: string
   tagline: string
   theme: string
+  locale: string
   pages: PlannedPage[]
 }
 
@@ -103,12 +105,13 @@ AVAILABLE THEMES (name: vibe) — pick ONE whose mood best fits the request:
 ${themeList}
 
 Return ONLY this JSON shape (no markdown, no code fences):
-{"brand":"<short brand/product name>","tagline":"<one short sentence>","theme":"<theme-name>","pages":[{"label":"<short nav word>","brief":"<one line of what this page covers>","blocks":["<BlockName>", "<BlockName>"]}]}
+{"brand":"<short brand/product name>","tagline":"<one short sentence>","theme":"<theme-name>","locale":"<ISO 639-1 code for the language of this request, e.g. en, hi, ne, es, fr, ja, zh, ar>","pages":[{"label":"<short nav word>","brief":"<one line of what this page covers>","blocks":["<BlockName>", "<BlockName>"]}]}
 
 Rules:
 - "pages": 3 to 5 entries; the FIRST is the home/landing route. For a single-purpose request (e.g. just a sign-in screen) a single page is allowed.
 - "blocks": 1 to 4 block NAMES copied EXACTLY from the catalog above, ordered most-relevant first. Choose blocks whose DESCRIPTION genuinely fits this page's purpose AND the overall site (e.g. a ramen shop's home picks a restaurant home block, a pricing page picks a pricing block). The home page's blocks must be landing/home-style blocks.
 - "theme": ONE theme NAME copied EXACTLY from the THEMES list, whose vibe matches the brand and request (e.g. a luxury restaurant -> "elegant-luxury", a dev tool -> "vercel" or "supabase", a kids site -> "candyland").
+- "locale": The ISO 639-1 language code matching the language of the build request (e.g. "en" for English, "hi" for Hindi, "ne" for Nepali, "es" for Spanish, "fr" for French, "ja" for Japanese). Default to "en" if the request is in English or you cannot determine the language.
 - Labels are short nav words (Home, Features, Pricing, About, Contact, Shop, Work, Menu, Blog …).
 - brand, tagline and briefs must be specific to the request.`
 }
@@ -195,6 +198,7 @@ function parsePlan(raw: string, rng: () => number, prompt: string): Plan {
     brand?: unknown
     tagline?: unknown
     theme?: unknown
+    locale?: unknown
     pages?: Array<{ label?: unknown; brief?: unknown; blocks?: unknown }>
   }
   const rawPages = Array.isArray(parsed.pages) ? parsed.pages : []
@@ -217,7 +221,10 @@ function parsePlan(raw: string, rng: () => number, prompt: string): Plan {
       ? parsed.tagline.trim()
       : `${brand} — built for what's next.`
   const theme = isKnownTheme(parsed.theme) ? parsed.theme : pickRandomTheme(rng)
-  return { brand, tagline, theme, pages }
+  const locale = typeof parsed.locale === "string" && parsed.locale.trim().length === 2
+    ? parsed.locale.trim().toLowerCase()
+    : "en"
+  return { brand, tagline, theme, locale, pages }
 }
 
 // Last-resort plan when the AI call/JSON entirely fails. Deliberately generic and
@@ -231,7 +238,7 @@ function fallbackPlan(prompt: string, rng: () => number): Plan {
     brief: label,
     block: fallbackBlock(rng, i === 0),
   }))
-  return { brand, tagline: `${brand} — built for what's next.`, theme: pickRandomTheme(rng), pages }
+  return { brand, tagline: `${brand} — built for what's next.`, theme: pickRandomTheme(rng), locale: "en", pages }
 }
 
 function pageUser(
@@ -401,6 +408,7 @@ export async function* generateUI(
 
       // Emit the chosen theme ASAP so the preview can apply it before content lands.
       ch.push({ type: "theme", name: plan.theme })
+      ch.push({ type: "locale", code: plan.locale })
 
       // AUTH single-page special case — the model returned one sign-in page whose
       // chosen block is an auth block: render just that screen, no fan-out.

@@ -4,7 +4,8 @@ export { library, componentNames, openUIComponentOpenPatternSource } from "./lib
 // one React context (avoids the dual-instance "useOpenUI must be used within a
 // <Renderer />" error when the engine renders home.openui to HTML).
 export { Renderer } from "@openuidev/react-lang"
-export { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+export { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
+export { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
 import componentSpec from "./generated/component-spec.json"
 export { componentSpec }
 

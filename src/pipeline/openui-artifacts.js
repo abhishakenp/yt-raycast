@@ -95,6 +95,20 @@ export function readSiteSpecThemeColors(workspace) {
   }
 }
 
+/** Locale (ISO 639-1 code) from `site-spec.json`, defaults to "en". */
+export function readSiteSpecLocale(workspace) {
+  const siteSpecPath = join(workspace, 'site-spec.json')
+  if (!existsSync(siteSpecPath)) return 'en'
+  try {
+    const siteSpec = JSON.parse(readFileSync(siteSpecPath, 'utf8'))
+    return typeof siteSpec?.locale === 'string' && siteSpec.locale.trim().length === 2
+      ? siteSpec.locale.trim().toLowerCase()
+      : 'en'
+  } catch {
+    return 'en'
+  }
+}
+
 export function openUIArtifactsReady(workspace, siteSpec) {
   if (!existsSync(join(workspace, HOME_OPENUI_FILE))) return false
   const manifest = readOpenUIManifest(workspace)

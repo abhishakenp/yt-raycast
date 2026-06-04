@@ -4,7 +4,6 @@ import {
   ECOMMERCE_MEDUSA_DOCS_LEARN,
   MOTION_REACT_GUIDELINES,
 } from '../config.js'
-import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { brandProfilePromptBlock } from './brand-profile.js'
 
 function imageGuide(imageHints) {
@@ -53,12 +52,6 @@ export function pagePrompt(
   hasUserDesignReferences = false,
 ) {
   const ecommerceGuidelines = getEcommerceGenerationGuidelines({ hasUserDesignReferences })
-  const mixedEn = isMixedEnglishIndicCode(indiaMode?.language?.code)
-  const langNote = mixedEn
-    ? `\n\nLANGUAGE: ${indiaMode.language?.name || 'Mixed'} — match the homepage. All new visible text stays a natural mix of the local language and English, not a single language throughout unless a short fragment requires it.\n`
-    : indiaMode?.code && indiaMode.code !== 'en'
-      ? `\n\nLANGUAGE: ${indiaMode.name} — all visible text must be in ${indiaMode.name}. Match the homepage language.\n`
-      : ''
   const brandBlock = brandProfilePromptBlock(brandProfile)
   const taskLower = (task.title || '').toLowerCase()
   const fnameLower = (task.filename || '').toLowerCase()
@@ -118,7 +111,7 @@ This page is part of an e-commerce store. Maintain the store aesthetic and Medus
     prompt: `Create the "${task.title}" page. Reuse the exact <head>, nav, and footer from the homepage.
 Write unique <main> content for: ${task.description ?? task.title}
 ${contactPageBlock}${ecommercePageBlock}
-${langNote}Nav links:
+Nav links:
 ${navList}
 
 Realistic mock data.

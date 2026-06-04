@@ -45,7 +45,7 @@ import {
   writeDesignReferencesFile,
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
-import { readOpenUIFileForRoute, readSiteSpecThemeColors } from '../pipeline/openui-artifacts.js'
+import { readOpenUIFileForRoute, readSiteSpecThemeColors, readSiteSpecLocale } from '../pipeline/openui-artifacts.js'
 import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
@@ -448,6 +448,50 @@ export async function startServer(sessionsDir) {
       return res.status(400).json({ error: 'Invalid JSON in request body' })
     }
     next(err)
+  })
+
+  // ─── Translation proxy (chatjimmy) ──────────────────────────────────
+  const langNames = new Intl.DisplayNames(['en'], { type: 'language' })
+  app.post('/api/translate', async (req, res) => {
+    const { text, locale } = req.body ?? {}
+    if (!text || !locale) {
+      return res.status(400).json({ error: 'text and locale are required' })
+    }
+    const langName = langNames.of(locale) ?? locale
+    try {
+      const upstream = await fetch('https://chatjimmy.ai/api/chat', {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'content-type': 'application/json',
+          'Referer': 'https://chatjimmy.ai/',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Translate the following text to ${langName}. Return ONLY the translated text, nothing else:\n\n${text}`,
+            },
+          ],
+          chatOptions: {
+            selectedModel: 'llama3.1-8B',
+            systemPrompt: 'You are a translator. Return only the translated text.',
+            topK: 8,
+          },
+          attachment: null,
+        }),
+      })
+      if (!upstream.ok) {
+        return res.status(502).json({ error: 'translation upstream failed' })
+      }
+      // Response is plain text with stats appended: "translated text\n<|stats|>...<|/stats|>"
+      const raw = await upstream.text()
+      const translation = raw.split('<|stats|>')[0].trim()
+      return res.json({ translation })
+    } catch (err) {
+      console.error('[translate]', err)
+      return res.status(500).json({ error: 'translation failed' })
+    }
   })
 
   // ─── Plausible Analytics Proxy ──────────────────────────
@@ -1205,7 +1249,8 @@ export async function startServer(sessionsDir) {
       return res.status(404).json({ error: 'OpenUI artifact not ready' })
     }
     const theme = readSiteSpecThemeColors(session.workspace)
-    res.json({ source, theme })
+    const locale = readSiteSpecLocale(session.workspace)
+    res.json({ source, theme, locale })
   })
 
   app.get('/api/sessions/:id/preview-html', optionalAuth, async (req, res) => {

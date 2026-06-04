@@ -2,10 +2,8 @@ import {
   GROQ_MODEL,
   getEcommerceGenerationGuidelines,
   GLOBAL_UI_CRAFT_GUIDELINES,
-  INDIAN_DESIGN_TOKENS,
   MOTION_DEV_DOCS_REACT,
 } from '../config.js'
-import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { inferSiteTypeHint } from '../lib/infer-site-type.js'
 import { mobbinDoctrineBlock, mobbinSessionBlock } from '../lib/mobbin/prompt-blocks.js'
 
@@ -23,47 +21,6 @@ function mobbinAnchorAppendix(anchor) {
       ? `\n\n── MOBBIN PRO ANCHOR PALETTE LOCK ──\n${accentLine}\nThe design system you output must be unmistakably ${anchor.app}-family at thumbnail glance.`
       : `\n\n── MOBBIN PRO ANCHOR ──\nThe design system you output should be unmistakably ${anchor.app}-family at thumbnail glance.`,
   }
-}
-
-function languageDesignAppendix(indiaMode) {
-  if (!indiaMode || indiaMode.code === 'en') return ''
-
-  if (indiaMode.isIndian) {
-    const { language } = indiaMode
-    const colors = INDIAN_DESIGN_TOKENS.colors
-    const patterns = INDIAN_DESIGN_TOKENS.patterns
-    if (isMixedEnglishIndicCode(language?.code)) {
-      const scriptPrimary = (language.fontFamily || '').split(',')[0].trim()
-      const pairLabel =
-        language?.code === 'hinglish'
-          ? 'Hindi–English mixed copy (natural Hinglish, not pure Hindi or pure English)'
-          : `${language.name} mixed copy for Indian audiences (natural blend of the local language and English, not purely one language)`
-      return `
-
-### India Mode — ${language.name}
-${pairLabel}:
-- **Fonts**: Load ${scriptPrimary} and Inter from Google Fonts. Use the script font for local-language words and Inter for English.
-- **Color palette**: Root the palette in Indian tradition — saffron (${colors.primary[1]}), gold (${colors.primary[2]}), deep red (${colors.decorative[0]}), peacock blue (${colors.secondary[0]}), India green (${colors.accent[0]}). Choose 1–2 as accent.
-- **Decorative motifs**: Subtle Indian geometric patterns: ${patterns.join(', ')}.
-- **Tailwind config**: Indian-inspired semantic tokens (primary, accent, decorative, surface).`
-    }
-    return `
-
-### India Mode — Additional Requirements
-This is an Indian-language (${language.name}) website. Apply these constraints on top of the standard design system:
-- **Font**: Use "${language.fontFamily}" as the primary font for body text. Load it from Google Fonts. Pair with a complementary heading font if desired.
-- **Color palette**: Root the palette in Indian tradition — saffron (${colors.primary[1]}), gold (${colors.primary[2]}), deep red (${colors.decorative[0]}), peacock blue (${colors.secondary[0]}), India green (${colors.accent[0]}). Choose 1–2 as accent, keep the rest as supporting tones.
-- **Decorative motifs**: Incorporate subtle Indian geometric patterns: ${patterns.join(', ')}. These should accent section boundaries and card borders — tasteful, not overwhelming.
-- **Tailwind config**: Include the chosen Indian-inspired colors as semantic tokens (primary, accent, decorative, surface).`
-  }
-
-  // Non-English, non-Indian language
-  const fontName = indiaMode.fontFamily?.split(',')[0]?.trim() || 'Inter'
-  return `
-
-### Language — ${indiaMode.name}
-This website is in ${indiaMode.name} (${indiaMode.nativeName}). Apply these constraints:
-- **Font**: Use "${fontName}" as the primary font for body text. Load it from Google Fonts.${indiaMode.isRTL ? '\n- **Direction**: Use right-to-left (RTL) layout with dir="rtl" on the html element.' : ''}`
 }
 
 export function designBriefPrompt(
@@ -168,7 +125,7 @@ ${
 - Signature: specify one motion or depth token (e.g. card hover lift, gradient mesh hero bg, blur glass panel)
 ${effectiveSiteType !== 'game' ? `- Next.js/React exports: plan Framer Motion (\`framer-motion\`, ${MOTION_DEV_DOCS_REACT}) for interactive motion — not purely static UI; respect reduced-motion preferences.\n` : ''}- If images are truly needed (ecommerce/portfolio), use relevant verified provider photos first. If no close match exists, avoid random stock-photo fallbacks and use gradients, patterns, icons, or typography-driven panels instead
 
-Max 70 lines. Output ONLY markdown.${userAppend}${languageDesignAppendix(indiaMode)}`,
+Max 70 lines. Output ONLY markdown.${userAppend}`,
     model: GROQ_MODEL,
     temperature: 0.4,
     maxTokens: 3000,

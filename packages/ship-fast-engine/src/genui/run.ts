@@ -7,6 +7,8 @@ export interface OrchestratorResult {
   source: string
   /** AI-picked theme name (caffeine, elegant-luxury, …) — drives the preview palette. */
   theme: string | null
+  /** AI-detected locale (ISO 639-1 code) — drives translation provider. */
+  locale: string
   /** Brand string the model used for the page blocks. */
   brand: string
 }
@@ -34,6 +36,7 @@ export async function runHomepageOrchestrator(p: {
   onSource?: (source: string) => void
 }): Promise<OrchestratorResult> {
   let theme: string | null = null
+  let locale = 'en'
   let source = ''
   let brand = ''
   let firstError = ''
@@ -66,6 +69,7 @@ export async function runHomepageOrchestrator(p: {
   for await (const event of generateUI(p.prompt, p.modelId || DEFAULT_MODEL, p.signal)) {
     p.onEvent?.(event)
     if (event.type === 'theme') theme = event.name
+    else if (event.type === 'locale') locale = event.code
     else if (event.type === 'skeleton') mergeIn(event.text)
     else if (event.type === 'module') mergeIn(event.text)
     else if (event.type === 'error') firstError ||= event.message
@@ -75,5 +79,5 @@ export async function runHomepageOrchestrator(p: {
     throw new Error(firstError || 'orchestrator produced an empty program')
   }
 
-  return { source, theme, brand }
+  return { source, theme, locale, brand }
 }

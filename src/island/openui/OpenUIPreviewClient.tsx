@@ -158,6 +158,7 @@ export function OpenUIPreviewClient() {
   /** Site-spec palette for OpenUIViewer — stable across streaming; do not clear when stream text updates. */
   const viewerPaletteRef = useRef<Record<string, string>>({})
   const [viewerPalette, setViewerPalette] = useState<Record<string, string>>({})
+  const [locale, setLocale] = useState('en')
 
   const stopArtifactLoadWait = () => {
     if (artifactLoadTimeoutRef.current != null) {
@@ -188,7 +189,7 @@ export function OpenUIPreviewClient() {
     settledRef.current = false
     const ac = new AbortController()
 
-    const finalizeFromOpenUIPayload = (j: { source?: string; theme?: unknown }): boolean => {
+    const finalizeFromOpenUIPayload = (j: { source?: string; theme?: unknown; locale?: unknown }): boolean => {
       if (settledRef.current) return true
       const source = typeof j.source === 'string' ? j.source : ''
       if (!source) return false
@@ -196,6 +197,9 @@ export function OpenUIPreviewClient() {
         j.theme && typeof j.theme === 'object' && j.theme ? (j.theme as Record<string, string>) : {}
       setFinal({ source, theme })
       commitViewerPalette(theme)
+      if (typeof j.locale === 'string' && j.locale.trim().length === 2) {
+        setLocale(j.locale.trim().toLowerCase())
+      }
       setBootError(null)
       setLoadingSavedPreview(false)
       settledRef.current = true
@@ -241,10 +245,17 @@ export function OpenUIPreviewClient() {
         `/api/sessions/${encodeURIComponent(id)}/openui?route=${encodeURIComponent(previewRoute)}`,
         id,
         { signal: ac.signal },
-      )
+      ).catch((error) => {
+        if (ac.signal.aborted || isAbortLike(error)) return null
+        throw error
+      })
       const sessionR = await artFetch(`/api/sessions/${encodeURIComponent(id)}`, id, {
         signal: ac.signal,
+      }).catch((error) => {
+        if (ac.signal.aborted || isAbortLike(error)) return null
+        throw error
       })
+      if (!sessionR) return
       if (!sessionR.ok) {
         if (!ac.signal.aborted) {
           setBootError('Session not found.')
@@ -265,7 +276,9 @@ export function OpenUIPreviewClient() {
         setLoadingSavedPreview(true)
       }
 
-      const got = await tryConsumeOpenUIResponse(await openuiInflight)
+      const openuiResponse = await openuiInflight
+      if (!openuiResponse) return
+      const got = await tryConsumeOpenUIResponse(openuiResponse)
       if (got) return
 
       // Saved OpenUI exists: never call /api/stream-openui on reload — only poll until GET succeeds
@@ -370,6 +383,7 @@ export function OpenUIPreviewClient() {
           route?: string
           token?: string
           source?: string
+          locale?: string
           error?: string
         } | null = null
         try {
@@ -416,6 +430,9 @@ export function OpenUIPreviewClient() {
         if (message.type === 'openui_stream_done') {
           console.log('[WebSocket] Stream done')
           const source = typeof message.source === 'string' ? message.source : ''
+          if (typeof message.locale === 'string' && message.locale.trim().length === 2) {
+            setLocale(message.locale.trim().toLowerCase())
+          }
           if (source) {
             settledRef.current = true
             const palette =
@@ -437,11 +454,15 @@ export function OpenUIPreviewClient() {
               id,
             )
               .then((r) => (r.ok ? r.json() : null))
-              .then((payload: { theme?: unknown } | null) => {
-                if (!payload?.theme || typeof payload.theme !== 'object' || !payload.theme) return
-                const t = payload.theme as Record<string, string>
-                commitViewerPalette(t)
-                setFinal((prev) => (prev ? { ...prev, theme: t } : prev))
+              .then((payload: { theme?: unknown; locale?: unknown } | null) => {
+                if (payload?.theme && typeof payload.theme === 'object' && payload.theme) {
+                  const t = payload.theme as Record<string, string>
+                  commitViewerPalette(t)
+                  setFinal((prev) => (prev ? { ...prev, theme: t } : prev))
+                }
+                if (typeof payload?.locale === 'string' && payload.locale.trim().length === 2) {
+                  setLocale(payload.locale.trim().toLowerCase())
+                }
               })
               .catch((error) => {
                 if (isAbortLike(error)) return
@@ -549,6 +570,7 @@ export function OpenUIPreviewClient() {
           <OpenUIViewer
             response={liveSource}
             theme={liveTheme}
+            locale={locale}
             isStreaming={liveIsStreaming}
             embed={true}
             sessionId={id}

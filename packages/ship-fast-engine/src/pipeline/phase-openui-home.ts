@@ -105,6 +105,7 @@ export async function generateAndWriteOpenUIHome(p: {
   // the FULL accumulated program on every page, so each page pops into the preview
   // as it finishes generating instead of after the whole run completes.
   let themeName: string | null = null
+  let localeName = 'en'
   let shellWritten = false
   const brandSoFar = projectTitle(p.siteSpec, p.prompt)
 
@@ -115,7 +116,7 @@ export async function generateAndWriteOpenUIHome(p: {
     // and the WS stream would then be ignored (settledRef short-circuits it). The
     // island streams the assembling program over the socket; home.openui is
     // persisted at the end, for reload.
-    saveSiteSpec(p.workspace, { brand: brandSoFar, tagline, theme, skeleton: '', modules: {} })
+    saveSiteSpec(p.workspace, { brand: brandSoFar, tagline, theme, locale: localeName, skeleton: '', modules: {} })
     writeStreamingShellToWorkspace(p.workspace, brandSoFar, theme)
   }
 
@@ -123,6 +124,9 @@ export async function generateAndWriteOpenUIHome(p: {
     if (event.type === 'theme') {
       themeName = event.name
       log(`  genui: theme → ${event.name}`)
+    } else if (event.type === 'locale') {
+      localeName = event.code
+      log(`  genui: locale → ${event.code}`)
     } else if (event.type === 'status') log(`  genui: ${event.message}`)
     else if (event.type === 'plan') log(`  genui: pages → ${event.ids.join(', ')}`)
     else if (event.type === 'module') log(`  genui: page ${event.id} ready`)
@@ -156,8 +160,9 @@ export async function generateAndWriteOpenUIHome(p: {
   // The AI-picked theme name drives the preview palette (renderers/index.ts reads
   // it back from the site spec and applies the matching designed preset).
   const theme = result.theme || themeName || specThemeName || 'modern-minimal'
+  const locale = result.locale || localeName || 'en'
   const ms = Date.now() - startedAt
-  const project = { brand, tagline, theme, skeleton: '', modules: { home: source } }
+  const project = { brand, tagline, theme, locale, skeleton: '', modules: { home: source } }
 
   // Finalize: persist the complete program + shell (for reload), then close the
   // stream so the client locks in the final, fully-merged source.
@@ -167,10 +172,10 @@ export async function generateAndWriteOpenUIHome(p: {
   renderPreviewToWorkspace(project, p.workspace)
 
   console.log('[Server] Broadcasting openui_stream_done, source length:', source.length)
-  ctx?.broadcast?.({ type: 'openui_stream_done', route, source })
+  ctx?.broadcast?.({ type: 'openui_stream_done', route, source, locale })
   ctx?.broadcast?.({ type: 'preview_reload', at: Date.now() })
   p.sessionCtx?.signalOpenuiReady?.()
-  log(`  genui: ${source.length} chars, theme=${theme} in ${(ms / 1000).toFixed(1)}s`)
+  log(`  genui: ${source.length} chars, theme=${theme}, locale=${locale} in ${(ms / 1000).toFixed(1)}s`)
 
   return {
     source,
