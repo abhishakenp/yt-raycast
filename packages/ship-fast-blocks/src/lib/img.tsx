@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { useEffect, useRef, useState } from "react"
 import type { ImgHTMLAttributes } from "react"
 
 function slugify(alt: string | undefined): string {
@@ -18,7 +19,7 @@ export function picsum(alt: string | undefined, w = 800, h = 600): string {
 }
 
 /** Fetches a relevant Pexels image based on alt text and caches it via React Query. */
-export function usePexelsImage(alt: string | undefined, w = 800, h = 600) {
+export function usePexelsImage(alt: string | undefined, w = 800, h = 600, enabled = true) {
   const seed = slugify(alt)
 
   return useQuery({
@@ -32,7 +33,7 @@ export function usePexelsImage(alt: string | undefined, w = 800, h = 600) {
       return data.url as string
     },
     staleTime: Infinity,
-    enabled: !!alt,
+    enabled: !!alt && enabled,
   })
 }
 
@@ -55,17 +56,45 @@ export function Image({
       <img
         src={picsum(alt, w, h)}
         alt={alt}
+        width={w}
+        height={h}
         className={className}
         loading={loading}
         {...rest}
       />
     )
   }
-  const { data: src } = usePexelsImage(alt, w, h)
+  const imgRef = useRef<HTMLImageElement | null>(null)
+  const isLazy = loading === "lazy"
+  const [shouldResolvePexels, setShouldResolvePexels] = useState(!isLazy)
+
+  useEffect(() => {
+    if (!isLazy || shouldResolvePexels) return
+    const img = imgRef.current
+    if (!img || typeof IntersectionObserver === "undefined") {
+      setShouldResolvePexels(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return
+        setShouldResolvePexels(true)
+        observer.disconnect()
+      },
+      { rootMargin: "600px 0px" },
+    )
+    observer.observe(img)
+    return () => observer.disconnect()
+  }, [isLazy, shouldResolvePexels])
+
+  const { data: src } = usePexelsImage(alt, w, h, shouldResolvePexels)
   return (
     <img
+      ref={imgRef}
       src={src ?? picsum(alt, w, h)}
       alt={alt}
+      width={w}
+      height={h}
       className={className}
       loading={loading}
       {...rest}
