@@ -34,6 +34,7 @@ This rule exists because claiming unverified fixes wastes time and breaks trust.
 
 ## Learned Workspace Facts
 
+- **Initial engine reference:** The original ship-faster engine is at `/Users/livio/Documents/ship-faster`. Use this for checking original implementations, patterns, and architectural decisions before reimplementing features.
 - Environment/secrets are managed with Doppler. For commands that need real env vars, prefer `doppler run -- <cmd>` rather than assuming `.env.local` has current keys; do not commit generated env files.
 - `.cursor/settings.json` may set `cursorProject.defaultUrl` to `http://localhost:7420/` but `autoOpenOnStart` should stay `false`.
 - Workspace has a GitHub MCP configuration in `.cursor/mcp.json` using `bunx` and `@modelcontextprotocol/server-github` with token env var.
