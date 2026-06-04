@@ -35,10 +35,12 @@ await build({
 })
 
 await build({
-  entryPoints: ['src/island/openui/entry.tsx'],
+  entryPoints: [{ in: 'src/island/openui/entry.tsx', out: 'openui-island' }],
   bundle: true,
-  outfile: 'public/scripts/openui-island.js',
+  outdir: 'public/scripts',
   format: 'esm',
+  splitting: true,
+  chunkNames: 'chunks/[name]-[hash]',
   target: ['es2020'],
   platform: 'browser',
   jsx: 'automatic',

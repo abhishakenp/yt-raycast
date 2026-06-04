@@ -1,10 +1,8 @@
-import { openUIComponentOpenPatternSource } from '@ship-fast/blocks'
-
 /**
  * Heuristic: enough OpenUI source has arrived that the shell can show a first
  * meaningful layout (avoids flashing partial/invalid token soup).
  */
-const COMPONENT_OPEN = new RegExp(`\\b(${openUIComponentOpenPatternSource})\\s*\\(`)
+const COMPONENT_OPEN = /\b[A-Z][A-Za-z0-9_]*\s*\(/
 
 export function openUIPreviewReadyToDisplay(raw: string): boolean {
   const t = raw.trim()

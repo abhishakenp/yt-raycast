@@ -3,7 +3,7 @@
  * The Express `/preview/:id` shell loads this script and it mounts onto `#openui-root`.
  */
 import { createRoot } from 'react-dom/client'
-import React, { StrictMode } from 'react'
+import React from 'react'
 import { OpenUIPreviewClient } from './OpenUIPreviewClient'
 // CSS is loaded via <link> in the preview HTML shell (public/styles/openui-preview-launch-loading.css)
 
@@ -37,9 +37,7 @@ class PreviewRootErrorBoundary extends React.Component<
 }
 
 createRoot(root).render(
-  <StrictMode>
-    <PreviewRootErrorBoundary>
-      <OpenUIPreviewClient />
-    </PreviewRootErrorBoundary>
-  </StrictMode>,
+  <PreviewRootErrorBoundary>
+    <OpenUIPreviewClient />
+  </PreviewRootErrorBoundary>,
 )

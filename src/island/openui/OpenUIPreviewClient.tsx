@@ -1,7 +1,17 @@
-import OpenUIViewer from './OpenUIViewer'
 import { OpenUIPreviewLaunchLoading } from './OpenUIPreviewLaunchLoading'
 import { openUIPreviewReadyToDisplay } from '@/lib/openui-preview-gate'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
+
+const OpenUIViewer = lazy(() => import('./OpenUIViewer'))
 
 type OpenUIProviderConfig = Record<string, string | null>
 
@@ -119,6 +129,19 @@ function isAbortLike(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false
   const name = 'name' in error ? String((error as { name?: unknown }).name || '') : ''
   return name === 'AbortError'
+}
+
+function OpenUIViewerLoadingFallback() {
+  return (
+    <div
+      style={{
+        minHeight: '100dvh',
+        width: '100%',
+        background: 'var(--background, #050507)',
+      }}
+      aria-hidden="true"
+    />
+  )
 }
 
 /**
@@ -245,10 +268,13 @@ export function OpenUIPreviewClient() {
         `/api/sessions/${encodeURIComponent(id)}/openui?route=${encodeURIComponent(previewRoute)}`,
         id,
         { signal: ac.signal },
-      ).catch((error) => {
-        if (ac.signal.aborted || isAbortLike(error)) return null
-        throw error
-      })
+      )
+      const openuiReady = openuiInflight
+        .then(tryConsumeOpenUIResponse)
+        .catch((error) => {
+          if (ac.signal.aborted || isAbortLike(error)) return false
+          return false
+        })
       const sessionR = await artFetch(`/api/sessions/${encodeURIComponent(id)}`, id, {
         signal: ac.signal,
       }).catch((error) => {
@@ -257,7 +283,7 @@ export function OpenUIPreviewClient() {
       })
       if (!sessionR) return
       if (!sessionR.ok) {
-        if (!ac.signal.aborted) {
+        if (!ac.signal.aborted && !settledRef.current) {
           setBootError('Session not found.')
         }
         return
@@ -276,9 +302,7 @@ export function OpenUIPreviewClient() {
         setLoadingSavedPreview(true)
       }
 
-      const openuiResponse = await openuiInflight
-      if (!openuiResponse) return
-      const got = await tryConsumeOpenUIResponse(openuiResponse)
+      const got = await openuiReady
       if (got) return
 
       // Saved OpenUI exists: never call /api/stream-openui on reload — only poll until GET succeeds
@@ -567,15 +591,17 @@ export function OpenUIPreviewClient() {
         }}
       >
         {hasSource ? (
-          <OpenUIViewer
-            response={liveSource}
-            theme={liveTheme}
-            locale={locale}
-            isStreaming={liveIsStreaming}
-            embed={true}
-            sessionId={id}
-            integrations={sessionIntegrations || undefined}
-          />
+          <Suspense fallback={<OpenUIViewerLoadingFallback />}>
+            <OpenUIViewer
+              response={liveSource}
+              theme={liveTheme}
+              locale={locale}
+              isStreaming={liveIsStreaming}
+              embed={true}
+              sessionId={id}
+              integrations={sessionIntegrations || undefined}
+            />
+          </Suspense>
         ) : null}
         {showLoader ? <OpenUIPreviewLaunchLoading phase={loaderPhase} /> : null}
       </div>

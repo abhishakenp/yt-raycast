@@ -165,8 +165,8 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
 ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root"></div>
-  <script type="module" src="/scripts/openui-island.js"></script>
+  <div id="openui-root">${openUIPreviewBootHtml(brand)}</div>
+  <script type="module" async src="/scripts/openui-island.js"></script>
 </body>
 </html>`
 }
@@ -177,6 +177,41 @@ function escapeHtml(value: unknown): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
+function openUIPreviewBootHtml(brand: string): string {
+  const title = escapeHtml(brand || 'Preview')
+  return `<div class="sf-openui-boot" role="status" aria-live="polite">
+    <style>
+      .sf-openui-boot {
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 32px;
+        background: var(--background, #050507);
+        color: var(--foreground, #f8fafc);
+        font: 500 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      .sf-openui-boot__mark {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0.78;
+      }
+      .sf-openui-boot__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: currentColor;
+        animation: sf-openui-boot-pulse 900ms ease-in-out infinite alternate;
+      }
+      @keyframes sf-openui-boot-pulse {
+        from { opacity: 0.35; transform: scale(0.8); }
+        to { opacity: 0.9; transform: scale(1); }
+      }
+    </style>
+    <span class="sf-openui-boot__mark"><span class="sf-openui-boot__dot" aria-hidden="true"></span>${title}</span>
+  </div>`
 }
 
 function renderActions(actions: any[] = []): string {
@@ -422,8 +457,8 @@ export function writeStreamingShellToWorkspace(
 ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root"></div>
-  <script type="module" src="/scripts/openui-island.js"></script>
+  <div id="openui-root">${openUIPreviewBootHtml(brand)}</div>
+  <script type="module" async src="/scripts/openui-island.js"></script>
 </body>
 </html>`
   writeRenderedFiles(workspace, { 'index.html': html })
