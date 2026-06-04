@@ -77,6 +77,7 @@ import {
   syncSessionPreviewFromSanity,
 } from './exports.js'
 import { broadcastDevReload, setupWebSocket } from './websocket.js'
+import { runHomepageOrchestrator } from '@ship-fast/engine/genui/run.ts'
 import { generateAlternativeDesign, runAll, runEdit } from '@ship-fast/engine/pipeline/runner.js'
 import { existsSync, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
@@ -1100,6 +1101,51 @@ export async function startServer(sessionsDir) {
     const paginated = paginateGalleryList(all, page, limit)
     res.set('Cache-Control', 'public, max-age=20, stale-while-revalidate=120')
     res.json(paginated)
+  })
+
+  // ─── API: GenUI streaming (SSE) - ported from Ship Faster ─────────
+  app.post('/api/genui', optionalAuth, async (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+
+    let prompt = ''
+    try {
+      const body = req.body
+      prompt = typeof body?.prompt === 'string' ? body.prompt : ''
+    } catch {
+      res.write(`data: ${JSON.stringify({ type: 'error', message: 'invalid body' })}\n\n`)
+      return res.end()
+    }
+    if (!prompt.trim()) {
+      res.write(`data: ${JSON.stringify({ type: 'error', message: 'prompt required' })}\n\n`)
+      return res.end()
+    }
+
+    const sendEvent = (data) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`)
+    }
+
+    try {
+      const result = await runHomepageOrchestrator({
+        prompt,
+        signal: req.signal,
+        onEvent: (event) => {
+          sendEvent(event)
+        },
+        onSource: (source) => {
+          // Send the accumulated source as a skeleton event for compatibility
+          sendEvent({ type: 'skeleton', text: source })
+        },
+      })
+      // Send done event
+      sendEvent({ type: 'done', modules: 1, ms: 0 })
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'stream error'
+      sendEvent({ type: 'error', message })
+    } finally {
+      res.end()
+    }
   })
 
   // ─── API: Claim anonymous sessions ─────────────────────────

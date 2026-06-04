@@ -331,122 +331,96 @@ export function OpenUIPreviewClient() {
   useEffect(() => {
     if (!id || previewRoute !== '/') return
     let closed = false
-    let ws: WebSocket | null = null
-    const backendWs =
-      typeof process !== 'undefined'
-        ? process.env?.NEXT_PUBLIC_SF_BACKEND_WS_HOST?.trim() || ''
-        : ''
-    const host =
-      typeof location !== 'undefined' && location.port === '3000' && backendWs
-        ? backendWs
-        : location.host
-    const url = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${host}?session=${encodeURIComponent(id)}`
-    console.log('[OpenUI WebSocket] Connecting to:', url)
-    try {
-      ws = new WebSocket(url)
-      ws.onopen = () => {
-        console.log('[OpenUI WebSocket] Connected')
-      }
-      ws.onerror = (error) => {
-        console.error('[OpenUI WebSocket] Error:', error)
-      }
-      ws.onclose = () => {
-        console.log('[OpenUI WebSocket] Closed')
-      }
-      ws.onmessage = (event) => {
-        console.log('[OpenUI WebSocket] Message:', event.data)
-        if (closed) return
-        let message: {
-          type?: string
-          route?: string
-          token?: string
-          source?: string
-          error?: string
-        } | null = null
-        try {
-          message = JSON.parse(String(event.data))
-        } catch {
+    const ac = new AbortController()
+
+    const fetchSessionAndStream = async () => {
+      try {
+        // First fetch the session to get the prompt
+        const sessionResponse = await artFetch(`/api/sessions/${encodeURIComponent(id)}`, id, {
+          signal: ac.signal,
+        })
+        if (!sessionResponse.ok) {
+          setBootError('Session not found.')
           return
         }
-        if (!message || message.route !== '/') return
-        if (settledRef.current && message.type !== 'openui_stream_start') return
-        if (message.type === 'openui_stream_start') {
-          settledRef.current = false
-          stopArtifactLoadWait()
-          // Keep `final` so the previously rendered UI stays visible until the new
-          // stream has enough source to take over (see `liveSource` derivation).
-          setStreamText('')
-          setIsStreaming(true)
-          setBootError(null)
-          setLoadingSavedPreview(false)
+        const session = (await sessionResponse.json()) as { prompt?: string }
+        const prompt = session.prompt || ''
+
+        if (!prompt.trim()) {
+          setBootError('No prompt found in session.')
           return
         }
-        if (message.type === 'openui_stream_chunk') {
-          const source = typeof message.source === 'string' ? message.source : ''
-          const token = typeof message.token === 'string' ? message.token : ''
-          settledRef.current = false
-          stopArtifactLoadWait()
-          if (source) setStreamText(source)
-          else if (token) setStreamText((current) => current + token)
-          setIsStreaming(true)
-          setLoadingSavedPreview(false)
-          return
+
+        // Now stream from the SSE endpoint
+        settledRef.current = false
+        stopArtifactLoadWait()
+        setStreamText('')
+        setIsStreaming(true)
+        setBootError(null)
+        setLoadingSavedPreview(false)
+
+        const response = await fetch('/api/genui', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt }),
+          signal: ac.signal,
+        })
+
+        if (!response.ok || !response.body) {
+          throw new Error(`Stream failed (${response.status})`)
         }
-        if (message.type === 'openui_stream_done') {
-          const source = typeof message.source === 'string' ? message.source : ''
-          if (source) {
-            settledRef.current = true
-            const palette =
-              Object.keys(viewerPaletteRef.current).length > 0
-                ? { ...viewerPaletteRef.current }
-                : {}
-            setFinal((prev) => ({
-              source,
-              theme:
-                Object.keys(palette).length > 0
-                  ? palette
-                  : prev && Object.keys(prev.theme).length > 0
-                    ? prev.theme
-                    : {},
-            }))
-            setStreamText('')
-            void artFetch(
-              `/api/sessions/${encodeURIComponent(id)}/openui?route=${encodeURIComponent(previewRoute)}`,
-              id,
-            )
-              .then((r) => (r.ok ? r.json() : null))
-              .then((payload: { theme?: unknown } | null) => {
-                if (!payload?.theme || typeof payload.theme !== 'object' || !payload.theme) return
-                const t = payload.theme as Record<string, string>
-                commitViewerPalette(t)
-                setFinal((prev) => (prev ? { ...prev, theme: t } : prev))
-              })
-              .catch((error) => {
-                if (isAbortLike(error)) return
-                console.warn('[openui-island] failed to refresh preview theme:', error)
-              })
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let buf = ''
+
+        while (!closed) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buf += decoder.decode(value, { stream: true })
+          const parts = buf.split('\n\n')
+          buf = parts.pop() ?? ''
+
+          for (const part of parts) {
+            const line = part.trim()
+            if (!line.startsWith('data:')) continue
+            const json = line.slice(5).trim()
+            if (!json) continue
+
+            try {
+              const event = JSON.parse(json)
+              if (event.type === 'skeleton' && event.text) {
+                setStreamText(event.text)
+              } else if (event.type === 'done') {
+                settledRef.current = true
+                const source = streamText || event.text || ''
+                setFinal({ source, theme: viewerPaletteRef.current })
+                setStreamText('')
+                setIsStreaming(false)
+              } else if (event.type === 'error') {
+                setBootError(event.message || 'Generation failed')
+                setIsStreaming(false)
+                setStreamText('')
+              }
+            } catch {
+              // Skip invalid JSON
+            }
           }
-          setIsStreaming(false)
         }
-        if (message.type === 'openui-error') {
-          const error = typeof message.error === 'string' ? message.error : 'OpenUI generation failed'
-          setBootError(error)
-          setLoadingSavedPreview(false)
-          setIsStreaming(false)
-          setStreamText('')
-        }
+      } catch (error) {
+        if (ac.signal.aborted || isAbortLike(error)) return
+        setBootError('Failed to stream generation.')
+        setIsStreaming(false)
+        setStreamText('')
       }
-    } catch {
-      return
     }
+
+    fetchSessionAndStream()
 
     return () => {
       closed = true
-      try {
-        ws?.close()
-      } catch {
-        void 0
-      }
+      ac.abort()
     }
   }, [id, previewRoute])
 
