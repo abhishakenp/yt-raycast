@@ -426,6 +426,14 @@ let promptLangDetectTimer: number | null = null
 let promptLangDetectToken = 0
 let lastPromptTrimLen = 0
 let promptLanguageRowUnlocked = false
+
+// Lazy-load franc library only when needed
+function getFranc(): Promise<FrancFn> {
+  if (!francLoadPromise) {
+    francLoadPromise = import('franc-min').then((m) => m.default)
+  }
+  return francLoadPromise
+}
 const isLocalDevHost =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' ||
