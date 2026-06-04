@@ -7,6 +7,7 @@ export interface SiteSpecProject {
   brand: string
   tagline: string
   theme: string
+  locale?: string
   skeleton: string
   modules: Record<string, string>
 }
