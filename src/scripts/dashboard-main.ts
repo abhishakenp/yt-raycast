@@ -4353,9 +4353,10 @@ document.getElementById('payment-confirm-btn').addEventListener('click', startCh
 document.getElementById('payment-modal').addEventListener('click', (event) => {
   if (event.target.closest('[data-close-payment="1"]')) closePaymentModal()
 })
-document.getElementById('auth-overlay').addEventListener('click', (event) => {
-  if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
-})
+// Disabled click-outside-to-close for auth overlay
+// document.getElementById('auth-overlay').addEventListener('click', (event) => {
+//   if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
+// })
 
 document.getElementById('google-signin-btn').addEventListener('click', async () => {
   const errEl = document.getElementById('auth-error')
