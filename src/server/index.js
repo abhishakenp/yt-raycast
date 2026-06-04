@@ -401,6 +401,10 @@ export async function startServer(sessionsDir) {
   app.disable('x-powered-by')
   app.set('trust proxy', true)
 
+  // Debug: Log environment variables at startup
+  console.log('[Server Startup] WHITELISTED_IPS env var:', process.env.WHITELISTED_IPS)
+  console.log('[Server Startup] All env vars starting with WHITE:', Object.keys(process.env).filter(k => k.startsWith('WHITE')))
+
   const getSessionSubdomain = (req) => {
     const host = String(req.hostname || req.headers.host?.split(':')[0] || '').toLowerCase()
     const bases = [BASE_DOMAIN, 'localhost', 'lvh.me']
