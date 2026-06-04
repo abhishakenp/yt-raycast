@@ -3473,7 +3473,7 @@ initPreviewFrameTools()
 
 function showPreviewChatDock() {
   const dock = document.getElementById('preview-chat-dock')
-  if (dock && SESSION_ID) dock.removeAttribute('hidden')
+  if (dock) dock.removeAttribute('hidden')
   syncPreviewSiteRail()
 }
 
@@ -4170,6 +4170,7 @@ function connectWS() {
         void maybeWarmNextDevServerInBackground()
         void refreshExportTargets()
         showPreviewChatDock()
+        openPreviewChatPanel()
         void refreshChatHistory()
         if (introActive && !hasSeenLiveUpdate) {
           // Reconnect: skip intro, show preview full-width immediately
@@ -4759,6 +4760,7 @@ function beginSessionDashboard(session) {
   void refreshExportTargets()
   if (homepageReady) {
     showPreviewChatDock()
+    openPreviewChatPanel()
     void refreshChatHistory()
     void maybeWarmNextDevServerInBackground()
   }
