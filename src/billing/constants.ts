@@ -50,5 +50,7 @@ export const WHITELISTED_IPS = process.env.WHITELISTED_IPS
  */
 export function isIpWhitelisted(ip: string | null | undefined): boolean {
   if (!ip) return false
-  return WHITELISTED_IPS.includes(ip)
+  const isWhitelisted = WHITELISTED_IPS.includes(ip)
+  console.log('[Whitelist] Checking IP:', ip, 'Whitelisted:', isWhitelisted, 'Whitelist:', WHITELISTED_IPS)
+  return isWhitelisted
 }
