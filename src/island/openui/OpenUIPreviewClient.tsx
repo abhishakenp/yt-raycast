@@ -341,9 +341,20 @@ export function OpenUIPreviewClient() {
         ? backendWs
         : location.host
     const url = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${host}?session=${encodeURIComponent(id)}`
+    console.log('[WebSocket] Connecting to:', url)
     try {
       ws = new WebSocket(url)
+      ws.onopen = () => {
+        console.log('[WebSocket] Connected')
+      }
+      ws.onerror = (error) => {
+        console.error('[WebSocket] Error:', error)
+      }
+      ws.onclose = () => {
+        console.log('[WebSocket] Closed')
+      }
       ws.onmessage = (event) => {
+        console.log('[WebSocket] Message:', event.data.substring(0, 100))
         if (closed) return
         let message: {
           type?: string
@@ -360,6 +371,7 @@ export function OpenUIPreviewClient() {
         if (!message || message.route !== '/') return
         if (settledRef.current && message.type !== 'openui_stream_start') return
         if (message.type === 'openui_stream_start') {
+          console.log('[WebSocket] Stream start')
           settledRef.current = false
           stopArtifactLoadWait()
           setStreamText('')
@@ -373,13 +385,17 @@ export function OpenUIPreviewClient() {
           const token = typeof message.token === 'string' ? message.token : ''
           settledRef.current = false
           stopArtifactLoadWait()
-          if (source) setStreamText(source)
+          if (source) {
+            console.log('[WebSocket] Chunk, source length:', source.length)
+            setStreamText(source)
+          }
           else if (token) setStreamText((current) => current + token)
           setIsStreaming(true)
           setLoadingSavedPreview(false)
           return
         }
         if (message.type === 'openui_stream_done') {
+          console.log('[WebSocket] Stream done')
           const source = typeof message.source === 'string' ? message.source : ''
           if (source) {
             settledRef.current = true
@@ -416,6 +432,7 @@ export function OpenUIPreviewClient() {
           setIsStreaming(false)
         }
         if (message.type === 'openui-error') {
+          console.error('[WebSocket] Error:', message.error)
           const error = typeof message.error === 'string' ? message.error : 'OpenUI generation failed'
           setBootError(error)
           setLoadingSavedPreview(false)
@@ -424,6 +441,7 @@ export function OpenUIPreviewClient() {
         }
       }
     } catch {
+      console.error('[WebSocket] Connection error')
       return
     }
 
