@@ -2586,9 +2586,6 @@ body.sf-openui-active .browser-content iframe {
 body.sf-openui-active .preview-chat-dock {
   display: none !important;
 }
-body.sf-openui-active .preview-site-rail {
-  display: none !important;
-}
 /* Edge-to-edge preview in iframe: drop device chrome that adds top gap and shadow */
 body.sf-openui-active .preview-device-shell {
   border-radius: 0 !important;
