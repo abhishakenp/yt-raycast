@@ -27,7 +27,11 @@ import {
   startMedusaPreWarmIfApplicable,
 } from './medusa-provision.js'
 import { extractSessionProducts } from './extract-session-products.js'
-import { syncProductsToMedusa } from './sync-medusa-catalog.js'
+import { fetchMedusaProductsForSiteSpec, syncProductsToMedusa } from './sync-medusa-catalog.js'
+import {
+  mergeMedusaProductsIntoSiteSpec,
+  patchOpenUIArtifactsWithMedusaProducts,
+} from './medusa-preview-sync.js'
 import { createDefaultPipelineIntegrations } from './pipeline-integrations.js'
 import { createMedusaStoreRouter } from './medusa-store-routes.js'
 import {
@@ -2023,6 +2027,53 @@ export async function startServer(sessionsDir) {
       res.json({ ok: true, files: Object.keys(preview.files) })
     } catch (error) {
       res.status(400).json({ error: error.message })
+    }
+  })
+
+  app.post('/api/sessions/:id/sync-medusa-preview', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    const config = session.medusaConfig
+    if (!config?.adminBaseUrl || !config?.adminEmail || !config?.adminPassword) {
+      return res.status(400).json({ error: 'Medusa admin is not provisioned for this session' })
+    }
+
+    try {
+      const siteSpec = loadSiteSpec(session.workspace)
+      if (!siteSpec) return res.status(400).json({ error: 'No site spec for this session' })
+      const medusaProducts = await fetchMedusaProductsForSiteSpec({
+        backendUrl: config.adminBaseUrl,
+        email: config.adminEmail,
+        password: config.adminPassword,
+      })
+      if (!medusaProducts.length) {
+        return res.status(400).json({ error: 'No products found in Medusa Admin' })
+      }
+
+      const visibleProducts = extractSessionProducts(session, _sessionsDir)
+      const merged = mergeMedusaProductsIntoSiteSpec(siteSpec, medusaProducts, {
+        visibleProducts,
+      })
+      saveSiteSpec(session.workspace, merged.siteSpec)
+      // The OpenUI preview renders the .openui artifacts, not the spec, so patch
+      // those too — otherwise the data updates but the visible storefront never
+      // reflects the Medusa edit.
+      patchOpenUIArtifactsWithMedusaProducts(session.workspace, medusaProducts, merged.siteSpec?.brand)
+      const preview = rerenderPreviewFromSiteSpec(session)
+      const nextConfig = {
+        ...config,
+        productsPulledAt: new Date().toISOString(),
+        productsPulledCount: merged.productCount,
+      }
+      await setMedusaConfig(req.params.id, nextConfig)
+      const sessionCtx = makeSessionState(session)
+      sessionCtx.signalHomepageReady()
+      sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
+      res.json({ ok: true, products: merged.productCount, files: Object.keys(preview.files) })
+    } catch (error) {
+      console.warn(`[medusa-sync] preview pull failed for ${req.params.id}: ${error.message}`)
+      res.status(400).json({ error: error.message || 'Could not sync Medusa products' })
     }
   })
 

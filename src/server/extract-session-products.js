@@ -174,8 +174,11 @@ function readRawSiteSpec(workspace) {
 // neither the HTML nor the section-item strategies see it. Pull product
 // object-literals straight out of the DSL by matching {... name:"X" ...
 // price:"$Y" ...} shapes (the product cards the user sees in the UI).
+// Matches product object-literals in either DSL syntax (name: "X") or the
+// JSON-ish syntax deeper pages use ("name":"X"), so the whole catalogue is
+// extracted — not just the home grid.
 const DSL_PRODUCT_RE =
-  /\{[^{}]*\bname:\s*"([^"]+)"[^{}]*\bprice:\s*"([^"]*\d[^"]*)"[^{}]*\}/g
+  /\{[^{}]*"?name"?\s*:\s*"([^"]+)"[^{}]*"?price"?\s*:\s*"([^"]*\d[^"]*)"[^{}]*\}/g
 
 function extractFromModulesDsl(spec, sessionId, sessionPrompt) {
   const modules = spec?.modules && typeof spec.modules === 'object' ? spec.modules : null
@@ -191,7 +194,11 @@ function extractFromModulesDsl(spec, sessionId, sessionPrompt) {
       const title = m[1].trim()
       const lc = title.toLowerCase()
       if (!title || PLACEHOLDER_TITLES.has(lc) || NON_PRODUCT_TITLES.has(lc)) continue
-      const handle = slugify(title)
+      // Honour an embedded handle/sku when present (reverse-sync stamps one so a
+      // product stays linked to its Medusa row across renames); else slug the
+      // title.
+      const handleMatch = block.match(/"?(?:handle|sku)"?\s*:\s*"([^"]+)"/)
+      const handle = handleMatch ? slugify(handleMatch[1]) : slugify(title)
       if (seen.has(handle)) continue
       const priceMatch = m[2].match(/([₹$€£])?\s*([\d,]+(?:\.\d{1,2})?)/)
       if (!priceMatch) continue

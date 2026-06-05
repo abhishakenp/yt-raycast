@@ -109,6 +109,15 @@ function mapMedusaAdminProductToSiteSpecProduct(p) {
     const first = p.images[0]
     image = typeof first === 'string' ? first : first?.url ? String(first.url) : null
   }
+  const metadata =
+    p.metadata && typeof p.metadata === 'object' && !Array.isArray(p.metadata) ? p.metadata : {}
+  const rawSpecs = metadata.specs || metadata.features || []
+  const specs = Array.isArray(rawSpecs)
+    ? rawSpecs.map((item) => String(item).trim()).filter(Boolean)
+    : String(rawSpecs || '')
+        .split(/\n|,/)
+        .map((item) => item.trim())
+        .filter(Boolean)
   return {
     id: handle,
     title,
@@ -118,6 +127,8 @@ function mapMedusaAdminProductToSiteSpecProduct(p) {
     currency,
     image,
     category: '',
+    ...(Object.keys(metadata).length ? { metadata } : {}),
+    ...(specs.length ? { specs, features: specs } : {}),
   }
 }
 
@@ -157,14 +168,20 @@ export async function syncProductsToMedusa(products, options = {}) {
   const deleteAllProductsAdmin = async () => {
     const limit = 80
     for (;;) {
-      const data = await adminFetch(base, token, `/admin/products?limit=${limit}&offset=0&fields=id`)
+      const data = await adminFetch(
+        base,
+        token,
+        `/admin/products?limit=${limit}&offset=0&fields=id`,
+      )
       const batch = data?.products ?? []
       if (!Array.isArray(batch) || batch.length === 0) break
       for (const pr of batch) {
         const id = pr?.id
         if (!id) continue
         try {
-          await adminFetch(base, token, `/admin/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
+          await adminFetch(base, token, `/admin/products/${encodeURIComponent(id)}`, {
+            method: 'DELETE',
+          })
         } catch {
           /* continue */
         }
@@ -196,12 +213,21 @@ export async function syncProductsToMedusa(products, options = {}) {
     const title = String(p.title || 'Product').trim()
     const handle = p.handle ? String(p.handle).trim() : slugify(title)
     const amount = parsePriceToCents(p.price)
+    const metadata =
+      p.metadata && typeof p.metadata === 'object'
+        ? p.metadata
+        : Array.isArray(p.specs) && p.specs.length
+          ? { specs: p.specs }
+          : Array.isArray(p.features) && p.features.length
+            ? { features: p.features }
+            : undefined
     const body = {
       title,
       handle,
       status: 'published',
       description: p.description ? String(p.description) : undefined,
       thumbnail: p.image ? String(p.image) : undefined,
+      metadata,
       options: [{ title: 'Default', values: ['Default'] }],
       variants: [
         {
