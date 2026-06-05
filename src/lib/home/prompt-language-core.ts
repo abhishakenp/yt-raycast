@@ -270,6 +270,7 @@ export const normalizeLanguageCode = (value: string) => {
   if (!v) return ''
   if (v === 'hinglish') return 'hinglish'
   if (/^[a-z]{2,8}-en$/.test(v)) return v
+  if (/^[a-z]{2,8}-latn$/.test(v)) return v
   return v.split(/[-_]/)[0] ?? ''
 }
 

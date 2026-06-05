@@ -47,3 +47,4 @@ infra/medusa/sessions/
 medusa-backend/node_modules/
 medusa-backend/.medusa/
 /.a5c
+/dogfood-output

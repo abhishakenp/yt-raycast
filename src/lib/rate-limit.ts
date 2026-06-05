@@ -11,6 +11,7 @@ export const ipMonthlyHits: Map<string, number[]> = new Map()
 export const activeGenerations: Map<string, number> = new Map()
 export const shareBonusIps: Map<string, string> = new Map()
 export const promptSuggestIpHits: Map<string, number[]> = new Map()
+export const translateIpHits: Map<string, number[]> = new Map()
 
 export function checkRateLimit(
   key: string,
