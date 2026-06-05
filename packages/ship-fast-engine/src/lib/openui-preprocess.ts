@@ -76,7 +76,45 @@ function resolveVariables(code: string): string {
 }
 
 function sanitizePartialImages(code: string): string {
-  return code.replace(/Image\("https:\/\/[^"]*$/, 'null')
+  const replaced = code.replace(/Image\("https:\/\/[^"]*$/, 'null')
+  if (replaced === code) return code
+  // Strip null elements from array literals so components iterating with
+  // .map() don't crash on null items during streaming.
+  return stripNullsFromArrays(replaced)
+}
+
+function stripNullsFromArrays(code: string): string {
+  const idx = code.lastIndexOf('null')
+  if (idx === -1) return code
+  // Only care about the tail null we just introduced
+  if (idx < code.length - 200) return code
+
+  // Find the enclosing '[' (scan backwards, tracking bracket depth)
+  let depth = 0
+  let bracketStart = -1
+  for (let i = idx - 1; i >= Math.max(0, idx - 500); i--) {
+    const ch = code[i]
+    if (ch === ']') depth++
+    else if (ch === '[') {
+      if (depth === 0) { bracketStart = i; break }
+      depth--
+    }
+  }
+  if (bracketStart === -1) return code
+
+  const arrayContent = code.slice(bracketStart + 1, idx + 4 + 1) // through 'null' (slice end is exclusive)
+
+  let cleaned = arrayContent
+  // ", null" at end
+  cleaned = cleaned.replace(/,\s*null\s*$/, '')
+  // "null ," at start
+  cleaned = cleaned.replace(/^\s*null\s*,\s*/, '')
+  // ", null," in middle → ","
+  cleaned = cleaned.replace(/,(\s*)null\s*,/, ',$1')
+  // "[null]" → "[]"
+  cleaned = cleaned.replace(/^\s*null\s*$/, '')
+
+  return code.slice(0, bracketStart + 1) + cleaned + code.slice(bracketStart + 1 + arrayContent.length)
 }
 
 function balancePartial(code: string): string {

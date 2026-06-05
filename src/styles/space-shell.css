@@ -49,11 +49,20 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scrollbar-gutter: stable;
   overflow-y: scroll;
   -webkit-font-smoothing: antialiased;
   background: var(--stitch-bg);
+  scroll-padding-top: 84px;
+}
+
+/* Smooth scroll only when motion is welcome — always-on smooth scroll races
+   scroll-then-click flows and assistive tooling (click fires before the
+   animated scroll settles). See index.css for the rationale. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -172,6 +181,14 @@ select {
   gap: 8px;
   padding: 16px 24px;
   background: transparent;
+  /* Transparent full-width strip — don't let it swallow clicks on content that
+     scrolls beneath it; re-enable hits only on the real controls below. */
+  pointer-events: none;
+}
+
+.top-actions-brand,
+.top-actions-right {
+  pointer-events: auto;
 }
 
 .top-actions-right {
