@@ -84,6 +84,7 @@ export const EcommerceKimiPage = defineComponent({
               brand: z.string().optional(),
               name: z.string(),
               alt: z.string(),
+              image: z.string().optional(),
               price: z.string(),
               oldPrice: z.string().optional(),
               badge: z.string().optional(),
@@ -781,6 +782,7 @@ export const EcommerceKimiPage = defineComponent({
                     <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-background">
                       <Image
                         alt={product.alt}
+                        src={product.image}
                         w={600}
                         h={600}
                         loading="lazy"

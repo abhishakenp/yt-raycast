@@ -157,6 +157,7 @@ const DSL_PRODUCT_RE =
 const DSL_NAME_FIELD_RE = /("?name"?\s*:\s*")[^"]*(")/
 const DSL_PRICE_FIELD_RE = /("?price"?\s*:\s*")[^"]*(")/
 const DSL_HANDLE_FIELD_RE = /"?(?:handle|sku)"?\s*:\s*"([^"]+)"/
+const DSL_IMAGE_FIELD_RE = /("?(?:image|src)"?\s*:\s*")[^"]*(")/
 
 const escapeDslString = (value) =>
   String(value || '')
@@ -251,6 +252,14 @@ const patchDslString = (dsl, nextByHandle, matched) =>
       embedded ? `${open}${title}${close}` : `${open}${title}${close}, handle: "${next.handle}"`,
     )
     updated = updated.replace(DSL_PRICE_FIELD_RE, (_m, open, close) => `${open}${price}${close}`)
+    // Stamp the resolved photo URL so the storefront renders the exact image
+    // synced to Medusa instead of resolving its own from alt text at runtime.
+    if (next.image) {
+      const imageUrl = escapeDslString(next.image)
+      updated = DSL_IMAGE_FIELD_RE.test(updated)
+        ? updated.replace(DSL_IMAGE_FIELD_RE, (_m, open, close) => `${open}${imageUrl}${close}`)
+        : updated.replace(DSL_PRICE_FIELD_RE, (m) => `${m}, image: "${imageUrl}"`)
+    }
     return updated
   })
 

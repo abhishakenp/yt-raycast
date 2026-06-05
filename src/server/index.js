@@ -27,7 +27,7 @@ import {
   startMedusaPreWarmIfApplicable,
 } from './medusa-provision.js'
 import { extractSessionProducts } from './extract-session-products.js'
-import { pexelsPhotoResolver } from './pexels.js'
+import { pexelsImageHandler, pexelsPhotoResolver } from './pexels.js'
 import { fetchMedusaProductsForSiteSpec, syncProductsToMedusa } from './sync-medusa-catalog.js'
 import {
   mergeMedusaProductsIntoSiteSpec,
@@ -1381,6 +1381,12 @@ export async function startServer(sessionsDir) {
     res.json({ source, theme, locale })
   })
 
+  // The storefront's <Image> component resolves a relevant Pexels photo from
+  // alt text via this endpoint; without it mounted the component falls back to
+  // generic picsum images, so the UI never matched the Pexels thumbnails we
+  // push to Medusa.
+  app.get('/api/pexels', pexelsImageHandler)
+
   app.get('/api/sessions/:id/preview-html', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
@@ -2290,6 +2296,10 @@ export async function startServer(sessionsDir) {
         password: config.adminPassword,
         workspace: session.workspace,
       })
+      // Stamp the same resolved photos into the storefront DSL so the generated
+      // UI renders the exact image we pushed to Medusa, not its own alt-resolved
+      // one.
+      patchOpenUIArtifactsWithMedusaProducts(session.workspace, products)
       const next = {
         ...config,
         productsSyncedAt: new Date().toISOString(),
