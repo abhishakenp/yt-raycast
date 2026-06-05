@@ -12,6 +12,8 @@ import {
   LLM_CONFIG,
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
+  GROQ_API_KEY,
+  GROQ_HOST,
 } from '../config.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
@@ -40,6 +42,7 @@ import { ensureSanityCorsOrigins, ensureSanityCorsForTenant } from '../sanity/en
 import { groq } from '@ship-fast/engine/llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
+import { buildTranslationMessages } from './translation-prompts.js'
 import { htmlLooksDegenerate } from '../pipeline/homepage-degeneracy.js'
 import {
   writeDesignReferencesFile,
@@ -84,6 +87,7 @@ import multer from 'multer'
 import {
   filePathForPreviewRequest,
   injectPreviewToolsHtml,
+  rewriteTailwindCdn,
   stripPreviewArtifactsFromHtml,
 } from './preview-tools-serve.js'
 import {
@@ -120,6 +124,7 @@ import {
   activeGenerations,
   shareBonusIps,
   promptSuggestIpHits,
+  translateIpHits,
   checkRateLimit,
   refundRateLimit,
   hasIpShareBonus,
@@ -210,6 +215,9 @@ const WHITELISTED_IPS = new Set(
 )
 const PROMPT_SUGGEST_WINDOW_MS = 60 * 1000
 const PROMPT_SUGGEST_MAX_PER_IP = 40
+const TRANSLATE_WINDOW_MS = 60 * 1000
+const TRANSLATE_MAX_PER_IP = 20
+const TRANSLATE_MAX_TEXT_LENGTH = 1000
 function isLocalDevelopmentRequest(req, clientIp) {
   if (process.env.NODE_ENV === 'production') return false
 
@@ -288,6 +296,7 @@ setInterval(
     cleanupMap(exportHits, RATE_WINDOW_MS)
     cleanupMap(ipMonthlyHits, MONTHLY_WINDOW_MS)
     cleanupMap(promptSuggestIpHits, PROMPT_SUGGEST_WINDOW_MS)
+    cleanupMap(translateIpHits, TRANSLATE_WINDOW_MS)
     // Prune expired share bonuses (not today)
     const today = new Date().toISOString().slice(0, 10)
     for (const [ip, date] of shareBonusIps) {
@@ -450,44 +459,66 @@ export async function startServer(sessionsDir) {
     next(err)
   })
 
-  // ─── Translation proxy (chatjimmy) ──────────────────────────────────
-  const langNames = new Intl.DisplayNames(['en'], { type: 'language' })
+  // ─── Translation (Groq llama-3.3-70b-versatile) ─────────────────────
+  // The 8B was too weak for low-resource Indic scripts (gibberish, repetition
+  // loops). 70B follows the heavy per-style prompts + few-shot far better.
+  const TRANSLATE_MODEL = 'llama-3.3-70b-versatile'
   app.post('/api/translate', async (req, res) => {
     const { text, locale } = req.body ?? {}
     if (!text || !locale) {
       return res.status(400).json({ error: 'text and locale are required' })
     }
-    const langName = langNames.of(locale) ?? locale
+    // Text length limit to prevent abuse
+    if (text.length > TRANSLATE_MAX_TEXT_LENGTH) {
+      return res.status(400).json({ error: `Text too long: maximum ${TRANSLATE_MAX_TEXT_LENGTH} characters` })
+    }
+    // IP rate limiting
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || ''
+    const skipRl =
+      (clientIp && WHITELISTED_IPS.has(clientIp)) || isLocalDevelopmentRequest(req, clientIp)
+    if (!skipRl && clientIp) {
+      if (
+        !checkRateLimit(
+          `translate:${clientIp}`,
+          translateIpHits,
+          TRANSLATE_MAX_PER_IP,
+          TRANSLATE_WINDOW_MS,
+        )
+      ) {
+        return res.status(429).json({ error: 'Rate limit: too many translation requests. Please wait.' })
+      }
+    }
+    const built = buildTranslationMessages(text, locale)
+    if (!built) {
+      // No translation needed (e.g. English) — echo the original.
+      return res.json({ translation: text })
+    }
+    if (!GROQ_API_KEY) {
+      return res.status(500).json({ error: 'GROQ_API_KEY not set' })
+    }
     try {
-      const upstream = await fetch('https://chatjimmy.ai/api/chat', {
+      const upstream = await fetch(`${GROQ_HOST}/openai/v1/chat/completions`, {
         method: 'POST',
         headers: {
-          'accept': '*/*',
-          'content-type': 'application/json',
-          'Referer': 'https://chatjimmy.ai/',
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `Translate the following text to ${langName}. Return ONLY the translated text, nothing else:\n\n${text}`,
-            },
-          ],
-          chatOptions: {
-            selectedModel: 'llama3.1-8B',
-            systemPrompt: 'You are a translator. Return only the translated text.',
-            topK: 8,
-          },
-          attachment: null,
+          model: TRANSLATE_MODEL,
+          // system + alternating few-shot user/assistant turns + the final user text
+          messages: [{ role: 'system', content: built.system }, ...built.messages],
+          temperature: 0.3,
+          max_tokens: 1024,
+          stream: false,
         }),
       })
-      if (!upstream.ok) {
+      const data = await upstream.json()
+      if (data.error) {
+        console.error('[translate] groq', data.error)
         return res.status(502).json({ error: 'translation upstream failed' })
       }
-      // Response is plain text with stats appended: "translated text\n<|stats|>...<|/stats|>"
-      const raw = await upstream.text()
-      const translation = raw.split('<|stats|>')[0].trim()
-      return res.json({ translation })
+      const translation = String(data.choices?.[0]?.message?.content ?? '').trim()
+      return res.json({ translation: translation || text })
     } catch (err) {
       console.error('[translate]', err)
       return res.status(500).json({ error: 'translation failed' })
@@ -758,13 +789,12 @@ export async function startServer(sessionsDir) {
       prompt,
       preferredLanguage,
       preferredExportTarget,
-      designReferenceUrls = [],
+      cloneUrl = '',
       designReferenceNotes = '',
     } = parsed.data
-    const designRefFingerprint = designReferenceFingerprintFromUrls(
-      designReferenceUrls,
-      designReferenceNotes,
-    )
+    const designRefFingerprint = cloneUrl
+      ? designReferenceFingerprintFromUrls([cloneUrl], designReferenceNotes)
+      : ''
     const trimmedPrompt = prompt?.trim()
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
@@ -1002,8 +1032,8 @@ export async function startServer(sessionsDir) {
       }
     }
 
-    if (designReferenceUrls.length) {
-      writeDesignReferencesFile(session.workspace, designReferenceUrls, designReferenceNotes)
+    if (cloneUrl) {
+      writeDesignReferencesFile(session.workspace, [cloneUrl], designReferenceNotes)
     }
 
     const sessionCtx = makeSessionState(session)
@@ -1026,20 +1056,218 @@ export async function startServer(sessionsDir) {
     setSessionStatus(session.id, 'generating')
 
     // Fire and forget the generation
-    const generation = editMode
-      ? runEdit({
-          prompt: session.prompt,
-          workspace: session.workspace,
-          sessionCtx,
-          integrations: generationIntegrations,
-        })
-      : runAll({
-          prompt: session.prompt,
-          workspace: session.workspace,
-          sessionCtx,
-          preferredLanguage: session.preferredLanguage,
-          integrations: generationIntegrations,
-        })
+    let generation
+    if (cloneUrl) {
+      // Clone mode: crawl + segment the target site, assemble a validated multi-page
+      // OpenUI program, persist it (home.openui + site-spec.json + themed shell), and
+      // stream it home-first over the same openui_stream_* envelope the live preview
+      // island consumes — exactly like the normal genui path, just sourced from a clone.
+      const { cloneSiteToOpenUI } = await import('@ship-fast/engine/clone/index.js')
+      const { generateFromClone } = await import('@ship-fast/engine/genui/orchestrator.js')
+      const { buildThemeHeadFromTokens, writeStreamingShellToWorkspace } = await import(
+        '@ship-fast/engine/renderers/index.js'
+      )
+      const { saveSiteSpec } = await import('@ship-fast/engine/spec/index.js')
+      generation = (async () => {
+        const route = '/'
+        try {
+          const result = await cloneSiteToOpenUI(cloneUrl, {
+            workspace: session.workspace,
+            maxDepth: 3,
+            maxPages: 20,
+            concurrency: 4,
+            onEvent: (event) => {
+              sessionCtx?.broadcast({ type: 'clone_progress', route, ...event })
+            },
+          })
+
+          if (!result.success || !Array.isArray(result.pages) || result.pages.length === 0) {
+            throw new Error('Clone job produced no pages')
+          }
+
+          // Derive the site brand. The clone job currently hardcodes page titles to
+          // `Cloned: <url>` / `Cloned (fallback): <url>` (a raw URL string, not a real
+          // <title>) — using that verbatim would print the URL as the brand in the
+          // shell <title>, site-spec, and home nav. Treat such placeholder titles as
+          // absent and synthesize a readable brand from the cloned URL's host instead.
+          const homeTitle = result.pages[0]?.title
+          const isPlaceholderTitle =
+            typeof homeTitle !== 'string' ||
+            !homeTitle.trim() ||
+            /^\s*Cloned(?:\s*\(fallback\))?\s*:/i.test(homeTitle)
+          const brandFromHost = (() => {
+            try {
+              const host = new URL(cloneUrl).hostname.replace(/^www\./, '').split('.')[0] || ''
+              return host
+                ? host.charAt(0).toUpperCase() + host.slice(1)
+                : ''
+            } catch {
+              return ''
+            }
+          })()
+          const brand =
+            (!isPlaceholderTitle && homeTitle.trim()) ||
+            brandFromHost ||
+            session.prompt?.trim()?.slice(0, 40) ||
+            'Cloned Site'
+
+          // Build the per-site theme head from the SYNTHESIZED tokens so every
+          // referenced CSS var (bg-card, text-muted-foreground, ring, …) is defined.
+          const themeHead = buildThemeHeadFromTokens(result.theme, brand)
+
+          // Persist the scraped palette as a STRUCTURED theme object — not the bare
+          // string 'cloned'. readSiteSpecThemeColors reads siteSpec.theme.colors (an
+          // object), so GET /api/sessions/:id/openui can surface the real palette to
+          // the viewer instead of {}; readSiteThemeName (renderers) reads theme.name,
+          // so naming still works. Keys use the viewer's server-key convention
+          // (primary, accent, background, …) with the extracted hex values.
+          const t = result.theme || {}
+          const cloneTheme = {
+            name: 'cloned',
+            colors: {
+              background: t.background,
+              foreground: t.foreground,
+              primary: t.primary,
+              secondary: t.secondary,
+              muted: t.muted,
+              accent: t.accent,
+              border: t.border,
+            },
+          }
+
+          // Drive generateFromClone to assemble + validate the full program. We collect
+          // the progressive per-page modules and the final validated source, streaming
+          // each over the openui envelope so pages pop into the preview as they land.
+          //
+          // Each broadcast chunk is rebuilt to be INDEPENDENTLY PARSEABLE: rather than
+          // emitting the full PageSwitch skeleton first (which references page ids not
+          // yet defined — a transient-invalid window), we re-root each chunk in a
+          // PageSwitch over ONLY the pages emitted so far. So a chunk after the home
+          // module is `home = Stack([...])\n$page = "Home"\nroot = PageSwitch(["Home"],[home])`
+          // — a complete, valid program at every step (home-first, then progressive).
+          let fullSource = ''
+          let shellWritten = false
+          // Parsed from the skeleton: the $page seed line + ordered [labels] / [ids].
+          let pageSeedLine = ''
+          let skeletonLabels = []
+          let skeletonIds = []
+          // Accumulated, in-order page module definitions emitted so far.
+          const emittedModules = []
+
+          // Re-assemble a self-contained program from the modules emitted so far, with
+          // a PageSwitch root referencing only those ids (and their matching labels).
+          const buildProgressiveSource = () => {
+            const defs = emittedModules.map((m) => m.text).join('\n')
+            const ids = emittedModules.map((m) => m.id)
+            const labels = ids.map((id) => {
+              const i = skeletonIds.indexOf(id)
+              return i >= 0 ? skeletonLabels[i] : id
+            })
+            const labelsJson = labels.map((l) => JSON.stringify(l)).join(', ')
+            const seed = pageSeedLine ? `${pageSeedLine}\n` : ''
+            return `${defs}\n${seed}root = PageSwitch([${labelsJson}], [${ids.join(', ')}])`
+          }
+
+          for await (const event of generateFromClone(result.pages, result.theme, brand)) {
+            if (event.type === 'skeleton') {
+              // Parse the skeleton: keep the `$page = …` seed and the ordered label/id
+              // arrays so progressive chunks can re-root over the emitted subset.
+              const seedMatch = /^\s*\$page\s*=.*$/m.exec(event.text)
+              pageSeedLine = seedMatch ? seedMatch[0].trim() : ''
+              const psMatch = /PageSwitch\(\s*\[([^\]]*)\]\s*,\s*\[([^\]]*)\]\s*\)/.exec(event.text)
+              if (psMatch) {
+                skeletonLabels = (psMatch[1].match(/"((?:[^"\\]|\\.)*)"/g) || []).map((s) =>
+                  JSON.parse(s),
+                )
+                skeletonIds = psMatch[2]
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              }
+              // Stand up the themed host shell + open the stream so the island mounts.
+              saveSiteSpec(session.workspace, {
+                brand,
+                tagline: '',
+                theme: cloneTheme,
+                locale: 'en',
+                skeleton: event.text,
+                modules: {},
+                themeHead,
+              })
+              writeStreamingShellToWorkspace(session.workspace, brand, 'cloned', themeHead)
+              shellWritten = true
+              sessionCtx?.broadcast({ type: 'openui_stream_start', route })
+              sessionCtx?.signalHomepageReady?.()
+            } else if (event.type === 'module') {
+              if (!shellWritten) continue
+              emittedModules.push({ id: event.id, text: event.text })
+              sessionCtx?.broadcast({
+                type: 'openui_stream_chunk',
+                route,
+                source: buildProgressiveSource(),
+              })
+            } else if (event.type === 'source') {
+              fullSource = event.text
+            } else if (event.type === 'done') {
+              if (event.source) fullSource = event.source
+            } else if (event.type === 'error') {
+              throw new Error(event.message || 'Clone assembly failed')
+            }
+          }
+
+          if (!fullSource.trim()) {
+            throw new Error('Clone assembly produced an empty program')
+          }
+
+          // Persist the final, validated program (for reload) + spec, then close the
+          // stream so the island locks in the fully-merged source.
+          writeFileSync(join(session.workspace, 'home.openui'), fullSource)
+          saveSiteSpec(session.workspace, {
+            brand,
+            tagline: '',
+            theme: cloneTheme,
+            locale: 'en',
+            skeleton: '',
+            modules: { home: fullSource },
+            themeHead,
+          })
+          sessionCtx?.broadcast({
+            type: 'openui_stream_done',
+            route,
+            source: fullSource,
+            locale: 'en',
+          })
+          sessionCtx?.broadcast({ type: 'preview_reload', at: Date.now() })
+          sessionCtx?.signalOpenuiReady?.()
+
+          return result
+        } catch (error) {
+          console.error('Clone job failed:', error)
+          sessionCtx?.broadcast({
+            type: 'openui-error',
+            route,
+            error: error?.message || 'Clone job failed',
+          })
+          throw error
+        }
+      })()
+    } else {
+      // Normal generation mode
+      generation = editMode
+        ? runEdit({
+            prompt: session.prompt,
+            workspace: session.workspace,
+            sessionCtx,
+            integrations: generationIntegrations,
+          })
+        : runAll({
+            prompt: session.prompt,
+            workspace: session.workspace,
+            sessionCtx,
+            preferredLanguage: session.preferredLanguage,
+            integrations: generationIntegrations,
+          })
+    }
 
     const generationKey = req.user?.uid || clientIp
     activeGenerations.set(generationKey, (activeGenerations.get(generationKey) || 0) + 1)
@@ -1263,7 +1491,8 @@ export async function startServer(sessionsDir) {
         return res.status(404).json({ error: 'Saved HTML not found' })
       }
       const html = readFileSync(htmlPath, 'utf8')
-      res.json({ html })
+      const rewrittenHtml = rewriteTailwindCdn(html)
+      res.json({ html: rewrittenHtml })
     } catch {
       res.status(500).json({ error: 'Failed to read saved HTML' })
     }

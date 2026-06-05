@@ -9,7 +9,6 @@ export const HINGLISH_LANGUAGE = {
     'hinglish website',
     'hindi english mix',
     'hindi-english',
-    'roman hindi',
   ],
 }
 
@@ -196,6 +195,27 @@ const MIXED_ENGLISH_SLANG_KEYWORDS = {
   ne: ['nepali english mix'],
 }
 
+const ROMANIZED_LATIN_LANGUAGES = INDIC_PURE_LANGUAGES.map((l) => {
+  const n = l.name.toLowerCase()
+  return {
+    code: `${l.code}-latn`,
+    name: `${l.name} (Roman)`,
+    nativeName: `${l.nativeName} (Roman)`,
+    fontFamily: 'Inter, system-ui, sans-serif',
+    keywords: [
+      `${l.code}-latn`,
+      `roman ${n}`,
+      `romanized ${n}`,
+      `romanised ${n}`,
+      `${n} in roman`,
+      `${n} in latin`,
+      `${n} in english letters`,
+      `${n} in english script`,
+      `${n} in english alphabet`,
+    ],
+  }
+})
+
 export const KNOWN_LANGUAGES = [
   HINGLISH_LANGUAGE,
   ...INDIC_PURE_LANGUAGES,
@@ -218,6 +238,7 @@ export const KNOWN_LANGUAGES = [
       ],
     }
   }),
+  ...ROMANIZED_LATIN_LANGUAGES,
 ]
 
 export const INDIAN_LANGUAGE_CODES = new Set(KNOWN_LANGUAGES.map((l) => l.code))
@@ -255,6 +276,42 @@ export const isMixedEnglishIndicCode = (code) => {
     .trim()
     .toLowerCase()
   return c === 'hinglish' || /^[a-z]{2,8}-en$/.test(c)
+}
+
+export const isRomanizedIndicCode = (code) =>
+  /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
+
+// Any non-English locale we render via /api/translate: plain 2-char ISO, xx-latn
+// (romanized), or the code-mixed variants (hinglish / xx-en). English is the only
+// non-translatable value.
+export const isTranslatableLocale = (code) => {
+  const c = String(code || '').trim().toLowerCase()
+  if (!c || c === 'en') return false
+  return (
+    /^[a-z]{2}$/.test(c) ||
+    /^[a-z]{2,8}-latn$/.test(c) ||
+    /^[a-z]{2,8}-en$/.test(c) ||
+    c === 'hinglish'
+  )
+}
+
+export const preferRomanizedBcp47FromSnippet = (snippet) => {
+  const pl = String(snippet || '').toLowerCase()
+  for (const l of INDIC_PURE_LANGUAGES) {
+    const n = l.name.toLowerCase()
+    if (
+      pl.includes(`roman ${n}`) ||
+      pl.includes(`romanized ${n}`) ||
+      pl.includes(`romanised ${n}`) ||
+      pl.includes(`${n} in roman`) ||
+      pl.includes(`${n} in latin`) ||
+      pl.includes(`${n} in english letter`) ||
+      pl.includes(`${n} in english script`) ||
+      pl.includes(`${n} in english alphabet`) ||
+      pl.includes(`${l.code}-latn`)
+    ) return `${l.code}-latn`
+  }
+  return null
 }
 
 export const SCRIPT_FONT_MAP = {

@@ -177,334 +177,341 @@ export const CorporateKimiPage = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Nexus"
-    const nav = props.nav?.length
-      ? props.nav
-      : ["Solutions", "Customers", "Pricing", "Investors", "Company"]
 
-    const heroBadge = props.hero?.badge ?? "Trusted by 500+ Enterprise Clients"
-    const heroHeading =
-      props.hero?.heading ?? "Enterprise infrastructure for the modern economy"
-    const heroSub =
-      props.hero?.subheading ??
-      "Nexus delivers mission-critical cloud infrastructure, enterprise software, and digital transformation solutions that power the world's most demanding organizations. From Fortune 500 to high-growth startups."
-    const heroPrimary = props.hero?.primaryCta ?? "Schedule a Demo"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Solutions"
-    const heroBadges = props.hero?.badges?.length
-      ? props.hero.badges
-      : ["SOC 2 Type II Certified", "ISO 27001 Compliant"]
-    const heroImageAlt =
-      props.hero?.imageAlt ??
-      "Modern corporate office interior with glass walls and collaborative workspace"
-    const heroStatLabel = props.hero?.statLabel ?? "Average ROI"
-    const heroStatValue = props.hero?.statValue ?? "340%"
+    // Normalization helpers to handle malformed generated props
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      value !== null && typeof value === 'object' && !Array.isArray(value)
 
-    const logosHeading =
-      props.logos?.heading ?? "Trusted by leading enterprises worldwide"
-    const logoItems = props.logos?.items?.length
-      ? props.logos.items
-      : ["AcmeCorp", "Globex", "Initech", "Hooli", "Massive", "Soylent"]
+    const nonEmptyString = (value: unknown, fallback: string): string =>
+      typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback
 
-    const solutionsHeading =
-      props.solutions?.heading ?? "Enterprise solutions built for scale"
-    const solutionsDesc =
-      props.solutions?.description ??
-      "Comprehensive infrastructure and software solutions designed to meet the security, compliance, and performance demands of global enterprises."
-    const solutionItems = props.solutions?.items?.length
-      ? props.solutions.items
-      : [
-          {
-            title: "Cloud Infrastructure",
-            description:
-              "Multi-cloud orchestration platform supporting AWS, Azure, and GCP with unified management, cost optimization, and automated scaling.",
-          },
-          {
-            title: "Security & Compliance",
-            description:
-              "Enterprise-grade security with zero-trust architecture, continuous compliance monitoring, and automated threat detection and response.",
-          },
-          {
-            title: "Data Analytics",
-            description:
-              "Real-time analytics platform with AI-powered insights, predictive modeling, and custom dashboards for executive decision-making.",
-          },
-          {
-            title: "Digital Transformation",
-            description:
-              "End-to-end transformation consulting, legacy modernization, and agile implementation to accelerate your digital journey.",
-          },
-          {
-            title: "Managed Services",
-            description:
-              "24/7 operations center with dedicated teams for monitoring, incident response, and proactive system optimization.",
-          },
-          {
-            title: "Risk Management",
-            description:
-              "Comprehensive risk assessment frameworks, business continuity planning, and disaster recovery with industry-leading RTOs.",
-          },
-        ]
+    const normalizeStringArray = (value: unknown, fallback: string[]): string[] => {
+      if (!Array.isArray(value)) return fallback
+      return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    }
 
-    const stepsHeading =
-      props.steps?.heading ?? "Implementation in four phases"
-    const stepsDesc =
-      props.steps?.description ??
-      "Our proven methodology ensures seamless deployment with minimal disruption to your operations."
-    const stepItems = props.steps?.items?.length
-      ? props.steps.items
-      : [
-          {
-            title: "Discovery",
-            description:
-              "Comprehensive assessment of your current infrastructure, workflows, and business objectives. We identify opportunities and define success metrics.",
-          },
-          {
-            title: "Design",
-            description:
-              "Custom architecture design tailored to your requirements. Security-first approach with scalability built into every component.",
-          },
-          {
-            title: "Deployment",
-            description:
-              "Phased rollout with parallel systems during transition. Our team manages the entire process with 24/7 support throughout.",
-          },
-          {
-            title: "Optimization",
-            description:
-              "Continuous monitoring and refinement post-deployment. Regular reviews ensure maximum ROI and alignment with evolving needs.",
-          },
-        ]
+    const normalizeObjectArray = <T extends Record<string, unknown>>(
+      value: unknown,
+      requiredKeys: (keyof T)[],
+      fallback: T[],
+    ): T[] => {
+      if (!Array.isArray(value)) return fallback
+      return value.filter((item): item is T => {
+        if (!isRecord(item)) return false
+        return requiredKeys.every((key) => typeof item[key] === 'string' && String(item[key]).trim().length > 0)
+      })
+    }
 
-    const officesHeading =
-      props.offices?.heading ?? "Global presence, local expertise"
-    const officesDesc =
-      props.offices?.description ??
-      "14 offices across 6 continents, serving clients in 47 countries with round-the-clock support."
-    const officeItems = props.offices?.items?.length
-      ? props.offices.items
-      : [
-          {
-            title: "New York Headquarters",
-            caption: "Global HQ & Innovation Center",
-            imageAlt:
-              "Modern glass skyscraper corporate headquarters at sunset",
-          },
-          {
-            title: "London Office",
-            caption: "EMEA Regional Hub",
-            imageAlt:
-              "Tower Bridge and modern city skyline in London at golden hour",
-          },
-          {
-            title: "Tokyo Office",
-            caption: "APAC Operations Center",
-            imageAlt: "Tokyo cityscape with illuminated skyscrapers at night",
-          },
-          {
-            title: "Sydney Office",
-            caption: "ANZ Regional Office",
-            imageAlt: "Sydney Opera House and harbor waterfront panorama",
-          },
-          {
-            title: "Singapore Office",
-            caption: "Southeast Asia Hub",
-            imageAlt: "Singapore Marina Bay skyline with modern architecture",
-          },
-          {
-            title: "Berlin Office",
-            caption: "European Development Center",
-            imageAlt:
-              "Modern corporate building in Berlin with contemporary architecture",
-          },
-        ]
+    const brand = nonEmptyString(props.brand, "Nexus")
+    const nav = normalizeStringArray(props.nav, ["Solutions", "Customers", "Pricing", "Investors", "Company"])
 
-    const pricingHeading =
-      props.pricing?.heading ?? "Transparent enterprise pricing"
-    const pricingDesc =
-      props.pricing?.description ??
-      "Flexible plans designed to scale with your organization. All plans include implementation support."
-    const pricingPlans = props.pricing?.plans?.length
-      ? props.pricing.plans
-      : [
-          {
-            name: "Professional",
-            blurb: "For growing teams up to 250 employees",
-            price: "$2,500",
-            period: "/month",
-            features: [
-              "Up to 5 cloud environments",
-              "24/7 email and chat support",
-              "Standard security features",
-              "Basic analytics dashboard",
-              "Quarterly business reviews",
-            ],
-            cta: "Get Started",
-            featured: false,
-          },
-          {
-            name: "Enterprise",
-            blurb: "For mid-size organizations up to 5,000 employees",
-            price: "$8,500",
-            period: "/month",
-            features: [
-              "Unlimited cloud environments",
-              "24/7 phone, email & chat support",
-              "Advanced security & compliance",
-              "Custom analytics & AI insights",
-              "Monthly business reviews",
-              "Dedicated success manager",
-            ],
-            cta: "Contact Sales",
-            featured: true,
-            badge: "Most Popular",
-          },
-          {
-            name: "Global",
-            blurb: "For large enterprises with 5,000+ employees",
-            price: "Custom",
-            period: "",
-            features: [
-              "Everything in Enterprise",
-              "Multi-region deployment",
-              "Custom SLAs & contracts",
-              "On-premise deployment options",
-              "Executive advisory board access",
-            ],
-            cta: "Contact Sales",
-            featured: false,
-          },
-        ]
+    const heroBadge = nonEmptyString(props.hero?.badge, "Trusted by 500+ Enterprise Clients")
+    const heroHeading = nonEmptyString(props.hero?.heading, "Enterprise infrastructure for the modern economy")
+    const heroSub = nonEmptyString(
+      props.hero?.subheading,
+      "Nexus delivers mission-critical cloud infrastructure, enterprise software, and digital transformation solutions that power the world's most demanding organizations. From Fortune 500 to high-growth startups.",
+    )
+    const heroPrimary = nonEmptyString(props.hero?.primaryCta, "Schedule a Demo")
+    const heroSecondary = nonEmptyString(props.hero?.secondaryCta, "Explore Solutions")
+    const heroBadges = normalizeStringArray(props.hero?.badges, ["SOC 2 Type II Certified", "ISO 27001 Compliant"])
+    const heroImageAlt = nonEmptyString(
+      props.hero?.imageAlt,
+      "Modern corporate office interior with glass walls and collaborative workspace",
+    )
+    const heroStatLabel = nonEmptyString(props.hero?.statLabel, "Average ROI")
+    const heroStatValue = nonEmptyString(props.hero?.statValue, "340%")
 
-    const statItems = props.stats?.items?.length
-      ? props.stats.items
-      : [
-          { value: "$2.4B", label: "Customer cost savings delivered" },
-          { value: "500+", label: "Enterprise clients worldwide" },
-          { value: "99.99%", label: "Platform uptime SLA" },
-          { value: "14", label: "Global office locations" },
-        ]
+    const logosHeading = nonEmptyString(props.logos?.heading, "Trusted by leading enterprises worldwide")
+    const logoItems = normalizeStringArray(props.logos?.items, ["AcmeCorp", "Globex", "Initech", "Hooli", "Massive", "Soylent"])
 
-    const testimonialsHeading =
-      props.testimonials?.heading ?? "Trusted by industry leaders"
-    const testimonialsDesc =
-      props.testimonials?.description ??
-      "See how leading organizations transformed their operations with Nexus."
-    const testimonialItems = props.testimonials?.items?.length
-      ? props.testimonials.items
-      : [
-          {
-            quote:
-              "Nexus transformed our infrastructure in just 90 days. We reduced operational costs by 40% while improving system reliability. Their team's expertise is unmatched in the industry.",
-            name: "Michael Chen",
-            role: "CTO, Meridian Financial Group",
-            avatarAlt:
-              "Professional headshot of a smiling male executive in business attire",
-          },
-          {
-            quote:
-              "The security and compliance features gave our board complete confidence. We passed our SOC 2 audit with zero findings—a first for our company. Nexus made it possible.",
-            name: "Sarah Williams",
-            role: "CISO, Horizon Healthcare Systems",
-            avatarAlt:
-              "Professional headshot of a female executive with confident expression",
-          },
-          {
-            quote:
-              "We evaluated 12 vendors before choosing Nexus. Their analytics platform helped us identify $3.2M in operational inefficiencies within the first quarter.",
-            name: "David Park",
-            role: "COO, Pacific Logistics Inc.",
-            avatarAlt:
-              "Professional headshot of a middle-aged male business leader with glasses",
-          },
-        ]
+    const solutionsHeading = nonEmptyString(props.solutions?.heading, "Enterprise solutions built for scale")
+    const solutionsDesc = nonEmptyString(
+      props.solutions?.description,
+      "Comprehensive infrastructure and software solutions designed to meet the security, compliance, and performance demands of global enterprises.",
+    )
+    const solutionItems = normalizeObjectArray(
+      props.solutions?.items,
+      ['title', 'description'],
+      [
+        {
+          title: "Cloud Infrastructure",
+          description:
+            "Multi-cloud orchestration platform supporting AWS, Azure, and GCP with unified management, cost optimization, and automated scaling.",
+        },
+        {
+          title: "Security & Compliance",
+          description:
+            "Enterprise-grade security with zero-trust architecture, continuous compliance monitoring, and automated threat detection and response.",
+        },
+        {
+          title: "Data Analytics",
+          description:
+            "Real-time analytics platform with AI-powered insights, predictive modeling, and custom dashboards for executive decision-making.",
+        },
+        {
+          title: "Digital Transformation",
+          description:
+            "End-to-end transformation consulting, legacy modernization, and agile implementation to accelerate your digital journey.",
+        },
+        {
+          title: "Managed Services",
+          description:
+            "24/7 operations center with dedicated teams for monitoring, incident response, and proactive system optimization.",
+        },
+        {
+          title: "Risk Management",
+          description:
+            "Comprehensive risk assessment frameworks, business continuity planning, and disaster recovery with industry-leading RTOs.",
+        },
+      ],
+    )
 
-    const faqHeading = props.faq?.heading ?? "Frequently asked questions"
-    const faqDesc =
-      props.faq?.description ??
-      "Everything you need to know about Nexus enterprise solutions."
-    const faqItems = props.faq?.items?.length
-      ? props.faq.items
-      : [
-          {
-            q: "What is the typical implementation timeline?",
-            a: "Most implementations are completed within 90-120 days, depending on complexity and scope. Our phased approach ensures minimal disruption to your operations, with parallel systems running during the transition period. Enterprise and Global plans include dedicated project managers to accelerate deployment.",
-          },
-          {
-            q: "How does your pricing model work?",
-            a: "Our Professional and Enterprise plans are priced as flat monthly subscriptions based on employee count and feature requirements. The Global plan is customized based on your specific needs, including multi-region deployment, custom SLAs, and specialized compliance requirements. All plans include implementation support.",
-          },
-          {
-            q: "What security certifications do you maintain?",
-            a: "Nexus maintains SOC 2 Type II, ISO 27001, ISO 9001, and HIPAA compliance certifications. Our platform is GDPR compliant and we undergo annual third-party security audits. Enterprise and Global customers receive access to our compliance documentation and can request custom security assessments.",
-          },
-          {
-            q: "Do you offer on-premise deployment options?",
-            a: "Yes, our Global plan includes on-premise, hybrid, and private cloud deployment options for organizations with specific data residency or regulatory requirements. Our solutions can be deployed in your own data centers while maintaining the same management and monitoring capabilities as our cloud offering.",
-          },
-          {
-            q: "What support options are available?",
-            a: "Professional plans include 24/7 email and chat support with 4-hour response times. Enterprise plans add 24/7 phone support and dedicated success managers with 1-hour response times. Global plans include a dedicated technical account manager, quarterly business reviews, and custom SLA guarantees.",
-          },
-          {
-            q: "Can I integrate with existing systems?",
-            a: "Absolutely. Nexus provides comprehensive REST APIs, webhooks, and pre-built connectors for major enterprise systems including Salesforce, SAP, Oracle, Workday, ServiceNow, and 200+ other platforms. Our integration team can build custom connectors for proprietary systems as part of your implementation.",
-          },
-        ]
+    const stepsHeading = nonEmptyString(props.steps?.heading, "Implementation in four phases")
+    const stepsDesc = nonEmptyString(
+      props.steps?.description,
+      "Our proven methodology ensures seamless deployment with minimal disruption to your operations.",
+    )
+    const stepItems = normalizeObjectArray(
+      props.steps?.items,
+      ['title', 'description'],
+      [
+        {
+          title: "Discovery",
+          description:
+            "Comprehensive assessment of your current infrastructure, workflows, and business objectives. We identify opportunities and define success metrics.",
+        },
+        {
+          title: "Design",
+          description:
+            "Custom architecture design tailored to your requirements. Security-first approach with scalability built into every component.",
+        },
+        {
+          title: "Deployment",
+          description:
+            "Phased rollout with parallel systems during transition. Our team manages the entire process with 24/7 support throughout.",
+        },
+        {
+          title: "Optimization",
+          description:
+            "Continuous monitoring and refinement post-deployment. Regular reviews ensure maximum ROI and alignment with evolving needs.",
+        },
+      ],
+    )
 
-    const ctaHeading =
-      props.cta?.heading ?? "Ready to transform your enterprise?"
-    const ctaDesc =
-      props.cta?.description ??
-      "Join 500+ organizations that trust Nexus for mission-critical infrastructure. Schedule a personalized demo with our solutions team."
-    const ctaPrimary = props.cta?.primaryCta ?? "Schedule a Demo"
-    const ctaSecondary = props.cta?.secondaryCta ?? "Contact Sales"
-    const ctaNote =
-      props.cta?.note ??
-      "Average response time: Under 2 hours during business hours"
+    const officesHeading = nonEmptyString(props.offices?.heading, "Global presence, local expertise")
+    const officesDesc = nonEmptyString(
+      props.offices?.description,
+      "14 offices across 6 continents, serving clients in 47 countries with round-the-clock support.",
+    )
+    const officeItems = normalizeObjectArray(
+      props.offices?.items,
+      ['title', 'caption', 'imageAlt'],
+      [
+        {
+          title: "New York Headquarters",
+          caption: "Global HQ & Innovation Center",
+          imageAlt: "Modern glass skyscraper corporate headquarters at sunset",
+        },
+        {
+          title: "London Office",
+          caption: "EMEA Regional Hub",
+          imageAlt: "Tower Bridge and modern city skyline in London at golden hour",
+        },
+        {
+          title: "Tokyo Office",
+          caption: "APAC Operations Center",
+          imageAlt: "Tokyo cityscape with illuminated skyscrapers at night",
+        },
+        {
+          title: "Sydney Office",
+          caption: "ANZ Regional Office",
+          imageAlt: "Sydney Opera House and harbor waterfront panorama",
+        },
+        {
+          title: "Singapore Office",
+          caption: "Southeast Asia Hub",
+          imageAlt: "Singapore Marina Bay skyline with modern architecture",
+        },
+        {
+          title: "Berlin Office",
+          caption: "European Development Center",
+          imageAlt: "Modern corporate building in Berlin with contemporary architecture",
+        },
+      ],
+    )
 
-    const footerAbout =
-      props.footer?.about ??
-      "Nexus Enterprise Solutions delivers mission-critical cloud infrastructure and digital transformation services to organizations worldwide."
-    const footerColumns = props.footer?.columns?.length
-      ? props.footer.columns
-      : [
-          {
-            title: "Solutions",
-            links: [
-              "Cloud Infrastructure",
-              "Security",
-              "Data Analytics",
-              "Digital Transformation",
-              "Managed Services",
-            ],
-          },
-          {
-            title: "Company",
-            links: [
-              "About Us",
-              "Careers",
-              "Press",
-              "Partners",
-              "Investor Relations",
-            ],
-          },
-          {
-            title: "Resources",
-            links: [
-              "Documentation",
-              "API Reference",
-              "Case Studies",
-              "Blog",
-              "Contact",
-            ],
-          },
-        ]
-    const footerCopyright =
-      props.footer?.copyright ??
-      "© 2026 Nexus Enterprise Solutions, Inc. All rights reserved."
-    const footerLegal = props.footer?.legal?.length
-      ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Cookie Policy"]
+    const pricingHeading = nonEmptyString(props.pricing?.heading, "Transparent enterprise pricing")
+    const pricingDesc = nonEmptyString(
+      props.pricing?.description,
+      "Flexible plans designed to scale with your organization. All plans include implementation support.",
+    )
+    const pricingPlans = normalizeObjectArray(
+      props.pricing?.plans,
+      ['name', 'blurb', 'price', 'features', 'cta'],
+      [
+        {
+          name: "Professional",
+          blurb: "For growing teams up to 250 employees",
+          price: "$2,500",
+          period: "/month",
+          features: [
+            "Up to 5 cloud environments",
+            "24/7 email and chat support",
+            "Standard security features",
+            "Basic analytics dashboard",
+            "Quarterly business reviews",
+          ],
+          cta: "Get Started",
+          featured: false,
+        },
+        {
+          name: "Enterprise",
+          blurb: "For mid-size organizations up to 5,000 employees",
+          price: "$8,500",
+          period: "/month",
+          features: [
+            "Unlimited cloud environments",
+            "24/7 phone, email & chat support",
+            "Advanced security & compliance",
+            "Custom analytics & AI insights",
+            "Monthly business reviews",
+            "Dedicated success manager",
+          ],
+          cta: "Contact Sales",
+          featured: true,
+          badge: "Most Popular",
+        },
+        {
+          name: "Global",
+          blurb: "For large enterprises with 5,000+ employees",
+          price: "Custom",
+          period: "",
+          features: [
+            "Everything in Enterprise",
+            "Multi-region deployment",
+            "Custom SLAs & contracts",
+            "On-premise deployment options",
+            "Executive advisory board access",
+          ],
+          cta: "Contact Sales",
+          featured: false,
+        },
+      ],
+    )
+
+    const statItems = normalizeObjectArray(
+      props.stats?.items,
+      ['value', 'label'],
+      [
+        { value: "$2.4B", label: "Customer cost savings delivered" },
+        { value: "500+", label: "Enterprise clients worldwide" },
+        { value: "99.99%", label: "Platform uptime SLA" },
+        { value: "14", label: "Global office locations" },
+      ],
+    )
+
+    const testimonialsHeading = nonEmptyString(props.testimonials?.heading, "Trusted by industry leaders")
+    const testimonialsDesc = nonEmptyString(
+      props.testimonials?.description,
+      "See how leading organizations transformed their operations with Nexus.",
+    )
+    const testimonialItems = normalizeObjectArray(
+      props.testimonials?.items,
+      ['quote', 'name', 'role', 'avatarAlt'],
+      [
+        {
+          quote:
+            "Nexus transformed our infrastructure in just 90 days. We reduced operational costs by 40% while improving system reliability. Their team's expertise is unmatched in the industry.",
+          name: "Michael Chen",
+          role: "CTO, Meridian Financial Group",
+          avatarAlt: "Professional headshot of a smiling male executive in business attire",
+        },
+        {
+          quote:
+            "The security and compliance features gave our board complete confidence. We passed our SOC 2 audit with zero findings—a first for our company. Nexus made it possible.",
+          name: "Sarah Williams",
+          role: "CISO, Horizon Healthcare Systems",
+          avatarAlt: "Professional headshot of a female executive with confident expression",
+        },
+        {
+          quote:
+            "We evaluated 12 vendors before choosing Nexus. Their analytics platform helped us identify $3.2M in operational inefficiencies within the first quarter.",
+          name: "David Park",
+          role: "COO, Pacific Logistics Inc.",
+          avatarAlt: "Professional headshot of a middle-aged male business leader with glasses",
+        },
+      ],
+    )
+
+    const faqHeading = nonEmptyString(props.faq?.heading, "Frequently asked questions")
+    const faqDesc = nonEmptyString(
+      props.faq?.description,
+      "Everything you need to know about Nexus enterprise solutions.",
+    )
+    const faqItems = normalizeObjectArray(
+      props.faq?.items,
+      ['q', 'a'],
+      [
+        {
+          q: "What is the typical implementation timeline?",
+          a: "Most implementations are completed within 90-120 days, depending on complexity and scope. Our phased approach ensures minimal disruption to your operations, with parallel systems running during the transition period. Enterprise and Global plans include dedicated project managers to accelerate deployment.",
+        },
+        {
+          q: "How does your pricing model work?",
+          a: "Our Professional and Enterprise plans are priced as flat monthly subscriptions based on employee count and feature requirements. The Global plan is customized based on your specific needs, including multi-region deployment, custom SLAs, and specialized compliance requirements. All plans include implementation support.",
+        },
+        {
+          q: "What security certifications do you maintain?",
+          a: "Nexus maintains SOC 2 Type II, ISO 27001, ISO 9001, and HIPAA compliance certifications. Our platform is GDPR compliant and we undergo annual third-party security audits. Enterprise and Global customers receive access to our compliance documentation and can request custom security assessments.",
+        },
+        {
+          q: "Do you offer on-premise deployment options?",
+          a: "Yes, our Global plan includes on-premise, hybrid, and private cloud deployment options for organizations with specific data residency or regulatory requirements. Our solutions can be deployed in your own data centers while maintaining the same management and monitoring capabilities as our cloud offering.",
+        },
+        {
+          q: "What support options are available?",
+          a: "Professional plans include 24/7 email and chat support with 4-hour response times. Enterprise plans add 24/7 phone support and dedicated success managers with 1-hour response times. Global plans include a dedicated technical account manager, quarterly business reviews, and custom SLA guarantees.",
+        },
+        {
+          q: "Can I integrate with existing systems?",
+          a: "Absolutely. Nexus provides comprehensive REST APIs, webhooks, and pre-built connectors for major enterprise systems including Salesforce, SAP, Oracle, Workday, ServiceNow, and 200+ other platforms. Our integration team can build custom connectors for proprietary systems as part of your implementation.",
+        },
+      ],
+    )
+
+    const ctaHeading = nonEmptyString(props.cta?.heading, "Ready to transform your enterprise?")
+    const ctaDesc = nonEmptyString(
+      props.cta?.description,
+      "Join 500+ organizations that trust Nexus for mission-critical infrastructure. Schedule a personalized demo with our solutions team.",
+    )
+    const ctaPrimary = nonEmptyString(props.cta?.primaryCta, "Schedule a Demo")
+    const ctaSecondary = nonEmptyString(props.cta?.secondaryCta, "Contact Sales")
+    const ctaNote = nonEmptyString(props.cta?.note, "Average response time: Under 2 hours during business hours")
+
+    const footerAbout = nonEmptyString(
+      props.footer?.about,
+      "Nexus Enterprise Solutions delivers mission-critical cloud infrastructure and digital transformation services to organizations worldwide.",
+    )
+    const footerColumns = normalizeObjectArray(
+      props.footer?.columns,
+      ['title', 'links'],
+      [
+        {
+          title: "Solutions",
+          links: ["Cloud Infrastructure", "Security", "Data Analytics", "Digital Transformation", "Managed Services"],
+        },
+        {
+          title: "Company",
+          links: ["About Us", "Careers", "Press", "Partners", "Investor Relations"],
+        },
+        {
+          title: "Resources",
+          links: ["Documentation", "API Reference", "Case Studies", "Blog", "Contact"],
+        },
+      ],
+    )
+    const footerCopyright = nonEmptyString(props.footer?.copyright, "© 2026 Nexus Enterprise Solutions, Inc. All rights reserved.")
+    const footerLegal = normalizeStringArray(props.footer?.legal, ["Privacy Policy", "Terms of Service", "Cookie Policy"])
 
     // Brand logo tile — solid token surface with the brand initial (decorative brand asset).
     const LogoMark = ({

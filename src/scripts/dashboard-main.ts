@@ -821,6 +821,11 @@ function syncPreviewInspectTools() {
   postPreviewToolsState()
 }
 
+function isLocalDevHost() {
+  const host = window.location.hostname
+  return host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')
+}
+
 function syncPreviewChrome() {
   const chrome = document.querySelector('.browser-chrome')
   if (!chrome) return
@@ -828,7 +833,7 @@ function syncPreviewChrome() {
   const urlText = document.getElementById('url-text')
   const statusText = document.getElementById('status-text')
   if (urlText) {
-    if (deploymentState?.url) {
+    if (deploymentState?.url && !isLocalDevHost()) {
       const raw = formatDeploymentUrl(deploymentState.url)
       const href = raw.startsWith('http') ? raw : `https://${raw}`
       urlText.href = href
@@ -849,7 +854,8 @@ function syncPreviewChrome() {
     }
   }
   if (statusText) {
-    if (deploymentState?.url) statusText.textContent = 'Deployed'
+    if (deploymentState?.url && !isLocalDevHost()) statusText.textContent = 'Deployed'
+    else if (deploymentState?.url && isLocalDevHost()) statusText.textContent = 'Local Preview'
     else if (nextPreviewActive) statusText.textContent = 'Next.js'
     else if (previewLoaded) statusText.textContent = 'Live'
     else statusText.textContent = 'Preview'
@@ -4358,6 +4364,17 @@ document.getElementById('payment-modal').addEventListener('click', (event) => {
 //   if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
 // })
 
+document.getElementById('auth-close-btn').addEventListener('click', closeAuthWall)
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const authOverlay = document.getElementById('auth-overlay')
+    if (authOverlay && !authOverlay.classList.contains('hidden')) {
+      closeAuthWall()
+    }
+  }
+})
+
 document.getElementById('google-signin-btn').addEventListener('click', async () => {
   const errEl = document.getElementById('auth-error')
   errEl.textContent = ''
@@ -4385,6 +4402,24 @@ document.getElementById('github-signin-btn').addEventListener('click', async () 
 })
 
 document.getElementById('email-signin-btn').addEventListener('click', async () => {
+  const errEl = document.getElementById('auth-error')
+  errEl.textContent = ''
+  const email = document.getElementById('auth-email').value.trim()
+  const password = document.getElementById('auth-password').value
+  if (!email || !password) {
+    errEl.textContent = 'Enter email and password.'
+    return
+  }
+  try {
+    await window.shipFastDashboardAuth?.signInWithEmail?.(email, password)
+    closeAuthWall()
+  } catch (e) {
+    errEl.textContent = e?.message || 'Sign-in failed.'
+  }
+})
+
+document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault()
   const errEl = document.getElementById('auth-error')
   errEl.textContent = ''
   const email = document.getElementById('auth-email').value.trim()
@@ -4829,6 +4864,27 @@ document.getElementById('new-prompt-form').addEventListener('submit', async (e) 
   const prompt = input.value.trim()
   if (!prompt) return
 
+  // Check quota for anonymous users
+  if (isAnonymousSession) {
+    const generationCount = parseInt(localStorage.getItem('sf_generation_count') || '0', 10)
+    const GENERATION_LIMIT = 2
+    const GENERATION_LIMIT_WITH_BONUS = 3
+    let effectiveLimit = GENERATION_LIMIT
+    try {
+      const bonusResp = await fetch('/api/share-bonus')
+      if (bonusResp.ok) {
+        const bonusData = await bonusResp.json()
+        if (bonusData.claimed) effectiveLimit = GENERATION_LIMIT_WITH_BONUS
+      }
+    } catch {
+      /* ignore */
+    }
+    if (generationCount >= effectiveLimit) {
+      showNewPromptPolicy('Sign in to keep generating. Free anonymous users get 2 generations per day (3 with share bonus).')
+      return
+    }
+  }
+
   const { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } =
     await import('../lib/content-policy')
   if (!checkPromptContentPolicy(prompt).ok) {
@@ -4840,9 +4896,7 @@ document.getElementById('new-prompt-form').addEventListener('submit', async (e) 
   btn.disabled = true
   btn.textContent = 'Throttling up…'
 
-  const nr1 = document.getElementById('new-prompt-ref-url-1')?.value?.trim() || ''
-  const nr2 = document.getElementById('new-prompt-ref-url-2')?.value?.trim() || ''
-  const designReferenceUrls = [nr1, nr2].filter(Boolean)
+  const cloneUrl = document.getElementById('new-prompt-clone-url')?.value?.trim() || ''
   const designReferenceNotes =
     document.getElementById('new-prompt-design-ref-notes')?.value?.trim() || ''
 
@@ -4853,9 +4907,9 @@ document.getElementById('new-prompt-form').addEventListener('submit', async (e) 
       body: JSON.stringify({
         prompt,
         preferredLanguage: sessionPreferredLanguage || 'en',
-        ...(designReferenceUrls.length
+        ...(cloneUrl
           ? {
-              designReferenceUrls,
+              cloneUrl,
               ...(designReferenceNotes ? { designReferenceNotes } : {}),
             }
           : {}),
@@ -4878,6 +4932,9 @@ document.getElementById('new-prompt-form').addEventListener('submit', async (e) 
           const entry = { id: data.id, prompt, secret: String(data.anonOwnerSecret) }
           stored.unshift(entry)
           localStorage.setItem('sf_anon_sessions', JSON.stringify(stored))
+          // Increment generation count for anonymous users
+          const currentCount = parseInt(localStorage.getItem('sf_generation_count') || '0', 10)
+          localStorage.setItem('sf_generation_count', String(currentCount + 1))
         } catch {}
       }
       location.href = `/session/${data.id}`

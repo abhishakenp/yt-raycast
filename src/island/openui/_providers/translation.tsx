@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { useQuery } from "@ship-fast/blocks";
+import { translateOnDevice } from "./chrome-translator";
 
 type Locale = string;
 
@@ -16,6 +17,14 @@ export function useI18n() {
 }
 
 async function fetchTranslation(text: string, locale: string): Promise<string> {
+  // Tier 1: on-device Chrome/Edge Translator (free, instant) for plain native
+  // locales it supports. Returns null → fall through to the LLM.
+  const onDevice = await translateOnDevice(text, locale);
+  if (onDevice) return onDevice;
+
+  // Tier 2: Groq 70B LLM — handles everything the browser can't: unsupported
+  // languages (gu, ml, …), non-Chromium browsers, and romanized / code-mixed
+  // variants (xx-latn, hinglish, xx-en).
   const res = await fetch("/api/translate", {
     method: "POST",
     headers: { "content-type": "application/json" },

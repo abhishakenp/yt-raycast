@@ -86,7 +86,7 @@ export const collectHomepageQualityIssues = (html, { siteType = '', prompt = '' 
   if (st !== 'dashboard' && st !== 'docs' && h1 > 2) issues.push('too many <h1> elements (want 1 primary)')
   if ((st === 'dashboard' || st === 'docs') && h1 > 24) issues.push('too many <h1> elements (cap for sanity)')
 
-  if (!/cdn\.tailwindcss\.com/i.test(s)) issues.push('missing Tailwind CDN')
+  if (!/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) issues.push('missing Tailwind runtime (/scripts/tailwind-browser.js)')
   else if (!/tailwind\.config\s*=\s*\{[\s\S]*theme\s*:\s*\{[\s\S]*extend/i.test(s))
     issues.push('tailwind.config missing theme.extend (colors/fonts/shadows)')
 

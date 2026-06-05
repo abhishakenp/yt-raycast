@@ -7,7 +7,7 @@ export const PUBLIC_DESIGNS_QUALITY_APPENDIX = `
 Ship Fast may ship static HTML under public/designs for QA; those files can include legacy author style blocks in head—do not copy that pattern. New outputs must match the same density—many sections, hairline rings, elevated cards, mono kickers, pills, grids, strong footers—not a sparse template. Vague prompts still need invented names, headlines, and real section prose.
 
 STACK (author CSS forbidden for layout, color, typography, borders, shadows, motion):
-1) Load \`https://cdn.tailwindcss.com\` first in <head>, then a \`<script>\` that sets \`tailwind.config\` with theme.extend: colors (Midnight-style bg/surface/elev/primary tokens as hex or rgb), fontFamily (body + display + mono from Google Fonts \`<link>\`), boxShadow, transitionTimingFunction, keyframes, animation.
+1) Load \`/scripts/tailwind-browser.js\` first in <head>, then a \`<script>\` that sets \`tailwind.config\` with theme.extend: colors (Midnight-style bg/surface/elev/primary tokens as hex or rgb), fontFamily (body + display + mono from Google Fonts \`<link>\`), boxShadow, transitionTimingFunction, keyframes, animation.
 2) Express every layout, color, spacing, border, shadow, blur, gradient, hover, and responsive breakpoint with Tailwind utility classes or arbitrary values (e.g. \`bg-[#0a0e1f]\`, \`border-white/[0.08]\`, \`shadow-[0_14px_40px_rgba(124,92,245,0.22)]\`). Optional: \`@layer\` is still CSS—do not use it. Do not use \`<style>\` for appearance.
 3) Mesh / aurora: stacked absolute divs with \`bg-gradient-to-*\` \`blur-3xl\` \`opacity-*\`; watermark numerals: huge \`text-*\` with opacity.
 

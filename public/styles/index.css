@@ -58,11 +58,24 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scrollbar-gutter: stable;
   overflow-y: scroll;
   -webkit-font-smoothing: antialiased;
   background: var(--stitch-bg);
+  /* Keep targets clear of the fixed .top-actions header (≈68px) when scrolled
+     into view via anchors / scrollIntoView, so they aren't hidden beneath it. */
+  scroll-padding-top: 84px;
+}
+
+/* Smooth scrolling only when the user hasn't asked to reduce motion. Always-on
+   smooth scroll races scroll-then-click flows (and assistive tooling): the click
+   fires before the animated scroll settles, landing on the wrong coordinates.
+   Gating it keeps the polish for most users while making scroll-driven
+   interaction deterministic for reduced-motion users and automation. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -218,6 +231,15 @@ select {
   gap: 8px;
   padding: 16px 24px;
   background: transparent;
+  /* The bar is a full-width transparent strip; without this it would swallow
+     clicks across its empty middle, including content that scrolls beneath it
+     (pagination, footer links, gallery items). Re-enable hits on real controls. */
+  pointer-events: none;
+}
+
+.top-actions-brand,
+.top-actions-right {
+  pointer-events: auto;
 }
 
 .top-actions-right {
@@ -1807,6 +1829,28 @@ button.share-icon.pill {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--glass-shadow);
+  position: relative;
+}
+
+.auth-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+
+.auth-close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .auth-logo {

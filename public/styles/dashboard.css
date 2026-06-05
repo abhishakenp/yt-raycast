@@ -5,6 +5,25 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+/* Gallery session link anchors - ensure they're clickable over iframe content */
+.session-link {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  z-index: 1;
+}
+.session-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+/* Make iframes in gallery thumbnails pass through clicks to the anchor */
+.session-thumbnail iframe {
+  pointer-events: none;
+}
 /* space-shell @import uses scrollbar-gutter: stable on html — that can leave a one-edge
    “dead” band; dashboard is non-scrolling, so we pin the root to the viewport and
    match bg to the stitch so there is no solid strip above the dot grid. */

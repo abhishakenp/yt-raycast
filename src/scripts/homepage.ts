@@ -4,6 +4,7 @@ if (typeof history !== 'undefined' && 'scrollRestoration' in history) {
 
 import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy'
 import { preferMixedEnglishBcp47FromSnippet } from '../lib/home/mixed-english-hints'
+import { preferRomanizedBcp47FromSnippet } from '../config/languages.js'
 import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
 import { LOCAL_DEV_PROMPT_SHORTCUTS } from '../lib/home/sample-prompts'
 
@@ -131,8 +132,23 @@ function consumeGalleryRestore(): { page: number; source: GallerySource | null }
   const sourceRaw = sessionStorage.getItem(GALLERY_RESTORE_SOURCE_KEY)
   if (pageRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_PAGE_KEY)
   if (sourceRaw != null) sessionStorage.removeItem(GALLERY_RESTORE_SOURCE_KEY)
-  const page = pageRaw != null ? Math.max(1, parseInt(pageRaw, 10) || 1) : 1
-  const source = sourceRaw === 'user' || sourceRaw === 'public' ? sourceRaw : null
+  // Fall back to URL query (?page=&source=) so paginated views are deep-linkable
+  // and survive reload / back-forward, not just intra-session restore.
+  const urlParams = new URLSearchParams(location.search)
+  const urlPage = urlParams.get('page')
+  const urlSource = urlParams.get('source')
+  const page =
+    pageRaw != null
+      ? Math.max(1, parseInt(pageRaw, 10) || 1)
+      : urlPage != null
+        ? Math.max(1, parseInt(urlPage, 10) || 1)
+        : 1
+  const source =
+    sourceRaw === 'user' || sourceRaw === 'public'
+      ? sourceRaw
+      : urlSource === 'user' || urlSource === 'public'
+        ? urlSource
+        : null
   return { page, source }
 }
 const GENERATION_LIMIT = 2
@@ -461,6 +477,7 @@ function normalizeLanguageCode(value: unknown): string {
   if (!v) return ''
   if (v === 'hinglish') return 'hinglish'
   if (/^[a-z]{2,8}-en$/.test(v)) return v
+  if (/^[a-z]{2,8}-latn$/.test(v)) return v
   return v.split(/[-_]/)[0]
 }
 
@@ -675,6 +692,8 @@ async function detectSnippetLanguageBcp47(fullText: string): Promise<string | nu
   const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
   const frenchFirst = preferFrenchCode3ForPrompt(snippet, 'und')
   if (frenchFirst === 'fra') return 'fr'
+  const fromRomanizedHint = preferRomanizedBcp47FromSnippet(fullText)
+  if (fromRomanizedHint) return fromRomanizedHint
   const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText)
   if (fromMixedHint) return fromMixedHint
   let franc: FrancFn | undefined
@@ -1653,25 +1672,54 @@ const updateGalleryPagination = (meta: GalleryMeta | null): void => {
   sessionPageNext.disabled = !showNext
 }
 
-sessionPagePrev?.addEventListener('click', async () => {
-  if (!galleryMeta?.hasPrev) return
-  const cur = Number(galleryMeta.page) || 1
-  const p = cur - 1
-  if (gallerySource === 'public') await loadRecentPublicSessions(p)
+// Reflect the active gallery page in the URL so pagination is observable,
+// deep-linkable and works with browser back/forward (page swaps in place via
+// fetch, so without this the URL never changes and a "Next" click looks inert).
+const syncGalleryUrl = (page: number, source: GallerySource): void => {
+  const params = new URLSearchParams()
+  if (page > 1) params.set('page', String(page))
+  if (source === 'user') params.set('source', 'user')
+  const qs = params.toString()
+  const url = qs ? `/?${qs}` : '/'
+  if (location.pathname + location.search !== url) {
+    history.pushState({ galleryPage: page, gallerySource: source }, '', url)
+  }
+}
+
+const goToGalleryPage = async (page: number): Promise<void> => {
+  if (gallerySource === 'public') await loadRecentPublicSessions(page)
   else if (gallerySource === 'user') {
-    userGalleryPage = p
+    userGalleryPage = page
     await loadUserSessionsPage()
   }
+  syncGalleryUrl(page, gallerySource)
+  // Keep the pagination controls in view so the updated page status is visible.
+  // Don't scroll the gallery top into view — that pushes the controls off screen
+  // and makes a successful page change look like nothing happened.
+  sessionPagination?.scrollIntoView({ block: 'nearest' })
+}
+
+sessionPagePrev?.addEventListener('click', () => {
+  if (!galleryMeta?.hasPrev) return
+  void goToGalleryPage((Number(galleryMeta.page) || 1) - 1)
 })
 
-sessionPageNext?.addEventListener('click', async () => {
+sessionPageNext?.addEventListener('click', () => {
   if (!galleryMeta?.hasNext) return
-  const cur = Number(galleryMeta.page) || 1
-  const p = cur + 1
-  if (gallerySource === 'public') await loadRecentPublicSessions(p)
-  else if (gallerySource === 'user') {
-    userGalleryPage = p
-    await loadUserSessionsPage()
+  void goToGalleryPage((Number(galleryMeta.page) || 1) + 1)
+})
+
+// Restore the gallery page when navigating browser history (back/forward).
+window.addEventListener('popstate', () => {
+  const params = new URLSearchParams(location.search)
+  const page = Math.max(1, parseInt(params.get('page') || '1', 10) || 1)
+  const source: GallerySource =
+    params.get('source') === 'user' && currentUser ? 'user' : 'public'
+  if (source === 'user') {
+    userGalleryPage = page
+    void loadUserSessionsPage()
+  } else {
+    void loadRecentPublicSessions(page)
   }
 })
 
@@ -1699,7 +1747,6 @@ getTypedElement<HTMLElement>('session-list')?.addEventListener('click', (event: 
     window.open(`/session/${id}`, '_blank', 'noopener,noreferrer')
     return
   }
-  if ((event.target as HTMLElement | null)?.closest('a[href]')) return
   if ((event.target as HTMLElement | null)?.closest('button')) return
   if (selectionSpansSessionItem(item)) return
   if (
@@ -1749,13 +1796,13 @@ function renderSessions(sessions: SessionItem[]): void {
   list.innerHTML = sessions
     .map(
       (session, index) => `
-        <li class="session-item" data-id="${session.id}">
+        <li class="session-item" data-id="${session.id}" role="button" tabindex="0" aria-label="View session: ${session.prompt.replace(/"/g, '&quot;')}">
           <div class="session-thumbnail">
             ${
               session.homepageReady
                 ? index < eagerThumbnailCount
-                  ? `<iframe src="/preview/${session.id}/" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                  : `<iframe data-src="/preview/${session.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                  ? `<iframe src="/preview/${session.id}/?gallery=1" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                  : `<iframe data-src="/preview/${session.id}/?gallery=1" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
                 : `<div class="session-placeholder">${placeholderSvg}</div>`
             }
             <div class="session-badges">

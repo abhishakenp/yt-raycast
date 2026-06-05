@@ -1323,38 +1323,26 @@
         ></textarea>
         <details class="new-prompt-design-ref">
           <summary class="new-prompt-design-ref-summary">
-            Optional layout inspiration (HTTPS links)
+            Clone a site (optional)
           </summary>
           <p class="new-prompt-design-ref-disclaimer">
-            Ship Fast creates original UI. Only add links you have rights to use for inspiration.
-            The generator does not load or screenshot pages—it uses your description, optional notes
-            below, and hints from each URL path only (not live content). References guide structure
-            and mood—not pixel-perfect copies.
+            Paste a URL to deeply clone its structure and visual styling. The system will crawl the site,
+            extract sections, and rebuild it with editable OpenUI components. Only clone sites you have
+            rights to use. Images and logos are downloaded as placeholders—replace them before publishing.
           </p>
-          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-1"
-            >Reference URL 1</label
+          <label class="new-prompt-design-ref-label" for="new-prompt-clone-url"
+            >Site URL to clone</label
           >
           <input
             class="new-prompt-design-ref-input"
             type="url"
-            id="new-prompt-ref-url-1"
+            id="new-prompt-clone-url"
             inputmode="url"
             autocomplete="off"
-            placeholder="https://"
-          />
-          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-2"
-            >Reference URL 2</label
-          >
-          <input
-            class="new-prompt-design-ref-input"
-            type="url"
-            id="new-prompt-ref-url-2"
-            inputmode="url"
-            autocomplete="off"
-            placeholder="https://"
+            placeholder="https://example.com"
           />
           <label class="new-prompt-design-ref-label" for="new-prompt-design-ref-notes"
-            >What to borrow (optional, max ~800 chars)</label
+            >Additional notes (optional, max ~800 chars)</label
           >
           <textarea
             class="new-prompt-design-ref-input"
@@ -1362,7 +1350,7 @@
             rows="2"
             maxlength="800"
             autocomplete="off"
-            placeholder="e.g. split hero, dense header nav, editorial product grid…"
+            placeholder="e.g. focus on the hero section and pricing table…"
           ></textarea>
         </details>
         <div
@@ -1492,6 +1480,12 @@
 
     <div id="auth-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
       <div class="auth-box">
+        <button class="auth-close-btn" id="auth-close-btn" type="button" aria-label="Close sign-in dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
         <div class="auth-logo">SHIP FAST</div>
         <p class="auth-title" id="auth-title">Sign in to continue</p>
         <button class="auth-btn" id="google-signin-btn" type="button" aria-label="Sign in with Google">

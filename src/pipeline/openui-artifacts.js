@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { HOME_OPENUI_FILE, OPENUI_MANIFEST_FILE, OPENUI_PAGES_DIR } from './openui-constants.js'
 import { slug, writeFile } from '@ship-fast/engine/pipeline/workspace.js'
+import { isTranslatableLocale } from '../config/languages.js'
 
 export function routeToOpenUIFile(route = '/') {
   const clean = String(route || '/').trim()
@@ -101,7 +102,7 @@ export function readSiteSpecLocale(workspace) {
   if (!existsSync(siteSpecPath)) return 'en'
   try {
     const siteSpec = JSON.parse(readFileSync(siteSpecPath, 'utf8'))
-    return typeof siteSpec?.locale === 'string' && siteSpec.locale.trim().length === 2
+    return typeof siteSpec?.locale === 'string' && isTranslatableLocale(siteSpec.locale)
       ? siteSpec.locale.trim().toLowerCase()
       : 'en'
   } catch {
