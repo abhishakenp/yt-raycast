@@ -38,9 +38,12 @@ export function usePexelsImage(alt: string | undefined, w = 800, h = 600, enable
 }
 
 /** Drop-in replacement for `<img>` that resolves a relevant Pexels image from `alt` text.
- *  Falls back to picsum while loading. Cached via React Query so identical alt text reuses the same URL. */
+ *  Falls back to picsum while loading. Cached via React Query so identical alt text reuses the same URL.
+ *  Pass an explicit `src` to use a pre-resolved URL verbatim (e.g. a photo already synced to Medusa),
+ *  bypassing Pexels resolution entirely so the UI and backend stay pixel-identical. */
 export function Image({
   alt,
+  src,
   w = 800,
   h = 600,
   className,
@@ -48,9 +51,24 @@ export function Image({
   ...rest
 }: {
   alt?: string
+  src?: string
   w?: number
   h?: number
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "alt" | "width" | "height">) {
+  const explicitSrc = typeof src === "string" && src.trim() ? src : null
+  if (explicitSrc) {
+    return (
+      <img
+        src={explicitSrc}
+        alt={alt}
+        width={w}
+        height={h}
+        className={className}
+        loading={loading}
+        {...rest}
+      />
+    )
+  }
   if (typeof window === "undefined") {
     return (
       <img
@@ -87,11 +105,11 @@ export function Image({
     return () => observer.disconnect()
   }, [isLazy, shouldResolvePexels])
 
-  const { data: src } = usePexelsImage(alt, w, h, shouldResolvePexels)
+  const { data: resolvedSrc } = usePexelsImage(alt, w, h, shouldResolvePexels)
   return (
     <img
       ref={imgRef}
-      src={src ?? picsum(alt, w, h)}
+      src={resolvedSrc ?? picsum(alt, w, h)}
       alt={alt}
       width={w}
       height={h}

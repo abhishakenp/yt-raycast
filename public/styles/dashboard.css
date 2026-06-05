@@ -3751,6 +3751,28 @@ body.debug-mode .debug-panel {
   font-weight: 600;
   color: #ededef;
 }
+.preview-chat-medusa-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.preview-chat-medusa-sync {
+  border: 1px solid rgba(139, 92, 246, 0.45);
+  background: rgba(139, 92, 246, 0.14);
+  color: #f5f3ff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.preview-chat-medusa-sync:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.22);
+}
+.preview-chat-medusa-sync:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
 .preview-chat-medusa-open-link {
   font-size: 12px;
   color: #8a8f98;

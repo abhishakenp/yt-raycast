@@ -535,14 +535,23 @@
                     >
                       <div class="preview-chat-medusa-toolbar">
                         <span class="preview-chat-medusa-title">Products (Medusa)</span>
-                        <a
-                          class="preview-chat-medusa-open-link"
-                          id="preview-chat-medusa-open-link"
-                          href="#"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          >Open in new tab</a
-                        >
+                        <div class="preview-chat-medusa-actions">
+                          <button
+                            class="preview-chat-medusa-sync"
+                            type="button"
+                            data-cms-medusa-sync
+                          >
+                            Apply to preview
+                          </button>
+                          <a
+                            class="preview-chat-medusa-open-link"
+                            id="preview-chat-medusa-open-link"
+                            href="#"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            >Open in new tab</a
+                          >
+                        </div>
                       </div>
                       <iframe
                         class="preview-chat-medusa-frame"
@@ -554,14 +563,8 @@
                         class="preview-chat-cms-note preview-chat-cms-note--medusa"
                         id="preview-chat-medusa-footnote"
                       >
-                        Commerce API and admin UI are served by your Medusa process (
-                        <code class="preview-chat-cms-studio-unbuilt-code">bun run medusa:dev</code>
-                        in
-                        <code class="preview-chat-cms-studio-unbuilt-code">medusa-backend</code>).
-                        Ensure
-                        <code class="preview-chat-cms-studio-unbuilt-code">ADMIN_CORS</code> /
-                        <code class="preview-chat-cms-studio-unbuilt-code">AUTH_CORS</code> include
-                        this origin if login fails.
+                        Save product changes in Medusa Admin, then apply them to refresh this
+                        session’s generated preview.
                       </p>
                     </div>
                     <div

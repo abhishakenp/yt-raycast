@@ -70,6 +70,7 @@ export const EcommerceKimiPage2 = defineComponent({
               brand: z.string().optional(),
               name: z.string(),
               alt: z.string(),
+              image: z.string().optional(),
               price: z.string(),
               oldPrice: z.string().optional(),
               badge: z.string().optional(),
@@ -646,6 +647,7 @@ export const EcommerceKimiPage2 = defineComponent({
                       </button>
                       <Image
                         alt={product.alt}
+                        src={product.image}
                         w={400}
                         h={400}
                         loading="lazy"

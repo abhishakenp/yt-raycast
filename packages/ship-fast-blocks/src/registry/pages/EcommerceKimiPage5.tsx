@@ -37,6 +37,7 @@ export const EcommerceKimiPage5 = defineComponent({
         z.object({
           title: z.string(),
           alt: z.string(),
+          image: z.string().optional(),
           caption: z.string().optional(),
         }),
       )
@@ -244,7 +245,7 @@ export const EcommerceKimiPage5 = defineComponent({
             <div className="grid gap-5 md:grid-cols-3">
               {gallery.map((item) => (
                 <article key={item.title} className="overflow-hidden rounded-lg border border-border bg-card">
-                  <Image alt={item.alt} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                  <Image alt={item.alt} src={item.image} w={900} h={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
                   <div className="p-5">
                     <h3 className="text-lg font-semibold text-card-foreground">{item.title}</h3>
                     {item.caption ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.caption}</p> : null}
