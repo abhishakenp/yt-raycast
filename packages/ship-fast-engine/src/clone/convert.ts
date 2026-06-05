@@ -67,6 +67,72 @@ function sanitizeHtml(html: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Link-list extraction (structural — no DOM, no hostname/slug knowledge)
+//
+// A flat link-hub body (e.g. info.cern.ch: <h1> + a bare <ul><li><a>…</a></li>
+// list) is the page's irreplaceable primary content. segment.ts already
+// classifies such a body as kind "content" via isLinkListRegion. The LLM
+// conversion drops or collapses these anchors unless the prompt is given an
+// EXPLICIT, ORDERED inventory of every anchor label and a hard per-anchor
+// coverage directive. These helpers build that inventory from the raw section
+// HTML so the prompt can demand one node per anchor, in source order.
+// ---------------------------------------------------------------------------
+
+// Strip tags and decode the handful of entities that appear in visible anchor
+// text, then collapse whitespace. Visible label only — never the href.
+function visibleText(htmlFragment: string): string {
+  return (htmlFragment || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+// Every anchor's VISIBLE label text, in document order, de-duplicated only for
+// exact repeats (the same nav link appearing twice keeps a single entry).
+// Source-structure driven: a plain regex sweep over <a>…</a>, no per-site logic.
+function extractAnchorLabelsInOrder(html: string): string[] {
+  const labels: string[] = []
+  const seen = new Set<string>()
+  for (const m of (html || "").matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)) {
+    const label = visibleText(m[1])
+    if (label.length < 1) continue
+    const key = label.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    labels.push(label)
+  }
+  return labels
+}
+
+// First heading's visible text (h1..h6, in order), used to forbid the model
+// from synthesizing a SECOND copy of a title the section already carries.
+function firstHeadingText(html: string): string {
+  const m = (html || "").match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/i)
+  return m ? visibleText(m[1]) : ""
+}
+
+// True when the section body is dominated by a list of links — mirrors
+// segment.ts's isLinkListRegion but on the raw HTML string (convert.ts has no
+// DOM). >=3 anchors AND either they sit in list rows (<li>/<dt>/<dd>) or their
+// combined visible text is the bulk of the block's text. Purely structural.
+function isLinkListHtml(html: string): boolean {
+  const source = html || ""
+  const anchorMatches = [...source.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)]
+  if (anchorMatches.length < 3) return false
+  let anchorTextLen = 0
+  for (const a of anchorMatches) anchorTextLen += visibleText(a[1]).length
+  const listRows = (source.match(/<(?:li|dt|dd)\b/gi) || []).length
+  const totalTextLen = visibleText(source).length || 1
+  return listRows >= 3 || anchorTextLen / totalTextLen >= 0.5
+}
+
+// ---------------------------------------------------------------------------
 // Prompt construction
 // ---------------------------------------------------------------------------
 
@@ -77,6 +143,25 @@ function buildConversionPrompt(
   const system = filteredSystemPrompt(ALWAYS_INCLUDE)
   const sanitizedHtml = sanitizeHtml(section.html)
   const sectionVar = `section_${section.kind}_${section.startIndex}`
+
+  // Structural augmentation for link-hub / index bodies. When the section is a
+  // dense list of anchors (a flat link hub, a blog/archive index, a hyperlinked
+  // docs body), the model routinely drops or collapses the list. Hand it an
+  // EXPLICIT, NUMBERED inventory of every anchor label in source order so the
+  // omission is unambiguous and verifiable. Keyed on structure only.
+  const anchorLabels = isLinkListHtml(section.html)
+    ? extractAnchorLabelsInOrder(sanitizeHtml(section.html))
+    : []
+  const headingText = firstHeadingText(sanitizeHtml(section.html))
+  const linkInventoryBlock =
+    anchorLabels.length > 0
+      ? `\nLINK INVENTORY — this section is a LINK LIST. The following ${anchorLabels.length} anchors appear in the UNTRUSTED block, in this exact order. You MUST emit EVERY one as its own Button(label, "link") node, in this order, with the label VERBATIM. Emitting fewer than ${anchorLabels.length} link nodes is a HARD FAILURE:\n${anchorLabels
+          .map((label, i) => `  ${i + 1}. ${label}`)
+          .join("\n")}\n`
+      : ""
+  const headingDedupBlock = headingText
+    ? `\nPAGE TITLE (emit EXACTLY ONCE): the section's heading is "${headingText}". Emit it as a single Heading node. Do NOT synthesize a second heading/title with this same text anywhere in the program — one and only one node may carry it.\n`
+    : ""
 
   const user = `You convert a scraped HTML section into an OpenUI-Lang composition.
 
@@ -100,7 +185,7 @@ Use theme TOKEN CLASSES (so the clone is themeable) — never raw hex colors:
 ${UNTRUSTED_FENCE}
 ${sanitizedHtml}
 ${UNTRUSTED_FENCE}
-
+${linkInventoryBlock}${headingDedupBlock}
 Rules:
 1. Use ONLY these primitives: ${ALWAYS_INCLUDE.join(", ")}.
 2. Compose them to match the visual structure of the section above.
@@ -109,13 +194,19 @@ Rules:
    - every heading (h1-h6) as a Heading node,
    - every paragraph / intro / body sentence as a Text node,
    - EVERY list item (<li>) as its own node — exactly ONE node per <li>,
-   - every link (<a>) and button as a Button node using its visible label.
+   - EVERY link (<a>) and button as its own Button node using its VISIBLE label,
+     in SOURCE ORDER — if a LINK INVENTORY is given above, you must emit one
+     Button per numbered entry, none skipped, none merged, none reordered.
    Do NOT drop the paragraph, the bulleted list, or the "Learn more"/anchor links.
    It is a FAILURE to emit only the title and discard the rest of the copy.
-   Before finishing, re-scan the UNTRUSTED block: every <li>, <a>, and <p> above
-   MUST have a corresponding node below. Missing any is a FAILURE.
+   Before finishing, re-scan the UNTRUSTED block (and the LINK INVENTORY if
+   present): every <li>, <a>, and <p> above MUST have a corresponding node
+   below, in the original order. Missing or collapsing any is a HARD FAILURE.
 5. NO DUPLICATION. Each distinct piece of content appears EXACTLY ONCE:
-   - emit each heading at most once (never two H1s of the same text),
+   - emit each heading at most once (never two H1s of the same text); the
+     page/section title from the UNTRUSTED block must appear in EXACTLY ONE
+     Heading node. Do NOT also synthesize a separate title/heading that repeats
+     it — no second "title" line, no echoed page name. Same text twice = FAILURE.
    - if a list row is "lead text + a link" (e.g. a date followed by a titled
      anchor), emit it as a SINGLE row — one Text for the lead AND one Button for
      the link inside ONE Stack(...,"row","sm"); do NOT also emit the title as a

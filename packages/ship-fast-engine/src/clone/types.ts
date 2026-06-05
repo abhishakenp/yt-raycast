@@ -36,6 +36,9 @@ export interface ClonedPage {
   screenshot?: string // base64 or path
   failed: boolean
   error?: string
+  // Normalized URLs of anchors inside the home page's nav/header landmark sections
+  // (= real site navigation). Populated on the home page. Optional/may be empty.
+  navLinks?: string[]
 }
 
 export interface PageGraphNode {

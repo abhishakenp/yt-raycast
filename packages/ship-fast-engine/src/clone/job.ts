@@ -2,7 +2,7 @@ import type { ClonedPage, CloneOptions, CloneResult, ExtractedTokens, ClonedSect
 import { crawlSite, normalizeUrl } from "./crawler.ts"
 import { capturePages } from "./capture.ts"
 import type { CapturedPageWithShots } from "./capture.ts"
-import { segmentPage } from "./segment.ts"
+import { segmentPage, extractPageNavLinks } from "./segment.ts"
 import type { Section } from "./segment.ts"
 import { dedupSections, applyDedup, hashSection } from "./dedup.ts"
 import { extractTokens } from "./tokens.ts"
@@ -125,6 +125,46 @@ export async function cloneSite(
     for (const captured of rawCapturedPages.values()) {
       const key = captured.normalizedUrl || normalizeUrl(captured.url)
       if (!capturedPages.has(key)) capturedPages.set(key, captured)
+    }
+
+    // REAL SITE-NAVIGATION LINK SET (home page only). Extract anchors inside the
+    // home page's nav/header LANDMARK regions — the genuine site navigation —
+    // resolve each to absolute against the home URL, normalize to the canonical
+    // key space, keep only SAME-DOMAIN entries (a nav tab must be an internal page),
+    // and dedupe. The assembler builds PageSwitch tabs from THIS set, not from
+    // arbitrary in-content links. Structural only: landmarks + anchors + same-domain,
+    // no per-site branches. Computed once here so it threads onto the home ClonedPage.
+    const homeNavLinks: string[] = []
+    {
+      const homeCaptured = homeUrl ? capturedPages.get(homeUrl) : undefined
+      if (homeUrl && homeCaptured) {
+        let homeHost = ""
+        try {
+          homeHost = new URL(normalizeUrl(homeUrl)).hostname
+        } catch {
+          homeHost = ""
+        }
+        const seenNav = new Set<string>()
+        for (const rawHref of extractPageNavLinks(homeCaptured)) {
+          let normalized: string
+          try {
+            normalized = normalizeUrl(new URL(rawHref, homeUrl).toString())
+          } catch {
+            continue
+          }
+          // Same-domain only (mirrors crawler.isSameDomain: compare normalized hosts).
+          let targetHost = ""
+          try {
+            targetHost = new URL(normalized).hostname
+          } catch {
+            continue
+          }
+          if (!homeHost || targetHost !== homeHost) continue
+          if (seenNav.has(normalized)) continue
+          seenNav.add(normalized)
+          homeNavLinks.push(normalized)
+        }
+      }
     }
 
     // Phase 3: Segment each page + extract tokens + download assets.
@@ -312,6 +352,9 @@ export async function cloneSite(
         title: `Cloned: ${url}`,
         sections: converted,
         failed: false,
+        // Real site-nav set on the HOME page only; left undefined elsewhere so the
+        // assembler builds PageSwitch tabs from genuine nav, not in-content links.
+        ...(url === homeUrl ? { navLinks: homeNavLinks } : {}),
       }
     }
 
@@ -349,6 +392,7 @@ export async function cloneSite(
           sections: fallbackSections,
           failed: true,
           error: msg,
+          ...(url === homeUrl ? { navLinks: homeNavLinks } : {}),
         })
         onEvent?.({ type: "page_complete", pageUrl: url })
       }
