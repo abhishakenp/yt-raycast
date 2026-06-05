@@ -29,6 +29,36 @@ export type PublicGallerySessionSummary = {
   homepageReady?: boolean
 }
 
+export type GalleryPageMeta = Omit<PublicGalleryPayload, 'items'>
+
+const positiveInt = (value: unknown, fallback: number): number => {
+  const n = Number(value)
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback
+}
+
+const nonNegativeInt = (value: unknown, fallback: number): number => {
+  const n = Number(value)
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback
+}
+
+export const normalizeGalleryMeta = (
+  raw: Partial<GalleryPageMeta> | null | undefined,
+): GalleryPageMeta => {
+  const limit = positiveInt(raw?.limit, GALLERY_PAGE_SIZE)
+  const total = nonNegativeInt(raw?.total, 0)
+  const totalPages = Math.max(1, positiveInt(raw?.totalPages, Math.ceil(total / limit) || 1))
+  const page = Math.min(positiveInt(raw?.page, 1), totalPages)
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages,
+    hasPrev: page > 1,
+    hasNext: page < totalPages,
+  }
+}
+
 export const fetchPublicGalleryPage = async (page: number): Promise<PublicGalleryFetchResult> => {
   const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
   if (!r.ok) throw new Error('recent-sessions')

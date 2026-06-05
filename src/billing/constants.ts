@@ -44,18 +44,12 @@ export const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
 const rawWhitelist = process.env.WHITELISTED_IPS || ''
 export const WHITELISTED_IPS = rawWhitelist ? rawWhitelist.split(',').map((ip) => ip.trim()) : []
 
-console.log('[Whitelist Init] WHITELISTED_IPS env var:', process.env.WHITELISTED_IPS)
-console.log('[Whitelist Init] Parsed whitelist:', WHITELISTED_IPS)
-
 /**
  * Check if an IP address is whitelisted from rate limiting
  */
 export function isIpWhitelisted(ip: string | null | undefined): boolean {
   if (!ip) {
-    console.log('[Whitelist Check] No IP provided')
     return false
   }
-  const isWhitelisted = WHITELISTED_IPS.includes(ip)
-  console.log('[Whitelist Check] IP:', ip, 'Whitelisted:', isWhitelisted, 'Whitelist list:', WHITELISTED_IPS)
-  return isWhitelisted
+  return WHITELISTED_IPS.includes(ip)
 }
