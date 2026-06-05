@@ -57,6 +57,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@sanity/client": "^7.21.0",
+    "@ship-fast/aeo": "workspace:*",
     "@ship-fast/blocks": "workspace:*",
     "@ship-fast/engine": "workspace:*",
     "@tanstack/query-async-storage-persister": "^5.101.0",

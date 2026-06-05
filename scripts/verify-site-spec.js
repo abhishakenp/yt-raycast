@@ -1,3 +1,4 @@
+import { enrichSiteSpecAeo, siteSpecPassesAeoAudit } from '@ship-fast/aeo'
 import { buildFallbackSiteSpec, normalizeSiteSpec, validateSiteSpec } from '@ship-fast/engine/spec/index.js'
 import { renderProject } from '@ship-fast/engine/renderers/index.js'
 
@@ -123,4 +124,18 @@ if (!htmlExactClone['index.html']?.includes('data-exact-clone="true"')) {
   process.exit(1)
 }
 
-console.log('Site spec validation and renderer verification passed.')
+const enrichedSpec = enrichSiteSpecAeo(spec, spec.userPrompt)
+const homePage = enrichedSpec.pages?.find((page) => page.route === '/')
+if (!homePage?.sections?.some((section) => section.type === 'direct-answer')) {
+  console.error('AEO enrichment failed to add a direct-answer section on the home page.')
+  process.exit(1)
+}
+
+const aeoAudit = siteSpecPassesAeoAudit(enrichedSpec)
+if (!aeoAudit.ok) {
+  console.error('AEO audit failed:')
+  for (const issue of aeoAudit.errors) console.error(`- [${issue.code}] ${issue.message}`)
+  process.exit(1)
+}
+
+console.log('Site spec validation, renderer verification, and AEO checks passed.')

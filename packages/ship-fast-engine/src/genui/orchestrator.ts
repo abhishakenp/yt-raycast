@@ -118,7 +118,8 @@ Rules:
 - "theme": ONE theme NAME copied EXACTLY from the THEMES list, whose vibe matches the brand and request (e.g. a luxury restaurant -> "elegant-luxury", a dev tool -> "vercel" or "supabase", a kids site -> "candyland").
 - "locale": The ISO 639-1 language code matching the language of the build request (e.g. "en" for English, "hi" for Hindi, "ne" for Nepali, "es" for Spanish, "fr" for French, "ja" for Japanese). Default to "en" if the request is in English or you cannot determine the language. For a ROMANIZED / Latin-script version of an Indian language — pure language in Latin letters (e.g. "roman hindi", "romanized nepali", "hindi in english letters") — append "-latn" to the base code: hi-latn, ne-latn, mr-latn. For a CODE-MIX (the language blended WITH English words) use: "hinglish" for Hindi+English, or "<base>-en" for others (e.g. "tanglish"/"tamil english mix" → ta-en, "marathi english mix" → mr-en). "hinglish" is a code-mix, NOT the same as romanized "hi-latn".
 - Labels are short nav words (Home, Features, Pricing, About, Contact, Shop, Work, Menu, Blog …).
-- brand, tagline and briefs must be specific to the request.`
+- brand, tagline and briefs must be specific to the request.
+- Home/landing pages should support answer-engine optimization: clear product definition, target audience, benefits, and realistic FAQ-style copy where the chosen block supports it.`
 }
 
 const isKnownBlock = (name: unknown): boolean =>
@@ -263,6 +264,8 @@ ${page.id} = ${page.block}({...props})
 Rules:
 - Fill EVERY content field of ${page.block}'s signature with rich, specific, on-prompt copy and data — no placeholders, no lorem ipsum, no "Item 1".
 - The first two arguments MUST be exactly ${JSON.stringify(brand)} then ${navJson} (verbatim).
+- Use semantic, intent-shaped copy: one clear value proposition, a concise direct-answer style overview near the top when the page is home/landing, realistic FAQ items when the block includes them, and specific benefits/use cases instead of generic "Welcome" headings.
+- Mention brand name, what the product does, who it is for, and key benefits naturally in the visible copy.
 - Write numbers/currency PLAINLY ($48 or 1,245) — never LaTeX or markdown.
 - NO styling, NO image src, NO urls, NO className. The block owns all design, images, and nav wiring.
 - Output openui-lang only. No markdown, no code fences, no extra statements.`

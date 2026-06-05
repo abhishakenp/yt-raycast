@@ -75,7 +75,18 @@ export function renderGeneratedSiteLlmsTxt(siteSpec) {
     const seo = resolvePageSeo(siteSpec, page)
     const route = normalizePath(page.route || '/')
     const href = siteUrl ? joinUrl(siteUrl, route) : route
-    const note = String(seo.description || page.description || page.title || '').trim().slice(0, 240)
+    const aeoBits = [
+      page?.aeo?.objective,
+      page?.aeo?.targetIntent ? `Intent: ${page.aeo.targetIntent}` : '',
+      Array.isArray(page?.aeo?.suggestedQueries) && page.aeo.suggestedQueries.length
+        ? `Queries: ${page.aeo.suggestedQueries.slice(0, 4).join('; ')}`
+        : '',
+    ].filter(Boolean)
+    const note = [seo.description || page.description || page.title || '', ...aeoBits]
+      .filter(Boolean)
+      .join(' ')
+      .trim()
+      .slice(0, 320)
     section.push(llmsLine(String(page.name || page.title || route).trim() || 'Page', href, note))
   }
 

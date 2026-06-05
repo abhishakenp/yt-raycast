@@ -131,6 +131,8 @@ export function siteSpecPrompt({
       `      "title": "string",\n` +
       `      "description": "string",\n` +
       `      "seo": { "title": "string", "description": "string", "keywords": ["string"], "canonicalPath": "/string", "canonicalUrl": "", "ogImage": "", "ogImageAlt": "", "noIndex": false },\n` +
+      `      "aeo": { "objective": "string", "targetIntent": "string", "suggestedQueries": ["string"], "entitySignals": { "brandName": "string", "category": "string", "audience": "string", "useCases": ["string"], "benefits": ["string"], "differentiators": ["string"], "contact": { "email": "", "phone": "", "location": "" } } },\n` +
+      `      "breadcrumbs": [{ "label": "string", "href": "/string" }],\n` +
       `      "layoutType": "marketing|app-shell|editorial",\n` +
       `      "sections": [\n` +
       `        {\n` +
@@ -172,8 +174,12 @@ export function siteSpecPrompt({
       `- For public marketing sites, prefer Home plus 2-4 meaningful secondary pages unless the user explicitly requests a single-page site.\n` +
       `- Secondary pages should be internally linkable through navigation, footer links, or CTAs.\n` +
       `- Homepage copy should support SEO with a clear product headline, descriptive supporting copy, and at least one FAQ section when relevant.\n` +
+      `- AEO structure (MANDATORY for public marketing/home pages): include a direct-answer section immediately after hero/nav with a concise first-paragraph answer to "what is this?" and who it serves; avoid generic headings like "Welcome".\n` +
+      `- Populate page.aeo on every indexable page with objective, targetIntent, suggestedQueries (3-6 natural-language queries), and entitySignals (brandName, category, audience, useCases, benefits, differentiators, contact when known).\n` +
+      `- Use intent-shaped section headings and include use-cases, how-it-works, comparison, or who-for sections when they help answer buyer questions for the site kind.\n` +
+      `- Software/SaaS sites should read as a product with clear benefits and differentiators; ecommerce product pages should support Product schema with concrete product copy.\n` +
       `- Use clean title patterns: homepage as "Project Name | Core benefit" and secondary pages as "Topic | Project Name" or "Project Name Topic | Benefit". Avoid keyword stuffing.\n` +
-      `- When you include FAQ content, write realistic buyer or user questions rather than placeholder copy.\n` +
+      `- When you include FAQ content, write realistic buyer or user questions rather than placeholder copy (5-8 items on home or dedicated /faq when relevant).\n` +
       `- When verified brand details are provided, use them for logo/contact/footer/social sections and keep those fields exact.\n` +
       `- Do not invent physical addresses or phone numbers in contact/footer; omit them if not in the prompt or brand block.\n` +
       `- Do not put generator/tool branding strings in any page content.\n` +
