@@ -5,6 +5,7 @@ import { renderPreviewToWorkspace, writeStreamingShellToWorkspace } from '../ren
 import { saveSiteSpec } from '../spec/index.ts'
 // @ts-ignore - JS module without type definitions
 import { preferRomanizedBcp47FromSnippet, preferMixedEnglishBcp47FromSnippet } from '../config/languages.js'
+import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
 const OPENUI_PAGES_DIR = 'pages'
@@ -146,8 +147,14 @@ export async function generateAndWriteOpenUIHome(p: {
       ctx?.broadcast?.({ type: 'openui_stream_start', route })
       ctx?.signalHomepageReady?.()
     }
-    console.log('[Server] Broadcasting openui_stream_chunk, source length:', accumulated.length)
-    ctx?.broadcast?.({ type: 'openui_stream_chunk', route, source: accumulated })
+    
+    // Server-side render OpenUI to HTML before sending to client
+    const currentTheme = themeName || specThemeName || 'modern-minimal'
+    const currentLocale = localeName || 'en'
+    const { html } = renderOpenUIToHTMLWithTheme(accumulated, null, currentLocale, null)
+    
+    console.log('[Server] Broadcasting openui_stream_chunk as HTML, length:', html.length)
+    ctx?.broadcast?.({ type: 'openui_stream_chunk', route, html: html, source: accumulated })
   }
 
   const result = await runHomepageOrchestrator({
@@ -183,7 +190,18 @@ export async function generateAndWriteOpenUIHome(p: {
   const ms = Date.now() - startedAt
 
   console.log('[Server] Broadcasting openui_stream_done, source length:', source.length)
-  ctx?.broadcast?.({ type: 'openui_stream_done', route, source, locale })
+  
+  // Server-side render final HTML
+  const { html: finalHtml, cssVars: themeCssVars } = renderOpenUIToHTMLWithTheme(source, null, locale, null)
+  
+  ctx?.broadcast?.({ 
+    type: 'openui_stream_done', 
+    route, 
+    source, 
+    html: finalHtml,
+    cssVars: themeCssVars,
+    locale 
+  })
   ctx?.broadcast?.({ type: 'preview_reload', at: Date.now() })
   p.sessionCtx?.signalOpenuiReady?.()
   log(`  genui: ${source.length} chars, theme=${theme}, locale=${locale} in ${(ms / 1000).toFixed(1)}s`)

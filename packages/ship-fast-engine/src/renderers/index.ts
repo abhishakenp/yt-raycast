@@ -4,6 +4,8 @@ import { resolveThemeStyles, THEME_CATALOG } from '@ship-fast/blocks'
 import type { SiteSpecProject } from '../spec/index.ts'
 import type { ExtractedTokens } from '../clone/types.ts'
 import { looksSerif } from '../clone/tokens.ts'
+// @ts-ignore - JS module without type definitions
+import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
 
@@ -318,12 +320,11 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
     return null
   }
   if (!source.trim()) return null
-  // Client-rendered preview (faithful to the original engine): emit a host shell
-  // carrying the per-site theme variables; the OpenUI island (OpenUIPreviewClient
-  // -> OpenUIViewer) fetches the generated program (authorized via the anon-owner
-  // secret in localStorage) and renders the rich KimiPage blocks in the BROWSER,
-  // where their hooks/effects work and PageSwitch enables multi-page navigation.
+
+  // Server-side render the OpenUI to HTML for instant loading in gallery
   const themeHead = buildThemeHead(`${brand}\n${source}`, readSiteThemeName(workspace))
+  const { html, cssVars } = renderOpenUIToHTMLWithTheme(source, null, 'en', null)
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -332,10 +333,14 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
   <title>${escapeHtml(brand)} - Preview</title>
   <script src="/scripts/tailwind-browser.js"></script>
 ${themeHead}
+  <style>
+    #openui-root {
+      ${cssVars || ''}
+    }
+  </style>
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root"></div>
-  <script type="module" src="/scripts/openui-island.js"></script>
+  <div id="openui-root">${html}</div>
 </body>
 </html>`
 }
@@ -598,7 +603,7 @@ ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
   <div id="openui-root"></div>
-  <script type="module" src="/scripts/openui-island.js"></script>
+  <script src="/scripts/openui-preview-client.js"></script>
 </body>
 </html>`
   writeRenderedFiles(workspace, { 'index.html': html })

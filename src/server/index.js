@@ -1,5 +1,6 @@
 import { createServer as createHttpServer } from 'node:http'
 import { extname, join } from 'node:path'
+import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import express from 'express'
 import {
@@ -49,6 +50,8 @@ import {
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
 import { readOpenUIFileForRoute, readSiteSpecThemeColors, readSiteSpecLocale } from '../pipeline/openui-artifacts.js'
+import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
+import { buildThemeHeadFromTokens } from '@ship-fast/engine/renderers/index.js'
 import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
@@ -1201,10 +1204,19 @@ export async function startServer(sessionsDir) {
             } else if (event.type === 'module') {
               if (!shellWritten) continue
               emittedModules.push({ id: event.id, text: event.text })
+              const progressiveSource = buildProgressiveSource()
+              const { html: chunkHtml, cssVars: chunkCssVars } = renderOpenUIToHTMLWithTheme(
+                progressiveSource,
+                cloneTheme.colors || null,
+                'en',
+                null,
+              )
               sessionCtx?.broadcast({
                 type: 'openui_stream_chunk',
                 route,
-                source: buildProgressiveSource(),
+                html: chunkHtml,
+                cssVars: chunkCssVars,
+                source: progressiveSource,
               })
             } else if (event.type === 'source') {
               fullSource = event.text
@@ -1231,10 +1243,26 @@ export async function startServer(sessionsDir) {
             modules: { home: fullSource },
             themeHead,
           })
+          try {
+            renderPreviewToWorkspace(
+              { brand, tagline: '', theme: cloneTheme, locale: 'en', skeleton: '', modules: { home: fullSource } },
+              session.workspace,
+            )
+          } catch (bakeErr) {
+            console.error('[clone] bake index.html failed:', bakeErr)
+          }
+          const { html: doneHtml, cssVars: doneCssVars } = renderOpenUIToHTMLWithTheme(
+            fullSource,
+            cloneTheme.colors || null,
+            'en',
+            null,
+          )
           sessionCtx?.broadcast({
             type: 'openui_stream_done',
             route,
             source: fullSource,
+            html: doneHtml,
+            cssVars: doneCssVars,
             locale: 'en',
           })
           sessionCtx?.broadcast({ type: 'preview_reload', at: Date.now() })
@@ -1372,6 +1400,82 @@ export async function startServer(sessionsDir) {
     const paginated = paginateGalleryList(all, page, limit)
     res.set('Cache-Control', 'public, max-age=20, stale-while-revalidate=120')
     res.json(paginated)
+  })
+
+  // ─── API: Gallery with embedded preview HTML (single request) ──
+  app.get('/api/gallery', async (req, res) => {
+    const all = getPublicGalleryList()
+    const { limit, page } = parseGalleryPagination(req.query)
+    const paginated = paginateGalleryList(all, page, limit)
+
+    // Render preview HTML dynamically for each item in the paginated result
+    const itemsWithHtml = await Promise.all(
+      paginated.items.map(async (item) => {
+        const session = getSession(item.id)
+        if (!session) {
+          console.log(`[Gallery] Session not found: ${item.id}`)
+          return { ...item, html: null }
+        }
+
+        // Try to read home.openui and SSR it
+        const openuiPath = join(session.workspace, 'home.openui')
+        if (existsSync(openuiPath)) {
+          try {
+            const source = readFileSync(openuiPath, 'utf8')
+            if (source.trim()) {
+              const theme = readSiteSpecThemeColors(session.workspace)
+              const locale = readSiteSpecLocale(session.workspace)
+              const { html } = renderOpenUIToHTMLWithTheme(source, theme, locale, null)
+
+              const siteSpec = loadSiteSpec(session.workspace)
+              const themeHead = siteSpec?.theme?.colors
+                ? buildThemeHeadFromTokens(siteSpec.theme.colors, siteSpec.brand || 'Preview')
+                : ''
+
+              const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview</title>
+  <script src="/scripts/tailwind-browser.js"></script>
+${themeHead}
+</head>
+<body class="min-h-screen bg-background text-foreground">
+  <div id="openui-root">${html}</div>
+</body>
+</html>`
+
+              return { ...item, html: fullHtml }
+            }
+          } catch (error) {
+            console.error(`[Gallery] Failed to SSR home.openui for session ${item.id}:`, error)
+          }
+        }
+
+        // Fall back to reading index.html for older sessions
+        const htmlPath = join(session.workspace, 'index.html')
+        if (!existsSync(htmlPath)) {
+          console.log(`[Gallery] No index.html for session ${item.id}`)
+          return { ...item, html: null }
+        }
+
+        try {
+          const html = readFileSync(htmlPath, 'utf8')
+          const rewrittenHtml = rewriteTailwindCdn(html)
+          return { ...item, html: rewrittenHtml }
+        } catch (error) {
+          console.error(`[Gallery] Failed to read index.html for session ${item.id}:`, error)
+          return { ...item, html: null }
+        }
+      })
+    )
+
+    res.set('Cache-Control', 'public, max-age=20, stale-while-revalidate=120')
+    res.json({
+      ...paginated,
+      items: itemsWithHtml,
+    })
   })
 
   // ─── API: Claim anonymous sessions ─────────────────────────
@@ -1513,6 +1617,55 @@ export async function startServer(sessionsDir) {
     if (!ensureSessionArtifactAccess(req, res, session)) return
     const palette = readPalette(session.workspace)
     res.json({ palette: palette || null })
+  })
+
+  app.get('/api/sessions/:id/pages', optionalAuth, (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensureSessionArtifactAccess(req, res, session)) return
+    
+    try {
+      const siteSpecPath = join(session.workspace, 'site-spec.json')
+      let pages = []
+      
+      if (existsSync(siteSpecPath)) {
+        const siteSpec = JSON.parse(readFileSync(siteSpecPath, 'utf-8'))
+        
+        // First try traditional pages array
+        if (Array.isArray(siteSpec.pages)) {
+          pages = siteSpec.pages.map((page) => ({
+            id: page.id || page.name,
+            name: page.name || page.title || 'Untitled',
+            route: page.route || '/',
+          }))
+        } 
+        // Then try OpenUI PageSwitch format
+        else if (siteSpec.modules && siteSpec.modules.home) {
+          const homeModule = siteSpec.modules.home
+          // Parse PageSwitch structure: PageSwitch(["Home","Services","News","FAQ"], [home, p1, p2, p3])
+          const pageSwitchMatch = homeModule.match(/PageSwitch\(\[(.*?)\]/s)
+          if (pageSwitchMatch) {
+            const pageNamesStr = pageSwitchMatch[1]
+            // Parse the array of page names
+            const pageNames = pageNamesStr
+              .split(',')
+              .map(name => name.trim().replace(/"/g, ''))
+              .filter(Boolean)
+            
+            pages = pageNames.map((name, index) => ({
+              id: `page-${index}`,
+              name: name,
+              route: index === 0 ? '/' : `/${name.toLowerCase().replace(/\s+/g, '-')}`,
+            }))
+          }
+        }
+      }
+      
+      res.json({ pages })
+    } catch (error) {
+      console.error('[Pages API] Error reading site spec:', error)
+      res.json({ pages: [] })
+    }
   })
 
   app.get('/api/sessions/:id/chat', optionalAuth, async (req, res) => {

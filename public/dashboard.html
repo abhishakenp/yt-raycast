@@ -119,6 +119,28 @@
           <div class="browser-toolbar">
             <button
               type="button"
+              class="preview-tool-btn"
+              id="file-tree-toggle-btn"
+              data-tip="File tree · view pages"
+              aria-label="Toggle file tree"
+            >
+              <svg
+                class="preview-tool-icon"
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H13L11 5H5C3.89543 5 3 5.89543 3 7Z" />
+              </svg>
+            </button>
+            <button
+              type="button"
               class="preview-toolbar-home"
               onclick="navigateHome(event)"
               data-tip="Abort launch · return to base"
@@ -1556,6 +1578,247 @@
 
     <canvas class="particles-canvas" id="particles-canvas"></canvas>
 
+    <!-- ─── File Tree Drawer Script ─── -->
+    <script>
+      (function() {
+        const drawer = document.getElementById('file-tree-drawer');
+        const overlay = document.getElementById('file-tree-overlay');
+        const toggleBtn = document.getElementById('file-tree-toggle-btn');
+        const closeBtn = document.getElementById('file-tree-close-btn');
+        const content = document.getElementById('file-tree-content');
+        
+        let isOpen = false;
+        let pages = [];
+        let currentRoute = '/';
+        let currentSessionId = null;
+        let iframe = null;
+
+        function findIframe() {
+          const iframes = document.querySelectorAll('iframe');
+          for (const frame of iframes) {
+            if (frame.src.includes('/preview/') || frame.id.includes('preview')) {
+              iframe = frame;
+              currentSessionId = extractSessionId(frame.src);
+              break;
+            }
+          }
+        }
+
+        function extractSessionId(url) {
+          const match = url.match(/\/preview\/([a-f0-9]+)/);
+          return match ? match[1] : null;
+        }
+
+        function toggle() {
+          if (isOpen) close();
+          else open();
+        }
+
+        function open() {
+          isOpen = true;
+          drawer?.classList.add('is-open');
+          overlay?.classList.add('is-open');
+          toggleBtn?.classList.add('is-active');
+          document.body.style.overflow = 'hidden';
+          fetchPages();
+        }
+
+        function close() {
+          isOpen = false;
+          drawer?.classList.remove('is-open');
+          overlay?.classList.remove('is-open');
+          toggleBtn?.classList.remove('is-active');
+          document.body.style.overflow = '';
+        }
+
+        async function fetchPages() {
+          if (!currentSessionId) {
+            findIframe();
+            if (!currentSessionId) {
+              renderEmpty();
+              return;
+            }
+          }
+
+          try {
+            const response = await fetch(`/api/sessions/${currentSessionId}/pages`);
+            if (response.ok) {
+              const data = await response.json();
+              pages = data.pages || [];
+              renderTree();
+            } else {
+              renderEmpty();
+            }
+          } catch (error) {
+            console.error('[FileTreeDrawer] Failed to fetch pages:', error);
+            renderEmpty();
+          }
+        }
+
+        function renderEmpty() {
+          if (content) {
+            content.innerHTML = '<div class="file-tree-empty">No pages available</div>';
+          }
+        }
+
+        function renderTree() {
+          if (!content || pages.length === 0) {
+            renderEmpty();
+            return;
+          }
+
+          const tree = buildTree(pages);
+          content.innerHTML = renderTreeNodes(tree, 0);
+          
+          content.querySelectorAll('.file-tree-node').forEach(node => {
+            node.addEventListener('click', (e) => {
+              const route = e.currentTarget.dataset.route;
+              const isFolder = e.currentTarget.dataset.folder === 'true';
+              
+              // Only navigate if it's not a folder
+              if (route && !isFolder) {
+                navigateTo(route);
+              }
+            });
+          });
+          
+          // Add click handlers for expand/collapse icons
+          content.querySelectorAll('.file-tree-expand-icon').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const node = e.currentTarget.closest('.file-tree-node');
+              if (node) {
+                const childrenContainer = node.nextElementSibling;
+                if (childrenContainer && childrenContainer.classList.contains('file-tree-children')) {
+                  childrenContainer.style.display = childrenContainer.style.display === 'none' ? 'block' : 'none';
+                  const chevron = icon.querySelector('svg');
+                  if (chevron) {
+                    chevron.style.transform = childrenContainer.style.display === 'none' ? '' : 'rotate(90deg)';
+                  }
+                }
+              }
+            });
+          });
+        }
+
+        function buildTree(pages) {
+          const tree = [];
+          
+          for (const page of pages) {
+            const segments = page.route.split('/').filter(Boolean);
+            
+            if (segments.length === 0) {
+              tree.push({
+                id: page.id,
+                name: page.name,
+                route: page.route,
+                children: [],
+                isFolder: false
+              });
+              continue;
+            }
+
+            let currentLevel = tree;
+            let currentPath = '';
+            
+            for (let i = 0; i < segments.length; i++) {
+              const segment = segments[i];
+              currentPath += '/' + segment;
+              const isLast = i === segments.length - 1;
+              
+              let existingNode = currentLevel.find(n => n.name === segment);
+              
+              if (!existingNode) {
+                const newNode = {
+                  id: isLast ? page.id : `${currentPath}-folder`,
+                  name: segment,
+                  route: isLast ? page.route : currentPath,
+                  isFolder: !isLast,
+                  children: isLast ? [] : undefined
+                };
+                
+                currentLevel.push(newNode);
+                if (!isLast && newNode.children) {
+                  currentLevel = newNode.children;
+                }
+              } else if (!isLast && existingNode.children) {
+                currentLevel = existingNode.children;
+              }
+            }
+          }
+
+          return tree;
+        }
+
+        function renderTreeNodes(nodes, level) {
+          return nodes.map(node => {
+            const hasChildren = node.children && node.children.length > 0;
+            const isActive = node.route === currentRoute;
+            const paddingLeft = level * 16 + 12;
+            
+            let html = `
+              <div class="file-tree-node ${isActive ? 'is-active' : ''}" data-route="${node.route}" style="padding-left: ${paddingLeft}px">
+                ${hasChildren ? `
+                  <span class="file-tree-expand-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 6l6 6-6 6"/>
+                    </svg>
+                  </span>
+                ` : '<span class="file-tree-expand-icon"></span>'}
+                <span class="file-tree-node-icon">
+                  ${node.isFolder ? `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7H13L11 5H5C3.89543 5 3 5.89543 3 7Z"/>
+                    </svg>
+                  ` : `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                    </svg>
+                  `}
+                </span>
+                <span class="file-tree-node-label">${node.name}</span>
+              </div>
+            `;
+            
+            if (hasChildren) {
+              html += `<div class="file-tree-children">${renderTreeNodes(node.children, level + 1)}</div>`;
+            }
+            
+            return html;
+          }).join('');
+        }
+
+        function navigateTo(route) {
+          currentRoute = route;
+          renderTree();
+          
+          if (iframe && currentSessionId) {
+            const newUrl = route === '/' 
+              ? `/preview/${currentSessionId}`
+              : `/preview/${currentSessionId}${route}`;
+            
+            iframe.src = newUrl;
+          }
+          
+          close();
+        }
+
+        // Initialize
+        toggleBtn?.addEventListener('click', toggle);
+        closeBtn?.addEventListener('click', close);
+        overlay?.addEventListener('click', close);
+        
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && isOpen) {
+            close();
+          }
+        });
+
+        findIframe();
+      })();
+    </script>
+
     <!-- ─── Debug Panel (visible only in debug mode: ?debug=1) ─── -->
     <button class="debug-burger" id="debug-burger"><span></span><span></span><span></span></button>
     <div class="debug-panel" id="debug-panel">
@@ -1564,6 +1827,22 @@
         <span class="event-count" id="debug-event-count">0 events</span>
       </div>
       <div class="debug-feed" id="debug-feed"></div>
+    </div>
+
+    <!-- ─── File Tree Drawer ─── -->
+    <div id="file-tree-overlay" class="file-tree-overlay"></div>
+    <div id="file-tree-drawer" class="file-tree-drawer">
+      <div class="file-tree-header">
+        <h2 class="file-tree-title">Pages</h2>
+        <button id="file-tree-close-btn" class="file-tree-close-btn" aria-label="Close drawer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="file-tree-content" class="file-tree-content">
+        <div class="file-tree-empty">No pages available</div>
+      </div>
     </div>
     <script src="/scripts/dashboard-auth.js" type="module"></script>
     <script src="/scripts/dashboard-main.js" type="module"></script>

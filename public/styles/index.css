@@ -611,8 +611,6 @@ button.share-icon.pill {
 .dev-prompt-chips--glass {
   background: rgba(20, 20, 24, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
     0 8px 32px rgba(0, 0, 0, 0.35);
@@ -626,8 +624,6 @@ button.share-icon.pill {
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   color: rgba(237, 237, 239, 0.88);
   font-family: var(--font-mono, 'JetBrains Mono'), ui-monospace, monospace;
   font-size: 11px;
@@ -819,8 +815,6 @@ button.share-icon.pill {
   border: 1px solid rgba(138, 180, 255, 0.22);
   background: rgba(12, 14, 22, 0.92);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   opacity: 0;
   transform: translateY(6px);
   pointer-events: none;
@@ -902,8 +896,6 @@ button.share-icon.pill {
   cursor: pointer;
   transition: all 0.2s ease;
   appearance: none;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
@@ -981,8 +973,6 @@ button.share-icon.pill {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   animation: panel-slide-in 0.3s var(--ease-out);
   width: 100%;
   overflow: hidden;
@@ -1029,8 +1019,6 @@ button.share-icon.pill {
   font-size: 13px;
   outline: none;
   transition: all 0.3s var(--ease-out);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .design-ref-search:focus {
@@ -1262,8 +1250,6 @@ button.share-icon.pill {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .share-bonus-label {
@@ -1396,8 +1382,6 @@ button.share-icon.pill {
   font-weight: 500;
   line-height: 1.5;
   white-space: pre-line;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .prompt-policy-violation.is-visible {
@@ -1412,8 +1396,6 @@ button.share-icon.pill {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .private-gen-modal.is-open {
@@ -1439,8 +1421,6 @@ button.share-icon.pill {
   align-items: center;
   gap: 16px;
   text-align: center;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--glass-shadow);
 }
 
@@ -1585,8 +1565,6 @@ button.share-icon.pill {
   cursor: pointer;
   transition: all 0.3s var(--ease-out);
   overflow: hidden;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -1626,6 +1604,22 @@ button.share-icon.pill {
   pointer-events: none;
 }
 
+.session-thumbnail .session-preview-html {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 800px;
+  transform-origin: top left;
+  transform: scale(calc(100% / 1280));
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.session-thumbnail .session-preview-html * {
+  pointer-events: none !important;
+}
+
 .session-badges {
   position: absolute;
   top: 8px;
@@ -1642,8 +1636,6 @@ button.share-icon.pill {
   align-items: center;
   gap: 4px;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   color: #fff;
   font-family: var(--font-sans);
   font-size: 10px;
@@ -1803,9 +1795,9 @@ button.share-icon.pill {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: transparent;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(7, 7, 16, 0.55);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1826,8 +1818,6 @@ button.share-icon.pill {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--glass-shadow);
   position: relative;
 }
@@ -1934,8 +1924,6 @@ button.share-icon.pill {
   font-size: 14px;
   outline: none;
   transition: all 0.3s var(--ease-out);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .auth-input:focus {
@@ -2006,8 +1994,6 @@ button.share-icon.pill {
   line-height: 1.6;
   font-family: var(--font-sans);
   font-size: 13px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 @media (max-width: 900px) {

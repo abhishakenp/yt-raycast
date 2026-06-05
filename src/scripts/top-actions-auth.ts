@@ -136,10 +136,10 @@ const main = async (): Promise<void> => {
   // ─── Auth overlay wiring (replaces the old React AuthOverlay) ───
   window.addEventListener('sf-request-auth-overlay', () => openOverlay())
 
-  // Disabled click-outside-to-close to prevent accidental closure
-  // authOverlay?.addEventListener('click', (event) => {
-  //   if (event.target === authOverlay && !auth?.currentUser) closeOverlay()
-  // })
+  // Click-outside (on the backdrop) closes the auth overlay
+  authOverlay?.addEventListener('click', (event) => {
+    if (event.target === authOverlay && !auth?.currentUser) closeOverlay()
+  })
 
   const wrap =
     (fn: () => Promise<unknown>): ((event: Event) => void) =>

@@ -2263,9 +2263,9 @@ body.sf-session-exit.sf-session-exit--run .intro-overlay:not(.hidden) {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(7, 7, 16, 0.18);
-  backdrop-filter: blur(3px) saturate(120%);
-  -webkit-backdrop-filter: blur(3px) saturate(120%);
+  background: rgba(7, 7, 16, 0.55);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
   cursor: pointer;
 }
 
@@ -4991,4 +4991,177 @@ body::after {
   box-shadow:
     0 0 0 3px rgba(167, 139, 250, 0.4),
     0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================================
+ * File Tree Drawer
+ * ============================================================ */
+
+/* File tree toggle button styling */
+#file-tree-toggle-btn.is-active {
+  color: #ededef;
+  background: rgba(237, 237, 237, 0.12);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* File tree overlay (shadcn-style) */
+.file-tree-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.file-tree-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* File tree drawer panel (shadcn-style) */
+.file-tree-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 320px;
+  background: #18181b;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 50;
+  transform: translateX(-100%);
+  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+.file-tree-drawer.is-open {
+  transform: translateX(0);
+}
+
+/* File tree header */
+.file-tree-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.file-tree-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fafafa;
+  letter-spacing: -0.025em;
+}
+
+.file-tree-close-btn {
+  color: rgba(255, 255, 255, 0.5);
+  background: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-tree-close-btn:hover {
+  color: #fafafa;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* File tree content */
+.file-tree-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.file-tree-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+}
+
+/* File tree node (shadcn-style) */
+.file-tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  user-select: none;
+}
+
+.file-tree-node:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fafafa;
+}
+
+.file-tree-node.is-active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fafafa;
+  font-weight: 500;
+}
+
+.file-tree-node-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.file-tree-node-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* File tree expand/collapse */
+.file-tree-expand-icon {
+  color: rgba(255, 255, 255, 0.4);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 150ms ease;
+}
+
+.file-tree-node.expanded .file-tree-expand-icon {
+  transform: rotate(90deg);
+}
+
+/* File tree nested items */
+.file-tree-children {
+  margin-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 8px;
+}
+
+/* Scrollbar styling for file tree */
+.file-tree-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.file-tree-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.file-tree-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.file-tree-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

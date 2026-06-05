@@ -1253,6 +1253,24 @@ function renderPalettePanel(anchor) {
   positionPaletteMenu(anchor)
 }
 
+// The preview iframe's theme tokens are consumed as `rgb(var(--token) / <alpha>)`
+// (see buildThemeHead in the engine), so each --token must hold BARE RGB CHANNELS
+// ("59 130 246"), not a hex string — `rgb(#3b82f6 / 1)` is invalid and silently
+// drops the color. Convert hex values to channels; pass non-hex values (radius,
+// fonts, already-channel/hsl) through untouched.
+function paletteValueToCssChannels(value) {
+  if (typeof value !== 'string') return value
+  let s = value.trim()
+  if (s[0] !== '#') return value
+  s = s.slice(1)
+  if (/^[0-9a-fA-F]{3}$/.test(s)) s = s.split('').map((c) => c + c).join('')
+  if (!/^[0-9a-fA-F]{6}$/.test(s)) return value
+  const r = parseInt(s.slice(0, 2), 16)
+  const g = parseInt(s.slice(2, 4), 16)
+  const b = parseInt(s.slice(4, 6), 16)
+  return `${r} ${g} ${b}`
+}
+
 function buildPaletteCss(palette) {
   const vars = {}
   if (palette && palette.dark && typeof palette.dark === 'object') {
@@ -1272,7 +1290,9 @@ function buildPaletteCss(palette) {
   }
   const entries = Object.entries(vars).filter(([, v]) => typeof v === 'string' && v.length)
   if (!entries.length) return ''
-  const decls = entries.map(([k, v]) => `  --${k}: ${v} !important;`).join('\n')
+  const decls = entries
+    .map(([k, v]) => `  --${k}: ${paletteValueToCssChannels(v)} !important;`)
+    .join('\n')
   // Emit on both :root and .dark so Tailwind's dark-mode scope picks it up too.
   return `:root, .dark, html, body {\n${decls}\n}`
 }
@@ -4578,10 +4598,10 @@ document.getElementById('payment-confirm-btn').addEventListener('click', startCh
 document.getElementById('payment-modal').addEventListener('click', (event) => {
   if (event.target.closest('[data-close-payment="1"]')) closePaymentModal()
 })
-// Disabled click-outside-to-close for auth overlay
-// document.getElementById('auth-overlay').addEventListener('click', (event) => {
-//   if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
-// })
+// Click-outside (on the backdrop) closes the auth overlay
+document.getElementById('auth-overlay').addEventListener('click', (event) => {
+  if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
+})
 
 document.getElementById('auth-close-btn').addEventListener('click', closeAuthWall)
 
