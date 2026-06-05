@@ -84,37 +84,31 @@ function sanitizePartialImages(code: string): string {
 }
 
 function stripNullsFromArrays(code: string): string {
-  const idx = code.lastIndexOf('null')
-  if (idx === -1) return code
-  // Only care about the tail null we just introduced
-  if (idx < code.length - 200) return code
+  // Aggressive null stripping for streaming: remove all null values from arrays
+  // to prevent "Cannot read properties of null" errors when components map over
+  // incomplete arrays during progressive rendering.
+  // Also removes objects with only null/empty properties that came from incomplete Image() calls.
+  let result = code
 
-  // Find the enclosing '[' (scan backwards, tracking bracket depth)
-  let depth = 0
-  let bracketStart = -1
-  for (let i = idx - 1; i >= Math.max(0, idx - 500); i--) {
-    const ch = code[i]
-    if (ch === ']') depth++
-    else if (ch === '[') {
-      if (depth === 0) { bracketStart = i; break }
-      depth--
-    }
-  }
-  if (bracketStart === -1) return code
+  // First pass: simple null removal in arrays
+  result = result
+    .replace(/,\s*null\s*(?=[,\]])/g, '') // null followed by comma or ]
+    .replace(/(?<=[,\[])\s*null\s*,/g, ',') // null preceded by comma or [
+    .replace(/^\s*null\s*$/gm, '') // standalone null on a line
 
-  const arrayContent = code.slice(bracketStart + 1, idx + 4 + 1) // through 'null' (slice end is exclusive)
+  // Second pass: remove empty objects and arrays that might have resulted from null replacements
+  result = result.replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '') // empty {}
+  result = result.replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',') // empty {} with comma
+  result = result.replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '') // empty []
+  result = result.replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',') // empty [] with comma
 
-  let cleaned = arrayContent
-  // ", null" at end
-  cleaned = cleaned.replace(/,\s*null\s*$/, '')
-  // "null ," at start
-  cleaned = cleaned.replace(/^\s*null\s*,\s*/, '')
-  // ", null," in middle → ","
-  cleaned = cleaned.replace(/,(\s*)null\s*,/, ',$1')
-  // "[null]" → "[]"
-  cleaned = cleaned.replace(/^\s*null\s*$/, '')
+  // Third pass: clean up resulting double commas and edge cases
+  result = result
+    .replace(/,\s*,/g, ',') // Fix double commas
+    .replace(/^\s*,\s*/gm, '') // Remove leading comma
+    .replace(/,\s*$/gm, '') // Remove trailing comma
 
-  return code.slice(0, bracketStart + 1) + cleaned + code.slice(bracketStart + 1 + arrayContent.length)
+  return result
 }
 
 /**

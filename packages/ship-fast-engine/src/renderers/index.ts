@@ -1,5 +1,6 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { buildPreviewSeoHead } from '@ship-fast/aeo'
 import { resolveThemeStyles, THEME_CATALOG } from '@ship-fast/blocks'
 import type { SiteSpecProject } from '../spec/index.ts'
 import type { ExtractedTokens } from '../clone/types.ts'
@@ -324,13 +325,12 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
   // Server-side render the OpenUI to HTML for instant loading in gallery
   const themeHead = buildThemeHead(`${brand}\n${source}`, readSiteThemeName(workspace))
   const { html, cssVars } = renderOpenUIToHTMLWithTheme(source, null, 'en', null)
-
+  const siteSpec = readSiteSpecJson(workspace)
+  const previewSeoHead = buildPreviewSeoHead(siteSpec, brand, String(siteSpec?.tagline || ''))
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(brand)} - Preview</title>
+  ${previewSeoHead}
   <script src="/scripts/tailwind-browser.js"></script>
 ${themeHead}
   <style>
@@ -343,6 +343,16 @@ ${themeHead}
   <div id="openui-root">${html}</div>
 </body>
 </html>`
+}
+
+function readSiteSpecJson(workspace: string): Record<string, unknown> | null {
+  const specPath = join(workspace, 'site-spec.json')
+  if (!existsSync(specPath)) return null
+  try {
+    return JSON.parse(readFileSync(specPath, 'utf8')) as Record<string, unknown>
+  } catch {
+    return null
+  }
 }
 
 function escapeHtml(value: unknown): string {
@@ -592,12 +602,12 @@ export function writeStreamingShellToWorkspace(
     prebuiltThemeHead && prebuiltThemeHead.trim()
       ? prebuiltThemeHead
       : buildThemeHead(String(brand || ''), themeName ?? readSiteThemeName(workspace))
+  const siteSpec = readSiteSpecJson(workspace)
+  const previewSeoHead = buildPreviewSeoHead(siteSpec, brand, String(siteSpec?.tagline || ''))
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(brand)} - Preview</title>
+  ${previewSeoHead}
   <script src="/scripts/tailwind-browser.js"></script>
 ${themeHead}
 </head>

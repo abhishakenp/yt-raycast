@@ -1,0 +1,13 @@
+{
+  "name": "@ship-fast/aeo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/sections/react/index.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}
