@@ -170,10 +170,10 @@ function ActionRow({ actions = [] }) {
 function CardGrid({ items = [] }) {
   return (
     <div className="card-grid">
-      {items.map((item) => (
-        <article key={item.id || item.title} className="card" data-reveal>
-          <h3>{item.title || item.label || item.value}</h3>
-          <p>{item.body || item.quote || ''}</p>
+      {items.filter(Boolean).map((item) => (
+        <article key={item?.id || item?.title || Math.random()} className="card" data-reveal>
+          <h3>{item?.title || item?.label || item?.value}</h3>
+          <p>{item?.body || item?.quote || ''}</p>
         </article>
       ))}
     </div>
@@ -264,9 +264,9 @@ function HeroSection({ section, siteSpec }) {
               />
             </figure>
           ) : null}
-          {(section.items || []).map((item) => (
-            <div key={item.id || item.title} className="hero-chip">
-              {item.title || item.label || item.value}
+          {(section.items || []).filter(Boolean).map((item) => (
+            <div key={item?.id || item?.title || Math.random()} className="hero-chip">
+              {item?.title || item?.label || item?.value}
             </div>
           ))}
         </div>
@@ -281,8 +281,8 @@ function StatsSection({ section }) {
       <div className="container">
         <SectionIntro section={section} />
         <div className="stat-grid">
-          {(section.items || []).map((item) => (
-            <div key={item.id || item.label} className="stat-card" data-reveal>
+          {(section.items || []).filter(Boolean).map((item) => (
+            <div key={item?.id || item?.label || Math.random()} className="stat-card" data-reveal>
               <span className="stat-card__label">{item.label || item.body}</span>
               <strong className="stat-card__value">{item.value || item.title}</strong>
             </div>
@@ -299,8 +299,8 @@ function PricingSection({ section }) {
       <div className="container">
         <SectionIntro section={section} />
         <div className="pricing-grid">
-          {(section.items || []).map((item) => (
-            <article key={item.id || item.title} className="pricing-card" data-reveal>
+          {(section.items || []).filter(Boolean).map((item) => (
+            <article key={item?.id || item?.title || Math.random()} className="pricing-card" data-reveal>
               <h3>{item.title}</h3>
               <div className="price">{item.price}</div>
               <p>{item.body}</p>
@@ -323,8 +323,8 @@ function TestimonialsSection({ section }) {
       <div className="container">
         <SectionIntro section={section} />
         <div className="card-grid">
-          {(section.items || []).map((item) => (
-            <blockquote key={item.id || item.author} className="card quote-card" data-reveal>
+          {(section.items || []).filter(Boolean).map((item) => (
+            <blockquote key={item?.id || item?.author || Math.random()} className="card quote-card" data-reveal>
               <p>“{item.quote || item.body}”</p>
               <footer>{item.author || item.title}</footer>
             </blockquote>
@@ -341,8 +341,8 @@ function LogoCloudSection({ section }) {
       <div className="container">
         <SectionIntro section={section} />
         <div className="logo-row">
-          {(section.items || []).map((item) => (
-            <span key={item.id || item.title} className="logo-pill">
+          {(section.items || []).filter(Boolean).map((item) => (
+            <span key={item?.id || item?.title || Math.random()} className="logo-pill">
               {item.title || item.label}
             </span>
           ))}
@@ -656,7 +656,7 @@ export default function SectionRenderer({ section, siteSpec }) {
                       ? String(item.compare_at)
                       : null
                 return (
-                  <article key={item.id || item.title} className="card product-card product-card--retail" data-reveal>
+                  <article key={item?.id || item?.title || Math.random()} className="card product-card product-card--retail" data-reveal>
                     <div className="product-image">
                       {item.image ? <img src={item.image} alt={item.title} /> : <div className="product-placeholder" />}
                     </div>
