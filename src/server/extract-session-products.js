@@ -167,6 +167,55 @@ function readRawSiteSpec(workspace) {
   }
 }
 
+// The DSL / "Kimi" generation pipeline stores its catalogue inside the
+// modules.* component-DSL strings — e.g. EcommerceKimiPage(... featured:{name:
+// "Woven Wall Mirror", price:"$199"}, products:[{name:"Silk Wall Tapestry",
+// price:"$159"}, ...]) — rather than as structured JSON or rendered HTML, so
+// neither the HTML nor the section-item strategies see it. Pull product
+// object-literals straight out of the DSL by matching {... name:"X" ...
+// price:"$Y" ...} shapes (the product cards the user sees in the UI).
+const DSL_PRODUCT_RE =
+  /\{[^{}]*\bname:\s*"([^"]+)"[^{}]*\bprice:\s*"([^"]*\d[^"]*)"[^{}]*\}/g
+
+function extractFromModulesDsl(spec, sessionId, sessionPrompt) {
+  const modules = spec?.modules && typeof spec.modules === 'object' ? spec.modules : null
+  if (!modules) return []
+  const products = []
+  const seen = new Set()
+  for (const dsl of Object.values(modules)) {
+    if (typeof dsl !== 'string') continue
+    DSL_PRODUCT_RE.lastIndex = 0
+    let m
+    while ((m = DSL_PRODUCT_RE.exec(dsl)) !== null) {
+      const block = m[0]
+      const title = m[1].trim()
+      const lc = title.toLowerCase()
+      if (!title || PLACEHOLDER_TITLES.has(lc) || NON_PRODUCT_TITLES.has(lc)) continue
+      const handle = slugify(title)
+      if (seen.has(handle)) continue
+      const priceMatch = m[2].match(/([₹$€£])?\s*([\d,]+(?:\.\d{1,2})?)/)
+      if (!priceMatch) continue
+      const symbol = priceMatch[1] || '$'
+      const badgeMatch = block.match(/\bbadge:\s*"([^"]+)"/)
+      seen.add(handle)
+      products.push({
+        id: handle,
+        title,
+        handle,
+        description: '',
+        price: parseFloat(priceMatch[2].replace(/,/g, '')) || null,
+        currency:
+          symbol === '₹' ? 'INR' : symbol === '€' ? 'EUR' : symbol === '£' ? 'GBP' : 'USD',
+        image: null,
+        category: badgeMatch?.[1] || '',
+        sessionId,
+        sessionPrompt,
+      })
+    }
+  }
+  return products
+}
+
 // Pull catalog entries from a session by reading its rendered HTML first
 // (more reliable — section.items often contains generic placeholders, the
 // rendered HTML has the actual product catalogue) and falling back to the
@@ -180,14 +229,24 @@ export function extractSessionProducts(session, sessionsDir) {
   const spec = readRawSiteSpec(workspace)
   if (!spec) return []
 
-  // An ecommerce session is one the generator tagged as such OR one that
-  // carries a non-empty structured catalogue. siteType is sometimes
-  // misclassified (e.g. "software") even when a full medusa product block
-  // exists, so keying off the catalogue keeps this generic rather than
-  // trusting a single label.
+  // An ecommerce session is one the generator tagged as such, one that carries
+  // a structured catalogue, or one whose DSL renders an ecommerce page. The
+  // generator uses two spec formats (structured `pages`/`ecommerce` vs the
+  // `modules` DSL), and siteType is sometimes missing or misclassified (e.g.
+  // "software"), so we accept any of these signals rather than one label —
+  // kept generic, no per-vertical rules.
   const hasCatalogue =
     Array.isArray(spec.ecommerce?.products) && spec.ecommerce.products.length > 0
-  if (spec.siteType !== 'ecommerce' && !hasCatalogue) return []
+  const modulesText =
+    spec.modules && typeof spec.modules === 'object'
+      ? Object.values(spec.modules)
+          .filter((v) => typeof v === 'string')
+          .join('\n')
+      : ''
+  const dslLooksEcommerce = /Ecommerce\w*Page\s*\(|Shop\w*Page\s*\(|Product\w*Page\s*\(/.test(
+    modulesText,
+  )
+  if (spec.siteType !== 'ecommerce' && !hasCatalogue && !dslLooksEcommerce) return []
 
   const sessionId = session.id
   const sessionPrompt = session.prompt || ''
@@ -201,10 +260,10 @@ export function extractSessionProducts(session, sessionsDir) {
     }
   }
 
-  // Primary source: the rendered HTML in each page's blueprint. The engine's
-  // structured `ecommerce.products` block is generic boilerplate (identical
-  // across every store it generates), whereas the rendered storefront holds
-  // the real, theme-specific catalogue the user sees in the UI.
+  // Source 1 (structured format): the rendered HTML in each page's blueprint.
+  // The engine's structured `ecommerce.products` block is generic boilerplate
+  // (identical across every store it generates), whereas the rendered
+  // storefront holds the real, theme-specific catalogue the user sees.
   const pages = Array.isArray(spec.pages) ? spec.pages : []
   for (const page of pages) {
     const html = page.renderBlueprint?.bodyHtml
@@ -212,8 +271,11 @@ export function extractSessionProducts(session, sessionsDir) {
     push(extractFromHtml(html, sessionId, sessionPrompt))
   }
 
+  // Source 2 (DSL format): product object-literals embedded in the modules DSL.
+  push(extractFromModulesDsl(spec, sessionId, sessionPrompt))
+
   // Fallback: section items, for older specs whose pages carry no rendered
-  // blueprint markup.
+  // blueprint markup and no DSL catalogue.
   if (products.length === 0) {
     for (const page of pages) {
       const sections = Array.isArray(page.sections) ? page.sections : []
