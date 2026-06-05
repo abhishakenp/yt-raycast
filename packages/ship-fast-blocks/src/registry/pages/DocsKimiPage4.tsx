@@ -235,7 +235,7 @@ export const DocsKimiPage4 = defineComponent({
     const codeSnippet =
       props.codeExample?.code ??
       `curl https://api.atlas.dev/v1/projects \\
-  -H "Authorization: Bearer sk_live_abc123xyz789" \\
+  -H "Authorization: Bearer ATLAS_API_KEY_REDACTED" \\
   -H "Content-Type: application/json" \\
   -X POST \\
   -d '{

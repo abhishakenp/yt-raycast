@@ -13,9 +13,9 @@ import {
 import { join } from 'node:path'
 import { BASE_DOMAIN } from '../config.js'
 import { readSessionThemeOverride, persistSessionThemeOverride } from './theme.js'
-import { SUPPORTED_EXPORT_TARGETS } from '@ship-fast/engine/spec/index.js'
+import { SUPPORTED_EXPORT_TARGETS } from '../spec/index.js'
 import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deployments.js'
-import { normalizeSession, validateSession } from '@ship-fast/engine/contracts/contracts.js'
+import { normalizeSession, validateSession } from '../contracts/contracts.js'
 import { readDesignReferenceFingerprintFromWorkspace } from '@ship-fast/engine/pipeline/ecommerce-design-references.js'
 import { invalidatePublicGallery } from './public-gallery-cache.js'
 
@@ -69,7 +69,7 @@ function readSessionMeta(workspace) {
     return {
       preferredExportTarget: normalizePreferredExportTarget(data?.preferredExportTarget),
       preferredLanguage: normalizePreferredLanguage(data?.preferredLanguage),
-      isPrivate: false,
+      isPrivate: data?.isPrivate === true,
     }
   } catch {
     return {
@@ -100,13 +100,14 @@ function writeSessionMeta(workspace, metaPatch = {}) {
         ? metaPatch.preferredLanguage
         : raw.preferredLanguage,
     ),
-    isPrivate: false,
+    isPrivate:
+      metaPatch.isPrivate !== undefined ? metaPatch.isPrivate === true : raw.isPrivate === true,
   }
   writeFileSync(metaPath, JSON.stringify(next, null, 2))
   return {
     preferredExportTarget: next.preferredExportTarget,
     preferredLanguage: next.preferredLanguage,
-    isPrivate: false,
+    isPrivate: next.isPrivate,
   }
 }
 
@@ -176,6 +177,7 @@ export function createSession(baseDir, prompt, userId, options = {}) {
   const sessionMeta = writeSessionMeta(workspace, {
     preferredExportTarget: options?.preferredExportTarget,
     preferredLanguage: options?.preferredLanguage,
+    isPrivate: options?.isPrivate,
   })
 
   // Persist userId to disk
@@ -713,7 +715,23 @@ export function sessionBroadcast(session, msg) {
     })
   }
   for (const ws of session.wsClients) {
-    if (ws.readyState === 1) ws.send(data)
+    if (ws.readyState !== 1) {
+      session.wsClients.delete(ws)
+      continue
+    }
+    try {
+      ws.send(data)
+    } catch (error) {
+      console.warn('[SessionBroadcast] failed to send websocket message', {
+        sessionId: session.id,
+        type: msg.type,
+        message: error?.message || String(error),
+      })
+      session.wsClients.delete(ws)
+      try {
+        ws.terminate?.()
+      } catch {}
+    }
   }
 }
 
@@ -794,8 +812,10 @@ export function getOpenUIStreamReplayMessages(session, route = '/') {
     return [{ type: 'openui-error', route: key, error: stream.error }]
   }
   const messages = [{ type: 'openui_stream_start', route: key }]
-  if (stream.source) messages.push({ type: 'openui_stream_chunk', route: key, source: stream.source })
-  if (stream.done) messages.push({ type: 'openui_stream_done', route: key, source: stream.source || '' })
+  if (stream.source)
+    messages.push({ type: 'openui_stream_chunk', route: key, source: stream.source })
+  if (stream.done)
+    messages.push({ type: 'openui_stream_done', route: key, source: stream.source || '' })
   return messages
 }
 

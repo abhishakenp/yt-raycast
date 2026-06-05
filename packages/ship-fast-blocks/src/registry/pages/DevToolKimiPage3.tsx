@@ -197,7 +197,7 @@ export const DevToolKimiPage3 = defineComponent({
     const heroCode =
       props.hero?.code ??
       `curl -X POST https://api.orbitapi.com/v1/projects \\
-  -H "Authorization: Bearer sk_live_51MzQ9J..." \\
+  -H "Authorization: Bearer ORBIT_API_KEY_REDACTED" \\
   -H "Content-Type: application/json" \\
   -d '{
     "name": "payment-gateway",
@@ -290,7 +290,7 @@ export const DevToolKimiPage3 = defineComponent({
       `import orbit from "@orbitapi/sdk"
 
 # Initialize the client
-client = orbit.Client(api_key="sk_live_...")
+client = orbit.Client(api_key="ORBIT_API_KEY_REDACTED")
 
 # Create a new endpoint
 endpoint = await client.endpoints.create({

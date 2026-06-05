@@ -4,10 +4,29 @@ import { getOpenUIStreamReplayMessages, getSession } from './sessions.js'
 let _wss = null
 const devReloadClients = new Set()
 
+const safeSendData = (ws, data) => {
+  if (ws.readyState !== 1) return false
+  try {
+    ws.send(data)
+    return true
+  } catch (error) {
+    console.warn('[WebSocket] Failed to send message', {
+      sessionId: ws.sessionId || null,
+      message: error?.message || String(error),
+    })
+    try {
+      ws.terminate?.()
+    } catch {}
+    return false
+  }
+}
+
+const safeSendJson = (ws, msg) => safeSendData(ws, JSON.stringify(msg))
+
 export const broadcastDevReload = (msg) => {
   const data = JSON.stringify(msg)
   for (const ws of devReloadClients) {
-    if (ws.readyState === 1) ws.send(data)
+    safeSendData(ws, data)
   }
 }
 
@@ -27,6 +46,11 @@ export function setupWebSocket(httpServer) {
     })
     if (process.env.NODE_ENV !== 'production' && url.searchParams.get('devReload') === '1') {
       devReloadClients.add(ws)
+      ws.on('error', (error) => {
+        console.warn('[WebSocket] Dev reload socket error', {
+          message: error?.message || String(error),
+        })
+      })
       ws.on('close', () => devReloadClients.delete(ws))
       return
     }
@@ -65,24 +89,32 @@ export function setupWebSocket(httpServer) {
       themeOverride: session.themeOverride,
       deployment: session.deployment,
     }
-    if (prompt) ws.send(JSON.stringify({ type: 'prompt', text: prompt }))
-    if (lastStatus) ws.send(JSON.stringify(lastStatus))
-    if (tasks.length > 0) ws.send(JSON.stringify({ type: 'tasks_loaded', tasks }))
-    if (siteSpecReady) ws.send(JSON.stringify({ type: 'site_spec_ready', ready: true }))
-    if (homepageReady) ws.send(JSON.stringify({ type: 'homepage_ready' }))
+    if (prompt) safeSendJson(ws, { type: 'prompt', text: prompt })
+    if (lastStatus) safeSendJson(ws, lastStatus)
+    if (tasks.length > 0) safeSendJson(ws, { type: 'tasks_loaded', tasks })
+    if (siteSpecReady) safeSendJson(ws, { type: 'site_spec_ready', ready: true })
+    if (homepageReady) safeSendJson(ws, { type: 'homepage_ready' })
     for (const message of getOpenUIStreamReplayMessages(session, '/')) {
-      ws.send(JSON.stringify(message))
+      safeSendJson(ws, message)
     }
     if (alternativeDesign)
-      ws.send(JSON.stringify({ type: 'alternative_design_ready', design: alternativeDesign }))
+      safeSendJson(ws, { type: 'alternative_design_ready', design: alternativeDesign })
     if (themeOverride)
-      ws.send(JSON.stringify({ type: 'theme_override_loaded', theme: themeOverride }))
+      safeSendJson(ws, { type: 'theme_override_loaded', theme: themeOverride })
     if (deployment?.url)
-      ws.send(JSON.stringify({ type: 'deployed', slug: deployment.slug, url: deployment.url }))
+      safeSendJson(ws, { type: 'deployed', slug: deployment.slug, url: deployment.url })
+
+    ws.on('error', (error) => {
+      console.warn('[WebSocket] Client socket error', {
+        sessionId,
+        message: error?.message || String(error),
+      })
+      session.wsClients.delete(ws)
+    })
 
     ws.on('close', () => {
-      console.log('[WebSocket] Client closed', { sessionId, totalClients: session.wsClients.size - 1 })
       session.wsClients.delete(ws)
+      console.log('[WebSocket] Client closed', { sessionId, totalClients: session.wsClients.size })
     })
   })
 

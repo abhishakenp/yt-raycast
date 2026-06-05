@@ -6,6 +6,15 @@ import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/
 import { preferMixedEnglishBcp47FromSnippet } from '../lib/home/mixed-english-hints'
 import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
 import { LOCAL_DEV_PROMPT_SHORTCUTS } from '../lib/home/sample-prompts'
+import {
+  normalizeGalleryMeta,
+  type GalleryPageMeta,
+} from '../lib/home/public-gallery-query'
+import {
+  canReusePrefetchedPrompt,
+  generationPayloadFingerprint,
+  isGibberishPromptClient,
+} from '../lib/home/generation-prefetch'
 
 declare const __SF_DEV_SCRIPTS__: boolean
 import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed'
@@ -14,14 +23,7 @@ type CurrentUser = unknown | null
 
 type GallerySource = 'public' | 'user'
 
-type GalleryMeta = {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
-  hasPrev?: boolean
-  hasNext?: boolean
-}
+type GalleryMeta = GalleryPageMeta
 
 type SessionItem = {
   id: string
@@ -97,6 +99,13 @@ const submitButton = getTypedElement<HTMLButtonElement>('submit-btn')!
 const submitButtonLabel = submitButton?.querySelector('.btn-label') as HTMLElement | null
 const logoTagline = getTypedElement<HTMLElement>('logo-tagline')!
 const SUBMIT_BTN_DEFAULT_LABEL = 'Generate'
+const LOADING_STEPS = [
+  'Reading the brief',
+  'Sketching the structure',
+  'Choosing the visual system',
+  'Composing the first screen',
+  'Preparing the preview',
+]
 const generationCounter = getTypedElement<HTMLElement>('gen-counter')!
 const promptPlaceholder = getTypedElement<HTMLElement>('prompt-placeholder')!
 const promptPlaceholderText = getTypedElement<HTMLElement>('prompt-placeholder-text')!
@@ -114,6 +123,7 @@ const sessionPaginationActions = getTypedElement<HTMLElement>('session-paginatio
 const sessionPagePrev = getTypedElement<HTMLButtonElement>('session-page-prev')!
 const sessionPageNext = getTypedElement<HTMLButtonElement>('session-page-next')!
 const sessionPageStatus = getTypedElement<HTMLElement>('session-page-status')!
+const homepageFooterLegal = getTypedElement<HTMLElement>('homepage-footer-legal')
 const GALLERY_PAGE_SIZE = 12
 const GALLERY_RESTORE_PAGE_KEY = 'sf_gallery_restore_page'
 const GALLERY_RESTORE_SOURCE_KEY = 'sf_gallery_restore_source'
@@ -141,6 +151,7 @@ const MIN_PROMPT_LENGTH = 15
 const PROMPT_LANG_DETECT_MIN_CHARS = 65
 const PROMPT_LANG_DETECT_DEBOUNCE_MS = 400
 const PROMPT_LANG_DETECT_SNIPPET_MAX = 800
+const GENERATION_PREFETCH_IDLE_MS = 6000
 const PROMPT_SUGGEST_MIN_CHARS = 2
 const PROMPT_SUGGEST_MAX_SHOW = 4
 const PROMPT_SUGGEST_DEBOUNCE_MS = 380
@@ -822,8 +833,8 @@ function renderPromptSuggestions(rows: string[], queryLen: number): void {
 function applyPromptSuggestion(fullText: string): void {
   closePromptSuggestions()
   input.value = fullText
-  hidePolicyViolation()
   validatePrompt(false)
+  syncPromptPolicyWarning()
   syncSamplePromptVisibility()
   syncSubmitButtonState()
   const prev = lastPromptTrimLen
@@ -841,6 +852,7 @@ function applyPromptSuggestion(fullText: string): void {
   } else {
     schedulePromptLanguageDetect()
   }
+  scheduleGenerationPrefetch()
   input.focus()
 }
 
@@ -863,7 +875,10 @@ async function fetchPromptSuggestionsFromApi(
     const resp = await authFetch('/api/prompt-suggestions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ partial: q }),
+      body: JSON.stringify({
+        partial: q,
+        language: normalizeLanguageCode(languageSelect?.value || ''),
+      }),
       signal,
     })
     if (runToken !== promptSuggestToken) return
@@ -1036,6 +1051,17 @@ const hidePolicyViolation = (): void => {
   policyBlock.classList.remove('is-visible')
 }
 
+const isPromptPolicyBlocked = (): boolean => !checkPromptContentPolicy(input.value.trim()).ok
+
+const syncPromptPolicyWarning = (): boolean => {
+  if (isPromptPolicyBlocked()) {
+    showPolicyViolation(CONTENT_POLICY_CLIENT_MESSAGE)
+    return true
+  }
+  hidePolicyViolation()
+  return false
+}
+
 function validatePrompt(showError = false): boolean {
   const promptLength = input.value.trim().length
 
@@ -1082,7 +1108,30 @@ function syncSubmitButtonState(): void {
   submitButton.disabled =
     submitButton.classList.contains('loading') ||
     isGenerationLimitReached() ||
+    isPromptPolicyBlocked() ||
     input.value.trim().length < MIN_PROMPT_LENGTH
+}
+
+let loadingStepTimer: ReturnType<typeof setInterval> | null = null
+let loadingStepIndex = 0
+
+function startLoadingSteps(): void {
+  if (!submitButtonLabel) return
+  stopLoadingSteps(false)
+  loadingStepIndex = 0
+  submitButtonLabel.textContent = LOADING_STEPS[0]
+  loadingStepTimer = window.setInterval(() => {
+    loadingStepIndex = (loadingStepIndex + 1) % LOADING_STEPS.length
+    submitButtonLabel.textContent = LOADING_STEPS[loadingStepIndex]
+  }, 1100)
+}
+
+function stopLoadingSteps(restoreLabel = true): void {
+  if (loadingStepTimer !== null) {
+    clearInterval(loadingStepTimer)
+    loadingStepTimer = null
+  }
+  if (restoreLabel && submitButtonLabel) submitButtonLabel.textContent = SUBMIT_BTN_DEFAULT_LABEL
 }
 
 function getGenerationCount(): number {
@@ -1096,8 +1145,15 @@ function updateGenerationCounter(): void {
     privateGenRow.style.display = 'none'
     if (shareBonusPanel) shareBonusPanel.style.display = 'none'
   }
-  if (isLocalDevHost || !authResolved || currentUser) {
+  if (isLocalDevHost || !authResolved) {
     hideAll()
+    syncSubmitButtonState()
+    return
+  }
+  if (currentUser) {
+    generationCounter.style.display = 'none'
+    privateGenRow.style.display = 'flex'
+    if (shareBonusPanel) shareBonusPanel.style.display = 'none'
     syncSubmitButtonState()
     return
   }
@@ -1220,8 +1276,87 @@ function closePrivateGenModal(): void {
   privateGenModal.setAttribute('aria-hidden', 'true')
 }
 
+type GenerationPrefetch = {
+  prompt: string
+  preferredLanguage: string
+  payload: Record<string, unknown>
+  promise: Promise<{ response: Response; data: any }>
+}
+
+let generationPrefetchTimer: ReturnType<typeof setTimeout> | null = null
+let generationPrefetch: GenerationPrefetch | null = null
+
+function getDesignReferencePayload() {
+  const ref1 = getTypedElement<HTMLInputElement>('design-ref-url-1')?.value?.trim() || ''
+  const ref2 = getTypedElement<HTMLInputElement>('design-ref-url-2')?.value?.trim() || ''
+  const designReferenceUrls = [ref1, ref2].filter(Boolean)
+  const designReferenceNotes =
+    getTypedElement<HTMLInputElement>('design-ref-notes')?.value?.trim() || ''
+  return {
+    ...(designReferenceUrls.length
+      ? {
+          designReferenceUrls,
+          ...(designReferenceNotes ? { designReferenceNotes } : {}),
+        }
+      : {}),
+  }
+}
+
+function buildGenerationPayload(
+  prompt: string,
+  preferredLanguage: string,
+): Record<string, unknown> {
+  return {
+    prompt,
+    preferredLanguage,
+    ...getDesignReferencePayload(),
+    ...(currentUser && privateGenCheckbox.checked ? { isPrivate: true } : {}),
+  }
+}
+
+function clearGenerationPrefetchTimer(): void {
+  if (generationPrefetchTimer !== null) {
+    clearTimeout(generationPrefetchTimer)
+    generationPrefetchTimer = null
+  }
+}
+
+function scheduleGenerationPrefetch(): void {
+  clearGenerationPrefetchTimer()
+  const prompt = input.value.trim()
+  if (
+    prompt.length < MIN_PROMPT_LENGTH ||
+    !authResolved ||
+    isGenerationLimitReached() ||
+    privateGenCheckbox.checked ||
+    !checkPromptContentPolicy(prompt).ok ||
+    isGibberishPromptClient(prompt)
+  ) {
+    return
+  }
+  generationPrefetchTimer = window.setTimeout(() => {
+    const latestPrompt = input.value.trim()
+    if (latestPrompt !== prompt) return
+    const preferredLanguage = languageSelect?.value || 'en'
+    const payload = buildGenerationPayload(prompt, preferredLanguage)
+    generationPrefetch = {
+      prompt,
+      preferredLanguage,
+      payload,
+      promise: authFetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).then(async (response) => ({
+        response,
+        data: await response.json().catch(() => ({})),
+      })),
+    }
+  }, GENERATION_PREFETCH_IDLE_MS)
+}
+
 privateGenCheckbox.addEventListener('change', () => {
-  if (privateGenCheckbox.checked) openPrivateGenModal()
+  if (privateGenCheckbox.checked && !currentUser) openPrivateGenModal()
 })
 
 getTypedElement<HTMLElement>('private-gen-modal-close')?.addEventListener(
@@ -1246,11 +1381,13 @@ syncSubmitButtonState()
 const applyPromptChip = (text: string): void => {
   input.value = text
   validatePrompt(false)
+  syncPromptPolicyWarning()
   syncSamplePromptVisibility()
   syncSubmitButtonState()
   lastPromptTrimLen = input.value.trim().length
   syncPromptLanguageRowVisibility()
   schedulePromptLanguageDetect()
+  scheduleGenerationPrefetch()
 }
 
 const homeDevPromptsEnabled = isHomeDevPromptsEnabled()
@@ -1371,7 +1508,10 @@ if (heroCard) {
     const rect = heroCard.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
-    setHeroGlow(`${Math.max(0, Math.min(100, x)).toFixed(1)}%`, `${Math.max(0, Math.min(100, y)).toFixed(1)}%`)
+    setHeroGlow(
+      `${Math.max(0, Math.min(100, x)).toFixed(1)}%`,
+      `${Math.max(0, Math.min(100, y)).toFixed(1)}%`,
+    )
   })
 
   heroCard.addEventListener('pointerleave', () => {
@@ -1380,8 +1520,8 @@ if (heroCard) {
 }
 
 input.addEventListener('input', () => {
-  hidePolicyViolation()
   validatePrompt(false)
+  syncPromptPolicyWarning()
   syncSamplePromptVisibility()
   syncSubmitButtonState()
   const prev = lastPromptTrimLen
@@ -1400,6 +1540,7 @@ input.addEventListener('input', () => {
     schedulePromptLanguageDetect()
   }
   schedulePromptSuggestUpdate()
+  scheduleGenerationPrefetch()
 })
 
 input.addEventListener('blur', () => {
@@ -1481,30 +1622,30 @@ form.addEventListener('submit', async (event) => {
   }
 
   submitButton.classList.add('loading')
+  startLoadingSteps()
   syncSubmitButtonState()
 
-  const ref1 = getTypedElement<HTMLInputElement>('design-ref-url-1')?.value?.trim() || ''
-  const ref2 = getTypedElement<HTMLInputElement>('design-ref-url-2')?.value?.trim() || ''
-  const designReferenceUrls = [ref1, ref2].filter(Boolean)
-  const designReferenceNotes =
-    getTypedElement<HTMLInputElement>('design-ref-notes')?.value?.trim() || ''
-
   try {
-    const response = await authFetch('/api/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        preferredLanguage,
-        ...(designReferenceUrls.length
-          ? {
-              designReferenceUrls,
-              ...(designReferenceNotes ? { designReferenceNotes } : {}),
-            }
-          : {}),
-      }),
-    })
-    const data = await response.json().catch(() => ({}))
+    clearGenerationPrefetchTimer()
+    const payload = buildGenerationPayload(prompt, preferredLanguage)
+    const canUsePrefetch =
+      generationPrefetch &&
+      generationPrefetch.preferredLanguage === preferredLanguage &&
+      canReusePrefetchedPrompt(generationPrefetch.prompt, prompt) &&
+      generationPayloadFingerprint(generationPrefetch.payload) ===
+        generationPayloadFingerprint(payload)
+    const result = canUsePrefetch
+      ? await generationPrefetch.promise
+      : await authFetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).then(async (response) => ({
+          response,
+          data: await response.json().catch(() => ({})),
+        }))
+    if (canUsePrefetch) generationPrefetch = null
+    const { response, data } = result
 
     if (data.id) {
       if (!currentUser) saveAnonSession(data.id, prompt, data.anonOwnerSecret)
@@ -1513,6 +1654,7 @@ form.addEventListener('submit', async (event) => {
         localStorage.setItem(`sf_openui_prompt_${data.id}`, prompt)
         openEmbeddedSession(data.id)
         submitButton.classList.remove('loading')
+        stopLoadingSteps()
         syncSubmitButtonState()
         return
       }
@@ -1525,6 +1667,11 @@ form.addEventListener('submit', async (event) => {
 
     if (data.code === 'CONTENT_POLICY' || response.status === 422) {
       showPolicyViolation(data.error || CONTENT_POLICY_CLIENT_MESSAGE)
+    } else if (
+      data.code === 'PRIVATE_REQUIRES_SUBSCRIPTION' ||
+      data.code === 'PRIVATE_REQUIRES_AUTH'
+    ) {
+      openPrivateGenModal()
     } else if (!currentUser && response.status === 429) {
       if (data.shareBonusClaimed !== undefined) shareBonusClaimed = data.shareBonusClaimed
       updateGenerationCounter()
@@ -1539,6 +1686,7 @@ form.addEventListener('submit', async (event) => {
   }
 
   submitButton.classList.remove('loading')
+  stopLoadingSteps()
   syncSubmitButtonState()
 })
 
@@ -1625,13 +1773,14 @@ const hideGalleryPagination = (): void => {
 
 const updateGalleryPagination = (meta: GalleryMeta | null): void => {
   if (!sessionPagination || !sessionPagePrev || !sessionPageNext || !sessionPageStatus) return
-  if (!meta || meta.total === 0) {
+  const normalized = normalizeGalleryMeta(meta)
+  if (!normalized || normalized.total === 0) {
     sessionPagination.hidden = true
     sessionPageStatus.textContent = ''
     return
   }
-  const showPrev = Boolean(meta.hasPrev)
-  const showNext = Boolean(meta.hasNext)
+  const showPrev = normalized.hasPrev
+  const showNext = normalized.hasNext
   if (!showPrev && !showNext) {
     sessionPagination.hidden = true
     sessionPageStatus.textContent = ''
@@ -1644,9 +1793,9 @@ const updateGalleryPagination = (meta: GalleryMeta | null): void => {
   }
   sessionPagination.hidden = false
   if (sessionPaginationActions) sessionPaginationActions.hidden = false
-  const from = (meta.page - 1) * meta.limit + 1
-  const to = Math.min(meta.page * meta.limit, meta.total)
-  sessionPageStatus.textContent = `Page ${meta.page} of ${meta.totalPages} \u00B7 ${from}\u2013${to} of ${meta.total}`
+  const from = (normalized.page - 1) * normalized.limit + 1
+  const to = Math.min(normalized.page * normalized.limit, normalized.total)
+  sessionPageStatus.textContent = `Page ${normalized.page} of ${normalized.totalPages} \u00B7 ${from}\u2013${to} of ${normalized.total}`
   sessionPagePrev.hidden = !showPrev
   sessionPageNext.hidden = !showNext
   sessionPagePrev.disabled = !showPrev
@@ -1654,8 +1803,9 @@ const updateGalleryPagination = (meta: GalleryMeta | null): void => {
 }
 
 sessionPagePrev?.addEventListener('click', async () => {
-  if (!galleryMeta?.hasPrev) return
-  const cur = Number(galleryMeta.page) || 1
+  const meta = normalizeGalleryMeta(galleryMeta)
+  if (!meta.hasPrev) return
+  const cur = Number(meta.page) || 1
   const p = cur - 1
   if (gallerySource === 'public') await loadRecentPublicSessions(p)
   else if (gallerySource === 'user') {
@@ -1665,14 +1815,26 @@ sessionPagePrev?.addEventListener('click', async () => {
 })
 
 sessionPageNext?.addEventListener('click', async () => {
-  if (!galleryMeta?.hasNext) return
-  const cur = Number(galleryMeta.page) || 1
+  const meta = normalizeGalleryMeta(galleryMeta)
+  if (!meta.hasNext) return
+  const cur = Number(meta.page) || 1
   const p = cur + 1
   if (gallerySource === 'public') await loadRecentPublicSessions(p)
   else if (gallerySource === 'user') {
     userGalleryPage = p
     await loadUserSessionsPage()
   }
+})
+
+homepageFooterLegal?.addEventListener('click', (event: MouseEvent) => {
+  const link = (event.target as HTMLElement | null)?.closest('a[href]') as HTMLAnchorElement | null
+  if (!link || !homepageFooterLegal.contains(link)) return
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+  if (link.target && link.target !== '_self') return
+  const url = new URL(link.href, window.location.href)
+  if (url.origin !== window.location.origin) return
+  event.preventDefault()
+  window.location.assign(`${url.pathname}${url.search}${url.hash}`)
 })
 
 getTypedElement<HTMLElement>('session-list')?.addEventListener(
@@ -1691,6 +1853,17 @@ getTypedElement<HTMLElement>('session-list')?.addEventListener(
 getTypedElement<HTMLElement>('session-list')?.addEventListener('click', (event: MouseEvent) => {
   if (sessionListNavTimer !== null) window.clearTimeout(sessionListNavTimer)
   sessionListNavTimer = null
+  const sessionLink = (event.target as HTMLElement | null)?.closest(
+    '.session-open-link',
+  ) as HTMLAnchorElement | null
+  if (sessionLink) {
+    const id = sessionLink.dataset.sessionId
+    if (!id) return
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    openSessionFromList(id)
+    return
+  }
   const item = (event.target as HTMLElement | null)?.closest('.session-item') as HTMLElement | null
   if (!item) return
   const id = item.dataset.id
@@ -1747,36 +1920,43 @@ function renderSessions(sessions: SessionItem[]): void {
   const eagerThumbnailCount = 6
 
   list.innerHTML = sessions
-    .map(
-      (session, index) => `
+    .map((session, index) => {
+      const sessionHref = `/session/${encodeURIComponent(session.id)}`
+      const promptHtml = escapeSuggestHtml(session.prompt)
+      const promptLabel = escapeSuggestHtml(
+        `Open generated project: ${session.prompt}`.slice(0, 180),
+      )
+      return `
         <li class="session-item" data-id="${session.id}">
-          <div class="session-thumbnail">
-            ${
-              session.homepageReady
-                ? index < eagerThumbnailCount
-                  ? `<iframe src="/preview/${session.id}/" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                  : `<iframe data-src="/preview/${session.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                : `<div class="session-placeholder">${placeholderSvg}</div>`
-            }
-            <div class="session-badges">
+          <a class="session-open-link" href="${sessionHref}" data-session-id="${session.id}" aria-label="${promptLabel}">
+            <div class="session-thumbnail">
               ${
-                session.elapsed
-                  ? `<span class="session-badge badge-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${session.elapsed}s</span>`
-                  : ''
+                session.homepageReady
+                  ? index < eagerThumbnailCount
+                    ? `<iframe src="/preview/${session.id}/" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                    : `<iframe data-src="/preview/${session.id}/" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                  : `<div class="session-placeholder">${placeholderSvg}</div>`
               }
-              ${
-                session.cost != null
-                  ? `<span class="session-badge badge-cost session-cost" style="display:none">$${session.cost.toFixed(4)}</span>`
-                  : ''
-              }
+              <div class="session-badges">
+                ${
+                  session.elapsed
+                    ? `<span class="session-badge badge-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>${session.elapsed}s</span>`
+                    : ''
+                }
+                ${
+                  session.cost != null
+                    ? `<span class="session-badge badge-cost session-cost" style="display:none">$${session.cost.toFixed(4)}</span>`
+                    : ''
+                }
+              </div>
             </div>
-          </div>
-          <div class="session-info">
-            <span class="session-prompt">${session.prompt.replace(/</g, '&lt;')}</span>
-          </div>
+            <div class="session-info">
+              <span class="session-prompt">${promptHtml}</span>
+            </div>
+          </a>
         </li>
-      `,
-    )
+      `
+    })
     .join('')
 
   section.style.display = 'block'
@@ -1931,7 +2111,7 @@ async function loadRecentPublicSessions(page = 1): Promise<void> {
       hideGalleryPagination()
       return
     }
-    galleryMeta = data
+    galleryMeta = normalizeGalleryMeta(data)
     const ids = new Set(items.map((s) => s.id))
     const merged = page === 1 ? [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items] : items
     if (merged.length === 0) {
@@ -1940,7 +2120,7 @@ async function loadRecentPublicSessions(page = 1): Promise<void> {
       return
     }
     renderSessions(merged)
-    updateGalleryPagination(data)
+    updateGalleryPagination(galleryMeta)
   } catch {
     renderSessions([])
     hideGalleryPagination()
@@ -1956,9 +2136,9 @@ async function loadUserSessionsPage(): Promise<boolean> {
     if (!response.ok) return false
     const raw = await response.json()
     if (!raw.items || !Array.isArray(raw.items)) return false
-    galleryMeta = raw
+    galleryMeta = normalizeGalleryMeta(raw)
     renderSessions(raw.items)
-    updateGalleryPagination(raw)
+    updateGalleryPagination(galleryMeta)
     return true
   } catch {
     return false
@@ -2020,14 +2200,14 @@ async function hydrateAnonymousOrPublicGallery(): Promise<void> {
     }
     const ids = new Set(items.map((s) => s.id))
     const merged = [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items]
-    galleryMeta = data
+    galleryMeta = normalizeGalleryMeta(data)
     if (merged.length === 0) {
       renderSessions([])
       hideGalleryPagination()
       return
     }
     renderSessions(merged)
-    updateGalleryPagination(data)
+    updateGalleryPagination(galleryMeta)
   } catch {
     renderSessions([])
     hideGalleryPagination()
@@ -2288,6 +2468,7 @@ const setDesignRefPreview = (url: string, title?: string): void => {
   designRefPreviewUrl!.textContent = url
   designRefPreview.classList.add('is-visible')
   designRefUrl1!.value = url
+  scheduleGenerationPrefetch()
 }
 
 const clearDesignRefPreview = (): void => {
@@ -2298,6 +2479,7 @@ const clearDesignRefPreview = (): void => {
   designRefPreviewUrl!.textContent = ''
   designRefUrl1!.value = ''
   if (designRefSearch) designRefSearch.value = ''
+  scheduleGenerationPrefetch()
 }
 
 let designRefSearchTimer: number | null = null

@@ -221,8 +221,10 @@ export async function createPaymentSessions(cartId, providerId) {
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_MEDUSA_PAYMENT_PROVIDER_ID) ||
     'pp_system_default'
   try {
-    const { cart } = await client.store.payment.initiatePaymentSession(cartId, { provider_id: pid })
-    return cart || null
+    const { cart } = await client.store.cart.retrieve(cartId)
+    if (!cart?.id) return null
+    const { payment_collection } = await client.store.payment.initiatePaymentSession(cart, { provider_id: pid })
+    return payment_collection || null
   } catch {
     return null
   }

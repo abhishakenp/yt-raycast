@@ -46,11 +46,14 @@ const openOverlay = (): void => {
   if (!authOverlay) return
   if (authErrorEl) authErrorEl.textContent = ''
   authOverlay.classList.remove('hidden')
+  authOverlay.setAttribute('aria-hidden', 'false')
+  document.getElementById('google-signin-btn')?.focus()
 }
 
 const closeOverlay = (): void => {
   if (!authOverlay) return
   authOverlay.classList.add('hidden')
+  authOverlay.setAttribute('aria-hidden', 'true')
   if (authErrorEl) authErrorEl.textContent = ''
 }
 
@@ -155,10 +158,13 @@ const main = async (): Promise<void> => {
 
   const emailInput = document.getElementById('auth-email') as HTMLInputElement | null
   const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null
+  const emailForm = document.getElementById('auth-email-form') as HTMLFormElement | null
 
   const readEmailCreds = (): { email: string; password: string } | null => {
     const email = emailInput?.value.trim() ?? ''
     const password = passwordInput?.value ?? ''
+    emailInput?.setAttribute('aria-invalid', email ? 'false' : 'true')
+    passwordInput?.setAttribute('aria-invalid', password ? 'false' : 'true')
     if (!email || !password) {
       if (authErrorEl) authErrorEl.textContent = 'Email and password required'
       return null
@@ -166,14 +172,14 @@ const main = async (): Promise<void> => {
     return { email, password }
   }
 
-  document.getElementById('email-signin-btn')?.addEventListener(
-    'click',
-    wrap(async () => {
-      const creds = readEmailCreds()
-      if (!creds) return
-      await window.__sfAuthApi!.signInEmail(creds.email, creds.password)
-    }),
-  )
+  const signInWithEmail = async (): Promise<void> => {
+    const creds = readEmailCreds()
+    if (!creds) return
+    await window.__sfAuthApi!.signInEmail(creds.email, creds.password)
+  }
+
+  emailForm?.addEventListener('submit', wrap(signInWithEmail))
+  document.getElementById('email-signin-btn')?.addEventListener('click', wrap(signInWithEmail))
 
   document.getElementById('email-signup-btn')?.addEventListener(
     'click',

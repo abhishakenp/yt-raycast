@@ -4,6 +4,7 @@ const NAV_LINKS = [
   { href: '/', label: 'Home', key: 'home' },
   { href: '/pricing', label: 'Pricing', key: 'pricing' },
   { href: '/privacy', label: 'Privacy', key: 'privacy' },
+  { href: '/terms', label: 'Terms', key: 'terms' },
 ]
 
 const navLogo = `

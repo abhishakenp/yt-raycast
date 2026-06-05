@@ -894,7 +894,14 @@ button.share-icon.pill {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 8px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 32px;
+  margin-top: -4px;
+  padding: 5px 8px 5px 5px;
+  border-radius: 9999px;
+  border: 1px solid var(--border-primary);
+  background: rgba(0, 0, 0, 0.18);
 }
 
 .design-ref-toggle {
@@ -942,6 +949,9 @@ button.share-icon.pill {
   cursor: pointer;
   user-select: none;
   transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .design-ref-toggle-label:hover {
@@ -950,8 +960,8 @@ button.share-icon.pill {
 
 .design-ref-panel {
   display: none;
-  margin-top: 12px;
-  padding: 14px;
+  margin-top: -8px;
+  padding: 12px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.25);
@@ -995,8 +1005,9 @@ button.share-icon.pill {
 
 .design-ref-search {
   width: 100%;
+  min-height: 40px;
   padding: 10px 12px 10px 36px;
-  border-radius: 9999px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.3);
   color: var(--text-primary);
@@ -1024,6 +1035,7 @@ button.share-icon.pill {
   display: none;
   margin-top: 10px;
   padding: 10px;
+  min-height: 42px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.2);
@@ -1090,6 +1102,17 @@ button.share-icon.pill {
   color: var(--text-muted);
   line-height: 1.5;
   word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  .design-ref-toggle-row {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .design-ref-panel {
+    padding: 10px;
+  }
 }
 
 .submit-btn {
@@ -1572,6 +1595,20 @@ button.share-icon.pill {
   transform: translateY(-2px);
 }
 
+.session-open-link {
+  color: inherit;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100%;
+  text-decoration: none;
+}
+
+.session-open-link:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
 .session-thumbnail {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -1776,13 +1813,15 @@ button.share-icon.pill {
 #auth-overlay {
   position: fixed;
   inset: 0;
-  z-index: 200;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  z-index: 500;
+  padding: 24px;
+  background: rgba(7, 7, 16, 0.18);
+  backdrop-filter: blur(3px) saturate(120%);
+  -webkit-backdrop-filter: blur(3px) saturate(120%);
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 #auth-overlay.hidden {
@@ -1790,12 +1829,14 @@ button.share-icon.pill {
 }
 
 .auth-box {
-  background: var(--glass-bg);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
+    rgba(7, 7, 16, 0.72);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   padding: 40px 32px;
   width: 100%;
-  max-width: 400px;
+  max-width: 384px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1803,6 +1844,7 @@ button.share-icon.pill {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--glass-shadow);
+  cursor: auto;
 }
 
 .auth-logo {
@@ -1815,8 +1857,17 @@ button.share-icon.pill {
 }
 
 .auth-title {
+  margin: 0;
   font-size: 14px;
   color: var(--text-secondary);
+  text-align: center;
+}
+
+.auth-description {
+  margin: -8px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
   text-align: center;
 }
 
@@ -1897,6 +1948,28 @@ button.share-icon.pill {
 
 .auth-input::placeholder {
   color: var(--text-muted);
+}
+
+.auth-email-form,
+.auth-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-email-form {
+  gap: 12px;
+}
+
+.auth-field {
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.auth-input[aria-invalid='true'] {
+  border-color: var(--error);
 }
 
 .auth-email-row {
@@ -2088,4 +2161,3 @@ button.share-icon.pill {
   transition: none;
   animation: none;
 }
-

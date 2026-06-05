@@ -2,6 +2,19 @@
   "name": "ship-fast-vanilla",
   "version": "1.0.0",
   "packageManager": "bun@1.2.5",
+  "overrides": {
+    "@tootallnate/once": "3.0.1",
+    "axios": "1.17.0",
+    "brace-expansion": "5.0.6",
+    "fast-xml-builder": "1.2.0",
+    "fast-xml-parser": "5.8.0",
+    "follow-redirects": "1.16.0",
+    "path-to-regexp": "0.1.13",
+    "prismjs": "1.30.0",
+    "protobufjs": "8.6.0",
+    "uuid": "14.0.0",
+    "ws": "8.21.0"
+  },
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -30,7 +43,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "latest",
-    "@medusajs/js-sdk": "^2.13.5",
+    "@medusajs/js-sdk": "^2.15.5",
     "@openuidev/lang-core": "^0.2.5",
     "@openuidev/react-lang": "^0.2.6",
     "@portabletext/to-html": "^5.0.2",
@@ -52,9 +65,9 @@
     "clsx": "^2.1.1",
     "cookie": "^1.1.1",
     "dotenv": "^17.4.2",
-    "express": "^4.21.0",
-    "firebase": "^12.12.0",
-    "firebase-admin": "^13.7.0",
+    "express": "^4.22.2",
+    "firebase": "^12.14.0",
+    "firebase-admin": "^13.10.0",
     "franc-min": "^6.2.0",
     "http-proxy": "^1.18.1",
     "idb-keyval": "^6.2.5",
@@ -63,23 +76,30 @@
     "razorpay": "^2.9.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "stripe": "^22.2.0",
     "tailwind-merge": "^3.5.0",
-    "ws": "^8.18.0",
+    "ws": "^8.21.0",
     "zod": "^4.3.6"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/express": "^5.0.6",
     "@types/http-proxy": "^1.17.15",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/ws": "^8.18.1",
+    "autoprefixer": "^10.5.0",
     "esbuild": "^0.28.0",
     "playwright": "^1.50.0",
     "prettier": "^3.0.0",
+    "tailwindcss": "^4.3.0",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5",
     "vitest": "^4.1.5"
   }

@@ -11,12 +11,18 @@ const slugify = (s) =>
 const parsePriceToCents = (price) => {
   if (price == null) return 1999
   if (typeof price === 'number' && Number.isFinite(price)) {
-    if (price > 0 && price < 1000) return Math.round(price * 100)
-    return Math.round(price)
+    return Math.round(price * 100)
   }
   const n = parseFloat(String(price).replace(/[^0-9.]/g, ''))
   if (!Number.isFinite(n)) return 1999
   return Math.round(n * 100)
+}
+
+const normalizeCurrencyCode = (currency, fallback = 'usd') => {
+  const normalized = String(currency || fallback || 'usd')
+    .trim()
+    .toLowerCase()
+  return /^[a-z]{3}$/.test(normalized) ? normalized : fallback
 }
 
 async function adminFetch(base, token, path, init = {}) {
@@ -221,6 +227,7 @@ export async function syncProductsToMedusa(products, options = {}) {
           : Array.isArray(p.features) && p.features.length
             ? { features: p.features }
             : undefined
+    const currencyCode = normalizeCurrencyCode(p.currency, defaultCurrency)
     const body = {
       title,
       handle,
@@ -234,7 +241,7 @@ export async function syncProductsToMedusa(products, options = {}) {
           title: 'Default',
           sku: p.id ? String(p.id) : undefined,
           options: { Default: 'Default' },
-          prices: [{ currency_code: defaultCurrency, amount }],
+          prices: [{ currency_code: currencyCode, amount }],
         },
       ],
     }

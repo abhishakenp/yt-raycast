@@ -92,7 +92,12 @@ export async function listPaymentProviders(regionId) {
 export async function initiatePayment(cartId, providerId = 'pp_system_default') {
   const client = getMedusaSdk()
   if (!client || !cartId) return null
-  try { const { cart } = await client.store.payment.initiatePaymentSession(cartId, { provider_id: providerId }); return cart || null }
+  try {
+    const { cart } = await client.store.cart.retrieve(cartId)
+    if (!cart?.id) return null
+    const { payment_collection } = await client.store.payment.initiatePaymentSession(cart, { provider_id: providerId })
+    return payment_collection || null
+  }
   catch { return null }
 }
 `

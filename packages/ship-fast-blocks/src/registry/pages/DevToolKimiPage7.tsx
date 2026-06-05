@@ -171,7 +171,7 @@ export const DevToolKimiPage7 = defineComponent({
       `import { StreamAPI } from '@streamapi/sdk';
 
 const client = new StreamAPI({
-  apiKey: 'sk_live_51H8x...'
+  apiKey: 'STREAM_API_KEY_REDACTED'
 });
 
 const stream = await client.createStream({

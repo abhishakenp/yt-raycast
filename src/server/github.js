@@ -1,12 +1,12 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { slug as slugify } from '@ship-fast/engine/pipeline/workspace.js'
-import { renderProject } from '@ship-fast/engine/renderers/index.js'
 import { ensureCompatibleSiteSpec, SUPPORTED_EXPORT_TARGETS } from '@ship-fast/engine/spec/index.js'
-import { generateSessionExport } from './exports.js'
+import { decorateExportFiles, generateSessionExport } from './exports.js'
+import { renderProject } from '../renderers/index.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 
-const GITHUB_API_BASE = 'https://api.github.com'
+const DEFAULT_GITHUB_API_BASE = 'https://api.github.com'
 const GITHUB_EXPORT_META_FILE = '.github-export.json'
 const GITHUB_RETRY_ATTEMPTS = 8
 const GITHUB_RETRY_BASE_DELAY_MS = 350
@@ -70,8 +70,13 @@ async function retryGithubConflict(task, attempts = GITHUB_RETRY_ATTEMPTS) {
   throw lastError || new Error('GitHub request failed.')
 }
 
+function getGithubApiBase() {
+  const configured = String(process.env.SHIP_FAST_GITHUB_API_BASE || DEFAULT_GITHUB_API_BASE).trim()
+  return (configured || DEFAULT_GITHUB_API_BASE).replace(/\/+$/, '')
+}
+
 async function githubRequest(path, { token, method = 'GET', body, expectedStatus = [200] } = {}) {
-  const response = await fetch(`${GITHUB_API_BASE}${path}`, {
+  const response = await fetch(`${getGithubApiBase()}${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
@@ -297,7 +302,7 @@ async function ensureTargetRepository(session, target, githubAccessToken, siteSp
   return { repo, created }
 }
 
-export async function pushSessionToGitHub(session, { target, githubAccessToken }) {
+export async function pushSessionToGitHub(session, { target, githubAccessToken, includeBadge = true }) {
   const normalizedTarget = normalizeTarget(target)
   const accessToken = String(githubAccessToken || '').trim()
   if (!accessToken) throw new Error('GitHub repo access is required before pushing.')
@@ -305,8 +310,9 @@ export async function pushSessionToGitHub(session, { target, githubAccessToken }
   const siteSpec = resolveSessionSiteSpec(session)
   await getAuthenticatedGithubUser(accessToken)
 
-  generateSessionExport(session, normalizedTarget)
-  const { files } = renderProject(siteSpec, normalizedTarget)
+  generateSessionExport(session, normalizedTarget, { includeBadge })
+  const { files: rawFiles } = renderProject(siteSpec, normalizedTarget)
+  const files = decorateExportFiles(rawFiles, { includeBadge })
   const { repo, created } = await ensureTargetRepository(
     session,
     normalizedTarget,
@@ -319,9 +325,9 @@ export async function pushSessionToGitHub(session, { target, githubAccessToken }
   const tree = await retryGithubConflict(() => createTree(accessToken, repo.full_name, files))
   const commit = await retryGithubConflict(() =>
     createCommit(accessToken, repo.full_name, {
-    message: `Ship Fast export (${formatTargetLabel(normalizedTarget)})`,
-    treeSha: tree.sha,
-    parentSha: existingRef?.object?.sha || null,
+      message: `Ship Fast export (${formatTargetLabel(normalizedTarget)})`,
+      treeSha: tree.sha,
+      parentSha: existingRef?.object?.sha || null,
     }),
   )
 

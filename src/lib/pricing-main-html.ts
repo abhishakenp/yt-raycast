@@ -1,4 +1,4 @@
-import { glassPillButtonHtml } from './glass-pill-html'
+import { glassPillButtonHtml } from './glass-pill-html.ts'
 
 const goHome = ' onclick="location.href=\'/\'"'
 
@@ -19,7 +19,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
           </span>
           <span class="countdown-badge" id="countdown-badge" aria-live="polite">
             <span class="countdown-dot" aria-hidden="true"></span>
-            <span id="countdown-text">Price increases in 23d 14h 06m</span>
+            <span id="countdown-text">Early adopter slots still open</span>
           </span>
         </div>
       </section>
@@ -242,7 +242,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
                 <td>Generation limit</td>
                 <td>10/month</td>
                 <td class="highlight-col" style="color:#EDEDEF;font-weight:600;">30/month</td>
-                <td>Unlimited</td>
+                <td>10/month previews</td>
               </tr>
               <tr>
                 <td>ZIP download</td>
@@ -299,7 +299,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
               Is there a free trial for Pro?
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
             </summary>
-            <p>Yes — the Free plan lets you generate previews and explore templates without a card. When you're ready to export a full project as a ZIP or need unlimited generations, upgrade to Pro or grab a credit pack.</p>
+            <p>Yes — the Free plan lets you generate previews and explore templates without a card. When you're ready to export a full project as a ZIP or need a higher monthly generation limit, upgrade to Pro or grab a credit pack.</p>
           </details>
 
           <details class="faq-item">
@@ -315,7 +315,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
               What is a "credit" in the credit packs?
               <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
             </summary>
-            <p>One credit equals one ZIP export of a generated project. Credits never expire and can be used across any generated session. Generating previews is always free and does not consume credits.</p>
+            <p>One credit equals one ZIP export of a generated project. Credits never expire and can be used across any generated session. Generating previews does not consume credits and stays subject to your plan's generation quota.</p>
           </details>
 
           <details class="faq-item">
@@ -361,22 +361,8 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
     </div>
 
     <script>
-      const TARGET = new Date('2026-05-23T00:00:00+05:30')
-
-      function pad(n) { return String(n).padStart(2, '0') }
-
       function tick() {
-        const now = new Date()
-        const diff = TARGET - now
-        if (diff <= 0) {
-          document.getElementById('countdown-text').textContent = 'Slots filled — price locked in'
-          return
-        }
-        const days = Math.floor(diff / 86400000)
-        const hours = Math.floor((diff % 86400000) / 3600000)
-        const mins = Math.floor((diff % 3600000) / 60000)
-        document.getElementById('countdown-text').textContent =
-          'Price increases in ' + days + 'd ' + pad(hours) + 'h ' + pad(mins) + 'm'
+        document.getElementById('countdown-text').textContent = 'Early adopter slots still open'
       }
 
       tick()

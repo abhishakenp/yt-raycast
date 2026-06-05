@@ -20,7 +20,8 @@ export const scoreRalphHomepage = (
       ok: false,
       score: 0,
       reasons: ['empty html'],
-      feedback: 'Emit a full single-file homepage: <!DOCTYPE html>, <html>, <head> with Tailwind CDN + config, <body> with sections and one inline script for toggles.',
+      feedback:
+        'Emit a full single-file homepage: <!DOCTYPE html>, <html>, <head> without Tailwind CDN, <body> with Tailwind utility classes, sections, and one inline script for toggles.',
     }
   }
 
@@ -44,8 +45,8 @@ export const scoreRalphHomepage = (
   const minBands = siteSt === 'docs' ? 5 : 6
   if (bands >= minBands) score += 30
   else reasons.push(`section bands ${bands} (target >= ${minBands})`)
-  if (/cdn\.tailwindcss\.com/i.test(s)) score += 25
-  else reasons.push('missing cdn.tailwindcss.com')
+  if (/cdn\.tailwindcss\.com/i.test(s)) reasons.push('remove cdn.tailwindcss.com; Ship Fast injects compiled Tailwind CSS')
+  else score += 25
   if (hookRe.test(s)) score += 25
   else reasons.push('missing wired data-* hooks (nav, accordion, tabs, carousel, counter, pricing toggle, or storefront cart)')
 
@@ -83,7 +84,7 @@ export const scoreRalphHomepage = (
 
   const ok = score >= minScore && reasons.length === 0
   const feedback = reasons.length
-    ? `Revise the next homepage: ${reasons.join('; ')}. Match the public design exemplar tier in the system prompt (same site type). Tailwind CDN + config only; working vanilla JS.`
+    ? `Revise the next homepage: ${reasons.join('; ')}. Match the public design exemplar tier in the system prompt (same site type). Tailwind utility classes only, no Tailwind CDN; working vanilla JS.`
     : ''
   return { ok, score, reasons, feedback }
 }

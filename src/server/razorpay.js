@@ -2,6 +2,7 @@ import Razorpay from 'razorpay'
 import { FieldValue } from 'firebase-admin/firestore'
 import { db } from '../auth/firebase-admin.js'
 import { addUserCredits, incrementEarlyAdopterCount, zeroUserCredits } from '../billing/payments.js'
+import { validatePartnerCoupon } from '../billing/coupons.js'
 
 const keyId = process.env.RAZORPAY_KEY_ID || ''
 const keySecret = process.env.RAZORPAY_KEY_SECRET || ''
@@ -12,9 +13,26 @@ const earlyAdopterPlanId = process.env.RAZORPAY_EARLY_ADOPTER_PLAN_ID || ''
 const credits3Paise = parseInt(process.env.RAZORPAY_CREDITS_3_PAISE || '0', 10)
 const credits10Paise = parseInt(process.env.RAZORPAY_CREDITS_10_PAISE || '0', 10)
 
+let razorpayTestOverrides = null
+
+export const __setRazorpayTestOverrides = (overrides = null) => {
+  razorpayTestOverrides = overrides
+}
+
+const getRazorpayConfig = () => ({
+  keyId: razorpayTestOverrides?.keyId ?? keyId,
+  keySecret: razorpayTestOverrides?.keySecret ?? keySecret,
+  proPlanId: razorpayTestOverrides?.proPlanId ?? proPlanId,
+  earlyAdopterPlanId: razorpayTestOverrides?.earlyAdopterPlanId ?? earlyAdopterPlanId,
+  credits3Paise: razorpayTestOverrides?.credits3Paise ?? credits3Paise,
+  credits10Paise: razorpayTestOverrides?.credits10Paise ?? credits10Paise,
+})
+
 const getRzp = () => {
-  if (!keyId || !keySecret) return null
-  return new Razorpay({ key_id: keyId, key_secret: keySecret })
+  if (razorpayTestOverrides?.client) return razorpayTestOverrides.client
+  const cfg = getRazorpayConfig()
+  if (!cfg.keyId || !cfg.keySecret) return null
+  return new Razorpay({ key_id: cfg.keyId, key_secret: cfg.keySecret })
 }
 
 const webhookIdsRef = () => db.collection('billing').doc('razorpay_webhooks').collection('ids')
@@ -98,15 +116,21 @@ const notesUid = (notes) => {
 export async function razorpayStartHandler(req, res) {
   const rzp = getRzp()
   if (!rzp) return res.status(503).json({ error: 'Razorpay is not configured' })
+  const cfg = getRazorpayConfig()
 
   const mode = String(req.body?.mode || '')
   const uid = req.user.uid
   const email = req.user.email || ''
+  const couponCode = String(req.body?.couponCode || '').trim()
+  const coupon = couponCode
+    ? validatePartnerCoupon(couponCode, { provider: 'razorpay' })
+    : { ok: true, code: '', percentOff: 0, razorpayOfferId: '' }
+  if (!coupon.ok) return res.status(400).json({ error: coupon.error, code: 'INVALID_COUPON' })
 
   try {
     if (mode === 'subscription') {
       const tier = String(req.body?.tier || 'pro')
-      const planId = tier === 'early_adopter' ? earlyAdopterPlanId : proPlanId
+      const planId = tier === 'early_adopter' ? cfg.earlyAdopterPlanId : cfg.proPlanId
       if (!planId) return res.status(503).json({ error: 'Subscription plan is not configured' })
 
       const sub = await rzp.subscriptions.create({
@@ -114,23 +138,37 @@ export async function razorpayStartHandler(req, res) {
         customer_notify: 1,
         total_count: 120,
         quantity: 1,
-        notes: { uid },
+        notes: {
+          uid,
+          ...(coupon.code
+            ? {
+                coupon_code: coupon.code,
+                coupon_percent_off: String(coupon.percentOff),
+              }
+            : {}),
+        },
+        ...(coupon.razorpayOfferId ? { offer_id: coupon.razorpayOfferId } : {}),
         ...(email ? { notify_info: { notify_email: email } } : {}),
       })
 
       return res.json({
-        key_id: keyId,
+        key_id: cfg.keyId,
         subscription_id: sub.id,
         name: 'Ship Fast Pro',
         description: tier === 'early_adopter' ? 'Early adopter Pro' : 'Pro subscription',
         prefill: email ? { email } : {},
+        coupon: coupon.code ? { code: coupon.code, percentOff: coupon.percentOff } : null,
       })
     }
 
     if (mode === 'credit_pack') {
       const packId = String(req.body?.packId || '')
       const amount =
-        packId === '10_credits' ? credits10Paise : packId === '3_credits' ? credits3Paise : 0
+        packId === '10_credits'
+          ? cfg.credits10Paise
+          : packId === '3_credits'
+            ? cfg.credits3Paise
+            : 0
       if (!amount) return res.status(400).json({ error: 'Invalid or unconfigured credit pack' })
 
       const receipt = `sf_${uid}_${Date.now()}`.slice(0, 40)
@@ -141,17 +179,25 @@ export async function razorpayStartHandler(req, res) {
         notes: {
           uid,
           pack: packId === '10_credits' ? '10' : '3',
+          ...(coupon.code
+            ? {
+                coupon_code: coupon.code,
+                coupon_percent_off: String(coupon.percentOff),
+              }
+            : {}),
         },
+        ...(coupon.razorpayOfferId ? { offer_id: coupon.razorpayOfferId } : {}),
       })
 
       return res.json({
-        key_id: keyId,
+        key_id: cfg.keyId,
         order_id: order.id,
         amount: order.amount,
         currency: order.currency || 'INR',
         name: 'Ship Fast',
         description: packId === '10_credits' ? '10 download credits' : '3 download credits',
         prefill: email ? { email } : {},
+        coupon: coupon.code ? { code: coupon.code, percentOff: coupon.percentOff } : null,
       })
     }
 

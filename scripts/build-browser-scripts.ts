@@ -1,9 +1,12 @@
 import { build } from 'esbuild'
+import { execFile } from 'node:child_process'
 import { readdirSync } from 'fs'
 import { join } from 'path'
+import { promisify } from 'node:util'
 
 const srcDir = 'src/scripts'
 const outDir = 'public/scripts'
+const execFileAsync = promisify(execFile)
 
 // Get all .ts files in src/scripts/
 const entryPoints = Array.from(
@@ -52,4 +55,13 @@ await build({
   },
 })
 
-console.log(`Built ${entryPoints.length + 1} scripts to ${outDir}/`)
+await execFileAsync('bunx', [
+  'tailwindcss',
+  '-i',
+  'src/styles/openui-preview-tailwind.css',
+  '-o',
+  'public/styles/openui-preview-tailwind.css',
+  '--minify',
+])
+
+console.log(`Built ${entryPoints.length + 1} scripts to ${outDir}/ and OpenUI preview CSS`)

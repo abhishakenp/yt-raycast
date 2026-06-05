@@ -42,7 +42,7 @@ const CASES = [
     prompts: [
       'B2B SaaS marketing site: hero, proof, feature grid, pricing band, docs CTA, footer; trust-oriented developer aesthetic.',
       'Eight major bands minimum; display + mono pairing; layered cards; dynamic UI hooks (nav, accordion, pricing toggle).',
-      'Vague SaaS: AI-first workflow product for teams — dense dark landing: aurora-style hero layers, split terminal or demo panel, proof metrics grid, pricing with monthly/yearly toggle (data-bill or data-pricing-billing), FAQ accordion (data-acc or data-accordion), penultimate CTA band, rich footer. Tailwind CDN + theme.extend only; vanilla JS for interactions.',
+      'Vague SaaS: AI-first workflow product for teams — dense dark landing: aurora-style hero layers, split terminal or demo panel, proof metrics grid, pricing with monthly/yearly toggle (data-bill or data-pricing-billing), FAQ accordion (data-acc or data-accordion), penultimate CTA band, rich footer. Tailwind utility classes only, no Tailwind CDN; vanilla JS for interactions.',
     ],
   },
   {

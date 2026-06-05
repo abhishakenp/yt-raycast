@@ -11,6 +11,8 @@ import {
   getSessionPaymentDetails,
 } from '../billing/payments.js'
 import { verifyIdToken } from '../auth/firebase-admin.js'
+import { razorpayStartHandler } from './razorpay.js'
+import { stripeStartHandler } from './stripe.js'
 
 const BRANDFETCH_TIMEOUT_MS = 6500
 
@@ -126,84 +128,8 @@ export function mountNextApiPort(app, { requireAuth }) {
   })
 
   // POST /api/payments/razorpay/start — auth required
-  app.post('/api/payments/razorpay/start', requireAuth, async (req, res) => {
-    const keyId = process.env.RAZORPAY_KEY_ID
-    const keySecret = process.env.RAZORPAY_KEY_SECRET
-    if (!keyId || !keySecret) {
-      return res.status(503).json({ error: 'Razorpay is not configured' })
-    }
-    let RazorpayCtor
-    try {
-      ;({ default: RazorpayCtor } = await import('razorpay'))
-    } catch (err) {
-      console.error('[razorpay/start] sdk load failed', err)
-      return res.status(503).json({ error: 'Razorpay SDK unavailable' })
-    }
-    const rzp = new RazorpayCtor({ key_id: keyId, key_secret: keySecret })
-    const body = req.body || {}
-    const mode = String(body.mode || '')
-    const uid = req.user.uid
-    const email = req.user.email || ''
-    try {
-      if (mode === 'subscription') {
-        const tier = String(body.tier || 'pro')
-        const planId =
-          tier === 'early_adopter'
-            ? process.env.RAZORPAY_EARLY_ADOPTER_PLAN_ID
-            : process.env.RAZORPAY_PRO_PLAN_ID
-        if (!planId) {
-          return res.status(503).json({ error: 'Subscription plan is not configured' })
-        }
-        const sub = await rzp.subscriptions.create({
-          plan_id: planId,
-          customer_notify: 1,
-          total_count: 120,
-          quantity: 1,
-          notes: { uid },
-          ...(email ? { notify_info: { notify_email: email } } : {}),
-        })
-        return res.json({
-          key_id: keyId,
-          subscription_id: sub.id,
-          name: 'Ship Fast Pro',
-          description: tier === 'early_adopter' ? 'Early adopter Pro' : 'Pro subscription',
-          prefill: email ? { email } : {},
-        })
-      }
-      if (mode === 'credit_pack') {
-        const packId = String(body.packId || '')
-        const amount =
-          packId === '10_credits'
-            ? Number(process.env.RAZORPAY_CREDITS_10_PAISE || 0)
-            : packId === '3_credits'
-              ? Number(process.env.RAZORPAY_CREDITS_3_PAISE || 0)
-              : 0
-        if (!amount) {
-          return res.status(400).json({ error: 'Invalid or unconfigured credit pack' })
-        }
-        const receipt = `sf_${uid}_${Date.now()}`.slice(0, 40)
-        const order = await rzp.orders.create({
-          amount,
-          currency: 'INR',
-          receipt,
-          notes: { uid, pack: packId === '10_credits' ? '10' : '3' },
-        })
-        return res.json({
-          key_id: keyId,
-          order_id: order.id,
-          amount: order.amount,
-          currency: order.currency || 'INR',
-          name: 'Ship Fast',
-          description: packId === '10_credits' ? '10 download credits' : '3 download credits',
-          prefill: email ? { email } : {},
-        })
-      }
-      return res.status(400).json({ error: 'Invalid mode' })
-    } catch (err) {
-      console.error('[razorpay/start]', err?.message ?? err)
-      return res.status(500).json({ error: err?.message || 'Razorpay error' })
-    }
-  })
+  app.post('/api/payments/razorpay/start', requireAuth, razorpayStartHandler)
+  app.post('/api/payments/stripe/start', requireAuth, stripeStartHandler)
 
   // POST /api/stream-openui — Server-Sent Events bridge to Groq
   app.post('/api/stream-openui', async (req, res) => {

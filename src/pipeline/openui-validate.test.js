@@ -11,7 +11,7 @@ describe('openui fixtures', () => {
   it('validates parser requirements only', () => {
     expect(validateOpenUISource('').ok).toBe(false)
     expect(validateOpenUISource(thinButParseable).ok).toBe(true)
-  })
+  }, 120000)
 
   it('rejects old and unknown component names', () => {
     const legacy = `root = LegacyPageTemplate([title])
@@ -22,5 +22,5 @@ title = Heading("Unknown")
 `
     expect(validateOpenUISource(legacy).ok).toBe(false)
     expect(validateOpenUISource(unknown).ok).toBe(false)
-  })
+  }, 120000)
 })

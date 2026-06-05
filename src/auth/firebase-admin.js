@@ -7,15 +7,23 @@ const firebasePrivateKeyRaw = process.env.FIREBASE_PRIVATE_KEY?.trim()
 const firebasePrivateKey = firebasePrivateKeyRaw
   ? firebasePrivateKeyRaw.replace(/^"|"$/g, '').replace(/\\n/g, '\n')
   : undefined
+const hasServiceAccount =
+  Boolean(process.env.FIREBASE_PROJECT_ID) &&
+  Boolean(process.env.FIREBASE_CLIENT_EMAIL) &&
+  Boolean(firebasePrivateKey)
 
 if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: firebasePrivateKey,
-    }),
-  })
+  initializeApp(
+    hasServiceAccount
+      ? {
+          credential: cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: firebasePrivateKey,
+          }),
+        }
+      : {},
+  )
 }
 
 /** @type {import('firebase-admin/firestore').Firestore} */

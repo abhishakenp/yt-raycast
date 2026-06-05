@@ -1,4 +1,4 @@
-import { MAX_ANON_PER_DAY, SHARE_BONUS_EXTRA } from '../billing/constants'
+import { MAX_ANON_PER_DAY, SHARE_BONUS_EXTRA } from '../billing/constants.ts'
 
 export { SHARE_BONUS_EXTRA }
 

@@ -6,6 +6,175 @@ const PARTIAL_MAX = 480
 const OUT_MAX = 4
 const LINE_MAX = 380
 const MIN_TAIL = 6
+const LANGUAGE_MAX = 32
+
+const LANGUAGE_NAMES = {
+  en: 'English',
+  hinglish: 'mixed Hindi-English',
+  hi: 'Hindi',
+  ta: 'Tamil',
+  te: 'Telugu',
+  kn: 'Kannada',
+  ml: 'Malayalam',
+  bn: 'Bengali',
+  mr: 'Marathi',
+  gu: 'Gujarati',
+  pa: 'Punjabi',
+  or: 'Odia',
+  as: 'Assamese',
+  ur: 'Urdu',
+  fr: 'French',
+  es: 'Spanish',
+  de: 'German',
+  it: 'Italian',
+  pt: 'Portuguese',
+  ar: 'Arabic',
+}
+
+const FALLBACK_TAILS = {
+  en: [
+    'for a modern homepage with a clear hero, benefits, pricing, testimonials, and a fast contact flow.',
+    'with polished sections for the audience, services, trust signals, FAQs, and conversion-focused calls to action.',
+    'that feels premium and practical, with mobile-first layout, strong visuals, and simple lead capture.',
+    'for a launch-ready site with product story, feature highlights, social proof, and a direct signup path.',
+  ],
+  hinglish: [
+    'ke liye modern homepage banao jisme hero, services, pricing, reviews aur clear contact flow ho.',
+    'ke liye ek premium website chahiye jisme audience, benefits, FAQs aur strong call to action ho.',
+    'ke liye mobile-friendly landing page banao jisme trust signals, gallery aur enquiry form ho.',
+    'ke liye clean aur fast site banao jisme brand story, sections aur booking flow simple rahe.',
+  ],
+  hi: [
+    'के लिए एक आधुनिक होमपेज बनाएं जिसमें हीरो सेक्शन, सेवाएं, कीमतें, समीक्षाएं और संपर्क फॉर्म हों।',
+    'के लिए प्रीमियम वेबसाइट बनाएं जिसमें ग्राहकों के लाभ, भरोसे के संकेत, FAQ और स्पष्ट कॉल टू एक्शन हों।',
+    'के लिए मोबाइल-फ्रेंडली लैंडिंग पेज बनाएं जिसमें गैलरी, ऑफर और आसान बुकिंग फ्लो हो।',
+    'के लिए साफ और तेज वेबसाइट बनाएं जिसमें ब्रांड कहानी, सेक्शन और लीड फॉर्म शामिल हों।',
+  ],
+  ta: [
+    'க்கு நவீன முகப்புப்பக்கம் உருவாக்கவும்; ஹீரோ பகுதி, சேவைகள், விலை, மதிப்புரைகள் மற்றும் தொடர்பு படிவம் இருக்கட்டும்.',
+    'க்கு பிரீமியம் இணையதளம் உருவாக்கவும்; பயன்கள், நம்பிக்கை சான்றுகள், FAQ மற்றும் தெளிவான செயல் அழைப்பு சேர்க்கவும்.',
+    'க்கு மொபைல் நட்பு லாண்டிங் பக்கம் உருவாக்கவும்; கேலரி, சலுகைகள் மற்றும் எளிய முன்பதிவு ஓட்டம் இருக்கட்டும்.',
+    'க்கு சுத்தமான வேகமான தளம் உருவாக்கவும்; பிராண்ட் கதை, பிரிவுகள் மற்றும் லீட் படிவம் சேர்க்கவும்.',
+  ],
+  te: [
+    'కోసం ఆధునిక హోమ్‌పేజ్ రూపొందించండి; హీరో సెక్షన్, సేవలు, ధరలు, సమీక్షలు మరియు సంప్రదింపు ఫారమ్ ఉండాలి.',
+    'కోసం ప్రీమియం వెబ్‌సైట్ కావాలి; ప్రయోజనాలు, నమ్మకం సూచనలు, FAQ మరియు స్పష్టమైన కాల్ టు యాక్షన్ ఉండాలి.',
+    'కోసం మొబైల్ ఫ్రెండ్లీ ల్యాండింగ్ పేజ్ రూపొందించండి; గ్యాలరీ, ఆఫర్లు మరియు సులభమైన బుకింగ్ ఫ్లో ఉండాలి.',
+    'కోసం శుభ్రమైన వేగమైన సైట్ రూపొందించండి; బ్రాండ్ కథ, విభాగాలు మరియు లీడ్ ఫారమ్ చేర్చండి.',
+  ],
+  kn: [
+    'ಗಾಗಿ ಆಧುನಿಕ ಹೋಮ್‌ಪೇಜ್ ರಚಿಸಿ; ಹೀರೋ ವಿಭಾಗ, ಸೇವೆಗಳು, ಬೆಲೆ, ವಿಮರ್ಶೆಗಳು ಮತ್ತು ಸಂಪರ್ಕ ಫಾರ್ಮ್ ಇರಲಿ.',
+    'ಗಾಗಿ ಪ್ರೀಮಿಯಂ ವೆಬ್‌ಸೈಟ್ ಬೇಕು; ಪ್ರಯೋಜನಗಳು, ವಿಶ್ವಾಸ ಸೂಚನೆಗಳು, FAQ ಮತ್ತು ಸ್ಪಷ್ಟ ಕರೆ-ಟು-ಆಕ್ಷನ್ ಸೇರಿಸಿ.',
+    'ಗಾಗಿ ಮೊಬೈಲ್ ಸ್ನೇಹಿ ಲ್ಯಾಂಡಿಂಗ್ ಪುಟ ರಚಿಸಿ; ಗ್ಯಾಲರಿ, ಆಫರ್‌ಗಳು ಮತ್ತು ಸರಳ ಬುಕ್ಕಿಂಗ್ ಹರಿವು ಇರಲಿ.',
+    'ಗಾಗಿ ಸ್ವಚ್ಛ ಮತ್ತು ವೇಗವಾದ ಸೈಟ್ ರಚಿಸಿ; ಬ್ರಾಂಡ್ ಕಥೆ, ವಿಭಾಗಗಳು ಮತ್ತು ಲೀಡ್ ಫಾರ್ಮ್ ಸೇರಿಸಿ.',
+  ],
+  ml: [
+    'ക്കായി ആധുനിക ഹോംപേജ് സൃഷ്ടിക്കുക; ഹീറോ വിഭാഗം, സേവനങ്ങൾ, വില, റിവ്യൂകൾ, കോൺടാക്റ്റ് ഫോം എന്നിവ ഉൾപ്പെടുത്തുക.',
+    'ക്കായി പ്രീമിയം വെബ്‌സൈറ്റ് വേണം; ഗുണങ്ങൾ, വിശ്വാസ സൂചനകൾ, FAQ, വ്യക്തമായ കോൾ ടു ആക്ഷൻ എന്നിവ ചേർക്കുക.',
+    'ക്കായി മൊബൈൽ സൗഹൃദ ലാൻഡിംഗ് പേജ് സൃഷ്ടിക്കുക; ഗാലറി, ഓഫറുകൾ, ലളിതമായ ബുക്കിംഗ് ഫ്ലോ എന്നിവ ഉണ്ടാകട്ടെ.',
+    'ക്കായി വൃത്തിയുള്ള വേഗത്തിലുള്ള സൈറ്റ് സൃഷ്ടിക്കുക; ബ്രാൻഡ് കഥ, സെക്ഷനുകൾ, ലീഡ് ഫോം എന്നിവ ചേർക്കുക.',
+  ],
+  bn: [
+    'এর জন্য একটি আধুনিক হোমপেজ বানান, যেখানে হিরো সেকশন, পরিষেবা, মূল্য, রিভিউ এবং যোগাযোগ ফর্ম থাকবে।',
+    'এর জন্য প্রিমিয়াম ওয়েবসাইট চাই, যেখানে সুবিধা, বিশ্বাসের সংকেত, FAQ এবং স্পষ্ট কল টু অ্যাকশন থাকবে।',
+    'এর জন্য মোবাইল-ফ্রেন্ডলি ল্যান্ডিং পেজ বানান, যেখানে গ্যালারি, অফার এবং সহজ বুকিং ফ্লো থাকবে।',
+    'এর জন্য পরিষ্কার ও দ্রুত সাইট বানান, যেখানে ব্র্যান্ড গল্প, সেকশন এবং লিড ফর্ম থাকবে।',
+  ],
+  mr: [
+    'साठी आधुनिक होमपेज तयार करा ज्यात हिरो सेक्शन, सेवा, किंमत, समीक्षा आणि संपर्क फॉर्म असतील.',
+    'साठी प्रीमियम वेबसाइट हवी ज्यात फायदे, विश्वासाचे संकेत, FAQ आणि स्पष्ट कॉल टू अॅक्शन असेल.',
+    'साठी मोबाइल-फ्रेंडली लँडिंग पेज तयार करा ज्यात गॅलरी, ऑफर आणि सोपा बुकिंग फ्लो असेल.',
+    'साठी स्वच्छ आणि जलद साइट तयार करा ज्यात ब्रँड कथा, सेक्शन्स आणि लीड फॉर्म असतील.',
+  ],
+  gu: [
+    'માટે આધુનિક હોમપેજ બનાવો જેમાં હીરો સેક્શન, સેવાઓ, કિંમત, સમીક્ષાઓ અને સંપર્ક ફોર્મ હોય.',
+    'માટે પ્રીમિયમ વેબસાઇટ જોઈએ જેમાં લાભો, વિશ્વાસ સંકેતો, FAQ અને સ્પષ્ટ કોલ ટુ એક્શન હોય.',
+    'માટે મોબાઇલ-ફ્રેન્ડલી લેન્ડિંગ પેજ બનાવો જેમાં ગેલેરી, ઓફર અને સરળ બુકિંગ ફ્લો હોય.',
+    'માટે સ્વચ્છ અને ઝડપી સાઇટ બનાવો જેમાં બ્રાન્ડ સ્ટોરી, વિભાગો અને લીડ ફોર્મ હોય.',
+  ],
+  pa: [
+    'ਲਈ ਆਧੁਨਿਕ ਹੋਮਪੇਜ ਬਣਾਓ ਜਿਸ ਵਿੱਚ ਹੀਰੋ ਸੈਕਸ਼ਨ, ਸੇਵਾਵਾਂ, ਕੀਮਤਾਂ, ਸਮੀਖਿਆਵਾਂ ਅਤੇ ਸੰਪਰਕ ਫਾਰਮ ਹੋਣ।',
+    'ਲਈ ਪ੍ਰੀਮੀਅਮ ਵੈੱਬਸਾਈਟ ਚਾਹੀਦੀ ਹੈ ਜਿਸ ਵਿੱਚ ਲਾਭ, ਭਰੋਸੇ ਦੇ ਸੰਕੇਤ, FAQ ਅਤੇ ਸਪਸ਼ਟ ਕਾਲ ਟੂ ਐਕਸ਼ਨ ਹੋਵੇ।',
+    'ਲਈ ਮੋਬਾਈਲ-ਫ੍ਰੈਂਡਲੀ ਲੈਂਡਿੰਗ ਪੇਜ ਬਣਾਓ ਜਿਸ ਵਿੱਚ ਗੈਲਰੀ, ਆਫਰ ਅਤੇ ਆਸਾਨ ਬੁਕਿੰਗ ਫਲੋ ਹੋਵੇ।',
+    'ਲਈ ਸਾਫ਼ ਅਤੇ ਤੇਜ਼ ਸਾਈਟ ਬਣਾਓ ਜਿਸ ਵਿੱਚ ਬ੍ਰਾਂਡ ਕਹਾਣੀ, ਸੈਕਸ਼ਨ ਅਤੇ ਲੀਡ ਫਾਰਮ ਸ਼ਾਮਲ ਹੋਣ।',
+  ],
+  or: [
+    'ପାଇଁ ଏକ ଆଧୁନିକ ହୋମପେଜ୍ ତିଆରି କରନ୍ତୁ, ଯେଉଁଥିରେ ହିରୋ ସେକ୍ସନ୍, ସେବା, ମୂଲ୍ୟ, ସମୀକ୍ଷା ଏବଂ ଯୋଗାଯୋଗ ଫର୍ମ ରହିବ।',
+    'ପାଇଁ ପ୍ରିମିୟମ୍ ୱେବସାଇଟ୍ ତିଆରି କରନ୍ତୁ, ଯେଉଁଥିରେ ଲାଭ, ବିଶ୍ୱାସ ସଙ୍କେତ, FAQ ଏବଂ ସ୍ପଷ୍ଟ କଲ୍ ଟୁ ଆକ୍ସନ୍ ରହିବ।',
+    'ପାଇଁ ମୋବାଇଲ୍-ଫ୍ରେଣ୍ଡଲି ଲ୍ୟାଣ୍ଡିଂ ପେଜ୍ ତିଆରି କରନ୍ତୁ, ଯେଉଁଥିରେ ଗ୍ୟାଲେରୀ, ଅଫର୍ ଏବଂ ସହଜ ବୁକିଂ ଫ୍ଲୋ ରହିବ।',
+    'ପାଇଁ ସଫା ଏବଂ ଦ୍ରୁତ ସାଇଟ୍ ତିଆରି କରନ୍ତୁ, ଯେଉଁଥିରେ ବ୍ରାଣ୍ଡ କଥା, ସେକ୍ସନ୍ ଏବଂ ଲିଡ୍ ଫର୍ମ ରହିବ।',
+  ],
+  as: [
+    'ৰ বাবে আধুনিক হোমপেজ সৃষ্টি কৰক, য’ত হিৰো অংশ, সেৱা, মূল্য, সমালোচনা আৰু যোগাযোগ ফৰ্ম থাকে।',
+    'ৰ বাবে প্ৰিমিয়াম ৱেবছাইট লাগে, য’ত সুবিধা, বিশ্বাসৰ সংকেত, FAQ আৰু স্পষ্ট কল টু একশ্যন থাকে।',
+    'ৰ বাবে মোবাইল-বন্ধু লেণ্ডিং পেজ সৃষ্টি কৰক, য’ত গেলাৰী, অফাৰ আৰু সহজ বুকিং ফ্ল’ থাকে।',
+    'ৰ বাবে পৰিষ্কাৰ আৰু দ্ৰুত ছাইট সৃষ্টি কৰক, য’ত ব্ৰেণ্ড গল্প, অংশ আৰু লীড ফৰ্ম থাকে।',
+  ],
+  ur: [
+    'کے لیے ایک جدید ہوم پیج بنائیں جس میں ہیرو سیکشن، خدمات، قیمتیں، جائزے اور رابطہ فارم شامل ہوں۔',
+    'کے لیے پریمیم ویب سائٹ چاہیے جس میں فوائد، اعتماد کے اشارے، FAQ اور واضح کال ٹو ایکشن ہو۔',
+    'کے لیے موبائل فرینڈلی لینڈنگ پیج بنائیں جس میں گیلری، آفرز اور آسان بکنگ فلو ہو۔',
+    'کے لیے صاف اور تیز سائٹ بنائیں جس میں برانڈ کہانی، سیکشنز اور لیڈ فارم شامل ہوں۔',
+  ],
+  fr: [
+    'pour une page d’accueil moderne avec une section héros, les services, les tarifs, des avis et un formulaire de contact.',
+    'avec des sections claires pour le public cible, les bénéfices, la preuve sociale, la FAQ et un appel à l’action.',
+    'pour un site premium et mobile avec une galerie, des offres, une histoire de marque et un parcours de réservation simple.',
+    'avec une mise en page élégante, des visuels forts, des témoignages et une capture de leads directe.',
+  ],
+  es: [
+    'para una página de inicio moderna con héroe, servicios, precios, reseñas y formulario de contacto.',
+    'con secciones claras para la audiencia, beneficios, prueba social, FAQ y una llamada a la acción.',
+    'para un sitio premium y móvil con galería, ofertas, historia de marca y reserva sencilla.',
+    'con diseño elegante, visuales fuertes, testimonios y captación directa de leads.',
+  ],
+  de: [
+    'für eine moderne Startseite mit Hero-Bereich, Leistungen, Preisen, Bewertungen und Kontaktformular.',
+    'mit klaren Abschnitten für Zielgruppe, Vorteile, Vertrauenssignale, FAQ und Call-to-Action.',
+    'für eine mobile Premium-Seite mit Galerie, Angeboten, Markengeschichte und einfachem Buchungsfluss.',
+    'mit elegantem Layout, starken Bildern, Kundenstimmen und direkter Lead-Erfassung.',
+  ],
+  it: [
+    'per una homepage moderna con hero, servizi, prezzi, recensioni e modulo di contatto.',
+    'con sezioni chiare per pubblico, benefici, prova sociale, FAQ e call to action.',
+    'per un sito premium mobile con galleria, offerte, storia del brand e prenotazione semplice.',
+    'con layout elegante, immagini forti, testimonianze e acquisizione lead diretta.',
+  ],
+  pt: [
+    'para uma página inicial moderna com hero, serviços, preços, avaliações e formulário de contato.',
+    'com seções claras para público, benefícios, prova social, FAQ e chamada para ação.',
+    'para um site premium mobile com galeria, ofertas, história da marca e reserva simples.',
+    'com layout elegante, visuais fortes, depoimentos e captação direta de leads.',
+  ],
+  ar: [
+    'لصفحة رئيسية حديثة تتضمن قسم بطل، الخدمات، الأسعار، التقييمات ونموذج تواصل واضح.',
+    'مع أقسام واضحة للجمهور المستهدف، الفوائد، إشارات الثقة، الأسئلة الشائعة ودعوة لاتخاذ إجراء.',
+    'لموقع فاخر ومتوافق مع الجوال يتضمن معرضًا، عروضًا، قصة العلامة ومسار حجز بسيط.',
+    'بتصميم أنيق، صور قوية، شهادات عملاء ونموذج مباشر لجمع العملاء المحتملين.',
+  ],
+}
+
+const SCRIPT_LANGUAGE_PATTERNS = [
+  [/[\u0900-\u097f]/, 'hi'],
+  [/[\u0b80-\u0bff]/, 'ta'],
+  [/[\u0c00-\u0c7f]/, 'te'],
+  [/[\u0c80-\u0cff]/, 'kn'],
+  [/[\u0d00-\u0d7f]/, 'ml'],
+  [/[\u0980-\u09ff]/, 'bn'],
+  [/[\u0a80-\u0aff]/, 'gu'],
+  [/[\u0a00-\u0a7f]/, 'pa'],
+  [/[\u0b00-\u0b7f]/, 'or'],
+  [/[\u0600-\u06ff]/, 'ur'],
+  [/[\u3040-\u30ff]/, 'ja'],
+  [/[\u4e00-\u9fff]/, 'zh'],
+  [/[\uac00-\ud7af]/, 'ko'],
+]
+
+const HINGLISH_MARKERS = new Set(
+  'ke liye ka ki ko se pe par aur banao bana chahiye mere meri mera apna apni aapka aapki nahi nhi hai hain'.split(
+    ' ',
+  ),
+)
 
 function extractJsonObject(text) {
   const s = String(text || '').trim()
@@ -25,11 +194,76 @@ function extractJsonObject(text) {
   }
 }
 
-export async function getPartialPromptSuggestions(partial) {
+export function normalizePromptSuggestionLanguage(language) {
+  const raw = String(language || '')
+    .trim()
+    .toLowerCase()
+  if (!raw || raw.length > LANGUAGE_MAX) return ''
+  if (raw === 'hinglish') return 'hinglish'
+  if (/^[a-z]{2,8}-en$/.test(raw)) return 'hinglish'
+  if (!/^[a-z]{2,8}(?:[-_][a-z0-9]{2,8})?$/.test(raw)) return ''
+  return raw.split(/[-_]/)[0]
+}
+
+function inferLanguageFromPartial(partial, language) {
+  const normalized = normalizePromptSuggestionLanguage(language)
+  if (normalized && normalized !== 'en') return normalized
+  const text = String(partial || '')
+  for (const [pattern, code] of SCRIPT_LANGUAGE_PATTERNS) {
+    if (pattern.test(text)) return code
+  }
+  const words = text.toLowerCase().match(/\b[a-z]{2,}\b/g) || []
+  const hinglishHits = words.filter((word) => HINGLISH_MARKERS.has(word)).length
+  if (hinglishHits >= 1 && words.length <= 6) return 'hinglish'
+  if (hinglishHits >= 2) return 'hinglish'
+  return normalized || 'en'
+}
+
+function joinPartialTail(partial, tail) {
+  const prefix = String(partial ?? '').trim()
+  const suffix = String(tail ?? '').trim()
+  if (!prefix || !suffix) return prefix
+  if (/\s$/.test(prefix) || /^[,.;:!?।،۔]/.test(suffix)) return `${prefix}${suffix}`
+  return `${prefix} ${suffix}`
+}
+
+export function getFallbackPromptSuggestions(partial, language) {
   const p = String(partial ?? '').trim()
   if (p.length < 2) return []
   if (p.length > PARTIAL_MAX) return []
-  if (!GROQ_API_KEY) return []
+  const inferred = inferLanguageFromPartial(p, language)
+  const tails = FALLBACK_TAILS[inferred] || FALLBACK_TAILS.en
+  const seen = new Set()
+  const out = []
+  for (const tail of tails) {
+    const suggestion = joinPartialTail(p, tail).replace(/\s+/g, ' ').trim()
+    if (!suggestion.startsWith(p)) continue
+    if (suggestion.length > LINE_MAX) continue
+    if (suggestion.length < p.length + MIN_TAIL) continue
+    const key = suggestion.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(suggestion)
+    if (out.length >= OUT_MAX) break
+  }
+  return out
+}
+
+function languageInstructionFor(partial, language) {
+  const inferred = inferLanguageFromPartial(partial, language)
+  if (!inferred || inferred === 'en') return 'Match the user language and script.'
+  const label = LANGUAGE_NAMES[inferred] || inferred
+  if (inferred === 'hinglish') {
+    return 'Continue in mixed Hindi-English/Hinglish when the partial uses that style, preserving code-switching and the exact prefix.'
+  }
+  return `Continue in ${label}; preserve the user script and exact prefix.`
+}
+
+export async function getPartialPromptSuggestions(partial, options = {}) {
+  const p = String(partial ?? '').trim()
+  if (p.length < 2) return []
+  if (p.length > PARTIAL_MAX) return []
+  if (!GROQ_API_KEY) return getFallbackPromptSuggestions(p, options.language)
 
   const system = [
     'You complete partial prompts for an AI that generates marketing websites.',
@@ -37,7 +271,7 @@ export async function getPartialPromptSuggestions(partial) {
     'Each string must begin with the user partial copied verbatim from the user message (same characters and spacing).',
     `Then continue into one flowing sentence describing the site (audience, sections, tone).`,
     `Each full string under ${LINE_MAX} characters; add at least ${MIN_TAIL} new characters after the prefix.`,
-    'Vary the angles across suggestions. Match the user language and script.',
+    `Vary the angles across suggestions. ${languageInstructionFor(p, options.language)}`,
     'No markdown, no numbering, no explanation outside the JSON.',
   ].join(' ')
 
@@ -47,11 +281,13 @@ export async function getPartialPromptSuggestions(partial) {
     maxTokens: 700,
   })
 
-  if (r.error || !r.content) return []
+  if (r.error || !r.content) return getFallbackPromptSuggestions(p, options.language)
 
   const cleaned = trimInlineAiText(r.content)
   const data = extractJsonObject(cleaned)
-  if (!data || !Array.isArray(data.suggestions)) return []
+  if (!data || !Array.isArray(data.suggestions)) {
+    return getFallbackPromptSuggestions(p, options.language)
+  }
 
   const seen = new Set()
   const out = []
@@ -67,5 +303,5 @@ export async function getPartialPromptSuggestions(partial) {
     out.push(s)
     if (out.length >= OUT_MAX) break
   }
-  return out
+  return out.length > 0 ? out : getFallbackPromptSuggestions(p, options.language)
 }

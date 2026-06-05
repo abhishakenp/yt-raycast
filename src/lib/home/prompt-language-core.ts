@@ -1,6 +1,6 @@
 import { franc } from 'franc-min'
-import { preferMixedEnglishBcp47FromSnippet } from '@/lib/home/mixed-english-hints'
-import { PROMPT_LANG_DETECT_SNIPPET_MAX, SUBMIT_BTN_DEFAULT_LABEL } from '@/lib/home/constants'
+import { preferMixedEnglishBcp47FromSnippet } from './mixed-english-hints'
+import { PROMPT_LANG_DETECT_SNIPPET_MAX, SUBMIT_BTN_DEFAULT_LABEL } from './constants'
 
 export const FRANC_ISO639_3_TO_BCP47: Record<string, string> = {
   eng: 'en',

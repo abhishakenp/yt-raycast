@@ -28,10 +28,20 @@ export function renderShipFastLlmsTxt({ siteUrl, includeBlog = false, includeIns
     '# Ship Fast',
     '> AI website generator: describe a site, preview it, export HTML, React, or Next.js.',
     '',
+    '## Summary',
+    'Ship Fast helps founders, agencies, and operators generate launch-ready website previews from natural language prompts. The product supports public previews, private generation for paid users, ecommerce-oriented output, and code exports.',
+    '',
     '## Product',
     link('/', 'Home', 'Prompt UI, generation, and gallery.'),
     link('/pricing', 'Pricing', 'Plans and limits.'),
     link('/privacy', 'Privacy', 'Data handling and contact.'),
+    link('/terms', 'Terms', 'Product policies, billing terms, and usage rules.'),
+    '',
+    '## Capabilities',
+    '- Generate marketing websites, landing pages, ecommerce storefronts, and product sites from prompts.',
+    '- Export generated sites as HTML, React, or Next.js projects.',
+    '- Include generated metadata assets such as robots.txt, sitemap.xml, and llms.txt in exported sites.',
+    '- Preview generated projects publicly unless private generation is selected by an eligible paid user.',
   ]
 
   if (includeBlog) {

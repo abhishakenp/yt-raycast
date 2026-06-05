@@ -21,6 +21,24 @@ const HOME_KEYWORDS = [
   'nextjs website generator',
 ].join(', ')
 const OG_IMAGE_URL = `${SITE_URL}/og-image.png`
+const HOMEPAGE_CSS_VERSION = '20260605-auth-modal'
+const HOME_AEO_FAQS = [
+  {
+    question: 'What is Ship Fast?',
+    answer:
+      'Ship Fast is an AI website generator that turns a written prompt into a public homepage preview with export options for HTML, React, and Next.js.',
+  },
+  {
+    question: 'Who is Ship Fast for?',
+    answer:
+      'Ship Fast is for founders, agencies, and operators who need to prototype or launch marketing pages, ecommerce storefronts, and product websites quickly.',
+  },
+  {
+    question: 'What can Ship Fast export?',
+    answer:
+      'Ship Fast can export generated projects as clean HTML, React, or Next.js output, with metadata, robots, sitemap, and llms.txt support for generated sites.',
+  },
+]
 
 const DEV_HOME_HOT_RELOAD_SNIPPET =
   process.env.NODE_ENV === 'production' ||
@@ -87,14 +105,32 @@ function renderStructuredData(descriptionOverride) {
   return JSON.stringify([
     {
       '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/favicon.svg`,
+    },
+    {
+      '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
       name: SITE_NAME,
       url: SITE_URL,
       operatingSystem: 'Web',
       applicationCategory: 'DeveloperApplication',
       description: desc,
+      featureList: [
+        'Prompt-to-website generation',
+        'Public homepage previews',
+        'HTML, React, and Next.js exports',
+        'Generated robots.txt, sitemap.xml, and llms.txt assets',
+      ],
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       screenshot: OG_IMAGE_URL,
+      potentialAction: {
+        '@type': 'CreateAction',
+        name: 'Generate a website from a prompt',
+        target: SITE_URL,
+      },
     },
     {
       '@context': 'https://schema.org',
@@ -102,6 +138,18 @@ function renderStructuredData(descriptionOverride) {
       name: SITE_NAME,
       url: SITE_URL,
       description: desc,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: HOME_AEO_FAQS.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
     },
   ])
 }
@@ -176,30 +224,46 @@ function renderLanguageOptions() {
 }
 
 function renderAuthOverlay() {
-  return `<div id="auth-overlay" class="hidden">
-    <div class="auth-box">
+  return `<div id="auth-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title" aria-describedby="auth-description" aria-hidden="true">
+    <div class="auth-box" role="document">
       <div class="auth-logo">SHIP FAST</div>
-      <p class="auth-title">Sign in to continue</p>
+      <h2 class="auth-title" id="auth-title">Sign in to continue</h2>
+      <p class="auth-description" id="auth-description">Use a social account, or sign in with email and password.</p>
       ${sfGlassPillBody({
         className: 'auth-btn',
         id: 'google-signin-btn',
+        extraAttrs: ' aria-describedby="auth-description"',
         bodyHtml:
           '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>\n        Sign in with Google',
       })}
       ${sfGlassPillBody({
         className: 'auth-btn',
         id: 'github-signin-btn',
+        extraAttrs: ' aria-describedby="auth-description"',
         bodyHtml:
           '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>\n        Sign in with GitHub',
       })}
       <div class="auth-divider">or</div>
-      <input class="auth-input" type="email" id="auth-email" placeholder="Email" autocomplete="email" />
-      <input class="auth-input" type="password" id="auth-password" placeholder="Password" autocomplete="current-password" />
-      <div class="auth-email-row">
-        ${sfGlassPillBody({ className: 'auth-btn', id: 'email-signin-btn', bodyHtml: 'Sign in' })}
-        ${sfGlassPillBody({ className: 'auth-btn', id: 'email-signup-btn', bodyHtml: 'Create account' })}
-      </div>
-      <div class="auth-error" id="auth-error"></div>
+      <form id="auth-email-form" class="auth-email-form" novalidate>
+        <label class="auth-field" for="auth-email">
+          <span>Email</span>
+          <input class="auth-input" type="email" id="auth-email" name="email" autocomplete="email" inputmode="email" required aria-describedby="auth-error" />
+        </label>
+        <label class="auth-field" for="auth-password">
+          <span>Password</span>
+          <input class="auth-input" type="password" id="auth-password" name="password" autocomplete="current-password" required aria-describedby="auth-error" />
+        </label>
+        <div class="auth-email-row">
+          ${sfGlassPillBody({
+            className: 'auth-btn',
+            id: 'email-signin-btn',
+            type: 'submit',
+            bodyHtml: 'Sign in',
+          })}
+          ${sfGlassPillBody({ className: 'auth-btn', id: 'email-signup-btn', bodyHtml: 'Create account' })}
+        </div>
+      </form>
+      <div class="auth-error" id="auth-error" role="alert" aria-live="polite"></div>
     </div>
   </div>`
 }
@@ -227,6 +291,7 @@ export function renderHomePage(siteSettings = null) {
     <meta name="theme-color" content="#050506" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="canonical" href="${escapeHtml(SITE_URL)}" />
+    <link rel="alternate" type="text/plain" href="${escapeHtml(SITE_URL)}/llms.txt" title="LLMs.txt" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -252,7 +317,7 @@ export function renderHomePage(siteSettings = null) {
     <meta name="twitter:image:alt" content="Ship Fast homepage preview" />
     <script defer data-domain="${escapeHtml(PLAUSIBLE_DOMAIN)}" data-api="/api/event" src="/js/script.js"></script>
     <script type="application/ld+json">${renderStructuredData(pageDescription)}</script>
-    <link rel="stylesheet" href="/styles/index.css${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}" />
+    <link rel="stylesheet" href="/styles/index.css?v=${process.env.NODE_ENV === 'production' ? HOMEPAGE_CSS_VERSION : Date.now()}" />
   </head>
   <body>
     ${sfGlassPillSvgDefs()}
@@ -347,7 +412,7 @@ export function renderHomePage(siteSettings = null) {
               id="design-ref-search"
               name="design-ref-search"
               autocomplete="off"
-              placeholder="Search a website or paste a URL…"
+              placeholder="Search a site or paste an HTTPS URL"
             />
           </div>
           <div class="design-ref-preview" id="design-ref-preview">
@@ -364,7 +429,7 @@ export function renderHomePage(siteSettings = null) {
                 '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
             })}
           </div>
-          <p class="design-ref-hint">Type a keyword like "stripe" or "linear" to find a site, or paste any URL directly.</p>
+          <p class="design-ref-hint">Use a site you have rights to reference. Ship Fast creates an original layout.</p>
         </div>
         <input type="hidden" id="design-ref-url-1" name="design-ref-url-1" value="" />
         <input type="hidden" id="design-ref-url-2" name="design-ref-url-2" value="" />
@@ -451,9 +516,10 @@ export function renderHomePage(siteSettings = null) {
     </div>
 
     <footer class="homepage-footer">
-      <nav class="homepage-footer-legal" aria-label="Legal">
+      <nav class="homepage-footer-legal" id="homepage-footer-legal" aria-label="Legal">
         <a href="/pricing">Pricing</a>
         <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
       </nav>
     </footer>
 
@@ -496,6 +562,11 @@ export function renderSitemapXml() {
   </url>
   <url>
     <loc>${escapeHtml(SITE_URL)}/privacy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>${escapeHtml(SITE_URL)}/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

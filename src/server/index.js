@@ -50,7 +50,11 @@ import {
   writeDesignReferencesFile,
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
-import { readOpenUIFileForRoute, readSiteSpecThemeColors, readSiteSpecLocale } from '../pipeline/openui-artifacts.js'
+import {
+  readOpenUIFileForRoute,
+  readSiteSpecThemeColors,
+  readSiteSpecLocale,
+} from '../pipeline/openui-artifacts.js'
 import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
@@ -82,7 +86,6 @@ import {
   syncSessionPreviewFromSanity,
 } from './exports.js'
 import { broadcastDevReload, setupWebSocket } from './websocket.js'
-import { generateAlternativeDesign, runAll, runEdit } from '@ship-fast/engine/pipeline/runner.js'
 import { existsSync, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import multer from 'multer'
@@ -100,6 +103,7 @@ import {
   getSessionPaymentDetails,
 } from '../billing/payments.js'
 import { razorpayWebhookHandler } from './razorpay.js'
+import { stripeWebhookHandler } from './stripe.js'
 import { mountNextApiPort } from './next-api-port.js'
 import { applySiteSettingsPatch } from '../sanity/sync.js'
 import {
@@ -115,7 +119,7 @@ import {
   MONTHLY_WINDOW_MS,
   DAILY_WINDOW_MS,
   isIpWhitelisted,
-} from '../billing/constants'
+} from '../billing/constants.ts'
 import {
   userHits,
   ipHits,
@@ -144,9 +148,40 @@ import { ensureEmbeddedStudioBuilt } from './ensure-studio-build.js'
 import { mountEmbeddedSanityStudio } from './sanity-studio-static.js'
 import { renderPrivacyPage } from './privacy-page.js'
 import { renderPricingPage } from './pricing-page.js'
+import { renderTermsPage } from './terms-page.js'
+import { getClientIp, resolveTrustProxySetting } from './client-ip.js'
+
+let engineRunnerPromise = null
+
+async function loadEngineRunner() {
+  engineRunnerPromise ??= import('@ship-fast/engine/pipeline/runner.js')
+  return engineRunnerPromise
+}
+
+async function runAll(...args) {
+  const { runAll: run } = await loadEngineRunner()
+  return run(...args)
+}
+
+async function runEdit(...args) {
+  const { runEdit: run } = await loadEngineRunner()
+  return run(...args)
+}
+
+async function generateAlternativeDesign(...args) {
+  const { generateAlternativeDesign: run } = await loadEngineRunner()
+  return run(...args)
+}
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
 import { getPublicGalleryList } from './public-gallery-cache.js'
 import { pushSessionToGitHub } from './github.js'
+import {
+  buildGenerationCostPayload,
+  calculateElapsedSeconds,
+  finalizeGenerationMonitoring,
+  sendFollowUpNotification,
+} from './generation-monitoring.js'
+import { validatePartnerCoupon } from '../billing/coupons.js'
 import {
   getDeploymentBySlug,
   getDeploymentBySessionId,
@@ -168,7 +203,7 @@ import {
 import { MAX_UPLOAD_BYTES, saveSessionImageBuffers } from './session-uploads.js'
 import { readPalette, writePalette } from './session-palette.js'
 import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
-import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy'
+import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy.ts'
 import {
   getNextPreviewSnapshot,
   isNextPreviewFeatureEnabled,
@@ -176,6 +211,8 @@ import {
   startNextPreview,
   stopNextPreview,
 } from './next-dev-preview.js'
+import { createHealthHandler, startKumaHeartbeat } from './monitoring.js'
+import { buildQuotaUsagePayload } from './quota-monitoring.js'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -205,7 +242,7 @@ const sanitizeChatAttachmentPaths = (workspace, paths) => {
 let _sessionsDir = null
 let rateLimitFile = null
 
-const httpContractsPromise = import('@ship-fast/engine/contracts/http-contracts.js')
+const httpContractsPromise = import('../contracts/http-contracts.js')
 
 // Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
 const WHITELISTED_IPS = new Set(
@@ -404,11 +441,8 @@ export async function startServer(sessionsDir) {
 
   const app = express()
   app.disable('x-powered-by')
-  app.set('trust proxy', true)
-
-  // Debug: Log environment variables at startup
-  console.log('[Server Startup] WHITELISTED_IPS env var:', process.env.WHITELISTED_IPS)
-  console.log('[Server Startup] All env vars starting with WHITE:', Object.keys(process.env).filter(k => k.startsWith('WHITE')))
+  app.set('trust proxy', resolveTrustProxySetting())
+  startKumaHeartbeat()
 
   const getSessionSubdomain = (req) => {
     const host = String(req.hostname || req.headers.host?.split(':')[0] || '').toLowerCase()
@@ -444,12 +478,19 @@ export async function startServer(sessionsDir) {
     setNoIndexHeaders(res)
     next()
   })
+  app.get('/health', createHealthHandler({ startedAt: Date.now(), sessionsDir }))
+  app.use('/api/storefront/medusa', createMedusaStoreRouter())
   app.use('/api/storefront', createMedusaStoreRouter())
 
   app.post(
     '/api/payments/razorpay/webhook',
     express.raw({ type: 'application/json' }),
     razorpayWebhookHandler,
+  )
+  app.post(
+    '/api/payments/stripe/webhook',
+    express.raw({ type: 'application/json' }),
+    stripeWebhookHandler,
   )
 
   app.use(express.json({ limit: '15mb' }))
@@ -472,9 +513,9 @@ export async function startServer(sessionsDir) {
       const upstream = await fetch('https://chatjimmy.ai/api/chat', {
         method: 'POST',
         headers: {
-          'accept': '*/*',
+          accept: '*/*',
           'content-type': 'application/json',
-          'Referer': 'https://chatjimmy.ai/',
+          Referer: 'https://chatjimmy.ai/',
         },
         body: JSON.stringify({
           messages: [
@@ -542,7 +583,7 @@ export async function startServer(sessionsDir) {
     const headers = {
       'Content-Type': 'text/plain',
       'User-Agent': req.headers['user-agent'] || '',
-      'X-Forwarded-For': req.headers['x-forwarded-for'] || req.ip,
+      'X-Forwarded-For': getClientIp(req),
     }
     try {
       for (const base of [plausibleHost, plausibleVendorHost]) {
@@ -565,6 +606,18 @@ export async function startServer(sessionsDir) {
   // Extracted to src/server/middleware/auth.middleware.js
   const { requireAuth, optionalAuth, requireProvisionAuth } =
     await import('./middleware/auth.middleware.js')
+
+  app.get('/api/internal/quota-usage', requireProvisionAuth, (_req, res) => {
+    res.json(buildQuotaUsagePayload())
+  })
+  app.get('/api/internal/generation-cost', requireProvisionAuth, (req, res) => {
+    res.json(
+      buildGenerationCostPayload({
+        sessionsDir,
+        monthKey: typeof req.query.month === 'string' ? req.query.month : undefined,
+      }),
+    )
+  })
 
   mountNextApiPort(app, { requireAuth })
 
@@ -591,6 +644,27 @@ export async function startServer(sessionsDir) {
         'This project was created in another browser or session. Open it from the device where you generated it, or sign in on the home page and claim your Ship Fast history.',
     })
     return false
+  }
+
+  function ensurePrivateSessionAccess(req, res, session, { html = false } = {}) {
+    if (session?.isPrivate !== true) return true
+    const send = (status, error) => {
+      if (html) return res.status(status).send(error)
+      return res.status(status).json({ error })
+    }
+    if (!session.userId) {
+      send(403, 'Private session is not accessible.')
+      return false
+    }
+    if (!req.user) {
+      send(401, 'Unauthorized')
+      return false
+    }
+    if (session.userId !== req.user.uid) {
+      send(403, 'Forbidden')
+      return false
+    }
+    return true
   }
 
   async function provisionDeploymentIfNeeded(session) {
@@ -638,7 +712,8 @@ export async function startServer(sessionsDir) {
 
   app.post('/api/prompt-suggestions', async (req, res) => {
     const partial = typeof req.body?.partial === 'string' ? req.body.partial : ''
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || ''
+    const language = typeof req.body?.language === 'string' ? req.body.language : ''
+    const clientIp = getClientIp(req)
     const skipRl =
       (clientIp && WHITELISTED_IPS.has(clientIp)) || isLocalDevelopmentRequest(req, clientIp)
     if (!skipRl && clientIp) {
@@ -654,7 +729,7 @@ export async function startServer(sessionsDir) {
       }
     }
     try {
-      const suggestions = await getPartialPromptSuggestions(partial)
+      const suggestions = await getPartialPromptSuggestions(partial, { language })
       return res.json({ suggestions })
     } catch {
       return res.status(500).json({ suggestions: [] })
@@ -663,12 +738,12 @@ export async function startServer(sessionsDir) {
 
   // ─── Share-for-credit: grant +1 anonymous generation ────
   app.get('/api/share-bonus', (req, res) => {
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const clientIp = getClientIp(req)
     res.json({ claimed: clientIp ? hasIpShareBonus(clientIp) : false })
   })
 
   app.post('/api/share-bonus', (req, res) => {
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const clientIp = getClientIp(req)
     if (!clientIp) return res.status(400).json({ error: 'Unable to identify client' })
     const today = new Date().toISOString().slice(0, 10)
     if (shareBonusIps.get(clientIp) === today) {
@@ -730,6 +805,10 @@ export async function startServer(sessionsDir) {
     res.type('html').send(renderPrivacyPage())
   })
 
+  app.get('/terms', (_req, res) => {
+    res.type('html').send(renderTermsPage())
+  })
+
   mountEmbeddedSanityStudio(app, join(studioRoot, 'dist'))
 
   app.get('/api/studio-embed-ready', (_req, res) => {
@@ -748,9 +827,10 @@ export async function startServer(sessionsDir) {
   )
 
   // ─── Dashboard (session-scoped) ───────────────────────────
-  app.get('/session/:id', async (req, res) => {
+  app.get('/session/:id', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).send('Session not found')
+    if (!ensurePrivateSessionAccess(req, res, session, { html: true })) return
     setNoIndexHeaders(res)
     const tpl = readFileSync(join(publicDir, 'dashboard.html'), 'utf8')
     let wsHost = req.get('host') || `127.0.0.1:${DASHBOARD_PORT}`
@@ -776,13 +856,14 @@ export async function startServer(sessionsDir) {
       designReferenceNotes,
     )
     const trimmedPrompt = prompt?.trim()
+    const requestedPrivate = req.body?.isPrivate === true
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
         error: 'Please provide a meaningful description of the website you want to build.',
       })
     }
 
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const clientIp = getClientIp(req)
     const ts = new Date().toISOString()
 
     const policyResult = checkPromptContentPolicy(trimmedPrompt)
@@ -799,6 +880,12 @@ export async function startServer(sessionsDir) {
     if (req.user) {
       // ─── Authenticated flow ─────────────────────────────────
       const isSubscriber = await hasActiveSubscription(req.user.uid)
+      if (requestedPrivate && !isSubscriber) {
+        return res.status(402).json({
+          error: 'Private generations are available for paid users.',
+          code: 'PRIVATE_REQUIRES_SUBSCRIPTION',
+        })
+      }
       const userMonthly = (userMonthlyHits.get(req.user.uid) || []).filter(
         (t) => Date.now() - t < MONTHLY_WINDOW_MS,
       ).length
@@ -822,14 +909,10 @@ export async function startServer(sessionsDir) {
         setSessionPreferredExportTarget(existing, preferredExportTarget)
         setSessionPreferredLanguage(existing, preferredLanguage)
         console.log(`[${ts}] CACHE_HIT user=${req.user.uid} session=${existing.id}`)
-        if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-          fetch(process.env.SLACK_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-            }),
-          }).catch(() => {})
+        if (process.env.NODE_ENV !== 'development') {
+          sendFollowUpNotification(
+            `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+          ).catch(() => {})
         }
         const monthlyLimitCached = isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
         return res.json(
@@ -854,14 +937,10 @@ export async function startServer(sessionsDir) {
           console.log(
             `[${ts}] MONTHLY_LIMIT user=${req.user.uid} ip=${clientIp} monthly=${userMonthly} limit=${monthlyLimit}`,
           )
-          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-            fetch(process.env.SLACK_WEBHOOK_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text: `\ud83d\udeab *Monthly limit reached* (${monthlyLimit}/month):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
-              }),
-            }).catch(() => {})
+          if (process.env.NODE_ENV !== 'development') {
+            sendFollowUpNotification(
+              `\ud83d\udeab *Monthly limit reached* (${monthlyLimit}/month):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
+            ).catch(() => {})
           }
           return res.status(429).json({
             error: `Limit reached: max ${monthlyLimit} generations per rolling 30 days. Need more? Contact us at https://x.com/LivioGama`,
@@ -872,14 +951,10 @@ export async function startServer(sessionsDir) {
         // 10-min rate limit per user
         if (!checkRateLimit(req.user.uid, userHits, MAX_PER_USER)) {
           console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=user_10min`)
-          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-            fetch(process.env.SLACK_WEBHOOK_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-              }),
-            }).catch(() => {})
+          if (process.env.NODE_ENV !== 'development') {
+            sendFollowUpNotification(
+              `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+            ).catch(() => {})
           }
           return res.status(429).json({
             error: 'Rate limit: max 5 generations per 10 minutes. Please wait.',
@@ -890,14 +965,10 @@ export async function startServer(sessionsDir) {
         // 10-min rate limit per IP
         if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP_AUTHED)) {
           console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=ip_10min`)
-          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-            fetch(process.env.SLACK_WEBHOOK_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_AUTHED}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-              }),
-            }).catch(() => {})
+          if (process.env.NODE_ENV !== 'development') {
+            sendFollowUpNotification(
+              `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_AUTHED}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+            ).catch(() => {})
           }
           return res.status(429).json({
             error: 'Rate limit: too many requests from this IP. Please wait.',
@@ -917,7 +988,10 @@ export async function startServer(sessionsDir) {
         }
 
         // Concurrent generation limit
-        if (!isIpWhitelisted(clientIp) && (activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER) {
+        if (
+          !isIpWhitelisted(clientIp) &&
+          (activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER
+        ) {
           return res.status(429).json({
             error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
             remaining: 0,
@@ -928,7 +1002,7 @@ export async function startServer(sessionsDir) {
       session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, {
         preferredExportTarget,
         preferredLanguage,
-        isPrivate: false,
+        isPrivate: requestedPrivate && isSubscriber,
       })
 
       // Background-provision Medusa as soon as the prompt looks ecommerce, so
@@ -944,24 +1018,28 @@ export async function startServer(sessionsDir) {
         `[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} monthly=${userMonthly + 1}`,
       )
 
-      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-        fetch(process.env.SLACK_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly + 1}/${monthlyLimit}`,
-          }),
-        }).catch(() => {})
+      if (process.env.NODE_ENV !== 'development') {
+        sendFollowUpNotification(
+          `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly + 1}/${monthlyLimit}`,
+        ).catch(() => {})
       }
     } else {
       // ─── Anonymous flow ─────────────────────────────────────
       console.log(`[${ts}] REQ anon ip=${clientIp} prompt="${trimmedPrompt.slice(0, 80)}"`)
+      if (requestedPrivate) {
+        return res.status(401).json({
+          error: 'Sign in and subscribe to create private generations.',
+          code: 'PRIVATE_REQUIRES_AUTH',
+        })
+      }
 
       if (!skipRateLimits) {
         // Daily limit per IP for anonymous users — sign-in wall after limit (2, or 3 with share bonus)
         const anonLimit = getAnonDailyLimit(clientIp)
-        console.log('[RateLimit] Checking daily limit for IP:', clientIp, 'Whitelisted:', isIpWhitelisted(clientIp))
-        if (!isIpWhitelisted(clientIp) && !checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)) {
+        if (
+          !isIpWhitelisted(clientIp) &&
+          !checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)
+        ) {
           console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp} bonus=${hasIpShareBonus(clientIp)}`)
           return res.status(429).json({
             error: `Sign in to keep generating. Free anonymous users get ${MAX_ANON_PER_DAY} generations per day.`,
@@ -982,7 +1060,10 @@ export async function startServer(sessionsDir) {
         }
 
         // Concurrent generation limit
-        if (!isIpWhitelisted(clientIp) && (activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER) {
+        if (
+          !isIpWhitelisted(clientIp) &&
+          (activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER
+        ) {
           return res.status(429).json({
             error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
             remaining: 0,
@@ -1002,14 +1083,10 @@ export async function startServer(sessionsDir) {
 
       console.log(`[${ts}] GENERATE anon ip=${clientIp} session=${session.id}`)
 
-      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
-        fetch(process.env.SLACK_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: `\ud83d\ude80 Anonymous Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nIP: \`${clientIp}\``,
-          }),
-        }).catch(() => {})
+      if (process.env.NODE_ENV !== 'development') {
+        sendFollowUpNotification(
+          `\ud83d\ude80 Anonymous Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nIP: \`${clientIp}\``,
+        ).catch(() => {})
       }
     }
 
@@ -1037,6 +1114,8 @@ export async function startServer(sessionsDir) {
     setSessionStatus(session.id, 'generating')
 
     // Fire and forget the generation
+    const generationStartedAt = Date.now()
+    const generationUser = req.user ? { uid: req.user.uid, email: req.user.email ?? null } : null
     const generation = editMode
       ? runEdit({
           prompt: session.prompt,
@@ -1060,11 +1139,31 @@ export async function startServer(sessionsDir) {
         if (tailPromise && typeof tailPromise.then === 'function') {
           await tailPromise
         }
+        const generationCompletedAt = Date.now()
+        const elapsedSeconds = calculateElapsedSeconds(generationStartedAt, generationCompletedAt)
+        const engineElapsedSeconds = session.elapsed
+        sessionCtx.setElapsed(elapsedSeconds)
+        sessionCtx.broadcast({ type: 'generation_timing_final', elapsed: elapsedSeconds })
         setSessionStatus(session.id, 'done')
         activeGenerations.set(
           generationKey,
           Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
         )
+        try {
+          await finalizeGenerationMonitoring({
+            sessionsDir: _sessionsDir,
+            session,
+            clientIp,
+            user: generationUser,
+            status: 'done',
+            startedAt: generationStartedAt,
+            completedAt: generationCompletedAt,
+            elapsedSeconds,
+            engineElapsedSeconds,
+          })
+        } catch (err) {
+          console.error(`[generation-monitoring] session ${session.id}:`, err?.message ?? err)
+        }
         try {
           await provisionDeploymentIfNeeded(session)
         } catch (err) {
@@ -1072,13 +1171,35 @@ export async function startServer(sessionsDir) {
         }
       })
       .catch((err) => {
+        const generationCompletedAt = Date.now()
+        const elapsedSeconds = calculateElapsedSeconds(generationStartedAt, generationCompletedAt)
+        const engineElapsedSeconds = session.elapsed
+        sessionCtx.setElapsed(elapsedSeconds)
         setSessionStatus(session.id, 'failed')
         console.error(`  Session ${session.id} error:`, err?.message ?? err)
         sessionCtx.broadcast({ type: 'error', message: err?.message ?? 'Generation failed' })
+        sessionCtx.broadcast({ type: 'generation_timing_final', elapsed: elapsedSeconds })
         activeGenerations.set(
           generationKey,
           Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
         )
+        finalizeGenerationMonitoring({
+          sessionsDir: _sessionsDir,
+          session,
+          clientIp,
+          user: generationUser,
+          status: 'failed',
+          startedAt: generationStartedAt,
+          completedAt: generationCompletedAt,
+          elapsedSeconds,
+          engineElapsedSeconds,
+          error: err?.message ?? err,
+        }).catch((monitoringErr) => {
+          console.error(
+            `[generation-monitoring] session ${session.id}:`,
+            monitoringErr?.message ?? monitoringErr,
+          )
+        })
         if (req.user) {
           refundRateLimit(req.user.uid, userMonthlyHits)
           console.log(
@@ -1198,10 +1319,11 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
+    if (!ensurePrivateSessionAccess(req, res, session)) return
 
     const targets = await decorateExportTargets(session, getSessionExportTargets(session))
     const payment = await getSessionPaymentDetails(session, {
-      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
+      ip: getClientIp(req) || null,
       headers: req.headers,
     })
     res.json({
@@ -1239,7 +1361,8 @@ export async function startServer(sessionsDir) {
           enabled: Boolean(session.medusaConfig?.backendUrl || session.medusaConfig?.adminBaseUrl),
           config: session.medusaConfig
             ? {
-                backendUrl: session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
+                backendUrl:
+                  session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
                 storefrontUrl: session.medusaConfig.storefrontUrl || null,
               }
             : null,
@@ -1444,7 +1567,7 @@ export async function startServer(sessionsDir) {
       })
     }
 
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const clientIp = getClientIp(req)
     const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     if (!skipRateLimits) {
@@ -1456,7 +1579,10 @@ export async function startServer(sessionsDir) {
         return res.status(429).json({ error: 'Rate limit: too many edit requests. Please wait.' })
       }
       const generationKey = req.user?.uid || clientIp
-      if (!isIpWhitelisted(clientIp) && (activeGenerations.get(generationKey) || 0) >= MAX_CONCURRENT_PER_USER) {
+      if (
+        !isIpWhitelisted(clientIp) &&
+        (activeGenerations.get(generationKey) || 0) >= MAX_CONCURRENT_PER_USER
+      ) {
         return res.status(429).json({
           error: `You already have ${MAX_CONCURRENT_PER_USER} operations in progress. Please wait.`,
         })
@@ -1621,7 +1747,7 @@ export async function startServer(sessionsDir) {
     if (!session) return res.status(404).json({ error: 'Session not found' })
     const targets = await decorateExportTargets(session, getSessionExportTargets(session))
     const payment = await getSessionPaymentDetails(session, {
-      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
+      ip: getClientIp(req) || null,
       headers: req.headers,
     })
     res.json({
@@ -1640,7 +1766,7 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
-    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const clientIp = getClientIp(req)
     const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     if (!skipRateLimits && !checkRateLimit(req.user.uid, exportHits, 5))
@@ -1989,6 +2115,13 @@ export async function startServer(sessionsDir) {
       await consumeUserCredit(session.userId)
     }
 
+    try {
+      generateSessionExport(session, target, {
+        includeBadge: !accessDecision.payment?.subscriptionActive,
+      })
+    } catch (error) {
+      return res.status(400).json({ error: error.message })
+    }
     const bundle = getSessionExportBundle(session, target)
     if (!bundle)
       return res.status(404).json({
@@ -2366,12 +2499,29 @@ export async function startServer(sessionsDir) {
       const result = await pushSessionToGitHub(session, {
         target,
         githubAccessToken: payload.data.githubAccessToken,
+        includeBadge: !accessDecision.payment?.subscriptionActive,
       })
       res.json({ ok: true, ...result })
     } catch (error) {
       const statusCode = error?.status === 401 ? 401 : 400
       res.status(statusCode).json({ error: error.message })
     }
+  })
+
+  app.post('/api/coupons/validate', requireAuth, async (req, res) => {
+    const provider =
+      String(req.body?.provider || 'razorpay').toLowerCase() === 'stripe' ? 'stripe' : 'razorpay'
+    const result = validatePartnerCoupon(req.body?.code, { provider })
+    if (!result.ok) {
+      return res.status(400).json({ ok: false, error: result.error, code: result.code })
+    }
+    res.json({
+      ok: true,
+      code: result.code,
+      percentOff: result.percentOff,
+      label: result.label,
+      provider,
+    })
   })
 
   // ─── API: Session tasks ───────────────────────────────────
@@ -2530,7 +2680,11 @@ export async function startServer(sessionsDir) {
               ),
             )
         } catch {
-          express.static(session.workspace, { extensions: ['html'], redirect: false })(req, res, next)
+          express.static(session.workspace, { extensions: ['html'], redirect: false })(
+            req,
+            res,
+            next,
+          )
         }
         return
       }

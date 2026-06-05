@@ -4,6 +4,14 @@ import { resolveThemeStyles, THEME_CATALOG } from '@ship-fast/blocks'
 import type { SiteSpecProject } from '../spec/index.ts'
 
 const HOME_OPENUI_FILE = 'home.openui'
+const OPENUI_PREVIEW_CSS_PUBLIC_PATH = '/styles/openui-preview-tailwind.css'
+const OPENUI_PREVIEW_CSS_EXPORT_PATH = './styles/openui-preview-tailwind.css'
+const OPENUI_PREVIEW_CSS_DISK_PATH = join(
+  process.cwd(),
+  'public',
+  'styles',
+  'openui-preview-tailwind.css',
+)
 
 // --- Per-site visual identity --------------------------------------------------
 // Registry modules use Tailwind token classes. During SSR we derive a
@@ -101,7 +109,7 @@ function googleFontLink(styles: any): string {
 
 // Build the SSR <head> for a chosen theme: map shadcn color names + radius +
 // fonts to the theme's CSS variables (so `bg-primary`/`text-foreground` resolve
-// under the Tailwind CDN), then set those variables on :root. The rich registry
+// under the local compiled Tailwind preview CSS), then set those variables on :root. The rich registry
 // sections then theme themselves with a designed, vibe-matched palette.
 function buildThemeHead(seedText: string, requested?: string | null): string {
   const themeName = pickThemeName(seedText, requested)
@@ -114,22 +122,19 @@ function buildThemeHead(seedText: string, requested?: string | null): string {
   const radius = light['radius'] ? `--radius: ${light['radius']};` : '--radius: 0.5rem;'
   const fontSans = light['font-sans'] || 'ui-sans-serif, system-ui, sans-serif'
   const fontSerif = light['font-serif'] || 'Georgia, serif'
-  const tailwindColors = JSON.stringify(
-    Object.fromEntries(THEME_VAR_KEYS.map((key) => [key, `var(--${key})`])),
-  )
   return `${googleFontLink(styles)}
-  <script>
-    window.tailwind = window.tailwind || {}
-    tailwind.config = { theme: { extend: {
-      colors: ${tailwindColors},
-      borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },
-      fontFamily: { sans: [${JSON.stringify(fontSans)}], serif: [${JSON.stringify(fontSerif)}] }
-    } } }
-  </script>
   <style>
-    :root { ${rootVars} ${radius} }
+    :root { ${rootVars} ${radius} --font-sans: ${fontSans}; --font-serif: ${fontSerif}; }
     body { font-family: ${fontSans}; background-color: var(--background); color: var(--foreground); }
   </style>`
+}
+
+function readOpenUIPreviewCssForExport(): string {
+  try {
+    return readFileSync(OPENUI_PREVIEW_CSS_DISK_PATH, 'utf8')
+  } catch {
+    return ''
+  }
 }
 
 /**
@@ -161,7 +166,7 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(brand)} - Preview</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="${OPENUI_PREVIEW_CSS_PUBLIC_PATH}">
 ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
@@ -333,12 +338,13 @@ export function renderProject(siteSpec: SiteSpecProject, target: string, session
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${brand} - Preview</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="${OPENUI_PREVIEW_CSS_EXPORT_PATH}">
 </head>
 <body class="min-h-screen bg-[radial-gradient(circle_at_top_left,#312e81,transparent_35%),linear-gradient(135deg,#050506,#111827_55%,#052e2b)] text-zinc-50">
   ${renderStaticHomepage(spec, brand, tagline)}
 </body>
 </html>`
+    files['styles/openui-preview-tailwind.css'] = readOpenUIPreviewCssForExport()
   } else if (target === 'react') {
     files['package.json'] = `{
   "name": "${brand.toLowerCase().replace(/[^a-z0-9]/g, '-')}",
@@ -453,7 +459,7 @@ export function writeStreamingShellToWorkspace(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(brand)} - Preview</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="${OPENUI_PREVIEW_CSS_PUBLIC_PATH}">
 ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">

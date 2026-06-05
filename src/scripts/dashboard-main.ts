@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { THEME_PRESETS } from './theme-presets'
 import { deriveCustomPalette } from './palette-derive'
+import { shouldPreserveOpenUIPreviewReset } from '../lib/home/preview-reset-guard'
 import './preview-editor/index'
 // ─── Config ────────────────────────────────────────────────
 const SESSION_ID = location.pathname.split('/session/')[1]?.split('/')[0] ?? ''
@@ -493,6 +494,7 @@ let paymentState = null
 let paymentModalTarget = null
 let selectedPaymentMode = 'subscription'
 let paymentBusy = false
+let appliedPaymentCoupon = null
 let provisionDialogType = null
 let provisionBusy = false
 let githubPushBusy = false
@@ -781,6 +783,10 @@ function getDisplayPrice() {
   return curr === 'inr'
     ? paymentState.pricing.inr?.display || '\u20B9399/month'
     : paymentState.pricing.usd?.display || '$9/month'
+}
+
+function getPaymentGateway() {
+  return paymentState?.gateway === 'stripe' ? 'stripe' : 'razorpay'
 }
 
 function syncPreviewTheme() {
@@ -1336,6 +1342,56 @@ function setPaymentBusyState(isBusy) {
   confirmBtn.textContent = isBusy ? 'Redirecting…' : 'Continue'
 }
 
+function normalizeCouponInput(value) {
+  return String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, '')
+    .slice(0, 64)
+}
+
+function renderCouponStatus(message = '', state = '') {
+  const statusEl = document.getElementById('payment-coupon-status')
+  if (!statusEl) return
+  statusEl.textContent = message
+  statusEl.dataset.state = state
+}
+
+async function applyPaymentCoupon() {
+  const input = document.getElementById('payment-coupon-code')
+  const applyBtn = document.getElementById('payment-coupon-apply')
+  const code = normalizeCouponInput(input?.value)
+  appliedPaymentCoupon = null
+  if (input) input.value = code
+  if (!code) {
+    renderCouponStatus('Enter a partner coupon code.', 'error')
+    return null
+  }
+  if (applyBtn) applyBtn.disabled = true
+  renderCouponStatus('Checking coupon…', 'pending')
+  try {
+    const res = await apiFetch('/api/coupons/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: getPaymentGateway(), code }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Coupon is not valid.')
+    appliedPaymentCoupon = {
+      code: data.code,
+      percentOff: data.percentOff,
+      label: data.label,
+    }
+    renderCouponStatus(`${data.percentOff}% discount applied.`, 'ok')
+    return appliedPaymentCoupon
+  } catch (error) {
+    renderCouponStatus(error.message || 'Coupon is not valid.', 'error')
+    return null
+  } finally {
+    if (applyBtn) applyBtn.disabled = false
+  }
+}
+
 function renderPaymentOptions() {
   const optionList = document.getElementById('payment-option-list')
   const plan = paymentState?.plan
@@ -1353,7 +1409,7 @@ function renderPaymentOptions() {
   }
 
   const features = plan?.features || [
-    '30 generations/month',
+    '5 generations/month',
     'Unlimited ZIP downloads',
     'Full template library',
     'AI iteration & refinement',
@@ -1402,6 +1458,15 @@ function renderPaymentOptions() {
           <ul class="payment-option-features">${featureHtml}</ul>
         </button>`
 
+  html += `<div class="payment-coupon">
+          <label class="payment-coupon-label" for="payment-coupon-code">Partner coupon</label>
+          <div class="payment-coupon-row">
+            <input id="payment-coupon-code" class="payment-coupon-input" type="text" inputmode="text" autocomplete="off" value="${escapeHtml(appliedPaymentCoupon?.code || '')}" placeholder="PARTNER20" />
+            <button id="payment-coupon-apply" class="payment-coupon-apply" type="button">Apply</button>
+          </div>
+          <p id="payment-coupon-status" class="payment-coupon-status">${appliedPaymentCoupon ? `${escapeHtml(String(appliedPaymentCoupon.percentOff))}% discount applied.` : ''}</p>
+        </div>`
+
   optionList.innerHTML = html
 }
 
@@ -1424,6 +1489,13 @@ function openPaymentModal(targetEntry) {
   const price = getDisplayPrice()
   document.getElementById('payment-copy').textContent =
     `${selectedLabel} ZIP exports need Pro or credits. Early adopter pricing applies while slots remain.`
+  const noteEl = document.getElementById('payment-note')
+  if (noteEl) {
+    noteEl.textContent =
+      getPaymentGateway() === 'stripe'
+        ? 'Secure checkout with Stripe — complete payment on the Stripe checkout page.'
+        : 'Secure checkout with Razorpay — UPI, cards, and net banking are available in the Razorpay window.'
+  }
 
   document.getElementById('payment-modal').classList.add('is-open')
   document.getElementById('payment-modal').setAttribute('aria-hidden', 'false')
@@ -1436,11 +1508,16 @@ function openAuthWall() {
     } catch {}
     return
   }
-  document.getElementById('auth-overlay').classList.remove('hidden')
+  const overlay = document.getElementById('auth-overlay')
+  overlay.classList.remove('hidden')
+  overlay.setAttribute('aria-hidden', 'false')
+  document.getElementById('google-signin-btn')?.focus()
 }
 
 function closeAuthWall() {
-  document.getElementById('auth-overlay').classList.add('hidden')
+  const overlay = document.getElementById('auth-overlay')
+  overlay.classList.add('hidden')
+  overlay.setAttribute('aria-hidden', 'true')
   document.getElementById('auth-error').textContent = ''
 }
 
@@ -1483,13 +1560,32 @@ async function startCheckout() {
       throw new Error('Subscription plan is not configured yet.')
     }
 
-    const res = await apiFetch('/api/payments/razorpay/start', {
+    const couponInput = normalizeCouponInput(document.getElementById('payment-coupon-code')?.value)
+    if (!couponInput) appliedPaymentCoupon = null
+    if (couponInput && appliedPaymentCoupon?.code !== couponInput) {
+      const applied = await applyPaymentCoupon()
+      if (!applied) throw new Error('Apply a valid coupon or clear the coupon field.')
+    }
+
+    const gateway = getPaymentGateway()
+    const res = await apiFetch(`/api/payments/${gateway}/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'subscription', tier }),
+      body: JSON.stringify({
+        mode: 'subscription',
+        tier,
+        sessionId: SESSION_ID,
+        ...(appliedPaymentCoupon?.code ? { couponCode: appliedPaymentCoupon.code } : {}),
+      }),
     })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error(data.error || 'Unable to start checkout')
+
+    if (gateway === 'stripe') {
+      if (!data.url) throw new Error('Invalid Stripe checkout response')
+      location.assign(data.url)
+      return
+    }
 
     await loadRazorpayScript()
 
@@ -1670,11 +1766,12 @@ function generateAlternativeDesign() {
 
 // ─── Task classification ───────────────────────────────────
 function isFrontendTask(task) {
-  const taskFiles = Array.isArray(task.files) && task.files.length > 0
-    ? task.files
-    : task.filename
-      ? [task.filename]
-      : []
+  const taskFiles =
+    Array.isArray(task.files) && task.files.length > 0
+      ? task.files
+      : task.filename
+        ? [task.filename]
+        : []
   return taskFiles.some(
     (f) =>
       f.endsWith('.html') ||
@@ -1703,11 +1800,12 @@ function getTaskCounts() {
 
 function hasOpenUIArtifact(taskList = tasks) {
   return taskList.some((task) => {
-    const files = Array.isArray(task.files) && task.files.length > 0
-      ? task.files
-      : task.filename
-        ? [task.filename]
-        : []
+    const files =
+      Array.isArray(task.files) && task.files.length > 0
+        ? task.files
+        : task.filename
+          ? [task.filename]
+          : []
     return files.some((file) => String(file || '').endsWith('.openui'))
   })
 }
@@ -1821,7 +1919,6 @@ function updatePreviewProgress() {
 
   if (counts.frontendDone >= counts.frontendTotal && !frontendComplete && hasSeenLiveUpdate) {
     frontendComplete = true
-    loading.classList.add('hidden')
     setTimeout(() => {
       if (!splitPinned) {
         leftPanel.classList.add('collapsed')
@@ -1829,7 +1926,8 @@ function updatePreviewProgress() {
         rightPanel.classList.add('expanded')
         rightPanel.style.width = ''
         leftPanel.style.width = ''
-        loadPreview()
+        if (!preloadStarted) preloadPreview()
+        loading.classList.add('hidden')
       }
     }, 600)
   }
@@ -2907,6 +3005,21 @@ function renderSprite(paletteIndex) {
   return c
 }
 
+// ─── Task label normalization ───────────────────────────────
+function normalizeTaskLabel(taskId: string, originalLabel?: string): string {
+  if (taskId === 'home.openui') return 'Build homepage preview'
+  return originalLabel || taskId
+}
+
+function normalizeTaskFiles(taskId: string, files?: string[]): string {
+  if (files && files.length > 0) {
+    const readable = files.filter((f) => f !== taskId)
+    if (readable.length > 0) return readable.join(', ')
+  }
+  if (taskId === 'home.openui') return 'Homepage layout, content, and styling'
+  return ''
+}
+
 // ─── Task list rendering ───────────────────────────────────
 function renderTasks() {
   const container = document.getElementById('task-list')
@@ -2948,10 +3061,12 @@ function renderTasks() {
       info.className = 'task-info'
       const title = document.createElement('div')
       title.className = 'task-title'
-      title.textContent = task.title || task.id
+      title.textContent = normalizeTaskLabel(task.id, task.title)
       const files = document.createElement('div')
       files.className = 'task-files'
-      files.textContent = (task.files || []).join(', ') || 'no files'
+      const filesText = normalizeTaskFiles(task.id, task.files)
+      files.textContent = filesText
+      if (!filesText) files.style.display = 'none'
       info.appendChild(title)
       info.appendChild(files)
 
@@ -2966,8 +3081,10 @@ function renderTasks() {
     } else {
       // Update files display if task has been updated with files
       const filesEl = el.querySelector('.task-files')
-      if (filesEl && task.files && task.files.length > 0) {
-        filesEl.textContent = task.files.join(', ')
+      if (filesEl) {
+        const filesText = normalizeTaskFiles(task.id, task.files)
+        filesEl.textContent = filesText
+        filesEl.style.display = filesText ? '' : 'none'
       }
     }
 
@@ -3011,7 +3128,7 @@ function updateStats() {
   const timingEl = document.getElementById('gen-timing')
   if (timingEl && !allDone) {
     if (total === 0) {
-      timingEl.textContent = 'Trajectory check…'
+      timingEl.textContent = 'Preparing to generate…'
     } else {
       const elapsed =
         persistedElapsed != null && finished >= total
@@ -3020,8 +3137,8 @@ function updateStats() {
       const counts = getTaskCounts()
       timingEl.textContent =
         counts.frontendTotal > 0
-          ? `Main engine: ${counts.frontendDone}/${counts.frontendTotal} frontend tasks · ${elapsed}s`
-          : `Main engine: ${done}/${total} pages · ${elapsed}s`
+          ? `Generating: ${counts.frontendDone}/${counts.frontendTotal} steps · ${elapsed}s`
+          : `Generating: ${done}/${total} pages · ${elapsed}s`
     }
   }
 
@@ -3357,6 +3474,16 @@ function resetPreviewToSessionHtml() {
   nextPreviewBase = ''
   const iframe = document.getElementById('preview-iframe')
   if (!iframe || !SESSION_ID) return
+  if (shouldPreserveOpenUIPreviewReset({
+    openuiActive: document.body.classList.contains('sf-openui-active'),
+    previewLoaded,
+    iframeSrc: iframe.src,
+    previewBase: PREVIEW_BASE,
+    origin: window.location.origin,
+  })) {
+    syncPreviewChrome()
+    return
+  }
   preloadStarted = true
   iframe.src = getPreviewFrameSrc(true)
   iframe.onload = () => onPreviewIframeLoaded()
@@ -4084,7 +4211,7 @@ function connectWS() {
     wsConnected = true
     debugLog('ws_connected', null)
     if (!introActive && !hydratedComplete) {
-      document.getElementById('phase-text').textContent = 'Comm lock on'
+      document.getElementById('phase-text').textContent = 'Connected. Waiting for updates'
     }
   }
 
@@ -4215,10 +4342,10 @@ function connectWS() {
 
       case 'homepage_phase_complete':
         document.getElementById('phase-text').textContent =
-          `Landing ready in ${ev.elapsed}s — building pages…`
+          `Homepage ready in ${ev.elapsed}s — building pages…`
         {
           const timing = document.getElementById('gen-timing')
-          if (timing) timing.textContent = `⚡ Landing page in ${ev.elapsed}s — pages generating…`
+          if (timing) timing.textContent = `Homepage ready in ${ev.elapsed}s — pages generating…`
         }
         break
 
@@ -4243,16 +4370,18 @@ function connectWS() {
 
       case 'run_completed':
         hydratedComplete = true
-        persistedElapsed = Number.isFinite(Number(ev.elapsed)) ? Number(ev.elapsed) : persistedElapsed
-        document.getElementById('phase-text').textContent = `Done in ${ev.elapsed}s`
+        persistedElapsed = Number.isFinite(Number(ev.elapsed))
+          ? Number(ev.elapsed)
+          : persistedElapsed
+        document.getElementById('phase-text').textContent = `Project generated in ${ev.elapsed}s`
         document.getElementById('toast-elapsed').textContent = ev.elapsed + 's'
         const timingFinal = document.getElementById('gen-timing')
         const counts = getTaskCounts()
         if (timingFinal) {
           if (counts.frontendTotal > 0) {
-            timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${counts.frontendDone}/${counts.frontendTotal} frontend tasks`
+            timingFinal.textContent = `Generated in ${ev.elapsed}s · ${counts.frontendDone}/${counts.frontendTotal} frontend steps`
           } else {
-            timingFinal.textContent = `⚡ Generated in ${ev.elapsed}s — ${ev.completed} pages`
+            timingFinal.textContent = `Generated in ${ev.elapsed}s · ${ev.completed} pages`
           }
         }
         resetPreviewToSessionHtml()
@@ -4264,6 +4393,25 @@ function connectWS() {
         void refreshChatHistory()
         if (!deploymentState?.url) void retryDeployOnce()
         break
+
+      case 'generation_timing_final': {
+        const finalElapsed = Number(ev.elapsed)
+        if (Number.isFinite(finalElapsed)) {
+          persistedElapsed = finalElapsed
+          document.getElementById('phase-text').textContent = `Project generated in ${finalElapsed}s`
+          document.getElementById('toast-elapsed').textContent = finalElapsed + 's'
+          const timingFinal = document.getElementById('gen-timing')
+          const counts = getTaskCounts()
+          if (timingFinal) {
+            if (counts.frontendTotal > 0) {
+              timingFinal.textContent = `Generated in ${finalElapsed}s · ${counts.frontendDone}/${counts.frontendTotal} frontend steps`
+            } else {
+              timingFinal.textContent = `Generated in ${finalElapsed}s`
+            }
+          }
+        }
+        break
+      }
 
       case 'next_preview_ready':
         break
@@ -4328,7 +4476,9 @@ function checkAllDone() {
   if (tasks.length === 0) return
   const pending = tasks.filter((t) => t.status === 'PENDING' || t.status === 'IN_PROGRESS')
   if (pending.length === 0 && !allDone) {
-    document.getElementById('phase-text').textContent = 'Orbit achieved'
+    if (!hydratedComplete) {
+      document.getElementById('phase-text').textContent = 'Project generated'
+    }
     if (drawerOpen) {
       triggerCompletion()
     }
@@ -4361,6 +4511,21 @@ document.getElementById('auth-overlay').addEventListener('click', (event) => {
   if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
 })
 
+function readAuthEmailCreds() {
+  const errEl = document.getElementById('auth-error')
+  const emailInput = document.getElementById('auth-email')
+  const passwordInput = document.getElementById('auth-password')
+  const email = emailInput.value.trim()
+  const password = passwordInput.value
+  emailInput.setAttribute('aria-invalid', email ? 'false' : 'true')
+  passwordInput.setAttribute('aria-invalid', password ? 'false' : 'true')
+  if (!email || !password) {
+    errEl.textContent = 'Enter email and password.'
+    return null
+  }
+  return { email, password }
+}
+
 document.getElementById('google-signin-btn').addEventListener('click', async () => {
   const errEl = document.getElementById('auth-error')
   errEl.textContent = ''
@@ -4387,34 +4552,35 @@ document.getElementById('github-signin-btn').addEventListener('click', async () 
   }
 })
 
-document.getElementById('email-signin-btn').addEventListener('click', async () => {
+async function signInWithAuthEmail() {
   const errEl = document.getElementById('auth-error')
   errEl.textContent = ''
-  const email = document.getElementById('auth-email').value.trim()
-  const password = document.getElementById('auth-password').value
-  if (!email || !password) {
-    errEl.textContent = 'Enter email and password.'
-    return
-  }
+  const creds = readAuthEmailCreds()
+  if (!creds) return
   try {
-    await window.shipFastDashboardAuth?.signInWithEmail?.(email, password)
+    await window.shipFastDashboardAuth?.signInWithEmail?.(creds.email, creds.password)
     closeAuthWall()
   } catch (e) {
     errEl.textContent = e?.message || 'Sign-in failed.'
   }
+}
+
+document.getElementById('auth-email-form')?.addEventListener('submit', (event) => {
+  event.preventDefault()
+  void signInWithAuthEmail()
+})
+
+document.getElementById('email-signin-btn').addEventListener('click', () => {
+  void signInWithAuthEmail()
 })
 
 document.getElementById('email-signup-btn').addEventListener('click', async () => {
   const errEl = document.getElementById('auth-error')
   errEl.textContent = ''
-  const email = document.getElementById('auth-email').value.trim()
-  const password = document.getElementById('auth-password').value
-  if (!email || !password) {
-    errEl.textContent = 'Enter email and password.'
-    return
-  }
+  const creds = readAuthEmailCreds()
+  if (!creds) return
   try {
-    await window.shipFastDashboardAuth?.signUpWithEmail?.(email, password)
+    await window.shipFastDashboardAuth?.signUpWithEmail?.(creds.email, creds.password)
     closeAuthWall()
   } catch (e) {
     errEl.textContent = e?.message || 'Account creation failed.'
@@ -4430,10 +4596,20 @@ document.getElementById('provision-modal').addEventListener('click', (event) => 
 })
 syncProvisionRailIndicators()
 document.getElementById('payment-option-list').addEventListener('click', (event) => {
+  if (event.target.closest('#payment-coupon-apply')) {
+    void applyPaymentCoupon()
+    return
+  }
   const option = event.target.closest('[data-payment-mode]')
   if (!option || paymentBusy) return
   selectedPaymentMode = option.dataset.paymentMode || selectedPaymentMode
   renderPaymentOptions()
+})
+document.getElementById('payment-option-list').addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter') return
+  if (!event.target.closest('#payment-coupon-code')) return
+  event.preventDefault()
+  void applyPaymentCoupon()
 })
 document.addEventListener('click', (event) => {
   if (event.target.closest('#export-panel')) return
@@ -4714,7 +4890,7 @@ function beginSessionDashboard(session) {
     tasks.forEach((task) => {
       taskMap[task.id] = task
     })
-    updateTasks()
+    renderTasks()
   }
   syncOpenUIActiveClass(session)
   persistedElapsed = Number.isFinite(Number(session.elapsed)) ? Number(session.elapsed) : null
@@ -4742,7 +4918,7 @@ function beginSessionDashboard(session) {
     const sfx = document.getElementById('launch-sfx')
     if (sfx) sfx.remove()
     if (persistedElapsed != null) {
-      document.getElementById('phase-text').textContent = `Done in ${persistedElapsed}s`
+      document.getElementById('phase-text').textContent = `Project generated in ${persistedElapsed}s`
       document.getElementById('toast-elapsed').textContent = persistedElapsed + 's'
     }
   }

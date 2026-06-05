@@ -3,16 +3,19 @@ import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import {
+  createSession,
   getAllSessions,
   getOpenUIStreamReplayMessages,
   getSession,
   initSessionDir,
   sessionBroadcast,
 } from './sessions.js'
+import { getPublicGalleryList, invalidatePublicGallery } from './public-gallery-cache.js'
 
 let tmpRoot = null
 
 afterEach(() => {
+  invalidatePublicGallery()
   if (tmpRoot) rmSync(tmpRoot, { recursive: true, force: true })
   tmpRoot = null
 })
@@ -37,9 +40,74 @@ describe('session disk recovery', () => {
     expect(session?.prompt).toBe('Stillpoint - Yoga studio in Paris')
     expect(getAllSessions().map((s) => s.id)).toContain(id)
   })
+
+  it('persists private session metadata across reloads', () => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'ship-fast-sessions-'))
+    initSessionDir(tmpRoot)
+
+    const created = createSession(tmpRoot, 'a private landing page for a funded startup', 'user-a', {
+      isPrivate: true,
+    })
+    const reloaded = getSession(created.id)
+
+    expect(created.isPrivate).toBe(true)
+    expect(reloaded?.isPrivate).toBe(true)
+  })
+
+  it('excludes private sessions from the public gallery cache', () => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'ship-fast-sessions-'))
+    initSessionDir(tmpRoot)
+
+    const publicSession = createSession(tmpRoot, 'a public landing page for a bakery', null)
+    const privateSession = createSession(
+      tmpRoot,
+      'a private investor update page for a funded startup',
+      'user-a',
+      { isPrivate: true },
+    )
+
+    invalidatePublicGallery()
+    const galleryIds = getPublicGalleryList(0).map((session) => session.id)
+
+    expect(galleryIds).toContain(publicSession.id)
+    expect(galleryIds).not.toContain(privateSession.id)
+  })
 })
 
 describe('OpenUI stream replay', () => {
+  it('drops stale or failing websocket clients during broadcast', () => {
+    const sent = []
+    const staleClient = { readyState: 3, send() {} }
+    const failingClient = {
+      readyState: 1,
+      send() {
+        throw new Error('socket gone')
+      },
+      terminateCalled: false,
+      terminate() {
+        this.terminateCalled = true
+      },
+    }
+    const liveClient = {
+      readyState: 1,
+      send(data) {
+        sent.push(JSON.parse(data))
+      },
+    }
+    const session = {
+      id: 'session-1',
+      wsClients: new Set([staleClient, failingClient, liveClient]),
+    }
+
+    sessionBroadcast(session, { type: 'status', message: 'still alive' })
+
+    expect(sent).toEqual([{ type: 'status', message: 'still alive' }])
+    expect(failingClient.terminateCalled).toBe(true)
+    expect(session.wsClients.has(staleClient)).toBe(false)
+    expect(session.wsClients.has(failingClient)).toBe(false)
+    expect(session.wsClients.has(liveClient)).toBe(true)
+  })
+
   it('replays the latest accumulated source to late websocket subscribers', () => {
     const sent = []
     const session = {
