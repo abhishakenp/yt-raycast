@@ -3980,6 +3980,40 @@ function initPreviewChat() {
       }
     })
   })
+  document.querySelectorAll('[data-cms-medusa-sync]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!SESSION_ID) return
+      const syncBtns = document.querySelectorAll('[data-cms-medusa-sync]')
+      syncBtns.forEach((b) => {
+        b.disabled = true
+        b.textContent = 'Applying...'
+      })
+      try {
+        const res = await apiFetch(`/api/sessions/${SESSION_ID}/sync-medusa-preview`, {
+          method: 'POST',
+        })
+        const j = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(j.error || `Request failed (${res.status})`)
+        syncBtns.forEach((b) => {
+          b.textContent = 'Applied'
+        })
+        window.setTimeout(() => {
+          syncBtns.forEach((b) => {
+            b.textContent = 'Apply to preview'
+          })
+        }, 1400)
+      } catch (err) {
+        alert(err?.message || 'Could not apply Medusa products to preview')
+        syncBtns.forEach((b) => {
+          b.textContent = 'Apply to preview'
+        })
+      } finally {
+        syncBtns.forEach((b) => {
+          b.disabled = false
+        })
+      }
+    })
+  })
   let cmsLibraryTargetSlot = null
   const cmsSlotIds = {
     og: {
