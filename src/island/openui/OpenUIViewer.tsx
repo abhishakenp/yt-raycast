@@ -1,16 +1,22 @@
 import {
   OpenUIIntegrationProviders,
   QueryClient,
-  PersistQueryClientProvider,
+  QueryClientProvider,
   library as shipFastOpenUILibrary,
   Renderer,
 } from '@ship-fast/blocks'
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
-import { get, set, del } from 'idb-keyval'
 import { preprocessOpenUIResponse } from '../../../packages/ship-fast-engine/src/lib/openui-preprocess'
 import { Component, type CSSProperties, type ReactNode } from 'react'
 import { I18nProvider, T } from './_providers/translation';
 
+// NOTE: We use a plain QueryClientProvider here (not PersistQueryClientProvider).
+// The persist provider from @tanstack/react-query-persist-client resolved a
+// different @tanstack/react-query instance than the one the rendered library
+// components call useQuery from, so its QueryClientContext never reached them —
+// every <Image> (img.tsx usePexelsImage) threw "No QueryClient set" and the
+// Renderer's error boundary blanked the page to white. A plain provider from the
+// same @ship-fast/blocks react-query re-export shares one context. In-memory
+// caching is retained for the session (idb persistence across reloads dropped).
 const openUIQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -20,15 +26,6 @@ const openUIQueryClient = new QueryClient({
       gcTime: Infinity,
     },
   },
-})
-
-const idbPersister = createAsyncStoragePersister({
-  storage: {
-    getItem: (key) => get(key),
-    setItem: (key, value) => set(key, value),
-    removeItem: (key) => del(key),
-  },
-  key: 'ship-fast-openui-cache',
 })
 
 class RendererErrorBoundary extends Component<
@@ -126,13 +123,7 @@ export default function OpenUIViewer({
             ) : null
           }
         >
-          <PersistQueryClientProvider
-            client={openUIQueryClient}
-            persistOptions={{
-              persister: idbPersister,
-              maxAge: Infinity,
-            }}
-          >
+          <QueryClientProvider client={openUIQueryClient}>
             <OpenUIIntegrationProviders
               sanity={integrations?.sanity || { enabled: false }}
               medusa={integrations?.medusa || { enabled: false }}
@@ -148,7 +139,7 @@ export default function OpenUIViewer({
                 </T>
               </I18nProvider>
             </OpenUIIntegrationProviders>
-          </PersistQueryClientProvider>
+          </QueryClientProvider>
         </RendererErrorBoundary>
       </div>
     </div>
