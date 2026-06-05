@@ -27,6 +27,7 @@ import {
   startMedusaPreWarmIfApplicable,
 } from './medusa-provision.js'
 import { extractSessionProducts } from './extract-session-products.js'
+import { pexelsPhotoResolver } from './pexels.js'
 import { fetchMedusaProductsForSiteSpec, syncProductsToMedusa } from './sync-medusa-catalog.js'
 import {
   mergeMedusaProductsIntoSiteSpec,
@@ -2127,11 +2128,33 @@ export async function startServer(sessionsDir) {
   // into the tenant Medusa admin. Idempotent: it's safe to call again if the
   // sync flag isn't set yet, but we skip when productsSyncedAt is already
   // populated to avoid re-syncing on every click.
+  // Products extracted from the DSL/storefront carry no image URL — the live
+  // preview resolves one client-side from the alt text. Medusa has no such
+  // hook, so give each product a relevant Pexels thumbnail here (reusing the
+  // existing resolver, which falls back to a deterministic image if the key is
+  // missing). Querying by the alt text, then the title, keeps it relevant.
+  const _resolveProductImages = async (products) =>
+    Promise.all(
+      products.map(async (product) => {
+        if (product.image) return product
+        try {
+          const photo = await pexelsPhotoResolver({
+            query: product.imageAlt || product.title,
+            w: 900,
+            h: 900,
+          })
+          return photo?.url ? { ...product, image: photo.url } : product
+        } catch {
+          return product
+        }
+      }),
+    )
+
   const _maybeSyncSessionProductsToTenant = async (sessionId, config) => {
     if (!config?.adminBaseUrl || !config?.adminEmail || !config?.adminPassword) return null
     const session = getSession(sessionId)
     if (!session?.siteSpecReady) return null
-    const products = extractSessionProducts(session, _sessionsDir)
+    const products = await _resolveProductImages(extractSessionProducts(session, _sessionsDir))
     if (products.length === 0) return null
     try {
       const result = await syncProductsToMedusa(products, {

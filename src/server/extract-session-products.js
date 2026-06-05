@@ -204,6 +204,10 @@ function extractFromModulesDsl(spec, sessionId, sessionPrompt) {
       if (!priceMatch) continue
       const symbol = priceMatch[1] || '$'
       const badgeMatch = block.match(/\bbadge:\s*"([^"]+)"/)
+      // The DSL carries no image URL (the live storefront resolves one from the
+      // alt text at render time), so surface that alt as the image query the
+      // sync layer can hand to Pexels for a matching thumbnail.
+      const altMatch = block.match(/"?alt"?\s*:\s*"([^"]+)"/)
       seen.add(handle)
       products.push({
         id: handle,
@@ -214,6 +218,7 @@ function extractFromModulesDsl(spec, sessionId, sessionPrompt) {
         currency:
           symbol === '₹' ? 'INR' : symbol === '€' ? 'EUR' : symbol === '£' ? 'GBP' : 'USD',
         image: null,
+        imageAlt: altMatch?.[1]?.trim() || '',
         category: badgeMatch?.[1] || '',
         sessionId,
         sessionPrompt,
