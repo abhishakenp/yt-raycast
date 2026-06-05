@@ -28,8 +28,15 @@ COPY src ./src
 # production-only node_modules the bundle expects.
 RUN npx --no medusa build && \
     cp medusa-config.js .medusa/server/medusa-config.js && \
+    mkdir -p .medusa/server/src && \
+    cp -r .medusa/server/subscribers .medusa/server/src/subscribers && \
     cd .medusa/server && \
     npm install --omit=dev --no-audit --no-fund --loglevel=error
+
+# `medusa build` flattens src/subscribers -> .medusa/server/subscribers, but
+# `medusa start` (run from .medusa/server) scans .medusa/server/src/subscribers,
+# so without the copy above our product-sync subscriber is silently never
+# registered and the auto-sync webhook never fires.
 
 RUN chmod +x entrypoint.sh && chown -R medusa:medusa /app
 
