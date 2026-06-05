@@ -87,58 +87,27 @@ function stripNullsFromArrays(code: string): string {
   // Aggressive null stripping for streaming: remove all null values from arrays
   // to prevent "Cannot read properties of null" errors when components map over
   // incomplete arrays during progressive rendering.
+  // Also removes objects with only null/empty properties that came from incomplete Image() calls.
   let result = code
-  let depth = 0
-  let inString = false
-  let stringChar = ''
-  let escape = false
-  let arrayStart = -1
-  let lastValidPos = 0
 
-  for (let i = 0; i < result.length; i++) {
-    const ch = result[i]
-    
-    if (escape) {
-      escape = false
-      continue
-    }
-    
-    if (inString) {
-      if (ch === '\\') escape = true
-      else if (ch === stringChar) inString = false
-      continue
-    }
-    
-    if (ch === '"' || ch === "'") {
-      inString = true
-      stringChar = ch
-      continue
-    }
-    
-    if (ch === '[') {
-      if (depth === 0) arrayStart = i
-      depth++
-    } else if (ch === ']') {
-      depth--
-      if (depth === 0 && arrayStart !== -1) {
-        // Process this array
-        const arrayContent = result.slice(arrayStart + 1, i)
-        // Remove all null entries (with optional surrounding whitespace and commas)
-        const cleaned = arrayContent
-          .replace(/,\s*null\s*/g, ',')
-          .replace(/null\s*,/g, ',')
-          .replace(/^\s*null\s*$/g, '')
-          .replace(/,\s*,/g, ',') // Fix double commas
-          .replace(/^\s*,\s*/g, '') // Remove leading comma
-          .replace(/,\s*$/g, '') // Remove trailing comma
-        
-        result = result.slice(0, arrayStart + 1) + cleaned + result.slice(i)
-        i = arrayStart + 1 + cleaned.length // Adjust index after modification
-        arrayStart = -1
-      }
-    }
-  }
-  
+  // First pass: simple null removal in arrays
+  result = result
+    .replace(/,\s*null\s*(?=[,\]])/g, '') // null followed by comma or ]
+    .replace(/(?<=[,\[])\s*null\s*,/g, ',') // null preceded by comma or [
+    .replace(/^\s*null\s*$/gm, '') // standalone null on a line
+
+  // Second pass: remove empty objects and arrays that might have resulted from null replacements
+  result = result.replace(/,\s*\{\s*\}\s*(?=[,\]])/g, '') // empty {}
+  result = result.replace(/(?<=[,\[])\s*\{\s*\}\s*,/g, ',') // empty {} with comma
+  result = result.replace(/,\s*\[\s*\]\s*(?=[,\]])/g, '') // empty []
+  result = result.replace(/(?<=[,\[])\s*\[\s*\]\s*,/g, ',') // empty [] with comma
+
+  // Third pass: clean up resulting double commas and edge cases
+  result = result
+    .replace(/,\s*,/g, ',') // Fix double commas
+    .replace(/^\s*,\s*/gm, '') // Remove leading comma
+    .replace(/,\s*$/gm, '') // Remove trailing comma
+
   return result
 }
 
