@@ -3,6 +3,8 @@ import { writeFileSync, existsSync, readFileSync } from 'node:fs'
 import { runHomepageOrchestrator } from '../genui/run.ts'
 import { renderPreviewToWorkspace, writeStreamingShellToWorkspace } from '../renderers/index.ts'
 import { saveSiteSpec } from '../spec/index.ts'
+// @ts-ignore - JS module without type definitions
+import { preferRomanizedBcp47FromSnippet, preferMixedEnglishBcp47FromSnippet } from '../config/languages.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
 const OPENUI_PAGES_DIR = 'pages'
@@ -160,7 +162,12 @@ export async function generateAndWriteOpenUIHome(p: {
   // The AI-picked theme name drives the preview palette (renderers/index.ts reads
   // it back from the site spec and applies the matching designed preset).
   const theme = result.theme || themeName || specThemeName || 'modern-minimal'
-  const locale = result.locale || localeName || 'en'
+  // Deterministic override: an explicit language keyword in the prompt ("hinglish",
+  // "roman hindi", "tamil english mix", …) is authoritative over the small planner
+  // LLM's guess, which is unreliable at picking the variant codes.
+  const promptLocale =
+    preferRomanizedBcp47FromSnippet(p.prompt) || preferMixedEnglishBcp47FromSnippet(p.prompt)
+  const locale = promptLocale || result.locale || localeName || 'en'
   const ms = Date.now() - startedAt
   const project = { brand, tagline, theme, locale, skeleton: '', modules: { home: source } }
 

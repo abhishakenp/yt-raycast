@@ -58,11 +58,24 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scrollbar-gutter: stable;
   overflow-y: scroll;
   -webkit-font-smoothing: antialiased;
   background: var(--stitch-bg);
+  /* Keep targets clear of the fixed .top-actions header (≈68px) when scrolled
+     into view via anchors / scrollIntoView, so they aren't hidden beneath it. */
+  scroll-padding-top: 84px;
+}
+
+/* Smooth scrolling only when the user hasn't asked to reduce motion. Always-on
+   smooth scroll races scroll-then-click flows (and assistive tooling): the click
+   fires before the animated scroll settles, landing on the wrong coordinates.
+   Gating it keeps the polish for most users while making scroll-driven
+   interaction deterministic for reduced-motion users and automation. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -218,6 +231,15 @@ select {
   gap: 8px;
   padding: 16px 24px;
   background: transparent;
+  /* The bar is a full-width transparent strip; without this it would swallow
+     clicks across its empty middle, including content that scrolls beneath it
+     (pagination, footer links, gallery items). Re-enable hits on real controls. */
+  pointer-events: none;
+}
+
+.top-actions-brand,
+.top-actions-right {
+  pointer-events: auto;
 }
 
 .top-actions-right {
@@ -898,14 +920,7 @@ button.share-icon.pill {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: fit-content;
-  max-width: 100%;
-  min-height: 32px;
-  margin-top: -4px;
-  padding: 5px 8px 5px 5px;
-  border-radius: 9999px;
-  border: 1px solid var(--border-primary);
-  background: rgba(0, 0, 0, 0.18);
+  margin-top: 8px;
 }
 
 .design-ref-toggle {
@@ -953,9 +968,6 @@ button.share-icon.pill {
   cursor: pointer;
   user-select: none;
   transition: color 0.2s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .design-ref-toggle-label:hover {
@@ -964,8 +976,8 @@ button.share-icon.pill {
 
 .design-ref-panel {
   display: none;
-  margin-top: -8px;
-  padding: 12px;
+  margin-top: 12px;
+  padding: 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.25);
@@ -1009,9 +1021,8 @@ button.share-icon.pill {
 
 .design-ref-search {
   width: 100%;
-  min-height: 40px;
   padding: 10px 12px 10px 36px;
-  border-radius: var(--radius-sm);
+  border-radius: 9999px;
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.3);
   color: var(--text-primary);
@@ -1039,7 +1050,6 @@ button.share-icon.pill {
   display: none;
   margin-top: 10px;
   padding: 10px;
-  min-height: 42px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-primary);
   background: rgba(0, 0, 0, 0.2);
@@ -1106,17 +1116,6 @@ button.share-icon.pill {
   color: var(--text-muted);
   line-height: 1.5;
   word-break: break-word;
-}
-
-@media (max-width: 600px) {
-  .design-ref-toggle-row {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .design-ref-panel {
-    padding: 10px;
-  }
 }
 
 .submit-btn {
@@ -1599,20 +1598,6 @@ button.share-icon.pill {
   transform: translateY(-2px);
 }
 
-.session-open-link {
-  color: inherit;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 100%;
-  text-decoration: none;
-}
-
-.session-open-link:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: -2px;
-}
-
 .session-thumbnail {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -1817,15 +1802,13 @@ button.share-icon.pill {
 #auth-overlay {
   position: fixed;
   inset: 0;
-  z-index: 500;
-  padding: 24px;
-  background: rgba(7, 7, 16, 0.18);
-  backdrop-filter: blur(3px) saturate(120%);
-  -webkit-backdrop-filter: blur(3px) saturate(120%);
+  z-index: 200;
+  background: transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 }
 
 #auth-overlay.hidden {
@@ -1833,14 +1816,12 @@ button.share-icon.pill {
 }
 
 .auth-box {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.025)),
-    rgba(7, 7, 16, 0.72);
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   padding: 40px 32px;
   width: 100%;
-  max-width: 384px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1848,7 +1829,28 @@ button.share-icon.pill {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--glass-shadow);
-  cursor: auto;
+  position: relative;
+}
+
+.auth-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
+}
+
+.auth-close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .auth-logo {
@@ -1861,17 +1863,8 @@ button.share-icon.pill {
 }
 
 .auth-title {
-  margin: 0;
   font-size: 14px;
   color: var(--text-secondary);
-  text-align: center;
-}
-
-.auth-description {
-  margin: -8px 0 0;
-  color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.45;
   text-align: center;
 }
 
@@ -1954,26 +1947,17 @@ button.share-icon.pill {
   color: var(--text-muted);
 }
 
-.auth-email-form,
 .auth-field {
   width: 100%;
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 16px;
 }
 
-.auth-email-form {
-  gap: 12px;
-}
-
-.auth-field {
-  gap: 6px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.auth-input[aria-invalid='true'] {
-  border-color: var(--error);
+.auth-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .auth-email-row {

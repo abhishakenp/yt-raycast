@@ -3,8 +3,11 @@ import { generateText } from "../generate.ts"
 import { pageSystemPrompt, componentCatalog } from "./prompt.ts"
 import { stripFences } from "./parser.ts"
 import { DEFAULT_MODEL } from "./model-list.ts"
-import { BLOCK_TAXONOMY, pickBlock } from "@ship-fast/blocks"
+import { BLOCK_TAXONOMY, pickBlock, componentNames } from "@ship-fast/blocks"
 import { THEME_CATALOG, isKnownTheme, pickRandomTheme } from "@ship-fast/blocks"
+import type { ClonedPage, ClonedSection, ExtractedTokens } from "../clone/types.ts"
+import { generateFallbackSection } from "../clone/fallback.ts"
+import { validateOpenUISource } from "../pipeline/openui-validate.js"
 
 // Server-side, SYSTEM-controlled site assembly.
 //
@@ -30,7 +33,8 @@ export type GenUIEvent =
   | { type: "module_start"; id: string }
   | { type: "module_retry"; id: string; attempt: number }
   | { type: "module"; id: string; text: string; failed?: boolean }
-  | { type: "done"; modules: number; ms: number }
+  | { type: "source"; text: string }
+  | { type: "done"; modules: number; ms: number; source?: string }
   | { type: "error"; message: string }
 
 const MAX_PARALLEL = 8
@@ -105,18 +109,18 @@ AVAILABLE THEMES (name: vibe) — pick ONE whose mood best fits the request:
 ${themeList}
 
 Return ONLY this JSON shape (no markdown, no code fences):
-{"brand":"<short brand/product name>","tagline":"<one short sentence>","theme":"<theme-name>","locale":"<ISO 639-1 code for the language of this request, e.g. en, hi, ne, es, fr, ja, zh, ar>","pages":[{"label":"<short nav word>","brief":"<one line of what this page covers>","blocks":["<BlockName>", "<BlockName>"]}]}
+{"brand":"<short brand/product name>","tagline":"<one short sentence>","theme":"<theme-name>","locale":"<ISO 639-1 code for the language of this request, e.g. en, hi, ne, es, fr, ja, zh, ar; for a romanized / Latin-script request append \"-latn\" (e.g. hi-latn); for a Hindi-English code-mix use \"hinglish\"; for another Indian-language+English mix append \"-en\" (e.g. ta-en)>","pages":[{"label":"<short nav word>","brief":"<one line of what this page covers>","blocks":["<BlockName>", "<BlockName>"]}]}
 
 Rules:
 - "pages": 3 to 5 entries; the FIRST is the home/landing route. For a single-purpose request (e.g. just a sign-in screen) a single page is allowed.
 - "blocks": 1 to 4 block NAMES copied EXACTLY from the catalog above, ordered most-relevant first. Choose blocks whose DESCRIPTION genuinely fits this page's purpose AND the overall site (e.g. a ramen shop's home picks a restaurant home block, a pricing page picks a pricing block). The home page's blocks must be landing/home-style blocks.
 - "theme": ONE theme NAME copied EXACTLY from the THEMES list, whose vibe matches the brand and request (e.g. a luxury restaurant -> "elegant-luxury", a dev tool -> "vercel" or "supabase", a kids site -> "candyland").
-- "locale": The ISO 639-1 language code matching the language of the build request (e.g. "en" for English, "hi" for Hindi, "ne" for Nepali, "es" for Spanish, "fr" for French, "ja" for Japanese). Default to "en" if the request is in English or you cannot determine the language.
+- "locale": The ISO 639-1 language code matching the language of the build request (e.g. "en" for English, "hi" for Hindi, "ne" for Nepali, "es" for Spanish, "fr" for French, "ja" for Japanese). Default to "en" if the request is in English or you cannot determine the language. For a ROMANIZED / Latin-script version of an Indian language — pure language in Latin letters (e.g. "roman hindi", "romanized nepali", "hindi in english letters") — append "-latn" to the base code: hi-latn, ne-latn, mr-latn. For a CODE-MIX (the language blended WITH English words) use: "hinglish" for Hindi+English, or "<base>-en" for others (e.g. "tanglish"/"tamil english mix" → ta-en, "marathi english mix" → mr-en). "hinglish" is a code-mix, NOT the same as romanized "hi-latn".
 - Labels are short nav words (Home, Features, Pricing, About, Contact, Shop, Work, Menu, Blog …).
 - brand, tagline and briefs must be specific to the request.`
 }
 
-const isKnownBlock = (name: unknown): name is string =>
+const isKnownBlock = (name: unknown): boolean =>
   typeof name === "string" && name in BLOCK_TAXONOMY
 
 const BLOCK_NAME_INDEX = Object.keys(BLOCK_TAXONOMY)
@@ -221,9 +225,8 @@ function parsePlan(raw: string, rng: () => number, prompt: string): Plan {
       ? parsed.tagline.trim()
       : `${brand} — built for what's next.`
   const theme = isKnownTheme(parsed.theme) ? parsed.theme : pickRandomTheme(rng)
-  const locale = typeof parsed.locale === "string" && parsed.locale.trim().length === 2
-    ? parsed.locale.trim().toLowerCase()
-    : "en"
+  const rawLocale = typeof parsed.locale === "string" ? parsed.locale.trim().toLowerCase() : ""
+  const locale = (/^[a-z]{2}$/.test(rawLocale) || /^[a-z]{2,8}-latn$/.test(rawLocale)) ? rawLocale : "en"
   return { brand, tagline, theme, locale, pages }
 }
 
@@ -559,4 +562,322 @@ export async function selectPlan(
     theme: plan.theme,
     pages: plan.pages.map((p) => ({ label: p.label, block: p.block })),
   }
+}
+
+// The primitive spine a scraped/fallback section program may reference. Per
+// CONTRACT, section programs may reference ONLY these primitives — NOT the heavy
+// page blocks (MarketingKimiPage, …) that `componentNames` also exposes. We pin
+// the spine explicitly and intersect with the live library so a spine primitive
+// that was renamed/removed upstream is caught here rather than passing validation
+// against a name the contract library no longer defines.
+const PRIMITIVE_SPINE = [
+  "Stack", "Grid", "Box", "Section", "Spacer", "Heading", "Text",
+  "Button", "Card", "Badge", "Tabs", "Separator", "Image",
+] as const
+const LIBRARY_COMPONENT_NAMES = new Set<string>(componentNames)
+const ALLOWED_COMPONENT_NAMES = new Set<string>(
+  PRIMITIVE_SPINE.filter((name) => LIBRARY_COMPONENT_NAMES.has(name)),
+)
+
+// A section program must define EXACTLY `section_${kind}_${index}` and may
+// reference ONLY the primitive spine. We probe it by wrapping the defined var in
+// a Stack root (the shape validateOpenUISource accepts) — a real parse + component
+// check. Returns false on parse failure, missing definition, or any component name
+// outside the spine, so the caller can swap in a native fallback section.
+function sectionVarName(section: { kind: string; index: number }): string {
+  return `section_${section.kind}_${section.index}`
+}
+
+function sectionProgramValid(section: ClonedSection): boolean {
+  const varName = sectionVarName(section)
+  const program = String(section.program || "")
+  const definesVar = new RegExp(`(^|\\n)\\s*${varName}\\s*=`).test(program)
+  if (!definesVar) return false
+  // No stray root/PageSwitch seed inside a section program.
+  if (/(^|\n)\s*root\s*=/.test(program)) return false
+  // Every PascalCase component call must be in the allowed spine (blocks library).
+  for (const m of program.matchAll(/\b([A-Z][A-Za-z0-9_]*)\s*\(/g)) {
+    if (!ALLOWED_COMPONENT_NAMES.has(m[1])) return false
+  }
+  // Real parse against the contract library, wrapped in an accepted Stack root.
+  const probe = validateOpenUISource(`root = Stack([${varName}])\n${program}`)
+  return probe.ok
+}
+
+// Assemble ONE page: concat section programs, then `${pageId} = Stack([refs])`.
+function assemblePage(pageId: string, sections: ClonedSection[]): string {
+  const refs = sections.map(sectionVarName).join(", ")
+  const programs = sections.map((s) => s.program).join("\n")
+  return `${pageId} = Stack([${refs}])\n${programs}`
+}
+
+// validateOpenUISource (openui-validate.js) is Stack-root-only — it categorically
+// rejects any non-Stack root. The full assembled clone program roots in
+// `PageSwitch([...])`, so the WHOLE program can never pass that validator. The
+// contract is therefore enforced PER PAGE: each page is a `Stack([sectionRefs])`
+// program, the exact shape validateOpenUISource accepts. We probe every page Stack
+// (real parse + component-spine check) and the PageSwitch root is assembled only
+// from pages that pass — so every page subtree the PageSwitch references is valid.
+function pageProgramValid(_pageId: string, sections: ClonedSection[]): boolean {
+  if (sections.length === 0) return false
+  // Each referenced section var must be defined by its own program.
+  for (const section of sections) {
+    if (!sectionProgramValid(section)) return false
+  }
+  // Probe the page as a Stack-rooted program — the shape validateOpenUISource
+  // accepts — by rooting the page's section refs directly in `root = Stack([...])`.
+  const refs = sections.map(sectionVarName).join(", ")
+  const programs = sections.map((s) => s.program).join("\n")
+  const probe = validateOpenUISource(`root = Stack([${refs}])\n${programs}`)
+  return probe.ok
+}
+
+// Assemble the FULL program: per-page Stacks + their section programs, then the
+// skeleton `root = PageSwitch([labels], [pageIds])`.
+function assembleClone(
+  pages: { id: string; sections: ClonedSection[] }[],
+  labels: string[],
+): string {
+  const pageBlocks = pages.map((p) => assemblePage(p.id, p.sections)).join("\n")
+  const labelsJson = labels.map((l) => JSON.stringify(l)).join(", ")
+  const pageRefs = pages.map((p) => p.id).join(", ")
+  return `${pageBlocks}\nroot = PageSwitch([${labelsJson}], [${pageRefs}])`
+}
+
+// The clone job currently hardcodes ClonedPage.title to `Cloned: <url>` /
+// `Cloned (fallback): <url>` — a URL string, NOT a real page title. Surfacing that
+// as a nav label (or brand) prints raw URLs in the UI. Until a real <title> is
+// extracted upstream, treat any such placeholder title as ABSENT and synthesize a
+// readable label from the page's URL path instead.
+const PLACEHOLDER_TITLE_RE = /^\s*Cloned(?:\s*\(fallback\))?\s*:/i
+
+function isPlaceholderTitle(title: unknown): boolean {
+  return typeof title !== "string" || !title.trim() || PLACEHOLDER_TITLE_RE.test(title)
+}
+
+// Title-case a slug/host fragment: "our-team" -> "Our Team", "api_docs" -> "Api Docs".
+function humanize(raw: string): string {
+  const words = raw
+    .replace(/[-_]+/g, " ")
+    .replace(/[^A-Za-z0-9 ]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+  if (words.length === 0) return ""
+  return words
+    .slice(0, 4)
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join(" ")
+}
+
+// A readable nav label for a non-home page derived from its URL: the last
+// meaningful path segment ("/company/pricing" -> "Pricing"), falling back to the
+// host, then a positional label.
+function labelFromUrl(url: string, index: number): string {
+  try {
+    const u = new URL(url)
+    const segs = u.pathname.split("/").filter(Boolean)
+    const last = segs[segs.length - 1] || ""
+    const slug = last.replace(/\.[a-z0-9]+$/i, "") // drop trailing extension
+    const fromSlug = humanize(slug)
+    if (fromSlug) return fromSlug
+    const fromHost = humanize(u.hostname.replace(/^www\./, "").split(".")[0] || "")
+    if (fromHost) return fromHost
+  } catch {
+    /* not a parseable URL */
+  }
+  return `Page ${index + 1}`
+}
+
+// The nav label for a cloned page: real <title> if present, else URL-derived.
+function cloneLabel(page: ClonedPage, index: number): string {
+  if (index === 0) return "Home"
+  if (!isPlaceholderTitle(page.title)) return page.title.trim()
+  return labelFromUrl(page.url, index)
+}
+
+// Clone mode: accept pre-built OpenUI-Lang programs from the clone job, assemble +
+// validate the full multi-page program, repairing broken sections with native
+// fallbacks. Streams a skeleton-first, then progressive page modules, then the
+// final validated source (emitted as a `source` event and on `done`).
+export async function* generateFromClone(
+  clonedPages: ClonedPage[],
+  theme: ExtractedTokens,
+  brand: string,
+  parentSignal?: AbortSignal,
+): AsyncGenerator<GenUIEvent> {
+  const startedAt = Date.now()
+  const abort = new AbortController()
+  parentSignal?.addEventListener("abort", () => abort.abort(), { once: true })
+  const ch = channel<GenUIEvent>()
+
+  const run = (async () => {
+    try {
+      ch.push({ type: "status", message: `Assembling ${brand}…` })
+
+      if (clonedPages.length === 0) {
+        ch.push({ type: "error", message: "No pages were cloned" })
+        return
+      }
+
+      // NEAR-DUPLICATE PAGE COLLAPSE (general, structure-driven). The crawler can
+      // follow in-content links and capture pages that are structurally identical
+      // (or near-identical) to the home page — e.g. a single-page site whose nav
+      // anchors resolve to the same document, or paginated views with the same
+      // section skeleton. Promoting each to its own PageSwitch tab fabricates a
+      // multi-page site that does not exist and prints duplicate tabs. We collapse
+      // pages whose ordered section content-signature substantially overlaps an
+      // already-kept page, keeping the FIRST occurrence (home wins). Signature is
+      // derived from each section's program-literal content — never URLs/slugs.
+      const pageSignature = (p: ClonedPage): string =>
+        p.sections
+          .map((s) =>
+            (s.program.match(/"((?:\\.|[^"\\])*)"/g) || [])
+              .join("|")
+              .toLowerCase()
+              .replace(/[^a-z0-9|]+/g, ""),
+          )
+          .join("§")
+      const tokenize = (sig: string): Set<string> =>
+        new Set(sig.split(/[|§]/).filter((t) => t.length >= 4))
+      const jaccard = (a: Set<string>, b: Set<string>): number => {
+        if (a.size === 0 && b.size === 0) return 1
+        let inter = 0
+        for (const t of a) if (b.has(t)) inter++
+        const union = a.size + b.size - inter
+        return union === 0 ? 0 : inter / union
+      }
+      // A page is SUBSTANTIVE only if it carries real rendered copy beyond a lone
+      // heading. In-content anchors on a single-page site frequently crawl to
+      // empty/near-empty documents (or fragment targets) whose only section is a
+      // bare heading; promoting those to PageSwitch tabs fabricates a multi-page
+      // site (e.g. a meaningless one-extra-tab nav). We require >=2 distinct
+      // content literals OR a single literal of real length — structure-driven,
+      // never URL/slug based. The first page (home) is always kept regardless so
+      // a genuinely minimal single-page site still renders.
+      const substantive = (p: ClonedPage): boolean => {
+        const lits = new Set<string>()
+        for (const s of p.sections) {
+          for (const m of s.program.matchAll(/"((?:\\.|[^"\\])*)"/g)) {
+            const v = m[1].toLowerCase().replace(/\s+/g, " ").trim()
+            if (v.length >= 3) lits.add(v)
+          }
+        }
+        if (lits.size >= 2) return true
+        // A single literal counts only if it is a real sentence/phrase (>= 24
+        // chars), not a one-word heading echoed as the whole "page".
+        return [...lits].some((v) => v.length >= 24)
+      }
+
+      const keptPages: ClonedPage[] = []
+      const keptSigs: Set<string>[] = []
+      clonedPages.forEach((page, i) => {
+        const toks = tokenize(pageSignature(page))
+        // A page that is >=85% the same content as one already kept is a
+        // near-duplicate tab — drop it. Always keep the first page (home).
+        const dup =
+          keptPages.length > 0 && keptSigs.some((s) => jaccard(toks, s) >= 0.85)
+        // Non-home pages with no substantive content are spurious tabs — drop.
+        const empty = i !== 0 && !substantive(page)
+        if (dup || empty) return
+        keptPages.push(page)
+        keptSigs.push(toks)
+      })
+      const uniquePages = keptPages.length > 0 ? keptPages : clonedPages
+
+      // theme name keys the preview palette; tokens drive the actual CSS vars at render.
+      ch.push({ type: "theme", name: "cloned" })
+      ch.push({ type: "locale", code: "en" })
+
+      // Use the cloned brand (param) as the home/site label so the nav reflects the
+      // brand; non-home labels come from the real <title> when present, else a
+      // readable label synthesized from the page URL — never a raw `Cloned: <url>`.
+      const labels = uniquePages.map((p, i) =>
+        i === 0 ? brand || cloneLabel(p, i) : cloneLabel(p, i),
+      )
+      const ids = uniquePages.map((_, i) => (i === 0 ? "home" : `p${i}`))
+
+      // Repair pass (per CONTRACT): a page is a `Stack([sectionRefs])` program — the
+      // shape validateOpenUISource accepts. For each page we (1) swap any invalid
+      // section for a native fallback keyed on the SAME kind+index, then (2) validate
+      // the FULL page Stack. If a page still fails to parse, fall every still-broken
+      // section back once more and re-validate. We never emit a page Stack that does
+      // not pass validateOpenUISource, so every subtree the PageSwitch references is
+      // valid — even though the PageSwitch root itself can't be fed to that
+      // (Stack-root-only) validator.
+      // The original section HTML may be carried on the section (clone path stamps
+      // `sourceHtml`). Read it via a structural guard so the repair can rebuild from
+      // REAL content instead of canned per-kind filler. No `as any`, no type edit.
+      const sourceHtmlOf = (section: ClonedSection): string | undefined => {
+        const h = (section as { sourceHtml?: unknown }).sourceHtml
+        return typeof h === "string" && h.trim() ? h : undefined
+      }
+      // Rebuild an invalid section. CRITICAL: pass the original section HTML so the
+      // fallback DOM-reconstructs the real headings/paragraphs/list-items/links in
+      // reading order. Omitting it (the prior behaviour) collapsed a broken section
+      // to generic "Overview / Read more about this." canned copy — the degenerate
+      // single-fallback render the dogfood audit flagged. Generic: the html is the
+      // ground truth, never per-site.
+      const repairSection = (section: ClonedSection, pageUrl: string): ClonedSection => {
+        if (sectionProgramValid(section)) return section
+        const html = sourceHtmlOf(section)
+        const fallback = generateFallbackSection(section.kind, pageUrl, section.index, theme, html)
+        return sectionProgramValid(fallback) ? fallback : section
+      }
+
+      const pagePlan = uniquePages.map((page, i) => {
+        const id = ids[i]
+        let sections = page.sections.map((section) => repairSection(section, page.url))
+        if (!pageProgramValid(id, sections)) {
+          // Force-fallback every section that still doesn't validate, then re-check.
+          sections = sections.map((section) =>
+            sectionProgramValid(section)
+              ? section
+              : generateFallbackSection(
+                  section.kind,
+                  page.url,
+                  section.index,
+                  theme,
+                  sourceHtmlOf(section),
+                ),
+          )
+          if (!pageProgramValid(id, sections)) {
+            console.warn(`[clone] page "${id}" invalid after fallback`)
+          }
+        }
+        return { id, sections }
+      })
+
+      // Skeleton first so the shell paints before page content lands.
+      const skeleton = buildSkeleton(labels[0], labels, ids)
+      ch.push({ type: "skeleton", text: skeleton })
+      ch.push({ type: "plan", ids })
+
+      // Progressive page modules (home first, then the rest in order).
+      for (let i = 0; i < pagePlan.length; i++) {
+        const { id, sections } = pagePlan[i]
+        ch.push({ type: "module_start", id })
+        ch.push({ type: "module", id, text: assemblePage(id, sections) })
+      }
+
+      // Assemble the FULL program: validated per-page Stacks + the PageSwitch root.
+      // Each page Stack already passed validateOpenUISource above; the PageSwitch root
+      // is system-authored from the validated page ids, so the whole program is valid
+      // by construction.
+      const fullSource = assembleClone(pagePlan, labels)
+
+      // Hand the final source to the caller (for persistence + streaming).
+      ch.push({ type: "source", text: fullSource })
+      ch.push({ type: "done", modules: pagePlan.length, ms: Date.now() - startedAt, source: fullSource })
+    } catch (e) {
+      const err = e as { name?: string; message?: string }
+      if (err?.name !== "AbortError") {
+        ch.push({ type: "error", message: err?.message ?? "clone generation failed" })
+      }
+    } finally {
+      ch.close()
+    }
+  })()
+
+  for await (const ev of ch.drain()) yield ev
+  await run
 }

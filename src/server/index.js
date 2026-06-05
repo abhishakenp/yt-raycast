@@ -12,6 +12,8 @@ import {
   LLM_CONFIG,
   RUNPOD_API_KEY,
   RUNPOD_API_URL,
+  GROQ_API_KEY,
+  GROQ_HOST,
 } from '../config.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
@@ -27,12 +29,7 @@ import {
   startMedusaPreWarmIfApplicable,
 } from './medusa-provision.js'
 import { extractSessionProducts } from './extract-session-products.js'
-import { pexelsImageHandler, pexelsPhotoResolver } from './pexels.js'
-import { fetchMedusaProductsForSiteSpec, syncProductsToMedusa } from './sync-medusa-catalog.js'
-import {
-  mergeMedusaProductsIntoSiteSpec,
-  patchOpenUIArtifactsWithMedusaProducts,
-} from './medusa-preview-sync.js'
+import { syncProductsToMedusa } from './sync-medusa-catalog.js'
 import { createDefaultPipelineIntegrations } from './pipeline-integrations.js'
 import { createMedusaStoreRouter } from './medusa-store-routes.js'
 import {
@@ -45,16 +42,13 @@ import { ensureSanityCorsOrigins, ensureSanityCorsForTenant } from '../sanity/en
 import { groq } from '@ship-fast/engine/llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
+import { buildTranslationMessages } from './translation-prompts.js'
 import { htmlLooksDegenerate } from '../pipeline/homepage-degeneracy.js'
 import {
   writeDesignReferencesFile,
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
-import {
-  readOpenUIFileForRoute,
-  readSiteSpecThemeColors,
-  readSiteSpecLocale,
-} from '../pipeline/openui-artifacts.js'
+import { readOpenUIFileForRoute, readSiteSpecThemeColors, readSiteSpecLocale } from '../pipeline/openui-artifacts.js'
 import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
@@ -86,12 +80,14 @@ import {
   syncSessionPreviewFromSanity,
 } from './exports.js'
 import { broadcastDevReload, setupWebSocket } from './websocket.js'
+import { generateAlternativeDesign, runAll, runEdit } from '@ship-fast/engine/pipeline/runner.js'
 import { existsSync, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import multer from 'multer'
 import {
   filePathForPreviewRequest,
   injectPreviewToolsHtml,
+  rewriteTailwindCdn,
   stripPreviewArtifactsFromHtml,
 } from './preview-tools-serve.js'
 import {
@@ -103,7 +99,6 @@ import {
   getSessionPaymentDetails,
 } from '../billing/payments.js'
 import { razorpayWebhookHandler } from './razorpay.js'
-import { stripeWebhookHandler } from './stripe.js'
 import { mountNextApiPort } from './next-api-port.js'
 import { applySiteSettingsPatch } from '../sanity/sync.js'
 import {
@@ -118,8 +113,7 @@ import {
   RATE_WINDOW_MS,
   MONTHLY_WINDOW_MS,
   DAILY_WINDOW_MS,
-  isIpWhitelisted,
-} from '../billing/constants.ts'
+} from '../billing/constants'
 import {
   userHits,
   ipHits,
@@ -130,6 +124,7 @@ import {
   activeGenerations,
   shareBonusIps,
   promptSuggestIpHits,
+  translateIpHits,
   checkRateLimit,
   refundRateLimit,
   hasIpShareBonus,
@@ -148,40 +143,9 @@ import { ensureEmbeddedStudioBuilt } from './ensure-studio-build.js'
 import { mountEmbeddedSanityStudio } from './sanity-studio-static.js'
 import { renderPrivacyPage } from './privacy-page.js'
 import { renderPricingPage } from './pricing-page.js'
-import { renderTermsPage } from './terms-page.js'
-import { getClientIp, resolveTrustProxySetting } from './client-ip.js'
-
-let engineRunnerPromise = null
-
-async function loadEngineRunner() {
-  engineRunnerPromise ??= import('@ship-fast/engine/pipeline/runner.js')
-  return engineRunnerPromise
-}
-
-async function runAll(...args) {
-  const { runAll: run } = await loadEngineRunner()
-  return run(...args)
-}
-
-async function runEdit(...args) {
-  const { runEdit: run } = await loadEngineRunner()
-  return run(...args)
-}
-
-async function generateAlternativeDesign(...args) {
-  const { generateAlternativeDesign: run } = await loadEngineRunner()
-  return run(...args)
-}
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
 import { getPublicGalleryList } from './public-gallery-cache.js'
 import { pushSessionToGitHub } from './github.js'
-import {
-  buildGenerationCostPayload,
-  calculateElapsedSeconds,
-  finalizeGenerationMonitoring,
-  sendFollowUpNotification,
-} from './generation-monitoring.js'
-import { validatePartnerCoupon } from '../billing/coupons.js'
 import {
   getDeploymentBySlug,
   getDeploymentBySessionId,
@@ -203,7 +167,7 @@ import {
 import { MAX_UPLOAD_BYTES, saveSessionImageBuffers } from './session-uploads.js'
 import { readPalette, writePalette } from './session-palette.js'
 import { promptLooksBrandDriven } from '../pipeline/brand-profile.js'
-import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy.ts'
+import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '../lib/content-policy'
 import {
   getNextPreviewSnapshot,
   isNextPreviewFeatureEnabled,
@@ -211,8 +175,6 @@ import {
   startNextPreview,
   stopNextPreview,
 } from './next-dev-preview.js'
-import { createHealthHandler, startKumaHeartbeat } from './monitoring.js'
-import { buildQuotaUsagePayload } from './quota-monitoring.js'
 
 const __dir = fileURLToPath(new URL('..', import.meta.url))
 const publicDir = join(__dir, '..', 'public')
@@ -242,11 +204,20 @@ const sanitizeChatAttachmentPaths = (workspace, paths) => {
 let _sessionsDir = null
 let rateLimitFile = null
 
-const httpContractsPromise = import('../contracts/http-contracts.js')
+const httpContractsPromise = import('@ship-fast/engine/contracts/http-contracts.js')
 
-// Owner IP whitelist — bypasses all rate limits. Single source of truth: isIpWhitelisted in billing/constants.ts
+// Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
+const WHITELISTED_IPS = new Set(
+  (process.env.WHITELIST_IPS || '')
+    .split(',')
+    .map((ip) => ip.trim())
+    .filter(Boolean),
+)
 const PROMPT_SUGGEST_WINDOW_MS = 60 * 1000
 const PROMPT_SUGGEST_MAX_PER_IP = 40
+const TRANSLATE_WINDOW_MS = 60 * 1000
+const TRANSLATE_MAX_PER_IP = 20
+const TRANSLATE_MAX_TEXT_LENGTH = 1000
 function isLocalDevelopmentRequest(req, clientIp) {
   if (process.env.NODE_ENV === 'production') return false
 
@@ -325,6 +296,7 @@ setInterval(
     cleanupMap(exportHits, RATE_WINDOW_MS)
     cleanupMap(ipMonthlyHits, MONTHLY_WINDOW_MS)
     cleanupMap(promptSuggestIpHits, PROMPT_SUGGEST_WINDOW_MS)
+    cleanupMap(translateIpHits, TRANSLATE_WINDOW_MS)
     // Prune expired share bonuses (not today)
     const today = new Date().toISOString().slice(0, 10)
     for (const [ip, date] of shareBonusIps) {
@@ -435,8 +407,7 @@ export async function startServer(sessionsDir) {
 
   const app = express()
   app.disable('x-powered-by')
-  app.set('trust proxy', resolveTrustProxySetting())
-  startKumaHeartbeat()
+  app.set('trust proxy', true)
 
   const getSessionSubdomain = (req) => {
     const host = String(req.hostname || req.headers.host?.split(':')[0] || '').toLowerCase()
@@ -472,19 +443,12 @@ export async function startServer(sessionsDir) {
     setNoIndexHeaders(res)
     next()
   })
-  app.get('/health', createHealthHandler({ startedAt: Date.now(), sessionsDir }))
-  app.use('/api/storefront/medusa', createMedusaStoreRouter())
   app.use('/api/storefront', createMedusaStoreRouter())
 
   app.post(
     '/api/payments/razorpay/webhook',
     express.raw({ type: 'application/json' }),
     razorpayWebhookHandler,
-  )
-  app.post(
-    '/api/payments/stripe/webhook',
-    express.raw({ type: 'application/json' }),
-    stripeWebhookHandler,
   )
 
   app.use(express.json({ limit: '15mb' }))
@@ -495,44 +459,66 @@ export async function startServer(sessionsDir) {
     next(err)
   })
 
-  // ─── Translation proxy (chatjimmy) ──────────────────────────────────
-  const langNames = new Intl.DisplayNames(['en'], { type: 'language' })
+  // ─── Translation (Groq llama-3.3-70b-versatile) ─────────────────────
+  // The 8B was too weak for low-resource Indic scripts (gibberish, repetition
+  // loops). 70B follows the heavy per-style prompts + few-shot far better.
+  const TRANSLATE_MODEL = 'llama-3.3-70b-versatile'
   app.post('/api/translate', async (req, res) => {
     const { text, locale } = req.body ?? {}
     if (!text || !locale) {
       return res.status(400).json({ error: 'text and locale are required' })
     }
-    const langName = langNames.of(locale) ?? locale
+    // Text length limit to prevent abuse
+    if (text.length > TRANSLATE_MAX_TEXT_LENGTH) {
+      return res.status(400).json({ error: `Text too long: maximum ${TRANSLATE_MAX_TEXT_LENGTH} characters` })
+    }
+    // IP rate limiting
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || ''
+    const skipRl =
+      (clientIp && WHITELISTED_IPS.has(clientIp)) || isLocalDevelopmentRequest(req, clientIp)
+    if (!skipRl && clientIp) {
+      if (
+        !checkRateLimit(
+          `translate:${clientIp}`,
+          translateIpHits,
+          TRANSLATE_MAX_PER_IP,
+          TRANSLATE_WINDOW_MS,
+        )
+      ) {
+        return res.status(429).json({ error: 'Rate limit: too many translation requests. Please wait.' })
+      }
+    }
+    const built = buildTranslationMessages(text, locale)
+    if (!built) {
+      // No translation needed (e.g. English) — echo the original.
+      return res.json({ translation: text })
+    }
+    if (!GROQ_API_KEY) {
+      return res.status(500).json({ error: 'GROQ_API_KEY not set' })
+    }
     try {
-      const upstream = await fetch('https://chatjimmy.ai/api/chat', {
+      const upstream = await fetch(`${GROQ_HOST}/openai/v1/chat/completions`, {
         method: 'POST',
         headers: {
-          accept: '*/*',
-          'content-type': 'application/json',
-          Referer: 'https://chatjimmy.ai/',
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `Translate the following text to ${langName}. Return ONLY the translated text, nothing else:\n\n${text}`,
-            },
-          ],
-          chatOptions: {
-            selectedModel: 'llama3.1-8B',
-            systemPrompt: 'You are a translator. Return only the translated text.',
-            topK: 8,
-          },
-          attachment: null,
+          model: TRANSLATE_MODEL,
+          // system + alternating few-shot user/assistant turns + the final user text
+          messages: [{ role: 'system', content: built.system }, ...built.messages],
+          temperature: 0.3,
+          max_tokens: 1024,
+          stream: false,
         }),
       })
-      if (!upstream.ok) {
+      const data = await upstream.json()
+      if (data.error) {
+        console.error('[translate] groq', data.error)
         return res.status(502).json({ error: 'translation upstream failed' })
       }
-      // Response is plain text with stats appended: "translated text\n<|stats|>...<|/stats|>"
-      const raw = await upstream.text()
-      const translation = raw.split('<|stats|>')[0].trim()
-      return res.json({ translation })
+      const translation = String(data.choices?.[0]?.message?.content ?? '').trim()
+      return res.json({ translation: translation || text })
     } catch (err) {
       console.error('[translate]', err)
       return res.status(500).json({ error: 'translation failed' })
@@ -577,7 +563,7 @@ export async function startServer(sessionsDir) {
     const headers = {
       'Content-Type': 'text/plain',
       'User-Agent': req.headers['user-agent'] || '',
-      'X-Forwarded-For': getClientIp(req),
+      'X-Forwarded-For': req.headers['x-forwarded-for'] || req.ip,
     }
     try {
       for (const base of [plausibleHost, plausibleVendorHost]) {
@@ -600,18 +586,6 @@ export async function startServer(sessionsDir) {
   // Extracted to src/server/middleware/auth.middleware.js
   const { requireAuth, optionalAuth, requireProvisionAuth } =
     await import('./middleware/auth.middleware.js')
-
-  app.get('/api/internal/quota-usage', requireProvisionAuth, (_req, res) => {
-    res.json(buildQuotaUsagePayload())
-  })
-  app.get('/api/internal/generation-cost', requireProvisionAuth, (req, res) => {
-    res.json(
-      buildGenerationCostPayload({
-        sessionsDir,
-        monthKey: typeof req.query.month === 'string' ? req.query.month : undefined,
-      }),
-    )
-  })
 
   mountNextApiPort(app, { requireAuth })
 
@@ -638,27 +612,6 @@ export async function startServer(sessionsDir) {
         'This project was created in another browser or session. Open it from the device where you generated it, or sign in on the home page and claim your Ship Fast history.',
     })
     return false
-  }
-
-  function ensurePrivateSessionAccess(req, res, session, { html = false } = {}) {
-    if (session?.isPrivate !== true) return true
-    const send = (status, error) => {
-      if (html) return res.status(status).send(error)
-      return res.status(status).json({ error })
-    }
-    if (!session.userId) {
-      send(403, 'Private session is not accessible.')
-      return false
-    }
-    if (!req.user) {
-      send(401, 'Unauthorized')
-      return false
-    }
-    if (session.userId !== req.user.uid) {
-      send(403, 'Forbidden')
-      return false
-    }
-    return true
   }
 
   async function provisionDeploymentIfNeeded(session) {
@@ -706,10 +659,9 @@ export async function startServer(sessionsDir) {
 
   app.post('/api/prompt-suggestions', async (req, res) => {
     const partial = typeof req.body?.partial === 'string' ? req.body.partial : ''
-    const language = typeof req.body?.language === 'string' ? req.body.language : ''
-    const clientIp = getClientIp(req)
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || ''
     const skipRl =
-      isIpWhitelisted(clientIp) || isLocalDevelopmentRequest(req, clientIp)
+      (clientIp && WHITELISTED_IPS.has(clientIp)) || isLocalDevelopmentRequest(req, clientIp)
     if (!skipRl && clientIp) {
       if (
         !checkRateLimit(
@@ -723,7 +675,7 @@ export async function startServer(sessionsDir) {
       }
     }
     try {
-      const suggestions = await getPartialPromptSuggestions(partial, { language })
+      const suggestions = await getPartialPromptSuggestions(partial)
       return res.json({ suggestions })
     } catch {
       return res.status(500).json({ suggestions: [] })
@@ -732,12 +684,12 @@ export async function startServer(sessionsDir) {
 
   // ─── Share-for-credit: grant +1 anonymous generation ────
   app.get('/api/share-bonus', (req, res) => {
-    const clientIp = getClientIp(req)
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     res.json({ claimed: clientIp ? hasIpShareBonus(clientIp) : false })
   })
 
   app.post('/api/share-bonus', (req, res) => {
-    const clientIp = getClientIp(req)
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     if (!clientIp) return res.status(400).json({ error: 'Unable to identify client' })
     const today = new Date().toISOString().slice(0, 10)
     if (shareBonusIps.get(clientIp) === today) {
@@ -799,10 +751,6 @@ export async function startServer(sessionsDir) {
     res.type('html').send(renderPrivacyPage())
   })
 
-  app.get('/terms', (_req, res) => {
-    res.type('html').send(renderTermsPage())
-  })
-
   mountEmbeddedSanityStudio(app, join(studioRoot, 'dist'))
 
   app.get('/api/studio-embed-ready', (_req, res) => {
@@ -821,10 +769,9 @@ export async function startServer(sessionsDir) {
   )
 
   // ─── Dashboard (session-scoped) ───────────────────────────
-  app.get('/session/:id', optionalAuth, async (req, res) => {
+  app.get('/session/:id', async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).send('Session not found')
-    if (!ensurePrivateSessionAccess(req, res, session, { html: true })) return
     setNoIndexHeaders(res)
     const tpl = readFileSync(join(publicDir, 'dashboard.html'), 'utf8')
     let wsHost = req.get('host') || `127.0.0.1:${DASHBOARD_PORT}`
@@ -842,22 +789,20 @@ export async function startServer(sessionsDir) {
       prompt,
       preferredLanguage,
       preferredExportTarget,
-      designReferenceUrls = [],
+      cloneUrl = '',
       designReferenceNotes = '',
     } = parsed.data
-    const designRefFingerprint = designReferenceFingerprintFromUrls(
-      designReferenceUrls,
-      designReferenceNotes,
-    )
+    const designRefFingerprint = cloneUrl
+      ? designReferenceFingerprintFromUrls([cloneUrl], designReferenceNotes)
+      : ''
     const trimmedPrompt = prompt?.trim()
-    const requestedPrivate = req.body?.isPrivate === true
     if (isGibberishPrompt(trimmedPrompt)) {
       return res.status(400).json({
         error: 'Please provide a meaningful description of the website you want to build.',
       })
     }
 
-    const clientIp = getClientIp(req)
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
     const ts = new Date().toISOString()
 
     const policyResult = checkPromptContentPolicy(trimmedPrompt)
@@ -867,19 +812,13 @@ export async function startServer(sessionsDir) {
         .status(422)
         .json(sanitizeErrorResponse(CONTENT_POLICY_CLIENT_MESSAGE, { code: 'CONTENT_POLICY' }))
     }
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || isIpWhitelisted(clientIp)
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     let session
 
     if (req.user) {
       // ─── Authenticated flow ─────────────────────────────────
       const isSubscriber = await hasActiveSubscription(req.user.uid)
-      if (requestedPrivate && !isSubscriber) {
-        return res.status(402).json({
-          error: 'Private generations are available for paid users.',
-          code: 'PRIVATE_REQUIRES_SUBSCRIPTION',
-        })
-      }
       const userMonthly = (userMonthlyHits.get(req.user.uid) || []).filter(
         (t) => Date.now() - t < MONTHLY_WINDOW_MS,
       ).length
@@ -903,10 +842,14 @@ export async function startServer(sessionsDir) {
         setSessionPreferredExportTarget(existing, preferredExportTarget)
         setSessionPreferredLanguage(existing, preferredLanguage)
         console.log(`[${ts}] CACHE_HIT user=${req.user.uid} session=${existing.id}`)
-        if (process.env.NODE_ENV !== 'development') {
-          sendFollowUpNotification(
-            `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-          ).catch(() => {})
+        if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+          fetch(process.env.SLACK_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: `\u267b\ufe0f *Cache hit* (no generation, $0 cost):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+            }),
+          }).catch(() => {})
         }
         const monthlyLimitCached = isSubscriber ? MAX_PAID_PER_MONTH : MAX_FREE_PER_MONTH
         return res.json(
@@ -931,10 +874,14 @@ export async function startServer(sessionsDir) {
           console.log(
             `[${ts}] MONTHLY_LIMIT user=${req.user.uid} ip=${clientIp} monthly=${userMonthly} limit=${monthlyLimit}`,
           )
-          if (process.env.NODE_ENV !== 'development') {
-            sendFollowUpNotification(
-              `\ud83d\udeab *Monthly limit reached* (${monthlyLimit}/month):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
-            ).catch(() => {})
+          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+            fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `\ud83d\udeab *Monthly limit reached* (${monthlyLimit}/month):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\``,
+              }),
+            }).catch(() => {})
           }
           return res.status(429).json({
             error: `Limit reached: max ${monthlyLimit} generations per rolling 30 days. Need more? Contact us at https://x.com/LivioGama`,
@@ -945,10 +892,14 @@ export async function startServer(sessionsDir) {
         // 10-min rate limit per user
         if (!checkRateLimit(req.user.uid, userHits, MAX_PER_USER)) {
           console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=user_10min`)
-          if (process.env.NODE_ENV !== 'development') {
-            sendFollowUpNotification(
-              `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-            ).catch(() => {})
+          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+            fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `\ud83d\udeab *Rate limited* (user cap ${MAX_PER_USER}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+              }),
+            }).catch(() => {})
           }
           return res.status(429).json({
             error: 'Rate limit: max 5 generations per 10 minutes. Please wait.',
@@ -959,10 +910,14 @@ export async function startServer(sessionsDir) {
         // 10-min rate limit per IP
         if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP_AUTHED)) {
           console.log(`[${ts}] RATE_LIMIT user=${req.user.uid} ip=${clientIp} reason=ip_10min`)
-          if (process.env.NODE_ENV !== 'development') {
-            sendFollowUpNotification(
-              `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_AUTHED}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
-            ).catch(() => {})
+          if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+            fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `\ud83d\udeab *Rate limited* (IP cap ${MAX_PER_IP_AUTHED}/10min):\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly}`,
+              }),
+            }).catch(() => {})
           }
           return res.status(429).json({
             error: 'Rate limit: too many requests from this IP. Please wait.',
@@ -982,10 +937,7 @@ export async function startServer(sessionsDir) {
         }
 
         // Concurrent generation limit
-        if (
-          !isIpWhitelisted(clientIp) &&
-          (activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER
-        ) {
+        if ((activeGenerations.get(req.user.uid) || 0) >= MAX_CONCURRENT_PER_USER) {
           return res.status(429).json({
             error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
             remaining: 0,
@@ -996,7 +948,7 @@ export async function startServer(sessionsDir) {
       session = createSession(_sessionsDir, trimmedPrompt, req.user.uid, {
         preferredExportTarget,
         preferredLanguage,
-        isPrivate: requestedPrivate && isSubscriber,
+        isPrivate: false,
       })
 
       // Background-provision Medusa as soon as the prompt looks ecommerce, so
@@ -1012,28 +964,23 @@ export async function startServer(sessionsDir) {
         `[${ts}] GENERATE user=${req.user.uid} ip=${clientIp} session=${session.id} monthly=${userMonthly + 1}`,
       )
 
-      if (process.env.NODE_ENV !== 'development') {
-        sendFollowUpNotification(
-          `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly + 1}/${monthlyLimit}`,
-        ).catch(() => {})
+      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+        fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `\ud83d\ude80 New Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nUser: \`${req.user.uid}\` | Email: \`${req.user.email ?? '?'}\` | IP: \`${clientIp}\` | Monthly: ${userMonthly + 1}/${monthlyLimit}`,
+          }),
+        }).catch(() => {})
       }
     } else {
       // ─── Anonymous flow ─────────────────────────────────────
       console.log(`[${ts}] REQ anon ip=${clientIp} prompt="${trimmedPrompt.slice(0, 80)}"`)
-      if (requestedPrivate) {
-        return res.status(401).json({
-          error: 'Sign in and subscribe to create private generations.',
-          code: 'PRIVATE_REQUIRES_AUTH',
-        })
-      }
 
       if (!skipRateLimits) {
         // Daily limit per IP for anonymous users — sign-in wall after limit (2, or 3 with share bonus)
         const anonLimit = getAnonDailyLimit(clientIp)
-        if (
-          !isIpWhitelisted(clientIp) &&
-          !checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)
-        ) {
+        if (!checkRateLimit(clientIp, anonIpDailyHits, anonLimit, DAILY_WINDOW_MS)) {
           console.log(`[${ts}] ANON_DAILY_LIMIT ip=${clientIp} bonus=${hasIpShareBonus(clientIp)}`)
           return res.status(429).json({
             error: `Sign in to keep generating. Free anonymous users get ${MAX_ANON_PER_DAY} generations per day.`,
@@ -1044,7 +991,7 @@ export async function startServer(sessionsDir) {
         }
 
         // 10-min rate limit per IP
-        if (!isIpWhitelisted(clientIp) && !checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
+        if (!checkRateLimit(clientIp, ipHits, MAX_PER_IP)) {
           console.log(`[${ts}] RATE_LIMIT anon ip=${clientIp} reason=ip_10min`)
           return res.status(429).json({
             error: 'Rate limit: too many requests from this IP. Please wait.',
@@ -1054,10 +1001,7 @@ export async function startServer(sessionsDir) {
         }
 
         // Concurrent generation limit
-        if (
-          !isIpWhitelisted(clientIp) &&
-          (activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER
-        ) {
+        if ((activeGenerations.get(clientIp) || 0) >= MAX_CONCURRENT_PER_USER) {
           return res.status(429).json({
             error: `You already have ${MAX_CONCURRENT_PER_USER} generations in progress. Please wait for them to complete.`,
             remaining: 0,
@@ -1077,15 +1021,19 @@ export async function startServer(sessionsDir) {
 
       console.log(`[${ts}] GENERATE anon ip=${clientIp} session=${session.id}`)
 
-      if (process.env.NODE_ENV !== 'development') {
-        sendFollowUpNotification(
-          `\ud83d\ude80 Anonymous Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nIP: \`${clientIp}\``,
-        ).catch(() => {})
+      if (process.env.NODE_ENV !== 'development' && process.env.SLACK_WEBHOOK_URL) {
+        fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `\ud83d\ude80 Anonymous Ship Fast prompt:\n> ${trimmedPrompt.slice(0, 500)}\nIP: \`${clientIp}\``,
+          }),
+        }).catch(() => {})
       }
     }
 
-    if (designReferenceUrls.length) {
-      writeDesignReferencesFile(session.workspace, designReferenceUrls, designReferenceNotes)
+    if (cloneUrl) {
+      writeDesignReferencesFile(session.workspace, [cloneUrl], designReferenceNotes)
     }
 
     const sessionCtx = makeSessionState(session)
@@ -1108,22 +1056,218 @@ export async function startServer(sessionsDir) {
     setSessionStatus(session.id, 'generating')
 
     // Fire and forget the generation
-    const generationStartedAt = Date.now()
-    const generationUser = req.user ? { uid: req.user.uid, email: req.user.email ?? null } : null
-    const generation = editMode
-      ? runEdit({
-          prompt: session.prompt,
-          workspace: session.workspace,
-          sessionCtx,
-          integrations: generationIntegrations,
-        })
-      : runAll({
-          prompt: session.prompt,
-          workspace: session.workspace,
-          sessionCtx,
-          preferredLanguage: session.preferredLanguage,
-          integrations: generationIntegrations,
-        })
+    let generation
+    if (cloneUrl) {
+      // Clone mode: crawl + segment the target site, assemble a validated multi-page
+      // OpenUI program, persist it (home.openui + site-spec.json + themed shell), and
+      // stream it home-first over the same openui_stream_* envelope the live preview
+      // island consumes — exactly like the normal genui path, just sourced from a clone.
+      const { cloneSiteToOpenUI } = await import('@ship-fast/engine/clone/index.js')
+      const { generateFromClone } = await import('@ship-fast/engine/genui/orchestrator.js')
+      const { buildThemeHeadFromTokens, writeStreamingShellToWorkspace } = await import(
+        '@ship-fast/engine/renderers/index.js'
+      )
+      const { saveSiteSpec } = await import('@ship-fast/engine/spec/index.js')
+      generation = (async () => {
+        const route = '/'
+        try {
+          const result = await cloneSiteToOpenUI(cloneUrl, {
+            workspace: session.workspace,
+            maxDepth: 3,
+            maxPages: 20,
+            concurrency: 4,
+            onEvent: (event) => {
+              sessionCtx?.broadcast({ type: 'clone_progress', route, ...event })
+            },
+          })
+
+          if (!result.success || !Array.isArray(result.pages) || result.pages.length === 0) {
+            throw new Error('Clone job produced no pages')
+          }
+
+          // Derive the site brand. The clone job currently hardcodes page titles to
+          // `Cloned: <url>` / `Cloned (fallback): <url>` (a raw URL string, not a real
+          // <title>) — using that verbatim would print the URL as the brand in the
+          // shell <title>, site-spec, and home nav. Treat such placeholder titles as
+          // absent and synthesize a readable brand from the cloned URL's host instead.
+          const homeTitle = result.pages[0]?.title
+          const isPlaceholderTitle =
+            typeof homeTitle !== 'string' ||
+            !homeTitle.trim() ||
+            /^\s*Cloned(?:\s*\(fallback\))?\s*:/i.test(homeTitle)
+          const brandFromHost = (() => {
+            try {
+              const host = new URL(cloneUrl).hostname.replace(/^www\./, '').split('.')[0] || ''
+              return host
+                ? host.charAt(0).toUpperCase() + host.slice(1)
+                : ''
+            } catch {
+              return ''
+            }
+          })()
+          const brand =
+            (!isPlaceholderTitle && homeTitle.trim()) ||
+            brandFromHost ||
+            session.prompt?.trim()?.slice(0, 40) ||
+            'Cloned Site'
+
+          // Build the per-site theme head from the SYNTHESIZED tokens so every
+          // referenced CSS var (bg-card, text-muted-foreground, ring, …) is defined.
+          const themeHead = buildThemeHeadFromTokens(result.theme, brand)
+
+          // Persist the scraped palette as a STRUCTURED theme object — not the bare
+          // string 'cloned'. readSiteSpecThemeColors reads siteSpec.theme.colors (an
+          // object), so GET /api/sessions/:id/openui can surface the real palette to
+          // the viewer instead of {}; readSiteThemeName (renderers) reads theme.name,
+          // so naming still works. Keys use the viewer's server-key convention
+          // (primary, accent, background, …) with the extracted hex values.
+          const t = result.theme || {}
+          const cloneTheme = {
+            name: 'cloned',
+            colors: {
+              background: t.background,
+              foreground: t.foreground,
+              primary: t.primary,
+              secondary: t.secondary,
+              muted: t.muted,
+              accent: t.accent,
+              border: t.border,
+            },
+          }
+
+          // Drive generateFromClone to assemble + validate the full program. We collect
+          // the progressive per-page modules and the final validated source, streaming
+          // each over the openui envelope so pages pop into the preview as they land.
+          //
+          // Each broadcast chunk is rebuilt to be INDEPENDENTLY PARSEABLE: rather than
+          // emitting the full PageSwitch skeleton first (which references page ids not
+          // yet defined — a transient-invalid window), we re-root each chunk in a
+          // PageSwitch over ONLY the pages emitted so far. So a chunk after the home
+          // module is `home = Stack([...])\n$page = "Home"\nroot = PageSwitch(["Home"],[home])`
+          // — a complete, valid program at every step (home-first, then progressive).
+          let fullSource = ''
+          let shellWritten = false
+          // Parsed from the skeleton: the $page seed line + ordered [labels] / [ids].
+          let pageSeedLine = ''
+          let skeletonLabels = []
+          let skeletonIds = []
+          // Accumulated, in-order page module definitions emitted so far.
+          const emittedModules = []
+
+          // Re-assemble a self-contained program from the modules emitted so far, with
+          // a PageSwitch root referencing only those ids (and their matching labels).
+          const buildProgressiveSource = () => {
+            const defs = emittedModules.map((m) => m.text).join('\n')
+            const ids = emittedModules.map((m) => m.id)
+            const labels = ids.map((id) => {
+              const i = skeletonIds.indexOf(id)
+              return i >= 0 ? skeletonLabels[i] : id
+            })
+            const labelsJson = labels.map((l) => JSON.stringify(l)).join(', ')
+            const seed = pageSeedLine ? `${pageSeedLine}\n` : ''
+            return `${defs}\n${seed}root = PageSwitch([${labelsJson}], [${ids.join(', ')}])`
+          }
+
+          for await (const event of generateFromClone(result.pages, result.theme, brand)) {
+            if (event.type === 'skeleton') {
+              // Parse the skeleton: keep the `$page = …` seed and the ordered label/id
+              // arrays so progressive chunks can re-root over the emitted subset.
+              const seedMatch = /^\s*\$page\s*=.*$/m.exec(event.text)
+              pageSeedLine = seedMatch ? seedMatch[0].trim() : ''
+              const psMatch = /PageSwitch\(\s*\[([^\]]*)\]\s*,\s*\[([^\]]*)\]\s*\)/.exec(event.text)
+              if (psMatch) {
+                skeletonLabels = (psMatch[1].match(/"((?:[^"\\]|\\.)*)"/g) || []).map((s) =>
+                  JSON.parse(s),
+                )
+                skeletonIds = psMatch[2]
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              }
+              // Stand up the themed host shell + open the stream so the island mounts.
+              saveSiteSpec(session.workspace, {
+                brand,
+                tagline: '',
+                theme: cloneTheme,
+                locale: 'en',
+                skeleton: event.text,
+                modules: {},
+                themeHead,
+              })
+              writeStreamingShellToWorkspace(session.workspace, brand, 'cloned', themeHead)
+              shellWritten = true
+              sessionCtx?.broadcast({ type: 'openui_stream_start', route })
+              sessionCtx?.signalHomepageReady?.()
+            } else if (event.type === 'module') {
+              if (!shellWritten) continue
+              emittedModules.push({ id: event.id, text: event.text })
+              sessionCtx?.broadcast({
+                type: 'openui_stream_chunk',
+                route,
+                source: buildProgressiveSource(),
+              })
+            } else if (event.type === 'source') {
+              fullSource = event.text
+            } else if (event.type === 'done') {
+              if (event.source) fullSource = event.source
+            } else if (event.type === 'error') {
+              throw new Error(event.message || 'Clone assembly failed')
+            }
+          }
+
+          if (!fullSource.trim()) {
+            throw new Error('Clone assembly produced an empty program')
+          }
+
+          // Persist the final, validated program (for reload) + spec, then close the
+          // stream so the island locks in the fully-merged source.
+          writeFileSync(join(session.workspace, 'home.openui'), fullSource)
+          saveSiteSpec(session.workspace, {
+            brand,
+            tagline: '',
+            theme: cloneTheme,
+            locale: 'en',
+            skeleton: '',
+            modules: { home: fullSource },
+            themeHead,
+          })
+          sessionCtx?.broadcast({
+            type: 'openui_stream_done',
+            route,
+            source: fullSource,
+            locale: 'en',
+          })
+          sessionCtx?.broadcast({ type: 'preview_reload', at: Date.now() })
+          sessionCtx?.signalOpenuiReady?.()
+
+          return result
+        } catch (error) {
+          console.error('Clone job failed:', error)
+          sessionCtx?.broadcast({
+            type: 'openui-error',
+            route,
+            error: error?.message || 'Clone job failed',
+          })
+          throw error
+        }
+      })()
+    } else {
+      // Normal generation mode
+      generation = editMode
+        ? runEdit({
+            prompt: session.prompt,
+            workspace: session.workspace,
+            sessionCtx,
+            integrations: generationIntegrations,
+          })
+        : runAll({
+            prompt: session.prompt,
+            workspace: session.workspace,
+            sessionCtx,
+            preferredLanguage: session.preferredLanguage,
+            integrations: generationIntegrations,
+          })
+    }
 
     const generationKey = req.user?.uid || clientIp
     activeGenerations.set(generationKey, (activeGenerations.get(generationKey) || 0) + 1)
@@ -1133,31 +1277,11 @@ export async function startServer(sessionsDir) {
         if (tailPromise && typeof tailPromise.then === 'function') {
           await tailPromise
         }
-        const generationCompletedAt = Date.now()
-        const elapsedSeconds = calculateElapsedSeconds(generationStartedAt, generationCompletedAt)
-        const engineElapsedSeconds = session.elapsed
-        sessionCtx.setElapsed(elapsedSeconds)
-        sessionCtx.broadcast({ type: 'generation_timing_final', elapsed: elapsedSeconds })
         setSessionStatus(session.id, 'done')
         activeGenerations.set(
           generationKey,
           Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
         )
-        try {
-          await finalizeGenerationMonitoring({
-            sessionsDir: _sessionsDir,
-            session,
-            clientIp,
-            user: generationUser,
-            status: 'done',
-            startedAt: generationStartedAt,
-            completedAt: generationCompletedAt,
-            elapsedSeconds,
-            engineElapsedSeconds,
-          })
-        } catch (err) {
-          console.error(`[generation-monitoring] session ${session.id}:`, err?.message ?? err)
-        }
         try {
           await provisionDeploymentIfNeeded(session)
         } catch (err) {
@@ -1165,35 +1289,13 @@ export async function startServer(sessionsDir) {
         }
       })
       .catch((err) => {
-        const generationCompletedAt = Date.now()
-        const elapsedSeconds = calculateElapsedSeconds(generationStartedAt, generationCompletedAt)
-        const engineElapsedSeconds = session.elapsed
-        sessionCtx.setElapsed(elapsedSeconds)
         setSessionStatus(session.id, 'failed')
         console.error(`  Session ${session.id} error:`, err?.message ?? err)
         sessionCtx.broadcast({ type: 'error', message: err?.message ?? 'Generation failed' })
-        sessionCtx.broadcast({ type: 'generation_timing_final', elapsed: elapsedSeconds })
         activeGenerations.set(
           generationKey,
           Math.max(0, (activeGenerations.get(generationKey) || 0) - 1),
         )
-        finalizeGenerationMonitoring({
-          sessionsDir: _sessionsDir,
-          session,
-          clientIp,
-          user: generationUser,
-          status: 'failed',
-          startedAt: generationStartedAt,
-          completedAt: generationCompletedAt,
-          elapsedSeconds,
-          engineElapsedSeconds,
-          error: err?.message ?? err,
-        }).catch((monitoringErr) => {
-          console.error(
-            `[generation-monitoring] session ${session.id}:`,
-            monitoringErr?.message ?? monitoringErr,
-          )
-        })
         if (req.user) {
           refundRateLimit(req.user.uid, userMonthlyHits)
           console.log(
@@ -1313,11 +1415,10 @@ export async function startServer(sessionsDir) {
   app.get('/api/sessions/:id', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (!ensurePrivateSessionAccess(req, res, session)) return
 
     const targets = await decorateExportTargets(session, getSessionExportTargets(session))
     const payment = await getSessionPaymentDetails(session, {
-      ip: getClientIp(req) || null,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
       headers: req.headers,
     })
     res.json({
@@ -1355,8 +1456,7 @@ export async function startServer(sessionsDir) {
           enabled: Boolean(session.medusaConfig?.backendUrl || session.medusaConfig?.adminBaseUrl),
           config: session.medusaConfig
             ? {
-                backendUrl:
-                  session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
+                backendUrl: session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
                 storefrontUrl: session.medusaConfig.storefrontUrl || null,
               }
             : null,
@@ -1381,12 +1481,6 @@ export async function startServer(sessionsDir) {
     res.json({ source, theme, locale })
   })
 
-  // The storefront's <Image> component resolves a relevant Pexels photo from
-  // alt text via this endpoint; without it mounted the component falls back to
-  // generic picsum images, so the UI never matched the Pexels thumbnails we
-  // push to Medusa.
-  app.get('/api/pexels', pexelsImageHandler)
-
   app.get('/api/sessions/:id/preview-html', optionalAuth, async (req, res) => {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
@@ -1397,7 +1491,8 @@ export async function startServer(sessionsDir) {
         return res.status(404).json({ error: 'Saved HTML not found' })
       }
       const html = readFileSync(htmlPath, 'utf8')
-      res.json({ html })
+      const rewrittenHtml = rewriteTailwindCdn(html)
+      res.json({ html: rewrittenHtml })
     } catch {
       res.status(500).json({ error: 'Failed to read saved HTML' })
     }
@@ -1567,8 +1662,8 @@ export async function startServer(sessionsDir) {
       })
     }
 
-    const clientIp = getClientIp(req)
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || isIpWhitelisted(clientIp)
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     if (!skipRateLimits) {
       if (req.user) {
@@ -1579,10 +1674,7 @@ export async function startServer(sessionsDir) {
         return res.status(429).json({ error: 'Rate limit: too many edit requests. Please wait.' })
       }
       const generationKey = req.user?.uid || clientIp
-      if (
-        !isIpWhitelisted(clientIp) &&
-        (activeGenerations.get(generationKey) || 0) >= MAX_CONCURRENT_PER_USER
-      ) {
+      if ((activeGenerations.get(generationKey) || 0) >= MAX_CONCURRENT_PER_USER) {
         return res.status(429).json({
           error: `You already have ${MAX_CONCURRENT_PER_USER} operations in progress. Please wait.`,
         })
@@ -1747,7 +1839,7 @@ export async function startServer(sessionsDir) {
     if (!session) return res.status(404).json({ error: 'Session not found' })
     const targets = await decorateExportTargets(session, getSessionExportTargets(session))
     const payment = await getSessionPaymentDetails(session, {
-      ip: getClientIp(req) || null,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
       headers: req.headers,
     })
     res.json({
@@ -1766,8 +1858,8 @@ export async function startServer(sessionsDir) {
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
-    const clientIp = getClientIp(req)
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || isIpWhitelisted(clientIp)
+    const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
 
     if (!skipRateLimits && !checkRateLimit(req.user.uid, exportHits, 5))
       return res.status(429).json({ error: 'Export rate limit: max 5 per 10 minutes' })
@@ -2115,13 +2207,6 @@ export async function startServer(sessionsDir) {
       await consumeUserCredit(session.userId)
     }
 
-    try {
-      generateSessionExport(session, target, {
-        includeBadge: !accessDecision.payment?.subscriptionActive,
-      })
-    } catch (error) {
-      return res.status(400).json({ error: error.message })
-    }
     const bundle = getSessionExportBundle(session, target)
     if (!bundle)
       return res.status(404).json({
@@ -2162,90 +2247,6 @@ export async function startServer(sessionsDir) {
     } catch (error) {
       res.status(400).json({ error: error.message })
     }
-  })
-
-  // Core Medusa -> storefront pull, shared by the manual sync button and the
-  // automatic product webhook. Throws on any problem so callers can decide how
-  // loud to be about it.
-  const runMedusaPreviewSync = async (session) => {
-    const config = session.medusaConfig
-    if (!config?.adminBaseUrl || !config?.adminEmail || !config?.adminPassword) {
-      throw new Error('Medusa admin is not provisioned for this session')
-    }
-    const siteSpec = loadSiteSpec(session.workspace)
-    if (!siteSpec) throw new Error('No site spec for this session')
-    const medusaProducts = await fetchMedusaProductsForSiteSpec({
-      backendUrl: config.adminBaseUrl,
-      email: config.adminEmail,
-      password: config.adminPassword,
-    })
-    if (!medusaProducts.length) throw new Error('No products found in Medusa Admin')
-
-    const visibleProducts = extractSessionProducts(session, _sessionsDir)
-    const merged = mergeMedusaProductsIntoSiteSpec(siteSpec, medusaProducts, { visibleProducts })
-    saveSiteSpec(session.workspace, merged.siteSpec)
-    // The OpenUI preview renders the .openui artifacts, not the spec, so patch
-    // those too — otherwise the data updates but the visible storefront never
-    // reflects the Medusa edit.
-    patchOpenUIArtifactsWithMedusaProducts(session.workspace, medusaProducts, merged.siteSpec?.brand)
-    const preview = rerenderPreviewFromSiteSpec(session)
-    await setMedusaConfig(session.id, {
-      ...config,
-      productsPulledAt: new Date().toISOString(),
-      productsPulledCount: merged.productCount,
-    })
-    const sessionCtx = makeSessionState(session)
-    sessionCtx.signalHomepageReady()
-    sessionCtx.broadcast({ type: 'preview_reload', at: Date.now() })
-    return { products: merged.productCount, files: Object.keys(preview.files) }
-  }
-
-  app.post('/api/sessions/:id/sync-medusa-preview', optionalAuth, async (req, res) => {
-    const session = getSession(req.params.id)
-    if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (!ensureSessionArtifactAccess(req, res, session)) return
-    try {
-      const result = await runMedusaPreviewSync(session)
-      res.json({ ok: true, ...result })
-    } catch (error) {
-      console.warn(`[medusa-sync] preview pull failed for ${req.params.id}: ${error.message}`)
-      res.status(400).json({ error: error.message || 'Could not sync Medusa products' })
-    }
-  })
-
-  // Auto-sync webhook: the tenant Medusa container's product subscriber hits
-  // this on product.created/updated/deleted. We coalesce bursts (a single admin
-  // save fires several events) into one trailing re-sync and answer 202 fast so
-  // the subscriber never blocks an admin operation.
-  const MEDUSA_WEBHOOK_SECRET = String(process.env.MEDUSA_WEBHOOK_SECRET || '').trim()
-  const MEDUSA_WEBHOOK_DEBOUNCE_MS = Number(process.env.MEDUSA_WEBHOOK_DEBOUNCE_MS || 1500)
-  const _medusaWebhookTimers = new Map()
-  app.post('/api/sessions/:id/medusa-webhook', (req, res) => {
-    if (MEDUSA_WEBHOOK_SECRET) {
-      const provided = String(req.get('x-shipfast-webhook-secret') || '')
-      if (provided !== MEDUSA_WEBHOOK_SECRET) {
-        return res.status(401).json({ error: 'Unauthorized' })
-      }
-    }
-    const id = req.params.id
-    const session = getSession(id)
-    if (!session) return res.status(404).json({ error: 'Session not found' })
-    if (!session.medusaConfig) return res.status(409).json({ error: 'Medusa not provisioned' })
-
-    const existing = _medusaWebhookTimers.get(id)
-    if (existing) clearTimeout(existing)
-    const timer = setTimeout(async () => {
-      _medusaWebhookTimers.delete(id)
-      try {
-        const fresh = getSession(id)
-        if (fresh) await runMedusaPreviewSync(fresh)
-      } catch (error) {
-        console.warn(`[medusa-webhook] auto-sync failed for ${id}: ${error.message}`)
-      }
-    }, MEDUSA_WEBHOOK_DEBOUNCE_MS)
-    if (typeof timer.unref === 'function') timer.unref()
-    _medusaWebhookTimers.set(id, timer)
-    res.status(202).json({ ok: true, scheduled: true })
   })
 
   // Dashboard calls /api/provision/{type} with sessionId in body
@@ -2298,33 +2299,11 @@ export async function startServer(sessionsDir) {
   // into the tenant Medusa admin. Idempotent: it's safe to call again if the
   // sync flag isn't set yet, but we skip when productsSyncedAt is already
   // populated to avoid re-syncing on every click.
-  // Products extracted from the DSL/storefront carry no image URL — the live
-  // preview resolves one client-side from the alt text. Medusa has no such
-  // hook, so give each product a relevant Pexels thumbnail here (reusing the
-  // existing resolver, which falls back to a deterministic image if the key is
-  // missing). Querying by the alt text, then the title, keeps it relevant.
-  const _resolveProductImages = async (products) =>
-    Promise.all(
-      products.map(async (product) => {
-        if (product.image) return product
-        try {
-          const photo = await pexelsPhotoResolver({
-            query: product.imageAlt || product.title,
-            w: 900,
-            h: 900,
-          })
-          return photo?.url ? { ...product, image: photo.url } : product
-        } catch {
-          return product
-        }
-      }),
-    )
-
   const _maybeSyncSessionProductsToTenant = async (sessionId, config) => {
     if (!config?.adminBaseUrl || !config?.adminEmail || !config?.adminPassword) return null
     const session = getSession(sessionId)
     if (!session?.siteSpecReady) return null
-    const products = await _resolveProductImages(extractSessionProducts(session, _sessionsDir))
+    const products = extractSessionProducts(session, _sessionsDir)
     if (products.length === 0) return null
     try {
       const result = await syncProductsToMedusa(products, {
@@ -2333,10 +2312,6 @@ export async function startServer(sessionsDir) {
         password: config.adminPassword,
         workspace: session.workspace,
       })
-      // Stamp the same resolved photos into the storefront DSL so the generated
-      // UI renders the exact image we pushed to Medusa, not its own alt-resolved
-      // one.
-      patchOpenUIArtifactsWithMedusaProducts(session.workspace, products)
       const next = {
         ...config,
         productsSyncedAt: new Date().toISOString(),
@@ -2540,29 +2515,12 @@ export async function startServer(sessionsDir) {
       const result = await pushSessionToGitHub(session, {
         target,
         githubAccessToken: payload.data.githubAccessToken,
-        includeBadge: !accessDecision.payment?.subscriptionActive,
       })
       res.json({ ok: true, ...result })
     } catch (error) {
       const statusCode = error?.status === 401 ? 401 : 400
       res.status(statusCode).json({ error: error.message })
     }
-  })
-
-  app.post('/api/coupons/validate', requireAuth, async (req, res) => {
-    const provider =
-      String(req.body?.provider || 'razorpay').toLowerCase() === 'stripe' ? 'stripe' : 'razorpay'
-    const result = validatePartnerCoupon(req.body?.code, { provider })
-    if (!result.ok) {
-      return res.status(400).json({ ok: false, error: result.error, code: result.code })
-    }
-    res.json({
-      ok: true,
-      code: result.code,
-      percentOff: result.percentOff,
-      label: result.label,
-      provider,
-    })
   })
 
   // ─── API: Session tasks ───────────────────────────────────
@@ -2721,11 +2679,7 @@ export async function startServer(sessionsDir) {
               ),
             )
         } catch {
-          express.static(session.workspace, { extensions: ['html'], redirect: false })(
-            req,
-            res,
-            next,
-          )
+          express.static(session.workspace, { extensions: ['html'], redirect: false })(req, res, next)
         }
         return
       }

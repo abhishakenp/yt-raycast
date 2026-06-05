@@ -43,7 +43,7 @@ export const promptExpectsNovaDenseMarketing = (prompt) => {
 
 export const explainNovaMarketingBarFailures = (html) => {
   const raw = String(html || '')
-  if (!/cdn\.tailwindcss\.com/i.test(raw)) return []
+  if (!/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(raw)) return []
   const failures = []
   const sections = (raw.match(/<section\b/gi) || []).length
   const text = stripToVisibleText(bodyInner(raw))

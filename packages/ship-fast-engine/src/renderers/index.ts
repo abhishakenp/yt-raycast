@@ -2,16 +2,10 @@ import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { resolveThemeStyles, THEME_CATALOG } from '@ship-fast/blocks'
 import type { SiteSpecProject } from '../spec/index.ts'
+import type { ExtractedTokens } from '../clone/types.ts'
+import { looksSerif } from '../clone/tokens.ts'
 
 const HOME_OPENUI_FILE = 'home.openui'
-const OPENUI_PREVIEW_CSS_PUBLIC_PATH = '/styles/openui-preview-tailwind.css'
-const OPENUI_PREVIEW_CSS_EXPORT_PATH = './styles/openui-preview-tailwind.css'
-const OPENUI_PREVIEW_CSS_DISK_PATH = join(
-  process.cwd(),
-  'public',
-  'styles',
-  'openui-preview-tailwind.css',
-)
 
 // --- Per-site visual identity --------------------------------------------------
 // Registry modules use Tailwind token classes. During SSR we derive a
@@ -51,6 +45,26 @@ function themeWords(text: string): string[] {
     .replace(/[^a-z0-9 ]+/g, ' ')
     .split(/\s+/)
     .filter((word) => word.length > 2 && !THEME_STOP_WORDS.has(word))
+}
+
+// Convert a hex color (#fff or #ffffff) to bare RGB channels ("255 255 255").
+// Tailwind v3 CDN needs this format so opacity modifiers (text-bg/80) can
+// decompose the variable into channels: rgb(var(--bg) / <alpha-value>).
+function hexToRgbChannels(hex: string): string {
+  // Validate hex format before processing
+  if (!isHexColor(hex)) return hex
+  const h = hex.replace(/^#/, '')
+  const full = h.length === 3
+    ? h.split('').map((c) => c + c).join('')
+    : h
+  const n = parseInt(full, 16)
+  if (Number.isNaN(n)) return hex
+  return `${(n >> 16) & 0xff} ${(n >> 8) & 0xff} ${n & 0xff}`
+}
+
+// Returns true if the value looks like a hex color we can convert to channels.
+function isHexColor(v: string): boolean {
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v.trim())
 }
 
 function readSiteThemeName(workspace: string): string | null {
@@ -109,32 +123,182 @@ function googleFontLink(styles: any): string {
 
 // Build the SSR <head> for a chosen theme: map shadcn color names + radius +
 // fonts to the theme's CSS variables (so `bg-primary`/`text-foreground` resolve
-// under the local compiled Tailwind preview CSS), then set those variables on :root. The rich registry
+// under the Tailwind CDN), then set those variables on :root. The rich registry
 // sections then theme themselves with a designed, vibe-matched palette.
 function buildThemeHead(seedText: string, requested?: string | null): string {
   const themeName = pickThemeName(seedText, requested)
   const styles = resolveThemeStyles(themeName)
   const light: Record<string, string> = (styles?.light as Record<string, string>) || {}
+  // Convert hex colors to bare RGB channels so Tailwind v3 CDN opacity
+  // modifiers (text-background/80, bg-primary/50, …) can decompose them.
   const rootVars = THEME_VAR_KEYS
     .filter((key) => light[key] != null)
-    .map((key) => `--${key}: ${light[key]};`)
+    .map((key) => {
+      const raw = light[key]
+      const val = isHexColor(raw) ? hexToRgbChannels(raw) : raw
+      return `--${key}: ${val};`
+    })
     .join(' ')
   const radius = light['radius'] ? `--radius: ${light['radius']};` : '--radius: 0.5rem;'
   const fontSans = light['font-sans'] || 'ui-sans-serif, system-ui, sans-serif'
   const fontSerif = light['font-serif'] || 'Georgia, serif'
+  // Use rgb(var(--X) / <alpha-value>) so Tailwind v3 can apply opacity modifiers.
+  const tailwindColors = JSON.stringify(
+    Object.fromEntries(THEME_VAR_KEYS.map((key) => [key, `rgb(var(--${key}) / <alpha-value>)`])),
+  )
   return `${googleFontLink(styles)}
+  <script>
+    window.tailwind = window.tailwind || {}
+    tailwind.config = { theme: { extend: {
+      colors: ${tailwindColors},
+      borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },
+      fontFamily: { sans: [${JSON.stringify(fontSans)}], serif: [${JSON.stringify(fontSerif)}] }
+    } } }
+  </script>
   <style>
-    :root { ${rootVars} ${radius} --font-sans: ${fontSans}; --font-serif: ${fontSerif}; }
-    body { font-family: ${fontSans}; background-color: var(--background); color: var(--foreground); }
+    :root { ${rootVars} ${radius} }
+    body { font-family: ${fontSans}; background-color: rgb(var(--background)); color: rgb(var(--foreground)); }
   </style>`
 }
 
-function readOpenUIPreviewCssForExport(): string {
-  try {
-    return readFileSync(OPENUI_PREVIEW_CSS_DISK_PATH, 'utf8')
-  } catch {
-    return ''
+// Build theme head from synthesized tokens (clone mode).
+// EVERY one of the 32 THEME_VAR_KEYS is defined in :root — registry sections
+// reference bg-card, text-muted-foreground, ring, chart-1, sidebar-*, etc., so a
+// missing var would render as a transparent/black hole. We map the handful of
+// extracted tokens, derive sensible *-foreground pairs (a color sits on its
+// foreground), and provide defaults for everything the scrape can't infer, all in
+// bare RGB channels so Tailwind v3 opacity modifiers (bg-primary/80) decompose.
+export function buildThemeHeadFromTokens(tokens: ExtractedTokens, brand: string): string {
+  const ch = (hex: string) => hexToRgbChannels(hex)
+  const bg = ch(tokens.background)
+  const fg = ch(tokens.foreground)
+  const primary = ch(tokens.primary)
+  const secondary = ch(tokens.secondary)
+  const muted = ch(tokens.muted)
+  const accent = ch(tokens.accent)
+  const border = ch(tokens.border)
+
+  // A muted-foreground that equals the full foreground makes muted sections read
+  // identically to primary content — the theme is then invisible on those bands.
+  // Derive a genuinely *muted* foreground by blending the foreground toward the
+  // background (≈40% toward bg) so secondary/caption text on muted surfaces is
+  // legibly softer, confirming theme application across content bands. Structural,
+  // palette-agnostic: works on light and dark grounds alike.
+  const mutedFg = ((): string => {
+    const f = tokens.foreground.match(/^#([0-9a-f]{6})$/i)
+    const b = tokens.background.match(/^#([0-9a-f]{6})$/i)
+    if (!f || !b) return fg
+    const fc = [0, 2, 4].map((i) => parseInt(f[1].slice(i, i + 2), 16))
+    const bc = [0, 2, 4].map((i) => parseInt(b[1].slice(i, i + 2), 16))
+    const blended = fc.map((c, i) => Math.round(c + (bc[i] - c) * 0.4))
+    return `${blended[0]} ${blended[1]} ${blended[2]}`
+  })()
+
+  // Every key resolves to channels; *-foreground pairs read against their surface.
+  const colorVars: Record<(typeof THEME_VAR_KEYS)[number], string> = {
+    'background': bg,
+    'foreground': fg,
+    'card': bg,
+    'card-foreground': fg,
+    'popover': bg,
+    'popover-foreground': fg,
+    'primary': primary,
+    'primary-foreground': bg,
+    'secondary': secondary,
+    'secondary-foreground': fg,
+    'muted': muted,
+    'muted-foreground': mutedFg,
+    'accent': accent,
+    'accent-foreground': bg,
+    'destructive': '239 68 68',
+    'destructive-foreground': '255 255 255',
+    'border': border,
+    'input': border,
+    'ring': primary,
+    'chart-1': primary,
+    'chart-2': accent,
+    'chart-3': secondary,
+    'chart-4': muted,
+    'chart-5': fg,
+    'sidebar': bg,
+    'sidebar-foreground': fg,
+    'sidebar-primary': primary,
+    'sidebar-primary-foreground': bg,
+    'sidebar-accent': accent,
+    'sidebar-accent-foreground': bg,
+    'sidebar-border': border,
+    'sidebar-ring': primary,
   }
+
+  const radius = tokens.radius && tokens.radius.trim() ? tokens.radius.trim() : '0.5rem'
+  const extracted = (tokens.fontFamily || '').trim()
+  // If the page's own typeface is a serif/display family, it IS the brand font:
+  // drive BOTH the serif token and headings from it (so the serif character the
+  // page is known for renders), and keep a clean sans for body copy. If it's a
+  // sans/unknown family, use it for body and keep a generic serif for any serif
+  // slots. This generalizes the previously hardcoded 'Georgia, serif' heading to
+  // the original's actual serif, while never branching on a specific site.
+  const extractedIsSerif = extracted ? looksSerif(extracted) : false
+  const fontSans = extractedIsSerif || !extracted
+    ? 'ui-sans-serif, system-ui, sans-serif'
+    : extracted
+  const fontSerif = extractedIsSerif ? `${extracted}, Georgia, serif` : 'Georgia, serif'
+
+  const rootVars = THEME_VAR_KEYS
+    .map((key) => `--${key}: ${colorVars[key]};`)
+    .join(' ')
+
+  // Use rgb(var(--X) / <alpha-value>) so Tailwind v3 can apply opacity modifiers
+  const tailwindColors = JSON.stringify(
+    Object.fromEntries(THEME_VAR_KEYS.map((key) => [key, `rgb(var(--${key}) / <alpha-value>)`])),
+  )
+
+  // Apply the brand serif to headings ONLY when the extracted typeface is actually
+  // a serif/display family. This keeps the original's serif heading character on
+  // every content band's heading (not just the hero), making theme typography
+  // confirmable across bands — without forcing a serif onto sans-first sites.
+  const headingRule = extractedIsSerif
+    ? `\n    h1, h2, h3, h4, h5, h6 { font-family: var(--font-serif); }`
+    : ''
+
+  return `  <script>
+    window.tailwind = window.tailwind || {}
+    tailwind.config = { theme: { extend: {
+      colors: ${tailwindColors},
+      borderRadius: { lg: 'var(--radius)', md: 'calc(var(--radius) - 2px)', sm: 'calc(var(--radius) - 4px)' },
+      fontFamily: { sans: [${JSON.stringify(fontSans)}], serif: [${JSON.stringify(fontSerif)}] }
+    } } }
+  </script>
+  <style>
+    :root { ${rootVars} --radius: ${radius}; --font-sans: ${fontSans}; --font-serif: ${fontSerif}; }
+    /* Paint the full viewport canvas (html + body) with the extracted surface so
+       the cloned page never shows a dark/black gutter framing the content — the
+       UA viewport background comes from the root element, not just body. */
+    html { background-color: rgb(var(--background)); }
+    body { margin: 0; min-height: 100vh; font-family: ${fontSans}; background-color: rgb(var(--background)); color: rgb(var(--foreground)); }${headingRule}
+    /* Alignment coherence: a link/CTA button that lives in a left-aligned content
+       column must share the text's inline axis. Intrinsic-width link buttons
+       (inline-flex / inline-grid anchors & buttons) inadvertently inherit a
+       centering wrapper (text-align:center, place-items:center) and float to the
+       middle, producing a zig-zag against left-aligned headings/paragraphs.
+       Snap such inline link buttons back to the start of the reading axis whenever
+       their flow is left-aligned, so the button column matches the prose column.
+       This is structural (driven by left text-flow + inline button display), not
+       tied to any site/slug, so every cloned target benefits identically. */
+    [style*="text-align: left" i] a:is(.inline-flex, .inline-grid),
+    [style*="text-align: left" i] button:is(.inline-flex, .inline-grid),
+    .text-left a:is(.inline-flex, .inline-grid),
+    .text-left button:is(.inline-flex, .inline-grid) {
+      margin-inline: 0;
+      align-self: flex-start;
+      justify-self: start;
+    }
+    /* When a button is the sole interactive child of a left-aligned text block,
+       neutralize an inherited text-align:center on its own box so the label/icon
+       row reads from the start rather than the middle. */
+    .text-left > a.inline-flex, .text-left > button.inline-flex,
+    .text-left > a.inline-grid, .text-left > button.inline-grid { text-align: start; }
+  </style>`
 }
 
 /**
@@ -166,12 +330,12 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(brand)} - Preview</title>
-  <link rel="stylesheet" href="${OPENUI_PREVIEW_CSS_PUBLIC_PATH}">
+  <script src="/scripts/tailwind-browser.js"></script>
 ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root">${openUIPreviewBootHtml(brand)}</div>
-  <script type="module" async src="/scripts/openui-island.js"></script>
+  <div id="openui-root"></div>
+  <script type="module" src="/scripts/openui-island.js"></script>
 </body>
 </html>`
 }
@@ -182,41 +346,6 @@ function escapeHtml(value: unknown): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-}
-
-function openUIPreviewBootHtml(brand: string): string {
-  const title = escapeHtml(brand || 'Preview')
-  return `<div class="sf-openui-boot" role="status" aria-live="polite">
-    <style>
-      .sf-openui-boot {
-        min-height: 100dvh;
-        display: grid;
-        place-items: center;
-        padding: 32px;
-        background: var(--background, #050507);
-        color: var(--foreground, #f8fafc);
-        font: 500 14px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-      .sf-openui-boot__mark {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        opacity: 0.78;
-      }
-      .sf-openui-boot__dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: currentColor;
-        animation: sf-openui-boot-pulse 900ms ease-in-out infinite alternate;
-      }
-      @keyframes sf-openui-boot-pulse {
-        from { opacity: 0.35; transform: scale(0.8); }
-        to { opacity: 0.9; transform: scale(1); }
-      }
-    </style>
-    <span class="sf-openui-boot__mark"><span class="sf-openui-boot__dot" aria-hidden="true"></span>${title}</span>
-  </div>`
 }
 
 function renderActions(actions: any[] = []): string {
@@ -338,13 +467,12 @@ export function renderProject(siteSpec: SiteSpecProject, target: string, session
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${brand} - Preview</title>
-  <link rel="stylesheet" href="${OPENUI_PREVIEW_CSS_EXPORT_PATH}">
+  <script src="/scripts/tailwind-browser.js"></script>
 </head>
 <body class="min-h-screen bg-[radial-gradient(circle_at_top_left,#312e81,transparent_35%),linear-gradient(135deg,#050506,#111827_55%,#052e2b)] text-zinc-50">
   ${renderStaticHomepage(spec, brand, tagline)}
 </body>
 </html>`
-    files['styles/openui-preview-tailwind.css'] = readOpenUIPreviewCssForExport()
   } else if (target === 'react') {
     files['package.json'] = `{
   "name": "${brand.toLowerCase().replace(/[^a-z0-9]/g, '-')}",
@@ -451,20 +579,26 @@ export function writeStreamingShellToWorkspace(
   workspace: string,
   brand: string,
   themeName: string | null,
+  prebuiltThemeHead?: string | null,
 ) {
-  const themeHead = buildThemeHead(String(brand || ''), themeName ?? readSiteThemeName(workspace))
+  // Clone path passes a token-derived head (buildThemeHeadFromTokens) so the shell is
+  // themed from the scraped palette, not a named preset. Named-theme paths omit it.
+  const themeHead =
+    prebuiltThemeHead && prebuiltThemeHead.trim()
+      ? prebuiltThemeHead
+      : buildThemeHead(String(brand || ''), themeName ?? readSiteThemeName(workspace))
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(brand)} - Preview</title>
-  <link rel="stylesheet" href="${OPENUI_PREVIEW_CSS_PUBLIC_PATH}">
+  <script src="/scripts/tailwind-browser.js"></script>
 ${themeHead}
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root">${openUIPreviewBootHtml(brand)}</div>
-  <script type="module" async src="/scripts/openui-island.js"></script>
+  <div id="openui-root"></div>
+  <script type="module" src="/scripts/openui-island.js"></script>
 </body>
 </html>`
   writeRenderedFiles(workspace, { 'index.html': html })

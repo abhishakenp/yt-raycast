@@ -75,6 +75,30 @@ export function parseCreateSessionRequest(body = {}) {
     designReferenceNotes = rawNotes.trim().slice(0, MAX_DESIGN_REFERENCE_NOTES)
   }
 
+  let cloneUrl = ''
+  const rawCloneUrl = body.cloneUrl
+  if (rawCloneUrl != null && typeof rawCloneUrl !== 'string') {
+    errors.push('cloneUrl must be a string when provided.')
+  } else if (typeof rawCloneUrl === 'string') {
+    const s = rawCloneUrl.trim()
+    if (!s) {
+      cloneUrl = ''
+    } else if (s.length > MAX_PATH_LENGTH) {
+      errors.push('cloneUrl is too long.')
+    } else {
+      let parsedUrl = null
+      try {
+        parsedUrl = new URL(s)
+      } catch {
+        errors.push('cloneUrl must be a valid URL.')
+      }
+      if (parsedUrl && parsedUrl.protocol !== 'https:') {
+        errors.push('cloneUrl must use HTTPS.')
+      }
+      cloneUrl = s
+    }
+  }
+
   if (errors.length) return { ok: false, errors }
 
   return {
@@ -85,6 +109,7 @@ export function parseCreateSessionRequest(body = {}) {
       preferredExportTarget,
       designReferenceUrls,
       designReferenceNotes,
+      cloneUrl,
     },
   }
 }

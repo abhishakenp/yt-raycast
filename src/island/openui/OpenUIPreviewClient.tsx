@@ -1,17 +1,8 @@
+import OpenUIViewer from './OpenUIViewer'
 import { OpenUIPreviewLaunchLoading } from './OpenUIPreviewLaunchLoading'
 import { openUIPreviewReadyToDisplay } from '@/lib/openui-preview-gate'
-import {
-  lazy,
-  Suspense,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from 'react'
-
-const OpenUIViewer = lazy(() => import('./OpenUIViewer'))
+import { isTranslatableLocale } from '../../config/languages.js'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 type OpenUIProviderConfig = Record<string, string | null>
 
@@ -29,21 +20,29 @@ type OpenUISessionIntegrations = {
  * Vanilla replacement for `useParams()` from next/navigation.
  * Express serves /preview/:id and /preview/:id/(.*) — parse them off pathname.
  */
-function useParams(): { id: string; route: string[] } {
-  const [params, setParams] = useState<{ id: string; route: string[] }>(() => parsePreviewPath())
+function useParams(): { id: string; route: string[]; isGallery: boolean } {
+  const [params, setParams] = useState<{ id: string; route: string[]; isGallery: boolean }>(() => {
+    const parsed = parsePreviewPath()
+    return { id: parsed.id, route: parsed.route, isGallery: parsed.isGallery }
+  })
   useEffect(() => {
-    const onPop = () => setParams(parsePreviewPath())
+    const onPop = () => {
+      const parsed = parsePreviewPath()
+      setParams({ id: parsed.id, route: parsed.route, isGallery: parsed.isGallery })
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
   return params
 }
 
-function parsePreviewPath(): { id: string; route: string[] } {
-  if (typeof window === 'undefined') return { id: '', route: [] }
+function parsePreviewPath(): { id: string; route: string[]; isGallery: boolean } {
+  if (typeof window === 'undefined') return { id: '', route: [], isGallery: false }
   const segs = window.location.pathname.split('/').filter(Boolean)
-  if (segs[0] !== 'preview' || !segs[1]) return { id: '', route: [] }
-  return { id: segs[1], route: segs.slice(2) }
+  if (segs[0] !== 'preview' || !segs[1]) return { id: '', route: [], isGallery: false }
+  const urlParams = new URLSearchParams(window.location.search)
+  const isGallery = urlParams.get('gallery') === '1'
+  return { id: segs[1], route: segs.slice(2), isGallery }
 }
 
 declare global {
@@ -131,25 +130,13 @@ function isAbortLike(error: unknown): boolean {
   return name === 'AbortError'
 }
 
-function OpenUIViewerLoadingFallback() {
-  return (
-    <div
-      style={{
-        minHeight: '100dvh',
-        width: '100%',
-        background: 'var(--background, #050507)',
-      }}
-      aria-hidden="true"
-    />
-  )
-}
-
 /**
  * `/preview/:id/` — stream or load the OpenUI artifact for the session.
  */
 export function OpenUIPreviewClient() {
   const params = useParams()
   const id = typeof params?.id === 'string' ? params.id : ''
+  const isGallery = Boolean(params?.isGallery)
   const routeParam = Array.isArray(params?.route)
     ? params.route.join('/')
     : typeof params?.route === 'string'
@@ -220,7 +207,7 @@ export function OpenUIPreviewClient() {
         j.theme && typeof j.theme === 'object' && j.theme ? (j.theme as Record<string, string>) : {}
       setFinal({ source, theme })
       commitViewerPalette(theme)
-      if (typeof j.locale === 'string' && j.locale.trim().length === 2) {
+      if (typeof j.locale === 'string' && isTranslatableLocale(j.locale)) {
         setLocale(j.locale.trim().toLowerCase())
       }
       setBootError(null)
@@ -268,13 +255,10 @@ export function OpenUIPreviewClient() {
         `/api/sessions/${encodeURIComponent(id)}/openui?route=${encodeURIComponent(previewRoute)}`,
         id,
         { signal: ac.signal },
-      )
-      const openuiReady = openuiInflight
-        .then(tryConsumeOpenUIResponse)
-        .catch((error) => {
-          if (ac.signal.aborted || isAbortLike(error)) return false
-          return false
-        })
+      ).catch((error) => {
+        if (ac.signal.aborted || isAbortLike(error)) return null
+        throw error
+      })
       const sessionR = await artFetch(`/api/sessions/${encodeURIComponent(id)}`, id, {
         signal: ac.signal,
       }).catch((error) => {
@@ -283,7 +267,7 @@ export function OpenUIPreviewClient() {
       })
       if (!sessionR) return
       if (!sessionR.ok) {
-        if (!ac.signal.aborted && !settledRef.current) {
+        if (!ac.signal.aborted) {
           setBootError('Session not found.')
         }
         return
@@ -302,7 +286,9 @@ export function OpenUIPreviewClient() {
         setLoadingSavedPreview(true)
       }
 
-      const got = await openuiReady
+      const openuiResponse = await openuiInflight
+      if (!openuiResponse) return
+      const got = await tryConsumeOpenUIResponse(openuiResponse)
       if (got) return
 
       // Saved OpenUI exists: never call /api/stream-openui on reload — only poll until GET succeeds
@@ -366,9 +352,17 @@ export function OpenUIPreviewClient() {
   }, [id, previewRoute])
 
   useEffect(() => {
+    // Skip WebSocket connection in gallery mode - thumbnails should be static
+    if (isGallery) return
     if (!id || previewRoute !== '/') return
+
     let closed = false
     let ws: WebSocket | null = null
+    let reconnectAttempts = 0
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+    const MAX_RECONNECT_ATTEMPTS = 5
+    const BASE_RECONNECT_DELAY_MS = 1000
+
     const resolveWSHost = () => {
       const backendWs =
         typeof process !== 'undefined'
@@ -381,143 +375,176 @@ export function OpenUIPreviewClient() {
       }
       return location.host
     }
-    const host = resolveWSHost()
-    if (!host) {
-      console.error('[WebSocket] Missing WS host')
-      return
-    }
-    const url = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${host}?session=${encodeURIComponent(id)}`
-    console.log('[WebSocket] Connecting to:', url)
-    try {
-      ws = new WebSocket(url)
-      ws.onopen = () => {
-        console.log('[WebSocket] Connected')
+
+    const connect = () => {
+      if (closed) return
+      const host = resolveWSHost()
+      if (!host) {
+        console.error('[WebSocket] Missing WS host')
+        return
       }
-      ws.onerror = (error) => {
-        console.error('[WebSocket] Error:', error)
-      }
-      ws.onclose = () => {
-        console.log('[WebSocket] Closed')
-      }
-      ws.onmessage = (event) => {
-        console.log('[WebSocket] Message:', event.data.substring(0, 100))
-        if (closed) return
-        let message: {
-          type?: string
-          route?: string
-          token?: string
-          source?: string
-          locale?: string
-          error?: string
-        } | null = null
-        try {
-          message = JSON.parse(String(event.data))
-        } catch {
-          console.warn('[WebSocket] Non-JSON message:', event.data)
-          return
+      const url = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${host}?session=${encodeURIComponent(id)}`
+      console.log('[WebSocket] Connecting to:', url)
+      try {
+        ws = new WebSocket(url)
+        ws.onopen = () => {
+          console.log('[WebSocket] Connected')
+          reconnectAttempts = 0
         }
-        const messageRoute =
-          typeof message.route === 'string' && message.route.trim() ? message.route.trim() : '/'
-        if (messageRoute !== previewRoute) {
-          console.log('[WebSocket] Ignored route mismatch', {
-            expected: previewRoute,
-            received: messageRoute,
-            type: message.type,
-          })
-          return
+        ws.onerror = (error) => {
+          console.error('[WebSocket] Error:', error)
         }
-        if (settledRef.current && message.type !== 'openui_stream_start') return
-        if (message.type === 'openui_stream_start') {
-          console.log('[WebSocket] Stream start')
-          settledRef.current = false
-          stopArtifactLoadWait()
-          setStreamText('')
-          setIsStreaming(true)
-          setBootError(null)
-          setLoadingSavedPreview(false)
-          return
-        }
-        if (message.type === 'openui_stream_chunk') {
-          const source = typeof message.source === 'string' ? message.source : ''
-          const token = typeof message.token === 'string' ? message.token : ''
-          settledRef.current = false
-          stopArtifactLoadWait()
-          if (source) {
-            console.log('[WebSocket] Chunk, source length:', source.length)
-            setStreamText(source)
+        ws.onclose = (event) => {
+          console.log('[WebSocket] Closed:', { code: event.code, reason: event.reason, wasClean: event.wasClean })
+          if (closed) return
+
+          // Generation already settled (stream_done / saved artifact shown): the close
+          // is expected — do NOT reconnect, or we trigger a post-completion reconnect
+          // storm that the message handler then ignores anyway. We gate purely on the
+          // settled latch: once settled, every reconnect would be wasted regardless of
+          // whether the socket reported wasClean.
+          if (settledRef.current) {
+            console.log('[WebSocket] Close after settle — not reconnecting')
+            return
           }
-          else if (token) setStreamText((current) => current + token)
-          setIsStreaming(true)
-          setLoadingSavedPreview(false)
-          return
-        }
-        if (message.type === 'openui_stream_done') {
-          console.log('[WebSocket] Stream done')
-          const source = typeof message.source === 'string' ? message.source : ''
-          if (typeof message.locale === 'string' && message.locale.trim().length === 2) {
-            setLocale(message.locale.trim().toLowerCase())
+
+          if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++
+            const delay = BASE_RECONNECT_DELAY_MS * Math.pow(2, reconnectAttempts - 1)
+            console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
+            reconnectTimer = setTimeout(connect, delay)
+          } else {
+            console.error('[WebSocket] Max reconnection attempts reached. Giving up.')
           }
-          if (source) {
-            settledRef.current = true
-            const palette =
-              Object.keys(viewerPaletteRef.current).length > 0
-                ? { ...viewerPaletteRef.current }
-                : {}
-            setFinal((prev) => ({
-              source,
-              theme:
-                Object.keys(palette).length > 0
-                  ? palette
-                  : prev && Object.keys(prev.theme).length > 0
-                    ? prev.theme
-                    : {},
-            }))
+        }
+        ws.onmessage = (event) => {
+          console.log('[WebSocket] Message:', event.data.substring(0, 100))
+          if (closed) return
+          let message: {
+            type?: string
+            route?: string
+            token?: string
+            source?: string
+            locale?: string
+            error?: string
+          } | null = null
+          try {
+            message = JSON.parse(String(event.data))
+          } catch {
+            console.warn('[WebSocket] Non-JSON message:', event.data)
+            return
+          }
+          if (!message) return
+          const messageRoute =
+            typeof message.route === 'string' && message.route.trim() ? message.route.trim() : '/'
+          if (messageRoute !== previewRoute) {
+            console.log('[WebSocket] Ignored route mismatch', {
+              expected: previewRoute,
+              received: messageRoute,
+              type: message.type,
+            })
+            return
+          }
+          if (settledRef.current && message.type !== 'openui_stream_start') return
+          if (message.type === 'openui_stream_start') {
+            console.log('[WebSocket] Stream start')
+            settledRef.current = false
+            stopArtifactLoadWait()
             setStreamText('')
-            void artFetch(
-              `/api/sessions/${encodeURIComponent(id)}/openui?route=${encodeURIComponent(previewRoute)}`,
-              id,
-            )
-              .then((r) => (r.ok ? r.json() : null))
-              .then((payload: { theme?: unknown; locale?: unknown } | null) => {
-                if (payload?.theme && typeof payload.theme === 'object' && payload.theme) {
-                  const t = payload.theme as Record<string, string>
-                  commitViewerPalette(t)
-                  setFinal((prev) => (prev ? { ...prev, theme: t } : prev))
-                }
-                if (typeof payload?.locale === 'string' && payload.locale.trim().length === 2) {
-                  setLocale(payload.locale.trim().toLowerCase())
-                }
-              })
-              .catch((error) => {
-                if (isAbortLike(error)) return
-                console.warn('[openui-island] failed to refresh preview theme:', error)
-              })
+            setIsStreaming(true)
+            setBootError(null)
+            setLoadingSavedPreview(false)
+            return
           }
-          setIsStreaming(false)
+          if (message.type === 'openui_stream_chunk') {
+            const source = typeof message.source === 'string' ? message.source : ''
+            const token = typeof message.token === 'string' ? message.token : ''
+            settledRef.current = false
+            stopArtifactLoadWait()
+            if (source) {
+              console.log('[WebSocket] Chunk, source length:', source.length)
+              setStreamText(source)
+            }
+            else if (token) setStreamText((current) => current + token)
+            setIsStreaming(true)
+            setLoadingSavedPreview(false)
+            return
+          }
+          if (message.type === 'openui_stream_done') {
+            console.log('[WebSocket] Stream done')
+            const source = typeof message.source === 'string' ? message.source : ''
+            if (typeof message.locale === 'string' && isTranslatableLocale(message.locale)) {
+              setLocale(message.locale.trim().toLowerCase())
+            }
+            if (source) {
+              settledRef.current = true
+              const palette =
+                Object.keys(viewerPaletteRef.current).length > 0
+                  ? { ...viewerPaletteRef.current }
+                  : {}
+              setFinal((prev) => ({
+                source,
+                theme:
+                  Object.keys(palette).length > 0
+                    ? palette
+                    : prev && Object.keys(prev.theme).length > 0
+                      ? prev.theme
+                      : {},
+              }))
+              setStreamText('')
+              void artFetch(
+                `/api/sessions/${encodeURIComponent(id)}/openui?route=${encodeURIComponent(previewRoute)}`,
+                id,
+              )
+                .then((r) => (r.ok ? r.json() : null))
+                .then((payload: { theme?: unknown; locale?: unknown } | null) => {
+                  if (payload?.theme && typeof payload.theme === 'object' && payload.theme) {
+                    const t = payload.theme as Record<string, string>
+                    commitViewerPalette(t)
+                    setFinal((prev) => (prev ? { ...prev, theme: t } : prev))
+                  }
+                  if (typeof payload?.locale === 'string' && isTranslatableLocale(payload.locale)) {
+                    setLocale(payload.locale.trim().toLowerCase())
+                  }
+                })
+                .catch((error) => {
+                  if (isAbortLike(error)) return
+                  console.warn('[openui-island] failed to refresh preview theme:', error)
+                })
+            }
+            setIsStreaming(false)
+          }
+          if (message.type === 'openui-error') {
+            console.error('[WebSocket] Error:', message.error)
+            const error = typeof message.error === 'string' ? message.error : 'OpenUI generation failed'
+            setBootError(error)
+            setLoadingSavedPreview(false)
+            setIsStreaming(false)
+            setStreamText('')
+          }
         }
-        if (message.type === 'openui-error') {
-          console.error('[WebSocket] Error:', message.error)
-          const error = typeof message.error === 'string' ? message.error : 'OpenUI generation failed'
-          setBootError(error)
-          setLoadingSavedPreview(false)
-          setIsStreaming(false)
-          setStreamText('')
-        }
+      } catch {
+        console.error('[WebSocket] Connection error')
+        return
       }
-    } catch {
-      console.error('[WebSocket] Connection error')
-      return
     }
+
+    // Initial connection
+    connect()
 
     return () => {
       closed = true
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer)
+        reconnectTimer = null
+      }
       try {
         ws?.close()
       } catch {
         void 0
       }
     }
-  }, [id, previewRoute])
+  }, [id, previewRoute, isGallery])
 
   const shell: CSSProperties = {
     minHeight: '100dvh',
@@ -591,17 +618,15 @@ export function OpenUIPreviewClient() {
         }}
       >
         {hasSource ? (
-          <Suspense fallback={<OpenUIViewerLoadingFallback />}>
-            <OpenUIViewer
-              response={liveSource}
-              theme={liveTheme}
-              locale={locale}
-              isStreaming={liveIsStreaming}
-              embed={true}
-              sessionId={id}
-              integrations={sessionIntegrations || undefined}
-            />
-          </Suspense>
+          <OpenUIViewer
+            response={liveSource}
+            theme={liveTheme}
+            locale={locale}
+            isStreaming={liveIsStreaming}
+            embed={true}
+            sessionId={id}
+            integrations={sessionIntegrations || undefined}
+          />
         ) : null}
         {showLoader ? <OpenUIPreviewLaunchLoading phase={loaderPhase} /> : null}
       </div>
