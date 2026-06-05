@@ -55,8 +55,13 @@ await build({
   },
 })
 
+// Tailwind v4 moved the CLI out of the `tailwindcss` package into
+// `@tailwindcss/cli` (the base package no longer ships a bin), so `bunx
+// tailwindcss` only resolves when @tailwindcss/cli happens to have installed a
+// `tailwindcss` shim. Invoke the v4 CLI package directly so the CSS build never
+// depends on that shim being present.
 await execFileAsync('bunx', [
-  'tailwindcss',
+  '@tailwindcss/cli',
   '-i',
   'src/styles/openui-preview-tailwind.css',
   '-o',
