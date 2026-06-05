@@ -14,6 +14,7 @@ export const siteSpecSchema = {
     'version',
   ],
   requiredPageFields: ['id', 'name', 'route', 'title', 'description', 'seo', 'layoutType', 'sections'],
+  optionalPageFields: ['aeo', 'breadcrumbs'],
   requiredSectionFields: ['id', 'type', 'variant'],
   optionalProjectFields: ['ecommerce', 'exportOptions'],
   ecommerceSchema: {

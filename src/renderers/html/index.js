@@ -10,6 +10,7 @@ import {
   routeToHtmlFile,
 } from '../shared.js'
 import { renderGeneratedSiteLlmsTxt } from '../llms-txt.js'
+import { renderSeoHeadMarkup as renderAeoHeadMarkup } from '@ship-fast/aeo'
 import {
   buildStructuredData,
   renderRobotsTxt,
@@ -22,51 +23,7 @@ import { shouldUseSwiper } from '@ship-fast/engine/lib/swiper-policy.js'
 function renderSeoHeadMarkup(siteSpec, page) {
   const seo = resolvePageSeo(siteSpec, page)
   const structuredData = buildStructuredData(siteSpec, page)
-  const tags = [
-    '<meta charset="UTF-8" />',
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
-    `<title>${escapeHtml(seo.title)}</title>`,
-    `<meta name="description" content="${escapeHtml(seo.description)}" />`,
-    `<meta name="robots" content="${escapeHtml(seo.robots)}" />`,
-    `<meta name="theme-color" content="${escapeHtml(seo.themeColor)}" />`,
-  ]
-
-  if (seo.keywords.length) {
-    tags.push(`<meta name="keywords" content="${escapeHtml(seo.keywords.join(', '))}" />`)
-  }
-  if (seo.canonicalUrl) {
-    tags.push(`<link rel="canonical" href="${escapeHtml(seo.canonicalUrl)}" />`)
-    tags.push(`<meta property="og:url" content="${escapeHtml(seo.canonicalUrl)}" />`)
-  }
-
-  tags.push(
-    '<meta property="og:type" content="website" />',
-    `<meta property="og:title" content="${escapeHtml(seo.title)}" />`,
-    `<meta property="og:description" content="${escapeHtml(seo.description)}" />`,
-    `<meta property="og:site_name" content="${escapeHtml(seo.siteName)}" />`,
-    `<meta property="og:locale" content="${escapeHtml(seo.locale)}" />`,
-    `<meta name="twitter:card" content="${escapeHtml(seo.ogImage ? seo.twitterCard : 'summary')}" />`,
-    `<meta name="twitter:title" content="${escapeHtml(seo.title)}" />`,
-    `<meta name="twitter:description" content="${escapeHtml(seo.description)}" />`,
-  )
-
-  if (seo.ogImage) {
-    tags.push(
-      `<meta property="og:image" content="${escapeHtml(seo.ogImage)}" />`,
-      `<meta property="og:image:alt" content="${escapeHtml(seo.ogImageAlt)}" />`,
-      `<meta name="twitter:image" content="${escapeHtml(seo.ogImage)}" />`,
-      `<meta name="twitter:image:alt" content="${escapeHtml(seo.ogImageAlt)}" />`,
-    )
-  }
-
-  if (structuredData.length) {
-    tags.push(`<script type="application/ld+json">${serializeStructuredData(structuredData)}</script>`)
-  }
-
-  return {
-    htmlLang: seo.htmlLang,
-    markup: tags.join('\n    '),
-  }
+  return renderAeoHeadMarkup(seo, serializeStructuredData(structuredData))
 }
 
 function applyLangToDocument(html, htmlLang) {
@@ -163,7 +120,9 @@ ${swiperHead}    <link rel="stylesheet" href="${cssHref}" />
   </head>
   <body>
     <div class="site-shell${storeShell}">
+      <main id="main-content">
       ${sections}
+      </main>
     </div>
 ${swiperBeforeSiteJs}    <script src="./site.js" defer></script>
     <script type="module" src="${motionHref}"></script>

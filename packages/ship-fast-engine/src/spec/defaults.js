@@ -5,6 +5,7 @@ export const SITE_SPEC_VERSION = '1.0.0'
 export const SUPPORTED_EXPORT_TARGETS = ['html', 'react', 'nextjs']
 export const SUPPORTED_SECTION_TYPES = [
   'hero',
+  'direct-answer',
   'features',
   'pricing',
   'testimonials',
@@ -13,6 +14,11 @@ export const SUPPORTED_SECTION_TYPES = [
   'logo-cloud',
   'docs-content',
   'faq',
+  'use-cases',
+  'comparison',
+  'how-it-works',
+  'who-for',
+  'breadcrumbs',
   'cta',
   'footer',
   'navbar',

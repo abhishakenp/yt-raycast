@@ -1,3 +1,4 @@
+import { renderAeoSectionHtml } from '@ship-fast/aeo'
 import { isMixedEnglishIndicCode } from '../config/languages.js'
 import { shouldUseSwiper } from '@ship-fast/engine/lib/swiper-policy.js'
 import { SHIP_FAST_SITE_URL, shipFastFooterLogoMarkup } from '@ship-fast/engine/marketing.js'
@@ -609,6 +610,9 @@ function renderBrandLogoMarkup(brandLogo, opts = {}) {
 }
 
 export function renderSectionHtml(section, siteSpec = {}) {
+  const aeoHtml = renderAeoSectionHtml(section)
+  if (aeoHtml) return aeoHtml
+
   const headline = section.headline ? `<h2>${escapeHtml(section.headline)}</h2>` : ''
   const subheadline = section.subheadline
     ? `<p class="eyebrow">${escapeHtml(section.subheadline)}</p>`

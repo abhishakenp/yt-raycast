@@ -669,7 +669,7 @@ export default function CartDrawer() {
             {!loading && (!cart?.items?.length) ? <p>Your cart is empty.</p> : null}
             <ul className="cart-items">
               {(cart?.items || []).map((item) => (
-                <li key={item.id} className="cart-item">
+                <li key={item?.id || Math.random()} className="cart-item">
                   <div className="cart-item__row">
                     <div className="cart-item__meta">
                       <strong className="cart-item__title">{item.title}</strong>
@@ -981,7 +981,7 @@ export default function CheckoutView() {
             <h3>Order summary</h3>
             <ul className="checkout-summary__items">
               {(cart?.items || []).slice(0, 6).map((item) => (
-                <li key={item.id} className="checkout-summary__item">
+                <li key={item?.id || Math.random()} className="checkout-summary__item">
                   <span className="checkout-summary__itemTitle">{item.title}</span>
                   <span className="checkout-summary__itemQty">×{item.quantity}</span>
                 </li>
@@ -1698,10 +1698,10 @@ function ActionRow({ actions = [] }) {
 function CardGrid({ items = [] }) {
   return (
     <div className="card-grid">
-      {items.map((item) => (
-        <article key={item.id || item.title} className="card" data-reveal>
-          <h3>{item.title || item.label || item.value}</h3>
-          <p>{item.body || item.quote || ''}</p>
+      {items.filter(Boolean).map((item) => (
+        <article key={item?.id || item?.title || Math.random()} className="card" data-reveal>
+          <h3>{item?.title || item?.label || item?.value || 'Item'}</h3>
+          <p>{item?.body || item?.quote || ''}</p>
         </article>
       ))}
     </div>
@@ -1743,18 +1743,18 @@ function NavbarSection({ section, siteSpec }) {
             Menu
           </button>
           <nav className="nav-links">
-            {(section.links || []).map((link) => {
-              const hasChildren = Array.isArray(link?.children) && link.children.length
+            {(section.links || []).filter(Boolean).map((link) => {
+              const hasChildren = Array.isArray(link?.children) && link?.children?.length
               if (isStore && hasChildren) {
                 return (
-                  <div key={link.id || link.label} className="nav-dropdown">
+                  <div key={link?.id || link?.label || Math.random()} className="nav-dropdown">
                     <button type="button" className="nav-dropdown__trigger">
-                      {link.label || 'Shop'}
+                      {link?.label || 'Shop'}
                     </button>
-                    <div className="nav-dropdown__panel" role="menu" aria-label={link.label || 'Shop'}>
-                      {(link.children || []).map((child) => (
-                        <SmartLink key={child.id || child.label} href={child.href || '#'} role="menuitem">
-                          {child.label || 'Link'}
+                    <div className="nav-dropdown__panel" role="menu" aria-label={link?.label || 'Shop'}>
+                      {(link?.children || []).filter(Boolean).map((child) => (
+                        <SmartLink key={child?.id || child?.label || Math.random()} href={child?.href || '#'} role="menuitem">
+                          {child?.label || 'Link'}
                         </SmartLink>
                       ))}
                     </div>
@@ -1762,8 +1762,8 @@ function NavbarSection({ section, siteSpec }) {
                 )
               }
               return (
-                <SmartLink key={link.id || link.label} href={link.href || '#'}>
-                  {link.label || 'Link'}
+                <SmartLink key={link?.id || link?.label || Math.random()} href={link?.href || '#'}>
+                  {link?.label || 'Link'}
                 </SmartLink>
               )
             })}
@@ -1816,9 +1816,9 @@ function HeroSection({ section, siteSpec }) {
               />
             </figure>
           ) : null}
-          {(section.items || []).map((item) => (
-            <div key={item.id || item.title} className="hero-chip">
-              {item.title || item.label || item.value}
+          {(section.items || []).filter(Boolean).map((item) => (
+            <div key={item?.id || item?.title || Math.random()} className="hero-chip">
+              {item?.title || item?.label || item?.value}
             </div>
           ))}
         </div>
@@ -1833,8 +1833,8 @@ function StatsSection({ section }) {
       <div className="container">
         <SectionIntro section={section} />
         <div className="stat-grid">
-          {(section.items || []).map((item) => (
-            <div key={item.id || item.label} className="stat-card" data-reveal>
+          {(section.items || []).filter(Boolean).map((item) => (
+            <div key={item?.id || item?.label || Math.random()} className="stat-card" data-reveal>
               <span className="stat-card__label">{item.label || item.body}</span>
               <strong className="stat-card__value">{item.value || item.title}</strong>
             </div>
@@ -1851,8 +1851,8 @@ function PricingSection({ section }) {
       <div className="container">
         <SectionIntro section={section} />
         <div className="pricing-grid">
-          {(section.items || []).map((item) => (
-            <article key={item.id || item.title} className="pricing-card" data-reveal>
+          {(section.items || []).filter(Boolean).map((item) => (
+            <article key={item?.id || item?.title || Math.random()} className="pricing-card" data-reveal>
               <h3>{item.title}</h3>
               <div className="price">{item.price}</div>
               <p>{item.body}</p>
@@ -2170,7 +2170,7 @@ export default function SectionRenderer({ section, siteSpec }) {
                       ? String(item.compare_at)
                       : null
                 return (
-                  <article key={item.id || item.title} className="card product-card product-card--retail" data-reveal>
+                  <article key={item?.id || item?.title || Math.random()} className="card product-card product-card--retail" data-reveal>
                     <div className="product-image">
                       {item.image ? <img src={item.image} alt={item.title} /> : <div className="product-placeholder" />}
                     </div>

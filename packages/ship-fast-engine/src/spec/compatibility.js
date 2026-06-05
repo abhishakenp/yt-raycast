@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { promptSnippet } from '../prompt.js'
 import { buildFallbackSiteSpec } from './defaults.js'
 import { enrichSiteSpecWithWorkspaceBlueprints } from './blueprints.js'
+import { enrichSiteSpecAeo } from '@ship-fast/aeo'
 import { sanitizeSiteSpec } from '../contracts/contracts.js'
 
 const SITE_SPEC_FILE = 'site-spec.json'
@@ -111,6 +112,8 @@ export function ensureCompatibleSiteSpec(workspace) {
     ? enrichSiteSpecWithWorkspaceBlueprints(baseSiteSpec, workspace)
     : baseSiteSpec
 
-  saveCompatibleSiteSpec(workspace, hydratedSiteSpec)
-  return hydratedSiteSpec
+  const aeoEnrichedSiteSpec = enrichSiteSpecAeo(hydratedSiteSpec, context.prompt)
+
+  saveCompatibleSiteSpec(workspace, aeoEnrichedSiteSpec)
+  return aeoEnrichedSiteSpec
 }

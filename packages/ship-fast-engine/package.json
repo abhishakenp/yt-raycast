@@ -8,6 +8,7 @@
     "./*": "./src/*"
   },
   "dependencies": {
+    "@ship-fast/aeo": "workspace:*",
     "@openuidev/lang-core": "^0.2.5",
     "@tanstack/ai": "latest",
     "@tanstack/ai-gemini": "latest",

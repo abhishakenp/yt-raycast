@@ -211,6 +211,19 @@ Users can request any kind of website; we **cannot** maintain hardcoded rules pe
 
 **Do not** add: per-slug conditionals, fixed copy for one customer story, or “if brief mentions dogs” branches in core engine code. **Do** add: routers, grammars, planners, and validators that scale to unseen inputs.
 
+### Deprecated Engines (No Longer Used)
+
+The following code generation engines are deprecated and no longer used:
+- `playground-engine-ui-ship` (legacy UI compiler) — use the unified pipeline instead
+- All legacy per-vertical engines — consolidated into `groqHomepage` in production
+
+**Rendering Safety (Critical Fix)**
+- Fixed: “Cannot read properties of null” errors in `.map()` operations when streaming incomplete OpenUI responses
+- Added defensive null filtering: `.filter(Boolean)` before all array iterations
+- Added optional chaining (`?.`) for property access on potentially null items
+- Improved `stripNullsFromArrays()` preprocessing to remove incomplete Image() calls
+- Updated both React and Next.js renderers in `packages/ship-fast-engine/src/renderers/`
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
