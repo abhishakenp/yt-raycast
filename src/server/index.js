@@ -244,13 +244,7 @@ let rateLimitFile = null
 
 const httpContractsPromise = import('../contracts/http-contracts.js')
 
-// Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
-const WHITELISTED_IPS = new Set(
-  (process.env.WHITELISTED_IPS || '')
-    .split(',')
-    .map((ip) => ip.trim())
-    .filter(Boolean),
-)
+// Owner IP whitelist — bypasses all rate limits. Single source of truth: isIpWhitelisted in billing/constants.ts
 const PROMPT_SUGGEST_WINDOW_MS = 60 * 1000
 const PROMPT_SUGGEST_MAX_PER_IP = 40
 function isLocalDevelopmentRequest(req, clientIp) {
@@ -715,7 +709,7 @@ export async function startServer(sessionsDir) {
     const language = typeof req.body?.language === 'string' ? req.body.language : ''
     const clientIp = getClientIp(req)
     const skipRl =
-      (clientIp && WHITELISTED_IPS.has(clientIp)) || isLocalDevelopmentRequest(req, clientIp)
+      isIpWhitelisted(clientIp) || isLocalDevelopmentRequest(req, clientIp)
     if (!skipRl && clientIp) {
       if (
         !checkRateLimit(
@@ -873,7 +867,7 @@ export async function startServer(sessionsDir) {
         .status(422)
         .json(sanitizeErrorResponse(CONTENT_POLICY_CLIENT_MESSAGE, { code: 'CONTENT_POLICY' }))
     }
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || isIpWhitelisted(clientIp)
 
     let session
 
@@ -1568,7 +1562,7 @@ export async function startServer(sessionsDir) {
     }
 
     const clientIp = getClientIp(req)
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || isIpWhitelisted(clientIp)
 
     if (!skipRateLimits) {
       if (req.user) {
@@ -1767,7 +1761,7 @@ export async function startServer(sessionsDir) {
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (session.userId !== req.user.uid) return res.status(403).json({ error: 'Forbidden' })
     const clientIp = getClientIp(req)
-    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || WHITELISTED_IPS.has(clientIp)
+    const skipRateLimits = isLocalDevelopmentRequest(req, clientIp) || isIpWhitelisted(clientIp)
 
     if (!skipRateLimits && !checkRateLimit(req.user.uid, exportHits, 5))
       return res.status(429).json({ error: 'Export rate limit: max 5 per 10 minutes' })
