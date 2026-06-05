@@ -153,3 +153,40 @@ bd prime                # Refresh Beads context
 - Run `bd prime` when Beads context is missing or stale.
 - Keep persistent project memory in Beads via `bd remember`; do not create ad hoc memory files.
 <!-- END BEADS CODEX SETUP -->
+
+## Beads — task tracking & progress (all agents: Claude, Codex, Devin)
+
+This repo tracks all work in **Beads** (`bd`), an AI-native issue tracker whose database lives in `.beads/` inside the repo. No web UI — everything is the `bd` CLI. If you're new here, you only need a handful of commands; treat Beads as the single source of truth for "what needs doing" (never invent ad-hoc markdown TODO lists).
+
+### See progress at the start of every session and after every pull
+
+Run this to see the current task board (open work, what's ready, what's blocked):
+
+```bash
+bash scripts/beads-progress.sh
+```
+
+- **Claude Code** runs it automatically — `SessionStart` shows it when a session begins, and a `PostToolUse` hook reprints it right after any `git pull` / `git merge`. (Wired in `.claude/settings.json` → `.claude/hooks/beads-on-pull.sh`.)
+- **Codex, Devin, and any other agent**: run `bash scripts/beads-progress.sh` yourself at the start of a session and again after you pull. The script is agent-agnostic and safe to run anytime (no-op if `bd` isn't installed).
+- **Humans**: same command, anytime you want a quick status.
+
+### Daily workflow (the only commands you usually need)
+
+```bash
+bd ready                # what's available to work on right now (no blockers)
+bd show <id>            # full detail of one issue, e.g. bd show ship-fast-zdi.50
+bd update <id> --claim  # take an issue (marks it in-progress, assigned to you)
+bd close <id>           # mark it done when finished
+bd create "Title"       # file a new issue
+bd note <id> "..."      # leave a progress note / context on an issue
+```
+
+Issue ids look like `ship-fast-zdi.50` (`<project>.<number>`); the bare `ship-fast-zdi` is the parent epic. Status glyphs: `○ open · ◐ in_progress · ● blocked · ✓ closed · ❄ deferred`.
+
+### Etiquette so teammates stay in sync
+
+- **Claim before you start** (`bd update <id> --claim`) so two people don't grab the same task.
+- **Close when done**, and `bd note` anything non-obvious you discovered along the way.
+- **File found work** as a new `bd create` instead of fixing-and-forgetting.
+- Beads is configured `no-git-ops: true` here — it won't auto-commit; the `.beads/*.jsonl` changes ride along in your normal commits.
+- Run `bd prime` if your Beads context feels missing or stale.
