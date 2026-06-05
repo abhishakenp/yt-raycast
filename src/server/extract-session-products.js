@@ -1,5 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { loadSiteSpec } from '../spec/index.js'
 
 const slugify = (s) =>
   String(s || '')
@@ -35,6 +35,27 @@ const PLACEHOLDER_TITLES = new Set([
   'explore now',
 ])
 
+// Titles that appear in cart/checkout/order markup and must never be mistaken
+// for catalogue products when scraping rendered HTML (e.g. an "Order Summary"
+// card sitting next to a "$94.97" total).
+const NON_PRODUCT_TITLES = new Set([
+  'order summary',
+  'cart summary',
+  'order total',
+  'order details',
+  'your order',
+  'your cart',
+  'shopping cart',
+  'cart total',
+  'subtotal',
+  'grand total',
+  'total',
+  'checkout',
+  'payment',
+  'shipping',
+  'tax',
+])
+
 // Walk rendered HTML for product cards. Two strategies because some templates
 // wrap cards in <article> (clean DOM signal) and others use generic div/li
 // grids where we have to fall back to "h3 + nearby price + nearby img".
@@ -51,7 +72,7 @@ function extractFromHtml(html, sessionId, sessionPrompt) {
       if (!h3Match) continue
       const title = h3Match[1].trim()
       const lc = title.toLowerCase()
-      if (PLACEHOLDER_TITLES.has(lc) || seen.has(lc)) continue
+      if (PLACEHOLDER_TITLES.has(lc) || NON_PRODUCT_TITLES.has(lc) || seen.has(lc)) continue
       const priceMatch = chunk.match(/[₹$€£]([\d,]+(?:\.\d{2})?)/)
       if (!priceMatch) continue
       const imgMatch = chunk.match(/<img[^>]+src="([^"]+)"/)
@@ -87,7 +108,7 @@ function extractFromHtml(html, sessionId, sessionPrompt) {
     while ((m = h3Regex.exec(html)) !== null) {
       const title = m[1].trim()
       const lc = title.toLowerCase()
-      if (PLACEHOLDER_TITLES.has(lc) || seen.has(lc)) continue
+      if (PLACEHOLDER_TITLES.has(lc) || NON_PRODUCT_TITLES.has(lc) || seen.has(lc)) continue
       const pos = m.index
       const fwd = html.slice(pos, pos + 600)
       const priceMatch = fwd.match(/[₹$€£]([\d,]+(?:\.\d{2})?)/)
@@ -129,6 +150,23 @@ const PRODUCT_SECTION_TYPES = new Set([
   'product-list',
 ])
 
+// loadSiteSpec() from the engine only returns specs that carry a top-level
+// `brand` string — which the generator's real specs never have (they use
+// projectName plus a structured `ecommerce` block). Reading the raw JSON lets
+// us see the spec the generator actually produced instead of bailing on every
+// session, which is why catalog sync silently no-op'd for everyone: the loader
+// returned null before we ever reached the rendered-HTML catalogue.
+function readRawSiteSpec(workspace) {
+  const filePath = join(workspace, 'site-spec.json')
+  if (!existsSync(filePath)) return null
+  try {
+    const parsed = JSON.parse(readFileSync(filePath, 'utf8'))
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
 // Pull catalog entries from a session by reading its rendered HTML first
 // (more reliable — section.items often contains generic placeholders, the
 // rendered HTML has the actual product catalogue) and falling back to the
@@ -139,27 +177,44 @@ export function extractSessionProducts(session, sessionsDir) {
   if (!session.siteSpecReady) return []
 
   const workspace = join(sessionsDir, session.id)
-  const spec = loadSiteSpec(workspace)
-  if (!spec || spec.siteType !== 'ecommerce') return []
+  const spec = readRawSiteSpec(workspace)
+  if (!spec) return []
 
-  const pages = Array.isArray(spec.pages) ? spec.pages : []
+  // An ecommerce session is one the generator tagged as such OR one that
+  // carries a non-empty structured catalogue. siteType is sometimes
+  // misclassified (e.g. "software") even when a full medusa product block
+  // exists, so keying off the catalogue keeps this generic rather than
+  // trusting a single label.
+  const hasCatalogue =
+    Array.isArray(spec.ecommerce?.products) && spec.ecommerce.products.length > 0
+  if (spec.siteType !== 'ecommerce' && !hasCatalogue) return []
+
+  const sessionId = session.id
+  const sessionPrompt = session.prompt || ''
   const seen = new Set()
   const products = []
-  let extractedFromHtml = false
-
-  for (const page of pages) {
-    const html = page.renderBlueprint?.bodyHtml
-    if (!html) continue
-    const pageProducts = extractFromHtml(html, session.id, session.prompt || '')
-    for (const p of pageProducts) {
-      if (seen.has(p.handle)) continue
+  const push = (list) => {
+    for (const p of list) {
+      if (!p.handle || seen.has(p.handle)) continue
       seen.add(p.handle)
       products.push(p)
     }
-    if (pageProducts.length > 0) extractedFromHtml = true
   }
 
-  if (!extractedFromHtml) {
+  // Primary source: the rendered HTML in each page's blueprint. The engine's
+  // structured `ecommerce.products` block is generic boilerplate (identical
+  // across every store it generates), whereas the rendered storefront holds
+  // the real, theme-specific catalogue the user sees in the UI.
+  const pages = Array.isArray(spec.pages) ? spec.pages : []
+  for (const page of pages) {
+    const html = page.renderBlueprint?.bodyHtml
+    if (!html) continue
+    push(extractFromHtml(html, sessionId, sessionPrompt))
+  }
+
+  // Fallback: section items, for older specs whose pages carry no rendered
+  // blueprint markup.
+  if (products.length === 0) {
     for (const page of pages) {
       const sections = Array.isArray(page.sections) ? page.sections : []
       for (const section of sections) {
@@ -168,18 +223,19 @@ export function extractSessionProducts(session, sessionsDir) {
         for (const item of items) {
           if (!item.title) continue
           const lc = item.title.toLowerCase().trim()
-          if (PLACEHOLDER_TITLES.has(lc) || seen.has(slugify(item.title))) continue
-          seen.add(slugify(item.title))
+          const handle = slugify(item.title)
+          if (PLACEHOLDER_TITLES.has(lc) || seen.has(handle)) continue
+          seen.add(handle)
           products.push({
-            id: item.id || slugify(item.title),
+            id: item.id || handle,
             title: item.title,
-            handle: slugify(item.title),
+            handle,
             description: item.body || item.description || '',
             price: item.price || null,
             image: item.image || item.thumbnail || null,
             category: item.label || item.category || '',
-            sessionId: session.id,
-            sessionPrompt: session.prompt,
+            sessionId,
+            sessionPrompt,
           })
         }
       }
