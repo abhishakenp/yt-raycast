@@ -302,6 +302,24 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
     ? `\n      MEDUSA_SEED_ADMIN_EMAIL: ${adminEmail}\n      MEDUSA_SEED_ADMIN_PASSWORD: ${adminPassword}`
     : ''
 
+  // Auto-sync wiring: the tenant's product subscriber calls back here on every
+  // product change so the storefront refreshes without a manual sync. Prefer an
+  // explicit override, then the public dashboard origin (prod behind Traefik),
+  // else loopback to the host (local Docker Desktop / host-gateway).
+  const dashboardPort = String(process.env.DASHBOARD_PORT || '7420').trim()
+  const syncCallbackUrl =
+    String(process.env.MEDUSA_SYNC_CALLBACK_URL || '').trim().replace(/\/$/, '') ||
+    String(process.env.DASHBOARD_PUBLIC_ORIGIN || '').trim().replace(/\/$/, '') ||
+    `http://host.docker.internal:${dashboardPort}`
+  const webhookSecret = String(process.env.MEDUSA_WEBHOOK_SECRET || '').trim()
+  const syncEnv =
+    `\n      SHIP_FAST_SESSION_ID: ${sessionId}` +
+    `\n      SHIP_FAST_SYNC_URL: ${syncCallbackUrl}` +
+    (webhookSecret ? `\n      SHIP_FAST_WEBHOOK_SECRET: ${webhookSecret}` : '')
+  // host.docker.internal resolves automatically on Docker Desktop; on Linux it
+  // needs the host-gateway mapping so the callback can reach the dashboard.
+  const extraHostsBlock = '\n    extra_hosts:\n      - "host.docker.internal:host-gateway"'
+
   const compose = `services:
   ${containerName}:
     image: ${TENANT_IMAGE}
@@ -318,7 +336,7 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
       COOKIE_SECRET: ${cookieSecret}
       STORE_CORS: ${storeCors}
       ADMIN_CORS: ${adminCors}
-      AUTH_CORS: ${authCors}${adminSeedEnv}
+      AUTH_CORS: ${authCors}${adminSeedEnv}${syncEnv}${extraHostsBlock}
     networks:
 ${networksList}${labelsBlock}
 ${networksBlock}`
