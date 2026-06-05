@@ -84,37 +84,62 @@ function sanitizePartialImages(code: string): string {
 }
 
 function stripNullsFromArrays(code: string): string {
-  const idx = code.lastIndexOf('null')
-  if (idx === -1) return code
-  // Only care about the tail null we just introduced
-  if (idx < code.length - 200) return code
-
-  // Find the enclosing '[' (scan backwards, tracking bracket depth)
+  // Aggressive null stripping for streaming: remove all null values from arrays
+  // to prevent "Cannot read properties of null" errors when components map over
+  // incomplete arrays during progressive rendering.
+  let result = code
   let depth = 0
-  let bracketStart = -1
-  for (let i = idx - 1; i >= Math.max(0, idx - 500); i--) {
-    const ch = code[i]
-    if (ch === ']') depth++
-    else if (ch === '[') {
-      if (depth === 0) { bracketStart = i; break }
+  let inString = false
+  let stringChar = ''
+  let escape = false
+  let arrayStart = -1
+  let lastValidPos = 0
+
+  for (let i = 0; i < result.length; i++) {
+    const ch = result[i]
+    
+    if (escape) {
+      escape = false
+      continue
+    }
+    
+    if (inString) {
+      if (ch === '\\') escape = true
+      else if (ch === stringChar) inString = false
+      continue
+    }
+    
+    if (ch === '"' || ch === "'") {
+      inString = true
+      stringChar = ch
+      continue
+    }
+    
+    if (ch === '[') {
+      if (depth === 0) arrayStart = i
+      depth++
+    } else if (ch === ']') {
       depth--
+      if (depth === 0 && arrayStart !== -1) {
+        // Process this array
+        const arrayContent = result.slice(arrayStart + 1, i)
+        // Remove all null entries (with optional surrounding whitespace and commas)
+        const cleaned = arrayContent
+          .replace(/,\s*null\s*/g, ',')
+          .replace(/null\s*,/g, ',')
+          .replace(/^\s*null\s*$/g, '')
+          .replace(/,\s*,/g, ',') // Fix double commas
+          .replace(/^\s*,\s*/g, '') // Remove leading comma
+          .replace(/,\s*$/g, '') // Remove trailing comma
+        
+        result = result.slice(0, arrayStart + 1) + cleaned + result.slice(i)
+        i = arrayStart + 1 + cleaned.length // Adjust index after modification
+        arrayStart = -1
+      }
     }
   }
-  if (bracketStart === -1) return code
-
-  const arrayContent = code.slice(bracketStart + 1, idx + 4 + 1) // through 'null' (slice end is exclusive)
-
-  let cleaned = arrayContent
-  // ", null" at end
-  cleaned = cleaned.replace(/,\s*null\s*$/, '')
-  // "null ," at start
-  cleaned = cleaned.replace(/^\s*null\s*,\s*/, '')
-  // ", null," in middle → ","
-  cleaned = cleaned.replace(/,(\s*)null\s*,/, ',$1')
-  // "[null]" → "[]"
-  cleaned = cleaned.replace(/^\s*null\s*$/, '')
-
-  return code.slice(0, bracketStart + 1) + cleaned + code.slice(bracketStart + 1 + arrayContent.length)
+  
+  return result
 }
 
 function balancePartial(code: string): string {
