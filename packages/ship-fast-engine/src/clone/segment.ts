@@ -75,6 +75,50 @@ function isLinkListRegion(element: Element): boolean {
   return listed >= 3 || anchorTextLen / totalTextLen >= 0.5
 }
 
+// True when an element is a NAV/HEADER landmark region: a semantic <nav>/<header>,
+// a navigation/banner ARIA role, or a div/element classed as one. Uses the SAME
+// token logic detectSectionKind uses for "nav"/"header" so the two stay in lock-step.
+// Purely structural — landmarks only, no hostname/slug knowledge.
+function isNavLandmark(element: Element): boolean {
+  const tag = element.tagName.toLowerCase()
+  const role = (element.getAttribute("role") || "").toLowerCase()
+  const cls = classTokens(element)
+  if (tag === "nav" || role === "navigation" || hasToken(cls, "nav", "navbar", "menu")) {
+    return true
+  }
+  if (tag === "header" || role === "banner" || hasToken(cls, "header", "masthead")) {
+    return true
+  }
+  return false
+}
+
+// Extract the raw hrefs of every anchor inside the page's nav/header LANDMARK
+// regions — the REAL site-navigation link set. Structural only: finds landmark
+// regions (isNavLandmark), collects all <a href> within them, and returns the raw
+// href strings (absolute or relative; normalization happens where the base URL is
+// known). Nested landmarks are de-duplicated by anchor identity so a <header><nav>
+// does not double-count. Returns [] when there are NO nav/header landmarks.
+export function extractNavLinks(root: Element): string[] {
+  const landmarks: Element[] = []
+  if (isNavLandmark(root)) landmarks.push(root)
+  for (const el of Array.from(root.querySelectorAll("nav, header, [role], [class]"))) {
+    if (isNavLandmark(el)) landmarks.push(el)
+  }
+  if (landmarks.length === 0) return []
+
+  const hrefs: string[] = []
+  const seenAnchors = new Set<Element>()
+  for (const region of landmarks) {
+    for (const a of Array.from(region.querySelectorAll("a"))) {
+      if (seenAnchors.has(a)) continue
+      seenAnchors.add(a)
+      const href = a.getAttribute("href")
+      if (href) hrefs.push(href)
+    }
+  }
+  return hrefs
+}
+
 // Heuristic detection of section kind based on tag, role, class tokens, and text content.
 function detectSectionKind(element: Element): SectionKind {
   const tag = element.tagName.toLowerCase()
@@ -534,4 +578,16 @@ export function segmentPage(captured: CapturedPage): Section[] {
 export function extractSectionText(sectionHtml: string): string {
   const { document: doc } = parseHTML(sectionHtml)
   return doc.body?.textContent?.trim() || ""
+}
+
+// Parse a captured page and return the raw nav-destination hrefs from its nav/header
+// landmark regions (see extractNavLinks). Parses captured.html the same way
+// segmentPage does, so the caller (job.ts) never has to handle the DOM itself.
+// hrefs are raw (absolute or relative); the caller resolves + normalizes them
+// against the page URL. Returns [] when the page has no body or no nav/header landmarks.
+export function extractPageNavLinks(captured: CapturedPage): string[] {
+  const { document: doc } = parseHTML(captured.html)
+  const body = doc.body
+  if (!body) return []
+  return extractNavLinks(body)
 }

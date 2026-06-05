@@ -168,7 +168,6 @@ export async function generateAndWriteOpenUIHome(p: {
   const promptLocale =
     preferRomanizedBcp47FromSnippet(p.prompt) || preferMixedEnglishBcp47FromSnippet(p.prompt)
   const locale = promptLocale || result.locale || localeName || 'en'
-  const ms = Date.now() - startedAt
   const project = { brand, tagline, theme, locale, skeleton: '', modules: { home: source } }
 
   // Finalize: persist the complete program + shell (for reload), then close the
@@ -177,6 +176,11 @@ export async function generateAndWriteOpenUIHome(p: {
   upsertManifest(p.workspace, route, 'Home', HOME_OPENUI_FILE)
   saveSiteSpec(p.workspace, project)
   renderPreviewToWorkspace(project, p.workspace)
+
+  // Capture elapsed AFTER persistence + preview render so this logged number
+  // covers the same span the runner stores as `elapsed` (the gallery time) —
+  // otherwise the terminal `genui: … in Xs` undercounts vs the gallery badge.
+  const ms = Date.now() - startedAt
 
   console.log('[Server] Broadcasting openui_stream_done, source length:', source.length)
   ctx?.broadcast?.({ type: 'openui_stream_done', route, source, locale })

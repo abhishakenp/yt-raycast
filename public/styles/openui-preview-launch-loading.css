@@ -1,5 +1,26 @@
 /* Ship Fast dashboard intro–style loading, scoped for OpenUI iframe preview */
 
+/* Paint-gated reveal: wrapper overlays the viewer and cross-fades out on first paint.
+   Stays mounted (loader mounts once) so launch SFX plays at most once. */
+.sf-openui-launch-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 1;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.sf-openui-launch-reveal.is-revealed {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-openui-launch-reveal {
+    transition: none;
+  }
+}
+
 .sf-openui-launch-root {
   position: absolute;
   inset: 0;

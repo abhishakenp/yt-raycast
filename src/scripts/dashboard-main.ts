@@ -474,6 +474,12 @@ let nextPreviewBootPromise = null
 let homepageReady = false
 let wsConnected = false
 let introActive = true
+// When true, the intro launch loader (warp + SFX) is intentionally kept on screen
+// AFTER homepage_ready and only dismissed once the preview iframe reports its first
+// real paint (preview:first-paint) — or a terminal fallback. This keeps the loved
+// loader covering the whole generation instead of flashing a blank dark preview.
+let introExitPending = false
+let introExitSafetyTimer: ReturnType<typeof setTimeout> | null = null
 let introPromptText = ''
 let typingDone = false
 let pendingStatus = ''
@@ -2886,6 +2892,28 @@ function exitIntro() {
   setTimeout(() => overlay.classList.add('hidden'), 800)
 }
 
+// Keep the intro launch loader on screen and load the preview behind it; the loader
+// is dismissed later by resolveIntroExit() on first paint (or a terminal fallback).
+function deferIntroExit() {
+  introExitPending = true
+  openDrawer() // boots the preview iframe BEHIND the still-visible intro overlay
+  if (introExitSafetyTimer) clearTimeout(introExitSafetyTimer)
+  // Last-resort failsafe so the loader can never get stuck (well beyond max gen time).
+  introExitSafetyTimer = setTimeout(resolveIntroExit, 45000)
+}
+
+// Dismiss the deferred intro loader, fading straight into the now-painted preview.
+function resolveIntroExit() {
+  if (!introExitPending) return
+  introExitPending = false
+  if (introExitSafetyTimer) {
+    clearTimeout(introExitSafetyTimer)
+    introExitSafetyTimer = null
+  }
+  if (introActive) exitIntro()
+  if (drawerOpen) expandPreviewForLiveOpenUI()
+}
+
 function skipIntro() {
   introActive = false
   introWarpCanvas.stop()
@@ -4343,12 +4371,14 @@ function connectWS() {
         openPreviewChatPanel()
         void refreshChatHistory()
         if (introActive && !hasSeenLiveUpdate) {
-          // Reconnect: skip intro, show preview full-width immediately
+          // Reconnect / pre-stream: keep the loved intro loader up and load the
+          // preview behind it; dismiss only once the preview actually paints.
           isReconnect = true
-          skipIntro()
+          deferIntroExit()
         } else if (introActive) {
-          exitIntro()
-          openDrawer()
+          // Live generation: keep the intro loader covering the preview until it
+          // paints its first real content (no blank dark preview hand-off).
+          deferIntroExit()
         } else if (drawerOpen) {
           reloadPreview()
         } else {
@@ -4394,17 +4424,17 @@ function connectWS() {
         syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
         if (drawerOpen) {
           loadPreview()
-          expandPreviewForLiveOpenUI()
         }
         break
 
       case 'openui_stream_chunk':
         hasSeenLiveUpdate = true
         syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
-        if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
         break
 
       case 'openui_stream_done':
+        // Fallback reveal if first-paint never arrived (e.g. degenerate render).
+        if (ev.route === '/') resolveIntroExit()
         if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
         break
 
@@ -4425,6 +4455,7 @@ function connectWS() {
           }
         }
         resetPreviewToSessionHtml()
+        resolveIntroExit() // terminal fallback: never leave the intro loader stuck
         checkAllDone()
         if (chatAwaitingEdit) {
           chatAwaitingEdit = false
@@ -4697,6 +4728,14 @@ document.addEventListener('click', (event) => {
 })
 window.addEventListener('message', (event) => {
   const data = event.data || {}
+  if (data && data.type === 'preview:first-paint') {
+    if (event.origin !== window.location.origin) return
+    // Preview painted real content — dismiss the deferred intro loader (if any)
+    // and expand to full-width, fading straight from loader into the live page.
+    resolveIntroExit()
+    expandPreviewForLiveOpenUI()
+    return
+  }
   if (data.type === 'SF_PREVIEW_TOOLS_READY') {
     syncPreviewInspectTools()
     return

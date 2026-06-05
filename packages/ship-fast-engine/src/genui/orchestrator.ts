@@ -8,6 +8,7 @@ import { THEME_CATALOG, isKnownTheme, pickRandomTheme } from "@ship-fast/blocks"
 import type { ClonedPage, ClonedSection, ExtractedTokens } from "../clone/types.ts"
 import { generateFallbackSection } from "../clone/fallback.ts"
 import { validateOpenUISource } from "../pipeline/openui-validate.js"
+import { normalizeUrl } from "../clone/crawler.ts"
 
 // Server-side, SYSTEM-controlled site assembly.
 //
@@ -533,6 +534,25 @@ function buildSkeleton(firstLabel: string, labels: string[], ids: string[]): str
 root = PageSwitch(${labelsJson}, [${ids.join(", ")}])`
 }
 
+// SINGLE-PAGE skeleton (Tier 1): a flat site with no real multi-page nav roots
+// DIRECTLY in a Stack of the home page's section refs — NO PageSwitch, NO `$page`,
+// NO `home =` indirection. validateOpenUISource requires a literal `Stack([...])`
+// root (it rejects `root = home`), so we inline the refs. The skeleton references
+// the section var names that the home module later defines, exactly as the
+// multi-page skeleton references page ids before they're defined.
+function buildSinglePageSkeleton(sections: ClonedSection[]): string {
+  const refs = sections.map(sectionVarName).join(", ")
+  return `root = Stack([${refs}])`
+}
+
+// Assemble a SINGLE-PAGE program: the home section programs, then a Stack root of
+// their refs. Mirrors assembleClone but with no PageSwitch wrapper.
+function assembleSinglePage(sections: ClonedSection[]): string {
+  const refs = sections.map(sectionVarName).join(", ")
+  const programs = sections.map((s) => s.program).join("\n")
+  return `${programs}\nroot = Stack([${refs}])`
+}
+
 // Selection-only entry point (the AI block picker WITHOUT the fan-out / content
 // generation) — for testing and observability of how prompts map to blocks.
 export async function selectPlan(
@@ -754,13 +774,36 @@ export async function* generateFromClone(
       // content literals OR a single literal of real length — structure-driven,
       // never URL/slug based. The first page (home) is always kept regardless so
       // a genuinely minimal single-page site still renders.
+      // Normalize a literal for case/whitespace-insensitive comparison.
+      const normLit = (v: string): string => v.toLowerCase().replace(/\s+/g, " ").trim()
+      // The home page's "identity" literals: the brand and its FIRST heading literal.
+      // A non-home page whose ONLY content echoes one of these is a bare link-target
+      // (e.g. a one-heading page that just repeats the site name) — not a real page.
+      // Structural, never URL/slug based.
+      const home0 = clonedPages[0]
+      const homeFirstLiteral = (() => {
+        for (const s of home0?.sections ?? []) {
+          const m = s.program.match(/"((?:\\.|[^"\\])*)"/)
+          if (m) return normLit(m[1])
+        }
+        return ""
+      })()
+      const homeEchoes = new Set<string>(
+        [normLit(brand || ""), homeFirstLiteral].filter((v) => v.length > 0),
+      )
       const substantive = (p: ClonedPage): boolean => {
         const lits = new Set<string>()
         for (const s of p.sections) {
           for (const m of s.program.matchAll(/"((?:\\.|[^"\\])*)"/g)) {
-            const v = m[1].toLowerCase().replace(/\s+/g, " ").trim()
+            const v = normLit(m[1])
             if (v.length >= 3) lits.add(v)
           }
+        }
+        // A page whose sole/dominant literal is just an echo of the home brand or
+        // home's first heading is a one-heading link-target — not substantive.
+        if (lits.size <= 1) {
+          const sole = [...lits][0]
+          if (sole !== undefined && homeEchoes.has(sole)) return false
         }
         if (lits.size >= 2) return true
         // A single literal counts only if it is a real sentence/phrase (>= 24
@@ -784,6 +827,34 @@ export async function* generateFromClone(
       })
       const uniquePages = keptPages.length > 0 ? keptPages : clonedPages
 
+      // TABS = REAL SITE-NAV ONLY (Tier 2). The crawler captures every same-domain
+      // in-content link it follows; a flat link-hub (e.g. info.cern.ch) thereby
+      // yields many "pages" that are NOT part of the site's own navigation. Promoting
+      // each to a PageSwitch tab fabricates a multi-tab site that does not exist. The
+      // home page carries `navLinks` — the normalized URLs of anchors that live inside
+      // its nav/header landmark = the site's REAL navigation. A non-home crawled page
+      // becomes a TAB only if its normalized URL is one of those nav destinations;
+      // non-nav crawled pages are dropped from the rendered program (background only),
+      // never fabricated as tabs. Read the contract field structurally (no `as any`).
+      const navLinks = (clonedPages[0] as { navLinks?: string[] }).navLinks ?? []
+      const navSet = new Set<string>(navLinks.map((u) => normalizeUrl(u)))
+      // When the home page exposes NO real nav landmark (navSet empty), the extra
+      // crawled pages can only have come from in-content links — a flat link-hub
+      // (info.cern.ch) or a single landing page. Per the contract there are then NO
+      // tabs: render the home page alone as a single Stack; the extras stay
+      // background-only (reachable through the rendered in-content links, never
+      // fabricated as top nav). With real nav present, tabs = home + nav-backed pages.
+      const renderedPages =
+        navSet.size > 0
+          ? [uniquePages[0], ...uniquePages.slice(1).filter((p) => navSet.has(normalizeUrl(p.url)))]
+          : [uniquePages[0]]
+      const droppedToBackground = uniquePages.length - renderedPages.length
+      if (droppedToBackground > 0) {
+        console.warn(
+          `[clone] ${droppedToBackground} crawled page(s) kept background-only (not real site-nav destinations); not rendered as tabs`,
+        )
+      }
+
       // theme name keys the preview palette; tokens drive the actual CSS vars at render.
       ch.push({ type: "theme", name: "cloned" })
       ch.push({ type: "locale", code: "en" })
@@ -791,10 +862,10 @@ export async function* generateFromClone(
       // Use the cloned brand (param) as the home/site label so the nav reflects the
       // brand; non-home labels come from the real <title> when present, else a
       // readable label synthesized from the page URL — never a raw `Cloned: <url>`.
-      const labels = uniquePages.map((p, i) =>
+      const labels = renderedPages.map((p, i) =>
         i === 0 ? brand || cloneLabel(p, i) : cloneLabel(p, i),
       )
-      const ids = uniquePages.map((_, i) => (i === 0 ? "home" : `p${i}`))
+      const ids = renderedPages.map((_, i) => (i === 0 ? "home" : `p${i}`))
 
       // Repair pass (per CONTRACT): a page is a `Stack([sectionRefs])` program — the
       // shape validateOpenUISource accepts. For each page we (1) swap any invalid
@@ -824,7 +895,7 @@ export async function* generateFromClone(
         return sectionProgramValid(fallback) ? fallback : section
       }
 
-      const pagePlan = uniquePages.map((page, i) => {
+      const pagePlan = renderedPages.map((page, i) => {
         const id = ids[i]
         let sections = page.sections.map((section) => repairSection(section, page.url))
         if (!pageProgramValid(id, sections)) {
@@ -847,23 +918,42 @@ export async function* generateFromClone(
         return { id, sections }
       })
 
-      // Skeleton first so the shell paints before page content lands.
-      const skeleton = buildSkeleton(labels[0], labels, ids)
-      ch.push({ type: "skeleton", text: skeleton })
-      ch.push({ type: "plan", ids })
-
-      // Progressive page modules (home first, then the rest in order).
-      for (let i = 0; i < pagePlan.length; i++) {
-        const { id, sections } = pagePlan[i]
+      // SINGLE-PAGE (Tier 1): exactly one page survived the nav/substantive filters —
+      // a flat link-hub clone. Root DIRECTLY in a Stack of the home page's section
+      // refs (no PageSwitch, no `$page`, no tabs). The home module defines those
+      // section vars; the skeleton references them before they're defined, exactly as
+      // the multi-page skeleton references page ids before their modules land.
+      const single = pagePlan.length === 1
+      let fullSource: string
+      if (single) {
+        const { id, sections } = pagePlan[0]
+        const skeleton = buildSinglePageSkeleton(sections)
+        ch.push({ type: "skeleton", text: skeleton })
+        ch.push({ type: "plan", ids })
         ch.push({ type: "module_start", id })
         ch.push({ type: "module", id, text: assemblePage(id, sections) })
-      }
+        // Assemble the FULL program: the home sections rooted in a literal Stack —
+        // the exact shape validateOpenUISource accepts (it rejects a non-Stack root).
+        fullSource = assembleSinglePage(sections)
+      } else {
+        // Skeleton first so the shell paints before page content lands.
+        const skeleton = buildSkeleton(labels[0], labels, ids)
+        ch.push({ type: "skeleton", text: skeleton })
+        ch.push({ type: "plan", ids })
 
-      // Assemble the FULL program: validated per-page Stacks + the PageSwitch root.
-      // Each page Stack already passed validateOpenUISource above; the PageSwitch root
-      // is system-authored from the validated page ids, so the whole program is valid
-      // by construction.
-      const fullSource = assembleClone(pagePlan, labels)
+        // Progressive page modules (home first, then the rest in order).
+        for (let i = 0; i < pagePlan.length; i++) {
+          const { id, sections } = pagePlan[i]
+          ch.push({ type: "module_start", id })
+          ch.push({ type: "module", id, text: assemblePage(id, sections) })
+        }
+
+        // Assemble the FULL program: validated per-page Stacks + the PageSwitch root.
+        // Each page Stack already passed validateOpenUISource above; the PageSwitch root
+        // is system-authored from the validated page ids, so the whole program is valid
+        // by construction.
+        fullSource = assembleClone(pagePlan, labels)
+      }
 
       // Hand the final source to the caller (for persistence + streaming).
       ch.push({ type: "source", text: fullSource })

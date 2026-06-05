@@ -2,7 +2,7 @@ import OpenUIViewer from './OpenUIViewer'
 import { OpenUIPreviewLaunchLoading } from './OpenUIPreviewLaunchLoading'
 import { openUIPreviewReadyToDisplay } from '@/lib/openui-preview-gate'
 import { isTranslatableLocale } from '../../config/languages.js'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 type OpenUIProviderConfig = Record<string, string | null>
 
@@ -156,12 +156,14 @@ export function OpenUIPreviewClient() {
   /** True while we know home.openui exists and are fetching it (no LLM stream). */
   const [loadingSavedPreview, setLoadingSavedPreview] = useState(false)
   /**
-   * One-way latch: once any OpenUI source has been shown (saved or streamed), the launch
-   * loader is hidden permanently for the lifetime of this preview mount. Prevents the
-   * loader from re-mounting on `openui_stream_start` (which would replay launch SFX),
-   * and keeps the previous UI on screen while the next generation streams in.
+   * One-way latch: the launch loader hides on the first real PAINT of the rendered UI
+   * (DOM layout actually visible), not merely when source is received. This prevents the
+   * white-screen gap between source-received and the Renderer painting. The loader stays
+   * mounted (cross-faded via opacity) for the lifetime of this preview mount so its launch
+   * SFX plays at most once and the previous UI stays on screen while regen streams in.
    */
-  const [revealed, setRevealed] = useState(false)
+  const [painted, setPainted] = useState(false)
+  const paintedRef = useRef(false)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const settledRef = useRef(false)
   const artifactLoadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -186,6 +188,32 @@ export function OpenUIPreviewClient() {
     viewerPaletteRef.current = theme
     setViewerPalette(theme)
   }
+
+  /**
+   * Idempotent reveal: hides the launch loader on first real paint. Notifies the parent
+   * window (dashboard) via postMessage so the outer shell can coordinate. Safe to call
+   * multiple times — only the first call has any effect.
+   */
+  const markPainted = useCallback(() => {
+    if (paintedRef.current) return
+    paintedRef.current = true
+    setPainted(true)
+    try {
+      if (!isGallery && window.parent && window.parent !== window) {
+        window.parent.postMessage(
+          { type: 'preview:first-paint', sessionId: id, route: previewRoute },
+          window.location.origin,
+        )
+      }
+    } catch {
+      void 0
+    }
+  }, [id, previewRoute, isGallery])
+
+  // Stable ref so the long-lived WebSocket effect can call the latest markPainted
+  // without listing it as a dependency (which would tear down/reconnect the socket).
+  const markPaintedRef = useRef(markPainted)
+  markPaintedRef.current = markPainted
 
   useLayoutEffect(() => {
     document.body.classList.add('sf-openui-preview-embed')
@@ -513,6 +541,9 @@ export function OpenUIPreviewClient() {
                 })
             }
             setIsStreaming(false)
+            // Fallback: if first-paint never fired (e.g. observer missed), reveal now.
+            // Idempotent — no-op if markPainted already ran on real paint.
+            markPaintedRef.current()
           }
           if (message.type === 'openui-error') {
             console.error('[WebSocket] Error:', message.error)
@@ -571,14 +602,15 @@ export function OpenUIPreviewClient() {
   const liveIsStreaming = streamUiReady && isStreaming
   const hasSource = liveSource.length > 0
 
-  // One-way latch: as soon as we have any source, hide the loader forever.
-  // Done in an effect (never during render) so `revealed` is a real state edge.
-  useEffect(() => {
-    if (hasSource && !revealed) setRevealed(true)
-  }, [hasSource, revealed])
-
-  const showLoader = !revealed && !bootError
+  const loaderVisible = !painted && !bootError
   const loaderPhase = loadingSavedPreview ? 'restore' : 'compose'
+  // When embedded in the dashboard (nested iframe), the dashboard's own intro
+  // launch loader (warp + SFX) covers the whole generation until first paint, so
+  // rendering a second launch loader here would double the SFX and flicker at the
+  // handoff. Suppress our own loader in that case (we still fire first-paint to the
+  // parent). Standalone /preview and gallery thumbnails keep their own loader.
+  const embedded = typeof window !== 'undefined' && window.parent !== window
+  const useOwnLoader = !embedded || isGallery
 
   if (bootError) {
     return (
@@ -626,9 +658,14 @@ export function OpenUIPreviewClient() {
             embed={true}
             sessionId={id}
             integrations={sessionIntegrations || undefined}
+            onFirstPaint={markPainted}
           />
         ) : null}
-        {showLoader ? <OpenUIPreviewLaunchLoading phase={loaderPhase} /> : null}
+        {!bootError && useOwnLoader ? (
+          <div className={`sf-openui-launch-reveal${loaderVisible ? '' : ' is-revealed'}`}>
+            <OpenUIPreviewLaunchLoading phase={loaderPhase} />
+          </div>
+        ) : null}
       </div>
     </div>
   )
