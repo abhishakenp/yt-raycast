@@ -7,6 +7,8 @@ import {
   RTL_SCRIPTS,
   lookupKnownLanguage,
   preferMixedEnglishBcp47FromSnippet,
+  preferRomanizedBcp47FromSnippet,
+  isRomanizedIndicCode,
 } from '../config/languages.js'
 
 const DETECT_MODEL = 'llama-3.3-70b-versatile'
@@ -62,6 +64,12 @@ function buildLanguageMode(code, name, nativeName, script, knownEntry) {
 export function resolveLanguageModeFromPreference(preferredLanguage) {
   const requested = String(preferredLanguage || '').trim().toLowerCase()
   if (requested && requested !== 'en') {
+    if (isRomanizedIndicCode(requested)) {
+      const romanized = lookupKnownLanguage(requested)
+      if (romanized) {
+        return buildLanguageMode(romanized.code, romanized.name, romanized.nativeName, 'Latin', romanized)
+      }
+    }
     const known = KNOWN_LANGUAGES.find((l) => l.code === requested)
     if (known) {
       return buildLanguageMode(known.code, known.name, known.nativeName, guessScript(known.fontFamily), known)
@@ -76,6 +84,14 @@ export async function detectLanguage(prompt, preferredLanguage) {
   if (fromPref.code !== 'en') return fromPref
   if (String(preferredLanguage || '').trim().toLowerCase() === 'en') return ENGLISH_MODE
   if (!prompt) return ENGLISH_MODE
+
+  const romanHint = preferRomanizedBcp47FromSnippet(prompt)
+  if (romanHint) {
+    const r = lookupKnownLanguage(romanHint)
+    if (r) {
+      return buildLanguageMode(r.code, r.name, r.nativeName, 'Latin', r)
+    }
+  }
 
   const mixHint = preferMixedEnglishBcp47FromSnippet(prompt)
   if (mixHint) {
@@ -108,11 +124,14 @@ Consider:
 
 Default to English if the intent is unclear or the prompt is in English without any other language signal.
 
+For a romanized request ('roman hindi', 'romanized nepali', 'hindi in english letters'), append '-latn': hi-latn, ne-latn, mr-latn.
+
 Respond with ONLY a JSON object, no other text:
 {"code":"<BCP-47 language code>","name":"<English name>","nativeName":"<name in native script>","script":"<Unicode script name>"}
 
 Examples:
 - "Build me a Hindi website for my restaurant" → {"code":"hi","name":"Hindi","nativeName":"हिंदी","script":"Devanagari"}
+- "Build me a roman hindi government site" → {"code":"hi-latn","name":"Hindi (Roman)","nativeName":"हिंदी (Roman)","script":"Latin"}
 - "मेरी वेबसाइट बनाओ" → {"code":"hi","name":"Hindi","nativeName":"हिंदी","script":"Devanagari"}
 - "为我的餐厅创建一个网站" → {"code":"zh","name":"Chinese","nativeName":"中文","script":"Han"}
 - "Create a website for my bakery" → {"code":"en","name":"English","nativeName":"English","script":"Latin"}
@@ -136,6 +155,13 @@ Examples:
     const parsed = JSON.parse(jsonMatch[0])
     const code = String(parsed.code || 'en').trim().toLowerCase()
     if (code === 'en') return ENGLISH_MODE
+
+    if (isRomanizedIndicCode(code)) {
+      const romanized = lookupKnownLanguage(code)
+      if (romanized) {
+        return buildLanguageMode(romanized.code, romanized.name, romanized.nativeName, 'Latin', romanized)
+      }
+    }
 
     const name = String(parsed.name || code)
     const nativeName = String(parsed.nativeName || name)

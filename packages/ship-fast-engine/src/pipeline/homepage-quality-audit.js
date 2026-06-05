@@ -86,9 +86,9 @@ export const collectHomepageQualityIssues = (html, { siteType = '', prompt = '' 
   if (st !== 'dashboard' && st !== 'docs' && h1 > 2) issues.push('too many <h1> elements (want 1 primary)')
   if ((st === 'dashboard' || st === 'docs') && h1 > 24) issues.push('too many <h1> elements (cap for sanity)')
 
-  if (/cdn\.tailwindcss\.com/i.test(s)) {
-    issues.push('remove Tailwind CDN; Ship Fast injects compiled Tailwind preview CSS')
-  }
+if (!/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) issues.push('missing Tailwind runtime (/scripts/tailwind-browser.js)')
+  else if (!/tailwind\.config\s*=\s*\{[\s\S]*theme\s*:\s*\{[\s\S]*extend/i.test(s))
+    issues.push('tailwind.config missing theme.extend (colors/fonts/shadows)')
 
   const hashAnchors = (s.match(/href\s*=\s*["']#["']/gi) || []).length
   if (hashAnchors > 55) issues.push(`too many href="#" placeholders (${hashAnchors}); wire real anchors or omit`)

@@ -45,8 +45,8 @@ export const scoreRalphHomepage = (
   const minBands = siteSt === 'docs' ? 5 : 6
   if (bands >= minBands) score += 30
   else reasons.push(`section bands ${bands} (target >= ${minBands})`)
-  if (/cdn\.tailwindcss\.com/i.test(s)) reasons.push('remove cdn.tailwindcss.com; Ship Fast injects compiled Tailwind CSS')
-  else score += 25
+if (/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) score += 25
+  else reasons.push('missing Tailwind runtime (/scripts/tailwind-browser.js)')
   if (hookRe.test(s)) score += 25
   else reasons.push('missing wired data-* hooks (nav, accordion, tabs, carousel, counter, pricing toggle, or storefront cart)')
 

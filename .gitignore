@@ -54,3 +54,6 @@ medusa-backend/.medusa/
 
 # Debug screenshots from agent-browser/manual UI checks
 /dashboard.png
+
+/.a5c
+/dogfood-output

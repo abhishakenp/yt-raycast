@@ -85,7 +85,7 @@ function looksLikeSubstantialEcommerceHomepage(html) {
 
 function looksLikeHybridLlmHomepage(html) {
   const h = String(html || '')
-  if (!/cdn\.tailwindcss\.com/i.test(h)) return false
+  if (!/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(h)) return false
   if (h.length < 12000) return false
   return /<(section|nav|footer)\b/i.test(h)
 }

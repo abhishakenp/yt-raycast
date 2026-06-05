@@ -70,7 +70,7 @@
         ><span class="typing-cursor" id="typing-cursor"></span>
       </div>
 
-      <div class="intro-phase-label" id="intro-phase-label">PREPARING</div>
+      <div class="intro-phase-label" id="intro-phase-label">COUNTDOWN HOLD</div>
     </div>
 
     <!-- ─── Dashboard ─── -->
@@ -81,17 +81,17 @@
             >&#8592; Back</a
           >
           <h1>SHIP FAST</h1>
-          <div class="subtitle" id="phase-text">Preparing your project</div>
+          <div class="subtitle" id="phase-text">Clear visors. Stand by.</div>
         </div>
 
         <div class="stats-bar">
-          <span id="gen-timing">Waiting for generation to start</span>
+          <span id="gen-timing">Standing by for t-zero…</span>
         </div>
 
         <div class="task-list" id="task-list">
           <div class="task-planning-loader" id="task-planning-loader">
             <div class="pulse-ring"></div>
-            <p>Planning pages and assets</p>
+            <p>Plotting flight plan…</p>
             <div class="pulse-dots"><span></span><span></span><span></span></div>
           </div>
         </div>
@@ -380,8 +380,8 @@
                   <div class="preview-progress-fill" id="preview-progress-fill"></div>
                 </div>
               </div>
-              <div class="preview-chat-dock" id="preview-chat-dock">
-                <div class="preview-chat-panel" id="preview-chat-panel">
+              <div class="preview-chat-dock" id="preview-chat-dock" hidden>
+                <div class="preview-chat-panel" id="preview-chat-panel" hidden>
                   <div class="preview-chat-head">
                     <span class="preview-chat-head-title" id="preview-chat-head-title">Chat</span>
                     <div class="preview-chat-head-trail">
@@ -446,6 +446,7 @@
                         role="tab"
                         aria-selected="false"
                         aria-controls="preview-chat-cms-medusa-panel"
+                        hidden
                       >
                         Products (Medusa)
                       </button>
@@ -532,26 +533,18 @@
                       id="preview-chat-cms-medusa-panel"
                       role="tabpanel"
                       aria-labelledby="preview-chat-cms-tab-medusa"
+                      hidden
                     >
                       <div class="preview-chat-medusa-toolbar">
                         <span class="preview-chat-medusa-title">Products (Medusa)</span>
-                        <div class="preview-chat-medusa-actions">
-                          <button
-                            class="preview-chat-medusa-sync"
-                            type="button"
-                            data-cms-medusa-sync
-                          >
-                            Apply to preview
-                          </button>
-                          <a
-                            class="preview-chat-medusa-open-link"
-                            id="preview-chat-medusa-open-link"
-                            href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            >Open in new tab</a
-                          >
-                        </div>
+                        <a
+                          class="preview-chat-medusa-open-link"
+                          id="preview-chat-medusa-open-link"
+                          href="#"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >Open in new tab</a
+                        >
                       </div>
                       <iframe
                         class="preview-chat-medusa-frame"
@@ -563,8 +556,14 @@
                         class="preview-chat-cms-note preview-chat-cms-note--medusa"
                         id="preview-chat-medusa-footnote"
                       >
-                        Save product changes in Medusa Admin, then apply them to refresh this
-                        session’s generated preview.
+                        Commerce API and admin UI are served by your Medusa process (
+                        <code class="preview-chat-cms-studio-unbuilt-code">bun run medusa:dev</code>
+                        in
+                        <code class="preview-chat-cms-studio-unbuilt-code">medusa-backend</code>).
+                        Ensure
+                        <code class="preview-chat-cms-studio-unbuilt-code">ADMIN_CORS</code> /
+                        <code class="preview-chat-cms-studio-unbuilt-code">AUTH_CORS</code> include
+                        this origin if login fails.
                       </p>
                     </div>
                     <div
@@ -1324,38 +1323,26 @@
         ></textarea>
         <details class="new-prompt-design-ref">
           <summary class="new-prompt-design-ref-summary">
-            Optional layout inspiration (HTTPS links)
+            Clone a site (optional)
           </summary>
           <p class="new-prompt-design-ref-disclaimer">
-            Ship Fast creates original UI. Only add links you have rights to use for inspiration.
-            The generator does not load or screenshot pages—it uses your description, optional notes
-            below, and hints from each URL path only (not live content). References guide structure
-            and mood—not pixel-perfect copies.
+            Paste a URL to deeply clone its structure and visual styling. The system will crawl the site,
+            extract sections, and rebuild it with editable OpenUI components. Only clone sites you have
+            rights to use. Images and logos are downloaded as placeholders—replace them before publishing.
           </p>
-          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-1"
-            >Reference URL 1</label
+          <label class="new-prompt-design-ref-label" for="new-prompt-clone-url"
+            >Site URL to clone</label
           >
           <input
             class="new-prompt-design-ref-input"
             type="url"
-            id="new-prompt-ref-url-1"
+            id="new-prompt-clone-url"
             inputmode="url"
             autocomplete="off"
-            placeholder="https://"
-          />
-          <label class="new-prompt-design-ref-label" for="new-prompt-ref-url-2"
-            >Reference URL 2</label
-          >
-          <input
-            class="new-prompt-design-ref-input"
-            type="url"
-            id="new-prompt-ref-url-2"
-            inputmode="url"
-            autocomplete="off"
-            placeholder="https://"
+            placeholder="https://example.com"
           />
           <label class="new-prompt-design-ref-label" for="new-prompt-design-ref-notes"
-            >What to borrow (optional, max ~800 chars)</label
+            >Additional notes (optional, max ~800 chars)</label
           >
           <textarea
             class="new-prompt-design-ref-input"
@@ -1363,7 +1350,7 @@
             rows="2"
             maxlength="800"
             autocomplete="off"
-            placeholder="e.g. split hero, dense header nav, editorial product grid…"
+            placeholder="e.g. focus on the hero section and pricing table…"
           ></textarea>
         </details>
         <div
@@ -1491,22 +1478,17 @@
       </div>
     </div>
 
-    <div
-      id="auth-overlay"
-      class="hidden"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="auth-title"
-      aria-describedby="auth-description"
-      aria-hidden="true"
-    >
-      <div class="auth-box" role="document">
+    <div id="auth-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      <div class="auth-box">
+        <button class="auth-close-btn" id="auth-close-btn" type="button" aria-label="Close sign-in dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
         <div class="auth-logo">SHIP FAST</div>
-        <h2 class="auth-title" id="auth-title">Sign in to continue</h2>
-        <p class="auth-description" id="auth-description">
-          Use a social account, or sign in with email and password.
-        </p>
-        <button class="auth-btn" id="google-signin-btn" type="button" aria-describedby="auth-description">
+        <p class="auth-title" id="auth-title">Sign in to continue</p>
+        <button class="auth-btn" id="google-signin-btn" type="button" aria-label="Sign in with Google">
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
             <path
               fill="#4285F4"
@@ -1527,7 +1509,7 @@
           </svg>
           Sign in with Google
         </button>
-        <button class="auth-btn" id="github-signin-btn" type="button" aria-describedby="auth-description">
+        <button class="auth-btn" id="github-signin-btn" type="button" aria-label="Sign in with GitHub">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path
               d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
@@ -1536,34 +1518,35 @@
           Sign in with GitHub
         </button>
         <div class="auth-divider">or</div>
-        <form id="auth-email-form" class="auth-email-form" novalidate>
-          <label class="auth-field" for="auth-email">
-            <span>Email</span>
+        <form id="auth-form" novalidate>
+          <div class="auth-field">
+            <label for="auth-email" class="auth-label">Email</label>
             <input
               class="auth-input"
               type="email"
               id="auth-email"
               name="email"
+              placeholder="Email"
               autocomplete="email"
-              inputmode="email"
               required
               aria-describedby="auth-error"
             />
-          </label>
-          <label class="auth-field" for="auth-password">
-            <span>Password</span>
+          </div>
+          <div class="auth-field">
+            <label for="auth-password" class="auth-label">Password</label>
             <input
               class="auth-input"
               type="password"
               id="auth-password"
               name="password"
+              placeholder="Password"
               autocomplete="current-password"
               required
               aria-describedby="auth-error"
             />
-          </label>
+          </div>
           <div class="auth-email-row">
-            <button class="auth-btn" id="email-signin-btn" type="submit">Sign in</button>
+            <button class="auth-btn" id="email-signin-btn" type="submit" formaction="#" formmethod="post">Sign in</button>
             <button class="auth-btn" id="email-signup-btn" type="button">Create account</button>
           </div>
         </form>
