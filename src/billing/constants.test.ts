@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { isIpWhitelisted, MAX_FREE_PER_MONTH, MAX_PAID_PER_MONTH, parseWhitelistedIps } from './constants'
+import {
+  isIpWhitelisted,
+  MAX_FREE_PER_MONTH,
+  MAX_PAID_PER_MONTH,
+  parseWhitelistedIps,
+} from './constants'
 
 describe('billing limits', () => {
   it('keeps the paid generation quota above the free quota', () => {

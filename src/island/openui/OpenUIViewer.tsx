@@ -7,7 +7,7 @@ import {
 } from '@ship-fast/blocks'
 import { preprocessOpenUIResponse } from '../../../packages/ship-fast-engine/src/lib/openui-preprocess'
 import { Component, useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
-import { I18nProvider, T } from './_providers/translation';
+import { I18nProvider, T } from './_providers/translation'
 
 // NOTE: We use a plain QueryClientProvider here (not PersistQueryClientProvider).
 // The persist provider from @tanstack/react-query-persist-client resolved a
@@ -129,29 +129,29 @@ export default function OpenUIViewer({
   }, [])
   const rootStyle: CSSProperties = inEmbed
     ? {
-      flex: 1,
-      alignSelf: 'stretch',
-      width: '100%',
-      minWidth: 0,
-      minHeight: '100dvh',
-      height: '100%',
-      borderRadius: 0,
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      boxShadow: 'none',
-    }
+        flex: 1,
+        alignSelf: 'stretch',
+        width: '100%',
+        minWidth: 0,
+        minHeight: '100dvh',
+        height: '100%',
+        borderRadius: 0,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: 'none',
+      }
     : {
-      height: '100%',
-      minHeight: 0,
-      borderRadius: '0 0 12px 12px',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      boxShadow: isStreaming
-        ? '0 0 0 1px color-mix(in srgb, #22d3ee 55%, transparent) inset'
-        : '0 0 0 1px rgba(255,255,255,0.08) inset',
-    }
+        height: '100%',
+        minHeight: 0,
+        borderRadius: '0 0 12px 12px',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: isStreaming
+          ? '0 0 0 1px color-mix(in srgb, #22d3ee 55%, transparent) inset'
+          : '0 0 0 1px rgba(255,255,255,0.08) inset',
+      }
   return (
     <div style={{ height: '100%', width: '100%', ...rootStyle }}>
       {isStreaming && !inEmbed ? <div className="streaming-indicator" aria-hidden="true" /> : null}
@@ -178,7 +178,7 @@ export default function OpenUIViewer({
               medusa={integrations?.medusa || { enabled: false }}
               sessionId={sessionId}
             >
-              <I18nProvider locale={locale || "en"}>
+              <I18nProvider locale={locale || 'en'}>
                 <T>
                   <Renderer
                     response={preprocessOpenUIResponse(response, { resolveRefs: false })}

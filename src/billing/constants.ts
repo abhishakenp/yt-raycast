@@ -39,7 +39,12 @@ export const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
 
 /** IP addresses whitelisted from rate limiting (comma-separated in env, or array) */
 export function parseWhitelistedIps(raw: string | null | undefined): string[] {
-  return raw ? raw.split(',').map((ip) => ip.trim()).filter(Boolean) : []
+  return raw
+    ? raw
+        .split(',')
+        .map((ip) => ip.trim())
+        .filter(Boolean)
+    : []
 }
 
 const rawWhitelist = process.env.WHITELISTED_IPS || ''
