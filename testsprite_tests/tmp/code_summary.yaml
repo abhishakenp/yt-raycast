@@ -1,0 +1,168 @@
+version: "2"
+type: frontend
+tech_stack:
+  - JavaScript
+  - TypeScript
+  - Express
+  - Bun
+  - Tailwind CSS v4
+  - Radix UI
+  - Firebase Auth
+  - React 19
+  - WebSocket
+routes:
+  - path: /
+    file: src/server/public-pages.js
+    auth_required: false
+    description: Marketing homepage with AI prompt form, public session gallery, and auth overlay
+  - path: /pricing
+    file: src/server/pricing-page.js
+    auth_required: false
+    description: Pricing page with plan comparison and sign-in CTA
+  - path: /privacy
+    file: src/server/privacy-page.js
+    auth_required: false
+    description: Privacy policy static page
+  - path: /session/:id
+    file: public/dashboard.html
+    auth_required: false
+    description: Live generation dashboard with progress, preview iframe, and chat studio
+  - path: /preview/:sessionId
+    file: packages/ship-fast-engine/src/renderers/
+    auth_required: false
+    description: Generated website preview with inline editor tools
+  - path: /studio/*
+    file: src/server/sanity-studio-static.js
+    auth_required: true
+    description: Embedded Sanity CMS studio for provisioned sessions
+features:
+  - name: Homepage Generation
+    description: User enters a website prompt on the homepage and creates a new generation session
+    files:
+      - src/scripts/homepage.ts
+      - src/scripts/home-session-embed.ts
+      - packages/ship-fast-engine/src/pipeline/phase-homepage.js
+    entry_route: /
+    user_interactions:
+      - Type project description in prompt input field
+      - Select prompt language from dropdown
+      - Optionally add design reference URLs
+      - Submit prompt form to start generation
+      - View public gallery of recent sessions
+      - Open auth overlay when anonymous quota is exhausted
+    api_calls:
+      - method: POST
+        endpoint: /api/sessions
+      - method: GET
+        endpoint: /api/sessions/recent
+      - method: POST
+        endpoint: /api/prompt-suggestions
+    auth_required: false
+  - name: User Authentication
+    description: Sign in or sign up via Google, GitHub, or email using Firebase Auth
+    files:
+      - src/scripts/top-actions-auth.ts
+      - src/scripts/dashboard-auth.ts
+    entry_route: /
+    user_interactions:
+      - Click Sign in button in top navigation
+      - Choose Google, GitHub, or email sign-in method
+      - Fill email and password for email auth
+      - Complete sign-up flow for new accounts
+      - Sign out from account menu
+    api_calls:
+      - method: GET
+        endpoint: /api/config
+      - method: POST
+        endpoint: /api/sessions/claim
+    auth_required: false
+  - name: Session Dashboard
+    description: Watch live generation progress and preview the generated site in an iframe
+    files:
+      - src/scripts/dashboard-main.ts
+      - public/dashboard.html
+      - src/server/websocket.js
+    entry_route: /session/:id
+    user_interactions:
+      - View generation task list and progress logs
+      - Watch preview iframe load generated homepage
+      - Toggle desktop and mobile preview sizes
+      - Refresh preview after generation completes
+      - Navigate back to homepage
+      - Open debug panel with debug query param
+    api_calls:
+      - method: GET
+        endpoint: /api/sessions/:id
+      - method: GET
+        endpoint: /api/sessions/:id/preview-html
+    auth_required: false
+  - name: Preview Editor
+    description: Edit generated site content inline within the preview iframe
+    files:
+      - src/scripts/preview-tools/
+      - src/scripts/preview-editor/
+    entry_route: /preview/:sessionId
+    user_interactions:
+      - Select elements in the preview
+      - Edit text, colors, spacing, and layout
+      - Save inline text and style changes
+      - Restore previous edits from history
+    api_calls:
+      - method: POST
+        endpoint: /api/sessions/:id/preview-inline-text
+      - method: POST
+        endpoint: /api/sessions/:id/preview-inline-style
+      - method: GET
+        endpoint: /api/sessions/:id/history
+    auth_required: false
+  - name: Chat Studio
+    description: Chat-based editing and CMS configuration for generated sessions
+    files:
+      - src/scripts/dashboard-main.ts
+    entry_route: /session/:id
+    user_interactions:
+      - Send chat messages to refine the generated site
+      - Upload images for CMS content
+      - Edit CMS site settings
+      - Open Sanity studio embed
+    api_calls:
+      - method: GET
+        endpoint: /api/sessions/:id/chat
+      - method: POST
+        endpoint: /api/sessions/:id/chat
+      - method: POST
+        endpoint: /api/sessions/:id/edit
+      - method: PATCH
+        endpoint: /api/sessions/:id/cms/site-settings
+    auth_required: false
+  - name: Export and Payments
+    description: Export generated site and unlock premium features via Stripe or Razorpay
+    files:
+      - src/billing/
+      - src/server/next-api-port.js
+    entry_route: /session/:id
+    user_interactions:
+      - View export target options
+      - Open payment modal for premium features
+      - Start Stripe or Razorpay checkout
+      - Download exported zip file
+    api_calls:
+      - method: GET
+        endpoint: /api/sessions/:id/export-targets
+      - method: POST
+        endpoint: /api/sessions/:id/export
+      - method: POST
+        endpoint: /api/payments/stripe/start
+      - method: GET
+        endpoint: /api/subscription-status
+    auth_required: true
+known_limitations:
+  - issue: /terms page is linked in footer but has no Express route registered
+    location: src/server/index.js
+    impact: Terms link redirects to homepage instead of showing terms content
+  - issue: Coupon validation API called from dashboard but no server handler exists
+    location: src/scripts/dashboard-main.ts
+    impact: Coupon field in payment modal may fail silently
+  - issue: Anonymous sessions are limited to 2 generations per day
+    location: src/billing/constants.ts
+    impact: Unauthenticated users hit quota and must sign in to continue

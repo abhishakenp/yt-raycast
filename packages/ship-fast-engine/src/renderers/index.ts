@@ -1,5 +1,6 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { buildPreviewSeoHead } from '@ship-fast/aeo'
 import { resolveThemeStyles, THEME_CATALOG } from '@ship-fast/blocks'
 import type { SiteSpecProject } from '../spec/index.ts'
@@ -7,6 +8,29 @@ import type { ExtractedTokens } from '../clone/types.ts'
 import { looksSerif } from '../clone/tokens.ts'
 
 const HOME_OPENUI_FILE = 'home.openui'
+const TAILWIND_BROWSER_SCRIPT_RELATIVE = 'scripts/tailwind-browser.js'
+const RENDERER_DIR = dirname(fileURLToPath(import.meta.url))
+
+function readTailwindBrowserScript(): string {
+  const candidatePaths = [
+    join(process.cwd(), 'public', TAILWIND_BROWSER_SCRIPT_RELATIVE),
+    join(RENDERER_DIR, '..', '..', '..', '..', 'public', TAILWIND_BROWSER_SCRIPT_RELATIVE),
+  ]
+  for (const path of candidatePaths) {
+    try {
+      if (existsSync(path)) return readFileSync(path, 'utf8')
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return ''
+}
+
+function attachTailwindBrowserScript(files: Record<string, string>) {
+  const script = readTailwindBrowserScript()
+  if (script) files[TAILWIND_BROWSER_SCRIPT_RELATIVE] = script
+  return files
+}
 
 // --- Per-site visual identity --------------------------------------------------
 // Registry modules use Tailwind token classes. During SSR we derive a
@@ -552,7 +576,7 @@ export default function Page() {
     throw new Error(`Unsupported export target: ${target}`)
   }
 
-  return { files }
+  return { files: attachTailwindBrowserScript(files) }
 }
 
 export function writeRenderedFiles(baseDir: string, files: Record<string, string>) {
@@ -612,7 +636,7 @@ ${themeHead}
   <script type="module" src="/scripts/openui-island.js"></script>
 </body>
 </html>`
-  writeRenderedFiles(workspace, { 'index.html': html })
+  writeRenderedFiles(workspace, attachTailwindBrowserScript({ 'index.html': html }))
 }
 
 export function writeNextAppToWorkspace(siteSpec: SiteSpecProject, workspace: string, session?: any, options?: any) {

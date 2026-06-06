@@ -7,6 +7,7 @@ import { preferMixedEnglishBcp47FromSnippet } from '../lib/home/mixed-english-hi
 import { preferRomanizedBcp47FromSnippet } from '../config/languages.js'
 import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
 import { LOCAL_DEV_PROMPT_SHORTCUTS } from '../lib/home/sample-prompts'
+import { getRandomPrompt } from '../lib/home/random-prompt'
 
 declare const __SF_DEV_SCRIPTS__: boolean
 import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed'
@@ -1036,6 +1037,7 @@ function stepSamplePromptAnimation(): void {
   }
 
   samplePromptIndex = (samplePromptIndex + 1) % SAMPLE_PROMPTS.length
+  SAMPLE_PROMPTS[samplePromptIndex] = getRandomPrompt()
   samplePromptMode = 'typing'
   scheduleSamplePromptStep(260)
 }

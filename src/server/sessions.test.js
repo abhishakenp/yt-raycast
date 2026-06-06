@@ -65,6 +65,12 @@ describe('session disk recovery', () => {
       'user-a',
       { isPrivate: true },
     )
+    for (const session of [publicSession, privateSession]) {
+      writeFileSync(join(session.workspace, 'index.html'), '<!doctype html><h1>Generated</h1>')
+      writeFileSync(join(session.workspace, 'cost.txt'), '0.01')
+      session.homepageReady = true
+      session.cost = 0.01
+    }
 
     invalidatePublicGallery()
     const galleryIds = getPublicGalleryList(0).map((session) => session.id)

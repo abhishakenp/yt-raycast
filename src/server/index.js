@@ -245,7 +245,55 @@ export function canReadOpenUIArtifactWithoutOwner(session) {
   return Boolean(session) && !session.userId && session.isPrivate !== true
 }
 
+const GIBBERISH_PROBE_WORDS = new Set([
+  'test',
+  'asdf',
+  'asdfg',
+  'qwer',
+  'qwerty',
+  'hello',
+  'hi',
+  'hey',
+  'ok',
+  'okay',
+  'cool',
+  'nice',
+  'yo',
+  'yeah',
+  'yep',
+  'nope',
+  'lol',
+  'lmao',
+  'haha',
+  'wow',
+  'omg',
+  'wtf',
+  'fff',
+  'ggg',
+  'xxx',
+  'zzz',
+  'aaa',
+  'bbb',
+  'ccc',
+])
+
+const GIBBERISH_KEYBOARD_PATTERNS = ['asdf', 'qwerty', 'zxcvb', '123456', 'abcde', 'qazwsx']
+
 function isGibberishPrompt(text) {
+  if (text.length < 5) return true
+
+  const lowerText = text.toLowerCase().trim()
+  if (GIBBERISH_PROBE_WORDS.has(lowerText)) return true
+
+  const alphaNum = text.replace(/[^a-zA-Z0-9]/g, '')
+  if (alphaNum.length === 0 && text.length > 0) return true
+
+  if (/(.)\1{4,}/.test(text)) return true
+
+  for (const pattern of GIBBERISH_KEYBOARD_PATTERNS) {
+    if (lowerText.includes(pattern)) return true
+  }
+
   const uniqueChars = new Set(text.replace(/\s/g, '')).size
   if (text.length >= 70 && uniqueChars < 10) return true
 
