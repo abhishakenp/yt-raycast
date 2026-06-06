@@ -213,7 +213,7 @@ const httpContractsPromise = import('@ship-fast/engine/contracts/http-contracts.
 
 // Owner IP whitelist — bypasses all rate limits (comma-separated in env, or hardcoded fallback)
 const WHITELISTED_IPS = new Set(
-  (process.env.WHITELIST_IPS || '')
+  (process.env.WHITELISTED_IPS || '')
     .split(',')
     .map((ip) => ip.trim())
     .filter(Boolean),
