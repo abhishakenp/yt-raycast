@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { isGatewayConfigured, resolvePaymentCurrency, resolvePaymentGateway } from './payment-routing.js'
+import {
+  isGatewayConfigured,
+  resolvePaymentCurrency,
+  resolvePaymentGateway,
+} from './payment-routing.js'
 
 describe('payment routing', () => {
   it('routes India to Razorpay for UPI support', () => {

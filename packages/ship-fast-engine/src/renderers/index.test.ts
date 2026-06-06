@@ -19,14 +19,14 @@ const siteSpec = {
 
 const expectNoTailwindCdn = (html: string) => {
   expect(html).not.toMatch(/cdn\.tailwindcss\.com/i)
-  expect(html).toContain('openui-preview-tailwind.css')
+  expect(html).toContain('tailwind-browser.js')
 }
 
 describe('renderer Tailwind preview CSS', () => {
   it('uses a local Tailwind CSS asset for static HTML exports', () => {
     const rendered = renderProject(siteSpec as any, 'html')
     expectNoTailwindCdn(rendered.files['index.html'])
-    expect(rendered.files['styles/openui-preview-tailwind.css']).toMatch(/\.bg-background|--color-background/)
+    expect(rendered.files['scripts/tailwind-browser.js']).toContain('tailwind')
   })
 
   it('uses a local Tailwind CSS asset for OpenUI preview shells', () => {
@@ -35,8 +35,8 @@ describe('renderer Tailwind preview CSS', () => {
       writeFileSync(join(workspace, 'home.openui'), 'page Home { Text "Hello" }')
       renderPreviewToWorkspace(siteSpec as any, workspace)
       expectNoTailwindCdn(readFileSync(join(workspace, 'index.html'), 'utf8'))
-      expect(readFileSync(join(workspace, 'styles/openui-preview-tailwind.css'), 'utf8')).toMatch(
-        /\.bg-background|--color-background/,
+      expect(readFileSync(join(workspace, 'scripts/tailwind-browser.js'), 'utf8')).toContain(
+        'tailwind',
       )
     } finally {
       rmSync(workspace, { recursive: true, force: true })

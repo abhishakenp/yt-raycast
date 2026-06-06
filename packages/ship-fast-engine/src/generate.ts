@@ -9,6 +9,21 @@ import { talaasChat } from "./talaas.ts"
 
 const RETRYABLE = /\b(503|429|500|502|504)\b|unavailable|overload|high demand|try again|rate.?limit|temporar|timeout/i
 
+/** Auth/config failures should not silently degrade to placeholder site output. */
+export function isHardLlmFailure(err: unknown): boolean {
+  const msg = String((err as { message?: string })?.message ?? err)
+  return /invalid api key|401|403|unauthorized|authentication|api[_ ]?key|groq_api_key|gemini_api_key/i.test(
+    msg,
+  )
+}
+
+export function formatLlmFailureMessage(err: unknown): string {
+  const detail = String((err as { message?: string })?.message ?? err).trim()
+  return detail
+    ? `Model API unavailable (${detail}). Check GROQ_API_KEY and restart the dev server after updating .env.`
+    : "Model API unavailable. Check GROQ_API_KEY and restart the dev server after updating .env."
+}
+
 function sleep(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     const t = setTimeout(resolve, ms)
