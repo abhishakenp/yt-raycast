@@ -37,9 +37,24 @@ await build({
   },
 })
 
-// REMOVED: openui-island bundle - now using vanilla JS client (openui-preview-client.js)
-// The React-based OpenUI island has been replaced with server-side rendering + vanilla JS client
-// to eliminate React dependency from the client side for generated content.
+// Build openui-island bundle for client-side React rendering
+await build({
+  entryPoints: [{ in: 'src/island/openui/entry.tsx', out: 'openui-island' }],
+  bundle: true,
+  outdir: 'public/scripts',
+  format: 'esm',
+  splitting: true,
+  chunkNames: 'chunks/[name]-[hash]',
+  target: ['es2020'],
+  platform: 'browser',
+  jsx: 'automatic',
+  sourcemap: false,
+  minify: true,
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'process.env': '{}',
+  },
+})
 
 // Tailwind v4 moved the CLI out of the `tailwindcss` package into
 // `@tailwindcss/cli` (the base package no longer ships a bin), so `bunx

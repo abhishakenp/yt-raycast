@@ -1749,6 +1749,44 @@ ${themeHead}
       sendSSEEvent(res, message.type, message)
     }
 
+    // Trigger auto-build exports for all sessions (both anonymous and authenticated)
+    // Payment gate is enforced on download endpoint, so no auth check needed here
+    console.log(`[SSE] Export check for session ${session.id}:`, {
+      homepageReady,
+      siteSpecReady,
+    })
+    if (homepageReady && siteSpecReady) {
+      const { getSessionExportTargets } = await import('./exports.js')
+      const currentTargets = getSessionExportTargets(session)
+      const hasAnyExport = currentTargets.some((t) => t.ready)
+      
+      console.log(`[SSE] Export targets for session ${session.id}:`, {
+        hasAnyExport,
+        targetCount: currentTargets.length,
+        targets: currentTargets.map((t) => ({ target: t.target, ready: t.ready })),
+      })
+      
+      if (!hasAnyExport) {
+        console.log(`[SSE] Triggering auto-build exports for existing session ${session.id}`)
+        const sessionCtx = makeSessionState(session)
+        for (const target of ['html', 'react', 'nextjs']) {
+          try {
+            console.log(`[SSE] Generating ${target} export for existing session ${session.id}`)
+            generateSessionExport(session, target)
+            console.log(`[SSE] Broadcasting export_ready for ${target} to session ${session.id}`)
+            sessionCtx.broadcast({ type: 'export_ready', target })
+          } catch (err) {
+            console.error(`[SSE] ${target} export failed: ${err.message}`)
+          }
+        }
+        console.log(`[SSE] Auto-build exports completed for existing session ${session.id}`)
+      } else {
+        console.log(`[SSE] Exports already exist for session ${session.id}, skipping auto-build`)
+      }
+    } else {
+      console.log(`[SSE] Skipping auto-build exports for session ${session.id} (conditions not met)`, { homepageReady, siteSpecReady })
+    }
+
     // Send keepalive every 30 seconds to prevent timeout
     const keepaliveInterval = setInterval(() => {
       if (!sendSSEKeepalive(res)) {
@@ -3005,33 +3043,29 @@ ${themeHead}
       if (!session) return res.status(404).send('Session not found')
       const fp = filePathForPreviewRequest(session.workspace, req)
       
-      // For index.html, try dynamic OpenUI SSR first
+      // For index.html, serve client shell with React bundle for interactivity
       if (fp && extname(fp) === '.html' && (fp.endsWith('index.html') || fp.endsWith('/index.html'))) {
         const openuiPath = join(session.workspace, 'home.openui')
         if (existsSync(openuiPath)) {
           try {
-            const source = readFileSync(openuiPath, 'utf8')
             const brand = session.prompt?.slice(0, 50) || 'Generated Site'
-            const themeHead = buildThemeHead(`${brand}\n${source}`, null)
-            const { html, cssVars } = renderOpenUIToHTMLWithTheme(source, null, session.preferredLanguage || 'en', null)
+            const themeHead = buildThemeHead(`${brand}\n`, null)
             const siteSpec = readFileSync(join(session.workspace, 'site-spec.json'), 'utf8')
             const siteSpecData = JSON.parse(siteSpec)
             const previewSeoHead = buildPreviewSeoHead(siteSpecData, brand, String(siteSpecData?.tagline || ''))
             
-            const dynamicHtml = `<!DOCTYPE html>
+            // Client shell HTML that loads React bundle for interactive rendering
+            const clientShellHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   ${previewSeoHead}
   <script src="/scripts/tailwind-browser.js"></script>
 ${themeHead}
-  <style>
-    #openui-root {
-      ${cssVars || ''}
-    }
-  </style>
+  <link rel="stylesheet" href="/styles/openui-preview-launch-loading.css">
 </head>
 <body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root">${html}</div>
+  <div id="openui-root"></div>
+  <script type="module" src="/scripts/openui-island.js"></script>
 </body>
 </html>`
             
@@ -3039,7 +3073,7 @@ ${themeHead}
               .type('html')
               .send(
                 injectPreviewToolsHtml(
-                  dynamicHtml,
+                  clientShellHtml,
                   req.params.sessionId,
                   session.preferredLanguage,
                   session.workspace,
@@ -3048,7 +3082,7 @@ ${themeHead}
               )
             return
           } catch (err) {
-            console.error('[OpenUI SSR] Failed:', err)
+            console.error('[OpenUI Client Shell] Failed:', err)
             // Fall through to static file serving
           }
         }
