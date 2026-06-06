@@ -737,6 +737,27 @@ export function sessionBroadcast(session, msg) {
   }
 }
 
+/** Broadcast a message to all SSE clients in a session */
+export async function sessionBroadcastSSE(session, msg) {
+  if (msg.type === 'status') session.lastStatus = msg
+  rememberOpenUIStreamMessage(session, msg)
+  if (String(msg.type || '').startsWith('openui_') || msg.type === 'openui-error') {
+    const route = typeof msg.route === 'string' ? msg.route : '/'
+    const sourcePreview = typeof msg.source === 'string' ? msg.source.length : null
+    const tokenPreview = typeof msg.token === 'string' ? msg.token.length : null
+    console.log('[SessionBroadcastSSE] openui', {
+      sessionId: session.id,
+      type: msg.type,
+      route,
+      sourceLen: sourcePreview,
+      tokenLen: tokenPreview,
+    })
+  }
+  // Import SSE utilities dynamically to avoid circular dependency
+  const { sseClients } = await import('./sse.js')
+  sseClients.broadcast(session.id, msg.type, msg)
+}
+
 function normalizeOpenUIStreamRoute(route) {
   const value = typeof route === 'string' && route.trim() ? route.trim() : '/'
   return value.startsWith('/') ? value : `/${value}`
@@ -829,7 +850,11 @@ export function broadcastToAllSessions(msg) {
 
 /** Build session-scoped state helpers for the pipeline */
 export function makeSessionState(session) {
-  const broadcast = (msg) => sessionBroadcast(session, msg)
+  const broadcast = (msg) => {
+    sessionBroadcast(session, msg)
+    // Also broadcast to SSE clients (fire and forget)
+    sessionBroadcastSSE(session, msg).catch(() => {})
+  }
 
   const setPrompt = (prompt) => {
     session.prompt = prompt

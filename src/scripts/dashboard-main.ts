@@ -13,17 +13,6 @@ const SF_EMBED_HOME = (() => {
   }
 })()
 const PREVIEW_BASE = `${location.origin}/preview/${SESSION_ID}`
-const WS_HOST = (() => {
-  // When served from Next.js (port 3000), Express WS is on port 7420
-  // In production (HTTPS), use hostname without port for WSS
-  const h = location.hostname
-  const p = location.port
-  const isHttps = location.protocol === 'https:'
-  if (isHttps) return h
-  if (p === '3000' || p === '') return `${h}:7420`
-  return location.host
-})()
-const WS_URL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${WS_HOST}?session=${SESSION_ID}`
 const TYPING_SPEED_MS = 40
 const PAYMENT_COUNTRY_HINT = detectCountryHint()
 let deploymentState = null
@@ -652,7 +641,7 @@ function populateCmsForm(siteSettings) {
   const sync = document.getElementById('cms-shipChatSyncedAt')
   if (sync) sync.textContent = s.shipChatSyncedAt ? String(s.shipChatSyncedAt) : '—'
 }
-let ws = null
+let eventSource = null
 let reconnectTimer = null
 let leavingDashboard = false
 const DEV_PROMPT_EXAMPLES = [
@@ -666,13 +655,13 @@ function cleanupRealtime() {
     clearTimeout(reconnectTimer)
     reconnectTimer = null
   }
-  if (ws) {
-    ws.onclose = null
-    ws.onerror = null
+  if (eventSource) {
+    eventSource.onopen = null
+    eventSource.onerror = null
     try {
-      ws.close(1000, 'navigate_home')
+      eventSource.close()
     } catch {}
-    ws = null
+    eventSource = null
   }
 }
 
@@ -4563,19 +4552,20 @@ initPreviewChat()
 initPreviewSiteRail()
 hydrateCurrentPalette()
 
-// ─── WebSocket: Connect to server ─────────────────────────
-function connectWS() {
-  ws = new WebSocket(WS_URL)
+// ─── SSE: Connect to server ─────────────────────────
+function connectSSE() {
+  const SSE_URL = `/api/sessions/${SESSION_ID}/stream`
+  eventSource = new EventSource(SSE_URL)
 
-  ws.onopen = () => {
+  eventSource.onopen = () => {
     wsConnected = true
-    debugLog('ws_connected', null)
+    debugLog('sse_connected', null)
     if (!introActive && !hydratedComplete) {
       document.getElementById('phase-text').textContent = 'Connected. Waiting for updates'
     }
   }
 
-  ws.onmessage = (e) => {
+  eventSource.addEventListener('message', (e) => {
     let ev
     try {
       ev = JSON.parse(e.data)
@@ -4834,22 +4824,19 @@ function connectWS() {
         appendLog(ev.message || '')
         break
     }
-  }
+  })
 
-  ws.onclose = () => {
+  eventSource.onerror = () => {
     wsConnected = false
-    debugLog('ws_disconnected', null)
-    ws = null
+    debugLog('sse_disconnected', null)
+    eventSource.close()
+    eventSource = null
     if (!leavingDashboard) {
       reconnectTimer = setTimeout(() => {
         reconnectTimer = null
-        connectWS()
+        connectSSE()
       }, 1500)
     }
-  }
-
-  ws.onerror = () => {
-    ws.close()
   }
 }
 
@@ -5373,7 +5360,7 @@ function beginSessionDashboard(session) {
   } else {
     startIntro()
   }
-  connectWS()
+  connectSSE()
 }
 
 apiFetch(`/api/sessions/${SESSION_ID}`)
@@ -5383,7 +5370,7 @@ apiFetch(`/api/sessions/${SESSION_ID}`)
   })
   .catch(() => {
     startIntro()
-    connectWS()
+    connectSSE()
   })
 
 // ─── New prompt overlay ─────────────────────────────────

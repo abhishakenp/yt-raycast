@@ -85,6 +85,10 @@ import {
   syncSessionPreviewFromSanity,
 } from './exports.js'
 import { broadcastDevReload, setupWebSocket } from './websocket.js'
+import { initSSEResponse, sendSSEEvent, sendSSEKeepalive, sseClients } from './sse.js'
+
+// Keep WebSocket for dev reload only (devReload=1 query param)
+// SSE is used for session streaming instead of WebSocket
 import { generateAlternativeDesign, runAll, runEdit } from '@ship-fast/engine/pipeline/runner.js'
 import { existsSync, mkdirSync, readFileSync, unlinkSync, watch, writeFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
@@ -1680,6 +1684,80 @@ ${themeHead}
     const theme = readSiteSpecThemeColors(session.workspace)
     const locale = readSiteSpecLocale(session.workspace)
     res.json({ source, theme, locale })
+  })
+
+  // ─── SSE: Session streaming endpoint ─────────────────────────
+  app.get('/api/sessions/:id/stream', optionalAuth, async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' })
+    }
+
+    // Check access control
+    const publicAnonymousPreview = canReadOpenUIArtifactWithoutOwner(session)
+    if (!publicAnonymousPreview && !ensureSessionArtifactAccess(req, res, session)) {
+      return
+    }
+
+    // Initialize SSE connection
+    initSSEResponse(res)
+    sseClients.add(session.id, res)
+
+    console.log('[SSE] Incoming connection', {
+      sessionId: session.id,
+      remoteAddress: req.ip,
+    })
+
+    // Send current state to newly connected client
+    const {
+      prompt,
+      lastStatus,
+      tasks,
+      homepageReady,
+      siteSpecReady,
+      alternativeDesign,
+      themeOverride,
+      deployment,
+    } = session
+
+    if (prompt) sendSSEEvent(res, 'prompt', { text: prompt })
+    if (lastStatus) sendSSEEvent(res, 'status', lastStatus)
+    if (tasks.length > 0) sendSSEEvent(res, 'tasks_loaded', { tasks })
+    if (siteSpecReady) sendSSEEvent(res, 'site_spec_ready', { ready: true })
+    if (homepageReady) sendSSEEvent(res, 'homepage_ready', {})
+    if (alternativeDesign) sendSSEEvent(res, 'alternative_design_ready', { design: alternativeDesign })
+    if (themeOverride) sendSSEEvent(res, 'theme_override_loaded', { theme: themeOverride })
+    if (deployment?.url) {
+      sendSSEEvent(res, 'deployed', { slug: deployment.slug, url: deployment.url })
+    }
+
+    // Replay OpenUI stream messages
+    const { getOpenUIStreamReplayMessages } = await import('./sessions.js')
+    for (const message of getOpenUIStreamReplayMessages(session, '/')) {
+      sendSSEEvent(res, message.type, message)
+    }
+
+    // Send keepalive every 30 seconds to prevent timeout
+    const keepaliveInterval = setInterval(() => {
+      if (!sendSSEKeepalive(res)) {
+        clearInterval(keepaliveInterval)
+      }
+    }, 30000)
+
+    // Cleanup on connection close
+    res.on('close', () => {
+      clearInterval(keepaliveInterval)
+      sseClients.remove(session.id, res)
+    })
+
+    res.on('error', (error) => {
+      console.warn('[SSE] Connection error', {
+        sessionId: session.id,
+        message: error?.message || String(error),
+      })
+      clearInterval(keepaliveInterval)
+      sseClients.remove(session.id, res)
+    })
   })
 
   app.get('/api/sessions/:id/preview-html', optionalAuth, async (req, res) => {
