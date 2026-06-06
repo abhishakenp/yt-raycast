@@ -111,6 +111,82 @@ function stripNullsFromArrays(code: string): string {
   return result
 }
 
+/**
+ * Repair a single top-level statement segment whose delimiters never closed
+ * (truncated mid-program LLM output, e.g. `p3 = Faq(... , {tag` followed by a
+ * fresh `p1 = ...` line). Strips the dangling partial token, then closes any
+ * still-open ( [ { in correct nesting order so the broken statement can't
+ * swallow the statements that follow it (which would otherwise leak as raw
+ * text in the rendered output).
+ */
+function balanceSegment(seg: string): string {
+  const trail = (seg.match(/\s*$/)?.[0]) || ''
+  let s = seg.slice(0, seg.length - trail.length)
+
+  // Strip trailing incomplete tokens (order matters; loop until stable).
+  let prev = ''
+  while (s !== prev) {
+    prev = s
+    s = s.replace(/,\s*$/, '') // dangling comma
+    s = s.replace(/,?\s*\{\s*[A-Za-z_$][\w]*\s*$/, '') // dangling "{tag" (open obj + bare key)
+    s = s.replace(/[,(]\s*[A-Za-z_$][\w]*\s*$/, (m) => m[0]) // partial ident arg → keep delimiter
+  }
+
+  // Walk delimiters with a stack so we close in the right order.
+  const stack: string[] = []
+  let inString = false
+  let stringChar = ''
+  let escape = false
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]
+    if (escape) {
+      escape = false
+      continue
+    }
+    if (inString) {
+      if (c === '\\') escape = true
+      else if (c === stringChar) inString = false
+      continue
+    }
+    if (c === '"' || c === "'") {
+      inString = true
+      stringChar = c
+      continue
+    }
+    if (c === '(' || c === '[' || c === '{') stack.push(c)
+    else if (c === ')' || c === ']' || c === '}') {
+      if (stack.length) stack.pop()
+    }
+  }
+  if (inString) s += stringChar
+  const closer: Record<string, string> = { '(': ')', '[': ']', '{': '}' }
+  for (let i = stack.length - 1; i >= 0; i--) s += closer[stack[i]]
+
+  return s + (trail.includes('\n') ? '\n' : '')
+}
+
+/**
+ * Segment the program at top-level `name =` boundaries and balance each segment
+ * independently. This prevents one truncated statement from consuming later
+ * statements (a mid-program truncation that balancePartial — which only repairs
+ * the tail of the whole string — cannot fix). No-op for well-formed input.
+ */
+function balanceStatements(code: string): string {
+  const re = /^[$A-Za-z_][\w]*\s*=/gm
+  const starts: number[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(code))) starts.push(m.index)
+  if (starts.length <= 1) return code
+
+  const segments: string[] = []
+  if (starts[0] > 0) segments.push(code.slice(0, starts[0]))
+  for (let i = 0; i < starts.length; i++) {
+    const end = i + 1 < starts.length ? starts[i + 1] : code.length
+    segments.push(balanceSegment(code.slice(starts[i], end)))
+  }
+  return segments.join('')
+}
+
 function balancePartial(code: string): string {
   let inString = false
   let stringChar = ''
@@ -178,6 +254,10 @@ export function preprocessOpenUIResponse(
     .replace(/^```[a-z-]*\n?/i, '')
     .replace(/\n?```\s*$/, '')
     .replace(/Action\([^)]*\)/g, 'null')
+
+  // Repair truncated mid-program statements before any ref resolution so a
+  // broken statement can't swallow the ones after it (which leak as raw text).
+  result = balanceStatements(result)
 
   if (resolveRefs) result = resolveVariables(result)
   result = sanitizePartialImages(result)
