@@ -30,6 +30,8 @@
   --ring-strong: rgba(255, 255, 255, 0.4);
   --glow: rgba(138, 180, 255, 0.2);
   --glow-strong: rgba(138, 180, 255, 0.32);
+  --top-actions-inset-block: 24px;
+  --top-actions-inset-inline: 48px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur: 320ms;
   --stitch-bg: #070710;
@@ -181,7 +183,7 @@ select {
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  padding: 16px 24px;
+  padding: var(--top-actions-inset-block) var(--top-actions-inset-inline);
   background: transparent;
   /* Transparent full-width strip — don't let it swallow clicks on content that
      scrolls beneath it; re-enable hits only on the real controls below. */
@@ -404,6 +406,13 @@ select {
 }
 
 @media (max-width: 600px) {
+  .top-actions {
+    --top-actions-inset-block: 16px;
+    --top-actions-inset-inline: 24px;
+    padding: var(--top-actions-inset-block) var(--top-actions-inset-inline);
+    gap: 6px;
+  }
+
   .top-action-link,
   #signout-btn,
   #signin-btn {
