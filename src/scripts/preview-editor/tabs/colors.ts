@@ -2,7 +2,8 @@ import { createSwatchRow } from '../controls'
 import type { EditorController } from '../shell'
 import type { PanelOpenPayload, TabContext, TabDef, TokenSwatch } from '../types'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r="0.6" fill="currentColor"/><circle cx="8" cy="5" r="0.6" fill="currentColor"/><circle cx="10.5" cy="7" r="0.6" fill="currentColor"/><circle cx="9" cy="10" r="0.6" fill="currentColor"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r="0.6" fill="currentColor"/><circle cx="8" cy="5" r="0.6" fill="currentColor"/><circle cx="10.5" cy="7" r="0.6" fill="currentColor"/><circle cx="9" cy="10" r="0.6" fill="currentColor"/></svg>'
 
 const COMMON_NEUTRALS = ['#ffffff', '#f3f4f6', '#d1d5db', '#6b7280', '#1f2937', '#000000']
 const TEXT_NEUTRALS = ['#ffffff', '#e5e7eb', '#9ca3af', '#4b5563', '#111827', '#000000']

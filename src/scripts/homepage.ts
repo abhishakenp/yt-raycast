@@ -7,6 +7,7 @@ import { preferMixedEnglishBcp47FromSnippet } from '../lib/home/mixed-english-hi
 import { preferRomanizedBcp47FromSnippet } from '../config/languages.js'
 import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
 import { LOCAL_DEV_PROMPT_SHORTCUTS } from '../lib/home/sample-prompts'
+import { getRandomPrompt } from '../lib/home/random-prompt'
 
 declare const __SF_DEV_SCRIPTS__: boolean
 import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed'
@@ -1042,6 +1043,7 @@ function stepSamplePromptAnimation(): void {
   }
 
   samplePromptIndex = (samplePromptIndex + 1) % SAMPLE_PROMPTS.length
+  SAMPLE_PROMPTS[samplePromptIndex] = getRandomPrompt()
   samplePromptMode = 'typing'
   scheduleSamplePromptStep(260)
 }
@@ -1396,7 +1398,10 @@ if (heroCard) {
     const rect = heroCard.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
-    setHeroGlow(`${Math.max(0, Math.min(100, x)).toFixed(1)}%`, `${Math.max(0, Math.min(100, y)).toFixed(1)}%`)
+    setHeroGlow(
+      `${Math.max(0, Math.min(100, x)).toFixed(1)}%`,
+      `${Math.max(0, Math.min(100, y)).toFixed(1)}%`,
+    )
   })
 
   heroCard.addEventListener('pointerleave', () => {
@@ -1719,8 +1724,7 @@ sessionPageNext?.addEventListener('click', () => {
 window.addEventListener('popstate', () => {
   const params = new URLSearchParams(location.search)
   const page = Math.max(1, parseInt(params.get('page') || '1', 10) || 1)
-  const source: GallerySource =
-    params.get('source') === 'user' && currentUser ? 'user' : 'public'
+  const source: GallerySource = params.get('source') === 'user' && currentUser ? 'user' : 'public'
   if (source === 'user') {
     userGalleryPage = page
     void loadUserSessionsPage()

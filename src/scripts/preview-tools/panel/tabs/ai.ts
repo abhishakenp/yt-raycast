@@ -36,16 +36,49 @@ interface SnapshotState {
 }
 
 const COMPUTED_PROPS: string[] = [
-  'display', 'position', 'width', 'height', 'min-width', 'min-height',
-  'max-width', 'max-height', 'margin', 'padding', 'background',
-  'background-color', 'background-image', 'color', 'border',
-  'border-radius', 'box-shadow', 'opacity', 'font-family', 'font-size',
-  'font-weight', 'font-style', 'line-height', 'letter-spacing',
-  'text-align', 'text-decoration', 'text-transform', 'flex',
-  'flex-direction', 'flex-wrap', 'gap', 'grid-template-columns',
-  'justify-content', 'align-items', 'align-content', 'overflow',
-  'z-index', 'cursor', 'transition', 'transform', 'filter',
-  'visibility', 'outline',
+  'display',
+  'position',
+  'width',
+  'height',
+  'min-width',
+  'min-height',
+  'max-width',
+  'max-height',
+  'margin',
+  'padding',
+  'background',
+  'background-color',
+  'background-image',
+  'color',
+  'border',
+  'border-radius',
+  'box-shadow',
+  'opacity',
+  'font-family',
+  'font-size',
+  'font-weight',
+  'font-style',
+  'line-height',
+  'letter-spacing',
+  'text-align',
+  'text-decoration',
+  'text-transform',
+  'flex',
+  'flex-direction',
+  'flex-wrap',
+  'gap',
+  'grid-template-columns',
+  'justify-content',
+  'align-items',
+  'align-content',
+  'overflow',
+  'z-index',
+  'cursor',
+  'transition',
+  'transform',
+  'filter',
+  'visibility',
+  'outline',
 ]
 
 function serializeComputed(el: Element): Record<string, string> {
@@ -435,7 +468,11 @@ function render(root: HTMLElement, ctx: PanelContext): () => void {
   })
 
   return () => {
-    try { disposeListener() } catch { /* ignore */ }
+    try {
+      disposeListener()
+    } catch {
+      /* ignore */
+    }
     currentRequestId = null
     snapshot = null
   }

@@ -28,7 +28,9 @@ async function getPublishableKey(req) {
   const sessionCfg = await resolveSessionMedusaConfig(sessionId)
   // Prefer the session's tenant URL when a session is provisioned — otherwise
   // multi-tenant storefronts would all be funneled into MEDUSA_BACKEND_URL.
-  const sessionBaseUrl = String(sessionCfg?.backendUrl || '').trim().replace(/\/$/, '')
+  const sessionBaseUrl = String(sessionCfg?.backendUrl || '')
+    .trim()
+    .replace(/\/$/, '')
   const baseUrl = sessionBaseUrl || DEFAULT_BASE_URL()
 
   const headerKey = String(req?.headers?.['x-medusa-publishable-key'] || '').trim()
@@ -133,7 +135,9 @@ export function createMedusaStoreRouter() {
   r.get('/config', async (req, res) => {
     const c = await getMedusaStoreConfig(req)
     const sessionCfg = await resolveSessionMedusaConfig(String(req?.query?.sessionId || '').trim())
-    const sessionBaseUrl = String(sessionCfg?.backendUrl || '').trim().replace(/\/$/, '')
+    const sessionBaseUrl = String(sessionCfg?.backendUrl || '')
+      .trim()
+      .replace(/\/$/, '')
     res.json({
       enabled: Boolean(c),
       backendUrl: sessionBaseUrl || DEFAULT_BASE_URL(),
@@ -166,7 +170,10 @@ export function createMedusaStoreRouter() {
     const config = await getMedusaStoreConfig(req)
     if (!config) return res.status(503).json({ error: 'Medusa Store API not configured' })
     try {
-      const { cart } = await medusaStoreRequest(config, `/carts/${encodeURIComponent(req.params.id)}`)
+      const { cart } = await medusaStoreRequest(
+        config,
+        `/carts/${encodeURIComponent(req.params.id)}`,
+      )
       return res.json({ cart })
     } catch (e) {
       return res.status(500).json({ error: e?.message || 'cart retrieve failed' })
@@ -235,9 +242,13 @@ export function createMedusaStoreRouter() {
     const cartId = String(req.body?.cart_id || req.body?.cartId || '').trim()
     if (!cartId) return res.status(400).json({ error: 'cart_id required' })
     try {
-      const data = await medusaStoreRequest(config, `/carts/${encodeURIComponent(cartId)}/complete`, {
-        method: 'POST',
-      })
+      const data = await medusaStoreRequest(
+        config,
+        `/carts/${encodeURIComponent(cartId)}/complete`,
+        {
+          method: 'POST',
+        },
+      )
       return res.json(data)
     } catch (e) {
       return res.status(e?.status || 500).json({ error: e?.message || 'cart complete failed' })

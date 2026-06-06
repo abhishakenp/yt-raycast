@@ -41,7 +41,9 @@ export function shortToken(value, length = 12, fallback = 'session') {
   // makes the token unusable as a Docker image reference (compose tags
   // `<project>-<service>` and rejects trailing separators with "invalid
   // reference format"). Re-strip after slicing so the truncation is safe.
-  const sliced = safeToken(value, fallback).slice(0, length).replace(/[_-]+$/, '')
+  const sliced = safeToken(value, fallback)
+    .slice(0, length)
+    .replace(/[_-]+$/, '')
   return sliced || fallback
 }
 
@@ -164,7 +166,9 @@ export async function ensureTenantImageBuilt(options = {}) {
 // subdomain reuses the same shortToken as the container name so operators can
 // trace `medusa-<token>.<host>` straight to `medusa-session-<token>`.
 export function getPublicMedusaConfig(sessionId) {
-  const host = String(process.env.MEDUSA_PUBLIC_HOST || '').trim().replace(/^https?:\/\//, '')
+  const host = String(process.env.MEDUSA_PUBLIC_HOST || '')
+    .trim()
+    .replace(/^https?:\/\//, '')
   if (!host) return { enabled: false }
 
   const token = shortToken(sessionId, 12, 'session')
@@ -247,10 +251,7 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
   //   2) Public host (Traefik) — the public subdomain + the dashboard
   //      origin both need to be on the allowlist so the popup can talk to
   //      its tenant and ship-fast.io's /api/ecommercify/products.
-  const extraOrigins = [
-    `http://localhost:${port}`,
-    `http://127.0.0.1:${port}`,
-  ]
+  const extraOrigins = [`http://localhost:${port}`, `http://127.0.0.1:${port}`]
   if (publicCfg.enabled) {
     extraOrigins.push(publicCfg.publicUrl)
     const dashboardOrigin = String(process.env.DASHBOARD_PUBLIC_ORIGIN || '').trim()
@@ -258,7 +259,10 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
     extraOrigins.push(`https://${publicCfg.host}`)
   }
   const mergeOrigins = (base) => {
-    const items = String(base || '').split(',').map((s) => s.trim()).filter(Boolean)
+    const items = String(base || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
     for (const origin of extraOrigins) if (!items.includes(origin)) items.push(origin)
     return items.join(',')
   }
@@ -286,7 +290,9 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
       - "traefik.http.services.${traefikRouter}.loadbalancer.server.port=9000"`
     : ''
 
-  const networksList = publicCfg.enabled ? `      - medusa_net\n      - proxy_net` : `      - medusa_net`
+  const networksList = publicCfg.enabled
+    ? `      - medusa_net\n      - proxy_net`
+    : `      - medusa_net`
   const networksBlock = publicCfg.enabled
     ? `\nnetworks:\n  medusa_net:\n    name: ${SHARED_NETWORK}\n    external: true\n  proxy_net:\n    name: ${publicCfg.network}\n    external: true\n`
     : `\nnetworks:\n  medusa_net:\n    name: ${SHARED_NETWORK}\n    external: true\n`
@@ -298,9 +304,10 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
   // step inside the container is the only path that creates a usable admin.
   const adminEmail = String(options.adminEmail || '').trim()
   const adminPassword = String(options.adminPassword || '').trim()
-  const adminSeedEnv = adminEmail && adminPassword
-    ? `\n      MEDUSA_SEED_ADMIN_EMAIL: ${adminEmail}\n      MEDUSA_SEED_ADMIN_PASSWORD: ${adminPassword}`
-    : ''
+  const adminSeedEnv =
+    adminEmail && adminPassword
+      ? `\n      MEDUSA_SEED_ADMIN_EMAIL: ${adminEmail}\n      MEDUSA_SEED_ADMIN_PASSWORD: ${adminPassword}`
+      : ''
 
   // Auto-sync wiring: the tenant's product subscriber calls back here on every
   // product change so the storefront refreshes without a manual sync. Prefer an
@@ -308,8 +315,12 @@ export function generateSessionComposeFile(sessionId, port, dbName, options = {}
   // else loopback to the host (local Docker Desktop / host-gateway).
   const dashboardPort = String(process.env.DASHBOARD_PORT || '7420').trim()
   const syncCallbackUrl =
-    String(process.env.MEDUSA_SYNC_CALLBACK_URL || '').trim().replace(/\/$/, '') ||
-    String(process.env.DASHBOARD_PUBLIC_ORIGIN || '').trim().replace(/\/$/, '') ||
+    String(process.env.MEDUSA_SYNC_CALLBACK_URL || '')
+      .trim()
+      .replace(/\/$/, '') ||
+    String(process.env.DASHBOARD_PUBLIC_ORIGIN || '')
+      .trim()
+      .replace(/\/$/, '') ||
     `http://host.docker.internal:${dashboardPort}`
   const webhookSecret = String(process.env.MEDUSA_WEBHOOK_SECRET || '').trim()
   const syncEnv =
@@ -701,7 +712,8 @@ export function isMedusaProvisionable() {
 // Same regex as src/pipeline/image-hints.js inferVisualSiteType — we want the
 // pre-warm signal to track the same classifier the rest of the pipeline uses,
 // so a prompt that gets routed as "ecommerce" downstream also pre-warms Medusa.
-const _ECOMMERCE_PROMPT_RE = /\b(ecommerce|e-commerce|shop|store|boutique|catalog|collection|buy|products?)\b/i
+const _ECOMMERCE_PROMPT_RE =
+  /\b(ecommerce|e-commerce|shop|store|boutique|catalog|collection|buy|products?)\b/i
 
 export function isEcommercePrompt(prompt) {
   return _ECOMMERCE_PROMPT_RE.test(String(prompt || ''))
@@ -730,15 +742,15 @@ export function startMedusaPreWarmIfApplicable(sessionId, prompt) {
           try {
             await deprovisionMedusaForSession(sessionId, config)
           } catch (err) {
-            console.warn(
-              `[medusa-prewarm] orphan cleanup failed for ${sessionId}: ${err.message}`,
-            )
+            console.warn(`[medusa-prewarm] orphan cleanup failed for ${sessionId}: ${err.message}`)
           }
           return
         }
         await setMedusaConfig(sessionId, config)
       } catch (err) {
-        console.warn(`[medusa-prewarm] post-provision wiring failed for ${sessionId}: ${err.message}`)
+        console.warn(
+          `[medusa-prewarm] post-provision wiring failed for ${sessionId}: ${err.message}`,
+        )
       }
     })
     .catch((err) => {

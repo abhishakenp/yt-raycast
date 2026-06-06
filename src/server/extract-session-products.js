@@ -215,8 +215,7 @@ function extractFromModulesDsl(spec, sessionId, sessionPrompt) {
         handle,
         description: '',
         price: parseFloat(priceMatch[2].replace(/,/g, '')) || null,
-        currency:
-          symbol === '₹' ? 'INR' : symbol === '€' ? 'EUR' : symbol === '£' ? 'GBP' : 'USD',
+        currency: symbol === '₹' ? 'INR' : symbol === '€' ? 'EUR' : symbol === '£' ? 'GBP' : 'USD',
         image: null,
         imageAlt: altMatch?.[1]?.trim() || '',
         category: badgeMatch?.[1] || '',
@@ -247,8 +246,7 @@ export function extractSessionProducts(session, sessionsDir) {
   // `modules` DSL), and siteType is sometimes missing or misclassified (e.g.
   // "software"), so we accept any of these signals rather than one label —
   // kept generic, no per-vertical rules.
-  const hasCatalogue =
-    Array.isArray(spec.ecommerce?.products) && spec.ecommerce.products.length > 0
+  const hasCatalogue = Array.isArray(spec.ecommerce?.products) && spec.ecommerce.products.length > 0
   const modulesText =
     spec.modules && typeof spec.modules === 'object'
       ? Object.values(spec.modules)

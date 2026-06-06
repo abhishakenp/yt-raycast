@@ -1,5 +1,5 @@
 import { mergeStatements } from "@openuidev/lang-core"
-import { generateText } from "../generate.ts"
+import { formatLlmFailureMessage, generateText, isHardLlmFailure } from "../generate.ts"
 import { pageSystemPrompt, componentCatalog } from "./prompt.ts"
 import { stripFences } from "./parser.ts"
 import { DEFAULT_MODEL } from "./model-list.ts"
@@ -41,6 +41,8 @@ export type GenUIEvent =
 const MAX_PARALLEL = 8
 const SUBTREE_TIMEOUT_MS = 60_000
 const SUBTREE_RETRIES = 4
+/** Programs shorter than this are almost always block-default stubs, not real LLM output. */
+const STUB_PROGRAM_MAX_CHARS = 900
 
 // Randomness, the same way generate.ts does it (Math.random). A factory so the
 // pseudo-random source is named + swappable without touching call sites.
@@ -400,6 +402,8 @@ export async function* generateUI(
       //    block shortlist chosen by the model from the catalog (name + description).
       //    The system random-picks from each shortlist below — no keyword heuristics.
       let plan: Plan
+      let usedFallbackPlan = false
+      let moduleFailureCount = 0
       try {
         const raw = await generateText(
           modelId,
@@ -409,8 +413,14 @@ export async function* generateUI(
           2,
         )
         plan = parsePlan(raw, rng, prompt)
-      } catch {
+      } catch (planErr) {
+        if (isHardLlmFailure(planErr)) {
+          ch.push({ type: "error", message: formatLlmFailureMessage(planErr) })
+          return
+        }
+        console.warn("[genui] plan call failed, using fallback:", planErr)
         plan = fallbackPlan(prompt, rng)
+        usedFallbackPlan = true
       }
 
       // Emit the chosen theme ASAP so the preview can apply it before content lands.
@@ -489,12 +499,26 @@ export async function* generateUI(
         )
           .then((text) => {
             const { text: safe, failed } = validateModule(page, text, plan.brand, labels)
+            if (failed) moduleFailureCount += 1
             ch.push({ type: "module", id: page.id, text: safe, failed })
           })
-          .catch(() => {
+          .catch((moduleErr) => {
+            if (isHardLlmFailure(moduleErr)) {
+              moduleFailureCount += 1
+              ch.push({
+                type: "module",
+                id: page.id,
+                text: isKnownBlock(page.block)
+                  ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
+                  : placeholderNode(page.id),
+                failed: true,
+              })
+              return
+            }
             // On generation failure, render the chosen block with just brand+nav —
             // its rich defaults are a complete, on-theme page. If there is no valid
             // chosen block, emit the server-authored unstyled placeholder node.
+            moduleFailureCount += 1
             ch.push({
               type: "module",
               id: page.id,
@@ -513,6 +537,19 @@ export async function* generateUI(
       while (running.size > 0) {
         await Promise.race(running)
         while (next < pages.length && running.size < MAX_PARALLEL) startOne(pages[next++])
+      }
+
+      if (
+        pages.length > 0 &&
+        moduleFailureCount >= pages.length &&
+        (usedFallbackPlan || Date.now() - startedAt < 2_000)
+      ) {
+        ch.push({
+          type: "error",
+          message:
+            "Site generation fell back to placeholder blocks because the AI model could not produce page content. Check GROQ_API_KEY and restart the dev server after updating .env.",
+        })
+        return
       }
 
       // 5. done.
@@ -576,7 +613,8 @@ export async function selectPlan(
       2,
     )
     plan = parsePlan(raw, rng, prompt)
-  } catch {
+  } catch (planErr) {
+    if (isHardLlmFailure(planErr)) throw planErr
     plan = fallbackPlan(prompt, rng)
   }
   return {

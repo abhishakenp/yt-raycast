@@ -266,10 +266,13 @@ export function injectStorefrontCartUi(html, options = {}) {
   if (force && /id=["']sf-cart-backdrop["']/.test(html)) {
     html = stripStorefrontCartUi(html)
   }
-  if ((html.includes(`id="sf-cart-drawer"`) || html.includes(`id='sf-cart-drawer'`)) && !force) return html
+  if ((html.includes(`id="sf-cart-drawer"`) || html.includes(`id='sf-cart-drawer'`)) && !force)
+    return html
   const hasCart =
     /id\s*=\s*["']cart-toggle["']/i.test(html) ||
-    /class\s*=\s*["'][^"']*utilities[^"']*["'][^>]*>[\s\S]*aria-label\s*=\s*["']Cart["']/i.test(html) ||
+    /class\s*=\s*["'][^"']*utilities[^"']*["'][^>]*>[\s\S]*aria-label\s*=\s*["']Cart["']/i.test(
+      html,
+    ) ||
     (/class\s*=\s*["'][^"']*product-card/i.test(html) && /cart-badge|cart-count/i.test(html))
 
   if (!hasCart) return html

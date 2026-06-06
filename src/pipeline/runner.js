@@ -1,5 +1,1 @@
-export {
-  runAll,
-  runEdit,
-  generateAlternativeDesign,
-} from '@ship-fast/engine/pipeline/runner.js'
+export { runAll, runEdit, generateAlternativeDesign } from '@ship-fast/engine/pipeline/runner.js'

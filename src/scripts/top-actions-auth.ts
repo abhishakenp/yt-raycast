@@ -149,13 +149,15 @@ const main = async (): Promise<void> => {
       fn().catch(showAuthError)
     }
 
-  document
-    .getElementById('google-signin-btn')
-    ?.addEventListener('click', wrap(() => window.__sfAuthApi!.signInGoogle()))
+  document.getElementById('google-signin-btn')?.addEventListener(
+    'click',
+    wrap(() => window.__sfAuthApi!.signInGoogle()),
+  )
 
-  document
-    .getElementById('github-signin-btn')
-    ?.addEventListener('click', wrap(() => window.__sfAuthApi!.signInGithub()))
+  document.getElementById('github-signin-btn')?.addEventListener(
+    'click',
+    wrap(() => window.__sfAuthApi!.signInGithub()),
+  )
 
   const emailInput = document.getElementById('auth-email') as HTMLInputElement | null
   const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null

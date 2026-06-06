@@ -248,7 +248,55 @@ export function canReadOpenUIArtifactWithoutOwner(session) {
   return Boolean(session) && !session.userId && session.isPrivate !== true
 }
 
+const GIBBERISH_PROBE_WORDS = new Set([
+  'test',
+  'asdf',
+  'asdfg',
+  'qwer',
+  'qwerty',
+  'hello',
+  'hi',
+  'hey',
+  'ok',
+  'okay',
+  'cool',
+  'nice',
+  'yo',
+  'yeah',
+  'yep',
+  'nope',
+  'lol',
+  'lmao',
+  'haha',
+  'wow',
+  'omg',
+  'wtf',
+  'fff',
+  'ggg',
+  'xxx',
+  'zzz',
+  'aaa',
+  'bbb',
+  'ccc',
+])
+
+const GIBBERISH_KEYBOARD_PATTERNS = ['asdf', 'qwerty', 'zxcvb', '123456', 'abcde', 'qazwsx']
+
 function isGibberishPrompt(text) {
+  if (text.length < 5) return true
+
+  const lowerText = text.toLowerCase().trim()
+  if (GIBBERISH_PROBE_WORDS.has(lowerText)) return true
+
+  const alphaNum = text.replace(/[^a-zA-Z0-9]/g, '')
+  if (alphaNum.length === 0 && text.length > 0) return true
+
+  if (/(.)\1{4,}/.test(text)) return true
+
+  for (const pattern of GIBBERISH_KEYBOARD_PATTERNS) {
+    if (lowerText.includes(pattern)) return true
+  }
+
   const uniqueChars = new Set(text.replace(/\s/g, '')).size
   if (text.length >= 70 && uniqueChars < 10) return true
 
@@ -473,7 +521,9 @@ export async function startServer(sessionsDir) {
     }
     // Text length limit to prevent abuse
     if (text.length > TRANSLATE_MAX_TEXT_LENGTH) {
-      return res.status(400).json({ error: `Text too long: maximum ${TRANSLATE_MAX_TEXT_LENGTH} characters` })
+      return res
+        .status(400)
+        .json({ error: `Text too long: maximum ${TRANSLATE_MAX_TEXT_LENGTH} characters` })
     }
     // IP rate limiting
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || ''
@@ -488,7 +538,9 @@ export async function startServer(sessionsDir) {
           TRANSLATE_WINDOW_MS,
         )
       ) {
-        return res.status(429).json({ error: 'Rate limit: too many translation requests. Please wait.' })
+        return res
+          .status(429)
+          .json({ error: 'Rate limit: too many translation requests. Please wait.' })
       }
     }
     const built = buildTranslationMessages(text, locale)
@@ -1067,9 +1119,8 @@ export async function startServer(sessionsDir) {
       // island consumes — exactly like the normal genui path, just sourced from a clone.
       const { cloneSiteToOpenUI } = await import('@ship-fast/engine/clone/index.js')
       const { generateFromClone } = await import('@ship-fast/engine/genui/orchestrator.js')
-      const { buildThemeHeadFromTokens, writeStreamingShellToWorkspace } = await import(
-        '@ship-fast/engine/renderers/index.js'
-      )
+      const { buildThemeHeadFromTokens, writeStreamingShellToWorkspace } =
+        await import('@ship-fast/engine/renderers/index.js')
       const { saveSiteSpec } = await import('@ship-fast/engine/spec/index.js')
       generation = (async () => {
         const route = '/'
@@ -1101,9 +1152,7 @@ export async function startServer(sessionsDir) {
           const brandFromHost = (() => {
             try {
               const host = new URL(cloneUrl).hostname.replace(/^www\./, '').split('.')[0] || ''
-              return host
-                ? host.charAt(0).toUpperCase() + host.slice(1)
-                : ''
+              return host ? host.charAt(0).toUpperCase() + host.slice(1) : ''
             } catch {
               return ''
             }
@@ -1560,7 +1609,8 @@ ${themeHead}
           enabled: Boolean(session.medusaConfig?.backendUrl || session.medusaConfig?.adminBaseUrl),
           config: session.medusaConfig
             ? {
-                backendUrl: session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
+                backendUrl:
+                  session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
                 storefrontUrl: session.medusaConfig.storefrontUrl || null,
               }
             : null,
@@ -2832,7 +2882,11 @@ ${themeHead}
               ),
             )
         } catch {
-          express.static(session.workspace, { extensions: ['html'], redirect: false })(req, res, next)
+          express.static(session.workspace, { extensions: ['html'], redirect: false })(
+            req,
+            res,
+            next,
+          )
         }
         return
       }

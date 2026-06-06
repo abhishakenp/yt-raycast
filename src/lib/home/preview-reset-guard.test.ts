@@ -24,9 +24,7 @@ describe('shouldPreserveOpenUIPreviewReset', () => {
   })
 
   it('does not preserve blank or unrelated iframe URLs', () => {
-    expect(shouldPreserveOpenUIPreviewReset({ ...baseInput, iframeSrc: 'about:blank' })).toBe(
-      false,
-    )
+    expect(shouldPreserveOpenUIPreviewReset({ ...baseInput, iframeSrc: 'about:blank' })).toBe(false)
     expect(
       shouldPreserveOpenUIPreviewReset({
         ...baseInput,

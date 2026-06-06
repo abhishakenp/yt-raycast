@@ -4,7 +4,14 @@ import { promptSnippet } from '../prompt.js'
 import { slug, parseJson, writeFile } from './workspace.js'
 import { contextPrompt } from '@ship-fast/engine/prompts/context.js'
 
-export async function generateContext(prompt, designBrief, siteType, workspace, log, brandProfile = null) {
+export async function generateContext(
+  prompt,
+  designBrief,
+  siteType,
+  workspace,
+  log,
+  brandProfile = null,
+) {
   log('  context: extracting from prompt via Groq')
 
   const { system, user, temperature, maxTokens } = contextPrompt(

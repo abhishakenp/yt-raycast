@@ -32,9 +32,7 @@ describe('monitoring', () => {
     })
 
     expect(result).toEqual({ ok: true, status: 200 })
-    expect(calls[0].url).toBe(
-      'https://kuma.example/api/push/token?status=up&msg=healthy&ping=123',
-    )
+    expect(calls[0].url).toBe('https://kuma.example/api/push/token?status=up&msg=healthy&ping=123')
     expect(calls[0].init.method).toBe('GET')
   })
 

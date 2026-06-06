@@ -85,13 +85,12 @@ export async function generateSiteSpec({
       },
     ).spec || normalizeSiteSpec(fallback, { prompt, ctx, designBrief, siteType })
 
-  const finalSpec =
-    finalSpecSanitized?.theme
-      ? {
-          ...finalSpecSanitized,
-          theme: repairThemeColors({ ...finalSpecSanitized.theme }, fallback),
-        }
-      : finalSpecSanitized
+  const finalSpec = finalSpecSanitized?.theme
+    ? {
+        ...finalSpecSanitized,
+        theme: repairThemeColors({ ...finalSpecSanitized.theme }, fallback),
+      }
+    : finalSpecSanitized
 
   if (!validation.valid) {
     log('  site-spec: falling back to normalized default site spec')
@@ -176,13 +175,12 @@ export async function updateSiteSpecFromPrompt({ prompt, currentSpec, workspace,
         fallback: baseSpec,
       },
     ).spec || normalizeSiteSpec(baseSpec, { prompt })
-  const finalSpec =
-    finalSpecSanitized?.theme
-      ? {
-          ...finalSpecSanitized,
-          theme: repairThemeColors({ ...finalSpecSanitized.theme }, baseSpec),
-        }
-      : finalSpecSanitized
+  const finalSpec = finalSpecSanitized?.theme
+    ? {
+        ...finalSpecSanitized,
+        theme: repairThemeColors({ ...finalSpecSanitized.theme }, baseSpec),
+      }
+    : finalSpecSanitized
   saveSiteSpec(workspace, finalSpec)
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
   log(`  site-spec edit: ${finalSpec.pages.length} pages restructured${tpsStr}`)

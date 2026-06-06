@@ -9,7 +9,9 @@ export { prepareSiteSpecForReliableRender } from './site-spec-prepare.js'
 export function renderProject(siteSpec, target, session) {
   prepareSiteSpecForReliableRender(siteSpec)
   if (target !== 'html') {
-    throw new Error(`Unsupported render target: ${target}. Only 'html' is supported (vanilla project).`)
+    throw new Error(
+      `Unsupported render target: ${target}. Only 'html' is supported (vanilla project).`,
+    )
   }
   const rendered = renderHtmlProject(siteSpec)
 

@@ -17,7 +17,11 @@ function normalizeHex(input: string): string {
   if (typeof input !== 'string') return FALLBACK_SEED
   let s = input.trim().toLowerCase()
   if (s.startsWith('#')) s = s.slice(1)
-  if (/^[0-9a-f]{3}$/.test(s)) s = s.split('').map((c) => c + c).join('')
+  if (/^[0-9a-f]{3}$/.test(s))
+    s = s
+      .split('')
+      .map((c) => c + c)
+      .join('')
   if (!/^[0-9a-f]{6}$/.test(s)) return FALLBACK_SEED
   return '#' + s
 }
@@ -50,14 +54,32 @@ export function hslToHex(h: number, s: number, l: number): string {
   const c = (1 - Math.abs(2 * ll - 1)) * ss
   const x = c * (1 - Math.abs(((hh / 60) % 2) - 1))
   const m = ll - c / 2
-  let r = 0, g = 0, b = 0
-  if (hh < 60) { r = c; g = x }
-  else if (hh < 120) { r = x; g = c }
-  else if (hh < 180) { g = c; b = x }
-  else if (hh < 240) { g = x; b = c }
-  else if (hh < 300) { r = x; b = c }
-  else { r = c; b = x }
-  const to = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0')
+  let r = 0,
+    g = 0,
+    b = 0
+  if (hh < 60) {
+    r = c
+    g = x
+  } else if (hh < 120) {
+    r = x
+    g = c
+  } else if (hh < 180) {
+    g = c
+    b = x
+  } else if (hh < 240) {
+    g = x
+    b = c
+  } else if (hh < 300) {
+    r = x
+    b = c
+  } else {
+    r = c
+    b = x
+  }
+  const to = (v: number) =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, '0')
   return '#' + to(r) + to(g) + to(b)
 }
 
@@ -73,42 +95,42 @@ export function deriveCustomPalette(seedHex: string): DerivedPalette {
   const { h } = hexToHsl(seed)
   const primaryFg = luminance(seed) < 0.5 ? '#ffffff' : '#0b0b0d'
   const dark: Record<string, string> = {
-    'background': hslToHex(h, 12, 6),
-    'foreground': hslToHex(h, 8, 96),
-    'card': hslToHex(h, 10, 9),
+    background: hslToHex(h, 12, 6),
+    foreground: hslToHex(h, 8, 96),
+    card: hslToHex(h, 10, 9),
     'card-foreground': hslToHex(h, 8, 96),
-    'popover': hslToHex(h, 10, 9),
+    popover: hslToHex(h, 10, 9),
     'popover-foreground': hslToHex(h, 8, 96),
-    'primary': seed,
+    primary: seed,
     'primary-foreground': primaryFg,
-    'secondary': hslToHex(h, 18, 16),
+    secondary: hslToHex(h, 18, 16),
     'secondary-foreground': hslToHex(h, 8, 96),
-    'muted': hslToHex(h, 10, 14),
+    muted: hslToHex(h, 10, 14),
     'muted-foreground': hslToHex(h, 10, 65),
-    'accent': hslToHex(h, 22, 22),
+    accent: hslToHex(h, 22, 22),
     'accent-foreground': hslToHex(h, 8, 96),
-    'border': hslToHex(h, 12, 18),
-    'input': hslToHex(h, 12, 18),
-    'ring': seed,
+    border: hslToHex(h, 12, 18),
+    input: hslToHex(h, 12, 18),
+    ring: seed,
   }
   const light: Record<string, string> = {
-    'background': hslToHex(h, 20, 98),
-    'foreground': hslToHex(h, 12, 12),
-    'card': hslToHex(h, 20, 100),
+    background: hslToHex(h, 20, 98),
+    foreground: hslToHex(h, 12, 12),
+    card: hslToHex(h, 20, 100),
     'card-foreground': hslToHex(h, 12, 12),
-    'popover': hslToHex(h, 20, 100),
+    popover: hslToHex(h, 20, 100),
     'popover-foreground': hslToHex(h, 12, 12),
-    'primary': seed,
+    primary: seed,
     'primary-foreground': primaryFg,
-    'secondary': hslToHex(h, 20, 94),
+    secondary: hslToHex(h, 20, 94),
     'secondary-foreground': hslToHex(h, 12, 16),
-    'muted': hslToHex(h, 18, 95),
+    muted: hslToHex(h, 18, 95),
     'muted-foreground': hslToHex(h, 10, 40),
-    'accent': hslToHex(h, 22, 90),
+    accent: hslToHex(h, 22, 90),
     'accent-foreground': hslToHex(h, 12, 16),
-    'border': hslToHex(h, 14, 88),
-    'input': hslToHex(h, 14, 88),
-    'ring': seed,
+    border: hslToHex(h, 14, 88),
+    input: hslToHex(h, 14, 88),
+    ring: seed,
   }
   return {
     id: 'custom',

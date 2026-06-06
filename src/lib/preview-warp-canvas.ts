@@ -8,9 +8,7 @@ type PreviewWarpController = {
   stop: () => void
 }
 
-export function createPreviewWarpController(
-  canvasEl: HTMLCanvasElement,
-): PreviewWarpController {
+export function createPreviewWarpController(canvasEl: HTMLCanvasElement): PreviewWarpController {
   let c: HTMLCanvasElement | null = null
   let ctx: CanvasRenderingContext2D | null = null
   let raf = 0
@@ -37,7 +35,12 @@ export function createPreviewWarpController(
     const u = (t - 0.67) / 0.33
     return [lerp(130, 251, u) | 0, lerp(72, 191, u) | 0, lerp(237, 52, u) | 0]
   }
-  const bezierArc = (p0: { x: number; y: number }, p1: { x: number; y: number }, p2: { x: number; y: number }, p3: { x: number; y: number }) => {
+  const bezierArc = (
+    p0: { x: number; y: number },
+    p1: { x: number; y: number },
+    p2: { x: number; y: number },
+    p3: { x: number; y: number },
+  ) => {
     const pts: { x: number; y: number }[] = []
     const ns: { nx: number; ny: number }[] = []
     for (let i = 0; i <= PTS; i++) {

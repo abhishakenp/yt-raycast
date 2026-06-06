@@ -42,8 +42,8 @@ const TRAVEL_PROMPT_RE =
   /\b(travel|trip|trips|adventure|cinematic|destination|vacation|tour|tourism|safari|backpack|wander|explorer|getaway|itinerary|traveler|booking funnel|exotic|landing page)\b/i
 
 const TRAVEL_PHOTO_PEXELS_IDS = [
-  4640881, 4074420, 9951672, 2901209, 3250612, 2387861, 3601422, 1320684, 2487979, 3155667,
-  2166553, 457882, 1450360, 2666218, 346885,
+  4640881, 4074420, 9951672, 2901209, 3250612, 2387861, 3601422, 1320684, 2487979, 3155667, 2166553,
+  457882, 1450360, 2666218, 346885,
 ]
 
 const TRAVEL_VIDEO_FALLBACK = {
@@ -1699,7 +1699,10 @@ function repairMalformedTailwindClasses(html) {
   if (!html || typeof html !== 'string') return html
   let next = html.replace(/\bclassrelative\b/g, 'class="relative"')
   next = next.replace(/\bclass\s*=\s*(["'])([^"']*)\1/g, (full, quote, classes) => {
-    const fixed = classes.replace(/\s+\/\d+\b/g, '').replace(/\s{2,}/g, ' ').trim()
+    const fixed = classes
+      .replace(/\s+\/\d+\b/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
     return fixed === classes ? full : `class=${quote}${fixed}${quote}`
   })
   return next
@@ -1712,7 +1715,11 @@ function isDecorativeGradientBlob(attrs = '', inner = '') {
   const cls = attrs.match(/\bclass\s*=\s*["']([^"']*)["']/i)?.[1] || ''
   if (!/\bbg-gradient-to/i.test(cls)) return false
   if (DECORATIVE_GRADIENT_CLASS_RE.test(cls)) return true
-  if (/\bblur-3xl\b/.test(cls) && !/<h[1-4]\b/i.test(inner) && inner.replace(/<[^>]+>/g, '').trim().length < 24)
+  if (
+    /\bblur-3xl\b/.test(cls) &&
+    !/<h[1-4]\b/i.test(inner) &&
+    inner.replace(/<[^>]+>/g, '').trim().length < 24
+  )
     return true
   return false
 }
@@ -1766,7 +1773,9 @@ function sanitizeStockImageTags(html) {
       )
       .join(' ')
       .trim()
-    const withCover = /\bobject-cover\b/i.test(cleaned) ? cleaned : `${cleaned} object-cover block`.trim()
+    const withCover = /\bobject-cover\b/i.test(cleaned)
+      ? cleaned
+      : `${cleaned} object-cover block`.trim()
     if (withCover !== cls) {
       next = next.replace(/\bclass\s*=\s*["'][^"']*["']/i, `class="${withCover}"`)
     } else if (!/\bobject-cover\b/i.test(cls)) {
@@ -1796,7 +1805,9 @@ function ensureHeroSectionMedia(html, imageHints = null) {
       const heroUrl = pick?.url
       if (!heroUrl) return full
       usage.set(heroUrl, (usage.get(heroUrl) || 0) + 1)
-      const alt = escapeHtmlAttribute(pick.alt || extractPromptVisualCore(prompt, 5) || 'Hero image')
+      const alt = escapeHtmlAttribute(
+        pick.alt || extractPromptVisualCore(prompt, 5) || 'Hero image',
+      )
       const media = `<div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-2xl"><img src="${heroUrl}" alt="${alt}" class="w-full h-full object-cover" loading="eager" decoding="async" /></div>`
 
       if (/<(?:pre|code)\b/i.test(body) || /overflow-auto\s+max-h/i.test(body)) {
@@ -1864,7 +1875,8 @@ function replaceArtSurfaceDivBlocks(html, onMatch) {
 }
 
 function hydrateArtSurfaceSlots(html, imageHints = null) {
-  if (!html || typeof html !== 'string' || !/\bdata-visual=["']art-surface["']/i.test(html)) return html
+  if (!html || typeof html !== 'string' || !/\bdata-visual=["']art-surface["']/i.test(html))
+    return html
   const photos = stockPhotosForHydration(imageHints)
   const videos = Array.isArray(imageHints?.videos) ? imageHints.videos : []
   const usage = new Map()
@@ -1891,7 +1903,9 @@ function hydrateHeroGradientBackgrounds(html, imageHints = null) {
   const photos = stockPhotosForHydration(imageHints)
   if (!photos.length) return html
   const usage = new Map()
-  const prompt = String(imageHints?.hydrationPrompt ?? imageHints?.prompt ?? 'travel hero cinematic')
+  const prompt = String(
+    imageHints?.hydrationPrompt ?? imageHints?.prompt ?? 'travel hero cinematic',
+  )
   const heroUrl = pickPhotoForImg(prompt, photos, usage)?.url ?? photos[0].url
 
   return html.replace(
@@ -1927,8 +1941,14 @@ function hydrateGradientCardMedia(html, imageHints = null) {
       if (/footer-branding|data-sf-|sr-only|intro-media/i.test(full)) return full
       if (isDecorativeGradientBlob(attrs, inner)) return full
       const label =
-        inner.match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
-        inner.match(/<p[^>]*>([\s\S]*?)<\/p>/i)?.[1]?.replace(/<[^>]+>/g, ' ').trim() ||
+        inner
+          .match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i)?.[1]
+          ?.replace(/<[^>]+>/g, ' ')
+          .trim() ||
+        inner
+          .match(/<p[^>]*>([\s\S]*?)<\/p>/i)?.[1]
+          ?.replace(/<[^>]+>/g, ' ')
+          .trim() ||
         promptFallback ||
         'featured image'
       const pick = pickPhotoForImg(label, photos, usage)
@@ -1961,7 +1981,8 @@ function dedupeRedundantHeroSections(html) {
     if (/min-h-screen/i.test(block)) score += 3
     if (/<video\b/i.test(block)) score += 2
     if (/<img\b/i.test(block)) score += 1
-    if (/\bdata-visual=["']art-surface["']/i.test(block) && !/<(?:video|img)\b/i.test(block)) score -= 2
+    if (/\bdata-visual=["']art-surface["']/i.test(block) && !/<(?:video|img)\b/i.test(block))
+      score -= 2
     if (score > bestScore) {
       bestScore = score
       keepIndex = i
@@ -2069,7 +2090,8 @@ const UI_MATCH_RE =
   /\b(dashboard|screen|interface|analytics|software|ui|app|data visualization|chart|monitor|workspace)\b/i
 const TECH_DESK_RE =
   /\b(laptop|macbook|computer|coding|programmer|developer|office desk|keyboard|monitor display)\b/i
-const MEDIA_MATCH_RE = /\b(magazine|award|trophy|badge|certificate|media|publication|newspaper|editorial)\b/i
+const MEDIA_MATCH_RE =
+  /\b(magazine|award|trophy|badge|certificate|media|publication|newspaper|editorial)\b/i
 
 function extractPromptVisualCore(promptCtx = '', maxWords = 5) {
   const words = tokenizeForMatch(promptCtx).filter((w) => !LOW_SIGNAL_QUERY_WORDS.has(w))
@@ -2106,7 +2128,8 @@ function semanticDataImgTokens(subject = '') {
 function parseDataImgIntent(subject = '', classes = '') {
   const s = normalizeText(String(subject).replace(/-/g, ' '))
   const cls = normalizeText(classes)
-  const smallSquare = /\bw-(?:8|10|12|16|20|24)\b/.test(cls) && /\bh-(?:8|10|12|16|20|24)\b/.test(cls)
+  const smallSquare =
+    /\bw-(?:8|10|12|16|20|24)\b/.test(cls) && /\bh-(?:8|10|12|16|20|24)\b/.test(cls)
   const isRound = /\brounded-full\b/.test(cls)
 
   if (
@@ -2118,7 +2141,8 @@ function parseDataImgIntent(subject = '', classes = '') {
   if (/\b(press|techcrunch|forbes|wired|nytimes|bloomberg|guardian|media outlet)\b/.test(s))
     return 'press'
   if (/\b(award|badge|trophy|certified|gartner|fast company)\b/.test(s)) return 'award'
-  if (/\b(dashboard|interface|ui|screen|analytics|software|platform|app|saas)\b/.test(s)) return 'ui'
+  if (/\b(dashboard|interface|ui|screen|analytics|software|platform|app|saas)\b/.test(s))
+    return 'ui'
   if (
     /\b(hero|banner|cover|background)\b/.test(s) ||
     /\b(?:aspect-\[21|aspect-video|min-h-\[)/.test(cls)

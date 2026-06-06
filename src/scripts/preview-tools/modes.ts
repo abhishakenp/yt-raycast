@@ -1,11 +1,5 @@
 import { state } from './state'
-import {
-  pickTarget,
-  syncHighlight,
-  setOverlayRefs,
-  classify,
-  isOverlayNode,
-} from './targeting'
+import { pickTarget, syncHighlight, setOverlayRefs, classify, isOverlayNode } from './targeting'
 import type { TextEditorHandle } from './editors/text'
 import type { ImageEditorHandle } from './editors/image'
 import type { ElementEditorHandle } from './editors/element'

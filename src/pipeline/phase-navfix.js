@@ -70,7 +70,10 @@ function resolveNavFilename(label, targets) {
   if (exact) return exact.filename
 
   for (const target of targets) {
-    if (norm.includes(target.slug.replace(/-/g, ' ')) || target.slug.includes(norm.replace(/\s+/g, '-'))) {
+    if (
+      norm.includes(target.slug.replace(/-/g, ' ')) ||
+      target.slug.includes(norm.replace(/\s+/g, '-'))
+    ) {
       return target.filename
     }
   }
@@ -95,7 +98,7 @@ function resolveNavFilename(label, targets) {
       best = target
     }
   }
-  return bestScore >= 2 ? best?.filename ?? null : null
+  return bestScore >= 2 ? (best?.filename ?? null) : null
 }
 
 function rewriteHref(tag, filename) {
@@ -134,7 +137,13 @@ export function wireHomepageNavLinks(html, tasks = []) {
     if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
       return full
     }
-    const pathSlug = slug(href.replace(/^\.\/?/, '').replace(/\.html$/i, '').split('/').pop() || '')
+    const pathSlug = slug(
+      href
+        .replace(/^\.\/?/, '')
+        .replace(/\.html$/i, '')
+        .split('/')
+        .pop() || '',
+    )
     if (!pathSlug) return full
     const target = targets.find((t) => t.slug === pathSlug)
     if (!target || target.filename === href) return full

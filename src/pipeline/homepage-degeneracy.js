@@ -24,9 +24,7 @@ export const promptExpectsNovaDenseMarketing = (prompt) => {
     )
   )
     return false
-  if (
-    /\b(dashboard|admin\s+panel|internal\s+(tool|app)|analytics\s+(workspace|console))\b/.test(p)
-  )
+  if (/\b(dashboard|admin\s+panel|internal\s+(tool|app)|analytics\s+(workspace|console))\b/.test(p))
     return false
   if (/\b(arcade|fps\b|playable\s+3d)\b/.test(p)) return false
   if (/\b(documentation\s+site|docs\s+for\s+dev|knowledge\s+base)\b/.test(p)) return false
@@ -68,9 +66,15 @@ export const explainNovaMarketingBarFailures = (html) => {
     /\bbackdrop-blur-(?:md|lg|xl|2xl|3xl)\b/i.test(raw)
   if (wc < 110) failures.push(`visible word count ${wc} (need >=110)`)
   if (sections < 5) failures.push(`<section> count ${sections} (need >=5)`)
-  if (!hasPricing) failures.push('missing pricing band (#pricing, data-pricing-billing, or /pricing link with prices)')
+  if (!hasPricing)
+    failures.push(
+      'missing pricing band (#pricing, data-pricing-billing, or /pricing link with prices)',
+    )
   if (!hasFaq) failures.push('missing FAQ (#faq, data-accordion, or FAQ copy)')
-  if (!hasVisualHook) failures.push('missing visual depth (blur-3xl, stacked bg-gradient-to-*, shadow-[…], ring-white/…, or backdrop-blur)')
+  if (!hasVisualHook)
+    failures.push(
+      'missing visual depth (blur-3xl, stacked bg-gradient-to-*, shadow-[…], ring-white/…, or backdrop-blur)',
+    )
   return failures
 }
 

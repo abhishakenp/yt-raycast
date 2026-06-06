@@ -5,7 +5,8 @@ import { createToggle } from '../controls/toggle'
 import { writeValue, readValue } from '../../style-apply'
 import type { Classification } from '../../targeting'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h10"/><path d="M8 4v9"/><path d="M6 13h4"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h10"/><path d="M8 4v9"/><path d="M6 13h4"/></svg>'
 
 const ALIGN_ICONS = [
   {
@@ -47,7 +48,9 @@ function section(title: string): HTMLElement {
   return wrap
 }
 
-function cloneChips(src: ReadonlyArray<{ id: string; label: string; value: string }>): ChipScaleItem[] {
+function cloneChips(
+  src: ReadonlyArray<{ id: string; label: string; value: string }>,
+): ChipScaleItem[] {
   return src.map((c) => ({ id: c.id, label: c.label, value: c.value }))
 }
 
@@ -104,8 +107,7 @@ function render(root: HTMLElement, ctx: PanelContext): () => void {
   const italicCtrl = createToggle({
     label: 'Italic',
     current: italicOn,
-    onChange: (on) =>
-      writeValue(el, 'font-style', on ? 'italic' : 'normal', { important: false }),
+    onChange: (on) => writeValue(el, 'font-style', on ? 'italic' : 'normal', { important: false }),
   })
   const underlineCtrl = createToggle({
     label: 'Underline',

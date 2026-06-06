@@ -2,7 +2,8 @@ import { CHIP_SCALES, createChipScale, createSlider } from '../controls'
 import type { EditorController } from '../shell'
 import type { PanelOpenPayload, TabContext, TabDef } from '../types'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="5" y="5" width="8" height="8" rx="1.5" opacity="0.45"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="5" y="5" width="8" height="8" rx="1.5" opacity="0.45"/></svg>'
 
 function readCurrent(state: PanelOpenPayload, prop: string): string {
   return (state.rawStyles[prop] || state.computedStyles[prop] || '').trim()

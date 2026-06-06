@@ -149,9 +149,7 @@ export function mountNextApiPort(app, { requireAuth }) {
       streamContext.title = body.title.trim()
     }
     const hasHint = Boolean(streamContext.siteType || streamContext.title)
-    const { buildStreamOpenUISystemPrompt } = await import(
-      '../lib/openui-stream-system-prompt.ts'
-    )
+    const { buildStreamOpenUISystemPrompt } = await import('../lib/openui-stream-system-prompt.ts')
     const system = buildStreamOpenUISystemPrompt(hasHint ? streamContext : null)
 
     const upstream = await fetch('https://api.groq.com/openai/v1/chat/completions', {

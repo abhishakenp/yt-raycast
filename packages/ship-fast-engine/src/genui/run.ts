@@ -14,6 +14,8 @@ export interface OrchestratorResult {
 }
 
 const FIRST_QUOTED = /=\s*[A-Za-z][A-Za-z0-9_]*\(\s*"((?:\\.|[^"\\])*)"/
+/** Programs shorter than this are almost always block-default stubs, not real LLM output. */
+const STUB_PROGRAM_MAX_CHARS = 900
 
 /**
  * Run the GenUI orchestrator (the ported original engine) and assemble its
@@ -77,6 +79,16 @@ export async function runHomepageOrchestrator(p: {
 
   if (!source.trim()) {
     throw new Error(firstError || 'orchestrator produced an empty program')
+  }
+
+  if (firstError) {
+    throw new Error(firstError)
+  }
+
+  if (source.length <= STUB_PROGRAM_MAX_CHARS) {
+    throw new Error(
+      'Generated site is too small — the AI model likely failed. Check GROQ_API_KEY and restart the dev server after updating .env.',
+    )
   }
 
   return { source, theme, locale, brand }

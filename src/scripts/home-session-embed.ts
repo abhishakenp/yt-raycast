@@ -15,7 +15,10 @@ const setMainInert = (on: boolean): void => {
     if (el === shell) continue
     // Skip elements that should remain interactive (footer, navigation)
     const isNav = el.tagName === 'NAV' || el.getAttribute('role') === 'navigation'
-    const isFooter = el.tagName === 'FOOTER' || el.classList.contains('footer') || el.getAttribute('role') === 'contentinfo'
+    const isFooter =
+      el.tagName === 'FOOTER' ||
+      el.classList.contains('footer') ||
+      el.getAttribute('role') === 'contentinfo'
     if (isNav || isFooter) continue
     if (on) el.setAttribute('inert', '')
     else el.removeAttribute('inert')

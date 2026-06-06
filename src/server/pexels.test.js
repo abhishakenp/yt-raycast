@@ -3,9 +3,9 @@ import { createPexelsPhotoResolver, normalizePexelsQuery } from './pexels.js'
 
 describe('normalizePexelsQuery', () => {
   it('keeps descriptive alt text readable for relevant Pexels searches', () => {
-    expect(
-      normalizePexelsQuery('athletic woman performing barbell back squat in modern gym'),
-    ).toBe('athletic woman performing barbell back squat in modern gym')
+    expect(normalizePexelsQuery('athletic woman performing barbell back squat in modern gym')).toBe(
+      'athletic woman performing barbell back squat in modern gym',
+    )
   })
 
   it('falls back to a generic editorial query for empty input', () => {

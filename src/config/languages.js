@@ -4,12 +4,7 @@ export const HINGLISH_LANGUAGE = {
   nativeName: 'Hinglish (Hindi–English)',
   fontFamily: 'Noto Sans Devanagari, Inter, system-ui, sans-serif',
   skipFullTranslation: true,
-  keywords: [
-    'hinglish',
-    'hinglish website',
-    'hindi english mix',
-    'hindi-english',
-  ],
+  keywords: ['hinglish', 'hinglish website', 'hindi english mix', 'hindi-english'],
 }
 
 export const INDIC_PURE_LANGUAGES = [
@@ -116,7 +111,14 @@ export const INDIC_PURE_LANGUAGES = [
     name: 'Manipuri',
     nativeName: 'ꯃꯤꯇꯩ ꯂꯣꯟ',
     fontFamily: 'Noto Sans Meetei Mayek, sans-serif',
-    keywords: ['manipuri', 'meitei', 'ꯃꯤꯇꯩ', 'in manipuri', 'manipuri website', 'manipuri language'],
+    keywords: [
+      'manipuri',
+      'meitei',
+      'ꯃꯤꯇꯩ',
+      'in manipuri',
+      'manipuri website',
+      'manipuri language',
+    ],
   },
   {
     code: 'sat',
@@ -278,14 +280,15 @@ export const isMixedEnglishIndicCode = (code) => {
   return c === 'hinglish' || /^[a-z]{2,8}-en$/.test(c)
 }
 
-export const isRomanizedIndicCode = (code) =>
-  /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
+export const isRomanizedIndicCode = (code) => /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
 
 // Any non-English locale we render via /api/translate: plain 2-char ISO, xx-latn
 // (romanized), or the code-mixed variants (hinglish / xx-en). English is the only
 // non-translatable value.
 export const isTranslatableLocale = (code) => {
-  const c = String(code || '').trim().toLowerCase()
+  const c = String(code || '')
+    .trim()
+    .toLowerCase()
   if (!c || c === 'en') return false
   return (
     /^[a-z]{2}$/.test(c) ||
@@ -309,7 +312,8 @@ export const preferRomanizedBcp47FromSnippet = (snippet) => {
       pl.includes(`${n} in english script`) ||
       pl.includes(`${n} in english alphabet`) ||
       pl.includes(`${l.code}-latn`)
-    ) return `${l.code}-latn`
+    )
+      return `${l.code}-latn`
   }
   return null
 }
@@ -365,5 +369,4 @@ export const INDIAN_DESIGN_TOKENS = {
 export const getDefaultFontForScript = (script) =>
   SCRIPT_FONT_MAP[script] || 'Inter, system-ui, sans-serif'
 
-export const lookupKnownLanguage = (code) =>
-  KNOWN_LANGUAGES.find((l) => l.code === code) || null
+export const lookupKnownLanguage = (code) => KNOWN_LANGUAGES.find((l) => l.code === code) || null

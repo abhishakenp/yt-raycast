@@ -39,9 +39,7 @@ describe('client IP security policy', () => {
   })
 
   it('normalizes IPv4-mapped IPv6 socket addresses', () => {
-    expect(getClientIp({ socket: { remoteAddress: '::ffff:198.51.100.8' } })).toBe(
-      '198.51.100.8',
-    )
+    expect(getClientIp({ socket: { remoteAddress: '::ffff:198.51.100.8' } })).toBe('198.51.100.8')
   })
 
   it('ignores spoofed X-Forwarded-For on a direct Express request by default', async () => {

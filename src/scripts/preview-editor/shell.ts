@@ -1,12 +1,6 @@
 import { post } from './bridge'
 import { requestAi } from './ai'
-import type {
-  ApplyOptions,
-  PanelOpenPayload,
-  SidesPayload,
-  TabContext,
-  TabDef,
-} from './types'
+import type { ApplyOptions, PanelOpenPayload, SidesPayload, TabContext, TabDef } from './types'
 
 export interface EditorController {
   open(state: PanelOpenPayload): void

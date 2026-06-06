@@ -838,7 +838,13 @@ function syncPreviewInspectTools() {
 
 function isLocalDevHost() {
   const host = window.location.hostname
-  return host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.')
+  return (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.startsWith('192.168.') ||
+    host.startsWith('10.') ||
+    host.startsWith('172.')
+  )
 }
 
 function syncPreviewChrome() {
@@ -3528,13 +3534,15 @@ function resetPreviewToSessionHtml() {
   nextPreviewBase = ''
   const iframe = document.getElementById('preview-iframe')
   if (!iframe || !SESSION_ID) return
-  if (shouldPreserveOpenUIPreviewReset({
-    openuiActive: document.body.classList.contains('sf-openui-active'),
-    previewLoaded,
-    iframeSrc: iframe.src,
-    previewBase: PREVIEW_BASE,
-    origin: window.location.origin,
-  })) {
+  if (
+    shouldPreserveOpenUIPreviewReset({
+      openuiActive: document.body.classList.contains('sf-openui-active'),
+      previewLoaded,
+      iframeSrc: iframe.src,
+      previewBase: PREVIEW_BASE,
+      origin: window.location.origin,
+    })
+  ) {
     syncPreviewChrome()
     return
   }
@@ -4489,7 +4497,8 @@ function connectWS() {
         const finalElapsed = Number(ev.elapsed)
         if (Number.isFinite(finalElapsed)) {
           persistedElapsed = finalElapsed
-          document.getElementById('phase-text').textContent = `Project generated in ${finalElapsed}s`
+          document.getElementById('phase-text').textContent =
+            `Project generated in ${finalElapsed}s`
           document.getElementById('toast-elapsed').textContent = finalElapsed + 's'
           const timingFinal = document.getElementById('gen-timing')
           const counts = getTaskCounts()
@@ -5047,7 +5056,8 @@ function beginSessionDashboard(session) {
     const sfx = document.getElementById('launch-sfx')
     if (sfx) sfx.remove()
     if (persistedElapsed != null) {
-      document.getElementById('phase-text').textContent = `Project generated in ${persistedElapsed}s`
+      document.getElementById('phase-text').textContent =
+        `Project generated in ${persistedElapsed}s`
       document.getElementById('toast-elapsed').textContent = persistedElapsed + 's'
     }
   }
@@ -5154,7 +5164,9 @@ document.getElementById('new-prompt-form').addEventListener('submit', async (e) 
       /* ignore */
     }
     if (generationCount >= effectiveLimit) {
-      showNewPromptPolicy('Sign in to keep generating. Free anonymous users get 2 generations per day (3 with share bonus).')
+      showNewPromptPolicy(
+        'Sign in to keep generating. Free anonymous users get 2 generations per day (3 with share bonus).',
+      )
       return
     }
   }

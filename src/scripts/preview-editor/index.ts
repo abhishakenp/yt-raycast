@@ -40,9 +40,7 @@ function coercePayload(data: unknown): PanelOpenPayload | null {
       ? (d.computedStyles as Record<string, string>)
       : {}
   const rawStyles =
-    d.rawStyles && typeof d.rawStyles === 'object'
-      ? (d.rawStyles as Record<string, string>)
-      : {}
+    d.rawStyles && typeof d.rawStyles === 'object' ? (d.rawStyles as Record<string, string>) : {}
   const tokens = Array.isArray(d.tokens) ? (d.tokens as PanelOpenPayload['tokens']) : []
   const breadcrumb = Array.isArray(d.breadcrumb)
     ? (d.breadcrumb as PanelOpenPayload['breadcrumb'])

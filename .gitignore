@@ -47,11 +47,6 @@ infra/medusa/sessions/
 medusa-backend/node_modules/
 medusa-backend/.medusa/
 
-# Beads / Dolt files (added by bd init)
-.dolt/
-*.db
-.beads-credential-key
-
 # Debug screenshots from agent-browser/manual UI checks
 /dashboard.png
 
@@ -60,3 +55,5 @@ medusa-backend/.medusa/
 /.a5c
 /dogfood-output
 /dogfood-output
+
+testsprite_tests/tmp/config.json

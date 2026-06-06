@@ -52,7 +52,12 @@ export function requestAi(input: AiRequestInput): Promise<AiResponse> {
         const cleaned: AiResponse['styleDiff'] = []
         for (const entry of arr) {
           if (!entry || typeof entry !== 'object') continue
-          const e = entry as { prop?: unknown; value?: unknown; token?: unknown; important?: unknown }
+          const e = entry as {
+            prop?: unknown
+            value?: unknown
+            token?: unknown
+            important?: unknown
+          }
           if (typeof e.prop !== 'string' || typeof e.value !== 'string') continue
           cleaned.push({
             prop: e.prop,

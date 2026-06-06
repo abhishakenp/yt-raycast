@@ -70,7 +70,7 @@ export function writeValue(
   el: Element,
   prop: string,
   value: string,
-  opts?: WriteOpts
+  opts?: WriteOpts,
 ): HistoryEntry {
   const html = el as HTMLElement
   const eid = ensureEid(el)
@@ -104,7 +104,9 @@ export function writeValue(
 }
 
 export function bindToken(el: Element, prop: string, cssVar: string): HistoryEntry {
-  const token = cssVar.startsWith('--') ? cssVar : `--${cssVar.replace(/^var\(|\)$/g, '').replace(/^--/, '')}`
+  const token = cssVar.startsWith('--')
+    ? cssVar
+    : `--${cssVar.replace(/^var\(|\)$/g, '').replace(/^--/, '')}`
   return writeValue(el, prop, `var(${token})`, { token })
 }
 
@@ -127,16 +129,13 @@ function readSide(el: Element, base: 'padding' | 'margin', side: SideKey): strin
 export function writeSides(
   el: Element,
   sides: { t?: string; r?: string; b?: string; l?: string },
-  base: 'padding' | 'margin'
+  base: 'padding' | 'margin',
 ): HistoryEntry[] {
   const provided: SideKey[] = SIDE_KEYS.filter((k) => typeof sides[k] === 'string')
   if (provided.length === 0) return []
 
   const allFour =
-    provided.length === 4 &&
-    sides.t === sides.r &&
-    sides.r === sides.b &&
-    sides.b === sides.l
+    provided.length === 4 && sides.t === sides.r && sides.r === sides.b && sides.b === sides.l
 
   if (allFour) {
     const entry = writeValue(el, base, sides.t as string, { important: false })

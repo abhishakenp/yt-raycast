@@ -38,7 +38,9 @@ export async function generateDesignBrief(prompt, workspace, log, indiaMode = nu
     }
     if (mobbinAnchor?.app) {
       writeMobbinAnchorToWorkspace(workspace, mobbinAnchor)
-      log(`  mobbin anchor: ${mobbinAnchor.app} (${mobbinAnchor.category}) \u2014 ${mobbinAnchor.reason}`)
+      log(
+        `  mobbin anchor: ${mobbinAnchor.app} (${mobbinAnchor.category}) \u2014 ${mobbinAnchor.reason}`,
+      )
     } else {
       log('  mobbin anchor: none (brief did not match any DNA entry)')
     }

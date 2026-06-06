@@ -1,5 +1,6 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { buildPreviewSeoHead } from '@ship-fast/aeo'
 import { resolveThemeStyles, THEME_CATALOG } from '@ship-fast/blocks'
 import type { SiteSpecProject } from '../spec/index.ts'
@@ -9,6 +10,29 @@ import { looksSerif } from '../clone/tokens.ts'
 import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
+const TAILWIND_BROWSER_SCRIPT_RELATIVE = 'scripts/tailwind-browser.js'
+const RENDERER_DIR = dirname(fileURLToPath(import.meta.url))
+
+function readTailwindBrowserScript(): string {
+  const candidatePaths = [
+    join(process.cwd(), 'public', TAILWIND_BROWSER_SCRIPT_RELATIVE),
+    join(RENDERER_DIR, '..', '..', '..', '..', 'public', TAILWIND_BROWSER_SCRIPT_RELATIVE),
+  ]
+  for (const path of candidatePaths) {
+    try {
+      if (existsSync(path)) return readFileSync(path, 'utf8')
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return ''
+}
+
+function attachTailwindBrowserScript(files: Record<string, string>) {
+  const script = readTailwindBrowserScript()
+  if (script) files[TAILWIND_BROWSER_SCRIPT_RELATIVE] = script
+  return files
+}
 
 // --- Per-site visual identity --------------------------------------------------
 // Registry modules use Tailwind token classes. During SSR we derive a
@@ -28,18 +52,72 @@ function hashSeed(text: string): number {
 // The shadcn-style design-token CSS variables the registry sections consume
 // (bg-primary, text-foreground, border-border, …).
 const THEME_VAR_KEYS = [
-  'background', 'foreground', 'card', 'card-foreground', 'popover', 'popover-foreground',
-  'primary', 'primary-foreground', 'secondary', 'secondary-foreground', 'muted', 'muted-foreground',
-  'accent', 'accent-foreground', 'destructive', 'destructive-foreground', 'border', 'input', 'ring',
-  'chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5',
-  'sidebar', 'sidebar-foreground', 'sidebar-primary', 'sidebar-primary-foreground',
-  'sidebar-accent', 'sidebar-accent-foreground', 'sidebar-border', 'sidebar-ring',
+  'background',
+  'foreground',
+  'card',
+  'card-foreground',
+  'popover',
+  'popover-foreground',
+  'primary',
+  'primary-foreground',
+  'secondary',
+  'secondary-foreground',
+  'muted',
+  'muted-foreground',
+  'accent',
+  'accent-foreground',
+  'destructive',
+  'destructive-foreground',
+  'border',
+  'input',
+  'ring',
+  'chart-1',
+  'chart-2',
+  'chart-3',
+  'chart-4',
+  'chart-5',
+  'sidebar',
+  'sidebar-foreground',
+  'sidebar-primary',
+  'sidebar-primary-foreground',
+  'sidebar-accent',
+  'sidebar-accent-foreground',
+  'sidebar-border',
+  'sidebar-ring',
 ] as const
 
 const THEME_STOP_WORDS = new Set([
-  'the', 'and', 'for', 'with', 'your', 'our', 'that', 'this', 'from', 'into', 'feel', 'vibe',
-  'mood', 'default', 'best', 'fits', 'when', 'brand', 'brands', 'product', 'products', 'site',
-  'app', 'homepage', 'page', 'build', 'create', 'website', 'palette', 'accent', 'primary',
+  'the',
+  'and',
+  'for',
+  'with',
+  'your',
+  'our',
+  'that',
+  'this',
+  'from',
+  'into',
+  'feel',
+  'vibe',
+  'mood',
+  'default',
+  'best',
+  'fits',
+  'when',
+  'brand',
+  'brands',
+  'product',
+  'products',
+  'site',
+  'app',
+  'homepage',
+  'page',
+  'build',
+  'create',
+  'website',
+  'palette',
+  'accent',
+  'primary',
 ])
 
 function themeWords(text: string): string[] {
@@ -57,9 +135,13 @@ function hexToRgbChannels(hex: string): string {
   // Validate hex format before processing
   if (!isHexColor(hex)) return hex
   const h = hex.replace(/^#/, '')
-  const full = h.length === 3
-    ? h.split('').map((c) => c + c).join('')
-    : h
+  const full =
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h
   const n = parseInt(full, 16)
   if (Number.isNaN(n)) return hex
   return `${(n >> 16) & 0xff} ${(n >> 8) & 0xff} ${n & 0xff}`
@@ -110,8 +192,16 @@ function googleFontLink(styles: any): string {
   for (const key of ['font-sans', 'font-serif']) {
     const raw = styles?.light?.[key]
     if (typeof raw !== 'string') continue
-    const first = raw.split(',')[0]?.trim().replace(/^["']|["']$/g, '')
-    if (first && !/^(ui-|system|-apple|blinkmac|segoe|sans-serif|serif|monospace|georgia|arial|helvetica|times|menlo|consolas|courier)/i.test(first)) {
+    const first = raw
+      .split(',')[0]
+      ?.trim()
+      .replace(/^["']|["']$/g, '')
+    if (
+      first &&
+      !/^(ui-|system|-apple|blinkmac|segoe|sans-serif|serif|monospace|georgia|arial|helvetica|times|menlo|consolas|courier)/i.test(
+        first,
+      )
+    ) {
       families.add(first)
     }
   }
@@ -134,8 +224,7 @@ function buildThemeHead(seedText: string, requested?: string | null): string {
   const light: Record<string, string> = (styles?.light as Record<string, string>) || {}
   // Convert hex colors to bare RGB channels so Tailwind v3 CDN opacity
   // modifiers (text-background/80, bg-primary/50, …) can decompose them.
-  const rootVars = THEME_VAR_KEYS
-    .filter((key) => light[key] != null)
+  const rootVars = THEME_VAR_KEYS.filter((key) => light[key] != null)
     .map((key) => {
       const raw = light[key]
       const val = isHexColor(raw) ? hexToRgbChannels(raw) : raw
@@ -199,31 +288,31 @@ export function buildThemeHeadFromTokens(tokens: ExtractedTokens, brand: string)
 
   // Every key resolves to channels; *-foreground pairs read against their surface.
   const colorVars: Record<(typeof THEME_VAR_KEYS)[number], string> = {
-    'background': bg,
-    'foreground': fg,
-    'card': bg,
+    background: bg,
+    foreground: fg,
+    card: bg,
     'card-foreground': fg,
-    'popover': bg,
+    popover: bg,
     'popover-foreground': fg,
-    'primary': primary,
+    primary: primary,
     'primary-foreground': bg,
-    'secondary': secondary,
+    secondary: secondary,
     'secondary-foreground': fg,
-    'muted': muted,
+    muted: muted,
     'muted-foreground': mutedFg,
-    'accent': accent,
+    accent: accent,
     'accent-foreground': bg,
-    'destructive': '239 68 68',
+    destructive: '239 68 68',
     'destructive-foreground': '255 255 255',
-    'border': border,
-    'input': border,
-    'ring': primary,
+    border: border,
+    input: border,
+    ring: primary,
     'chart-1': primary,
     'chart-2': accent,
     'chart-3': secondary,
     'chart-4': muted,
     'chart-5': fg,
-    'sidebar': bg,
+    sidebar: bg,
     'sidebar-foreground': fg,
     'sidebar-primary': primary,
     'sidebar-primary-foreground': bg,
@@ -242,14 +331,11 @@ export function buildThemeHeadFromTokens(tokens: ExtractedTokens, brand: string)
   // slots. This generalizes the previously hardcoded 'Georgia, serif' heading to
   // the original's actual serif, while never branching on a specific site.
   const extractedIsSerif = extracted ? looksSerif(extracted) : false
-  const fontSans = extractedIsSerif || !extracted
-    ? 'ui-sans-serif, system-ui, sans-serif'
-    : extracted
+  const fontSans =
+    extractedIsSerif || !extracted ? 'ui-sans-serif, system-ui, sans-serif' : extracted
   const fontSerif = extractedIsSerif ? `${extracted}, Georgia, serif` : 'Georgia, serif'
 
-  const rootVars = THEME_VAR_KEYS
-    .map((key) => `--${key}: ${colorVars[key]};`)
-    .join(' ')
+  const rootVars = THEME_VAR_KEYS.map((key) => `--${key}: ${colorVars[key]};`).join(' ')
 
   // Use rgb(var(--X) / <alpha-value>) so Tailwind v3 can apply opacity modifiers
   const tailwindColors = JSON.stringify(
@@ -385,7 +471,9 @@ function renderItems(items: any[] = []): string {
     .map((item) => {
       const title = escapeHtml(item?.title || item?.label || item?.value || 'Feature')
       const body = escapeHtml(item?.body || item?.quote || item?.price || item?.label || '')
-      const value = item?.value ? `<p class="mb-2 text-3xl font-black text-emerald-300">${escapeHtml(item.value)}</p>` : ''
+      const value = item?.value
+        ? `<p class="mb-2 text-3xl font-black text-emerald-300">${escapeHtml(item.value)}</p>`
+        : ''
       const features = Array.isArray(item?.features)
         ? `<ul class="mt-4 space-y-2 text-sm text-zinc-300">${item.features
             .map((feature: unknown) => `<li>+ ${escapeHtml(feature)}</li>`)
@@ -401,7 +489,9 @@ function renderStaticHomepage(spec: any, brand: string, tagline: string): string
   const sections = Array.isArray(home?.sections) ? home.sections : []
   const nav = sections.find((section: any) => section?.type === 'navbar')
   const links = Array.isArray(nav?.links) ? nav.links : []
-  const bodySections = sections.filter((section: any) => section?.type !== 'navbar' && section?.type !== 'footer')
+  const bodySections = sections.filter(
+    (section: any) => section?.type !== 'navbar' && section?.type !== 'footer',
+  )
 
   return `
     <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
@@ -409,7 +499,10 @@ function renderStaticHomepage(spec: any, brand: string, tagline: string): string
       <nav class="hidden items-center gap-5 text-sm text-zinc-300 md:flex">
         ${links
           .slice(0, 6)
-          .map((link: any) => `<a class="hover:text-white" href="${escapeHtml(link?.href || '#')}">${escapeHtml(link?.label || 'Link')}</a>`)
+          .map(
+            (link: any) =>
+              `<a class="hover:text-white" href="${escapeHtml(link?.href || '#')}">${escapeHtml(link?.label || 'Link')}</a>`,
+          )
           .join('')}
       </nav>
     </header>
@@ -453,14 +546,9 @@ export function renderProject(siteSpec: SiteSpecProject, target: string, session
   const spec: any = siteSpec
   const brand = spec.brand || spec.projectName || 'Generated Site'
   const tagline =
-    spec.tagline ||
-    spec.pages?.[0]?.description ||
-    spec.userPrompt ||
-    'Generated with Ship Fast.'
+    spec.tagline || spec.pages?.[0]?.description || spec.userPrompt || 'Generated with Ship Fast.'
   const theme =
-    typeof spec.theme === 'string'
-      ? spec.theme
-      : spec.theme?.mood || spec.siteType || 'default'
+    typeof spec.theme === 'string' ? spec.theme : spec.theme?.mood || spec.siteType || 'default'
   const modules =
     spec.modules && typeof spec.modules === 'object'
       ? spec.modules
@@ -473,7 +561,8 @@ export function renderProject(siteSpec: SiteSpecProject, target: string, session
   const moduleNames = Object.keys(modules)
 
   files['site-spec.json'] = JSON.stringify(siteSpec, null, 2)
-  files['README.md'] = `# ${brand}\n\n${tagline}\n\nThis project was generated with the **${theme}** theme.\n\n## Structure\n- Brand: ${brand}\n- Tagline: ${tagline}\n- Theme: ${theme}\n- Pages: ${moduleNames.join(', ')}\n`
+  files['README.md'] =
+    `# ${brand}\n\n${tagline}\n\nThis project was generated with the **${theme}** theme.\n\n## Structure\n- Brand: ${brand}\n- Tagline: ${tagline}\n- Theme: ${theme}\n- Pages: ${moduleNames.join(', ')}\n`
 
   if (target === 'html') {
     files['index.html'] = `<!DOCTYPE html>
@@ -512,7 +601,7 @@ export default function App() {
         <p>${theme}</p>
         <h2>Modules</h2>
         <ul>
-          ${moduleNames.map(id => `<li key={id}>${id}</li>`).join('\n          ')}
+          ${moduleNames.map((id) => `<li key={id}>${id}</li>`).join('\n          ')}
         </ul>
       </div>
     </div>
@@ -546,7 +635,7 @@ export default function Page() {
         <p>${theme}</p>
         <h2>Modules</h2>
         <ul>
-          ${moduleNames.map(id => `<li key={id}>${id}</li>`).join('\n          ')}
+          ${moduleNames.map((id) => `<li key={id}>${id}</li>`).join('\n          ')}
         </ul>
       </div>
     </div>
@@ -556,7 +645,7 @@ export default function Page() {
     throw new Error(`Unsupported export target: ${target}`)
   }
 
-  return { files }
+  return { files: attachTailwindBrowserScript(files) }
 }
 
 export function writeRenderedFiles(baseDir: string, files: Record<string, string>) {
@@ -567,7 +656,12 @@ export function writeRenderedFiles(baseDir: string, files: Record<string, string
   }
 }
 
-export function renderPreviewToWorkspace(siteSpec: SiteSpecProject, workspace: string, session?: any, options?: any) {
+export function renderPreviewToWorkspace(
+  siteSpec: SiteSpecProject,
+  workspace: string,
+  session?: any,
+  options?: any,
+) {
   const rendered = renderProject(siteSpec, 'html', session)
   const spec: any = siteSpec
   const brand = spec?.brand || spec?.projectName || 'Generated Site'
@@ -616,9 +710,14 @@ ${themeHead}
   <script src="/scripts/openui-preview-client.js"></script>
 </body>
 </html>`
-  writeRenderedFiles(workspace, { 'index.html': html })
+  writeRenderedFiles(workspace, attachTailwindBrowserScript({ 'index.html': html }))
 }
 
-export function writeNextAppToWorkspace(siteSpec: SiteSpecProject, workspace: string, session?: any, options?: any) {
+export function writeNextAppToWorkspace(
+  siteSpec: SiteSpecProject,
+  workspace: string,
+  session?: any,
+  options?: any,
+) {
   return renderPreviewToWorkspace(siteSpec, workspace, session, options)
 }

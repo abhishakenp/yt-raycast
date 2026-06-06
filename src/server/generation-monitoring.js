@@ -168,8 +168,11 @@ async function notifyTelegram(text, env = process.env) {
   const token = env.TELEGRAM_BOT_TOKEN || env.SHIP_FAST_TELEGRAM_BOT_TOKEN || ''
   const chatId = env.TELEGRAM_CHAT_ID || env.SHIP_FAST_TELEGRAM_CHAT_ID || ''
   if (!token || !chatId) return
-  const apiBase = (env.SHIP_FAST_TELEGRAM_API_BASE || env.TELEGRAM_API_BASE || 'https://api.telegram.org')
-    .replace(/\/+$/, '')
+  const apiBase = (
+    env.SHIP_FAST_TELEGRAM_API_BASE ||
+    env.TELEGRAM_API_BASE ||
+    'https://api.telegram.org'
+  ).replace(/\/+$/, '')
   await postJson(`${apiBase}/bot${token}/sendMessage`, {
     chat_id: chatId,
     text,
@@ -259,7 +262,10 @@ export async function finalizeGenerationMonitoring({
     engineElapsedSeconds,
   })
 
-  writeFileSync(join(session.workspace, 'generation-metrics.json'), JSON.stringify(metrics, null, 2))
+  writeFileSync(
+    join(session.workspace, 'generation-metrics.json'),
+    JSON.stringify(metrics, null, 2),
+  )
   appendFileSync(usageFilePath(sessionsDir), `${JSON.stringify(metrics)}\n`)
 
   const summary = `Ship Fast generation ${status}: ${metrics.sessionId} | ${metrics.elapsedSeconds}s | $${metrics.cost.totalUsd.toFixed(4)} | ${metrics.userId || 'anonymous'}`

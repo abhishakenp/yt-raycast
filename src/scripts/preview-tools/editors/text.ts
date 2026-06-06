@@ -133,7 +133,7 @@ export function createTextEditor(opts: TextEditorOpts = {}): TextEditorHandle {
         const href = window.prompt('Link URL')
         if (!href) return
         exec('createLink', href)
-      })
+      }),
     )
     return bar
   }
