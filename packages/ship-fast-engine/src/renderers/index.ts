@@ -218,7 +218,7 @@ function googleFontLink(styles: any): string {
 // fonts to the theme's CSS variables (so `bg-primary`/`text-foreground` resolve
 // under the Tailwind CDN), then set those variables on :root. The rich registry
 // sections then theme themselves with a designed, vibe-matched palette.
-function buildThemeHead(seedText: string, requested?: string | null): string {
+export function buildThemeHead(seedText: string, requested?: string | null): string {
   const themeName = pickThemeName(seedText, requested)
   const styles = resolveThemeStyles(themeName)
   const light: Record<string, string> = (styles?.light as Record<string, string>) || {}

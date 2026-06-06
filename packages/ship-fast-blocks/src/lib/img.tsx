@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query"
-import { useEffect, useRef, useState } from "react"
 import type { ImgHTMLAttributes } from "react"
 
 function slugify(alt: string | undefined): string {
@@ -18,29 +16,15 @@ export function picsum(alt: string | undefined, w = 800, h = 600): string {
   return `https://picsum.photos/seed/${seed}/${w}/${h}`
 }
 
-/** Fetches a relevant Pexels image based on alt text and caches it via React Query. */
-export function usePexelsImage(alt: string | undefined, w = 800, h = 600, enabled = true) {
+/** Generate proxy URL for Pexels image. */
+function getPexelsProxyUrl(alt: string | undefined, w: number, h: number): string {
   const seed = slugify(alt)
-
-  return useQuery({
-    queryKey: ["pexels", seed, w, h],
-    queryFn: async () => {
-      const res = await fetch(
-        `/api/pexels?query=${encodeURIComponent(seed)}&w=${w}&h=${h}`
-      )
-      if (!res.ok) throw new Error("pexels fetch failed")
-      const data = await res.json()
-      return data.url as string
-    },
-    staleTime: Infinity,
-    enabled: !!alt && enabled,
-  })
+  return `/api/pexels?query=${encodeURIComponent(seed)}&w=${w}&h=${h}`
 }
 
 /** Drop-in replacement for `<img>` that resolves a relevant Pexels image from `alt` text.
- *  Falls back to picsum while loading. Cached via React Query so identical alt text reuses the same URL.
- *  Pass an explicit `src` to use a pre-resolved URL verbatim (e.g. a photo already synced to Medusa),
- *  bypassing Pexels resolution entirely so the UI and backend stay pixel-identical. */
+ *  Uses server-side proxy for SSR compatibility. Pass an explicit `src` to use a pre-resolved URL verbatim
+ *  (e.g. a photo already synced to Medusa), bypassing Pexels resolution entirely. */
 export function Image({
   alt,
   src,
@@ -69,47 +53,12 @@ export function Image({
       />
     )
   }
-  if (typeof window === "undefined") {
-    return (
-      <img
-        src={picsum(alt, w, h)}
-        alt={alt}
-        width={w}
-        height={h}
-        className={className}
-        loading={loading}
-        {...rest}
-      />
-    )
-  }
-  const imgRef = useRef<HTMLImageElement | null>(null)
-  const isLazy = loading === "lazy"
-  const [shouldResolvePexels, setShouldResolvePexels] = useState(!isLazy)
 
-  useEffect(() => {
-    if (!isLazy || shouldResolvePexels) return
-    const img = imgRef.current
-    if (!img || typeof IntersectionObserver === "undefined") {
-      setShouldResolvePexels(true)
-      return
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return
-        setShouldResolvePexels(true)
-        observer.disconnect()
-      },
-      { rootMargin: "600px 0px" },
-    )
-    observer.observe(img)
-    return () => observer.disconnect()
-  }, [isLazy, shouldResolvePexels])
+  const proxyUrl = getPexelsProxyUrl(alt, w, h)
 
-  const { data: resolvedSrc } = usePexelsImage(alt, w, h, shouldResolvePexels)
   return (
     <img
-      ref={imgRef}
-      src={resolvedSrc ?? picsum(alt, w, h)}
+      src={proxyUrl}
       alt={alt}
       width={w}
       height={h}
