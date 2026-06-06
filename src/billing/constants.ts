@@ -1,6 +1,3 @@
-// ─── Shared Billing & Rate-Limit Constants ───────────────────────────────────
-// Single source of truth — imported by both server/index.js and server/payments.js
-
 /** Hard monthly cap for free (no subscription) users */
 export const MAX_FREE_PER_MONTH = 10
 
@@ -41,15 +38,19 @@ export const MONTHLY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
 export const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
 
 /** IP addresses whitelisted from rate limiting (comma-separated in env, or array) */
-const rawWhitelist = process.env.WHITELISTED_IPS || ''
-export const WHITELISTED_IPS = rawWhitelist ? rawWhitelist.split(',').map((ip) => ip.trim()) : []
+export function parseWhitelistedIps(raw: string | null | undefined): string[] {
+  return raw ? raw.split(',').map((ip) => ip.trim()).filter(Boolean) : []
+}
 
-/**
- * Check if an IP address is whitelisted from rate limiting
- */
-export function isIpWhitelisted(ip: string | null | undefined): boolean {
+const rawWhitelist = process.env.WHITELISTED_IPS || ''
+export const WHITELISTED_IPS = parseWhitelistedIps(rawWhitelist)
+
+export function isIpWhitelisted(
+  ip: string | null | undefined,
+  whitelist = WHITELISTED_IPS,
+): boolean {
   if (!ip) {
     return false
   }
-  return WHITELISTED_IPS.includes(ip)
+  return whitelist.includes(ip)
 }
