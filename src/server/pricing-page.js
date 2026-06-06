@@ -7,6 +7,7 @@ import {
   renderMarketingFonts,
   renderMarketingLogoBlock,
   renderMarketingTopBarScript,
+  renderSiteFooter,
   renderTopActions,
 } from './marketing-shell.js'
 
@@ -40,6 +41,7 @@ export const renderPricingPage = () => {
     ${renderTopActions()}
     ${renderMarketingLogoBlock()}
     ${PRICING_PAGE_MAIN_HTML}
+    ${renderSiteFooter()}
     ${renderMarketingTopBarScript()}
     ${renderLaunchBackdropScript()}
   </body>

@@ -350,14 +350,6 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
         <p class="cta-note">Free to start · ₹199/month early adopter · cancel anytime</p>
       </section>
 
-      <footer class="site-footer">
-        <span class="footer-brand">SHIP FAST © 2025</span>
-        <nav class="footer-nav" aria-label="Footer links">
-          <a href="/">Home</a>
-          <a href="/pricing" aria-current="page">Pricing</a>
-        </nav>
-      </footer>
-
     </div>
 
     <script>

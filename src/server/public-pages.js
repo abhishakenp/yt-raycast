@@ -10,6 +10,7 @@ import { sfGlassPillBody, sfGlassPillSvgDefs } from './liquid-glass-button.js'
 import {
   GLOBAL_LAUNCH_BACKDROP_HTML,
   renderLaunchBackdropScript,
+  renderSiteFooterContent,
   renderTopActions,
 } from './marketing-shell.js'
 
@@ -364,6 +365,10 @@ export function renderHomePage(siteSettings = null) {
       ${heroBlock}
 
       <section class="launch-hero" aria-label="Instant AI websites">
+        <div class="launch-visual" aria-hidden="true">
+          <img class="launch-rocket" src="/assets/launch-scene.png" alt="" loading="eager" decoding="async" />
+        </div>
+
         <div class="launch-copy">
           <p class="launch-eyebrow">Prompt. Generate. Launch.</p>
           <h2 class="launch-title">Instant AI Websites</h2>
@@ -504,30 +509,6 @@ export function renderHomePage(siteSettings = null) {
       </div>
             ${renderExamplePromptChips()}
           </div>
-
-          <div class="launch-visual" aria-hidden="true">
-          <img class="launch-rocket" src="/assets/launch-rocket.png" alt="" loading="eager" decoding="async" />
-          <div class="launch-orbit launch-orbit--one"></div>
-          <div class="launch-orbit launch-orbit--two"></div>
-
-          <div class="launch-flow">
-            <span class="flow-flame flow-flame--halo"></span>
-            <span class="flow-flame flow-flame--core"></span>
-            <span class="flow-ribbon flow-ribbon--one"></span>
-            <span class="flow-ribbon flow-ribbon--two"></span>
-            <span class="flow-ribbon flow-ribbon--three"></span>
-            <span class="flow-word flow-word--one">WEB STARTUP</span>
-            <span class="flow-word flow-word--two">PORTFOLIO</span>
-            <span class="flow-word flow-word--three">SAAS</span>
-            <span class="flow-word flow-word--four">LOCAL BUSINESS</span>
-            <span class="flow-word flow-word--five">ECOMMERCE</span>
-            <span class="flow-particle flow-particle--one"></span>
-            <span class="flow-particle flow-particle--two"></span>
-            <span class="flow-particle flow-particle--three"></span>
-            <span class="flow-particle flow-particle--four"></span>
-            <span class="flow-particle flow-particle--five"></span>
-          </div>
-        </div>
         </div>
       </section>
 
@@ -553,12 +534,8 @@ export function renderHomePage(siteSettings = null) {
       </div>
     </div>
 
-    <footer class="homepage-footer">
-      <nav class="homepage-footer-legal" id="homepage-footer-legal" aria-label="Legal">
-        <a href="/pricing">Pricing</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-      </nav>
+    <footer class="site-footer homepage-footer">
+      ${renderSiteFooterContent()}
     </footer>
 
     <noscript>

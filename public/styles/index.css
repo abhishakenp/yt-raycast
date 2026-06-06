@@ -1824,33 +1824,45 @@ button.share-icon.pill {
   position: relative;
   z-index: 4;
   width: min(var(--homepage-track-max), calc(100% - var(--homepage-track-gutter)));
-  margin: 0 auto;
-  padding: 32px 0 48px;
-  border-top: 1px solid var(--border-primary);
+  margin: 0 auto 24px;
+  padding: 22px 28px;
+  border-radius: 20px;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 24px;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    var(--glass-shadow),
+    0 0 60px rgba(100, 80, 200, 0.04);
 }
 
-.homepage-footer-legal {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 24px;
-  font-family: var(--font-sans);
+.homepage-footer .footer-brand {
+  font-family: var(--font-mono);
   font-size: 13px;
-  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.12em;
 }
 
-.homepage-footer-legal a {
+.homepage-footer .footer-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.homepage-footer .footer-nav a {
+  font-size: 13px;
   color: var(--text-secondary);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s;
 }
 
-.homepage-footer-legal a:hover {
+.homepage-footer .footer-nav a:hover {
   color: var(--text-primary);
 }
 
@@ -2123,8 +2135,8 @@ button.share-icon.pill {
 
   .homepage-footer {
     flex-direction: column;
-    align-items: center;
-    gap: 20px;
+    align-items: flex-start;
+    gap: 16px;
   }
 
   .auth-box {
@@ -2272,7 +2284,7 @@ body::before {
   min-height: 100svh;
   overflow: hidden;
   border-radius: 0;
-  padding: clamp(82px, 7vw, 102px) clamp(42px, 3.4vw, 58px) clamp(32px, 5vw, 62px);
+  padding: clamp(82px, 7vw, 102px) clamp(42px, 3.4vw, 58px) clamp(32px, 5vw, 62px) 0;
   isolation: isolate;
   background:
     linear-gradient(116deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01) 38%, transparent 66%),
@@ -2319,7 +2331,7 @@ body::before {
   align-items: flex-start;
   justify-content: flex-start;
   text-align: left;
-  padding: clamp(78px, 7vw, 92px) 0 0;
+  padding: clamp(34px, 3vw, 44px) 0 0;
   padding-left: 0;
   margin-left: 0;
   width: 100%;

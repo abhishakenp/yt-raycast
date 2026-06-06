@@ -164,9 +164,19 @@ export const renderMarketingNav = (active = 'home') => `
 </nav>
 `
 
+export const renderSiteFooterContent = () => `
+  <span class="footer-brand">SHIP FAST © ${new Date().getFullYear()}</span>
+  <nav class="footer-nav" aria-label="Footer links">
+    <a href="/">Home</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+  </nav>
+`
+
 export const renderSiteFooter = () => `
   <footer class="site-footer">
-    <p>© ${new Date().getFullYear()} SHIP FAST. All rights reserved.</p>
+    ${renderSiteFooterContent()}
   </footer>
 `
 

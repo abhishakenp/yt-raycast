@@ -2832,7 +2832,8 @@ function setIntroProgress(value, options = {}) {
   overlay.style.setProperty('--intro-progress', introProgressValue.toFixed(3))
   overlay.style.setProperty('--intro-frame-y', `${Math.round((1 - introProgressValue) * 58)}vh`)
   overlay.style.setProperty('--intro-glow-y', `${Math.round((1 - introProgressValue) * 12)}vh`)
-  overlay.style.setProperty('--intro-frame-scale', (0.9 + introProgressValue * 0.1).toFixed(3))
+  // overlay.style.setProperty('--intro-frame-scale', (0.9 + introProgressValue * 0.1).toFixed(3))
+  overlay.style.setProperty('--intro-frame-scale', '1')
   overlay.style.setProperty('--intro-frame-opacity', String(Math.min(1, Math.max(0, (introProgressValue - 0.08) / 0.34))))
   overlay.style.setProperty('--intro-progress-width', `${Math.round(progressTrackWidth * introProgressValue)}px`)
   overlay.dataset.progress = String(Math.round(introProgressValue * 100))
@@ -2866,6 +2867,8 @@ function getIntroPhotoUrl(photo) {
 }
 
 function seedIntroMediaPreviews(photos = []) {
+  // Disabled - no media previews
+  return
   const orbit = document.getElementById('intro-media-orbit')
   // Ignore photos parameter - we use placeholder rectangles instead of images
   if (!orbit) return
@@ -2907,7 +2910,7 @@ function syncIntroProgressFromTasks() {
 }
 
 function startIntro() {
-  document.body.classList.add('intro-loading-active')
+  // document.body.classList.add('intro-loading-active')
   resetIntroMediaPreviews()
   seedIntroMediaPreviews()
   funMessageIndex = 0 // Reset fun message index for new session

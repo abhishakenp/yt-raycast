@@ -5,23 +5,23 @@
   --launch-cyan: #26e7ff;
 }
 
-.launch-hero .launch-stage .launch-visual {
+.launch-hero .launch-visual {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 0;
   overflow: visible;
   pointer-events: none;
 }
 
 .launch-visual .launch-rocket {
   position: absolute;
-  right: -4%;
-  bottom: 24px;
-  left: auto;
-  top: auto;
-  z-index: 1;
+  left: -6%;
+  top: -60px;
+  right: auto;
+  bottom: auto;
+  z-index: -1;
   display: block;
-  width: min(118%, 480px);
+  width: min(122%, 760px);
   max-width: none;
   min-width: 0;
   height: auto;
@@ -31,9 +31,12 @@
   opacity: 1;
   transform: translate3d(0, 0, 0);
   transform-origin: 82% 78%;
-  filter:
-    drop-shadow(-18px 24px 38px rgba(38, 231, 255, 0.28))
-    drop-shadow(22px -10px 42px rgba(223, 53, 255, 0.22));
+  filter: drop-shadow(20px -10px 42px rgba(223, 53, 255, 0.18));
+}
+
+.launch-flow,
+.launch-orbit {
+  display: none !important;
 }
 
 .launch-flow {
@@ -345,7 +348,7 @@
 }
 
 @media (max-width: 1100px) {
-  .launch-hero .launch-stage .launch-visual {
+  .launch-hero .launch-visual {
     inset: 168px -4vw 0;
   }
 
@@ -353,19 +356,19 @@
     position: relative;
     right: auto;
     bottom: auto;
-    width: min(100%, 420px);
+    width: min(100%, 680px);
     max-width: 100%;
     margin: 28px auto 0;
   }
 }
 
 @media (max-width: 760px) {
-  .launch-hero .launch-stage .launch-visual {
+  .launch-hero .launch-visual {
     inset: 214px -30px 0 -56px;
   }
 
   .launch-visual .launch-rocket {
-    width: min(100%, 340px);
+    width: min(112%, 620px);
     margin-top: 18px;
   }
 
