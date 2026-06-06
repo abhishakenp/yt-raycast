@@ -18,6 +18,9 @@ import {
 } from '../config.js'
 import { applyThemeOverrideToSiteSpec } from './theme.js'
 import { renderPreviewToWorkspace } from '../renderers/index.js'
+import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
+import { buildThemeHead } from '@ship-fast/engine/renderers/index.js'
+import { buildPreviewSeoHead } from '@ship-fast/aeo'
 import {
   provisionSanityForSession,
   isSanityProvisionable,
@@ -50,7 +53,6 @@ import {
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
 import { readOpenUIFileForRoute, readSiteSpecThemeColors, readSiteSpecLocale } from '../pipeline/openui-artifacts.js'
-import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
 import { buildThemeHeadFromTokens } from '@ship-fast/engine/renderers/index.js'
 import {
   compactStyleFragmentHtml,
@@ -2859,14 +2861,65 @@ ${themeHead}
     '/preview/:sessionId',
     (req, res, next) => {
       setNoIndexHeaders(res)
-      // Cache preview files aggressively - they don't change once generated
-      res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800')
+      // Disable caching for dynamic OpenUI SSR
+      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate')
       next()
     },
     (req, res, next) => {
       const session = getSession(req.params.sessionId)
       if (!session) return res.status(404).send('Session not found')
       const fp = filePathForPreviewRequest(session.workspace, req)
+      
+      // For index.html, try dynamic OpenUI SSR first
+      if (fp && extname(fp) === '.html' && (fp.endsWith('index.html') || fp.endsWith('/index.html'))) {
+        const openuiPath = join(session.workspace, 'home.openui')
+        if (existsSync(openuiPath)) {
+          try {
+            const source = readFileSync(openuiPath, 'utf8')
+            const brand = session.prompt?.slice(0, 50) || 'Generated Site'
+            const themeHead = buildThemeHead(`${brand}\n${source}`, null)
+            const { html, cssVars } = renderOpenUIToHTMLWithTheme(source, null, session.preferredLanguage || 'en', null)
+            const siteSpec = readFileSync(join(session.workspace, 'site-spec.json'), 'utf8')
+            const siteSpecData = JSON.parse(siteSpec)
+            const previewSeoHead = buildPreviewSeoHead(siteSpecData, brand, String(siteSpecData?.tagline || ''))
+            
+            const dynamicHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  ${previewSeoHead}
+  <script src="/scripts/tailwind-browser.js"></script>
+${themeHead}
+  <style>
+    #openui-root {
+      ${cssVars || ''}
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-background text-foreground">
+  <div id="openui-root">${html}</div>
+</body>
+</html>`
+            
+            res
+              .type('html')
+              .send(
+                injectPreviewToolsHtml(
+                  dynamicHtml,
+                  req.params.sessionId,
+                  session.preferredLanguage,
+                  session.workspace,
+                  readPalette(session.workspace),
+                ),
+              )
+            return
+          } catch (err) {
+            console.error('[OpenUI SSR] Failed:', err)
+            // Fall through to static file serving
+          }
+        }
+      }
+      
+      // Fall back to static file serving
       if (fp && extname(fp) === '.html') {
         try {
           const html = readFileSync(fp, 'utf8')

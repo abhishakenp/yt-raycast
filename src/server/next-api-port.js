@@ -131,6 +131,12 @@ export function mountNextApiPort(app, { requireAuth }) {
   app.post('/api/payments/razorpay/start', requireAuth, razorpayStartHandler)
   app.post('/api/payments/stripe/start', requireAuth, stripeStartHandler)
 
+  // GET /api/pexels — Pexels image proxy (HTTP redirect)
+  app.get('/api/pexels', async (req, res) => {
+    const { pexelsImageHandler } = await import('./pexels.js')
+    return pexelsImageHandler(req, res)
+  })
+
   // POST /api/stream-openui — Server-Sent Events bridge to Groq
   app.post('/api/stream-openui', async (req, res) => {
     const { GROQ_API_KEY, OPENUI_HOME_MODEL } = await import('../config.js')
