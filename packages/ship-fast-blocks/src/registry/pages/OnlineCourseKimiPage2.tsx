@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineComponent } from "@openuidev/react-lang"
 import { cn } from "#/lib/utils.ts"
@@ -181,6 +181,7 @@ export const OnlineCourseKimiPage2 = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "Nexus Academy"
     const nav = props.nav?.length
       ? props.nav
@@ -884,13 +885,33 @@ export const OnlineCourseKimiPage2 = defineComponent({
               </button>
               <button
                 type="button"
-                onClick={() => go("/")}
+                onClick={() => setMobileOpen((v: boolean) => !v)}
                 aria-label="Open menu"
                 className="grid size-10 place-items-center rounded-lg text-foreground transition-colors hover:bg-muted md:hidden"
               >
                 <HamburgerIcon className="size-6" />
               </button>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </header>
 

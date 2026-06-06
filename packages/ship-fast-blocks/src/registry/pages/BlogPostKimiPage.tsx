@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineComponent } from "@openuidev/react-lang"
 import { cn } from "#/lib/utils.ts"
@@ -141,6 +142,7 @@ export const BlogPostKimiPage = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "Studio Journal"
     const nav = props.nav?.length
       ? props.nav
@@ -397,7 +399,9 @@ export const BlogPostKimiPage = defineComponent({
               <button
                 type="button"
                 aria-label="Open menu"
-                onClick={() => go(nav[0])}
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMobileOpen((v) => !v)}
                 className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
               >
                 <svg
@@ -416,6 +420,26 @@ export const BlogPostKimiPage = defineComponent({
                 </svg>
               </button>
             </div>
+            {mobileOpen && (
+              <div
+                id="mobile-menu"
+                className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+              >
+                {nav.map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      go(label)
+                    }}
+                    className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </nav>
 

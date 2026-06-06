@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import { z } from "zod/v4"
 import { defineComponent } from "@openuidev/react-lang"
 import { cn } from "#/lib/utils.ts"
@@ -196,6 +196,7 @@ export const LawFirmKimiPage2 = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "Westbrook & Associates"
     const nav = props.nav?.length
       ? props.nav
