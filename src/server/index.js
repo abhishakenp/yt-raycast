@@ -48,7 +48,11 @@ import {
   writeDesignReferencesFile,
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
-import { readOpenUIFileForRoute, readSiteSpecThemeColors, readSiteSpecLocale } from '../pipeline/openui-artifacts.js'
+import {
+  readOpenUIFileForRoute,
+  readSiteSpecThemeColors,
+  readSiteSpecLocale,
+} from '../pipeline/openui-artifacts.js'
 import {
   compactStyleFragmentHtml,
   trimInlineAiHtmlFragment,
@@ -518,7 +522,9 @@ export async function startServer(sessionsDir) {
     }
     // Text length limit to prevent abuse
     if (text.length > TRANSLATE_MAX_TEXT_LENGTH) {
-      return res.status(400).json({ error: `Text too long: maximum ${TRANSLATE_MAX_TEXT_LENGTH} characters` })
+      return res
+        .status(400)
+        .json({ error: `Text too long: maximum ${TRANSLATE_MAX_TEXT_LENGTH} characters` })
     }
     // IP rate limiting
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || ''
@@ -533,7 +539,9 @@ export async function startServer(sessionsDir) {
           TRANSLATE_WINDOW_MS,
         )
       ) {
-        return res.status(429).json({ error: 'Rate limit: too many translation requests. Please wait.' })
+        return res
+          .status(429)
+          .json({ error: 'Rate limit: too many translation requests. Please wait.' })
       }
     }
     const built = buildTranslationMessages(text, locale)
@@ -1112,9 +1120,8 @@ export async function startServer(sessionsDir) {
       // island consumes — exactly like the normal genui path, just sourced from a clone.
       const { cloneSiteToOpenUI } = await import('@ship-fast/engine/clone/index.js')
       const { generateFromClone } = await import('@ship-fast/engine/genui/orchestrator.js')
-      const { buildThemeHeadFromTokens, writeStreamingShellToWorkspace } = await import(
-        '@ship-fast/engine/renderers/index.js'
-      )
+      const { buildThemeHeadFromTokens, writeStreamingShellToWorkspace } =
+        await import('@ship-fast/engine/renderers/index.js')
       const { saveSiteSpec } = await import('@ship-fast/engine/spec/index.js')
       generation = (async () => {
         const route = '/'
@@ -1146,9 +1153,7 @@ export async function startServer(sessionsDir) {
           const brandFromHost = (() => {
             try {
               const host = new URL(cloneUrl).hostname.replace(/^www\./, '').split('.')[0] || ''
-              return host
-                ? host.charAt(0).toUpperCase() + host.slice(1)
-                : ''
+              return host ? host.charAt(0).toUpperCase() + host.slice(1) : ''
             } catch {
               return ''
             }
@@ -1504,7 +1509,8 @@ export async function startServer(sessionsDir) {
           enabled: Boolean(session.medusaConfig?.backendUrl || session.medusaConfig?.adminBaseUrl),
           config: session.medusaConfig
             ? {
-                backendUrl: session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
+                backendUrl:
+                  session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
                 storefrontUrl: session.medusaConfig.storefrontUrl || null,
               }
             : null,
@@ -2727,7 +2733,11 @@ export async function startServer(sessionsDir) {
               ),
             )
         } catch {
-          express.static(session.workspace, { extensions: ['html'], redirect: false })(req, res, next)
+          express.static(session.workspace, { extensions: ['html'], redirect: false })(
+            req,
+            res,
+            next,
+          )
         }
         return
       }

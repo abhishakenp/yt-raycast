@@ -40,7 +40,12 @@ async function startFakeGithubApi() {
     try {
       const url = new URL(req.url, 'http://127.0.0.1')
       const body = await readRequestBody(req)
-      requests.push({ method: req.method, path: url.pathname, body, authorization: req.headers.authorization })
+      requests.push({
+        method: req.method,
+        path: url.pathname,
+        body,
+        authorization: req.headers.authorization,
+      })
 
       if (req.headers.authorization !== 'Bearer test-github-token') {
         res.writeHead(401, { 'Content-Type': 'application/json' })

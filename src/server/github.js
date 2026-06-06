@@ -100,7 +100,10 @@ async function githubRequest(path, { token, method = 'GET', body, expectedStatus
 
   if (!expectedStatus.includes(response.status)) {
     const githubMessage =
-      data?.errors?.map((entry) => entry?.message).filter(Boolean).join(', ') ||
+      data?.errors
+        ?.map((entry) => entry?.message)
+        .filter(Boolean)
+        .join(', ') ||
       data?.message ||
       response.statusText ||
       'GitHub request failed.'
@@ -163,10 +166,13 @@ async function createRepositoryWithFallback(token, baseRepoName, target, session
 }
 
 async function getBranchRef(token, repoFullName, branch) {
-  const ref = await githubRequest(`/repos/${repoFullName}/git/ref/heads/${encodeURIComponent(branch)}`, {
-    token,
-    expectedStatus: [200, 404, 409],
-  })
+  const ref = await githubRequest(
+    `/repos/${repoFullName}/git/ref/heads/${encodeURIComponent(branch)}`,
+    {
+      token,
+      expectedStatus: [200, 404, 409],
+    },
+  )
   return ref?.ref ? ref : null
 }
 
@@ -214,7 +220,9 @@ async function updateBranchRef(token, repoFullName, branch, commitSha) {
 }
 
 async function seedEmptyRepository(token, repoFullName, branch) {
-  const bootstrapContent = Buffer.from('Ship Fast repository bootstrap.\n', 'utf-8').toString('base64')
+  const bootstrapContent = Buffer.from('Ship Fast repository bootstrap.\n', 'utf-8').toString(
+    'base64',
+  )
   return githubRequest(`/repos/${repoFullName}/contents/.shipfast-bootstrap`, {
     token,
     method: 'PUT',
@@ -302,7 +310,10 @@ async function ensureTargetRepository(session, target, githubAccessToken, siteSp
   return { repo, created }
 }
 
-export async function pushSessionToGitHub(session, { target, githubAccessToken, includeBadge = true }) {
+export async function pushSessionToGitHub(
+  session,
+  { target, githubAccessToken, includeBadge = true },
+) {
   const normalizedTarget = normalizeTarget(target)
   const accessToken = String(githubAccessToken || '').trim()
   if (!accessToken) throw new Error('GitHub repo access is required before pushing.')
@@ -331,9 +342,7 @@ export async function pushSessionToGitHub(session, { target, githubAccessToken, 
     }),
   )
 
-  await retryGithubConflict(() =>
-    updateBranchRef(accessToken, repo.full_name, branch, commit.sha),
-  )
+  await retryGithubConflict(() => updateBranchRef(accessToken, repo.full_name, branch, commit.sha))
 
   persistTargetRepoMeta(session, normalizedTarget, {
     repoFullName: repo.full_name,

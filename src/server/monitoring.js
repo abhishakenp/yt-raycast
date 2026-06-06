@@ -6,7 +6,11 @@ function parsePositiveInt(value, fallback) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
 }
 
-export function buildHealthPayload({ startedAt = Date.now(), now = Date.now(), sessionsDir = '' } = {}) {
+export function buildHealthPayload({
+  startedAt = Date.now(),
+  now = Date.now(),
+  sessionsDir = '',
+} = {}) {
   return {
     ok: true,
     status: 'ok',

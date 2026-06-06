@@ -30,11 +30,19 @@ describe('createMedusaStoreRouter checkout proxy', () => {
   test('lists providers, initializes Stripe/Razorpay payment sessions, and completes cart', async () => {
     const calls = []
     const fakeMedusa = http.createServer(async (req, res) => {
-      calls.push({ method: req.method, url: req.url, body: req.method === 'GET' ? null : await readJson(req) })
+      calls.push({
+        method: req.method,
+        url: req.url,
+        body: req.method === 'GET' ? null : await readJson(req),
+      })
       res.setHeader('Content-Type', 'application/json')
 
       if (req.method === 'GET' && req.url === '/store/payment-providers?region_id=reg_us') {
-        res.end(JSON.stringify({ payment_providers: [{ id: 'pp_stripe_stripe' }, { id: 'pp_razorpay_razorpay' }] }))
+        res.end(
+          JSON.stringify({
+            payment_providers: [{ id: 'pp_stripe_stripe' }, { id: 'pp_razorpay_razorpay' }],
+          }),
+        )
         return
       }
 
@@ -48,8 +56,15 @@ describe('createMedusaStoreRouter checkout proxy', () => {
         return
       }
 
-      if (req.method === 'POST' && req.url === '/store/payment-collections/paycol_1/payment-sessions') {
-        res.end(JSON.stringify({ payment_collection: { id: 'paycol_1', payment_sessions: [{ id: 'payses_1' }] } }))
+      if (
+        req.method === 'POST' &&
+        req.url === '/store/payment-collections/paycol_1/payment-sessions'
+      ) {
+        res.end(
+          JSON.stringify({
+            payment_collection: { id: 'paycol_1', payment_sessions: [{ id: 'payses_1' }] },
+          }),
+        )
         return
       }
 
@@ -85,8 +100,13 @@ describe('createMedusaStoreRouter checkout proxy', () => {
       process.env.MEDUSA_PUBLISHABLE_API_KEY = 'pk_test'
       process.env.MEDUSA_PAYMENT_PROVIDER_ID = 'pp_stripe_stripe'
 
-      const providers = await fetch(`${url}/api/storefront/medusa/payment-providers?regionId=reg_us`).then((r) => r.json())
-      expect(providers.payment_providers.map((p) => p.id)).toEqual(['pp_stripe_stripe', 'pp_razorpay_razorpay'])
+      const providers = await fetch(
+        `${url}/api/storefront/medusa/payment-providers?regionId=reg_us`,
+      ).then((r) => r.json())
+      expect(providers.payment_providers.map((p) => p.id)).toEqual([
+        'pp_stripe_stripe',
+        'pp_razorpay_razorpay',
+      ])
 
       const stripeSession = await fetch(`${url}/api/storefront/medusa/cart/payment-sessions`, {
         method: 'POST',

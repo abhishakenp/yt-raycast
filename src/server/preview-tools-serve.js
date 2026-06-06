@@ -44,18 +44,50 @@ export function rewriteTailwindCdn(html) {
 // `rgb(var(--X) / <alpha-value>)`. Saved sessions written by the legacy renderer
 // stored hex vars + `var(--X)` colors, so those modifiers rendered transparent.
 const THEME_COLOR_VAR_KEYS = [
-  'background', 'foreground', 'card', 'card-foreground', 'popover', 'popover-foreground',
-  'primary', 'primary-foreground', 'secondary', 'secondary-foreground', 'muted', 'muted-foreground',
-  'accent', 'accent-foreground', 'destructive', 'destructive-foreground', 'border', 'input', 'ring',
-  'chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5',
-  'sidebar', 'sidebar-foreground', 'sidebar-primary', 'sidebar-primary-foreground',
-  'sidebar-accent', 'sidebar-accent-foreground', 'sidebar-border', 'sidebar-ring',
+  'background',
+  'foreground',
+  'card',
+  'card-foreground',
+  'popover',
+  'popover-foreground',
+  'primary',
+  'primary-foreground',
+  'secondary',
+  'secondary-foreground',
+  'muted',
+  'muted-foreground',
+  'accent',
+  'accent-foreground',
+  'destructive',
+  'destructive-foreground',
+  'border',
+  'input',
+  'ring',
+  'chart-1',
+  'chart-2',
+  'chart-3',
+  'chart-4',
+  'chart-5',
+  'sidebar',
+  'sidebar-foreground',
+  'sidebar-primary',
+  'sidebar-primary-foreground',
+  'sidebar-accent',
+  'sidebar-accent-foreground',
+  'sidebar-border',
+  'sidebar-ring',
 ]
 const THEME_COLOR_VAR_SET = new Set(THEME_COLOR_VAR_KEYS)
 
 function hexToRgbChannels(hex) {
   const h = String(hex).replace(/^#/, '')
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
+  const full =
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h
   const n = Number.parseInt(full, 16)
   if (Number.isNaN(n)) return null
   return `${(n >> 16) & 0xff} ${(n >> 8) & 0xff} ${n & 0xff}`
@@ -76,18 +108,19 @@ export function normalizeThemeHead(html) {
   let out = html
 
   // 1) Tailwind config colors: "background":"var(--background)" -> alpha form.
-  out = out.replace(
-    /"([a-z0-9-]+)"\s*:\s*"var\(--\1\)"/gi,
-    (match, key) =>
-      THEME_COLOR_VAR_SET.has(key) ? `"${key}":"rgb(var(--${key}) / <alpha-value>)"` : match,
+  out = out.replace(/"([a-z0-9-]+)"\s*:\s*"var\(--\1\)"/gi, (match, key) =>
+    THEME_COLOR_VAR_SET.has(key) ? `"${key}":"rgb(var(--${key}) / <alpha-value>)"` : match,
   )
 
   // 2) :root hex color tokens -> bare RGB channels.
-  out = out.replace(/--([a-z0-9-]+)\s*:\s*(#(?:[0-9a-f]{3}|[0-9a-f]{6}))\b/gi, (match, key, hex) => {
-    if (!THEME_COLOR_VAR_SET.has(key)) return match
-    const channels = hexToRgbChannels(hex)
-    return channels ? `--${key}: ${channels}` : match
-  })
+  out = out.replace(
+    /--([a-z0-9-]+)\s*:\s*(#(?:[0-9a-f]{3}|[0-9a-f]{6}))\b/gi,
+    (match, key, hex) => {
+      if (!THEME_COLOR_VAR_SET.has(key)) return match
+      const channels = hexToRgbChannels(hex)
+      return channels ? `--${key}: ${channels}` : match
+    },
+  )
 
   // 3) body background/color set from `var(--background)` -> rgb(var(--background)).
   out = out.replace(
@@ -108,7 +141,13 @@ export function stripPreviewArtifactsFromHtml(html) {
     .replace(/<script\b[^>]*data-sf-preview-tools="1"[^>]*><\/script>\s*/gi, '')
 }
 
-export function injectPreviewToolsHtml(html, sessionId, preferredLanguage, sessionWorkspace, palette) {
+export function injectPreviewToolsHtml(
+  html,
+  sessionId,
+  preferredLanguage,
+  sessionWorkspace,
+  palette,
+) {
   if (typeof html !== 'string') return html
   html = rewriteTailwindCdn(html)
   html = normalizeThemeHead(html)

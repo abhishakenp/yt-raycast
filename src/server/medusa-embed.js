@@ -8,8 +8,7 @@ const workspaceLooksEcommerceMedusa = (workspace) => {
   const root = join(workspace, 'next-app')
   if (!existsSync(root)) return false
   return (
-    existsSync(join(root, 'components', 'ecommerce')) ||
-    existsSync(join(root, 'lib', 'medusa.js'))
+    existsSync(join(root, 'components', 'ecommerce')) || existsSync(join(root, 'lib', 'medusa.js'))
   )
 }
 
