@@ -19,6 +19,7 @@ import { normalizeSession, validateSession } from '../contracts/contracts.js'
 import { readDesignReferenceFingerprintFromWorkspace } from '@ship-fast/engine/pipeline/ecommerce-design-references.js'
 import { invalidatePublicGallery } from './public-gallery-cache.js'
 import { queueGalleryThumbCapture } from './session-gallery-thumbnail.js'
+import { readOpenUIFileForRoute } from '../pipeline/openui-artifacts.js'
 
 const sessions = new Map()
 let _sessionsDir = null
@@ -820,25 +821,45 @@ function rememberOpenUIStreamMessage(session, msg) {
 export function getOpenUIStreamReplayMessages(session, route = '/') {
   const key = normalizeOpenUIStreamRoute(route)
   const stream = session?.openuiStreams?.[key]
-  if (stream && stream.source && stream.source.length > 0) {
-    console.log('[SessionBroadcast] replay_openui', {
+  
+  // Read fresh OpenUI from disk instead of using cached stream.source
+  // Fall back to cached if workspace is not available or file doesn't exist
+  let freshSource = null
+  if (session?.workspace) {
+    freshSource = readOpenUIFileForRoute(session.workspace, route)
+  }
+  
+  if (freshSource) {
+    console.log('[SessionBroadcast] replay_openui (fresh from disk)', {
       sessionId: session.id,
       route: key,
-      sourceLen: stream.source.length,
-      active: stream.active,
-      done: stream.done,
-      error: stream.error,
+      sourceLen: freshSource.length,
     })
   }
-  if (!stream || (!stream.active && !stream.done && !stream.error)) return []
+  
+  if (!stream || (!stream.active && !stream.done && !stream.error)) {
+    // If stream doesn't exist but we have fresh source, still send it
+    if (freshSource) {
+      return [
+        { type: 'openui_stream_start', route: key },
+        { type: 'openui_stream_chunk', route: key, source: freshSource },
+        { type: 'openui_stream_done', route: key, source: freshSource },
+      ]
+    }
+    return []
+  }
+  
   if (stream.error) {
     return [{ type: 'openui-error', route: key, error: stream.error }]
   }
+  
   const messages = [{ type: 'openui_stream_start', route: key }]
-  if (stream.source)
-    messages.push({ type: 'openui_stream_chunk', route: key, source: stream.source })
+  // Use fresh source from disk if available, otherwise fall back to cached
+  const sourceToUse = freshSource || stream.source
+  if (sourceToUse)
+    messages.push({ type: 'openui_stream_chunk', route: key, source: sourceToUse })
   if (stream.done)
-    messages.push({ type: 'openui_stream_done', route: key, source: stream.source || '' })
+    messages.push({ type: 'openui_stream_done', route: key, source: sourceToUse || '' })
   return messages
 }
 
