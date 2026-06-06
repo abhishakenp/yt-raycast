@@ -32,9 +32,10 @@ export function ensureEid(el: Element): string {
 export function findByEid(eid: string): Element | null {
   if (!eid) return null
   if (typeof document === 'undefined') return null
-  const escaped = (typeof CSS !== 'undefined' && typeof CSS.escape === 'function')
-    ? CSS.escape(eid)
-    : eid.replace(/"/g, '\\"')
+  const escaped =
+    typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+      ? CSS.escape(eid)
+      : eid.replace(/"/g, '\\"')
   try {
     return document.querySelector(`[${EID_ATTR}="${escaped}"]`)
   } catch {

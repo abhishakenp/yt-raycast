@@ -3,11 +3,7 @@ import { post, on, type MessageEnvelope } from './bridge'
 import { attachKeyboard, undo as historyUndo, redo as historyRedo } from './history'
 import { createTextEditor } from './editors/text'
 import { createImageEditor } from './editors/image'
-import {
-  createElementEditor,
-  buildPanelPayload,
-  getActiveElement,
-} from './editors/element'
+import { createElementEditor, buildPanelPayload, getActiveElement } from './editors/element'
 import { createSelectMode, createAnnotateMode } from './modes'
 import { writeValue, writeSides } from './style-apply'
 import { findByEid } from './identity'
@@ -75,9 +71,7 @@ function stripPaletteOverrideStyle(root: Document): void {
 function stripPreviewRuntimeScripts(root: Document): void {
   try {
     root
-      .querySelectorAll(
-        'script#sf-preview-tools-runtime, script[data-sf-preview-tools]'
-      )
+      .querySelectorAll('script#sf-preview-tools-runtime, script[data-sf-preview-tools]')
       .forEach((n) => {
         try {
           n.remove()
@@ -154,7 +148,7 @@ function attachLinkIntercept(): void {
         /* malformed URL — let the browser handle it normally */
       }
     },
-    true
+    true,
   )
 }
 
@@ -191,16 +185,31 @@ function boot(): void {
   }
 
   function closeAllEditors(): void {
-    try { textEditor.close() } catch { /* ignore */ }
-    try { imageEditor.close() } catch { /* ignore */ }
-    try { elementEditor.close() } catch { /* ignore */ }
+    try {
+      textEditor.close()
+    } catch {
+      /* ignore */
+    }
+    try {
+      imageEditor.close()
+    } catch {
+      /* ignore */
+    }
+    try {
+      elementEditor.close()
+    } catch {
+      /* ignore */
+    }
   }
 
   function applyModeMessage(mode: unknown, selectFlag: unknown, annotateFlag: unknown): void {
     // Support both explicit mode strings and the legacy boolean flags used by
     // dashboard-main so existing parent code keeps working unchanged.
     let target: 'select' | 'annotate' | 'inactive'
-    if (typeof mode === 'string' && (mode === 'select' || mode === 'annotate' || mode === 'inactive')) {
+    if (
+      typeof mode === 'string' &&
+      (mode === 'select' || mode === 'annotate' || mode === 'inactive')
+    ) {
       target = mode
     } else {
       const sel = Boolean(selectFlag)
@@ -229,7 +238,7 @@ function boot(): void {
     applyModeMessage(
       (envelope as { mode?: unknown }).mode,
       (envelope as { selectMode?: unknown }).selectMode,
-      (envelope as { annotateMode?: unknown }).annotateMode
+      (envelope as { annotateMode?: unknown }).annotateMode,
     )
   })
 
@@ -300,7 +309,8 @@ function boot(): void {
     const eid = typeof e.eid === 'string' ? e.eid : null
     const base = e.base === 'padding' || e.base === 'margin' ? e.base : null
     if (!eid || !base) return
-    const sidesRaw = (e.sides && typeof e.sides === 'object') ? (e.sides as Record<string, unknown>) : {}
+    const sidesRaw =
+      e.sides && typeof e.sides === 'object' ? (e.sides as Record<string, unknown>) : {}
     const sides: { t?: string; r?: string; b?: string; l?: string } = {}
     if (typeof sidesRaw.t === 'string') sides.t = sidesRaw.t
     if (typeof sidesRaw.r === 'string') sides.r = sidesRaw.r

@@ -178,7 +178,9 @@ export function createPanelHost(opts: PanelHostOpts): PanelHostHandle {
   function visibleTabs(): PanelTab[] {
     if (!activeClassification) return []
     return tabRegistry.filter((t) =>
-      typeof t.isVisible === 'function' ? !!t.isVisible(activeClassification as Classification) : true,
+      typeof t.isVisible === 'function'
+        ? !!t.isVisible(activeClassification as Classification)
+        : true,
     )
   }
 
@@ -302,7 +304,11 @@ export function createPanelHost(opts: PanelHostOpts): PanelHostHandle {
       el: activeEl as Element,
       onReselect: (next: Element) => {
         if (opts.onReselect) {
-          try { opts.onReselect(next) } catch { /* ignore */ }
+          try {
+            opts.onReselect(next)
+          } catch {
+            /* ignore */
+          }
         }
       },
     })
@@ -326,11 +332,19 @@ export function createPanelHost(opts: PanelHostOpts): PanelHostHandle {
 
   function close(): void {
     if (disposeActiveTab) {
-      try { disposeActiveTab() } catch { /* ignore */ }
+      try {
+        disposeActiveTab()
+      } catch {
+        /* ignore */
+      }
       disposeActiveTab = null
     }
     if (rootEl && rootEl.parentNode) {
-      try { rootEl.parentNode.removeChild(rootEl) } catch { /* ignore */ }
+      try {
+        rootEl.parentNode.removeChild(rootEl)
+      } catch {
+        /* ignore */
+      }
     }
     rootEl = null
     railEl = null

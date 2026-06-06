@@ -31,7 +31,11 @@ const GRADIENT_PRESETS: { id: string; label: string; css: string }[] = [
   { id: 'soft', label: 'Soft', css: 'linear-gradient(135deg, var(--primary), var(--accent))' },
   { id: 'sunset', label: 'Sunset', css: 'linear-gradient(135deg, var(--accent), var(--primary))' },
   { id: 'ocean', label: 'Ocean', css: 'linear-gradient(180deg, var(--primary), var(--muted))' },
-  { id: 'emerald', label: 'Emerald', css: 'linear-gradient(135deg, var(--primary), var(--surface))' },
+  {
+    id: 'emerald',
+    label: 'Emerald',
+    css: 'linear-gradient(135deg, var(--primary), var(--surface))',
+  },
   { id: 'mono', label: 'Monochrome', css: 'linear-gradient(180deg, var(--surface), var(--muted))' },
 ]
 
@@ -141,10 +145,14 @@ export function createSwatch(opts: SwatchOptions): SwatchControl {
 
   function highlight(activeVar?: string, activeHex?: string): void {
     for (const c of brandChips) {
-      c.el.style.boxShadow = c.swatch.cssVar === activeVar ? '0 0 0 2px #fff, 0 0 0 3px rgba(167,139,250,0.8)' : 'none'
+      c.el.style.boxShadow =
+        c.swatch.cssVar === activeVar ? '0 0 0 2px #fff, 0 0 0 3px rgba(167,139,250,0.8)' : 'none'
     }
     for (const n of neutralChips) {
-      n.el.style.boxShadow = n.hex.toLowerCase() === (activeHex || '').toLowerCase() ? '0 0 0 2px #fff, 0 0 0 3px rgba(167,139,250,0.8)' : 'none'
+      n.el.style.boxShadow =
+        n.hex.toLowerCase() === (activeHex || '').toLowerCase()
+          ? '0 0 0 2px #fff, 0 0 0 3px rgba(167,139,250,0.8)'
+          : 'none'
     }
     for (const g of gradientChips) g.el.style.boxShadow = 'none'
   }

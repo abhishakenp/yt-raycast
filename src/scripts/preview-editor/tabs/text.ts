@@ -2,18 +2,26 @@ import { CHIP_SCALES, createChipScale, createIconRow, createToggle } from '../co
 import type { EditorController } from '../shell'
 import type { PanelClassification, PanelOpenPayload, TabContext, TabDef } from '../types'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4 H13 M8 4 V13 M5 13 H11"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4 H13 M8 4 V13 M5 13 H11"/></svg>'
 
-const ICON_ALIGN_LEFT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="12" y2="4"/><line x1="2" y1="8" x2="9" y2="8"/><line x1="2" y1="12" x2="13" y2="12"/></svg>'
-const ICON_ALIGN_CENTER = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="4" x2="13" y2="4"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="3" y1="12" x2="13" y2="12"/></svg>'
-const ICON_ALIGN_RIGHT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="4" x2="14" y2="4"/><line x1="7" y1="8" x2="14" y2="8"/><line x1="3" y1="12" x2="14" y2="12"/></svg>'
-const ICON_ALIGN_JUSTIFY = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>'
+const ICON_ALIGN_LEFT =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="12" y2="4"/><line x1="2" y1="8" x2="9" y2="8"/><line x1="2" y1="12" x2="13" y2="12"/></svg>'
+const ICON_ALIGN_CENTER =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="4" x2="13" y2="4"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="3" y1="12" x2="13" y2="12"/></svg>'
+const ICON_ALIGN_RIGHT =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="4" x2="14" y2="4"/><line x1="7" y1="8" x2="14" y2="8"/><line x1="3" y1="12" x2="14" y2="12"/></svg>'
+const ICON_ALIGN_JUSTIFY =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="14" y2="8"/><line x1="2" y1="12" x2="14" y2="12"/></svg>'
 
 function readCurrent(state: PanelOpenPayload, prop: string): string {
   return (state.rawStyles[prop] || state.computedStyles[prop] || '').trim()
 }
 
-function matchChipId(chips: ReadonlyArray<{ id: string; value: string }>, v: string): string | undefined {
+function matchChipId(
+  chips: ReadonlyArray<{ id: string; value: string }>,
+  v: string,
+): string | undefined {
   if (!v) return undefined
   const hit = chips.find((c) => c.value === v)
   if (hit) return hit.id
@@ -56,7 +64,9 @@ function render(body: HTMLElement, ctx: TabContext): () => void {
 
   const underline = createToggle({
     label: 'Underline',
-    current: /underline/.test(readCurrent(state, 'text-decoration') || readCurrent(state, 'text-decoration-line')),
+    current: /underline/.test(
+      readCurrent(state, 'text-decoration') || readCurrent(state, 'text-decoration-line'),
+    ),
     onChange: (v) => ctx.apply('text-decoration', v ? 'underline' : 'none'),
   })
   body.appendChild(underline.root)

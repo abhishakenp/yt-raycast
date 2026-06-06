@@ -135,13 +135,25 @@ export function createBreadcrumb(opts: BreadcrumbOpts): BreadcrumbHandle {
       const isLast = i === chain.length - 1
       const c = chip(label, isLast)
       c.addEventListener('click', () => {
-        try { opts.onPick(node) } catch { /* ignore */ }
+        try {
+          opts.onPick(node)
+        } catch {
+          /* ignore */
+        }
       })
       c.addEventListener('mouseenter', () => {
-        try { opts.onHover(node) } catch { /* ignore */ }
+        try {
+          opts.onHover(node)
+        } catch {
+          /* ignore */
+        }
       })
       c.addEventListener('mouseleave', () => {
-        try { opts.onHover(null) } catch { /* ignore */ }
+        try {
+          opts.onHover(null)
+        } catch {
+          /* ignore */
+        }
       })
       root.appendChild(c)
     }
@@ -153,7 +165,11 @@ export function createBreadcrumb(opts: BreadcrumbOpts): BreadcrumbHandle {
 
   function destroy(): void {
     if (root.parentNode) {
-      try { root.parentNode.removeChild(root) } catch { /* ignore */ }
+      try {
+        root.parentNode.removeChild(root)
+      } catch {
+        /* ignore */
+      }
     }
   }
 

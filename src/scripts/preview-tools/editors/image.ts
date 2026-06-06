@@ -112,10 +112,7 @@ function parseObjectPosition(img: HTMLImageElement): { x: number; y: number } {
   return { x: num(p1), y: num(p2) }
 }
 
-function attachPan(
-  img: HTMLImageElement,
-  onPercent: (x: number, y: number) => void
-): PanState {
+function attachPan(img: HTMLImageElement, onPercent: (x: number, y: number) => void): PanState {
   const cs0 = getComputedStyle(img)
   if (cs0.objectFit !== 'cover' && cs0.objectFit !== 'contain') {
     img.style.objectFit = 'cover'

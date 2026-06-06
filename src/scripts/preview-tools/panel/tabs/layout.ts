@@ -44,9 +44,7 @@ const ARRANGEMENTS: Arrangement[] = [
     label: 'Grid',
     svg: ICON_GRID,
     display: 'grid',
-    extra: [
-      { prop: 'grid-template-columns', value: 'repeat(auto-fit, minmax(200px, 1fr))' },
-    ],
+    extra: [{ prop: 'grid-template-columns', value: 'repeat(auto-fit, minmax(200px, 1fr))' }],
   },
 ]
 
@@ -84,7 +82,11 @@ function section(title: string): HTMLElement {
 
 function matchArrangementId(el: Element): string | undefined {
   const display = (readValue(el, 'display').raw || readValue(el, 'display').effective || '').trim()
-  const direction = (readValue(el, 'flex-direction').raw || readValue(el, 'flex-direction').effective || '').trim()
+  const direction = (
+    readValue(el, 'flex-direction').raw ||
+    readValue(el, 'flex-direction').effective ||
+    ''
+  ).trim()
   if (display === 'grid') return 'grid'
   if (display === 'flex') {
     if (direction === 'column' || direction === 'column-reverse') return 'stack'
@@ -94,7 +96,11 @@ function matchArrangementId(el: Element): string | undefined {
 }
 
 function matchJustifyId(el: Element): string | undefined {
-  const v = (readValue(el, 'justify-content').raw || readValue(el, 'justify-content').effective || '').trim()
+  const v = (
+    readValue(el, 'justify-content').raw ||
+    readValue(el, 'justify-content').effective ||
+    ''
+  ).trim()
   for (const key of Object.keys(JUSTIFY_MAP)) {
     if (JUSTIFY_MAP[key] === v) return key
   }
@@ -102,7 +108,11 @@ function matchJustifyId(el: Element): string | undefined {
 }
 
 function matchAlignId(el: Element): string | undefined {
-  const v = (readValue(el, 'align-items').raw || readValue(el, 'align-items').effective || '').trim()
+  const v = (
+    readValue(el, 'align-items').raw ||
+    readValue(el, 'align-items').effective ||
+    ''
+  ).trim()
   for (const key of Object.keys(ALIGN_MAP)) {
     if (ALIGN_MAP[key] === v) return key
   }

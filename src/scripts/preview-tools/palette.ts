@@ -68,7 +68,10 @@ export function discoverTailwindColorNames(): string[] {
     const w = window as unknown as {
       tailwind?: {
         config?: {
-          theme?: { extend?: { colors?: Record<string, unknown> }; colors?: Record<string, unknown> }
+          theme?: {
+            extend?: { colors?: Record<string, unknown> }
+            colors?: Record<string, unknown>
+          }
         }
       }
     }
@@ -105,7 +108,8 @@ export function mapNameToPaletteVar(name: string, dark: Record<string, string>):
   }
   if (/(^|-)(bg|background|base|page)$/i.test(k)) return pick('background')
   if (/(^|-)(surface|card|panel|tile)$/i.test(k)) return pick('card', 'popover', 'background')
-  if (/(^|-)(elev|elevated|popover|raised|overlay)$/i.test(k)) return pick('popover', 'card', 'background')
+  if (/(^|-)(elev|elevated|popover|raised|overlay)$/i.test(k))
+    return pick('popover', 'card', 'background')
   if (/(^|-)(ink|fg|foreground|text|copy|body|content)$/i.test(k)) return pick('foreground')
   if (/(^|-)(primary|accent|brand|highlight|cta)$/i.test(k)) return pick('primary', 'accent')
   if (/(^|-)(secondary)$/i.test(k)) return pick('secondary', 'muted')
@@ -223,7 +227,9 @@ function readPersistedDark(): Record<string, string> | null {
   return null
 }
 
-export function buildTokensVocabulary(palette?: PersistedPalette | Record<string, string> | null): TokenSwatch[] {
+export function buildTokensVocabulary(
+  palette?: PersistedPalette | Record<string, string> | null,
+): TokenSwatch[] {
   let dark: Record<string, string> | null = null
   if (palette && typeof palette === 'object') {
     const maybeOuter = palette as PersistedPalette
@@ -236,11 +242,12 @@ export function buildTokensVocabulary(palette?: PersistedPalette | Record<string
   if (!dark) dark = readPersistedDark()
   if (!dark) dark = {}
 
-  const groups: Array<{ items: Array<{ name: string; label: string }>; category: TokenCategory }> = [
-    { items: BRAND_TOKENS, category: 'brand' },
-    { items: NEUTRAL_TOKENS, category: 'neutral' },
-    { items: SEMANTIC_TOKENS, category: 'semantic' },
-  ]
+  const groups: Array<{ items: Array<{ name: string; label: string }>; category: TokenCategory }> =
+    [
+      { items: BRAND_TOKENS, category: 'brand' },
+      { items: NEUTRAL_TOKENS, category: 'neutral' },
+      { items: SEMANTIC_TOKENS, category: 'semantic' },
+    ]
 
   const out: TokenSwatch[] = []
   for (const group of groups) {

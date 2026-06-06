@@ -3,16 +3,10 @@ import { createSwatch, type SwatchControl, type SwatchPickValue } from '../contr
 import { resolveSwatchForControl } from '../tokens-lookup'
 import { writeValue, readValue } from '../../style-apply'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r="0.6" fill="currentColor"/><circle cx="8" cy="5" r="0.6" fill="currentColor"/><circle cx="10.5" cy="7" r="0.6" fill="currentColor"/><circle cx="9" cy="10" r="0.6" fill="currentColor"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r="0.6" fill="currentColor"/><circle cx="8" cy="5" r="0.6" fill="currentColor"/><circle cx="10.5" cy="7" r="0.6" fill="currentColor"/><circle cx="9" cy="10" r="0.6" fill="currentColor"/></svg>'
 
-const COMMON_NEUTRALS = [
-  '#ffffff',
-  '#f3f4f6',
-  '#d1d5db',
-  '#6b7280',
-  '#1f2937',
-  '#000000',
-]
+const COMMON_NEUTRALS = ['#ffffff', '#f3f4f6', '#d1d5db', '#6b7280', '#1f2937', '#000000']
 
 function sectionContainer(title: string): HTMLElement {
   const wrap = document.createElement('div')

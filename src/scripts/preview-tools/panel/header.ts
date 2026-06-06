@@ -71,7 +71,11 @@ function buildThumbnail(el: Element): HTMLElement {
         }
         for (let i = 0; i < e.children.length; i++) stripAttrs(e.children[i])
       }
-      try { stripAttrs(clone) } catch { /* ignore */ }
+      try {
+        stripAttrs(clone)
+      } catch {
+        /* ignore */
+      }
       const scale = Math.min(THUMB_SIZE / w, THUMB_SIZE / h)
       const stage = document.createElement('div')
       Object.assign(stage.style, {
@@ -106,9 +110,10 @@ function buildThumbnail(el: Element): HTMLElement {
     Object.assign(fill.style, {
       position: 'absolute',
       inset: '0',
-      background: cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)'
-        ? cs.backgroundColor
-        : 'rgba(124, 58, 237, 0.15)',
+      background:
+        cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)'
+          ? cs.backgroundColor
+          : 'rgba(124, 58, 237, 0.15)',
     })
     wrap.appendChild(fill)
     const t = (el.textContent || '').trim().slice(0, 24)

@@ -2,7 +2,8 @@ import { CHIP_SCALES, createChipScale, createToggle } from '../controls'
 import type { EditorController } from '../shell'
 import type { PanelOpenPayload, TabContext, TabDef } from '../types'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="1.5"/><rect x="5" y="5" width="6" height="6" rx="1"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="1.5"/><rect x="5" y="5" width="6" height="6" rx="1"/></svg>'
 
 type Base = 'padding' | 'margin'
 type Side = 't' | 'r' | 'b' | 'l'
@@ -27,7 +28,10 @@ function sidesEqual(state: PanelOpenPayload, base: Base): boolean {
   return t === r && r === b && b === l && t !== ''
 }
 
-function matchChipId(chips: ReadonlyArray<{ id: string; value: string }>, v: string): string | undefined {
+function matchChipId(
+  chips: ReadonlyArray<{ id: string; value: string }>,
+  v: string,
+): string | undefined {
   if (!v) return undefined
   const hit = chips.find((c) => c.value === v)
   if (hit) return hit.id
@@ -42,12 +46,7 @@ function matchChipId(chips: ReadonlyArray<{ id: string; value: string }>, v: str
   return undefined
 }
 
-function renderSection(
-  body: HTMLElement,
-  ctx: TabContext,
-  base: Base,
-  title: string,
-): void {
+function renderSection(body: HTMLElement, ctx: TabContext, base: Base, title: string): void {
   const state = ctx.state
   let uniform = sidesEqual(state, base)
   const container = document.createElement('div')

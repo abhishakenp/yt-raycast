@@ -31,10 +31,32 @@ const TAG_LABELS: Record<string, string> = {
 }
 
 const SEMANTIC_TAGS = new Set<string>([
-  'NAV', 'HEADER', 'FOOTER', 'SECTION', 'ARTICLE', 'MAIN', 'ASIDE',
-  'A', 'BUTTON', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'IMG',
-  'UL', 'OL', 'LI', 'FIGURE', 'FIGCAPTION', 'INPUT', 'TEXTAREA',
-  'SELECT', 'LABEL',
+  'NAV',
+  'HEADER',
+  'FOOTER',
+  'SECTION',
+  'ARTICLE',
+  'MAIN',
+  'ASIDE',
+  'A',
+  'BUTTON',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'P',
+  'IMG',
+  'UL',
+  'OL',
+  'LI',
+  'FIGURE',
+  'FIGCAPTION',
+  'INPUT',
+  'TEXTAREA',
+  'SELECT',
+  'LABEL',
 ])
 
 function firstElementChildDirect(el: Element): Element | null {
@@ -62,11 +84,13 @@ function hasVisibleSurface(el: Element): boolean {
     return false
   }
   const bg = cs.backgroundColor
-  const hasBg = !!bg && bg !== 'transparent' && !/rgba?\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/i.test(bg)
-  const hasBorder = parseFloat(cs.borderTopWidth || '0') > 0
-    || parseFloat(cs.borderRightWidth || '0') > 0
-    || parseFloat(cs.borderBottomWidth || '0') > 0
-    || parseFloat(cs.borderLeftWidth || '0') > 0
+  const hasBg =
+    !!bg && bg !== 'transparent' && !/rgba?\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/i.test(bg)
+  const hasBorder =
+    parseFloat(cs.borderTopWidth || '0') > 0 ||
+    parseFloat(cs.borderRightWidth || '0') > 0 ||
+    parseFloat(cs.borderBottomWidth || '0') > 0 ||
+    parseFloat(cs.borderLeftWidth || '0') > 0
   return hasBg || hasBorder
 }
 
