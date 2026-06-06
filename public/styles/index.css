@@ -2547,7 +2547,7 @@ body::before {
   height: 430px;
   pointer-events: none;
   transform-origin: 100% 18%;
-  display: none;
+  display: none; /* Hidden - replaced with curved line exhaust */
 }
 
 .launch-flow::before {
@@ -2577,7 +2577,7 @@ body::before {
   top: 4px;
   border-radius: 999px;
   transform-origin: 100% 50%;
-  display: none;
+  display: none; /* Hidden - replaced with curved line exhaust */
 }
 
 .flow-flame--halo {

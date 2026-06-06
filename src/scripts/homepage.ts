@@ -2558,5 +2558,29 @@ window.addEventListener('sf-home-auth-state', (e: Event) => {
   else void showAnonymousApp()
 })
 
+// Initialize rocket exhaust effect on homepage
+if (typeof window !== 'undefined' && document.querySelector('.launch-rocket')) {
+  // Load the animated backgrounds script and initialize rocket exhaust
+  // Only initialize once
+  if (!(window as any).__rocketExhaustInitialized) {
+    (window as any).__rocketExhaustInitialized = true
+    const script = document.createElement('script')
+    script.type = 'module'
+    script.textContent = `
+      import('/scripts/odysseus-animated-backgrounds.js').then((module) => {
+        if (module.initRocketExhaust) {
+          module.initRocketExhaust()
+          console.log('Rocket exhaust initialized')
+        } else {
+          console.warn('initRocketExhaust not found in module')
+        }
+      }).catch((err) => {
+        console.warn('Failed to initialize rocket exhaust:', err)
+      })
+    `
+    document.head.appendChild(script)
+  }
+}
+
 window.__sfHomeScriptReady = true
 window.dispatchEvent(new CustomEvent('sf-home-script-ready'))
