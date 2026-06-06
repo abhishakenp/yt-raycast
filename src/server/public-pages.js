@@ -634,7 +634,7 @@ export function renderHomePage(siteSettings = null) {
           p.size = 0.45 + Math.random() * 1.05;
           p.seed = Math.random() * 200;
           p.hue = Math.random() > 0.42 ? 190 : 310;
-          p.alpha = 0.08 + Math.random() * 0.18;
+          p.alpha = p.hue === 310 ? 0.45 + Math.random() * 0.35 : 0.08 + Math.random() * 0.18;
         }
 
         function resize() {
@@ -686,7 +686,7 @@ export function renderHomePage(siteSettings = null) {
             ctx.beginPath();
             ctx.moveTo(px, py);
             ctx.lineTo(p.x, p.y);
-            ctx.strokeStyle = 'hsla(' + p.hue + ', 100%, 62%, ' + alpha + ')';
+            ctx.strokeStyle = 'hsla(' + p.hue + ', 100%, ' + (p.hue === 310 ? 80 : 62) + '%, ' + alpha + ')';
             ctx.lineWidth = p.size;
             ctx.stroke();
           }
