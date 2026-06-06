@@ -90,8 +90,14 @@ export const GLOBAL_LAUNCH_BACKDROP_HTML = `
   </div>
 `
 
-/** @deprecated Use GLOBAL_LAUNCH_BACKDROP_HTML — kept for existing imports. */
-export const SPACE_BACKDROP_HTML = GLOBAL_LAUNCH_BACKDROP_HTML
+export const SPACE_BACKDROP_HTML = `
+  <div class="stitch-grid" id="stitch-grid">
+    <div class="stitch-grid__layer"></div>
+    <div class="stitch-grid__layer stitch-grid__layer--lit" id="stitch-grid-lit"></div>
+  </div>
+  <div class="blackhole-vortex"></div>
+  <div class="blackhole-ring"></div>
+`
 
 export const renderLaunchBackdropScript = () =>
   `<script type="module" src="/scripts/launch-backdrop.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>`
