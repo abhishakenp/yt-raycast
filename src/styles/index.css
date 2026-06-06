@@ -1,4 +1,5 @@
 @import url('./space-shell.css');
+@import url('./launch-visual.css');
 @import url('./marketing.css');
 @import url('./liquid-glass-button.css');
 
@@ -40,6 +41,8 @@
   --stitch-dot-outer: 1.15px;
   --stitch-glow-radius: 140px;
   --stitch-glow-fade-ms: 800;
+  --homepage-track-max: 1200px;
+  --homepage-track-gutter: 48px;
   --chart-1: 217 70% 59%;
   --chart-2: 27 87% 67%;
   --chart-3: 45 93% 47%;
@@ -225,7 +228,7 @@ select {
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  padding: 16px 24px;
+  padding: var(--top-actions-inset-block) var(--top-actions-inset-inline);
   background: transparent;
   /* The bar is a full-width transparent strip; without this it would swallow
      clicks across its empty middle, including content that scrolls beneath it
@@ -678,6 +681,10 @@ button.share-icon.pill {
   min-width: 0;
 }
 
+.launch-prompt-card .input-group {
+  gap: 11px;
+}
+
 .input-group > * {
   min-width: 0;
 }
@@ -699,7 +706,7 @@ button.share-icon.pill {
 
 .prompt-input {
   width: 100%;
-  min-height: 140px;
+  min-height: 105px;
   padding: var(--prompt-text-start) var(--prompt-inset-x) var(--prompt-inset-bottom);
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--border-primary);
@@ -912,11 +919,27 @@ button.share-icon.pill {
   color: var(--text-primary);
 }
 
+.prompt-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.prompt-form-footer .submit-btn {
+  align-self: auto;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .design-ref-toggle-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .design-ref-toggle {
@@ -972,7 +995,8 @@ button.share-icon.pill {
 
 .design-ref-panel {
   display: none;
-  margin-top: 12px;
+  margin-top: 8px;
+  margin-bottom: 4px;
   padding: 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-primary);
@@ -1539,10 +1563,44 @@ button.share-icon.pill {
 .sessions {
   position: relative;
   z-index: 4;
-  width: min(1200px, calc(100% - 48px));
-  margin: 36px auto 72px;
-  border-top: 1px solid var(--border-primary);
-  padding-top: 36px;
+  width: 100%;
+  margin: 0 0 72px;
+  border-top: 1px solid transparent;
+  padding-top: 28px;
+  background:
+    linear-gradient(var(--border-primary), var(--border-primary)) top / 100% 1px no-repeat,
+    linear-gradient(180deg, rgba(38, 231, 255, 0.06), transparent 72px);
+}
+
+@media (min-width: 1101px) {
+  body.has-sessions .page-layout {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  body.has-sessions .container.sidebar-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  body.has-sessions .launch-hero {
+    flex: 0 1 auto;
+    min-height: min(60svh, 650px);
+    max-height: 66svh;
+    padding-bottom: 20px;
+  }
+
+  body.has-sessions .sessions {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 0;
+    padding-top: 20px;
+    overflow: visible;
+  }
 }
 
 .sessions h2 {
@@ -1773,7 +1831,7 @@ button.share-icon.pill {
 .homepage-footer {
   position: relative;
   z-index: 4;
-  width: min(1200px, calc(100% - 48px));
+  width: min(var(--homepage-track-max), calc(100% - var(--homepage-track-gutter)));
   margin: 0 auto;
   padding: 32px 0 48px;
   border-top: 1px solid var(--border-primary);
@@ -1967,7 +2025,7 @@ button.share-icon.pill {
 
 .noscript-banner {
   margin: 0 auto 32px;
-  width: min(1200px, calc(100% - 48px));
+  width: min(var(--homepage-track-max), calc(100% - var(--homepage-track-gutter)));
   padding: 14px 18px;
   border-radius: var(--radius-md);
   border: 1px solid var(--warning);
@@ -2005,7 +2063,9 @@ button.share-icon.pill {
   }
 
   .top-actions {
-    padding: 12px 16px;
+    --top-actions-inset-block: 16px;
+    --top-actions-inset-inline: 24px;
+    padding: var(--top-actions-inset-block) var(--top-actions-inset-inline);
     gap: 6px;
   }
 
@@ -2056,13 +2116,18 @@ button.share-icon.pill {
   }
 
   .prompt-input {
-    min-height: 120px;
+    min-height: 90px;
     font-size: 15px;
   }
 
   .submit-btn {
     width: 100%;
     padding: 12px 20px;
+  }
+
+  .launch-prompt-card .prompt-form-footer .submit-btn {
+    width: auto;
+    padding: 10px 18px;
   }
 
   .session-list,
@@ -2165,8 +2230,11 @@ body::before {
 }
 
 .container.sidebar-panel {
-  max-width: 100%;
-  min-height: 100svh;
+  position: relative;
+  width: min(var(--homepage-track-max), calc(100% - var(--homepage-track-gutter)));
+  max-width: var(--homepage-track-max);
+  margin-inline: auto;
+  min-height: auto;
   padding: 0;
   align-items: stretch;
 }
@@ -2174,7 +2242,7 @@ body::before {
 .logo-block {
   position: absolute;
   top: 34px;
-  left: clamp(28px, 4.5vw, 72px);
+  left: 0;
   z-index: 14;
   align-items: flex-start;
   margin-bottom: 0;
@@ -2210,12 +2278,15 @@ body::before {
 .launch-hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(340px, 0.82fr) minmax(620px, 1.18fr);
-  gap: clamp(26px, 5vw, 76px);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(28px, 2.6vw, 44px);
+  width: 100%;
+  justify-content: center;
+  align-items: start;
   min-height: 100svh;
-  overflow: visible;
+  overflow: hidden;
   border-radius: 0;
-  padding: clamp(82px, 7vw, 102px) clamp(28px, 4vw, 62px) clamp(32px, 5vw, 62px);
+  padding: clamp(82px, 7vw, 102px) clamp(42px, 3.4vw, 58px) clamp(32px, 5vw, 62px);
   isolation: isolate;
   background:
     linear-gradient(116deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01) 38%, transparent 66%),
@@ -2261,7 +2332,17 @@ body::before {
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 0;
+  text-align: left;
+  padding: clamp(78px, 7vw, 92px) 0 0;
+  padding-left: 0;
+  margin-left: 0;
+  width: 100%;
+}
+
+.launch-eyebrow,
+.launch-title {
+  position: relative;
+  z-index: 5;
 }
 
 .launch-eyebrow {
@@ -2276,10 +2357,10 @@ body::before {
 }
 
 .launch-title {
-  max-width: 620px;
+  max-width: 640px;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(58px, 5.8vw, 92px);
+  font-size: clamp(50px, 4.7vw, 78px);
   line-height: 0.98;
   letter-spacing: -0.055em;
   text-transform: uppercase;
@@ -2293,16 +2374,25 @@ body::before {
 
 .launch-stage {
   position: relative;
-  z-index: 3;
-  min-height: calc(100svh - 190px);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: clamp(360px, 34vw, 420px);
 }
 
 .launch-prompt-stack {
-  display: none; /* Temporary rocket-review mode requested by user. */
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   position: relative;
   z-index: 8;
-  width: min(100%, 620px);
-  margin-left: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  pointer-events: auto;
 }
 
 .hero-card.launch-prompt-card {
@@ -2335,11 +2425,11 @@ body::before {
 }
 
 .launch-prompt-card .hero-card-inner {
-  padding: clamp(22px, 3vw, 34px);
+  padding: clamp(22px, 2.1vw, 30px);
 }
 
 .launch-prompt-card .prompt-input {
-  min-height: 134px;
+  min-height: clamp(142px, 14vw, 166px);
   background: rgba(0, 8, 22, 0.72);
   border-color: rgba(38, 231, 255, 0.2);
   color: #f6fdff;
@@ -2370,8 +2460,13 @@ body::before {
   color: rgba(219, 237, 255, 0.75);
 }
 
+.launch-prompt-card .prompt-form-footer {
+  margin-top: 6px;
+}
+
 .launch-prompt-card .submit-btn {
-  min-height: 50px;
+  min-height: 44px;
+  padding: 10px 22px;
   color: #00121a;
   background:
     linear-gradient(135deg, #6dfbff 0%, #25dff5 45%, #38a8ff 100%) !important;
@@ -2389,23 +2484,31 @@ body::before {
 
 .launch-prompt-stack .dev-prompt-chips {
   max-width: 100%;
-  margin: 14px 0 0 auto;
-  justify-content: flex-end;
+  margin: 14px auto 0;
+  justify-content: center;
 }
 
 /* Launch visual scene: see launch-visual.css (via launch-backdrop.css) */
 
 @media (max-width: 1100px) {
+  .container.sidebar-panel {
+    width: min(760px, calc(100% - var(--homepage-track-gutter)));
+  }
+
   .launch-hero {
     grid-template-columns: 1fr;
     min-height: auto;
+    padding-top: 96px;
   }
 
   .launch-copy {
     padding: 0;
+    align-items: center;
+    text-align: center;
   }
 
   .launch-stage {
+    position: relative;
     min-height: 720px;
   }
 
@@ -2417,8 +2520,28 @@ body::before {
 
 @media (max-width: 760px) {
   .container.sidebar-panel {
-    max-width: calc(100% - 24px);
+    width: calc(100% - 24px);
     padding-top: 0;
+  }
+
+  .logo-block {
+    top: 34px;
+    left: 0;
+    width: auto;
+  }
+
+  .logo {
+    gap: 8px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .logo-text {
+    font-size: 21px;
+    letter-spacing: -0.035em;
   }
 
   .launch-hero {
@@ -2426,12 +2549,12 @@ body::before {
     border-radius: 22px;
   }
 
-  .launch-title {
-    font-size: clamp(44px, 14vw, 64px);
+  .launch-copy {
+    padding-top: 92px;
   }
 
-  .launch-subtitle {
-    font-size: 17px;
+  .launch-title {
+    font-size: clamp(40px, 12vw, 56px);
   }
 
   .launch-stage {
@@ -2440,6 +2563,20 @@ body::before {
 
   .launch-prompt-stack .dev-prompt-chips {
     justify-content: flex-start;
+  }
+
+  .launch-prompt-card .prompt-form-footer {
+    gap: 8px;
+  }
+
+  .launch-prompt-card .submit-btn {
+    width: 52px;
+    min-width: 52px;
+    padding: 0;
+  }
+
+  .launch-prompt-card .submit-btn .btn-label {
+    display: none;
   }
 }
 

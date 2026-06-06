@@ -300,17 +300,15 @@ body.intro-loading-active .intro-overlay::after {
   aspect-ratio: 4 / 3;
   border: 1px solid rgba(104, 222, 255, 0.34);
   border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(32, 226, 255, 0.25), rgba(231, 74, 255, 0.18)),
-    var(--chip-bg);
+  background: var(--chip-bg);
   background-size: cover;
   background-position: center;
   box-shadow:
     0 0 34px rgba(32, 226, 255, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
   opacity: 0;
-  transform: translate3d(-50%, -50%, 0) scale(0.34) rotate(var(--chip-rot));
-  animation: introMediaPop 0.9s cubic-bezier(0.18, 1.35, 0.25, 1) var(--chip-delay) forwards;
+  transform: translate3d(-50%, 150%, 0) scale(0.6) rotate(var(--chip-rot));
+  animation: introMediaRise 0.9s cubic-bezier(0.18, 1.35, 0.25, 1) var(--chip-delay) forwards;
 }
 .intro-media-chip::after {
   content: '';
@@ -321,15 +319,15 @@ body.intro-loading-active .intro-overlay::after {
   mix-blend-mode: screen;
   opacity: 0.52;
 }
-@keyframes introMediaPop {
+@keyframes introMediaRise {
   0% {
     opacity: 0;
-    transform: translate3d(-50%, -42%, 0) scale(0.26) rotate(calc(var(--chip-rot) - 8deg));
-    filter: blur(10px);
+    transform: translate3d(-50%, 150%, 0) scale(0.6) rotate(var(--chip-rot));
+    filter: blur(8px);
   }
   70% {
     opacity: 1;
-    transform: translate3d(-50%, -50%, 0) scale(1.08) rotate(var(--chip-rot));
+    transform: translate3d(-50%, -50%, 0) scale(1) rotate(var(--chip-rot));
     filter: blur(0);
   }
   100% {
@@ -1900,9 +1898,6 @@ body.sf-session-exit.sf-session-exit--run .intro-overlay:not(.hidden) {
   display: flex;
   flex-direction: column;
   padding: 0;
-  transition:
-    width 1s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   height: 100vh;
 }

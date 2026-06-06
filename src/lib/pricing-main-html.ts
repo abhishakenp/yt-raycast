@@ -145,7 +145,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="page">
           </div>
 
         </div>
-        <p style="text-align:center;margin-top:24px;font-size:14px;color:#4E5259;">Need more than 30 generations/month? <a href="https://x.com/LivioGama" target="_blank" rel="noopener" style="color:#EDEDEF;text-decoration:underline;">Contact us</a></p>
+        <p class="pricing-contact-note">Need more than 30 generations/month? <a href="https://x.com/LivioGama" target="_blank" rel="noopener">Contact us</a></p>
       </section>
 
       <section class="packs-section section-gap" aria-labelledby="packs-heading">

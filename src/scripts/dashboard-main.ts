@@ -484,6 +484,7 @@ let introPromptText = ''
 let typingDone = false
 let pendingStatus = ''
 let introMediaFlipConsumed = false
+let introRectanglesAnimated = false
 let hasSeenLiveUpdate = false // only auto-collapse if we watched tasks complete live
 let isReconnect = false // true when refreshing a session that already has homepage
 let alternativeDesign = null // background-loaded alternative theme
@@ -1909,6 +1910,7 @@ function openDrawer() {
   const rightPanel = document.getElementById('right-panel')
   leftPanel.classList.add('drawer-open')
   rightPanel.classList.add('open')
+  // Set width immediately without transition - no slide-in from right
   rightPanel.style.width = '50%'
   leftPanel.style.width = '50%'
   loadPreview()
@@ -2795,6 +2797,27 @@ const INTRO_PLACEHOLDER_BACKGROUNDS = [
   'linear-gradient(135deg, rgba(232, 74, 255, 0.26), rgba(52, 224, 255, 0.18))',
 ]
 
+const FUN_LOADING_MESSAGES = [
+  'Herding pixels',
+  'Teaching CSS to behave',
+  'Converting coffee to code',
+  'Persuading divs to align',
+  'Negotiating with browsers',
+  'Polishing the pixels',
+  'Warming up the servers',
+  'Counting to infinity',
+  'Defying gravity',
+  'Bending spacetime',
+  'Summoning layouts',
+  'Taming the wild markup',
+  'Optimizing the vibes',
+  'Calibrating the magic',
+  'Consulting the oracle',
+]
+
+let funMessageIndex = 0
+let funMessageInterval: ReturnType<typeof setInterval> | null = null
+
 function clampIntroProgress(value) {
   if (!Number.isFinite(value)) return 0
   return Math.max(0, Math.min(1, value))
@@ -2844,23 +2867,14 @@ function getIntroPhotoUrl(photo) {
 
 function seedIntroMediaPreviews(photos = []) {
   const orbit = document.getElementById('intro-media-orbit')
-  const urls = Array.isArray(photos) ? photos.map(getIntroPhotoUrl).filter(Boolean).slice(0, 6) : []
+  // Ignore photos parameter - we use placeholder rectangles instead of images
   if (!orbit) return
-  if (introMediaSeeded) {
-    if (urls.length > 0) {
-      orbit.querySelectorAll('.intro-media-chip').forEach((chip, index) => {
-        const url = urls[index]
-        if (url) chip.style.setProperty('--chip-bg', `url("${url.replace(/"/g, '%22')}")`)
-      })
-    }
-    return
-  }
+  if (introMediaSeeded) return
   introMediaSeeded = true
   orbit.innerHTML = ''
   for (let i = 0; i < INTRO_MEDIA_LAYOUT.length; i++) {
     const chip = document.createElement('span')
     const [x, y, rot, delay, dockX, dockY] = INTRO_MEDIA_LAYOUT[i]
-    const url = urls[i]
     chip.className = 'intro-media-chip'
     chip.style.setProperty('--chip-x', x)
     chip.style.setProperty('--chip-y', y)
@@ -2868,10 +2882,8 @@ function seedIntroMediaPreviews(photos = []) {
     chip.style.setProperty('--chip-delay', delay)
     chip.style.setProperty('--dock-x', dockX)
     chip.style.setProperty('--dock-y', dockY)
-    chip.style.setProperty(
-      '--chip-bg',
-      url ? `url("${url.replace(/"/g, '%22')}")` : INTRO_PLACEHOLDER_BACKGROUNDS[i % INTRO_PLACEHOLDER_BACKGROUNDS.length],
-    )
+    // Use gradient backgrounds only - no images
+    chip.style.setProperty('--chip-bg', INTRO_PLACEHOLDER_BACKGROUNDS[i % INTRO_PLACEHOLDER_BACKGROUNDS.length])
     orbit.appendChild(chip)
   }
 }
@@ -2898,6 +2910,8 @@ function startIntro() {
   document.body.classList.add('intro-loading-active')
   resetIntroMediaPreviews()
   seedIntroMediaPreviews()
+  funMessageIndex = 0 // Reset fun message index for new session
+  introRectanglesAnimated = false // Reset rectangle animation flag
   setIntroProgress(0.04, { force: true })
   introWarpCanvas.start()
   const logo = document.getElementById('intro-logo')
@@ -3016,6 +3030,24 @@ function startTyping() {
 
 function setPhaseLabel(text) {
   const statusLabel = document.getElementById('intro-phase-label')
+  // During intro, use fun messages instead of real status
+  if (introActive && typingDone) {
+    const funMessage = FUN_LOADING_MESSAGES[funMessageIndex % FUN_LOADING_MESSAGES.length]
+    funMessageIndex++
+    setIntroProgress(inferIntroProgressFromStatus(text))
+    if (statusLabel.classList.contains('visible') && statusLabel.textContent !== funMessage) {
+      statusLabel.classList.add('switching')
+      setTimeout(() => {
+        statusLabel.textContent = funMessage
+        statusLabel.classList.remove('switching')
+      }, 100)
+    } else {
+      statusLabel.textContent = funMessage
+      statusLabel.classList.add('visible')
+    }
+    return
+  }
+  // Normal behavior after intro
   setIntroProgress(inferIntroProgressFromStatus(text))
   if (statusLabel.classList.contains('visible') && statusLabel.textContent !== text) {
     statusLabel.classList.add('switching')
@@ -3638,6 +3670,104 @@ function maybeRunIntroMediaFlip(iframe) {
   introMediaFlipConsumed = true
   requestAnimationFrame(() => {
     requestAnimationFrame(() => runIntroMediaFlipPairs(pairs))
+  })
+}
+
+// Animate placeholder rectangles to actual image positions when page loads
+function animateRectanglesToImages(iframe) {
+  if (introRectanglesAnimated) return
+  introRectanglesAnimated = true
+
+  const orbit = document.getElementById('intro-media-orbit')
+  if (!orbit || orbit.childElementCount === 0) return
+
+  let doc
+  try {
+    doc = iframe && iframe.contentDocument
+  } catch {
+    // Cross-origin restriction - fade out rectangles instead
+    orbit.querySelectorAll('.intro-media-chip').forEach((chip) => {
+      chip.style.transition = 'opacity 0.6s ease-out'
+      chip.style.opacity = '0'
+    })
+    return
+  }
+  if (!doc) return
+
+  const rectangles = [...orbit.querySelectorAll('.intro-media-chip')]
+  const images = [...doc.querySelectorAll('img')].slice(0, rectangles.length)
+
+  if (images.length === 0) {
+    // No images found, fade out rectangles
+    rectangles.forEach((chip) => {
+      chip.style.transition = 'opacity 0.6s ease-out'
+      chip.style.opacity = '0'
+    })
+    return
+  }
+
+  // Map rectangles to images by index
+  const pairs = rectangles.map((rect, index) => ({
+    rect,
+    target: images[index] || null,
+  }))
+
+  // Animate each rectangle to its target image position
+  pairs.forEach(({ rect, target }) => {
+    if (!target) {
+      rect.style.transition = 'opacity 0.6s ease-out'
+      rect.style.opacity = '0'
+      return
+    }
+
+    const rectRect = rect.getBoundingClientRect()
+    const imgRect = target.getBoundingClientRect()
+
+    // Calculate position relative to viewport
+    const fromX = rectRect.left + rectRect.width / 2
+    const fromY = rectRect.top + rectRect.height / 2
+    const toX = imgRect.left + imgRect.width / 2
+    const toY = imgRect.top + imgRect.height / 2
+
+    // Create a clone for animation
+    const clone = rect.cloneNode(true) as HTMLElement
+    clone.style.position = 'fixed'
+    clone.style.left = `${rectRect.left}px`
+    clone.style.top = `${rectRect.top}px`
+    clone.style.width = `${rectRect.width}px`
+    clone.style.height = `${rectRect.height}px`
+    clone.style.margin = '0'
+    clone.style.zIndex = '9999'
+    clone.style.pointerEvents = 'none'
+    document.body.appendChild(clone)
+
+    // Hide original
+    rect.style.opacity = '0'
+
+    // Animate clone to target position
+    const anim = clone.animate(
+      [
+        {
+          left: `${rectRect.left}px`,
+          top: `${rectRect.top}px`,
+          width: `${rectRect.width}px`,
+          height: `${rectRect.height}px`,
+          opacity: 1,
+          transform: 'rotate(0deg)',
+        },
+        {
+          left: `${imgRect.left}px`,
+          top: `${imgRect.top}px`,
+          width: `${imgRect.width}px`,
+          height: `${imgRect.height}px`,
+          opacity: 0,
+          transform: 'rotate(0deg)',
+        },
+      ],
+      { duration: 800, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' },
+    )
+
+    anim.onfinish = () => clone.remove()
   })
 }
 
@@ -4609,6 +4739,9 @@ function connectWS() {
         setIntroProgress(1)
         if (ev.route === '/') resolveIntroExit()
         if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
+        // Fallback: animate rectangles if first-paint didn't fire
+        const iframe = document.getElementById('preview-iframe')
+        if (iframe && !introRectanglesAnimated) animateRectanglesToImages(iframe)
         break
 
       case 'run_completed':
@@ -4908,6 +5041,9 @@ window.addEventListener('message', (event) => {
     // and expand to full-width, fading straight from loader into the live page.
     resolveIntroExit()
     expandPreviewForLiveOpenUI()
+    // Animate placeholder rectangles to actual image positions
+    const iframe = document.getElementById('preview-iframe')
+    if (iframe) animateRectanglesToImages(iframe)
     return
   }
   if (data.type === 'SF_PREVIEW_TOOLS_READY') {
