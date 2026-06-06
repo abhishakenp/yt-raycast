@@ -402,6 +402,8 @@ export async function* generateUI(
       //    block shortlist chosen by the model from the catalog (name + description).
       //    The system random-picks from each shortlist below — no keyword heuristics.
       let plan: Plan
+      let usedFallbackPlan = false
+      let moduleFailureCount = 0
       try {
         const raw = await generateText(
           modelId,
@@ -411,8 +413,14 @@ export async function* generateUI(
           2,
         )
         plan = parsePlan(raw, rng, prompt)
-      } catch {
+      } catch (planErr) {
+        if (isHardLlmFailure(planErr)) {
+          ch.push({ type: "error", message: formatLlmFailureMessage(planErr) })
+          return
+        }
+        console.warn("[genui] plan call failed, using fallback:", planErr)
         plan = fallbackPlan(prompt, rng)
+        usedFallbackPlan = true
       }
 
       // Emit the chosen theme ASAP so the preview can apply it before content lands.
@@ -491,12 +499,26 @@ export async function* generateUI(
         )
           .then((text) => {
             const { text: safe, failed } = validateModule(page, text, plan.brand, labels)
+            if (failed) moduleFailureCount += 1
             ch.push({ type: "module", id: page.id, text: safe, failed })
           })
-          .catch(() => {
+          .catch((moduleErr) => {
+            if (isHardLlmFailure(moduleErr)) {
+              moduleFailureCount += 1
+              ch.push({
+                type: "module",
+                id: page.id,
+                text: isKnownBlock(page.block)
+                  ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
+                  : placeholderNode(page.id),
+                failed: true,
+              })
+              return
+            }
             // On generation failure, render the chosen block with just brand+nav —
             // its rich defaults are a complete, on-theme page. If there is no valid
             // chosen block, emit the server-authored unstyled placeholder node.
+            moduleFailureCount += 1
             ch.push({
               type: "module",
               id: page.id,
