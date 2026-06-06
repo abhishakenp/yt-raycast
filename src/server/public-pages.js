@@ -7,7 +7,11 @@ import {
 } from '../config.js'
 import { escapeHtml } from '@ship-fast/engine/renderers/shared.js'
 import { sfGlassPillBody, sfGlassPillSvgDefs } from './liquid-glass-button.js'
-import { SPACE_BACKDROP_HTML, renderTopActions } from './marketing-shell.js'
+import {
+  GLOBAL_LAUNCH_BACKDROP_HTML,
+  renderLaunchBackdropScript,
+  renderTopActions,
+} from './marketing-shell.js'
 
 const HOME_TITLE = `${SITE_NAME} - AI Website Generator`
 const HOME_DESCRIPTION =
@@ -325,7 +329,7 @@ export function renderHomePage(siteSettings = null) {
       } catch (e) {}
     </script>
 
-    ${SPACE_BACKDROP_HTML}
+    ${GLOBAL_LAUNCH_BACKDROP_HTML}
 
     ${renderAuthOverlay()}
 
@@ -360,7 +364,6 @@ export function renderHomePage(siteSettings = null) {
       ${heroBlock}
 
       <section class="launch-hero" aria-label="Instant AI websites">
-        <canvas class="launch-perlin-canvas" aria-hidden="true"></canvas>
         <div class="launch-copy">
           <p class="launch-eyebrow">Prompt. Generate. Launch.</p>
           <h2 class="launch-title">Instant AI Websites</h2>
@@ -499,60 +502,6 @@ export function renderHomePage(siteSettings = null) {
       </div>
             ${renderExamplePromptChips()}
           </div>
-
-          <div class="launch-visual" aria-hidden="true">
-            <div class="launch-orbit launch-orbit--one"></div>
-            <div class="launch-orbit launch-orbit--two"></div>
-
-            <div class="launch-browser-card">
-              <div class="launch-browser-bar">
-                <span></span><span></span><span></span>
-              </div>
-              <div class="launch-browser-body">
-                <div class="launch-browser-preview"></div>
-                <div class="launch-browser-lines">
-                  <span></span><span></span><span></span><span></span><span></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="launch-flow">
-              <span class="flow-flame flow-flame--halo"></span>
-              <span class="flow-flame flow-flame--core"></span>
-              <span class="flow-ribbon flow-ribbon--one"></span>
-              <span class="flow-ribbon flow-ribbon--two"></span>
-              <span class="flow-ribbon flow-ribbon--three"></span>
-              <span class="flow-word flow-word--one">WEB STARTUP</span>
-              <span class="flow-word flow-word--two">PORTFOLIO</span>
-              <span class="flow-word flow-word--three">SAAS</span>
-              <span class="flow-word flow-word--four">LOCAL BUSINESS</span>
-              <span class="flow-word flow-word--five">ECOMMERCE</span>
-              <span class="flow-particle flow-particle--one"></span>
-              <span class="flow-particle flow-particle--two"></span>
-              <span class="flow-particle flow-particle--three"></span>
-              <span class="flow-particle flow-particle--four"></span>
-              <span class="flow-particle flow-particle--five"></span>
-            </div>
-            <img class="launch-rocket" src="/assets/launch-rocket.png" alt="" loading="eager" decoding="async" />
-
-            <div class="launch-feature-cards">
-              <div class="launch-feature-card">
-                <span class="launch-feature-icon">AI</span>
-                <strong>AI Generate</strong>
-                <p>Describe your idea and watch AI build your website.</p>
-              </div>
-              <div class="launch-feature-card">
-                <span class="launch-feature-icon">ED</span>
-                <strong>Edit &amp; Refine</strong>
-                <p>Customize design, content, and layout.</p>
-              </div>
-              <div class="launch-feature-card">
-                <span class="launch-feature-icon">EX</span>
-                <strong>Export &amp; Deploy</strong>
-                <p>Export clean code and deploy with one click.</p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
       </div>
@@ -594,115 +543,7 @@ export function renderHomePage(siteSettings = null) {
 
     <script type="module" src="/scripts/top-actions-auth.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>
     <script type="module" src="/scripts/homepage.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>
-    <script>
-      (() => {
-        const canvas = document.querySelector('.launch-perlin-canvas');
-        const hero = canvas && canvas.closest('.launch-hero');
-        if (!canvas || !hero || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-        const ctx = canvas.getContext('2d', { alpha: true });
-        const particles = [];
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        let width = 0;
-        let height = 0;
-        let tick = 0;
-
-        function noise2d(x, y) {
-          const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
-          return n - Math.floor(n);
-        }
-
-        function smoothNoise(x, y) {
-          const ix = Math.floor(x);
-          const iy = Math.floor(y);
-          const fx = x - ix;
-          const fy = y - iy;
-          const a = noise2d(ix, iy);
-          const b = noise2d(ix + 1, iy);
-          const c = noise2d(ix, iy + 1);
-          const d = noise2d(ix + 1, iy + 1);
-          const ux = fx * fx * (3 - 2 * fx);
-          const uy = fy * fy * (3 - 2 * fy);
-          return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy;
-        }
-
-        function resetParticle(p, edge) {
-          p.x = edge === 'left' ? -12 : Math.random() * width;
-          p.y = Math.random() * height;
-          p.life = 0.45 + Math.random() * 0.55;
-          p.speed = 0.45 + Math.random() * 1.35;
-          p.size = 0.45 + Math.random() * 1.05;
-          p.seed = Math.random() * 200;
-          p.hue = Math.random() > 0.42 ? 190 : 310;
-          p.alpha = p.hue === 310 ? 0.45 + Math.random() * 0.35 : 0.08 + Math.random() * 0.18;
-        }
-
-        function resize() {
-          const rect = hero.getBoundingClientRect();
-          width = Math.max(1, rect.width);
-          height = Math.max(1, rect.height);
-          canvas.width = Math.floor(width * dpr);
-          canvas.height = Math.floor(height * dpr);
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-          const target = Math.max(150, Math.min(260, Math.floor((width * height) / 9000)));
-          while (particles.length < target) {
-            const p = {};
-            resetParticle(p);
-            particles.push(p);
-          }
-          particles.length = target;
-        }
-
-        function draw() {
-          if (!document.body.contains(canvas)) return;
-          window.requestAnimationFrame(draw);
-          tick += 1;
-
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.fillStyle = 'rgba(2, 4, 18, 0.065)';
-          ctx.fillRect(0, 0, width, height);
-          ctx.globalCompositeOperation = 'lighter';
-
-          for (const p of particles) {
-            const px = p.x;
-            const py = p.y;
-            const n = smoothNoise(p.x * 0.0036 + tick * 0.0007, p.y * 0.0036 + p.seed);
-            const drift = smoothNoise(p.x * 0.0022, p.y * 0.0022 + 50);
-            const angle = n * Math.PI * 5.4 - Math.PI * 0.22;
-            const speed = p.speed * (0.75 + drift * 1.45);
-
-            p.x += Math.cos(angle) * speed + 0.34;
-            p.y += Math.sin(angle) * speed * 0.82;
-            p.life -= 0.0011;
-
-            if (p.life <= 0 || p.x < -40 || p.x > width + 40 || p.y < -40 || p.y > height + 40) {
-              resetParticle(p, Math.random() > 0.35 ? 'left' : undefined);
-              continue;
-            }
-
-            const pulse = 0.65 + Math.sin((tick * 0.035) + p.seed) * 0.35;
-            const alpha = Math.max(0, p.life) * p.alpha * pulse;
-            ctx.beginPath();
-            ctx.moveTo(px, py);
-            ctx.lineTo(p.x, p.y);
-            ctx.strokeStyle = 'hsla(' + p.hue + ', 100%, ' + (p.hue === 310 ? 80 : 62) + '%, ' + alpha + ')';
-            ctx.lineWidth = p.size;
-            ctx.stroke();
-          }
-
-          ctx.globalAlpha = 1;
-        }
-
-        resize();
-        if ('ResizeObserver' in window) {
-          new ResizeObserver(resize).observe(hero);
-        } else {
-          window.addEventListener('resize', resize, { passive: true });
-        }
-        draw();
-      })();
-    </script>
+    ${renderLaunchBackdropScript()}
     ${DEV_HOME_HOT_RELOAD_SNIPPET}
   </body>
 </html>`

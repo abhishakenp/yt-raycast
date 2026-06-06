@@ -1,5 +1,47 @@
 @import url('./liquid-glass-button.css');
 
+:root {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Archivo Black', Impact, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* Legal page header (shared with privacy/terms) */
+.legal-page-header {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+  background: rgba(5, 5, 6, 0.72);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.legal-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  transition: opacity 0.2s;
+}
+
+.legal-home-link:hover {
+  opacity: 0.8;
+}
+
+.legal-home-link svg {
+  width: 18px;
+  height: 18px;
+}
+
 .page {
   position: relative;
   z-index: 1;
@@ -20,11 +62,17 @@
         text-transform: uppercase; color: #c4c9d4;
       }
       .pricing-hero h1 {
+        font-family: var(--font-display);
         font-size: clamp(2.4rem, 5vw, 4rem);
-        line-height: 1.05; letter-spacing: -0.04em;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
         max-width: 14ch;
+        color: #fffdf6;
+        text-wrap: balance;
       }
       .pricing-hero p {
+        font-family: var(--font-sans);
         font-size: 18px; color: #c4c9d4;
         line-height: 1.6; max-width: 52ch;
       }
@@ -165,7 +213,8 @@
         margin-bottom: 6px;
       }
       .plan-price {
-        font-size: 3rem; font-weight: 700;
+        font-family: var(--font-display);
+        font-size: 3rem; font-weight: 400;
         letter-spacing: -0.04em; line-height: 1;
         color: #EDEDEF;
       }

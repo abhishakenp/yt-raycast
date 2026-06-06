@@ -31,16 +31,97 @@ const navLogo = `
 </a>
 `
 
-export const SPACE_BACKDROP_HTML = `
-  <div class="stitch-grid" id="stitch-grid">
-    <div class="stitch-grid__layer"></div>
-    <div class="stitch-grid__layer stitch-grid__layer--lit" id="stitch-grid-lit"></div>
+export const GLOBAL_LAUNCH_BACKDROP_HTML = `
+  <div class="global-launch-backdrop" aria-hidden="true">
+    <canvas class="global-launch-backdrop__canvas"></canvas>
+    <div class="global-launch-backdrop__visual launch-visual">
+      <div class="launch-orbit launch-orbit--one"></div>
+      <div class="launch-orbit launch-orbit--two"></div>
+
+      <div class="launch-browser-card">
+        <div class="launch-browser-bar">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="launch-browser-body">
+          <div class="launch-browser-preview"></div>
+          <div class="launch-browser-lines">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="launch-flow">
+        <span class="flow-flame flow-flame--halo"></span>
+        <span class="flow-flame flow-flame--core"></span>
+        <span class="flow-ribbon flow-ribbon--one"></span>
+        <span class="flow-ribbon flow-ribbon--two"></span>
+        <span class="flow-ribbon flow-ribbon--three"></span>
+        <span class="flow-word flow-word--one">WEB STARTUP</span>
+        <span class="flow-word flow-word--two">PORTFOLIO</span>
+        <span class="flow-word flow-word--three">SAAS</span>
+        <span class="flow-word flow-word--four">LOCAL BUSINESS</span>
+        <span class="flow-word flow-word--five">ECOMMERCE</span>
+        <span class="flow-particle flow-particle--one"></span>
+        <span class="flow-particle flow-particle--two"></span>
+        <span class="flow-particle flow-particle--three"></span>
+        <span class="flow-particle flow-particle--four"></span>
+        <span class="flow-particle flow-particle--five"></span>
+      </div>
+      <img class="launch-rocket" src="/assets/launch-rocket.png" alt="" loading="eager" decoding="async" />
+
+      <div class="launch-feature-cards">
+        <div class="launch-feature-card">
+          <span class="launch-feature-icon">AI</span>
+          <strong>AI Generate</strong>
+          <p>Describe your idea and watch AI build your website.</p>
+        </div>
+        <div class="launch-feature-card">
+          <span class="launch-feature-icon">ED</span>
+          <strong>Edit &amp; Refine</strong>
+          <p>Customize design, content, and layout.</p>
+        </div>
+        <div class="launch-feature-card">
+          <span class="launch-feature-icon">EX</span>
+          <strong>Export &amp; Deploy</strong>
+          <p>Export clean code and deploy with one click.</p>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="blackhole-vortex"></div>
-  <div class="blackhole-ring"></div>
 `
 
+/** @deprecated Use GLOBAL_LAUNCH_BACKDROP_HTML — kept for existing imports. */
+export const SPACE_BACKDROP_HTML = GLOBAL_LAUNCH_BACKDROP_HTML
+
+export const renderLaunchBackdropScript = () =>
+  `<script type="module" src="/scripts/launch-backdrop.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>`
+
+export const renderMarketingFonts = () => `
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    />`
+
 export const MARKETING_ROCKET_SVG = navLogo
+
+export const BOLT_LOGO_SVG = `
+<svg width="18" height="18" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" fill="url(#sfBoltG1)" />
+  <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" stroke="url(#sfBoltG2)" stroke-width="2.2" stroke-linejoin="round" />
+  <defs>
+    <linearGradient id="sfBoltG1" x1="11" y1="5" x2="42" y2="47" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#69f8ff" />
+      <stop offset="0.54" stop-color="#1ab8ff" />
+      <stop offset="1" stop-color="#6b3cff" />
+    </linearGradient>
+    <linearGradient id="sfBoltG2" x1="8" y1="3" x2="44" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#dffcff" />
+      <stop offset="1" stop-color="#31dfff" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+</svg>`
 
 const topBarBrand = `
 <a href="/" class="top-actions-brand" aria-label="SHIP FAST home">

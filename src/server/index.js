@@ -147,6 +147,7 @@ import { renderHomePage, renderRobotsTxt, renderSitemapXml } from './public-page
 import { ensureEmbeddedStudioBuilt } from './ensure-studio-build.js'
 import { mountEmbeddedSanityStudio } from './sanity-studio-static.js'
 import { renderPrivacyPage } from './privacy-page.js'
+import { renderTermsPage } from './terms-page.js'
 import { renderPricingPage } from './pricing-page.js'
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
 import { getPublicGalleryList } from './public-gallery-cache.js'
@@ -813,6 +814,10 @@ export async function startServer(sessionsDir) {
 
   app.get('/privacy', (_req, res) => {
     res.type('html').send(renderPrivacyPage())
+  })
+
+  app.get('/terms', (_req, res) => {
+    res.type('html').send(renderTermsPage())
   })
 
   mountEmbeddedSanityStudio(app, join(studioRoot, 'dist'))

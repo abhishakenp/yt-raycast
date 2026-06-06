@@ -6,7 +6,7 @@ import {
   SITE_URL,
 } from '../config.js'
 import { escapeHtml } from '@ship-fast/engine/renderers/shared.js'
-import { renderMarketingShell } from './marketing-shell.js'
+import { BOLT_LOGO_SVG } from './marketing-shell.js'
 
 const termsEffectiveDate = (process.env.TERMS_EFFECTIVE_DATE ?? '2026-06-04').trim()
 const incorporationJurisdiction = (process.env.LEGAL_INCORPORATION_JURISDICTION ?? '').trim()
@@ -47,10 +47,21 @@ export const renderTermsPage = () => {
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="${siteUrl}/terms" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    />
     <link rel="stylesheet" href="/styles/privacy.css" />
   </head>
   <body>
-    ${renderMarketingShell({ active: 'terms' })}
+    <header class="legal-page-header">
+      <a href="/" class="legal-home-link" aria-label="Back to home">
+        ${BOLT_LOGO_SVG}
+        <span>SHIP FAST</span>
+      </a>
+    </header>
 
     <main class="page legal-doc">
       <header class="legal-header">
@@ -142,6 +153,7 @@ export const renderTermsPage = () => {
         </p>
       </section>
     </main>
+    ${renderLaunchBackdropScript()}
   </body>
 </html>`
 }
