@@ -41,7 +41,9 @@ function normalizeItem(item, idx = 0) {
     label: ensureString(item.label, ''),
     href: ensureString(item.href, ''),
     price: ensureString(item.price, ''),
-    features: ensureArray(item.features).map((feature) => ensureString(feature)).filter(Boolean),
+    features: ensureArray(item.features)
+      .map((feature) => ensureString(feature))
+      .filter(Boolean),
   }
 }
 
@@ -53,7 +55,9 @@ function normalizeContentBlock(block, idx = 0) {
     id: ensureString(block.id, `block-${idx + 1}`),
     kind: ensureString(block.kind, 'paragraph'),
     text: ensureString(block.text, ''),
-    items: ensureArray(block.items).map((t) => ensureString(t)).filter(Boolean),
+    items: ensureArray(block.items)
+      .map((t) => ensureString(t))
+      .filter(Boolean),
   }
 }
 
@@ -100,7 +104,8 @@ function normalizeSection(section, idx = 0) {
         : 0,
     })),
     styling: typeof section?.styling === 'object' && section?.styling ? section.styling : {},
-    visibility: typeof section?.visibility === 'object' && section?.visibility ? section.visibility : {},
+    visibility:
+      typeof section?.visibility === 'object' && section?.visibility ? section.visibility : {},
     contentBlocks: ensureArray(section?.contentBlocks).map(normalizeContentBlock),
     form:
       section?.form && typeof section.form === 'object'
@@ -168,7 +173,8 @@ function normalizeEcommerceCategory(c, idx = 0) {
 
 function normalizeEcommerce(raw, fallback) {
   const fromRaw = raw?.ecommerce && typeof raw.ecommerce === 'object' ? raw.ecommerce : null
-  const fromFb = fallback?.ecommerce && typeof fallback.ecommerce === 'object' ? fallback.ecommerce : null
+  const fromFb =
+    fallback?.ecommerce && typeof fallback.ecommerce === 'object' ? fallback.ecommerce : null
   if (!fromRaw && !fromFb) return null
   const base = fromRaw || fromFb
   const settingsSrc = base.settings && typeof base.settings === 'object' ? base.settings : {}
@@ -185,8 +191,14 @@ function normalizeEcommerce(raw, fallback) {
     provider: ensureString(base.provider, 'medusa'),
     settings: {
       currency: ensureString(settingsSrc.currency, fbSettings.currency || 'USD'),
-      storeName: ensureString(settingsSrc.storeName, fbSettings.storeName || fallback.projectName || ''),
-      provider: ensureString(settingsSrc.provider, fbSettings.provider || ensureString(base.provider, 'medusa')),
+      storeName: ensureString(
+        settingsSrc.storeName,
+        fbSettings.storeName || fallback.projectName || '',
+      ),
+      provider: ensureString(
+        settingsSrc.provider,
+        fbSettings.provider || ensureString(base.provider, 'medusa'),
+      ),
     },
     products,
     categories,
@@ -206,10 +218,16 @@ function normalizePlanMeta(rawPm, fallbackPm) {
   const fb = fallbackPm && typeof fallbackPm === 'object' ? fallbackPm : {}
   const r = rawPm && typeof rawPm === 'object' ? rawPm : {}
   return {
-    schemaRevision: ensureString(r.schemaRevision, ensureString(fb.schemaRevision, SITE_SPEC_VERSION)),
+    schemaRevision: ensureString(
+      r.schemaRevision,
+      ensureString(fb.schemaRevision, SITE_SPEC_VERSION),
+    ),
     contentRefId: ensureString(r.contentRefId, fb.contentRefId || ''),
     contentRefStashName: ensureString(r.contentRefStashName, fb.contentRefStashName || ''),
-    archetypePresetKey: ensureString(r.archetypePresetKey, fb.archetypePresetKey || 'marketingDark'),
+    archetypePresetKey: ensureString(
+      r.archetypePresetKey,
+      fb.archetypePresetKey || 'marketingDark',
+    ),
     resolutionReason: ensureString(r.resolutionReason, fb.resolutionReason || ''),
     qualityChecklist: ensureArray(r.qualityChecklist ?? fb.qualityChecklist)
       .map((x) => ensureString(x))
@@ -224,7 +242,10 @@ function normalizePlanMeta(rawPm, fallbackPm) {
 }
 
 function normalizePage(page, idx = 0) {
-  const route = ensureString(page?.route, idx === 0 ? '/' : `/${slug(page?.name || `page-${idx + 1}`)}`)
+  const route = ensureString(
+    page?.route,
+    idx === 0 ? '/' : `/${slug(page?.name || `page-${idx + 1}`)}`,
+  )
   const normalizedRoute = route === '' ? '/' : route.startsWith('/') ? route : `/${route}`
   const name = ensureString(page?.name, idx === 0 ? 'Home' : `Page ${idx + 1}`)
 
@@ -239,11 +260,16 @@ function normalizePage(page, idx = 0) {
         ? {
             title: ensureString(page.seo.title, ensureString(page?.title, name)),
             description: ensureString(page.seo.description, ensureString(page?.description, '')),
-            keywords: ensureArray(page.seo.keywords).map((item) => ensureString(item)).filter(Boolean),
+            keywords: ensureArray(page.seo.keywords)
+              .map((item) => ensureString(item))
+              .filter(Boolean),
             canonicalPath: ensureString(page.seo.canonicalPath, normalizedRoute),
             canonicalUrl: ensureString(page.seo.canonicalUrl, ''),
             ogImage: ensureString(page.seo.ogImage, ''),
-            ogImageAlt: ensureString(page.seo.ogImageAlt, `${ensureString(page?.title, name)} social preview`),
+            ogImageAlt: ensureString(
+              page.seo.ogImageAlt,
+              `${ensureString(page?.title, name)} social preview`,
+            ),
             noIndex: page.seo.noIndex === true,
           }
         : {
@@ -259,8 +285,12 @@ function normalizePage(page, idx = 0) {
     layoutType: ensureString(page?.layoutType, 'marketing'),
     pageRole: ensureString(page?.pageRole, idx === 0 ? 'conversion' : 'standard'),
     contentGoals:
-      ensureArray(page?.contentGoals).map((g) => ensureString(g)).filter(Boolean).length > 0
-        ? ensureArray(page?.contentGoals).map((g) => ensureString(g)).filter(Boolean)
+      ensureArray(page?.contentGoals)
+        .map((g) => ensureString(g))
+        .filter(Boolean).length > 0
+        ? ensureArray(page?.contentGoals)
+            .map((g) => ensureString(g))
+            .filter(Boolean)
         : idx === 0
           ? ['Establish trust', 'Drive primary CTA']
           : ['Inform', 'Link related pages'],
@@ -268,21 +298,27 @@ function normalizePage(page, idx = 0) {
     renderBlueprint:
       page?.renderBlueprint && typeof page.renderBlueprint === 'object'
         ? {
-            version: Number.isFinite(page.renderBlueprint.version) ? page.renderBlueprint.version : 1,
+            version: Number.isFinite(page.renderBlueprint.version)
+              ? page.renderBlueprint.version
+              : 1,
             exactClone: page.renderBlueprint.exactClone !== false,
             title: ensureString(page.renderBlueprint.title, ensureString(page?.title, name)),
             meta: ensureArray(page.renderBlueprint.meta),
             links: ensureArray(page.renderBlueprint.links),
-            styles: ensureArray(page.renderBlueprint.styles).map((style) => ensureString(style)).filter(Boolean),
+            styles: ensureArray(page.renderBlueprint.styles)
+              .map((style) => ensureString(style))
+              .filter(Boolean),
             headHtml: ensureString(page.renderBlueprint.headHtml, ''),
             scripts: ensureArray(page.renderBlueprint.scripts),
             bodyHtml: ensureString(page.renderBlueprint.bodyHtml, ''),
             htmlAttributes:
-              page.renderBlueprint.htmlAttributes && typeof page.renderBlueprint.htmlAttributes === 'object'
+              page.renderBlueprint.htmlAttributes &&
+              typeof page.renderBlueprint.htmlAttributes === 'object'
                 ? page.renderBlueprint.htmlAttributes
                 : {},
             bodyAttributes:
-              page.renderBlueprint.bodyAttributes && typeof page.renderBlueprint.bodyAttributes === 'object'
+              page.renderBlueprint.bodyAttributes &&
+              typeof page.renderBlueprint.bodyAttributes === 'object'
                 ? page.renderBlueprint.bodyAttributes
                 : {},
             originalHtmlDocument: ensureString(page.renderBlueprint.originalHtmlDocument, ''),
@@ -335,8 +371,12 @@ export function normalizeSiteSpec(input, context = {}) {
     navigation:
       raw.navigation && typeof raw.navigation === 'object'
         ? {
-            global: ensureArray(raw.navigation.global).map((item, idx) => normalizeAction(item, idx)),
-            footer: ensureArray(raw.navigation.footer).map((item, idx) => normalizeAction(item, idx)),
+            global: ensureArray(raw.navigation.global).map((item, idx) =>
+              normalizeAction(item, idx),
+            ),
+            footer: ensureArray(raw.navigation.footer).map((item, idx) =>
+              normalizeAction(item, idx),
+            ),
             ctas: ensureArray(raw.navigation.ctas).map((item, idx) => normalizeAction(item, idx)),
           }
         : fallback.navigation,
@@ -374,7 +414,9 @@ export function normalizeSiteSpec(input, context = {}) {
             description: ensureString(raw.seo.description, fallback.seo.description),
             siteName: ensureString(raw.seo.siteName, fallback.seo.siteName),
             siteUrl: ensureString(raw.seo.siteUrl, fallback.seo.siteUrl),
-            keywords: ensureArray(raw.seo.keywords).map((item) => ensureString(item)).filter(Boolean),
+            keywords: ensureArray(raw.seo.keywords)
+              .map((item) => ensureString(item))
+              .filter(Boolean),
             ogImage: ensureString(raw.seo.ogImage, fallback.seo.ogImage),
             ogImageAlt: ensureString(raw.seo.ogImageAlt, fallback.seo.ogImageAlt),
             twitterCard: ensureString(raw.seo.twitterCard, fallback.seo.twitterCard),
@@ -382,7 +424,9 @@ export function normalizeSiteSpec(input, context = {}) {
             robots: ensureString(raw.seo.robots, fallback.seo.robots),
           }
         : fallback.seo,
-    backendFeatureHints: ensureArray(raw.backendFeatureHints).map((item) => ensureString(item)).filter(Boolean),
+    backendFeatureHints: ensureArray(raw.backendFeatureHints)
+      .map((item) => ensureString(item))
+      .filter(Boolean),
     businessProfile: normalizeBusinessProfile(raw.businessProfile, fallback.businessProfile),
     planMeta: normalizePlanMeta(raw.planMeta, fallback.planMeta),
     exportOptions: normalizeExportOptions(raw.exportOptions),

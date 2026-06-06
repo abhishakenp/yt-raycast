@@ -1,13 +1,13 @@
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
 
 const DEFAULT_DATA = [
-  { label: "Jan", value: 186 },
-  { label: "Feb", value: 305 },
-  { label: "Mar", value: 237 },
-  { label: "Apr", value: 173 },
-  { label: "May", value: 209 },
-  { label: "Jun", value: 264 },
+  { label: 'Jan', value: 186 },
+  { label: 'Feb', value: 305 },
+  { label: 'Mar', value: 237 },
+  { label: 'Apr', value: 173 },
+  { label: 'May', value: 209 },
+  { label: 'Jun', value: 264 },
 ]
 
 const chartPoints = (data: typeof DEFAULT_DATA) => {
@@ -25,27 +25,25 @@ const chartPoints = (data: typeof DEFAULT_DATA) => {
 }
 
 export const Chart = defineComponent({
-  name: "Chart",
+  name: 'Chart',
   description:
     "Static SVG chart from data:[{label,value}]. kind 'area' (default), 'bar', or 'line'. Ships sample data so it renders standalone.",
   props: z.object({
-    data: z
-      .array(z.object({ label: z.string(), value: z.number() }))
-      .optional(),
-    kind: z.enum(["area", "bar", "line"]).optional(),
+    data: z.array(z.object({ label: z.string(), value: z.number() })).optional(),
+    kind: z.enum(['area', 'bar', 'line']).optional(),
     label: z.string().optional(),
     className: z.string().optional(),
   }),
   component: ({ props }) => {
     const data = props.data && props.data.length > 0 ? props.data : DEFAULT_DATA
-    const kind = props.kind ?? "area"
+    const kind = props.kind ?? 'area'
     const points = chartPoints(data)
-    const pointList = points.map((point) => `${point.x},${point.y}`).join(" ")
+    const pointList = points.map((point) => `${point.x},${point.y}`).join(' ')
     const lastPoint = points[points.length - 1]
     const areaPath = `M ${points[0]?.x ?? 20},130 L ${pointList} L ${lastPoint?.x ?? 300},130 Z`
-    const label = props.label ?? "Value"
+    const label = props.label ?? 'Value'
 
-    if (kind === "bar") {
+    if (kind === 'bar') {
       return (
         <div className={props.className} role="img" aria-label={label}>
           <svg viewBox="0 0 320 160" className="h-full min-h-48 w-full overflow-visible">
@@ -67,7 +65,7 @@ export const Chart = defineComponent({
       )
     }
 
-    if (kind === "line") {
+    if (kind === 'line') {
       return (
         <div className={props.className} role="img" aria-label={label}>
           <svg viewBox="0 0 320 160" className="h-full min-h-48 w-full overflow-visible">
@@ -81,7 +79,13 @@ export const Chart = defineComponent({
               strokeLinejoin="round"
             />
             {points.map((point, index) => (
-              <circle key={`${point.label}-${index}`} cx={point.x} cy={point.y} r="4" fill="rgb(var(--primary))" />
+              <circle
+                key={`${point.label}-${index}`}
+                cx={point.x}
+                cy={point.y}
+                r="4"
+                fill="rgb(var(--primary))"
+              />
             ))}
           </svg>
         </div>

@@ -34,7 +34,8 @@ export function validateSiteSpec(spec) {
       errors.push('exportOptions.embedSanityStudio must be a boolean.')
     }
   }
-  if (!Array.isArray(spec.pages) || spec.pages.length === 0) errors.push('pages must contain at least one page.')
+  if (!Array.isArray(spec.pages) || spec.pages.length === 0)
+    errors.push('pages must contain at least one page.')
 
   const seenRoutes = new Set()
   const seenPageIds = new Set()
