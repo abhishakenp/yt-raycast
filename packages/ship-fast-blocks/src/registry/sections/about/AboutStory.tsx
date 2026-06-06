@@ -116,7 +116,7 @@ export const AboutStory = defineComponent({
                 loading="lazy"
                 className="aspect-[4/3] size-full object-cover"
               />
-              <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-[10px] border border-border/50 bg-background/90 px-3.5 py-2.5 text-sm font-bold text-foreground shadow-sm backdrop-blur">
+              <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-lg border border-border/50 bg-background/90 px-3.5 py-2.5 text-sm font-bold text-foreground shadow-sm backdrop-blur">
                 <SmallIcon>
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />

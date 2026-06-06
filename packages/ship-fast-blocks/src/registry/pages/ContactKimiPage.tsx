@@ -433,7 +433,7 @@ export const ContactKimiPage = defineComponent({
             <button
               type="button"
               onClick={() => go("Contact")}
-              className="rounded-[10px] bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+              className="rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
             >
               Get Started
             </button>
@@ -443,14 +443,14 @@ export const ContactKimiPage = defineComponent({
         <main className="relative z-[1] mx-auto w-full max-w-[1160px] px-6">
           {/* Hero */}
           <section className="pt-20 pb-14 text-center">
-            <span className="mb-[18px] inline-flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary">
+            <span className="mb-5 inline-flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary">
               <span
                 aria-hidden="true"
                 className="inline-block h-0.5 w-7 rounded-full bg-primary"
               />
               {heroEyebrow}
             </span>
-            <h1 className="mx-auto mb-[18px] max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-5xl lg:text-[3.4rem]">
+            <h1 className="mx-auto mb-5 max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-5xl lg:text-[3.4rem]">
               {heroHeading}
             </h1>
             <p className="mx-auto max-w-[560px] text-lg leading-[1.7] text-muted-foreground">
@@ -469,7 +469,7 @@ export const ContactKimiPage = defineComponent({
                   go("Contact")
                 }}
               >
-                <div className="mb-[22px]">
+                <div className="mb-6">
                   <label
                     htmlFor="ck-name"
                     className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
@@ -481,10 +481,10 @@ export const ContactKimiPage = defineComponent({
                     id="ck-name"
                     name="name"
                     placeholder={namePlaceholder}
-                    className="w-full rounded-[10px] border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                    className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
                 </div>
-                <div className="mb-[22px]">
+                <div className="mb-6">
                   <label
                     htmlFor="ck-email"
                     className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
@@ -496,10 +496,10 @@ export const ContactKimiPage = defineComponent({
                     id="ck-email"
                     name="email"
                     placeholder={emailPlaceholder}
-                    className="w-full rounded-[10px] border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                    className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
                 </div>
-                <div className="mb-[22px]">
+                <div className="mb-6">
                   <label
                     htmlFor="ck-message"
                     className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
@@ -510,7 +510,7 @@ export const ContactKimiPage = defineComponent({
                     id="ck-message"
                     name="message"
                     placeholder={messagePlaceholder}
-                    className="min-h-[140px] w-full resize-y rounded-[10px] border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                    className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
                   />
                 </div>
                 <p className="sr-only" aria-live="polite">
@@ -518,7 +518,7 @@ export const ContactKimiPage = defineComponent({
                 </p>
                 <button
                   type="submit"
-                  className="flex w-full items-center justify-center gap-2.5 rounded-[10px] bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0"
+                  className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0"
                 >
                   <svg
                     width="18"
@@ -541,14 +541,14 @@ export const ContactKimiPage = defineComponent({
 
             {/* Contact details */}
             <div className="rounded-2xl border border-border bg-card p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60">
-              <h2 className="mb-[22px] text-xl font-bold text-foreground">
+              <h2 className="mb-6 text-xl font-bold text-foreground">
                 {detailsHeading}
               </h2>
-              <div className="flex flex-col gap-[22px]">
+              <div className="flex flex-col gap-6">
                 {detailItems.map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-start gap-4 rounded-[10px] border border-transparent bg-muted/40 p-[18px] transition-all hover:border-border hover:bg-muted/60"
+                    className="flex items-start gap-4 rounded-lg border border-transparent bg-muted/40 p-5 transition-all hover:border-border hover:bg-muted/60"
                   >
                     <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
                       {detailIcons[item.icon ?? "mail"]}
@@ -692,7 +692,7 @@ export const ContactKimiPage = defineComponent({
                   <div
                     key={item.question}
                     className={cn(
-                      "rounded-[10px] border border-border px-[22px] py-[18px] transition-colors hover:border-border/60",
+                      "rounded-lg border border-border px-6 py-5 transition-colors hover:border-border/60",
                       open ? "bg-muted/40" : "bg-card",
                     )}
                   >

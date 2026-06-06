@@ -1405,21 +1405,33 @@ export async function startServer(sessionsDir) {
       })
 
     if (req.user) {
+      console.log(`[auto-build] User authenticated, setting up export chain for session ${session.id}`)
       generation
         .then(async (tailPromise) => {
+          console.log(`[auto-build] Generation promise resolved for session ${session.id}`)
           if (tailPromise && typeof tailPromise.then === 'function') {
+            console.log(`[auto-build] Awaiting tailPromise for session ${session.id}`)
             await tailPromise
+            console.log(`[auto-build] tailPromise completed for session ${session.id}`)
           }
+          console.log(`[auto-build] Starting exports for session ${session.id}`)
           for (const target of ['html', 'react', 'nextjs']) {
             try {
+              console.log(`[auto-build] Generating ${target} export for session ${session.id}`)
               generateSessionExport(session, target)
+              console.log(`[auto-build] Broadcasting export_ready for ${target} to session ${session.id}`)
               sessionCtx.broadcast({ type: 'export_ready', target })
             } catch (err) {
               console.error(`[auto-build] ${target} failed: ${err.message}`)
             }
           }
+          console.log(`[auto-build] All exports completed for session ${session.id}`)
         })
-        .catch(() => {})
+        .catch((err) => {
+          console.error(`[auto-build] Export chain failed for session ${session.id}:`, err)
+        })
+    } else {
+      console.log(`[auto-build] User not authenticated, skipping auto-build exports for session ${session.id}`)
     }
 
     if (req.user) {

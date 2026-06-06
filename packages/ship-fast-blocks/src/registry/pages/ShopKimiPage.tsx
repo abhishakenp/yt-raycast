@@ -424,7 +424,7 @@ export const ShopKimiPage = defineComponent({
                         type="button"
                         onClick={() => go(`Save ${product.name}`)}
                         aria-label={`Save ${product.name}`}
-                        className="absolute right-2.5 top-2.5 grid size-8.5 place-items-center rounded-[0.625rem] border border-border bg-background/90 text-foreground transition-colors hover:bg-background"
+                        className="absolute right-2.5 top-2.5 grid size-8.5 place-items-center rounded-md border border-border bg-background/90 text-foreground transition-colors hover:bg-background"
                       >
                         <svg
                           width="16"
@@ -462,7 +462,7 @@ export const ShopKimiPage = defineComponent({
                         <button
                           type="button"
                           onClick={() => go(`Add ${product.name}`)}
-                          className="rounded-[0.625rem] bg-primary px-3 py-2 text-[0.8125rem] font-bold text-primary-foreground transition-all hover:bg-primary/90"
+                          className="rounded-md bg-primary px-3 py-2 text-[0.8125rem] font-bold text-primary-foreground transition-all hover:bg-primary/90"
                         >
                           Add to Bag
                         </button>

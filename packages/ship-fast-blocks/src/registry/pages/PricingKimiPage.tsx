@@ -371,7 +371,7 @@ export const PricingKimiPage = defineComponent({
               <button
                 type="button"
                 onClick={() => go("Pricing")}
-                className="rounded-[10px] bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                className="rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Get started
               </button>
@@ -380,7 +380,7 @@ export const PricingKimiPage = defineComponent({
             <button
               type="button"
               onClick={() => go("Pricing")}
-              className="rounded-[10px] bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground md:hidden"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground md:hidden"
             >
               Get started
             </button>
@@ -487,7 +487,7 @@ export const PricingKimiPage = defineComponent({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "w-full rounded-[10px] px-5 py-2.5 text-[0.9375rem] font-semibold transition-colors",
+                        "w-full rounded-lg px-5 py-2.5 text-[0.9375rem] font-semibold transition-colors",
                         plan.isPopular
                           ? "bg-primary text-primary-foreground hover:bg-primary/90"
                           : "border border-border bg-card text-foreground hover:bg-muted",

@@ -112,7 +112,7 @@ export const AboutNavbar = defineComponent({
           <button
             type="button"
             onClick={() => go(ctaTarget)}
-            className="inline-flex items-center gap-2 rounded-[10px] bg-foreground px-4 py-2.5 text-sm font-semibold text-background shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
+            className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background shadow-sm transition-all hover:-translate-y-px hover:shadow-md"
           >
             <span className="hidden sm:inline">{cta}</span>
             <ArrowRight />

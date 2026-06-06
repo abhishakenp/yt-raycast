@@ -83,7 +83,7 @@ export const BlogHeader = defineComponent({
                 type="button"
                 onClick={() => go(label)}
                 className={cn(
-                  "rounded-[0.625rem] px-3 py-2 text-[0.92rem] font-medium transition-colors",
+                  "rounded-md px-3 py-2 text-[0.92rem] font-medium transition-colors",
                   i === 0
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -97,7 +97,7 @@ export const BlogHeader = defineComponent({
             type="button"
             aria-label="Search"
             onClick={() => go(searchTarget)}
-            className="grid size-[2.375rem] place-items-center rounded-[0.625rem] border border-border bg-background text-muted-foreground transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm"
+            className="grid size-[2.375rem] place-items-center rounded-md border border-border bg-background text-muted-foreground transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm"
           >
             <svg
               width="18"

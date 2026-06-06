@@ -31,14 +31,14 @@ export const ContactHero = defineComponent({
 
     return (
       <section className={cn("pt-20 pb-14 text-center", props.className)}>
-        <span className="mb-[18px] inline-flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary">
+        <span className="mb-5 inline-flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-primary">
           <span
             aria-hidden="true"
             className="inline-block h-0.5 w-7 rounded-full bg-primary"
           />
           {eyebrow}
         </span>
-        <h1 className="mx-auto mb-[18px] max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-5xl lg:text-[3.4rem]">
+        <h1 className="mx-auto mb-5 max-w-3xl text-4xl font-extrabold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-5xl lg:text-[3.4rem]">
           {heading}
         </h1>
         <p className="mx-auto max-w-[560px] text-lg leading-[1.7] text-muted-foreground">

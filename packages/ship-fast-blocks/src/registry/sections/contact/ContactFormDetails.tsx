@@ -204,7 +204,7 @@ export const ContactFormDetails = defineComponent({
               go("Contact")
             }}
           >
-            <div className="mb-[22px]">
+            <div className="mb-6">
               <label
                 htmlFor="cfd-name"
                 className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
@@ -216,10 +216,10 @@ export const ContactFormDetails = defineComponent({
                 id="cfd-name"
                 name="name"
                 placeholder={namePlaceholder}
-                className="w-full rounded-[10px] border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
               />
             </div>
-            <div className="mb-[22px]">
+            <div className="mb-6">
               <label
                 htmlFor="cfd-email"
                 className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
@@ -231,10 +231,10 @@ export const ContactFormDetails = defineComponent({
                 id="cfd-email"
                 name="email"
                 placeholder={emailPlaceholder}
-                className="w-full rounded-[10px] border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                className="w-full rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
               />
             </div>
-            <div className="mb-[22px]">
+            <div className="mb-6">
               <label
                 htmlFor="cfd-message"
                 className="mb-2 block text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground"
@@ -245,7 +245,7 @@ export const ContactFormDetails = defineComponent({
                 id="cfd-message"
                 name="message"
                 placeholder={messagePlaceholder}
-                className="min-h-[140px] w-full resize-y rounded-[10px] border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
+                className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-background px-4 py-3.5 text-[0.97rem] text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/50"
               />
             </div>
             <p className="sr-only" aria-live="polite">
@@ -253,7 +253,7 @@ export const ContactFormDetails = defineComponent({
             </p>
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2.5 rounded-[10px] bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0"
+              className="flex w-full items-center justify-center gap-2.5 rounded-lg bg-primary px-7 py-4 text-[0.95rem] font-semibold text-primary-foreground transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)] active:translate-y-0"
             >
               <svg
                 width="18"
@@ -276,14 +276,14 @@ export const ContactFormDetails = defineComponent({
 
         {/* Contact details */}
         <div className="rounded-2xl border border-border bg-card p-9 shadow-[0_24px_64px_rgba(0,0,0,0.45)] transition-colors hover:border-border/60">
-          <h2 className="mb-[22px] text-xl font-bold text-foreground">
+          <h2 className="mb-6 text-xl font-bold text-foreground">
             {detailsHeading}
           </h2>
-          <div className="flex flex-col gap-[22px]">
+          <div className="flex flex-col gap-6">
             {detailItems.map((item) => (
               <div
                 key={item.label}
-                className="flex items-start gap-4 rounded-[10px] border border-transparent bg-muted/40 p-[18px] transition-all hover:border-border hover:bg-muted/60"
+                className="flex items-start gap-4 rounded-lg border border-transparent bg-muted/40 p-5 transition-all hover:border-border hover:bg-muted/60"
               >
                 <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
                   {detailIcons[item.icon ?? "mail"]}

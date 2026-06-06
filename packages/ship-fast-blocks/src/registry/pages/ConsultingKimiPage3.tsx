@@ -57,82 +57,82 @@ export const ConsultingKimiPage3 = defineComponent({
       ...props.hero,
     }
     const metrics = props.metrics?.length ? props.metrics : [
-  {
-    "value": "24/7",
-    "label": "Responsive service"
-  },
-  {
-    "value": "98%",
-    "label": "Positive outcomes"
-  },
-  {
-    "value": "4.9",
-    "label": "Average rating"
-  },
-  {
-    "value": "12+",
-    "label": "Core capabilities"
-  }
-]
+      {
+        "value": "24/7",
+        "label": "Responsive service"
+      },
+      {
+        "value": "98%",
+        "label": "Positive outcomes"
+      },
+      {
+        "value": "4.9",
+        "label": "Average rating"
+      },
+      {
+        "value": "12+",
+        "label": "Core capabilities"
+      }
+    ]
     const sections = props.sections?.length ? props.sections : [
-  {
-    "eyebrow": "Overview",
-    "title": "Expertise across the full value chain",
-    "body": "Northridge Advisory Management Consulting N Northridge Advisory Services Insights Approach Pricing FAQ Contact us Services Insights Approach Pricing FAQ Contact us Northridge Ad...",
-    "items": [
-      "Engagement models that fit your stage",
-      "What leaders say about us",
-      "Common questions"
+      {
+        "eyebrow": "Overview",
+        "title": "Expertise across the full value chain",
+        "body": "Northridge Advisory Management Consulting N Northridge Advisory Services Insights Approach Pricing FAQ Contact us Services Insights Approach Pricing FAQ Contact us Northridge Ad...",
+        "items": [
+          "Engagement models that fit your stage",
+          "What leaders say about us",
+          "Common questions"
+        ]
+      },
+      {
+        "eyebrow": "Experience",
+        "title": "How we deliver outcomes",
+        "body": "Consulting page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
+        "items": [
+          "Ready to move your business forward?",
+          "Market Entry & Growth Strategy",
+          "M&A Advisory"
+        ]
+      },
+      {
+        "eyebrow": "Proof",
+        "title": "Proven impact, documented",
+        "body": "Consulting page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
+        "items": [
+          "Digital Transformation",
+          "Operational Excellence",
+          "Sustainability & ESG"
+        ]
+      },
+      {
+        "eyebrow": "Next steps",
+        "title": "Engagement models that fit your stage",
+        "body": "Consulting page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
+        "items": [
+          "Organizational Design",
+          "Diagnose",
+          "Global Retail Expansion"
+        ]
+      }
     ]
-  },
-  {
-    "eyebrow": "Experience",
-    "title": "How we deliver outcomes",
-    "body": "Consulting page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Ready to move your business forward?",
-      "Market Entry & Growth Strategy",
-      "M&A Advisory"
-    ]
-  },
-  {
-    "eyebrow": "Proof",
-    "title": "Proven impact, documented",
-    "body": "Consulting page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Digital Transformation",
-      "Operational Excellence",
-      "Sustainability & ESG"
-    ]
-  },
-  {
-    "eyebrow": "Next steps",
-    "title": "Engagement models that fit your stage",
-    "body": "Consulting page variant 4 highlights the generated design's core message, section pacing, and conversion-focused content.",
-    "items": [
-      "Organizational Design",
-      "Diagnose",
-      "Global Retail Expansion"
-    ]
-  }
-]
     const gallery = props.gallery?.length ? props.gallery : [
-  {
-    "title": "How we deliver outcomes",
-    "alt": "modern glass office towers reflecting sunset sky",
-    "caption": "Consulting generated page detail"
-  },
-  {
-    "title": "Proven impact, documented",
-    "alt": "professional team collaborating around laptops in modern office",
-    "caption": "Consulting generated page detail"
-  },
-  {
-    "title": "Engagement models that fit your stage",
-    "alt": "bright open plan office with industrial architecture",
-    "caption": "Consulting generated page detail"
-  }
-]
+      {
+        "title": "How we deliver outcomes",
+        "alt": "modern glass office towers reflecting sunset sky",
+        "caption": "Consulting generated page detail"
+      },
+      {
+        "title": "Proven impact, documented",
+        "alt": "professional team collaborating around laptops in modern office",
+        "caption": "Consulting generated page detail"
+      },
+      {
+        "title": "Engagement models that fit your stage",
+        "alt": "bright open plan office with industrial architecture",
+        "caption": "Consulting generated page detail"
+      }
+    ]
 
     return (
       <div className={cn("min-h-screen bg-background text-foreground", props.className)}>

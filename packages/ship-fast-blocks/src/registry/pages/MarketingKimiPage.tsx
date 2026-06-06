@@ -674,7 +674,7 @@ export const MarketingKimiPage = defineComponent({
           {/* Testimonial */}
           <section className="bg-gradient-to-b from-muted/50 to-background py-20">
             <div className="mx-auto max-w-6xl px-6">
-              <figure className="relative mx-auto max-w-3xl rounded-[1.5rem] border border-border bg-card px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10">
+              <figure className="relative mx-auto max-w-3xl rounded-2xl border border-border bg-card px-8 py-12 text-center shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] sm:px-10">
                 <span className="mx-auto mb-5 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
                   <svg
                     width="20"
@@ -785,7 +785,7 @@ export const MarketingKimiPage = defineComponent({
 
           {/* CTA banner */}
           <section className="px-6 pb-20">
-            <div className="mx-auto max-w-[calc(72rem-3rem)] rounded-[1.5rem] bg-foreground px-6 py-20 text-center text-background">
+            <div className="mx-auto max-w-[calc(72rem-3rem)] rounded-2xl bg-foreground px-6 py-20 text-center text-background">
               <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {ctaHeading}
               </h2>

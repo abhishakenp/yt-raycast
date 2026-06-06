@@ -36,7 +36,7 @@ export const MarketingCta = defineComponent({
 
     return (
       <section className={cn("px-6 pb-20", props.className)}>
-        <div className="mx-auto max-w-[calc(72rem-3rem)] rounded-[1.5rem] bg-foreground px-6 py-20 text-center text-background">
+        <div className="mx-auto max-w-[calc(72rem-3rem)] rounded-2xl bg-foreground px-6 py-20 text-center text-background">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
             {heading}
           </h2>

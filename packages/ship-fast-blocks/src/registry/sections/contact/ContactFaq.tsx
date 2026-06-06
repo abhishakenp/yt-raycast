@@ -85,7 +85,7 @@ export const ContactFaq = defineComponent({
               <div
                 key={item.question}
                 className={cn(
-                  "rounded-[10px] border border-border px-[22px] py-[18px] transition-colors hover:border-border/60",
+                  "rounded-lg border border-border px-6 py-5 transition-colors hover:border-border/60",
                   open ? "bg-muted/40" : "bg-card",
                 )}
               >

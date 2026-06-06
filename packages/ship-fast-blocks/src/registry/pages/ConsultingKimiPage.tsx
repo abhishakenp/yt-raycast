@@ -243,37 +243,37 @@ export const ConsultingKimiPage = defineComponent({
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
-          {
-            title: "Corporate Strategy",
-            description:
-              "Develop winning strategies that define your competitive position, prioritize growth initiatives, and allocate resources for maximum impact. Our approach combines rigorous analysis with creative problem-solving.",
-          },
-          {
-            title: "Digital Transformation",
-            description:
-              "Navigate the digital landscape with confidence. We help organizations leverage technology to reimagine operations, enhance customer experiences, and build new digital business models.",
-          },
-          {
-            title: "M&A Advisory",
-            description:
-              "From target identification to post-merger integration, we guide clients through complex transactions. Our team has advised on over 400 deals worth more than $180 billion in total value.",
-          },
-          {
-            title: "Operations Excellence",
-            description:
-              "Optimize your end-to-end operations to reduce costs, improve quality, and accelerate delivery. We specialize in supply chain transformation, lean manufacturing, and process automation.",
-          },
-          {
-            title: "Organization & Change",
-            description:
-              "Build high-performing organizations and lead successful transformations. We help you redesign structures, develop talent, and manage cultural change to support your strategic objectives.",
-          },
-          {
-            title: "Risk & Compliance",
-            description:
-              "Navigate regulatory complexity and protect your enterprise. We help organizations identify, assess, and mitigate risks while ensuring compliance with evolving standards and regulations.",
-          },
-        ]
+        {
+          title: "Corporate Strategy",
+          description:
+            "Develop winning strategies that define your competitive position, prioritize growth initiatives, and allocate resources for maximum impact. Our approach combines rigorous analysis with creative problem-solving.",
+        },
+        {
+          title: "Digital Transformation",
+          description:
+            "Navigate the digital landscape with confidence. We help organizations leverage technology to reimagine operations, enhance customer experiences, and build new digital business models.",
+        },
+        {
+          title: "M&A Advisory",
+          description:
+            "From target identification to post-merger integration, we guide clients through complex transactions. Our team has advised on over 400 deals worth more than $180 billion in total value.",
+        },
+        {
+          title: "Operations Excellence",
+          description:
+            "Optimize your end-to-end operations to reduce costs, improve quality, and accelerate delivery. We specialize in supply chain transformation, lean manufacturing, and process automation.",
+        },
+        {
+          title: "Organization & Change",
+          description:
+            "Build high-performing organizations and lead successful transformations. We help you redesign structures, develop talent, and manage cultural change to support your strategic objectives.",
+        },
+        {
+          title: "Risk & Compliance",
+          description:
+            "Navigate regulatory complexity and protect your enterprise. We help organizations identify, assess, and mitigate risks while ensuring compliance with evolving standards and regulations.",
+        },
+      ]
 
     const processHeading = props.process?.heading ?? "How We Work"
     const processDesc =
@@ -282,27 +282,27 @@ export const ConsultingKimiPage = defineComponent({
     const processSteps = props.process?.steps?.length
       ? props.process.steps
       : [
-          {
-            title: "Discovery & Diagnosis",
-            description:
-              "We begin by deeply understanding your business, conducting rigorous analysis of your market position, operations, and strategic challenges to identify the core issues.",
-          },
-          {
-            title: "Strategy Development",
-            description:
-              "Working collaboratively with your team, we develop tailored strategies that leverage your strengths and address your most critical opportunities and challenges.",
-          },
-          {
-            title: "Implementation Support",
-            description:
-              "We roll up our sleeves to help execute the strategy, providing hands-on support for organizational changes, process improvements, and capability building.",
-          },
-          {
-            title: "Sustained Impact",
-            description:
-              "We measure success by lasting results. We build your internal capabilities and establish mechanisms to ensure improvements endure long after our engagement.",
-          },
-        ]
+        {
+          title: "Discovery & Diagnosis",
+          description:
+            "We begin by deeply understanding your business, conducting rigorous analysis of your market position, operations, and strategic challenges to identify the core issues.",
+        },
+        {
+          title: "Strategy Development",
+          description:
+            "Working collaboratively with your team, we develop tailored strategies that leverage your strengths and address your most critical opportunities and challenges.",
+        },
+        {
+          title: "Implementation Support",
+          description:
+            "We roll up our sleeves to help execute the strategy, providing hands-on support for organizational changes, process improvements, and capability building.",
+        },
+        {
+          title: "Sustained Impact",
+          description:
+            "We measure success by lasting results. We build your internal capabilities and establish mechanisms to ensure improvements endure long after our engagement.",
+        },
+      ]
 
     const caseHeading = props.caseStudies?.heading ?? "Featured Case Studies"
     const caseDesc =
@@ -312,67 +312,67 @@ export const ConsultingKimiPage = defineComponent({
     const caseItems = props.caseStudies?.items?.length
       ? props.caseStudies.items
       : [
-          {
-            tag: "Financial Services",
-            title: "Transforming a Regional Bank's Digital Ecosystem",
-            description:
-              "Helped First Capital Bank redesign their digital platform, resulting in 47% increase in mobile adoption and $23M in operational savings over 18 months.",
-            duration: "18-month engagement",
-            period: "2023-2024",
-            imageAlt:
-              "Modern glass skyscraper headquarters building in downtown business district",
-          },
-          {
-            tag: "Manufacturing",
-            title: "Operational Turnaround for Industrial Manufacturer",
-            description:
-              "Partnered with Meridian Industrial to implement lean manufacturing principles, reducing production costs by 31% and improving on-time delivery to 97%.",
-            duration: "24-month engagement",
-            period: "2022-2024",
-            imageAlt:
-              "Advanced manufacturing facility with robotic arms assembling products on production line",
-          },
-          {
-            tag: "Healthcare",
-            title: "Post-Merger Integration for Health System Expansion",
-            description:
-              "Guided Westview Health System through the integration of three acquired hospitals, achieving $85M in synergies while maintaining quality of care standards.",
-            duration: "36-month engagement",
-            period: "2021-2024",
-            imageAlt:
-              "Healthcare professionals reviewing patient data on tablets in modern hospital setting",
-          },
-          {
-            tag: "Retail",
-            title: "Omnichannel Strategy for National Retailer",
-            description:
-              "Developed and executed an omnichannel transformation for Carter Retail Group, driving 28% growth in e-commerce revenue and improving customer lifetime value by 34%.",
-            duration: "30-month engagement",
-            period: "2022-2024",
-            imageAlt:
-              "Retail store interior with customers shopping and modern product displays",
-          },
-          {
-            tag: "Energy",
-            title: "Sustainability Transformation for Energy Provider",
-            description:
-              "Supported Pacific Energy's transition to renewable sources, developing a 10-year roadmap that positions the company for carbon neutrality by 2035.",
-            duration: "15-month engagement",
-            period: "2023-2024",
-            imageAlt:
-              "Sustainable office building with green rooftop garden and solar panels",
-          },
-          {
-            tag: "Technology",
-            title: "Product Strategy for SaaS Market Leader",
-            description:
-              "Helped CloudSync Technologies redefine their product portfolio, entering three new market segments and increasing ARR by $42M in the first year.",
-            duration: "12-month engagement",
-            period: "2023-2024",
-            imageAlt:
-              "Software development team collaborating on multiple monitors in modern tech office",
-          },
-        ]
+        {
+          tag: "Financial Services",
+          title: "Transforming a Regional Bank's Digital Ecosystem",
+          description:
+            "Helped First Capital Bank redesign their digital platform, resulting in 47% increase in mobile adoption and $23M in operational savings over 18 months.",
+          duration: "18-month engagement",
+          period: "2023-2024",
+          imageAlt:
+            "Modern glass skyscraper headquarters building in downtown business district",
+        },
+        {
+          tag: "Manufacturing",
+          title: "Operational Turnaround for Industrial Manufacturer",
+          description:
+            "Partnered with Meridian Industrial to implement lean manufacturing principles, reducing production costs by 31% and improving on-time delivery to 97%.",
+          duration: "24-month engagement",
+          period: "2022-2024",
+          imageAlt:
+            "Advanced manufacturing facility with robotic arms assembling products on production line",
+        },
+        {
+          tag: "Healthcare",
+          title: "Post-Merger Integration for Health System Expansion",
+          description:
+            "Guided Westview Health System through the integration of three acquired hospitals, achieving $85M in synergies while maintaining quality of care standards.",
+          duration: "36-month engagement",
+          period: "2021-2024",
+          imageAlt:
+            "Healthcare professionals reviewing patient data on tablets in modern hospital setting",
+        },
+        {
+          tag: "Retail",
+          title: "Omnichannel Strategy for National Retailer",
+          description:
+            "Developed and executed an omnichannel transformation for Carter Retail Group, driving 28% growth in e-commerce revenue and improving customer lifetime value by 34%.",
+          duration: "30-month engagement",
+          period: "2022-2024",
+          imageAlt:
+            "Retail store interior with customers shopping and modern product displays",
+        },
+        {
+          tag: "Energy",
+          title: "Sustainability Transformation for Energy Provider",
+          description:
+            "Supported Pacific Energy's transition to renewable sources, developing a 10-year roadmap that positions the company for carbon neutrality by 2035.",
+          duration: "15-month engagement",
+          period: "2023-2024",
+          imageAlt:
+            "Sustainable office building with green rooftop garden and solar panels",
+        },
+        {
+          tag: "Technology",
+          title: "Product Strategy for SaaS Market Leader",
+          description:
+            "Helped CloudSync Technologies redefine their product portfolio, entering three new market segments and increasing ARR by $42M in the first year.",
+          duration: "12-month engagement",
+          period: "2023-2024",
+          imageAlt:
+            "Software development team collaborating on multiple monitors in modern tech office",
+        },
+      ]
 
     const pricingHeading = props.pricing?.heading ?? "Engagement Models"
     const pricingDesc =
@@ -381,57 +381,57 @@ export const ConsultingKimiPage = defineComponent({
     const pricingTiers = props.pricing?.tiers?.length
       ? props.pricing.tiers
       : [
-          {
-            name: "Strategic Advisory",
-            price: "$45K",
-            unit: "/month",
-            description:
-              "Ideal for executive-level guidance on strategic direction, market entry, or transformation planning. Includes weekly advisory sessions and strategic roadmapping.",
-            features: [
-              "Monthly strategy sessions",
-              "Executive coaching",
-              "Market intelligence reports",
-            ],
-            cta: "Learn More",
-          },
-          {
-            name: "Transformation Partnership",
-            price: "Custom",
-            description:
-              "Comprehensive support for major transformation initiatives. Dedicated team embedded with your organization for strategy through implementation.",
-            features: [
-              "Dedicated project team",
-              "Full implementation support",
-              "Change management",
-              "Capability building",
-            ],
-            cta: "Schedule Consultation",
-            featured: true,
-            badge: "Most Popular",
-          },
-          {
-            name: "Capability Building",
-            price: "$85K",
-            unit: "/program",
-            description:
-              "Intensive training and development programs to build internal consulting capabilities and leadership skills within your organization.",
-            features: [
-              "Workshop-based training",
-              "Real project application",
-              "12-week program duration",
-            ],
-            cta: "Learn More",
-          },
-        ]
+        {
+          name: "Strategic Advisory",
+          price: "$45K",
+          unit: "/month",
+          description:
+            "Ideal for executive-level guidance on strategic direction, market entry, or transformation planning. Includes weekly advisory sessions and strategic roadmapping.",
+          features: [
+            "Monthly strategy sessions",
+            "Executive coaching",
+            "Market intelligence reports",
+          ],
+          cta: "Learn More",
+        },
+        {
+          name: "Transformation Partnership",
+          price: "Custom",
+          description:
+            "Comprehensive support for major transformation initiatives. Dedicated team embedded with your organization for strategy through implementation.",
+          features: [
+            "Dedicated project team",
+            "Full implementation support",
+            "Change management",
+            "Capability building",
+          ],
+          cta: "Schedule Consultation",
+          featured: true,
+          badge: "Most Popular",
+        },
+        {
+          name: "Capability Building",
+          price: "$85K",
+          unit: "/program",
+          description:
+            "Intensive training and development programs to build internal consulting capabilities and leadership skills within your organization.",
+          features: [
+            "Workshop-based training",
+            "Real project application",
+            "12-week program duration",
+          ],
+          cta: "Learn More",
+        },
+      ]
 
     const statItems = props.stats?.length
       ? props.stats
       : [
-          { value: "28", label: "Years of Excellence" },
-          { value: "850+", label: "Client Engagements" },
-          { value: "24", label: "Global Offices" },
-          { value: "1,600+", label: "Consultants Worldwide" },
-        ]
+        { value: "28", label: "Years of Excellence" },
+        { value: "850+", label: "Client Engagements" },
+        { value: "24", label: "Global Offices" },
+        { value: "1,600+", label: "Consultants Worldwide" },
+      ]
 
     const testimonialsHeading =
       props.testimonials?.heading ?? "What Our Clients Say"
@@ -441,31 +441,31 @@ export const ConsultingKimiPage = defineComponent({
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
-          {
-            quote:
-              "Nexus Strategy Partners delivered exceptional value. Their team's deep expertise in financial services and hands-on approach helped us achieve a 40% improvement in operational efficiency within 12 months.",
-            name: "Richard Chen",
-            role: "CEO, First Capital Bank",
-            avatarAlt:
-              "Professional headshot of a confident male executive in a navy suit with silver tie",
-          },
-          {
-            quote:
-              "The Nexus team became true partners in our transformation. Their strategic insights and pragmatic implementation approach were instrumental in our successful market expansion into Southeast Asia.",
-            name: "Sarah Mitchell",
-            role: "COO, Meridian Industrial",
-            avatarAlt:
-              "Professional headshot of a smiling female business leader in professional attire",
-          },
-          {
-            quote:
-              "Working with Nexus on our post-merger integration was a game-changer. They brought structure, expertise, and a collaborative spirit that made a complex process feel manageable.",
-            name: "Dr. James Rodriguez",
-            role: "President, Westview Health",
-            avatarAlt:
-              "Professional headshot of a male healthcare executive wearing glasses and a suit",
-          },
-        ]
+        {
+          quote:
+            "Nexus Strategy Partners delivered exceptional value. Their team's deep expertise in financial services and hands-on approach helped us achieve a 40% improvement in operational efficiency within 12 months.",
+          name: "Richard Chen",
+          role: "CEO, First Capital Bank",
+          avatarAlt:
+            "Professional headshot of a confident male executive in a navy suit with silver tie",
+        },
+        {
+          quote:
+            "The Nexus team became true partners in our transformation. Their strategic insights and pragmatic implementation approach were instrumental in our successful market expansion into Southeast Asia.",
+          name: "Sarah Mitchell",
+          role: "COO, Meridian Industrial",
+          avatarAlt:
+            "Professional headshot of a smiling female business leader in professional attire",
+        },
+        {
+          quote:
+            "Working with Nexus on our post-merger integration was a game-changer. They brought structure, expertise, and a collaborative spirit that made a complex process feel manageable.",
+          name: "Dr. James Rodriguez",
+          role: "President, Westview Health",
+          avatarAlt:
+            "Professional headshot of a male healthcare executive wearing glasses and a suit",
+        },
+      ]
 
     const insightsHeading = props.insights?.heading ?? "Latest Insights"
     const insightsDesc =
@@ -475,37 +475,37 @@ export const ConsultingKimiPage = defineComponent({
     const insightItems = props.insights?.items?.length
       ? props.insights.items
       : [
-          {
-            category: "Technology",
-            date: "May 15, 2026",
-            title:
-              "The AI Imperative: Redefining Competitive Advantage in the Enterprise",
-            description:
-              "How leading organizations are moving beyond pilot projects to scale AI across their operations—and the capabilities that separate winners from laggards.",
-            imageAlt:
-              "Abstract visualization of AI and machine learning with glowing neural network patterns",
-          },
-          {
-            category: "Supply Chain",
-            date: "May 8, 2026",
-            title:
-              "Building Resilience: Lessons from the Semiconductor Supply Chain Crisis",
-            description:
-              "An in-depth analysis of supply chain vulnerabilities exposed in recent years and the strategic shifts required for future resilience.",
-            imageAlt:
-              "Close-up of semiconductor chip with intricate circuit patterns and glowing connections",
-          },
-          {
-            category: "Sustainability",
-            date: "April 28, 2026",
-            title:
-              "From Compliance to Competitive Edge: The New Sustainability Playbook",
-            description:
-              "How forward-thinking companies are integrating ESG principles to drive innovation, attract talent, and create long-term shareholder value.",
-            imageAlt:
-              "Wind turbines on a green hillside at sunset representing sustainable energy",
-          },
-        ]
+        {
+          category: "Technology",
+          date: "May 15, 2026",
+          title:
+            "The AI Imperative: Redefining Competitive Advantage in the Enterprise",
+          description:
+            "How leading organizations are moving beyond pilot projects to scale AI across their operations—and the capabilities that separate winners from laggards.",
+          imageAlt:
+            "Abstract visualization of AI and machine learning with glowing neural network patterns",
+        },
+        {
+          category: "Supply Chain",
+          date: "May 8, 2026",
+          title:
+            "Building Resilience: Lessons from the Semiconductor Supply Chain Crisis",
+          description:
+            "An in-depth analysis of supply chain vulnerabilities exposed in recent years and the strategic shifts required for future resilience.",
+          imageAlt:
+            "Close-up of semiconductor chip with intricate circuit patterns and glowing connections",
+        },
+        {
+          category: "Sustainability",
+          date: "April 28, 2026",
+          title:
+            "From Compliance to Competitive Edge: The New Sustainability Playbook",
+          description:
+            "How forward-thinking companies are integrating ESG principles to drive innovation, attract talent, and create long-term shareholder value.",
+          imageAlt:
+            "Wind turbines on a green hillside at sunset representing sustainable energy",
+        },
+      ]
 
     const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
     const faqDesc =
@@ -514,32 +514,32 @@ export const ConsultingKimiPage = defineComponent({
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
-          {
-            question: "How do you approach a typical consulting engagement?",
-            answer:
-              "We begin every engagement with a deep diagnostic phase to understand your unique context, challenges, and opportunities. From there, we develop tailored solutions in close collaboration with your team, ensuring buy-in and building internal capability. We don't just deliver recommendations—we stay to help implement and ensure lasting impact. Our average engagement lasts 12-18 months for transformation projects, though strategic advisory relationships can extend for years.",
-          },
-          {
-            question: "What industries do you specialize in?",
-            answer:
-              "We have deep expertise across financial services, healthcare, technology, industrials, energy, and consumer sectors. Within these, we maintain specialized practices in areas like digital banking, healthcare provider systems, enterprise SaaS, advanced manufacturing, and renewable energy transition. Our consultants combine industry-specific knowledge with functional expertise to deliver contextualized solutions.",
-          },
-          {
-            question: "How do you measure the success of your engagements?",
-            answer:
-              "We establish clear, measurable objectives at the outset of every engagement, tied directly to your business outcomes. These might include revenue growth, cost reduction, market share gains, or operational metrics. We track progress rigorously and regularly report on impact. Importantly, we measure not just immediate results but sustained performance—we conduct follow-up assessments 12 months post-engagement to ensure changes have stuck.",
-          },
-          {
-            question: "What is your fee structure?",
-            answer:
-              "We offer flexible engagement models to meet different client needs. These include monthly retainer arrangements for ongoing advisory work, fixed-fee project pricing for well-defined initiatives, and performance-based fees where a portion of our compensation is tied to achieving agreed-upon outcomes. We're transparent about pricing and work with you to structure arrangements that align incentives and ensure strong return on investment.",
-          },
-          {
-            question: "How do you ensure knowledge transfer to our team?",
-            answer:
-              "Building your internal capabilities is a core part of our mission. We embed your team members in our work streams, conduct training sessions, create playbooks and tools, and provide coaching throughout the engagement. Our goal is to leave your organization stronger than we found it—with people who can continue driving progress long after we step back. Many of our clients develop internal consulting functions based on our methodologies.",
-          },
-        ]
+        {
+          question: "How do you approach a typical consulting engagement?",
+          answer:
+            "We begin every engagement with a deep diagnostic phase to understand your unique context, challenges, and opportunities. From there, we develop tailored solutions in close collaboration with your team, ensuring buy-in and building internal capability. We don't just deliver recommendations—we stay to help implement and ensure lasting impact. Our average engagement lasts 12-18 months for transformation projects, though strategic advisory relationships can extend for years.",
+        },
+        {
+          question: "What industries do you specialize in?",
+          answer:
+            "We have deep expertise across financial services, healthcare, technology, industrials, energy, and consumer sectors. Within these, we maintain specialized practices in areas like digital banking, healthcare provider systems, enterprise SaaS, advanced manufacturing, and renewable energy transition. Our consultants combine industry-specific knowledge with functional expertise to deliver contextualized solutions.",
+        },
+        {
+          question: "How do you measure the success of your engagements?",
+          answer:
+            "We establish clear, measurable objectives at the outset of every engagement, tied directly to your business outcomes. These might include revenue growth, cost reduction, market share gains, or operational metrics. We track progress rigorously and regularly report on impact. Importantly, we measure not just immediate results but sustained performance—we conduct follow-up assessments 12 months post-engagement to ensure changes have stuck.",
+        },
+        {
+          question: "What is your fee structure?",
+          answer:
+            "We offer flexible engagement models to meet different client needs. These include monthly retainer arrangements for ongoing advisory work, fixed-fee project pricing for well-defined initiatives, and performance-based fees where a portion of our compensation is tied to achieving agreed-upon outcomes. We're transparent about pricing and work with you to structure arrangements that align incentives and ensure strong return on investment.",
+        },
+        {
+          question: "How do you ensure knowledge transfer to our team?",
+          answer:
+            "Building your internal capabilities is a core part of our mission. We embed your team members in our work streams, conduct training sessions, create playbooks and tools, and provide coaching throughout the engagement. Our goal is to leave your organization stronger than we found it—with people who can continue driving progress long after we step back. Many of our clients develop internal consulting functions based on our methodologies.",
+        },
+      ]
 
     const ctaHeading = props.cta?.heading ?? "Ready to Transform Your Business?"
     const ctaDesc =
@@ -558,24 +558,24 @@ export const ConsultingKimiPage = defineComponent({
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Corporate Strategy",
-          "Digital Transformation",
-          "M&A Advisory",
-          "Operations Excellence",
-          "Organization & Change",
-          "Risk & Compliance",
-        ]
+        "Corporate Strategy",
+        "Digital Transformation",
+        "M&A Advisory",
+        "Operations Excellence",
+        "Organization & Change",
+        "Risk & Compliance",
+      ]
     const footerCompanyHeading = props.footer?.companyHeading ?? "Company"
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks
       : [
-          "About Us",
-          "Our Team",
-          "Case Studies",
-          "Insights",
-          "Careers",
-          "Contact",
-        ]
+        "About Us",
+        "Our Team",
+        "Case Studies",
+        "Insights",
+        "Careers",
+        "Contact",
+      ]
     const footerContactHeading = props.footer?.contactHeading ?? "Contact"
     const footerAddress =
       props.footer?.address ?? "350 Park Avenue, Suite 1800, New York, NY 10022"

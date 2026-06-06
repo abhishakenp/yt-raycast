@@ -233,22 +233,22 @@ export const ConsultingKimiPage2 = defineComponent({
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "$47B", label: "Client value created" },
-          { value: "340+", label: "Transformations delivered" },
-          { value: "94%", label: "Client retention rate" },
-        ]
+        { value: "$47B", label: "Client value created" },
+        { value: "340+", label: "Transformations delivered" },
+        { value: "94%", label: "Client retention rate" },
+      ]
 
     const logosHeading = props.logos?.heading ?? "Trusted by industry leaders"
     const logoItems = props.logos?.items?.length
       ? props.logos.items
       : [
-          "Acme Corp",
-          "Globex",
-          "Initech",
-          "MassiveDynamic",
-          "Umbrella",
-          "Wayne Ent",
-        ]
+        "Acme Corp",
+        "Globex",
+        "Initech",
+        "MassiveDynamic",
+        "Umbrella",
+        "Wayne Ent",
+      ]
 
     const servicesEyebrow = props.services?.eyebrow ?? "Our Services"
     const servicesHeading =
@@ -259,126 +259,126 @@ export const ConsultingKimiPage2 = defineComponent({
     const serviceItems = props.services?.items?.length
       ? props.services.items
       : [
-          {
-            title: "Strategy & Growth",
-            description:
-              "Develop winning strategies for market expansion, M&A, portfolio optimization, and sustainable competitive positioning.",
-            points: [
-              "Corporate strategy development",
-              "M&A advisory & due diligence",
-              "Market entry & expansion",
-            ],
-          },
-          {
-            title: "Operations Excellence",
-            description:
-              "Transform supply chains, optimize processes, reduce costs, and build operational resilience for competitive advantage.",
-            points: [
-              "Supply chain transformation",
-              "Cost optimization programs",
-              "Lean & Six Sigma implementation",
-            ],
-          },
-          {
-            title: "Digital Transformation",
-            description:
-              "Accelerate digital initiatives, implement AI/ML solutions, modernize technology architecture, and build data-driven organizations.",
-            points: [
-              "AI & automation strategy",
-              "Cloud migration & modernization",
-              "Data & analytics platforms",
-            ],
-          },
-          {
-            title: "Organization & Change",
-            description:
-              "Restructure for agility, develop leadership capabilities, manage cultural transformation, and build high-performing teams.",
-            points: [
-              "Operating model redesign",
-              "Talent & capability building",
-              "Change management programs",
-            ],
-          },
-          {
-            title: "Financial Advisory",
-            description:
-              "Optimize capital structure, improve financial planning, enhance investor relations, and navigate complex transactions.",
-            points: [
-              "FP&A transformation",
-              "Working capital optimization",
-              "Restructuring & turnaround",
-            ],
-          },
-          {
-            title: "Sustainability & ESG",
-            description:
-              "Embed sustainability into strategy, meet regulatory requirements, and create value through responsible business practices.",
-            points: [
-              "ESG strategy & reporting",
-              "Net-zero transition planning",
-              "Circular economy programs",
-            ],
-          },
-        ]
+        {
+          title: "Strategy & Growth",
+          description:
+            "Develop winning strategies for market expansion, M&A, portfolio optimization, and sustainable competitive positioning.",
+          points: [
+            "Corporate strategy development",
+            "M&A advisory & due diligence",
+            "Market entry & expansion",
+          ],
+        },
+        {
+          title: "Operations Excellence",
+          description:
+            "Transform supply chains, optimize processes, reduce costs, and build operational resilience for competitive advantage.",
+          points: [
+            "Supply chain transformation",
+            "Cost optimization programs",
+            "Lean & Six Sigma implementation",
+          ],
+        },
+        {
+          title: "Digital Transformation",
+          description:
+            "Accelerate digital initiatives, implement AI/ML solutions, modernize technology architecture, and build data-driven organizations.",
+          points: [
+            "AI & automation strategy",
+            "Cloud migration & modernization",
+            "Data & analytics platforms",
+          ],
+        },
+        {
+          title: "Organization & Change",
+          description:
+            "Restructure for agility, develop leadership capabilities, manage cultural transformation, and build high-performing teams.",
+          points: [
+            "Operating model redesign",
+            "Talent & capability building",
+            "Change management programs",
+          ],
+        },
+        {
+          title: "Financial Advisory",
+          description:
+            "Optimize capital structure, improve financial planning, enhance investor relations, and navigate complex transactions.",
+          points: [
+            "FP&A transformation",
+            "Working capital optimization",
+            "Restructuring & turnaround",
+          ],
+        },
+        {
+          title: "Sustainability & ESG",
+          description:
+            "Embed sustainability into strategy, meet regulatory requirements, and create value through responsible business practices.",
+          points: [
+            "ESG strategy & reporting",
+            "Net-zero transition planning",
+            "Circular economy programs",
+          ],
+        },
+      ]
 
     const caseEyebrow = props.caseStudies?.eyebrow ?? "Case Studies"
     const caseHeading = props.caseStudies?.heading ?? "Real results, lasting impact"
     const caseItems = props.caseStudies?.items?.length
       ? props.caseStudies.items
       : [
-          {
-            tag: "Technology",
-            duration: "6-month engagement",
-            title: "Global SaaS Company Digital Transformation",
-            description:
-              "Helped a $2B SaaS provider modernize their cloud infrastructure, resulting in 40% cost reduction and 3x improvement in deployment velocity.",
-            imageAlt:
-              "Business executive reviewing data analytics dashboard on large screen",
-            metrics: [
-              { value: "$127M", label: "Cost savings achieved" },
-              { value: "340%", label: "ROI in first year" },
-            ],
-          },
-          {
-            tag: "Healthcare",
-            duration: "12-month engagement",
-            title: "Healthcare System Operational Excellence",
-            description:
-              "Partnered with a 45-hospital network to redesign patient flow, reduce wait times, and improve clinical outcomes across the system.",
-            imageAlt:
-              "Corporate team collaborating in modern conference room with glass walls",
-            metrics: [
-              { value: "23%", label: "Cost reduction" },
-              { value: "47min", label: "Avg wait time reduction" },
-            ],
-          },
-          {
-            tag: "Retail",
-            duration: "8-month engagement",
-            title: "Fortune 100 Retailer Supply Chain Overhaul",
-            description:
-              "Redesigned end-to-end supply chain for a major retailer, implementing AI-driven demand forecasting and automated replenishment.",
-            imageAlt:
-              "Modern retail store interior with bright lighting and organized product displays",
-            metrics: [
-              { value: "$890M", label: "Inventory optimization" },
-              { value: "18%", label: "Revenue increase" },
-            ],
-          },
-          {
-            tag: "Financial Services",
-            duration: "10-month engagement",
-            title: "Global Bank Merger Integration",
-            description:
-              "Led post-merger integration for a $47B banking merger, harmonizing operations, technology, and culture across 12 countries.",
-            imageAlt:
-              "Financial district with modern banking buildings and glass architecture",
-            metrics: [
-              { value: "$2.1B", label: "Synergies realized" },
-              { value: "14mo", label: "Ahead of schedule" },
-            ],
-          },
-        ]
+        {
+          tag: "Technology",
+          duration: "6-month engagement",
+          title: "Global SaaS Company Digital Transformation",
+          description:
+            "Helped a $2B SaaS provider modernize their cloud infrastructure, resulting in 40% cost reduction and 3x improvement in deployment velocity.",
+          imageAlt:
+            "Business executive reviewing data analytics dashboard on large screen",
+          metrics: [
+            { value: "$127M", label: "Cost savings achieved" },
+            { value: "340%", label: "ROI in first year" },
+          ],
+        },
+        {
+          tag: "Healthcare",
+          duration: "12-month engagement",
+          title: "Healthcare System Operational Excellence",
+          description:
+            "Partnered with a 45-hospital network to redesign patient flow, reduce wait times, and improve clinical outcomes across the system.",
+          imageAlt:
+            "Corporate team collaborating in modern conference room with glass walls",
+          metrics: [
+            { value: "23%", label: "Cost reduction" },
+            { value: "47min", label: "Avg wait time reduction" },
+          ],
+        },
+        {
+          tag: "Retail",
+          duration: "8-month engagement",
+          title: "Fortune 100 Retailer Supply Chain Overhaul",
+          description:
+            "Redesigned end-to-end supply chain for a major retailer, implementing AI-driven demand forecasting and automated replenishment.",
+          imageAlt:
+            "Modern retail store interior with bright lighting and organized product displays",
+          metrics: [
+            { value: "$890M", label: "Inventory optimization" },
+            { value: "18%", label: "Revenue increase" },
+          ],
+        },
+        {
+          tag: "Financial Services",
+          duration: "10-month engagement",
+          title: "Global Bank Merger Integration",
+          description:
+            "Led post-merger integration for a $47B banking merger, harmonizing operations, technology, and culture across 12 countries.",
+          imageAlt:
+            "Financial district with modern banking buildings and glass architecture",
+          metrics: [
+            { value: "$2.1B", label: "Synergies realized" },
+            { value: "14mo", label: "Ahead of schedule" },
+          ],
+        },
+      ]
 
     const insightsEyebrow = props.insights?.eyebrow ?? "Insights"
     const insightsHeading =
@@ -387,100 +387,100 @@ export const ConsultingKimiPage2 = defineComponent({
     const insightItems = props.insights?.items?.length
       ? props.insights.items
       : [
-          {
-            category: "AI & Automation",
-            date: "May 28, 2026",
-            readTime: "12 min read",
-            title: "The Enterprise AI Playbook: From Pilot to Production at Scale",
-            description:
-              "Our analysis of 200+ AI implementations reveals the critical success factors for scaling generative AI across enterprise operations.",
-            imageAlt:
-              "Abstract visualization of artificial intelligence neural networks and data flows",
-            author: "Sarah Chen",
-            authorRole: "AI Strategy Director",
-            authorAlt:
-              "Professional headshot of Sarah Chen, AI Strategy Director",
-          },
-          {
-            category: "Sustainability",
-            date: "May 22, 2026",
-            readTime: "8 min read",
-            title: "Navigating the SEC Climate Disclosure Rules",
-            description:
-              "A comprehensive guide for executives preparing their first climate-related financial disclosures under the new regulatory framework.",
-            imageAlt:
-              "Sustainable green energy infrastructure with solar panels and wind turbines",
-            author: "Michael Torres",
-            authorRole: "ESG Practice Lead",
-            authorAlt:
-              "Professional headshot of Michael Torres, ESG Practice Lead",
-          },
-          {
-            category: "M&A",
-            date: "May 15, 2026",
-            readTime: "15 min read",
-            title: "M&A in 2026: Strategic Deal-Making in a Volatile Market",
-            description:
-              "Analysis of Q1 2026 deal activity and our outlook on how private equity and strategic buyers are adapting to new market realities.",
-            imageAlt:
-              "Business professionals shaking hands during successful merger negotiations",
-            author: "Jennifer Walsh",
-            authorRole: "M&A Partner",
-            authorAlt: "Professional headshot of Jennifer Walsh, M&A Partner",
-          },
-          {
-            category: "Supply Chain",
-            date: "May 8, 2026",
-            readTime: "10 min read",
-            title:
-              "Building Resilient Supply Chains: Lessons from the Red Sea Crisis",
-            description:
-              "How leading companies are rethinking their supply chain strategies to mitigate geopolitical risks and maintain operational continuity.",
-            imageAlt:
-              "Data visualization dashboard showing supply chain metrics and analytics",
-            author: "David Park",
-            authorRole: "Operations Partner",
-            authorAlt:
-              "Professional headshot of David Park, Operations Partner",
-          },
-          {
-            category: "Organization",
-            date: "April 30, 2026",
-            readTime: "11 min read",
-            title: "The Future of Work: Redesigning Organizations for the AI Era",
-            description:
-              "How AI is reshaping organizational structures, career paths, and the skills that will define success in the next decade.",
-            imageAlt:
-              "Diverse corporate team collaborating on digital transformation strategy",
-            author: "Amanda Foster",
-            authorRole: "People & Org Partner",
-            authorAlt:
-              "Professional headshot of Amanda Foster, People & Organization Partner",
-          },
-          {
-            category: "Technology",
-            date: "April 24, 2026",
-            readTime: "9 min read",
-            title: "Quantum Computing: Preparing Your Cybersecurity Posture",
-            description:
-              "Why organizations need to start planning for post-quantum cryptography now, and practical steps to begin the transition.",
-            imageAlt:
-              "Futuristic visualization of quantum computing and cybersecurity infrastructure",
-            author: "James Nakamura",
-            authorRole: "Technology Partner",
-            authorAlt:
-              "Professional headshot of James Nakamura, Technology Partner",
-          },
-        ]
+        {
+          category: "AI & Automation",
+          date: "May 28, 2026",
+          readTime: "12 min read",
+          title: "The Enterprise AI Playbook: From Pilot to Production at Scale",
+          description:
+            "Our analysis of 200+ AI implementations reveals the critical success factors for scaling generative AI across enterprise operations.",
+          imageAlt:
+            "Abstract visualization of artificial intelligence neural networks and data flows",
+          author: "Sarah Chen",
+          authorRole: "AI Strategy Director",
+          authorAlt:
+            "Professional headshot of Sarah Chen, AI Strategy Director",
+        },
+        {
+          category: "Sustainability",
+          date: "May 22, 2026",
+          readTime: "8 min read",
+          title: "Navigating the SEC Climate Disclosure Rules",
+          description:
+            "A comprehensive guide for executives preparing their first climate-related financial disclosures under the new regulatory framework.",
+          imageAlt:
+            "Sustainable green energy infrastructure with solar panels and wind turbines",
+          author: "Michael Torres",
+          authorRole: "ESG Practice Lead",
+          authorAlt:
+            "Professional headshot of Michael Torres, ESG Practice Lead",
+        },
+        {
+          category: "M&A",
+          date: "May 15, 2026",
+          readTime: "15 min read",
+          title: "M&A in 2026: Strategic Deal-Making in a Volatile Market",
+          description:
+            "Analysis of Q1 2026 deal activity and our outlook on how private equity and strategic buyers are adapting to new market realities.",
+          imageAlt:
+            "Business professionals shaking hands during successful merger negotiations",
+          author: "Jennifer Walsh",
+          authorRole: "M&A Partner",
+          authorAlt: "Professional headshot of Jennifer Walsh, M&A Partner",
+        },
+        {
+          category: "Supply Chain",
+          date: "May 8, 2026",
+          readTime: "10 min read",
+          title:
+            "Building Resilient Supply Chains: Lessons from the Red Sea Crisis",
+          description:
+            "How leading companies are rethinking their supply chain strategies to mitigate geopolitical risks and maintain operational continuity.",
+          imageAlt:
+            "Data visualization dashboard showing supply chain metrics and analytics",
+          author: "David Park",
+          authorRole: "Operations Partner",
+          authorAlt:
+            "Professional headshot of David Park, Operations Partner",
+        },
+        {
+          category: "Organization",
+          date: "April 30, 2026",
+          readTime: "11 min read",
+          title: "The Future of Work: Redesigning Organizations for the AI Era",
+          description:
+            "How AI is reshaping organizational structures, career paths, and the skills that will define success in the next decade.",
+          imageAlt:
+            "Diverse corporate team collaborating on digital transformation strategy",
+          author: "Amanda Foster",
+          authorRole: "People & Org Partner",
+          authorAlt:
+            "Professional headshot of Amanda Foster, People & Organization Partner",
+        },
+        {
+          category: "Technology",
+          date: "April 24, 2026",
+          readTime: "9 min read",
+          title: "Quantum Computing: Preparing Your Cybersecurity Posture",
+          description:
+            "Why organizations need to start planning for post-quantum cryptography now, and practical steps to begin the transition.",
+          imageAlt:
+            "Futuristic visualization of quantum computing and cybersecurity infrastructure",
+          author: "James Nakamura",
+          authorRole: "Technology Partner",
+          authorAlt:
+            "Professional headshot of James Nakamura, Technology Partner",
+        },
+      ]
 
     const statItems = props.stats?.length
       ? props.stats
       : [
-          { value: "$47B", label: "Value created for clients" },
-          { value: "340+", label: "Transformations delivered" },
-          { value: "1,800+", label: "Consultants worldwide" },
-          { value: "94%", label: "Client retention rate" },
-        ]
+        { value: "$47B", label: "Value created for clients" },
+        { value: "340+", label: "Transformations delivered" },
+        { value: "1,800+", label: "Consultants worldwide" },
+        { value: "94%", label: "Client retention rate" },
+      ]
 
     const industriesEyebrow = props.industries?.eyebrow ?? "Industries"
     const industriesHeading =
@@ -491,55 +491,55 @@ export const ConsultingKimiPage2 = defineComponent({
     const industryItems = props.industries?.items?.length
       ? props.industries.items
       : [
-          {
-            name: "Healthcare",
-            detail: "Providers, payers, life sciences",
-            imageAlt:
-              "Modern hospital corridor with healthcare professionals walking",
-          },
-          {
-            name: "Financial Services",
-            detail: "Banking, insurance, asset management",
-            imageAlt:
-              "Wall Street financial district with iconic banking buildings",
-          },
-          {
-            name: "Technology",
-            detail: "Software, hardware, semiconductors",
-            imageAlt:
-              "High-tech manufacturing facility with automated robotics and machinery",
-          },
-          {
-            name: "Retail & Consumer",
-            detail: "CPG, retail, e-commerce",
-            imageAlt:
-              "Modern retail store with digital displays and customer experience technology",
-          },
-          {
-            name: "Energy & Utilities",
-            detail: "Oil & gas, renewables, utilities",
-            imageAlt:
-              "Energy infrastructure with power lines and renewable energy sources",
-          },
-          {
-            name: "Transportation",
-            detail: "Airlines, logistics, shipping",
-            imageAlt:
-              "Logistics warehouse with automated systems and supply chain operations",
-          },
-          {
-            name: "Private Equity",
-            detail: "Due diligence, value creation",
-            imageAlt:
-              "Business team analyzing financial data and analytics dashboards",
-          },
-          {
-            name: "Public Sector",
-            detail: "Government, education, defense",
-            imageAlt:
-              "Government and public sector building with institutional architecture",
-          },
-        ]
+        {
+          name: "Healthcare",
+          detail: "Providers, payers, life sciences",
+          imageAlt:
+            "Modern hospital corridor with healthcare professionals walking",
+        },
+        {
+          name: "Financial Services",
+          detail: "Banking, insurance, asset management",
+          imageAlt:
+            "Wall Street financial district with iconic banking buildings",
+        },
+        {
+          name: "Technology",
+          detail: "Software, hardware, semiconductors",
+          imageAlt:
+            "High-tech manufacturing facility with automated robotics and machinery",
+        },
+        {
+          name: "Retail & Consumer",
+          detail: "CPG, retail, e-commerce",
+          imageAlt:
+            "Modern retail store with digital displays and customer experience technology",
+        },
+        {
+          name: "Energy & Utilities",
+          detail: "Oil & gas, renewables, utilities",
+          imageAlt:
+            "Energy infrastructure with power lines and renewable energy sources",
+        },
+        {
+          name: "Transportation",
+          detail: "Airlines, logistics, shipping",
+          imageAlt:
+            "Logistics warehouse with automated systems and supply chain operations",
+        },
+        {
+          name: "Private Equity",
+          detail: "Due diligence, value creation",
+          imageAlt:
+            "Business team analyzing financial data and analytics dashboards",
+        },
+        {
+          name: "Public Sector",
+          detail: "Government, education, defense",
+          imageAlt:
+            "Government and public sector building with institutional architecture",
+        },
+      ]
 
     const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Client Impact"
     const testimonialsHeading =
@@ -547,31 +547,31 @@ export const ConsultingKimiPage2 = defineComponent({
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
-          {
-            quote:
-              "Meridian transformed our entire go-to-market strategy. They didn't just deliver recommendations—they rolled up their sleeves and helped us execute. The $40M revenue impact speaks for itself.",
-            name: "Robert Harrison",
-            role: "CEO, TechVentures Inc.",
-            avatarAlt:
-              "Professional headshot of Robert Harrison, CEO of TechVentures Inc",
-          },
-          {
-            quote:
-              "The Meridian team brought unparalleled expertise to our post-merger integration. They managed complex stakeholder dynamics while delivering $180M in synergies six months ahead of schedule.",
-            name: "Catherine Morgan",
-            role: "CFO, United Healthcare Systems",
-            avatarAlt:
-              "Professional headshot of Catherine Morgan, CFO of United Healthcare Systems",
-          },
-          {
-            quote:
-              "Working with Meridian on our ESG strategy was transformative. They helped us not just meet regulatory requirements but turn sustainability into a genuine competitive advantage.",
-            name: "Marcus Chen",
-            role: "CSO, Pacific Energy Group",
-            avatarAlt:
-              "Professional headshot of Marcus Chen, Chief Sustainability Officer at Pacific Energy Group",
-          },
-        ]
+        {
+          quote:
+            "Meridian transformed our entire go-to-market strategy. They didn't just deliver recommendations—they rolled up their sleeves and helped us execute. The $40M revenue impact speaks for itself.",
+          name: "Robert Harrison",
+          role: "CEO, TechVentures Inc.",
+          avatarAlt:
+            "Professional headshot of Robert Harrison, CEO of TechVentures Inc",
+        },
+        {
+          quote:
+            "The Meridian team brought unparalleled expertise to our post-merger integration. They managed complex stakeholder dynamics while delivering $180M in synergies six months ahead of schedule.",
+          name: "Catherine Morgan",
+          role: "CFO, United Healthcare Systems",
+          avatarAlt:
+            "Professional headshot of Catherine Morgan, CFO of United Healthcare Systems",
+        },
+        {
+          quote:
+            "Working with Meridian on our ESG strategy was transformative. They helped us not just meet regulatory requirements but turn sustainability into a genuine competitive advantage.",
+          name: "Marcus Chen",
+          role: "CSO, Pacific Energy Group",
+          avatarAlt:
+            "Professional headshot of Marcus Chen, Chief Sustainability Officer at Pacific Energy Group",
+        },
+      ]
 
     const teamEyebrow = props.team?.eyebrow ?? "Our Leadership"
     const teamHeading = props.team?.heading ?? "Meet our partners"
@@ -581,35 +581,35 @@ export const ConsultingKimiPage2 = defineComponent({
     const teamItems = props.team?.items?.length
       ? props.team.items
       : [
-          {
-            name: "David Thornton",
-            role: "Managing Partner",
-            bio: "Former McKinsey partner with 25 years of experience in strategy and transformation.",
-            avatarAlt:
-              "Professional headshot of David Thornton, Managing Partner at Meridian Strategy Partners",
-          },
-          {
-            name: "Elena Vasquez",
-            role: "Partner & COO",
-            bio: "Former BCG principal specializing in operations and supply chain excellence.",
-            avatarAlt:
-              "Professional headshot of Elena Vasquez, Partner & COO at Meridian Strategy Partners",
-          },
-          {
-            name: "James Nakamura",
-            role: "Partner, Technology",
-            bio: "Former CTO at Fortune 100 tech company. AI and digital transformation expert.",
-            avatarAlt:
-              "Professional headshot of James Nakamura, Partner & Technology Lead at Meridian Strategy Partners",
-          },
-          {
-            name: "Jennifer Walsh",
-            role: "Partner, M&A",
-            bio: "Former investment banker with $50B+ in completed M&A transactions.",
-            avatarAlt:
-              "Professional headshot of Jennifer Walsh, Partner & M&A Lead at Meridian Strategy Partners",
-          },
-        ]
+        {
+          name: "David Thornton",
+          role: "Managing Partner",
+          bio: "Former McKinsey partner with 25 years of experience in strategy and transformation.",
+          avatarAlt:
+            "Professional headshot of David Thornton, Managing Partner at Meridian Strategy Partners",
+        },
+        {
+          name: "Elena Vasquez",
+          role: "Partner & COO",
+          bio: "Former BCG principal specializing in operations and supply chain excellence.",
+          avatarAlt:
+            "Professional headshot of Elena Vasquez, Partner & COO at Meridian Strategy Partners",
+        },
+        {
+          name: "James Nakamura",
+          role: "Partner, Technology",
+          bio: "Former CTO at Fortune 100 tech company. AI and digital transformation expert.",
+          avatarAlt:
+            "Professional headshot of James Nakamura, Partner & Technology Lead at Meridian Strategy Partners",
+        },
+        {
+          name: "Jennifer Walsh",
+          role: "Partner, M&A",
+          bio: "Former investment banker with $50B+ in completed M&A transactions.",
+          avatarAlt:
+            "Professional headshot of Jennifer Walsh, Partner & M&A Lead at Meridian Strategy Partners",
+        },
+      ]
 
     const ctaHeading = props.cta?.heading ?? "Ready to transform your business?"
     const ctaDesc =
@@ -628,25 +628,25 @@ export const ConsultingKimiPage2 = defineComponent({
     const footerServicesLinks = props.footer?.servicesLinks?.length
       ? props.footer.servicesLinks
       : [
-          "Strategy & Growth",
-          "Operations",
-          "Digital Transformation",
-          "Organization",
-          "Financial Advisory",
-          "Sustainability",
-        ]
+        "Strategy & Growth",
+        "Operations",
+        "Digital Transformation",
+        "Organization",
+        "Financial Advisory",
+        "Sustainability",
+      ]
     const footerIndustriesHeading =
       props.footer?.industriesHeading ?? "Industries"
     const footerIndustriesLinks = props.footer?.industriesLinks?.length
       ? props.footer.industriesLinks
       : [
-          "Healthcare",
-          "Financial Services",
-          "Technology",
-          "Retail & Consumer",
-          "Energy",
-          "Private Equity",
-        ]
+        "Healthcare",
+        "Financial Services",
+        "Technology",
+        "Retail & Consumer",
+        "Energy",
+        "Private Equity",
+      ]
     const footerCompanyHeading = props.footer?.companyHeading ?? "Company"
     const footerCompanyLinks = props.footer?.companyLinks?.length
       ? props.footer.companyLinks

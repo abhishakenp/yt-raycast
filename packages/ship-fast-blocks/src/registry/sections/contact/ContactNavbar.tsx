@@ -95,7 +95,7 @@ export const ContactNavbar = defineComponent({
           <button
             type="button"
             onClick={() => go(ctaTarget)}
-            className="rounded-[10px] bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+            className="rounded-lg bg-primary px-5 py-2.5 text-[0.9375rem] font-semibold text-primary-foreground shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-px hover:bg-primary/90 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
           >
             {ctaLabel}
           </button>
