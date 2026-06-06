@@ -539,6 +539,19 @@ export async function* generateUI(
         while (next < pages.length && running.size < MAX_PARALLEL) startOne(pages[next++])
       }
 
+      if (
+        pages.length > 0 &&
+        moduleFailureCount >= pages.length &&
+        (usedFallbackPlan || Date.now() - startedAt < 2_000)
+      ) {
+        ch.push({
+          type: "error",
+          message:
+            "Site generation fell back to placeholder blocks because the AI model could not produce page content. Check GROQ_API_KEY and restart the dev server after updating .env.",
+        })
+        return
+      }
+
       // 5. done.
       ch.push({ type: "done", modules: pages.length, ms: Date.now() - startedAt })
     } catch (e) {
@@ -600,7 +613,8 @@ export async function selectPlan(
       2,
     )
     plan = parsePlan(raw, rng, prompt)
-  } catch {
+  } catch (planErr) {
+    if (isHardLlmFailure(planErr)) throw planErr
     plan = fallbackPlan(prompt, rng)
   }
   return {

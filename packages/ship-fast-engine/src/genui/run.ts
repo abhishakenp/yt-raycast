@@ -14,6 +14,8 @@ export interface OrchestratorResult {
 }
 
 const FIRST_QUOTED = /=\s*[A-Za-z][A-Za-z0-9_]*\(\s*"((?:\\.|[^"\\])*)"/
+/** Programs shorter than this are almost always block-default stubs, not real LLM output. */
+const STUB_PROGRAM_MAX_CHARS = 900
 
 /**
  * Run the GenUI orchestrator (the ported original engine) and assemble its
