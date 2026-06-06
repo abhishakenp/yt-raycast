@@ -1,5 +1,14 @@
-// @ts-ignore — JSON fixture is resolved at bundle time
-import randomPrompts from '../../../fixtures/random_prompt.json'
+const FALLBACK_PROMPTS = [
+  'A cinematic travel landing page for curated weekend escapes with reviews and fast booking.',
+  'A polished SaaS homepage for an AI sales copilot with pipeline analytics and clear pricing.',
+  'A premium architecture studio site with immersive case studies, awards, and inquiry scheduling.',
+  'A bold ecommerce homepage for handcrafted coffee gear with bundles and subscriptions.',
+  'A sleek fintech landing page for founders tracking runway, burn, and investor updates.',
+  'A modern fitness club website with class schedules, trainer profiles, and membership plans.',
+]
+
+// Fallback prompts; JSON fixture is not available in prod
+const randomPrompts = FALLBACK_PROMPTS
 
 function resolveNodeEnv(): string {
   if (typeof process === 'undefined') return 'development'
