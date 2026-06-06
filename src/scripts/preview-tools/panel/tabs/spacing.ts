@@ -3,7 +3,8 @@ import { createChipScale, CHIP_SCALES, type ChipScaleItem } from '../controls/ch
 import { createToggle } from '../controls/toggle'
 import { writeSides, readValue } from '../../style-apply'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="1.5"/><rect x="5" y="5" width="6" height="6" rx="1"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="1.5"/><rect x="5" y="5" width="6" height="6" rx="1"/></svg>'
 
 type Base = 'padding' | 'margin'
 type Side = 't' | 'r' | 'b' | 'l'
@@ -30,7 +31,9 @@ function section(title: string): HTMLElement {
   return wrap
 }
 
-function cloneChips(src: ReadonlyArray<{ id: string; label: string; value: string }>): ChipScaleItem[] {
+function cloneChips(
+  src: ReadonlyArray<{ id: string; label: string; value: string }>,
+): ChipScaleItem[] {
   return src.map((c) => ({ id: c.id, label: c.label, value: c.value }))
 }
 

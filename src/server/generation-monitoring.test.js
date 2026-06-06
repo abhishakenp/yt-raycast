@@ -141,7 +141,9 @@ describe('generation monitoring', () => {
     const metricsPath = join(session.workspace, 'generation-metrics.json')
     expect(existsSync(metricsPath)).toBe(true)
     expect(JSON.parse(readFileSync(metricsPath, 'utf8')).cost.totalUsd).toBe(60)
-    expect(readFileSync(join(tmpRoot, 'generation-usage.jsonl'), 'utf8').trim().split('\n')).toHaveLength(2)
+    expect(
+      readFileSync(join(tmpRoot, 'generation-usage.jsonl'), 'utf8').trim().split('\n'),
+    ).toHaveLength(2)
     expect(first.monthlyTotal).toBe(60)
     expect(second.monthlyTotal).toBe(120)
     expect(fetchMock).toHaveBeenCalledTimes(3)

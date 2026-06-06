@@ -213,41 +213,101 @@ function hasNonEmptyText(el: Element): boolean {
 export function classify(el: Element): Classification {
   const label = friendlyLabel(el)
   if (!el || el.nodeType !== 1) {
-    return { canText: false, canImage: false, isContainer: false, tagCategory: 'other', friendlyLabel: label }
+    return {
+      canText: false,
+      canImage: false,
+      isContainer: false,
+      tagCategory: 'other',
+      friendlyLabel: label,
+    }
   }
   const t = el.tagName
 
   if (t === 'IMG') {
-    return { canText: false, canImage: true, isContainer: false, tagCategory: 'image', friendlyLabel: label }
+    return {
+      canText: false,
+      canImage: true,
+      isContainer: false,
+      tagCategory: 'image',
+      friendlyLabel: label,
+    }
   }
 
   if (MEDIA_TAGS[t]) {
-    return { canText: false, canImage: false, isContainer: false, tagCategory: 'other', friendlyLabel: label }
+    return {
+      canText: false,
+      canImage: false,
+      isContainer: false,
+      tagCategory: 'other',
+      friendlyLabel: label,
+    }
   }
 
   if (CONTROL_TAGS[t]) {
     const canText = t === 'BUTTON'
-    return { canText, canImage: false, isContainer: false, tagCategory: 'control', friendlyLabel: label }
+    return {
+      canText,
+      canImage: false,
+      isContainer: false,
+      tagCategory: 'control',
+      friendlyLabel: label,
+    }
   }
 
   if (CONTAINER_TAGS[t]) {
     // text-leaf heuristic: DIV with no element children but non-empty text is editable
-    if ((t === 'DIV') && !hasElementChildren(el) && hasNonEmptyText(el)) {
-      return { canText: true, canImage: false, isContainer: false, tagCategory: 'text', friendlyLabel: label }
+    if (t === 'DIV' && !hasElementChildren(el) && hasNonEmptyText(el)) {
+      return {
+        canText: true,
+        canImage: false,
+        isContainer: false,
+        tagCategory: 'text',
+        friendlyLabel: label,
+      }
     }
-    return { canText: false, canImage: false, isContainer: true, tagCategory: 'container', friendlyLabel: label }
+    return {
+      canText: false,
+      canImage: false,
+      isContainer: true,
+      tagCategory: 'container',
+      friendlyLabel: label,
+    }
   }
 
   if (t === 'SPAN') {
     if (!hasElementChildren(el) && hasNonEmptyText(el)) {
-      return { canText: true, canImage: false, isContainer: false, tagCategory: 'text', friendlyLabel: label }
+      return {
+        canText: true,
+        canImage: false,
+        isContainer: false,
+        tagCategory: 'text',
+        friendlyLabel: label,
+      }
     }
-    return { canText: false, canImage: false, isContainer: false, tagCategory: 'text', friendlyLabel: label }
+    return {
+      canText: false,
+      canImage: false,
+      isContainer: false,
+      tagCategory: 'text',
+      friendlyLabel: label,
+    }
   }
 
   if (TEXT_TAGS[t]) {
-    return { canText: true, canImage: false, isContainer: false, tagCategory: 'text', friendlyLabel: label }
+    return {
+      canText: true,
+      canImage: false,
+      isContainer: false,
+      tagCategory: 'text',
+      friendlyLabel: label,
+    }
   }
 
-  return { canText: false, canImage: false, isContainer: false, tagCategory: 'other', friendlyLabel: label }
+  return {
+    canText: false,
+    canImage: false,
+    isContainer: false,
+    tagCategory: 'other',
+    friendlyLabel: label,
+  }
 }
