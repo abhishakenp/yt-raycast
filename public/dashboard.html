@@ -1581,11 +1581,9 @@
     <!-- ─── File Tree Drawer Script ─── -->
     <script>
       (function() {
-        const drawer = document.getElementById('file-tree-drawer');
-        const overlay = document.getElementById('file-tree-overlay');
-        const toggleBtn = document.getElementById('file-tree-toggle-btn');
-        const closeBtn = document.getElementById('file-tree-close-btn');
-        const content = document.getElementById('file-tree-content');
+        // Resolved in init() — the drawer markup lives further down the
+        // document, so these elements don't exist yet at parse time.
+        let drawer, overlay, toggleBtn, closeBtn, content;
         
         let isOpen = false;
         let pages = [];
@@ -1804,18 +1802,32 @@
           close();
         }
 
-        // Initialize
-        toggleBtn?.addEventListener('click', toggle);
-        closeBtn?.addEventListener('click', close);
-        overlay?.addEventListener('click', close);
-        
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && isOpen) {
-            close();
-          }
-        });
+        // Initialize once the drawer markup (further down the document) is parsed.
+        function init() {
+          drawer = document.getElementById('file-tree-drawer');
+          overlay = document.getElementById('file-tree-overlay');
+          toggleBtn = document.getElementById('file-tree-toggle-btn');
+          closeBtn = document.getElementById('file-tree-close-btn');
+          content = document.getElementById('file-tree-content');
 
-        findIframe();
+          toggleBtn?.addEventListener('click', toggle);
+          closeBtn?.addEventListener('click', close);
+          overlay?.addEventListener('click', close);
+
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isOpen) {
+              close();
+            }
+          });
+
+          findIframe();
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
       })();
     </script>
 
