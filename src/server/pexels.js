@@ -129,5 +129,5 @@ export const pexelsImageHandler = async (req, res) => {
     h: req.query?.h,
   })
   res.set('Cache-Control', result.ok ? 'public, max-age=86400' : 'private, max-age=300')
-  res.json(result)
+  return res.redirect(302, result.url)
 }

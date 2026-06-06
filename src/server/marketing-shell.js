@@ -31,6 +31,12 @@ const navLogo = `
 </a>
 `
 
+export const GLOBAL_LAUNCH_BACKDROP_HTML = `
+  <div class="global-launch-backdrop" aria-hidden="true">
+    <canvas class="global-launch-backdrop__canvas"></canvas>
+  </div>
+`
+
 export const SPACE_BACKDROP_HTML = `
   <div class="stitch-grid" id="stitch-grid">
     <div class="stitch-grid__layer"></div>
@@ -40,7 +46,62 @@ export const SPACE_BACKDROP_HTML = `
   <div class="blackhole-ring"></div>
 `
 
+export const renderLaunchBackdropScript = () =>
+  `<script type="module" src="/scripts/launch-backdrop.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>`
+
+export const renderMarketingTopBarScript = () =>
+  `<script type="module" src="/scripts/top-actions-auth.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>`
+
+export const renderMarketingFonts = () => `
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    />`
+
 export const MARKETING_ROCKET_SVG = navLogo
+
+export const HOME_BOLT_LOGO_SVG = `
+<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" fill="url(#sfMarketingHomeBoltG1)" />
+  <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" stroke="url(#sfMarketingHomeBoltG2)" stroke-width="2.2" stroke-linejoin="round" />
+  <defs>
+    <linearGradient id="sfMarketingHomeBoltG1" x1="11" y1="5" x2="42" y2="47" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#69f8ff" />
+      <stop offset="0.54" stop-color="#1ab8ff" />
+      <stop offset="1" stop-color="#6b3cff" />
+    </linearGradient>
+    <linearGradient id="sfMarketingHomeBoltG2" x1="8" y1="3" x2="44" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#dffcff" />
+      <stop offset="1" stop-color="#31dfff" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+</svg>`
+
+export const renderMarketingLogoBlock = () => `<div class="logo-block marketing-logo-block">
+  <a href="/" class="logo" aria-label="SHIP FAST home">
+    <div class="logo-icon">${HOME_BOLT_LOGO_SVG}</div>
+    <span class="logo-text">SHIP FAST</span>
+  </a>
+</div>`
+
+export const BOLT_LOGO_SVG = `
+<svg width="18" height="18" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" fill="url(#sfBoltG1)" />
+  <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" stroke="url(#sfBoltG2)" stroke-width="2.2" stroke-linejoin="round" />
+  <defs>
+    <linearGradient id="sfBoltG1" x1="11" y1="5" x2="42" y2="47" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#69f8ff" />
+      <stop offset="0.54" stop-color="#1ab8ff" />
+      <stop offset="1" stop-color="#6b3cff" />
+    </linearGradient>
+    <linearGradient id="sfBoltG2" x1="8" y1="3" x2="44" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#dffcff" />
+      <stop offset="1" stop-color="#31dfff" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+</svg>`
 
 const topBarBrand = `
 <a href="/" class="top-actions-brand" aria-label="SHIP FAST home">
@@ -103,9 +164,19 @@ export const renderMarketingNav = (active = 'home') => `
 </nav>
 `
 
+export const renderSiteFooterContent = () => `
+  <span class="footer-brand">SHIP FAST © ${new Date().getFullYear()}</span>
+  <nav class="footer-nav" aria-label="Footer links">
+    <a href="/">Home</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+  </nav>
+`
+
 export const renderSiteFooter = () => `
   <footer class="site-footer">
-    <p>© ${new Date().getFullYear()} SHIP FAST. All rights reserved.</p>
+    ${renderSiteFooterContent()}
   </footer>
 `
 

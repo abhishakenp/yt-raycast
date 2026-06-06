@@ -484,6 +484,7 @@ let introPromptText = ''
 let typingDone = false
 let pendingStatus = ''
 let introMediaFlipConsumed = false
+let introRectanglesAnimated = false
 let hasSeenLiveUpdate = false // only auto-collapse if we watched tasks complete live
 let isReconnect = false // true when refreshing a session that already has homepage
 let alternativeDesign = null // background-loaded alternative theme
@@ -1259,6 +1260,24 @@ function renderPalettePanel(anchor) {
   positionPaletteMenu(anchor)
 }
 
+// The preview iframe's theme tokens are consumed as `rgb(var(--token) / <alpha>)`
+// (see buildThemeHead in the engine), so each --token must hold BARE RGB CHANNELS
+// ("59 130 246"), not a hex string — `rgb(#3b82f6 / 1)` is invalid and silently
+// drops the color. Convert hex values to channels; pass non-hex values (radius,
+// fonts, already-channel/hsl) through untouched.
+function paletteValueToCssChannels(value) {
+  if (typeof value !== 'string') return value
+  let s = value.trim()
+  if (s[0] !== '#') return value
+  s = s.slice(1)
+  if (/^[0-9a-fA-F]{3}$/.test(s)) s = s.split('').map((c) => c + c).join('')
+  if (!/^[0-9a-fA-F]{6}$/.test(s)) return value
+  const r = parseInt(s.slice(0, 2), 16)
+  const g = parseInt(s.slice(2, 4), 16)
+  const b = parseInt(s.slice(4, 6), 16)
+  return `${r} ${g} ${b}`
+}
+
 function buildPaletteCss(palette) {
   const vars = {}
   if (palette && palette.dark && typeof palette.dark === 'object') {
@@ -1278,7 +1297,9 @@ function buildPaletteCss(palette) {
   }
   const entries = Object.entries(vars).filter(([, v]) => typeof v === 'string' && v.length)
   if (!entries.length) return ''
-  const decls = entries.map(([k, v]) => `  --${k}: ${v} !important;`).join('\n')
+  const decls = entries
+    .map(([k, v]) => `  --${k}: ${paletteValueToCssChannels(v)} !important;`)
+    .join('\n')
   // Emit on both :root and .dark so Tailwind's dark-mode scope picks it up too.
   return `:root, .dark, html, body {\n${decls}\n}`
 }
@@ -1889,6 +1910,7 @@ function openDrawer() {
   const rightPanel = document.getElementById('right-panel')
   leftPanel.classList.add('drawer-open')
   rightPanel.classList.add('open')
+  // Set width immediately without transition - no slide-in from right
   rightPanel.style.width = '50%'
   leftPanel.style.width = '50%'
   loadPreview()
@@ -2754,7 +2776,146 @@ const introWarpCanvas = (() => {
   }
 })()
 
+let introProgressValue = 0
+let introMediaSeeded = false
+
+const INTRO_MEDIA_LAYOUT = [
+  ['17%', '20%', '-11deg', '0ms', '39%', '72%'],
+  ['33%', '13%', '7deg', '260ms', '46%', '73%'],
+  ['66%', '16%', '-5deg', '520ms', '54%', '74%'],
+  ['82%', '27%', '10deg', '780ms', '61%', '75%'],
+  ['24%', '39%', '5deg', '1040ms', '42%', '82%'],
+  ['74%', '42%', '-9deg', '1300ms', '58%', '82%'],
+]
+
+const INTRO_PLACEHOLDER_BACKGROUNDS = [
+  'linear-gradient(135deg, rgba(34, 226, 255, 0.34), rgba(102, 64, 255, 0.26))',
+  'linear-gradient(135deg, rgba(246, 78, 255, 0.32), rgba(32, 226, 255, 0.22))',
+  'linear-gradient(135deg, rgba(48, 125, 255, 0.32), rgba(200, 74, 255, 0.24))',
+  'linear-gradient(135deg, rgba(34, 226, 255, 0.2), rgba(255, 255, 255, 0.12))',
+  'linear-gradient(135deg, rgba(116, 92, 255, 0.28), rgba(27, 229, 255, 0.18))',
+  'linear-gradient(135deg, rgba(232, 74, 255, 0.26), rgba(52, 224, 255, 0.18))',
+]
+
+const FUN_LOADING_MESSAGES = [
+  'Herding pixels',
+  'Teaching CSS to behave',
+  'Converting coffee to code',
+  'Persuading divs to align',
+  'Negotiating with browsers',
+  'Polishing the pixels',
+  'Warming up the servers',
+  'Counting to infinity',
+  'Defying gravity',
+  'Bending spacetime',
+  'Summoning layouts',
+  'Taming the wild markup',
+  'Optimizing the vibes',
+  'Calibrating the magic',
+  'Consulting the oracle',
+]
+
+let funMessageIndex = 0
+let funMessageInterval: ReturnType<typeof setInterval> | null = null
+
+function clampIntroProgress(value) {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(1, value))
+}
+
+function setIntroProgress(value, options = {}) {
+  const overlay = document.getElementById('intro-overlay')
+  if (!overlay) return
+  const next = clampIntroProgress(value)
+  introProgressValue = options.force ? next : Math.max(introProgressValue, next)
+  const progressTrackWidth = Math.min(250, window.innerWidth * 0.58)
+  overlay.style.setProperty('--intro-progress', introProgressValue.toFixed(3))
+  overlay.style.setProperty('--intro-frame-y', `${Math.round((1 - introProgressValue) * 58)}vh`)
+  overlay.style.setProperty('--intro-glow-y', `${Math.round((1 - introProgressValue) * 12)}vh`)
+  // overlay.style.setProperty('--intro-frame-scale', (0.9 + introProgressValue * 0.1).toFixed(3))
+  overlay.style.setProperty('--intro-frame-scale', '1')
+  overlay.style.setProperty('--intro-frame-opacity', String(Math.min(1, Math.max(0, (introProgressValue - 0.08) / 0.34))))
+  overlay.style.setProperty('--intro-progress-width', `${Math.round(progressTrackWidth * introProgressValue)}px`)
+  overlay.dataset.progress = String(Math.round(introProgressValue * 100))
+}
+
+function inferIntroProgressFromStatus(text) {
+  const value = String(text || '').toLowerCase()
+  if (!value) return introProgressValue
+  if (/(complete|generated|ready|final|deploy|done)/.test(value)) return 0.96
+  if (/(stream|render|preview|paint|homepage)/.test(value)) return 0.74
+  if (/(image|media|asset|visual|photo)/.test(value)) return 0.56
+  if (/(build|section|component|layout|page)/.test(value)) return 0.42
+  if (/(plan|prompt|brief|idea|spec|flight|countdown)/.test(value)) return 0.18
+  return Math.min(0.9, introProgressValue + 0.05)
+}
+
+function getIntroPhotoUrl(photo) {
+  if (!photo) return ''
+  if (typeof photo === 'string') return photo
+  return (
+    photo.url ||
+    photo.src ||
+    photo.imageUrl ||
+    photo.thumbnailUrl ||
+    photo.previewUrl ||
+    photo.urls?.regular ||
+    photo.urls?.small ||
+    photo.urls?.thumb ||
+    ''
+  )
+}
+
+function seedIntroMediaPreviews(photos = []) {
+  // Disabled - no media previews
+  return
+  const orbit = document.getElementById('intro-media-orbit')
+  // Ignore photos parameter - we use placeholder rectangles instead of images
+  if (!orbit) return
+  if (introMediaSeeded) return
+  introMediaSeeded = true
+  orbit.innerHTML = ''
+  for (let i = 0; i < INTRO_MEDIA_LAYOUT.length; i++) {
+    const chip = document.createElement('span')
+    const [x, y, rot, delay, dockX, dockY] = INTRO_MEDIA_LAYOUT[i]
+    chip.className = 'intro-media-chip'
+    chip.style.setProperty('--chip-x', x)
+    chip.style.setProperty('--chip-y', y)
+    chip.style.setProperty('--chip-rot', rot)
+    chip.style.setProperty('--chip-delay', delay)
+    chip.style.setProperty('--dock-x', dockX)
+    chip.style.setProperty('--dock-y', dockY)
+    // Use gradient backgrounds only - no images
+    chip.style.setProperty('--chip-bg', INTRO_PLACEHOLDER_BACKGROUNDS[i % INTRO_PLACEHOLDER_BACKGROUNDS.length])
+    orbit.appendChild(chip)
+  }
+}
+
+function resetIntroMediaPreviews() {
+  introMediaSeeded = false
+  const orbit = document.getElementById('intro-media-orbit')
+  if (orbit) orbit.innerHTML = ''
+}
+
+function syncIntroProgressFromTasks() {
+  if (!introActive) return
+  const counts = getTaskCounts()
+  const frontendTotal = counts.frontendTotal || tasks.length
+  const frontendDone = counts.frontendTotal
+    ? counts.frontendDone
+    : tasks.filter((task) => task.status === 'DONE' || task.status === 'FAILED').length
+  if (frontendTotal > 0) {
+    setIntroProgress(0.24 + (frontendDone / frontendTotal) * 0.66)
+  }
+}
+
 function startIntro() {
+  // document.body.classList.add('intro-loading-active')
+  resetIntroMediaPreviews()
+  seedIntroMediaPreviews()
+  funMessageIndex = 0 // Reset fun message index for new session
+  introRectanglesAnimated = false // Reset rectangle animation flag
+  setIntroProgress(0.04, { force: true })
   introWarpCanvas.start()
   const logo = document.getElementById('intro-logo')
   const phase = document.getElementById('intro-phase-label')
@@ -2872,6 +3033,25 @@ function startTyping() {
 
 function setPhaseLabel(text) {
   const statusLabel = document.getElementById('intro-phase-label')
+  // During intro, use fun messages instead of real status
+  if (introActive && typingDone) {
+    const funMessage = FUN_LOADING_MESSAGES[funMessageIndex % FUN_LOADING_MESSAGES.length]
+    funMessageIndex++
+    setIntroProgress(inferIntroProgressFromStatus(text))
+    if (statusLabel.classList.contains('visible') && statusLabel.textContent !== funMessage) {
+      statusLabel.classList.add('switching')
+      setTimeout(() => {
+        statusLabel.textContent = funMessage
+        statusLabel.classList.remove('switching')
+      }, 100)
+    } else {
+      statusLabel.textContent = funMessage
+      statusLabel.classList.add('visible')
+    }
+    return
+  }
+  // Normal behavior after intro
+  setIntroProgress(inferIntroProgressFromStatus(text))
   if (statusLabel.classList.contains('visible') && statusLabel.textContent !== text) {
     statusLabel.classList.add('switching')
     setTimeout(() => {
@@ -2888,6 +3068,7 @@ function exitIntro() {
   if (!introActive) return
   introActive = false
   introWarpCanvas.stop()
+  setIntroProgress(1, { force: true })
 
   const overlay = document.getElementById('intro-overlay')
   const wrap = document.getElementById('dashboard-wrap')
@@ -2895,7 +3076,10 @@ function exitIntro() {
   document.body.classList.add('dashboard-active')
   overlay.classList.add('exiting')
   wrap.classList.add('active')
-  setTimeout(() => overlay.classList.add('hidden'), 800)
+  setTimeout(() => {
+    overlay.classList.add('hidden')
+    document.body.classList.remove('intro-loading-active')
+  }, 800)
 }
 
 // Keep the intro launch loader on screen and load the preview behind it; the loader
@@ -2923,6 +3107,7 @@ function resolveIntroExit() {
 function skipIntro() {
   introActive = false
   introWarpCanvas.stop()
+  document.body.classList.remove('intro-loading-active')
 
   const overlay = document.getElementById('intro-overlay')
   const wrap = document.getElementById('dashboard-wrap')
@@ -3186,6 +3371,7 @@ function updateStats() {
   document.getElementById('progress-pct').textContent = pct + '%'
   const fill = document.getElementById('progress-fill')
   fill.style.width = pct + '%'
+  syncIntroProgressFromTasks()
   if (failed > 0) fill.classList.add('has-failures')
   else fill.classList.remove('has-failures')
 }
@@ -3487,6 +3673,104 @@ function maybeRunIntroMediaFlip(iframe) {
   introMediaFlipConsumed = true
   requestAnimationFrame(() => {
     requestAnimationFrame(() => runIntroMediaFlipPairs(pairs))
+  })
+}
+
+// Animate placeholder rectangles to actual image positions when page loads
+function animateRectanglesToImages(iframe) {
+  if (introRectanglesAnimated) return
+  introRectanglesAnimated = true
+
+  const orbit = document.getElementById('intro-media-orbit')
+  if (!orbit || orbit.childElementCount === 0) return
+
+  let doc
+  try {
+    doc = iframe && iframe.contentDocument
+  } catch {
+    // Cross-origin restriction - fade out rectangles instead
+    orbit.querySelectorAll('.intro-media-chip').forEach((chip) => {
+      chip.style.transition = 'opacity 0.6s ease-out'
+      chip.style.opacity = '0'
+    })
+    return
+  }
+  if (!doc) return
+
+  const rectangles = [...orbit.querySelectorAll('.intro-media-chip')]
+  const images = [...doc.querySelectorAll('img')].slice(0, rectangles.length)
+
+  if (images.length === 0) {
+    // No images found, fade out rectangles
+    rectangles.forEach((chip) => {
+      chip.style.transition = 'opacity 0.6s ease-out'
+      chip.style.opacity = '0'
+    })
+    return
+  }
+
+  // Map rectangles to images by index
+  const pairs = rectangles.map((rect, index) => ({
+    rect,
+    target: images[index] || null,
+  }))
+
+  // Animate each rectangle to its target image position
+  pairs.forEach(({ rect, target }) => {
+    if (!target) {
+      rect.style.transition = 'opacity 0.6s ease-out'
+      rect.style.opacity = '0'
+      return
+    }
+
+    const rectRect = rect.getBoundingClientRect()
+    const imgRect = target.getBoundingClientRect()
+
+    // Calculate position relative to viewport
+    const fromX = rectRect.left + rectRect.width / 2
+    const fromY = rectRect.top + rectRect.height / 2
+    const toX = imgRect.left + imgRect.width / 2
+    const toY = imgRect.top + imgRect.height / 2
+
+    // Create a clone for animation
+    const clone = rect.cloneNode(true) as HTMLElement
+    clone.style.position = 'fixed'
+    clone.style.left = `${rectRect.left}px`
+    clone.style.top = `${rectRect.top}px`
+    clone.style.width = `${rectRect.width}px`
+    clone.style.height = `${rectRect.height}px`
+    clone.style.margin = '0'
+    clone.style.zIndex = '9999'
+    clone.style.pointerEvents = 'none'
+    document.body.appendChild(clone)
+
+    // Hide original
+    rect.style.opacity = '0'
+
+    // Animate clone to target position
+    const anim = clone.animate(
+      [
+        {
+          left: `${rectRect.left}px`,
+          top: `${rectRect.top}px`,
+          width: `${rectRect.width}px`,
+          height: `${rectRect.height}px`,
+          opacity: 1,
+          transform: 'rotate(0deg)',
+        },
+        {
+          left: `${imgRect.left}px`,
+          top: `${imgRect.top}px`,
+          width: `${imgRect.width}px`,
+          height: `${imgRect.height}px`,
+          opacity: 0,
+          transform: 'rotate(0deg)',
+        },
+      ],
+      { duration: 800, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' },
+    )
+
+    anim.onfinish = () => clone.remove()
   })
 }
 
@@ -4324,6 +4608,8 @@ function connectWS() {
         break
 
       case 'stock_media_preview':
+        seedIntroMediaPreviews(ev.photos)
+        setIntroProgress(0.52)
         applyStockMediaPreviewPhotos(ev.photos)
         break
 
@@ -4336,6 +4622,7 @@ function connectWS() {
         syncOpenUIActiveClass({ tasks })
         genStartTime = Date.now()
         renderTasks()
+        syncIntroProgressFromTasks()
         {
           const c = getTaskCounts()
           if (c.frontendTotal > 0 && c.frontendDone >= c.frontendTotal) {
@@ -4359,6 +4646,7 @@ function connectWS() {
         }
         syncOpenUIActiveClass({ tasks })
         renderTasks()
+        syncIntroProgressFromTasks()
         if (updated.status === 'DONE') {
           triggerTeleport(updated.id)
           if (isFrontendTask(updated)) previewLoaded ? reloadPreview() : loadPreview()
@@ -4430,7 +4718,15 @@ function connectWS() {
       case 'openui_stream_start':
         hasSeenLiveUpdate = true
         syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
-        if (drawerOpen) {
+        if (ev.route === '/') {
+          setIntroProgress(0.78)
+          // The OpenUI island inside the preview iframe owns progressive
+          // rendering. Mount the shell as soon as streaming starts so it can
+          // subscribe before most chunks arrive; otherwise a closed drawer can
+          // miss the stream and stay blank until the final preview reload.
+          resetPreviewToSessionHtml()
+          if (introActive) deferIntroExit()
+        } else if (drawerOpen) {
           loadPreview()
         }
         break
@@ -4438,12 +4734,17 @@ function connectWS() {
       case 'openui_stream_chunk':
         hasSeenLiveUpdate = true
         syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
+        setIntroProgress(0.86)
         break
 
       case 'openui_stream_done':
         // Fallback reveal if first-paint never arrived (e.g. degenerate render).
+        setIntroProgress(1)
         if (ev.route === '/') resolveIntroExit()
         if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
+        // Fallback: animate rectangles if first-paint didn't fire
+        const iframe = document.getElementById('preview-iframe')
+        if (iframe && !introRectanglesAnimated) animateRectanglesToImages(iframe)
         break
 
       case 'run_completed':
@@ -4587,10 +4888,10 @@ document.getElementById('payment-confirm-btn').addEventListener('click', startCh
 document.getElementById('payment-modal').addEventListener('click', (event) => {
   if (event.target.closest('[data-close-payment="1"]')) closePaymentModal()
 })
-// Disabled click-outside-to-close for auth overlay
-// document.getElementById('auth-overlay').addEventListener('click', (event) => {
-//   if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
-// })
+// Click-outside (on the backdrop) closes the auth overlay
+document.getElementById('auth-overlay').addEventListener('click', (event) => {
+  if (event.target === document.getElementById('auth-overlay')) closeAuthWall()
+})
 
 document.getElementById('auth-close-btn').addEventListener('click', closeAuthWall)
 
@@ -4743,6 +5044,9 @@ window.addEventListener('message', (event) => {
     // and expand to full-width, fading straight from loader into the live page.
     resolveIntroExit()
     expandPreviewForLiveOpenUI()
+    // Animate placeholder rectangles to actual image positions
+    const iframe = document.getElementById('preview-iframe')
+    if (iframe) animateRectanglesToImages(iframe)
     return
   }
   if (data.type === 'SF_PREVIEW_TOOLS_READY') {

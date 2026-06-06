@@ -1,0 +1,112 @@
+/* Fixed launch-hero atmosphere — canvas + gradients only (no rocket scene). */
+
+.global-launch-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 70% 30%, rgba(28, 171, 255, 0.16), transparent 29rem),
+    radial-gradient(circle at 88% 26%, rgba(255, 55, 221, 0.12), transparent 25rem),
+    radial-gradient(circle at 36% 84%, rgba(45, 217, 255, 0.08), transparent 32rem),
+    linear-gradient(135deg, #020413 0%, #050822 44%, #12051f 100%);
+}
+
+.global-launch-backdrop::before {
+  content: '';
+  position: absolute;
+  inset: -12% -18% -18% -24%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 67% 39%, rgba(28, 206, 255, 0.18), transparent 30rem),
+    radial-gradient(circle at 78% 28%, rgba(255, 55, 221, 0.12), transparent 24rem);
+  opacity: 0.58;
+  filter: blur(7px) saturate(1.4);
+  animation: heroAuraOnly 5.5s ease-in-out infinite alternate;
+}
+
+.global-launch-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: none;
+  opacity: 0;
+}
+
+.global-launch-backdrop__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.82;
+  mix-blend-mode: screen;
+  filter: saturate(1.35) contrast(1.05);
+}
+
+/* Content layers sit above the fixed backdrop. */
+body:has(.global-launch-backdrop) .page,
+body:has(.global-launch-backdrop) .page-layout,
+body:has(.global-launch-backdrop) .launch-hero,
+body:has(.global-launch-backdrop) .launch-copy,
+body:has(.global-launch-backdrop) .launch-stage,
+body:has(.global-launch-backdrop) .site-nav,
+body:has(.global-launch-backdrop) .site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+body:has(.global-launch-backdrop) .top-actions {
+  z-index: 210;
+}
+
+body:has(.global-launch-backdrop) {
+  background: #020413;
+}
+
+body:has(.global-launch-backdrop)::before {
+  display: none;
+}
+
+body:has(.global-launch-backdrop) .launch-hero {
+  background: transparent !important;
+  animation: none !important;
+}
+
+body:has(.global-launch-backdrop) .launch-hero::before,
+body:has(.global-launch-backdrop) .launch-hero::after {
+  display: none !important;
+  animation: none !important;
+}
+
+@keyframes heroAuraOnly {
+  from {
+    opacity: 0.42;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.64;
+    transform: scale(1.035);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-launch-backdrop::before {
+    animation: none;
+  }
+
+  .global-launch-backdrop__canvas {
+    display: none;
+  }
+}

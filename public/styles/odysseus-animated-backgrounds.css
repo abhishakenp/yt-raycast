@@ -1,0 +1,40 @@
+/* Supporting CSS for the animated backgrounds — extracted verbatim from Odysseus' style.css.
+ *
+ * Drives the canvas effects via three custom properties:
+ *   --bg-effect-color      colour of the effect (falls back to --fg)
+ *   --bg-effect-intensity  0..1, applied as canvas opacity (single source of truth)
+ *   --bg-effect-size       0.2..3 scale multiplier (read in JS via _getEffectSize)
+ *
+ * `dots` and the `synapse` grid base are pure CSS; everything else is canvas-only. */
+
+:root { --bg-effect-intensity: 1; }
+
+/* Canvas-based effects — single source of truth for intensity */
+#synapse-canvas, #rain-canvas, #constellations-canvas,
+#perlin-flow-canvas, #petals-canvas, #sparkles-canvas,
+#embers-canvas {
+  opacity: var(--bg-effect-intensity, 1);
+}
+
+/* Static dotted background (not animated) */
+body.bg-pattern-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
+  background-size: 20px 20px; background-attachment: fixed;
+}
+
+/* Synapse: CSS grid as base, canvas pulses overlay */
+body.bg-pattern-synapse {
+  background-image: linear-gradient(color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(3.5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--bg-effect-color, var(--fg)) calc(3.5% * var(--bg-effect-intensity, 1)), transparent) 1px, transparent 1px);
+  background-size: 24px 24px; background-attachment: fixed;
+}
+
+/* Canvas-only backgrounds — no CSS base needed */
+body.bg-pattern-perlin-flow,
+body.bg-pattern-petals,
+body.bg-pattern-sparkles,
+body.bg-pattern-rain,
+body.bg-pattern-constellations,
+body.bg-pattern-embers {
+  /* canvas-only backgrounds */
+}

@@ -21,10 +21,29 @@ export interface TokenSwatch {
   swatch: string
 }
 
+// The SSR theme head defines tokens as bare RGB channels consumed via
+// `rgb(var(--token) / <alpha>)` (see buildThemeHead in the engine), so a root var
+// MUST hold channels ("34 29 39"), not a hex string — `rgb(#221d27 / 1)` is
+// invalid and the color silently drops (e.g. the body background falls back to a
+// default). Convert hex values to channels; pass non-hex values (radius, fonts,
+// already-channel/hsl) through untouched. Note: buildTailwindOverrideCss keeps the
+// raw hex because there the value is a literal color, not a channel triple.
+function hexToRgbChannels(value: string): string {
+  let s = value.trim()
+  if (s[0] !== '#') return value
+  s = s.slice(1)
+  if (/^[0-9a-fA-F]{3}$/.test(s)) s = s.split('').map((c) => c + c).join('')
+  if (!/^[0-9a-fA-F]{6}$/.test(s)) return value
+  const r = parseInt(s.slice(0, 2), 16)
+  const g = parseInt(s.slice(2, 4), 16)
+  const b = parseInt(s.slice(4, 6), 16)
+  return `${r} ${g} ${b}`
+}
+
 export function buildRootVarsCss(dark: Record<string, string>): string {
   const entries = Object.entries(dark).filter(([, v]) => typeof v === 'string' && v.length)
   if (!entries.length) return ''
-  const decls = entries.map(([k, v]) => `  --${k}: ${v} !important;`).join('\n')
+  const decls = entries.map(([k, v]) => `  --${k}: ${hexToRgbChannels(v)} !important;`).join('\n')
   return `:root, .dark, html, body {\n${decls}\n}`
 }
 

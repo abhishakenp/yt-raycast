@@ -10,7 +10,15 @@ import {
   SITE_URL,
 } from '../config.js'
 import { escapeHtml } from '@ship-fast/engine/renderers/shared.js'
-import { renderMarketingShell } from './marketing-shell.js'
+import { sfGlassPillSvgDefs } from './liquid-glass-button.js'
+import {
+  GLOBAL_LAUNCH_BACKDROP_HTML,
+  renderLaunchBackdropScript,
+  renderMarketingFonts,
+  renderMarketingLogoBlock,
+  renderMarketingTopBarScript,
+  renderTopActions,
+} from './marketing-shell.js'
 
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 
@@ -44,11 +52,16 @@ export const renderPrivacyPage = () => {
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="${siteUrl}/privacy" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#020413" />
+    ${renderMarketingFonts()}
     <script defer data-domain="${plausible}" data-api="/api/event" src="/js/script.js"></script>
     <link rel="stylesheet" href="/styles/privacy.css" />
   </head>
   <body>
-    ${renderMarketingShell({ active: 'privacy' })}
+    ${sfGlassPillSvgDefs()}
+    ${GLOBAL_LAUNCH_BACKDROP_HTML}
+    ${renderTopActions()}
+    ${renderMarketingLogoBlock()}
 
     <main class="page legal-doc">
       <header class="legal-header">
@@ -246,6 +259,8 @@ export const renderPrivacyPage = () => {
         <p>Public site: <a href="${siteUrl}/">${siteUrl}/</a></p>
       </section>
     </main>
+    ${renderMarketingTopBarScript()}
+    ${renderLaunchBackdropScript()}
   </body>
 </html>`
 }

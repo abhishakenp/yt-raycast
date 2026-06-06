@@ -57,3 +57,4 @@ medusa-backend/.medusa/
 /dogfood-output
 
 testsprite_tests/tmp/config.json
+public/scripts/

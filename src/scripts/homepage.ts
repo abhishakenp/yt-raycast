@@ -31,6 +31,7 @@ type SessionItem = {
   homepageReady: boolean
   elapsed: number | null
   cost: number | null
+  html?: string | null
 }
 
 type StoredAnonSessionEntry = {
@@ -144,12 +145,17 @@ function consumeGalleryRestore(): { page: number; source: GallerySource | null }
       : urlPage != null
         ? Math.max(1, parseInt(urlPage, 10) || 1)
         : 1
+  // A public deep-link is just `?page=N` with no `source` (syncGalleryUrl only
+  // writes source for the user gallery). Default a bare page to 'public' so
+  // reload / deep-link of page>1 restores that page instead of snapping to 1.
   const source =
     sourceRaw === 'user' || sourceRaw === 'public'
       ? sourceRaw
       : urlSource === 'user' || urlSource === 'public'
         ? urlSource
-        : null
+        : urlPage != null || pageRaw != null
+          ? 'public'
+          : null
   return { page, source }
 }
 const GENERATION_LIMIT = 2
@@ -1803,11 +1809,13 @@ function renderSessions(sessions: SessionItem[]): void {
         <li class="session-item" data-id="${session.id}" role="button" tabindex="0" aria-label="View session: ${session.prompt.replace(/"/g, '&quot;')}">
           <div class="session-thumbnail">
             ${
-              session.homepageReady
+              session.html
                 ? index < eagerThumbnailCount
-                  ? `<iframe src="/preview/${session.id}/?gallery=1" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                  : `<iframe data-src="/preview/${session.id}/?gallery=1" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                : `<div class="session-placeholder">${placeholderSvg}</div>`
+                  ? `<iframe class="session-srcdoc" data-srcdoc-idx="${index}" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                  : `<iframe class="session-srcdoc" data-srcdoc-idx="${index}" data-lazy="1" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                : session.homepageReady
+                  ? `<img class="session-thumb-img" src="/api/sessions/${session.id}/gallery-thumb" alt="" loading="${index < eagerThumbnailCount ? 'eager' : 'lazy'}" decoding="async" data-session-id="${session.id}" />`
+                  : `<div class="session-placeholder">${placeholderSvg}</div>`
             }
             <div class="session-badges">
               ${
@@ -1842,6 +1850,24 @@ function renderSessions(sessions: SessionItem[]): void {
     })
   }
 
+  // Render generated full-document HTML inside an isolated iframe (srcdoc) so its
+  // global <style>/<link> rules can't leak into the homepage and clobber it
+  // (raw innerHTML injection turned paginated gallery pages white). srcdoc is set
+  // via the JS property to avoid attribute-escaping the whole document; a doctype
+  // is prepended so previews render in standards mode, not quirks.
+  const assignSrcdoc = (iframe: HTMLIFrameElement): void => {
+    const idx = iframe.dataset.srcdocIdx
+    if (idx == null) return
+    const html = sessions[Number(idx)]?.html
+    if (!html) return
+    iframe.srcdoc = /^\s*<!doctype/i.test(html) ? html : `<!doctype html>${html}`
+    iframe.addEventListener('load', scaleIframes, { once: true })
+  }
+
+  list
+    .querySelectorAll<HTMLIFrameElement>('iframe[data-srcdoc-idx]:not([data-lazy])')
+    .forEach(assignSrcdoc)
+
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       scaleIframes()
@@ -1852,34 +1878,75 @@ function renderSessions(sessions: SessionItem[]): void {
     hasSessionResizeListener = true
   }
 
-  const iframes = list.querySelectorAll<HTMLIFrameElement>('iframe[data-src]')
+  const loadLazyIframe = (iframe: HTMLIFrameElement): void => {
+    if (iframe.dataset.srcdocIdx != null) {
+      assignSrcdoc(iframe)
+      return
+    }
+    const src = iframe.dataset.src
+    if (!src) return
+    iframe.src = src
+    iframe.addEventListener('load', scaleIframes, { once: true })
+  }
+
+  const iframes = list.querySelectorAll<HTMLIFrameElement>('iframe[data-src], iframe[data-lazy]')
   if (iframes.length > 0 && 'IntersectionObserver' in window) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const iframe = entry.target as HTMLIFrameElement
-            const src = iframe.dataset.src
-            if (!src) return
-            iframe.src = src
-            iframe.addEventListener('load', scaleIframes, { once: true })
-            observer.unobserve(iframe)
-            requestAnimationFrame(scaleIframes)
-          }
+          if (!entry.isIntersecting) return
+          const iframe = entry.target as HTMLIFrameElement
+          loadLazyIframe(iframe)
+          observer.unobserve(iframe)
+          requestAnimationFrame(scaleIframes)
         })
       },
       { rootMargin: '200px' },
     )
     iframes.forEach((iframe) => observer.observe(iframe))
   } else {
-    iframes.forEach((iframe) => {
-      const src = iframe.dataset.src
-      if (!src) return
-      iframe.src = src
-      iframe.addEventListener('load', scaleIframes, { once: true })
-    })
+    iframes.forEach(loadLazyIframe)
     requestAnimationFrame(scaleIframes)
   }
+
+  const mountIframeFallback = (img: HTMLImageElement): void => {
+    if (img.dataset.fallback === '1') return
+    img.dataset.fallback = '1'
+    const id = img.dataset.sessionId
+    if (!id) return
+    const iframe = document.createElement('iframe')
+    const previewSrc = `/preview/${id}/?gallery=1`
+    iframe.src = previewSrc
+    iframe.loading = img.loading === 'eager' ? 'eager' : 'lazy'
+    iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts')
+    iframe.tabIndex = -1
+    iframe.addEventListener('load', scaleIframes, { once: true })
+    img.replaceWith(iframe)
+    requestAnimationFrame(scaleIframes)
+  }
+
+  const scheduleThumbRetry = (img: HTMLImageElement): void => {
+    const id = img.dataset.sessionId
+    if (!id) {
+      mountIframeFallback(img)
+      return
+    }
+    const retries = parseInt(img.dataset.thumbRetries || '0', 10)
+    if (retries >= 12) {
+      mountIframeFallback(img)
+      return
+    }
+    img.dataset.thumbRetries = String(retries + 1)
+    window.setTimeout(() => {
+      img.src = `/api/sessions/${id}/gallery-thumb?v=${Date.now()}`
+    }, 2000)
+  }
+
+  list.querySelectorAll<HTMLImageElement>('.session-thumb-img').forEach((img) => {
+    img.addEventListener('error', () => {
+      scheduleThumbRetry(img)
+    })
+  })
 
   list.querySelectorAll('.session-thumbnail iframe[src]:not([data-src])').forEach((iframe) => {
     iframe.addEventListener('load', scaleIframes, { once: true })
@@ -1895,7 +1962,7 @@ function renderSessions(sessions: SessionItem[]): void {
 async function fetchPublicGalleryPageFromNetwork(
   page: number,
 ): Promise<{ ok: boolean; items: SessionItem[]; data: GalleryMeta }> {
-  const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
+  const r = await fetch(`/api/gallery?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
   if (!r.ok) throw new Error('recent-sessions')
   const data = await r.json()
   return { ok: true, items: Array.isArray(data.items) ? data.items : [], data }
@@ -1973,24 +2040,19 @@ async function loadRecentPublicSessions(page = 1): Promise<void> {
   gallerySource = 'public'
   publicGalleryPage = page
   try {
-    const [anonExtras, { ok, items, data }] = await Promise.all([
-      page === 1 ? loadAnonymousSessionEntries() : Promise.resolve([]),
-      fetchPublicGalleryPage(page),
-    ])
+    const { ok, items, data } = await fetchPublicGalleryPage(page)
     if (!ok) {
       renderSessions([])
       hideGalleryPagination()
       return
     }
     galleryMeta = data
-    const ids = new Set(items.map((s) => s.id))
-    const merged = page === 1 ? [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items] : items
-    if (merged.length === 0) {
+    if (items.length === 0) {
       renderSessions([])
       hideGalleryPagination()
       return
     }
-    renderSessions(merged)
+    renderSessions(items)
     updateGalleryPagination(data)
   } catch {
     renderSessions([])
@@ -2055,29 +2117,19 @@ async function hydrateAnonymousOrPublicGallery(): Promise<void> {
   publicGalleryPage = 1
   gallerySource = 'public'
   try {
-    const [{ ok, items, data }, anonExtras] = await Promise.all([
-      fetchPublicGalleryPage(1),
-      loadAnonymousSessionEntries(),
-    ])
+    const { ok, items, data } = await fetchPublicGalleryPage(1)
     if (!ok) {
-      if (anonExtras.length === 0) {
-        renderSessions([])
-        hideGalleryPagination()
-        return
-      }
-      renderSessions(anonExtras)
-      hideGalleryPagination()
-      return
-    }
-    const ids = new Set(items.map((s) => s.id))
-    const merged = [...anonExtras.filter((s) => s && !ids.has(s.id)), ...items]
-    galleryMeta = data
-    if (merged.length === 0) {
       renderSessions([])
       hideGalleryPagination()
       return
     }
-    renderSessions(merged)
+    galleryMeta = data
+    if (items.length === 0) {
+      renderSessions([])
+      hideGalleryPagination()
+      return
+    }
+    renderSessions(items)
     updateGalleryPagination(data)
   } catch {
     renderSessions([])
@@ -2505,6 +2557,30 @@ window.addEventListener('sf-home-auth-state', (e: Event) => {
   if (currentUser) void showApp()
   else void showAnonymousApp()
 })
+
+// Initialize rocket exhaust effect on homepage
+if (typeof window !== 'undefined' && document.querySelector('.launch-rocket')) {
+  // Load the animated backgrounds script and initialize rocket exhaust
+  // Only initialize once
+  if (!(window as any).__rocketExhaustInitialized) {
+    (window as any).__rocketExhaustInitialized = true
+    const script = document.createElement('script')
+    script.type = 'module'
+    script.textContent = `
+      import('/scripts/odysseus-animated-backgrounds.js').then((module) => {
+        if (module.initRocketExhaust) {
+          module.initRocketExhaust()
+          console.log('Rocket exhaust initialized')
+        } else {
+          console.warn('initRocketExhaust not found in module')
+        }
+      }).catch((err) => {
+        console.warn('Failed to initialize rocket exhaust:', err)
+      })
+    `
+    document.head.appendChild(script)
+  }
+}
 
 window.__sfHomeScriptReady = true
 window.dispatchEvent(new CustomEvent('sf-home-script-ready'))

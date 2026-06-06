@@ -1,7 +1,60 @@
 @import url('./space-shell.css');
-@import url('./marketing.css');
+@import url('./liquid-glass-button.css');
+
+/* Font variables for consistency */
+:root {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Archivo Black', Impact, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Marketing pages — homepage-matched logo placement (no opaque header band) */
+.marketing-logo-block {
+  position: fixed;
+  top: 34px;
+  left: clamp(28px, 4.5vw, 72px);
+  z-index: 209;
+  align-items: flex-start;
+  margin-bottom: 0;
+  width: auto;
+  pointer-events: auto;
+}
+
+.marketing-logo-block .logo {
+  gap: 13px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.marketing-logo-block .logo-icon {
+  width: 39px;
+  height: 39px;
+  filter: drop-shadow(0 0 18px rgba(38, 231, 255, 0.58));
+}
+
+.marketing-logo-block .logo-text {
+  font-family: var(--font-sans);
+  font-size: 31px;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  text-transform: none;
+  background: linear-gradient(135deg, #ffffff 0%, #dffbff 46%, #23e5ff 100%);
+  background-size: 180% 180%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  width: min(760px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 88px 0 96px;
+}
 
 .legal-doc {
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.65;
   color: var(--text-primary);
@@ -23,6 +76,7 @@
 }
 
 .legal-header h1 {
+  font-family: var(--font-display);
   font-size: clamp(1.75rem, 4vw, 2.25rem);
   letter-spacing: -0.03em;
   color: #fff;
@@ -35,10 +89,16 @@
 }
 
 .legal-doc section {
-  margin-bottom: 36px;
+  margin-bottom: 24px;
+  padding: 22px 24px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
 }
 
 .legal-doc h2 {
+  font-family: var(--font-sans);
   font-size: 1.15rem;
   color: var(--text-primary);
   margin-bottom: 14px;
@@ -46,6 +106,7 @@
 }
 
 .legal-doc h3 {
+  font-family: var(--font-sans);
   font-size: 1rem;
   color: #c4c9d4;
   margin: 20px 0 10px;
@@ -62,6 +123,20 @@
 
 .legal-doc li {
   margin-bottom: 8px;
+}
+
+.legal-doc a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.legal-doc a:hover {
+  color: var(--accent-hover);
+}
+
+.legal-placeholder {
+  color: var(--warning);
 }
 
 .legal-address {

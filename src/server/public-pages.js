@@ -7,7 +7,12 @@ import {
 } from '../config.js'
 import { escapeHtml } from '@ship-fast/engine/renderers/shared.js'
 import { sfGlassPillBody, sfGlassPillSvgDefs } from './liquid-glass-button.js'
-import { SPACE_BACKDROP_HTML, renderTopActions } from './marketing-shell.js'
+import {
+  GLOBAL_LAUNCH_BACKDROP_HTML,
+  renderLaunchBackdropScript,
+  renderSiteFooterContent,
+  renderTopActions,
+} from './marketing-shell.js'
 
 const HOME_TITLE = `${SITE_NAME} - AI Website Generator`
 const HOME_DESCRIPTION =
@@ -21,7 +26,7 @@ const HOME_KEYWORDS = [
   'nextjs website generator',
 ].join(', ')
 const OG_IMAGE_URL = `${SITE_URL}/og-image.png`
-const HOMEPAGE_CSS_VERSION = '20260605-auth-modal'
+const HOMEPAGE_CSS_VERSION = '20260606-homepage-track-v1'
 const HOME_AEO_FAQS = [
   {
     question: 'What is Ship Fast?',
@@ -191,20 +196,17 @@ function renderLogo() {
     <div class="logo">
       <div class="logo-icon">
         <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#sfHomeRocketG1)" opacity="0.9" />
-          <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#sfHomeRocketG2)" opacity="0.8" />
-          <path d="M38 22L38 40L30 36V24L38 22Z" fill="url(#sfHomeRocketG2)" opacity="0.8" />
-          <path d="M22 24V36L26 38L30 36V24L26 20L22 24Z" fill="url(#sfHomeRocketG1)" />
-          <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#a78bfa" opacity="0.7" />
-          <circle cx="26" cy="16" r="2" fill="#c4b5fd" />
+          <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" fill="url(#sfHomeBoltG1)" />
+          <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" stroke="url(#sfHomeBoltG2)" stroke-width="2.2" stroke-linejoin="round" />
           <defs>
-            <linearGradient id="sfHomeRocketG1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#7c3aed" />
-              <stop offset="1" stop-color="#a78bfa" />
+            <linearGradient id="sfHomeBoltG1" x1="11" y1="5" x2="42" y2="47" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#69f8ff" />
+              <stop offset="0.54" stop-color="#1ab8ff" />
+              <stop offset="1" stop-color="#6b3cff" />
             </linearGradient>
-            <linearGradient id="sfHomeRocketG2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#6d28d9" />
-              <stop offset="1" stop-color="#7c3aed" />
+            <linearGradient id="sfHomeBoltG2" x1="8" y1="3" x2="44" y2="49" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#dffcff" />
+              <stop offset="1" stop-color="#31dfff" stop-opacity="0.15" />
             </linearGradient>
           </defs>
         </svg>
@@ -298,7 +300,7 @@ export function renderHomePage(siteSettings = null) {
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap"
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${escapeHtml(SITE_URL)}" />
@@ -328,7 +330,7 @@ export function renderHomePage(siteSettings = null) {
       } catch (e) {}
     </script>
 
-    ${SPACE_BACKDROP_HTML}
+    ${GLOBAL_LAUNCH_BACKDROP_HTML}
 
     ${renderAuthOverlay()}
 
@@ -358,11 +360,23 @@ export function renderHomePage(siteSettings = null) {
 
     <div class="page-layout">
       <div class="container sidebar-panel">
-        <h1 class="sr-only">${escapeHtml(SITE_NAME)} AI website generator</h1>
+        <h1 class="sr-only">${escapeHtml(SITE_NAME)} — AI website generator</h1>
       ${renderLogo()}
       ${heroBlock}
 
-      <div class="hero-card" id="hero-card">
+      <section class="launch-hero" aria-label="Instant AI websites">
+        <div class="launch-visual" aria-hidden="true">
+          <img class="launch-rocket" src="/assets/launch-scene.png" alt="" loading="eager" decoding="async" />
+        </div>
+
+        <div class="launch-copy">
+          <p class="launch-eyebrow">Prompt. Generate. Launch.</p>
+          <h2 class="launch-title">Instant AI Websites</h2>
+        </div>
+
+        <div class="launch-stage">
+          <div class="launch-prompt-stack">
+      <div class="hero-card launch-prompt-card" id="hero-card">
         <div class="hero-card-inner">
           <form id="prompt-form" class="input-group">
         <label class="sr-only" for="prompt-input">Describe the website you want to build</label>
@@ -374,7 +388,7 @@ export function renderHomePage(siteSettings = null) {
             autofocus
             autocomplete="off"
             required
-            rows="4"
+            rows="3"
             maxlength="5000"
           ></textarea>
           <div class="prompt-placeholder" id="prompt-placeholder" aria-hidden="true">
@@ -398,10 +412,6 @@ export function renderHomePage(siteSettings = null) {
               ${renderLanguageOptions()}
             </select>
           </div>
-        </div>
-        <div class="design-ref-toggle-row">
-          <input type="checkbox" class="design-ref-toggle" id="design-ref-toggle" />
-          <label class="design-ref-toggle-label" for="design-ref-toggle">Layout inspiration</label>
         </div>
         <div class="design-ref-panel" id="design-ref-panel">
           <div class="design-ref-search-wrap">
@@ -434,12 +444,17 @@ export function renderHomePage(siteSettings = null) {
         <input type="hidden" id="design-ref-url-1" name="design-ref-url-1" value="" />
         <input type="hidden" id="design-ref-url-2" name="design-ref-url-2" value="" />
         <input type="hidden" id="design-ref-notes" name="design-ref-notes" value="" />
-        ${sfGlassPillBody({
-          type: 'submit',
-          className: 'submit-btn',
-          id: 'submit-btn',
-          disabled: true,
-          bodyHtml: `<svg
+        <div class="prompt-form-footer">
+          <div class="design-ref-toggle-row">
+            <input type="checkbox" class="design-ref-toggle" id="design-ref-toggle" />
+            <label class="design-ref-toggle-label" for="design-ref-toggle">Layout inspiration</label>
+          </div>
+          ${sfGlassPillBody({
+            type: 'submit',
+            className: 'submit-btn',
+            id: 'submit-btn',
+            disabled: true,
+            bodyHtml: `<svg
             class="zap-icon"
             viewBox="0 0 24 24"
             fill="none"
@@ -453,7 +468,8 @@ export function renderHomePage(siteSettings = null) {
           </svg>
           <span class="btn-label">Generate</span>
           <div class="spinner"></div>`,
-        })}
+          })}
+        </div>
       </form>
       <div
         class="prompt-policy-violation"
@@ -491,8 +507,10 @@ export function renderHomePage(siteSettings = null) {
       </div>
       </div>
       </div>
-      </div>
-      ${renderExamplePromptChips()}
+            ${renderExamplePromptChips()}
+          </div>
+        </div>
+      </section>
 
       <section class="sessions" id="sessions-section" style="display: none" aria-live="polite">
         <h2>See what other speedsters generated</h2>
@@ -513,14 +531,11 @@ export function renderHomePage(siteSettings = null) {
           </div>
         </nav>
       </section>
+      </div>
     </div>
 
-    <footer class="homepage-footer">
-      <nav class="homepage-footer-legal" id="homepage-footer-legal" aria-label="Legal">
-        <a href="/pricing">Pricing</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-      </nav>
+    <footer class="site-footer homepage-footer">
+      ${renderSiteFooterContent()}
     </footer>
 
     <noscript>
@@ -531,6 +546,7 @@ export function renderHomePage(siteSettings = null) {
 
     <script type="module" src="/scripts/top-actions-auth.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>
     <script type="module" src="/scripts/homepage.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>
+    ${renderLaunchBackdropScript()}
     ${DEV_HOME_HOT_RELOAD_SNIPPET}
   </body>
 </html>`

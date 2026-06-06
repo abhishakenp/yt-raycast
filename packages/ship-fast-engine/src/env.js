@@ -1,6 +1,8 @@
 import { config } from 'dotenv'
-import { resolve } from 'node:path'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = process.cwd()
-config({ path: resolve(root, '.env'), override: false })
-config({ path: resolve(root, '.env.local'), override: true })
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const root = resolve(__dirname, '..')
+
+config({ path: resolve(root, '.env'), override: true })

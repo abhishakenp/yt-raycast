@@ -27,6 +27,7 @@ export type PublicGallerySessionSummary = {
   cost?: number | null
   createdAt?: string
   homepageReady?: boolean
+  html?: string | null
 }
 
 export type GalleryPageMeta = Omit<PublicGalleryPayload, 'items'>
@@ -60,7 +61,7 @@ export const normalizeGalleryMeta = (
 }
 
 export const fetchPublicGalleryPage = async (page: number): Promise<PublicGalleryFetchResult> => {
-  const r = await fetch(`/api/sessions/recent?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
+  const r = await fetch(`/api/gallery?page=${page}&limit=${GALLERY_PAGE_SIZE}`)
   if (!r.ok) throw new Error('recent-sessions')
   const data = (await r.json()) as PublicGalleryPayload
   const items = Array.isArray(data.items) ? (data.items as PublicGallerySessionSummary[]) : []

@@ -12,7 +12,7 @@ const execFileAsync = promisify(execFile)
 const entryPoints = Array.from(
   new Set([
     ...readdirSync(srcDir)
-      .filter((f) => f.endsWith('.ts'))
+      .filter((f) => f.endsWith('.ts') || f.endsWith('.js'))
       .map((f) => join(srcDir, f)),
     'src/scripts/dashboard-main.ts',
   ]),
@@ -37,23 +37,9 @@ await build({
   },
 })
 
-await build({
-  entryPoints: [{ in: 'src/island/openui/entry.tsx', out: 'openui-island' }],
-  bundle: true,
-  outdir: 'public/scripts',
-  format: 'esm',
-  splitting: true,
-  chunkNames: 'chunks/[name]-[hash]',
-  target: ['es2020'],
-  platform: 'browser',
-  jsx: 'automatic',
-  sourcemap: false,
-  minify: true,
-  define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
-    'process.env': '{}',
-  },
-})
+// REMOVED: openui-island bundle - now using vanilla JS client (openui-preview-client.js)
+// The React-based OpenUI island has been replaced with server-side rendering + vanilla JS client
+// to eliminate React dependency from the client side for generated content.
 
 // Tailwind v4 moved the CLI out of the `tailwindcss` package into
 // `@tailwindcss/cli` (the base package no longer ships a bin), so `bunx
