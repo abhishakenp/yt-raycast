@@ -1814,9 +1814,7 @@ function renderSessions(sessions: SessionItem[]): void {
                   ? `<iframe class="session-srcdoc" data-srcdoc-idx="${index}" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
                   : `<iframe class="session-srcdoc" data-srcdoc-idx="${index}" data-lazy="1" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
                 : session.homepageReady
-                  ? index < eagerThumbnailCount
-                    ? `<iframe src="/preview/${session.id}/?gallery=1" loading="eager" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
-                    : `<iframe data-src="/preview/${session.id}/?gallery=1" loading="lazy" sandbox="allow-same-origin allow-scripts" tabindex="-1"></iframe>`
+                  ? `<img class="session-thumb-img" src="/api/sessions/${session.id}/gallery-thumb" alt="" loading="${index < eagerThumbnailCount ? 'eager' : 'lazy'}" decoding="async" data-session-id="${session.id}" />`
                   : `<div class="session-placeholder">${placeholderSvg}</div>`
             }
             <div class="session-badges">
@@ -1896,12 +1894,11 @@ function renderSessions(sessions: SessionItem[]): void {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const iframe = entry.target as HTMLIFrameElement
-            loadLazyIframe(iframe)
-            observer.unobserve(iframe)
-            requestAnimationFrame(scaleIframes)
-          }
+          if (!entry.isIntersecting) return
+          const iframe = entry.target as HTMLIFrameElement
+          loadLazyIframe(iframe)
+          observer.unobserve(iframe)
+          requestAnimationFrame(scaleIframes)
         })
       },
       { rootMargin: '200px' },
@@ -1911,6 +1908,45 @@ function renderSessions(sessions: SessionItem[]): void {
     iframes.forEach(loadLazyIframe)
     requestAnimationFrame(scaleIframes)
   }
+
+  const mountIframeFallback = (img: HTMLImageElement): void => {
+    if (img.dataset.fallback === '1') return
+    img.dataset.fallback = '1'
+    const id = img.dataset.sessionId
+    if (!id) return
+    const iframe = document.createElement('iframe')
+    const previewSrc = `/preview/${id}/?gallery=1`
+    iframe.src = previewSrc
+    iframe.loading = img.loading === 'eager' ? 'eager' : 'lazy'
+    iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts')
+    iframe.tabIndex = -1
+    iframe.addEventListener('load', scaleIframes, { once: true })
+    img.replaceWith(iframe)
+    requestAnimationFrame(scaleIframes)
+  }
+
+  const scheduleThumbRetry = (img: HTMLImageElement): void => {
+    const id = img.dataset.sessionId
+    if (!id) {
+      mountIframeFallback(img)
+      return
+    }
+    const retries = parseInt(img.dataset.thumbRetries || '0', 10)
+    if (retries >= 12) {
+      mountIframeFallback(img)
+      return
+    }
+    img.dataset.thumbRetries = String(retries + 1)
+    window.setTimeout(() => {
+      img.src = `/api/sessions/${id}/gallery-thumb?v=${Date.now()}`
+    }, 2000)
+  }
+
+  list.querySelectorAll<HTMLImageElement>('.session-thumb-img').forEach((img) => {
+    img.addEventListener('error', () => {
+      scheduleThumbRetry(img)
+    })
+  })
 
   list.querySelectorAll('.session-thumbnail iframe[src]:not([data-src])').forEach((iframe) => {
     iframe.addEventListener('load', scaleIframes, { once: true })

@@ -150,6 +150,13 @@ import { renderPrivacyPage } from './privacy-page.js'
 import { renderPricingPage } from './pricing-page.js'
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
 import { getPublicGalleryList } from './public-gallery-cache.js'
+import {
+  captureGalleryThumb,
+  hasGalleryThumb,
+  isGalleryThumbEnabled,
+  queueGalleryThumbCapture,
+  readGalleryThumb,
+} from './session-gallery-thumbnail.js'
 import { pushSessionToGitHub } from './github.js'
 import {
   getDeploymentBySlug,
@@ -1441,7 +1448,14 @@ export async function startServer(sessionsDir) {
       return
     }
     const { limit, page } = parseGalleryPagination(req.query)
-    res.json(paginateGalleryList(all, page, limit))
+    const paginated = paginateGalleryList(all, page, limit)
+    if (isGalleryThumbEnabled()) {
+      for (const item of paginated.items || []) {
+        const session = getSession(item.id)
+        if (session?.homepageReady) queueGalleryThumbCapture(session.id, session.workspace)
+      }
+    }
+    res.json(paginated)
   })
 
   // ─── API: Recent public sessions gallery (no auth required) ──
@@ -1449,6 +1463,12 @@ export async function startServer(sessionsDir) {
     const all = getPublicGalleryList()
     const { limit, page } = parseGalleryPagination(req.query)
     const paginated = paginateGalleryList(all, page, limit)
+    if (isGalleryThumbEnabled()) {
+      for (const item of paginated.items || []) {
+        const session = getSession(item.id)
+        if (session?.homepageReady) queueGalleryThumbCapture(session.id, session.workspace)
+      }
+    }
     res.set('Cache-Control', 'public, max-age=20, stale-while-revalidate=120')
     res.json(paginated)
   })
@@ -1527,6 +1547,26 @@ ${themeHead}
       ...paginated,
       items: itemsWithHtml,
     })
+  })
+
+  // ─── API: Cached gallery thumbnail (static preview image) ──
+  app.get('/api/sessions/:id/gallery-thumb', async (req, res) => {
+    const session = getSession(req.params.id)
+    if (!session) return res.status(404).end()
+    if (!session.homepageReady) return res.status(404).end()
+
+    if (hasGalleryThumb(session.workspace)) {
+      const body = readGalleryThumb(session.workspace)
+      if (!body) return res.status(404).end()
+      res.set('Content-Type', 'image/png')
+      res.set('Cache-Control', 'public, max-age=31536000, immutable')
+      return res.send(body)
+    }
+
+    if (isGalleryThumbEnabled()) {
+      void captureGalleryThumb(session.id, session.workspace).catch(() => {})
+    }
+    return res.status(404).end()
   })
 
   // ─── API: Claim anonymous sessions ─────────────────────────

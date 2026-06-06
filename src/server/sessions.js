@@ -18,6 +18,7 @@ import { getDeploymentBySessionId, removeDeploymentBySessionId } from './deploym
 import { normalizeSession, validateSession } from '../contracts/contracts.js'
 import { readDesignReferenceFingerprintFromWorkspace } from '@ship-fast/engine/pipeline/ecommerce-design-references.js'
 import { invalidatePublicGallery } from './public-gallery-cache.js'
+import { queueGalleryThumbCapture } from './session-gallery-thumbnail.js'
 
 const sessions = new Map()
 let _sessionsDir = null
@@ -860,6 +861,7 @@ export function makeSessionState(session) {
     session.homepageReady = true
     invalidatePublicGallery()
     broadcast({ type: 'homepage_ready' })
+    queueGalleryThumbCapture(session.id, session.workspace)
   }
 
   const signalOpenuiReady = () => {

@@ -2774,7 +2774,131 @@ const introWarpCanvas = (() => {
   }
 })()
 
+let introProgressValue = 0
+let introMediaSeeded = false
+
+const INTRO_MEDIA_LAYOUT = [
+  ['17%', '20%', '-11deg', '0ms', '39%', '72%'],
+  ['33%', '13%', '7deg', '260ms', '46%', '73%'],
+  ['66%', '16%', '-5deg', '520ms', '54%', '74%'],
+  ['82%', '27%', '10deg', '780ms', '61%', '75%'],
+  ['24%', '39%', '5deg', '1040ms', '42%', '82%'],
+  ['74%', '42%', '-9deg', '1300ms', '58%', '82%'],
+]
+
+const INTRO_PLACEHOLDER_BACKGROUNDS = [
+  'linear-gradient(135deg, rgba(34, 226, 255, 0.34), rgba(102, 64, 255, 0.26))',
+  'linear-gradient(135deg, rgba(246, 78, 255, 0.32), rgba(32, 226, 255, 0.22))',
+  'linear-gradient(135deg, rgba(48, 125, 255, 0.32), rgba(200, 74, 255, 0.24))',
+  'linear-gradient(135deg, rgba(34, 226, 255, 0.2), rgba(255, 255, 255, 0.12))',
+  'linear-gradient(135deg, rgba(116, 92, 255, 0.28), rgba(27, 229, 255, 0.18))',
+  'linear-gradient(135deg, rgba(232, 74, 255, 0.26), rgba(52, 224, 255, 0.18))',
+]
+
+function clampIntroProgress(value) {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(1, value))
+}
+
+function setIntroProgress(value, options = {}) {
+  const overlay = document.getElementById('intro-overlay')
+  if (!overlay) return
+  const next = clampIntroProgress(value)
+  introProgressValue = options.force ? next : Math.max(introProgressValue, next)
+  const progressTrackWidth = Math.min(250, window.innerWidth * 0.58)
+  overlay.style.setProperty('--intro-progress', introProgressValue.toFixed(3))
+  overlay.style.setProperty('--intro-frame-y', `${Math.round((1 - introProgressValue) * 58)}vh`)
+  overlay.style.setProperty('--intro-glow-y', `${Math.round((1 - introProgressValue) * 12)}vh`)
+  overlay.style.setProperty('--intro-frame-scale', (0.9 + introProgressValue * 0.1).toFixed(3))
+  overlay.style.setProperty('--intro-frame-opacity', String(Math.min(1, Math.max(0, (introProgressValue - 0.08) / 0.34))))
+  overlay.style.setProperty('--intro-progress-width', `${Math.round(progressTrackWidth * introProgressValue)}px`)
+  overlay.dataset.progress = String(Math.round(introProgressValue * 100))
+}
+
+function inferIntroProgressFromStatus(text) {
+  const value = String(text || '').toLowerCase()
+  if (!value) return introProgressValue
+  if (/(complete|generated|ready|final|deploy|done)/.test(value)) return 0.96
+  if (/(stream|render|preview|paint|homepage)/.test(value)) return 0.74
+  if (/(image|media|asset|visual|photo)/.test(value)) return 0.56
+  if (/(build|section|component|layout|page)/.test(value)) return 0.42
+  if (/(plan|prompt|brief|idea|spec|flight|countdown)/.test(value)) return 0.18
+  return Math.min(0.9, introProgressValue + 0.05)
+}
+
+function getIntroPhotoUrl(photo) {
+  if (!photo) return ''
+  if (typeof photo === 'string') return photo
+  return (
+    photo.url ||
+    photo.src ||
+    photo.imageUrl ||
+    photo.thumbnailUrl ||
+    photo.previewUrl ||
+    photo.urls?.regular ||
+    photo.urls?.small ||
+    photo.urls?.thumb ||
+    ''
+  )
+}
+
+function seedIntroMediaPreviews(photos = []) {
+  const orbit = document.getElementById('intro-media-orbit')
+  const urls = Array.isArray(photos) ? photos.map(getIntroPhotoUrl).filter(Boolean).slice(0, 6) : []
+  if (!orbit) return
+  if (introMediaSeeded) {
+    if (urls.length > 0) {
+      orbit.querySelectorAll('.intro-media-chip').forEach((chip, index) => {
+        const url = urls[index]
+        if (url) chip.style.setProperty('--chip-bg', `url("${url.replace(/"/g, '%22')}")`)
+      })
+    }
+    return
+  }
+  introMediaSeeded = true
+  orbit.innerHTML = ''
+  for (let i = 0; i < INTRO_MEDIA_LAYOUT.length; i++) {
+    const chip = document.createElement('span')
+    const [x, y, rot, delay, dockX, dockY] = INTRO_MEDIA_LAYOUT[i]
+    const url = urls[i]
+    chip.className = 'intro-media-chip'
+    chip.style.setProperty('--chip-x', x)
+    chip.style.setProperty('--chip-y', y)
+    chip.style.setProperty('--chip-rot', rot)
+    chip.style.setProperty('--chip-delay', delay)
+    chip.style.setProperty('--dock-x', dockX)
+    chip.style.setProperty('--dock-y', dockY)
+    chip.style.setProperty(
+      '--chip-bg',
+      url ? `url("${url.replace(/"/g, '%22')}")` : INTRO_PLACEHOLDER_BACKGROUNDS[i % INTRO_PLACEHOLDER_BACKGROUNDS.length],
+    )
+    orbit.appendChild(chip)
+  }
+}
+
+function resetIntroMediaPreviews() {
+  introMediaSeeded = false
+  const orbit = document.getElementById('intro-media-orbit')
+  if (orbit) orbit.innerHTML = ''
+}
+
+function syncIntroProgressFromTasks() {
+  if (!introActive) return
+  const counts = getTaskCounts()
+  const frontendTotal = counts.frontendTotal || tasks.length
+  const frontendDone = counts.frontendTotal
+    ? counts.frontendDone
+    : tasks.filter((task) => task.status === 'DONE' || task.status === 'FAILED').length
+  if (frontendTotal > 0) {
+    setIntroProgress(0.24 + (frontendDone / frontendTotal) * 0.66)
+  }
+}
+
 function startIntro() {
+  document.body.classList.add('intro-loading-active')
+  resetIntroMediaPreviews()
+  seedIntroMediaPreviews()
+  setIntroProgress(0.04, { force: true })
   introWarpCanvas.start()
   const logo = document.getElementById('intro-logo')
   const phase = document.getElementById('intro-phase-label')
@@ -2892,6 +3016,7 @@ function startTyping() {
 
 function setPhaseLabel(text) {
   const statusLabel = document.getElementById('intro-phase-label')
+  setIntroProgress(inferIntroProgressFromStatus(text))
   if (statusLabel.classList.contains('visible') && statusLabel.textContent !== text) {
     statusLabel.classList.add('switching')
     setTimeout(() => {
@@ -2908,6 +3033,7 @@ function exitIntro() {
   if (!introActive) return
   introActive = false
   introWarpCanvas.stop()
+  setIntroProgress(1, { force: true })
 
   const overlay = document.getElementById('intro-overlay')
   const wrap = document.getElementById('dashboard-wrap')
@@ -2915,7 +3041,10 @@ function exitIntro() {
   document.body.classList.add('dashboard-active')
   overlay.classList.add('exiting')
   wrap.classList.add('active')
-  setTimeout(() => overlay.classList.add('hidden'), 800)
+  setTimeout(() => {
+    overlay.classList.add('hidden')
+    document.body.classList.remove('intro-loading-active')
+  }, 800)
 }
 
 // Keep the intro launch loader on screen and load the preview behind it; the loader
@@ -2943,6 +3072,7 @@ function resolveIntroExit() {
 function skipIntro() {
   introActive = false
   introWarpCanvas.stop()
+  document.body.classList.remove('intro-loading-active')
 
   const overlay = document.getElementById('intro-overlay')
   const wrap = document.getElementById('dashboard-wrap')
@@ -3206,6 +3336,7 @@ function updateStats() {
   document.getElementById('progress-pct').textContent = pct + '%'
   const fill = document.getElementById('progress-fill')
   fill.style.width = pct + '%'
+  syncIntroProgressFromTasks()
   if (failed > 0) fill.classList.add('has-failures')
   else fill.classList.remove('has-failures')
 }
@@ -4344,6 +4475,8 @@ function connectWS() {
         break
 
       case 'stock_media_preview':
+        seedIntroMediaPreviews(ev.photos)
+        setIntroProgress(0.52)
         applyStockMediaPreviewPhotos(ev.photos)
         break
 
@@ -4356,6 +4489,7 @@ function connectWS() {
         syncOpenUIActiveClass({ tasks })
         genStartTime = Date.now()
         renderTasks()
+        syncIntroProgressFromTasks()
         {
           const c = getTaskCounts()
           if (c.frontendTotal > 0 && c.frontendDone >= c.frontendTotal) {
@@ -4379,6 +4513,7 @@ function connectWS() {
         }
         syncOpenUIActiveClass({ tasks })
         renderTasks()
+        syncIntroProgressFromTasks()
         if (updated.status === 'DONE') {
           triggerTeleport(updated.id)
           if (isFrontendTask(updated)) previewLoaded ? reloadPreview() : loadPreview()
@@ -4450,7 +4585,15 @@ function connectWS() {
       case 'openui_stream_start':
         hasSeenLiveUpdate = true
         syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
-        if (drawerOpen) {
+        if (ev.route === '/') {
+          setIntroProgress(0.78)
+          // The OpenUI island inside the preview iframe owns progressive
+          // rendering. Mount the shell as soon as streaming starts so it can
+          // subscribe before most chunks arrive; otherwise a closed drawer can
+          // miss the stream and stay blank until the final preview reload.
+          resetPreviewToSessionHtml()
+          if (introActive) deferIntroExit()
+        } else if (drawerOpen) {
           loadPreview()
         }
         break
@@ -4458,10 +4601,12 @@ function connectWS() {
       case 'openui_stream_chunk':
         hasSeenLiveUpdate = true
         syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
+        setIntroProgress(0.86)
         break
 
       case 'openui_stream_done':
         // Fallback reveal if first-paint never arrived (e.g. degenerate render).
+        setIntroProgress(1)
         if (ev.route === '/') resolveIntroExit()
         if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
         break

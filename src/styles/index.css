@@ -1622,6 +1622,15 @@ button.share-icon.pill {
   pointer-events: none;
 }
 
+.session-thumbnail img.session-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  pointer-events: none;
+}
+
 .session-badges {
   position: absolute;
   top: 8px;
@@ -2111,3 +2120,1461 @@ button.share-icon.pill {
   animation: none;
 }
 
+/* Launch hero redesign: prompt-first rocket scene */
+:root {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Archivo Black', Impact, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --launch-bg: #020411;
+  --launch-ink: #fffdf6;
+  --launch-muted: rgba(221, 236, 255, 0.72);
+  --launch-cyan: #26e7ff;
+  --launch-blue: #2088ff;
+  --launch-magenta: #df35ff;
+  --launch-violet: #6b3cff;
+}
+
+body {
+  background:
+    radial-gradient(circle at 72% 19%, rgba(36, 231, 255, 0.18), transparent 26rem),
+    radial-gradient(circle at 91% 33%, rgba(221, 53, 255, 0.18), transparent 22rem),
+    radial-gradient(circle at 8% 79%, rgba(32, 136, 255, 0.18), transparent 28rem),
+    linear-gradient(135deg, #020411 0%, #050718 45%, #01020a 100%);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 16% 28%, rgba(38, 231, 255, 0.11), transparent 34rem),
+    radial-gradient(ellipse at 92% 22%, rgba(223, 53, 255, 0.12), transparent 30rem),
+    linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.018), transparent);
+  opacity: 0.72;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+}
+
+.page-layout {
+  width: 100%;
+}
+
+.stitch-grid {
+  display: none;
+}
+
+.container.sidebar-panel {
+  max-width: 100%;
+  min-height: 100svh;
+  padding: 0;
+  align-items: stretch;
+}
+
+.logo-block {
+  position: absolute;
+  top: 34px;
+  left: clamp(28px, 4.5vw, 72px);
+  z-index: 14;
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+
+.logo {
+  gap: 13px;
+}
+
+.logo-icon {
+  width: 39px;
+  height: 39px;
+  filter: drop-shadow(0 0 18px rgba(38, 231, 255, 0.58));
+}
+
+.logo-text {
+  font-family: var(--font-sans);
+  font-size: 31px;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  text-transform: none;
+  background: linear-gradient(135deg, #ffffff 0%, #dffbff 46%, #23e5ff 100%);
+  background-size: 180% 180%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-tagline {
+  color: rgba(38, 231, 255, 0.74);
+}
+
+.launch-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(340px, 0.82fr) minmax(620px, 1.18fr);
+  gap: clamp(26px, 5vw, 76px);
+  min-height: 100svh;
+  overflow: hidden;
+  border-radius: 0;
+  padding: clamp(82px, 7vw, 102px) clamp(28px, 4vw, 62px) clamp(32px, 5vw, 62px);
+  isolation: isolate;
+  background:
+    linear-gradient(116deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01) 38%, transparent 66%),
+    radial-gradient(circle at 70% 34%, rgba(34, 176, 255, 0.17), transparent 28rem),
+    radial-gradient(circle at 86% 22%, rgba(223, 53, 255, 0.18), transparent 24rem);
+  box-shadow: none;
+}
+
+.launch-hero::before {
+  content: '';
+  position: absolute;
+  inset: -25% -14% auto -22%;
+  height: 62%;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(38, 231, 255, 0.22), transparent 45%),
+    radial-gradient(ellipse at 70% 35%, rgba(107, 60, 255, 0.22), transparent 52%);
+  filter: blur(22px);
+  transform: rotate(-8deg);
+  opacity: 0.76;
+}
+
+.launch-hero::after {
+  content: '';
+  position: absolute;
+  left: -12%;
+  right: 30%;
+  bottom: 5%;
+  height: 18rem;
+  z-index: -1;
+  background:
+    linear-gradient(104deg, transparent 8%, rgba(38, 231, 255, 0.22), rgba(107, 60, 255, 0.18), transparent 76%),
+    linear-gradient(108deg, transparent 18%, rgba(223, 53, 255, 0.2), transparent 70%);
+  filter: blur(18px);
+  transform: rotate(-16deg);
+  opacity: 0.8;
+}
+
+.launch-copy {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+.launch-eyebrow {
+  margin: 0 0 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--launch-cyan);
+  text-shadow: 0 0 18px rgba(38, 231, 255, 0.48);
+}
+
+.launch-title {
+  max-width: 620px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(58px, 5.8vw, 92px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+  color: var(--launch-ink);
+  text-wrap: balance;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6),
+    0 0 32px rgba(255, 255, 255, 0.16),
+    0 18px 44px rgba(0, 0, 0, 0.48);
+}
+
+.launch-stage {
+  position: relative;
+  z-index: 3;
+  min-height: calc(100svh - 190px);
+}
+
+.launch-prompt-stack {
+  display: none; /* Temporary rocket-review mode requested by user. */
+  position: relative;
+  z-index: 8;
+  width: min(100%, 620px);
+  margin-left: auto;
+}
+
+.hero-card.launch-prompt-card {
+  --hero-glow-x: 50%;
+  --hero-glow-y: 0%;
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(7, 15, 38, 0.78), rgba(4, 6, 18, 0.62)),
+    radial-gradient(circle at var(--hero-glow-x) var(--hero-glow-y), rgba(38, 231, 255, 0.2), transparent 32rem);
+  box-shadow:
+    0 0 0 1px rgba(38, 231, 255, 0.26),
+    0 0 0 5px rgba(38, 231, 255, 0.04),
+    0 24px 70px rgba(0, 0, 0, 0.42),
+    0 0 70px rgba(32, 136, 255, 0.18);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+.hero-card.launch-prompt-card::before {
+  opacity: 0.72;
+  background:
+    radial-gradient(ellipse 82% 70% at var(--hero-glow-x) var(--hero-glow-y), rgba(38, 231, 255, 0.24), transparent 58%),
+    linear-gradient(120deg, rgba(38, 231, 255, 0.28), transparent 24%, rgba(223, 53, 255, 0.2) 76%, transparent);
+}
+
+.hero-card.launch-prompt-card::after {
+  left: 6%;
+  right: 6%;
+  background: linear-gradient(90deg, transparent, rgba(38, 231, 255, 0.66), rgba(223, 53, 255, 0.55), transparent);
+}
+
+.launch-prompt-card .hero-card-inner {
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.launch-prompt-card .prompt-input {
+  min-height: 134px;
+  background: rgba(0, 8, 22, 0.72);
+  border-color: rgba(38, 231, 255, 0.2);
+  color: #f6fdff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -22px 70px rgba(32, 136, 255, 0.08);
+}
+
+.launch-prompt-card .prompt-input:hover,
+.launch-prompt-card .prompt-input:focus {
+  border-color: rgba(38, 231, 255, 0.62);
+  box-shadow:
+    0 0 0 3px rgba(38, 231, 255, 0.11),
+    0 0 35px rgba(38, 231, 255, 0.13),
+    inset 0 -22px 70px rgba(32, 136, 255, 0.1);
+}
+
+.launch-prompt-card .prompt-placeholder-label {
+  color: rgba(38, 231, 255, 0.88);
+}
+
+.launch-prompt-card .prompt-placeholder-body {
+  color: rgba(219, 237, 255, 0.48);
+}
+
+.launch-prompt-card .design-ref-toggle-label,
+.launch-prompt-card .private-gen-label {
+  color: rgba(219, 237, 255, 0.75);
+}
+
+.launch-prompt-card .submit-btn {
+  min-height: 50px;
+  color: #00121a;
+  background:
+    linear-gradient(135deg, #6dfbff 0%, #25dff5 45%, #38a8ff 100%) !important;
+  font-weight: 800;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset,
+    0 0 34px rgba(38, 231, 255, 0.22),
+    0 16px 34px rgba(0, 0, 0, 0.34);
+}
+
+.launch-prompt-card .submit-btn:disabled {
+  color: rgba(230, 248, 255, 0.46);
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+.launch-prompt-stack .dev-prompt-chips {
+  max-width: 100%;
+  margin: 14px 0 0 auto;
+  justify-content: flex-end;
+}
+
+.launch-visual {
+  position: absolute;
+  inset: -10px -20px -18px -260px;
+  z-index: 2;
+}
+
+.launch-browser-card {
+  position: absolute;
+  top: 104px;
+  right: 4%;
+  width: min(74%, 690px);
+  min-height: 382px;
+  border: 2px solid rgba(69, 119, 255, 0.78);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(18, 28, 82, 0.76), rgba(11, 2, 40, 0.54)),
+    radial-gradient(circle at 100% 0%, rgba(223, 53, 255, 0.36), transparent 20rem);
+  box-shadow:
+    0 0 0 1px rgba(38, 231, 255, 0.28) inset,
+    0 0 50px rgba(32, 136, 255, 0.26),
+    0 0 70px rgba(223, 53, 255, 0.14);
+  overflow: hidden;
+}
+
+.launch-browser-card::before {
+  content: '';
+  position: absolute;
+  inset: 58px 0 auto;
+  height: 1px;
+  background: rgba(38, 231, 255, 0.45);
+}
+
+.launch-browser-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 22px 28px 0;
+}
+
+.launch-browser-bar span {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #9eefff;
+  box-shadow: 0 0 18px rgba(38, 231, 255, 0.7);
+}
+
+.launch-browser-body {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 28px;
+  padding: 92px 32px 32px;
+}
+
+.launch-browser-preview {
+  min-height: 136px;
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(38, 231, 255, 0.16), transparent),
+    rgba(32, 136, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(38, 231, 255, 0.22);
+}
+
+.launch-browser-lines {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+}
+
+.launch-browser-lines span {
+  height: 9px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2fe7ff, #40b9ff);
+  box-shadow: 0 0 16px rgba(38, 231, 255, 0.32);
+}
+
+.launch-browser-lines span:first-child {
+  width: 28%;
+}
+
+.launch-browser-lines span:nth-child(4) {
+  width: 48%;
+}
+
+.launch-rocket {
+  position: absolute;
+  top: 10px;
+  left: 3%;
+  z-index: 5;
+  width: min(70vw, 940px);
+  min-width: 650px;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  mix-blend-mode: screen;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transform-origin: 50% 65%;
+  animation: launchRocketFloat 4.6s ease-in-out infinite;
+  -webkit-mask-image: radial-gradient(ellipse 94% 82% at 64% 47%, #000 0 70%, rgba(0, 0, 0, 0.82) 77%, transparent 100%);
+  mask-image: radial-gradient(ellipse 94% 82% at 64% 47%, #000 0 70%, rgba(0, 0, 0, 0.82) 77%, transparent 100%);
+  filter:
+    drop-shadow(-18px 24px 38px rgba(38, 231, 255, 0.28))
+    drop-shadow(22px -10px 42px rgba(223, 53, 255, 0.22));
+}
+
+.launch-flow {
+  position: absolute;
+  left: -42%;
+  top: 260px;
+  z-index: 3;
+  width: 118%;
+  height: 520px;
+  transform: rotate(-20deg);
+  transform-origin: 100% 0;
+  filter: drop-shadow(0 0 18px rgba(38, 231, 255, 0.45));
+}
+
+.launch-flow::before,
+.launch-flow::after {
+  content: '';
+  position: absolute;
+  right: -18px;
+  top: -72px;
+  width: 980px;
+  height: 430px;
+  pointer-events: none;
+  transform-origin: 100% 18%;
+  display: none;
+}
+
+.launch-flow::before {
+  background:
+    conic-gradient(from 160deg at 96% 16%, transparent 0deg, rgba(38, 231, 255, 0.95) 3deg, transparent 6deg, transparent 11deg, rgba(255, 255, 255, 0.96) 14deg, transparent 18deg, transparent 24deg, rgba(68, 171, 255, 0.78) 28deg, transparent 32deg, transparent 40deg, rgba(223, 53, 255, 0.82) 44deg, transparent 49deg, transparent 58deg),
+    radial-gradient(ellipse at 97% 16%, #ffffff 0 2%, #9cffff 7%, rgba(38, 231, 255, 0.52) 18%, rgba(68, 44, 255, 0.16) 35%, transparent 52%);
+  filter: blur(1px);
+  opacity: 0.78;
+  animation: jetFanPulse 1.8s ease-in-out infinite;
+}
+
+.launch-flow::after {
+  top: 14px;
+  right: 82px;
+  width: 800px;
+  height: 250px;
+  background: linear-gradient(101deg, transparent 2%, rgba(38, 231, 255, 0.08) 16%, rgba(51, 225, 255, 0.74) 58%, #ffffff 99%);
+  clip-path: polygon(0 7%, 100% 39%, 100% 62%, 0 100%);
+  filter: blur(10px);
+  opacity: 0.76;
+  animation: flamePulse 1.4s ease-in-out infinite;
+}
+
+.flow-flame {
+  position: absolute;
+  right: -16px;
+  top: 4px;
+  border-radius: 999px;
+  transform-origin: 100% 50%;
+  display: none;
+}
+
+.flow-flame--halo {
+  width: 560px;
+  height: 112px;
+  background: radial-gradient(ellipse at 91% 50%, #ffffff 0%, #9fffff 12%, rgba(38, 231, 255, 0.68) 30%, rgba(80, 44, 255, 0.24) 64%, transparent 80%);
+  filter: blur(12px);
+  opacity: 0.88;
+  animation: flamePulse 1.7s ease-in-out infinite;
+}
+
+.flow-flame--core {
+  right: 60px;
+  top: 32px;
+  width: 440px;
+  height: 34px;
+  background: linear-gradient(90deg, transparent 0%, rgba(72, 244, 255, 0.2) 8%, #ffffff 76%, #8bffff 100%);
+  filter: blur(1px);
+  box-shadow:
+    0 0 18px rgba(255, 255, 255, 0.82),
+    0 0 36px rgba(38, 231, 255, 0.72);
+  animation: flameCore 0.92s ease-in-out infinite alternate;
+}
+
+.flow-ribbon {
+  position: absolute;
+  right: 48px;
+  height: 3px;
+  width: 920px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(38, 231, 255, 0.1), #26e7ff 55%, transparent);
+  transform-origin: 100% 50%;
+  opacity: 0.9;
+  animation: flowRibbon 2.4s linear infinite;
+}
+
+.flow-ribbon--one {
+  top: 28px;
+  transform: rotate(-9deg);
+}
+
+.flow-ribbon--two {
+  top: 82px;
+  width: 840px;
+  background: linear-gradient(90deg, transparent, rgba(223, 53, 255, 0.12), #df35ff 48%, transparent);
+  transform: rotate(7deg);
+  animation-delay: -0.8s;
+}
+
+.flow-ribbon--three {
+  top: 137px;
+  width: 760px;
+  transform: rotate(16deg);
+  animation-delay: -1.55s;
+}
+
+.flow-word {
+  position: absolute;
+  right: 610px;
+  font-family: var(--font-mono);
+  font-size: clamp(18px, 2.2vw, 34px);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  color: #5df8ff;
+  text-shadow:
+    0 0 10px rgba(38, 231, 255, 0.78),
+    0 0 25px rgba(38, 231, 255, 0.36);
+  opacity: 0.88;
+  animation: none;
+}
+
+.flow-word--one {
+  top: 108px;
+  transform: rotate(3deg);
+}
+
+.flow-word--two {
+  top: 166px;
+  color: #3aa8ff;
+  transform: rotate(9deg);
+}
+
+.flow-word--three {
+  top: 60px;
+  color: #4ef3ff;
+  transform: rotate(-13deg);
+}
+
+.flow-word--four {
+  top: 232px;
+  color: #68a8ff;
+  transform: rotate(19deg);
+}
+
+.flow-word--five {
+  top: 304px;
+  color: #ff6dff;
+  transform: rotate(24deg);
+}
+
+.flow-particle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #67fbff;
+  box-shadow: 0 0 18px #26e7ff;
+  opacity: 0;
+  animation: flowParticle 2.9s ease-out infinite;
+}
+
+.flow-particle--one {
+  right: 330px;
+  top: 38px;
+}
+
+.flow-particle--two {
+  right: 420px;
+  top: 116px;
+  background: #df35ff;
+  box-shadow: 0 0 18px #df35ff;
+  animation-delay: -0.85s;
+}
+
+.flow-particle--three {
+  right: 510px;
+  top: 190px;
+  animation-delay: -1.45s;
+}
+
+.flow-particle--four {
+  right: 580px;
+  top: 70px;
+  width: 6px;
+  height: 6px;
+  animation-delay: -2.1s;
+}
+
+.flow-particle--five {
+  right: 620px;
+  top: 258px;
+  background: #ff6dff;
+  box-shadow: 0 0 18px #df35ff;
+  animation-delay: -2.55s;
+}
+
+.launch-feature-cards {
+  position: absolute;
+  right: 6%;
+  bottom: 150px;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 14px;
+  width: min(70%, 560px);
+}
+
+.launch-feature-card {
+  min-height: 162px;
+  padding: 18px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(38, 231, 255, 0.45);
+  background: linear-gradient(145deg, rgba(5, 15, 58, 0.84), rgba(10, 6, 40, 0.66));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 48px rgba(0, 0, 0, 0.26),
+    0 0 24px rgba(32, 136, 255, 0.15);
+  color: #ffffff;
+}
+
+.launch-feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 18px;
+  border-radius: 9px;
+  border: 1px solid rgba(38, 231, 255, 0.62);
+  color: var(--launch-cyan);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 0 18px rgba(38, 231, 255, 0.28);
+}
+
+.launch-feature-card strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.launch-feature-card p {
+  margin: 0;
+  color: rgba(229, 240, 255, 0.74);
+  font-size: 12px;
+  line-height: 1.58;
+  font-weight: 600;
+}
+
+.launch-orbit {
+  position: absolute;
+  left: -16%;
+  bottom: 5%;
+  width: 66%;
+  height: 18px;
+  border-radius: 999px;
+  border-top: 2px solid rgba(38, 231, 255, 0.62);
+  transform: rotate(-18deg);
+  filter: blur(0.2px) drop-shadow(0 0 14px rgba(38, 231, 255, 0.54));
+}
+
+.launch-orbit--two {
+  left: 24%;
+  bottom: 1%;
+  width: 30%;
+  border-color: rgba(223, 53, 255, 0.62);
+  transform: rotate(-78deg);
+}
+
+@keyframes launchRocketFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(8px, -13px, 0);
+  }
+}
+
+@keyframes flamePulse {
+  0%,
+  100% {
+    transform: scaleX(0.94) scaleY(0.92);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleX(1.08) scaleY(1.08);
+    opacity: 0.98;
+  }
+}
+
+@keyframes flameCore {
+  from {
+    transform: translateX(0) scaleX(0.92);
+  }
+  to {
+    transform: translateX(-10px) scaleX(1.08);
+  }
+}
+
+@keyframes flowRibbon {
+  0% {
+    clip-path: inset(0 82% 0 0);
+    opacity: 0;
+  }
+  22% {
+    opacity: 0.95;
+  }
+  100% {
+    clip-path: inset(0 0 0 80%);
+    opacity: 0;
+  }
+}
+
+@keyframes flowWord {
+  0% {
+    opacity: 0;
+    translate: 150px -16px;
+    filter: blur(5px);
+  }
+  24% {
+    opacity: 0.9;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    translate: -240px 74px;
+    filter: blur(3px);
+  }
+}
+
+@keyframes flowParticle {
+  0% {
+    opacity: 0;
+    transform: translate(130px, -20px) scale(0.35);
+  }
+  20% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-260px, 90px) scale(1.2);
+  }
+}
+
+@keyframes jetFanPulse {
+  0%,
+  100% {
+    transform: rotate(-2deg) scaleX(0.96);
+    opacity: 0.6;
+  }
+  50% {
+    transform: rotate(2deg) scaleX(1.06);
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 1100px) {
+  .launch-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .launch-copy {
+    padding: 0;
+  }
+
+  .launch-stage {
+    min-height: 720px;
+  }
+
+  .launch-prompt-stack {
+    width: min(100%, 680px);
+    margin: 0 auto;
+  }
+
+  .launch-visual {
+    inset: 168px -4vw 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .container.sidebar-panel {
+    max-width: calc(100% - 24px);
+    padding-top: 0;
+  }
+
+  .launch-hero {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .launch-title {
+    font-size: clamp(44px, 14vw, 64px);
+  }
+
+  .launch-subtitle {
+    font-size: 17px;
+  }
+
+  .launch-stage {
+    min-height: 760px;
+  }
+
+  .launch-visual {
+    inset: 214px -30px 0 -56px;
+  }
+
+  .launch-browser-card {
+    top: 100px;
+    right: 20px;
+    width: 82%;
+    min-height: 260px;
+  }
+
+  .launch-browser-body {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 82px 22px 24px;
+  }
+
+  .launch-rocket {
+    left: 20%;
+    width: 315px;
+    min-width: 260px;
+  }
+
+  .launch-flow {
+    left: -44px;
+    top: 320px;
+    width: 78%;
+    height: 310px;
+  }
+
+  .flow-word {
+    font-size: 15px;
+  }
+
+  .launch-feature-cards {
+    left: 56px;
+    right: 22px;
+    bottom: 18px;
+    width: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .launch-feature-card {
+    min-height: auto;
+    padding: 14px 16px;
+  }
+
+  .launch-feature-icon {
+    margin-bottom: 10px;
+  }
+
+  .launch-prompt-stack .dev-prompt-chips {
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-rocket,
+  .flow-flame,
+  .flow-ribbon,
+  .flow-word,
+  .flow-particle {
+    animation: none !important;
+  }
+}
+
+/* Magic-flow pass: fixed rocket, stronger animated energy field */
+.launch-rocket {
+  animation: none !important;
+  transform: translate3d(0, 0, 0) !important;
+}
+
+.launch-hero {
+  background:
+    radial-gradient(circle at 72% 24%, rgba(38, 231, 255, 0.18), transparent 24rem),
+    radial-gradient(circle at 87% 34%, rgba(223, 53, 255, 0.19), transparent 25rem),
+    radial-gradient(circle at 16% 78%, rgba(38, 231, 255, 0.12), transparent 30rem),
+    linear-gradient(116deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01) 38%, transparent 66%),
+    linear-gradient(135deg, #020411 0%, #060819 54%, #02030d 100%);
+}
+
+.launch-hero::before {
+  content: '';
+  position: absolute;
+  inset: -18% -14% -18% -18%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(116deg, transparent 0 28%, rgba(38, 231, 255, 0.18) 31%, transparent 35% 100%),
+    linear-gradient(119deg, transparent 0 37%, rgba(255, 255, 255, 0.13) 39%, transparent 41% 100%),
+    linear-gradient(121deg, transparent 0 45%, rgba(223, 53, 255, 0.16) 48%, transparent 51% 100%),
+    repeating-linear-gradient(117deg, transparent 0 74px, rgba(38, 231, 255, 0.07) 75px 77px, transparent 78px 154px),
+    repeating-linear-gradient(122deg, transparent 0 118px, rgba(223, 53, 255, 0.065) 119px 121px, transparent 122px 240px);
+  background-size:
+    170% 170%,
+    220% 220%,
+    190% 190%,
+    360px 360px,
+    520px 520px;
+  mix-blend-mode: screen;
+  opacity: 0.74;
+  filter: blur(0.2px) saturate(1.3);
+  animation: heroMagicStreams 6.5s linear infinite;
+}
+
+.launch-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 61% 51%, transparent 0 18%, rgba(38, 231, 255, 0.13) 22%, transparent 42%),
+    radial-gradient(ellipse at 36% 84%, rgba(223, 53, 255, 0.16), transparent 31rem),
+    linear-gradient(117deg, transparent 18%, rgba(96, 243, 255, 0.15) 28%, transparent 36%),
+    linear-gradient(126deg, transparent 42%, rgba(255, 86, 255, 0.12) 50%, transparent 58%);
+  mix-blend-mode: screen;
+  opacity: 0.62;
+  animation: heroMagicBreath 4.2s ease-in-out infinite;
+}
+
+.launch-flow {
+  filter:
+    drop-shadow(0 0 16px rgba(38, 231, 255, 0.64))
+    drop-shadow(0 0 30px rgba(223, 53, 255, 0.26));
+}
+
+.launch-flow::before,
+.launch-flow::after {
+  display: block;
+  mix-blend-mode: screen;
+}
+
+.launch-flow::before {
+  top: -42px;
+  right: 10px;
+  width: 1040px;
+  height: 430px;
+  opacity: 0.92;
+  background:
+    conic-gradient(from 161deg at 98% 18%, transparent 0deg, rgba(255, 255, 255, 0.92) 2deg, transparent 4deg, transparent 8deg, rgba(38, 231, 255, 0.95) 11deg, transparent 14deg, transparent 21deg, rgba(78, 149, 255, 0.8) 24deg, transparent 27deg, transparent 35deg, rgba(223, 53, 255, 0.78) 39deg, transparent 43deg, transparent 54deg),
+    repeating-linear-gradient(104deg, transparent 0 36px, rgba(38, 231, 255, 0.16) 37px 39px, transparent 40px 82px),
+    repeating-linear-gradient(111deg, transparent 0 72px, rgba(255, 255, 255, 0.18) 73px 74px, transparent 75px 150px),
+    radial-gradient(ellipse at 97% 18%, #ffffff 0 3%, rgba(123, 255, 255, 0.8) 7%, rgba(38, 231, 255, 0.35) 22%, transparent 48%);
+  filter: blur(0.5px) saturate(1.45);
+  animation: exhaustFanSurge 2.2s ease-in-out infinite;
+}
+
+.launch-flow::after {
+  top: 68px;
+  right: 90px;
+  width: 940px;
+  height: 250px;
+  opacity: 0.84;
+  background:
+    linear-gradient(99deg, transparent 0%, rgba(38, 231, 255, 0.1) 12%, rgba(38, 231, 255, 0.72) 43%, rgba(255, 255, 255, 0.85) 72%, transparent 100%),
+    repeating-linear-gradient(101deg, transparent 0 54px, rgba(255, 255, 255, 0.22) 55px 56px, transparent 57px 102px),
+    repeating-linear-gradient(108deg, transparent 0 44px, rgba(223, 53, 255, 0.18) 45px 47px, transparent 48px 95px);
+  clip-path: polygon(0 4%, 100% 34%, 100% 66%, 0 100%);
+  filter: blur(7px) saturate(1.3);
+  animation: exhaustCoreTravel 1.65s ease-in-out infinite alternate;
+}
+
+.flow-ribbon {
+  height: 4px;
+  opacity: 1;
+  box-shadow:
+    0 0 12px rgba(38, 231, 255, 0.9),
+    0 0 26px rgba(38, 231, 255, 0.45);
+  animation: flowRibbonIntense 1.9s linear infinite;
+}
+
+.flow-ribbon--two {
+  box-shadow:
+    0 0 14px rgba(223, 53, 255, 0.85),
+    0 0 30px rgba(223, 53, 255, 0.38);
+}
+
+.flow-ribbon--three {
+  height: 2px;
+  opacity: 0.78;
+}
+
+.flow-particle {
+  width: 12px;
+  height: 12px;
+  animation: flowParticleMagic 2.4s ease-out infinite;
+}
+
+@keyframes heroMagicStreams {
+  0% {
+    background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+    opacity: 0.45;
+  }
+  34% {
+    opacity: 0.86;
+  }
+  70% {
+    opacity: 0.62;
+  }
+  100% {
+    background-position: -520px 280px, -760px 380px, -640px 320px, -360px 190px, -520px 260px;
+    opacity: 0.45;
+  }
+}
+
+@keyframes heroMagicBreath {
+  0%,
+  100% {
+    opacity: 0.42;
+    filter: saturate(1.05) brightness(0.9);
+  }
+  50% {
+    opacity: 0.78;
+    filter: saturate(1.4) brightness(1.12);
+  }
+}
+
+@keyframes exhaustFanSurge {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scaleX(0.96) translateX(18px);
+    filter: blur(1.2px) saturate(1.2) brightness(0.9);
+  }
+  44% {
+    opacity: 0.98;
+    transform: scaleX(1.05) translateX(-18px);
+    filter: blur(0.3px) saturate(1.55) brightness(1.2);
+  }
+  72% {
+    opacity: 0.74;
+    transform: scaleX(1.02) translateX(-42px);
+  }
+}
+
+@keyframes exhaustCoreTravel {
+  from {
+    opacity: 0.48;
+    transform: translateX(44px) scaleX(0.9);
+  }
+  to {
+    opacity: 0.95;
+    transform: translateX(-34px) scaleX(1.08);
+  }
+}
+
+@keyframes flowRibbonIntense {
+  0% {
+    clip-path: inset(0 88% 0 0);
+    opacity: 0;
+    filter: brightness(0.75);
+  }
+  22% {
+    opacity: 1;
+    filter: brightness(1.4);
+  }
+  58% {
+    opacity: 0.72;
+    filter: brightness(0.95);
+  }
+  100% {
+    clip-path: inset(0 0 0 86%);
+    opacity: 0;
+    filter: brightness(1.8);
+  }
+}
+
+@keyframes flowParticleMagic {
+  0% {
+    opacity: 0;
+    transform: translate(180px, -36px) scale(0.2);
+    filter: brightness(0.7);
+  }
+  18% {
+    opacity: 1;
+    filter: brightness(1.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-380px, 128px) scale(1.45);
+    filter: brightness(1.1);
+  }
+}
+
+/* Magic-flow pass: rocket stays fixed; motion lives in exhaust and hero energy fields. */
+.launch-rocket {
+  animation: none !important;
+  transform: translate3d(0, 0, 0) !important;
+}
+
+.launch-hero {
+  background:
+    linear-gradient(116deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.007) 38%, transparent 66%),
+    radial-gradient(circle at 70% 34%, rgba(34, 176, 255, 0.17), transparent 28rem),
+    radial-gradient(circle at 86% 22%, rgba(223, 53, 255, 0.18), transparent 24rem),
+    linear-gradient(118deg, transparent 0 42%, rgba(38, 231, 255, 0.05) 46%, transparent 52%),
+    linear-gradient(124deg, transparent 0 58%, rgba(223, 53, 255, 0.045) 61%, transparent 67%);
+  background-size: auto, auto, auto, 220% 220%, 180% 180%;
+  animation: heroFlowBackground 8s linear infinite;
+}
+
+.launch-hero::before {
+  content: '';
+  position: absolute;
+  inset: -12% -18% -18% -24%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(118deg, transparent 0 42px, rgba(38, 231, 255, 0.18) 44px, transparent 48px, transparent 118px),
+    repeating-linear-gradient(126deg, transparent 0 74px, rgba(223, 53, 255, 0.14) 77px, transparent 82px, transparent 176px),
+    repeating-linear-gradient(112deg, transparent 0 28px, rgba(108, 166, 255, 0.1) 29px, transparent 33px, transparent 92px),
+    radial-gradient(ellipse at 72% 36%, rgba(38, 231, 255, 0.18), transparent 35rem),
+    radial-gradient(ellipse at 50% 82%, rgba(223, 53, 255, 0.14), transparent 32rem);
+  background-size: 130% 130%, 115% 115%, 150% 150%, auto, auto;
+  opacity: 0.62;
+  filter: blur(0.2px) saturate(1.5);
+  mix-blend-mode: screen;
+  animation: heroMagicStreams 7.2s linear infinite, heroMagicPulse 2.8s ease-in-out infinite alternate;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 96%, transparent 100%);
+}
+
+.launch-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(116deg, transparent 8%, rgba(38, 231, 255, 0.18) 22%, transparent 31%),
+    linear-gradient(121deg, transparent 38%, rgba(223, 53, 255, 0.16) 49%, transparent 58%),
+    linear-gradient(110deg, transparent 52%, rgba(255, 255, 255, 0.12) 57%, transparent 61%);
+  background-size: 210% 210%, 180% 180%, 240% 240%;
+  opacity: 0.38;
+  filter: blur(5px);
+  mix-blend-mode: screen;
+  animation: heroWideSweep 5.6s ease-in-out infinite;
+}
+
+.launch-flow::before,
+.launch-flow::after {
+  display: block !important;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.launch-flow::before {
+  right: -90px;
+  top: -130px;
+  width: 1180px;
+  height: 520px;
+  background:
+    repeating-linear-gradient(6deg, transparent 0 26px, rgba(38, 231, 255, 0.85) 27px, transparent 31px, transparent 64px),
+    repeating-linear-gradient(-4deg, transparent 0 48px, rgba(255, 255, 255, 0.7) 49px, transparent 52px, transparent 128px),
+    repeating-linear-gradient(14deg, transparent 0 72px, rgba(223, 53, 255, 0.72) 74px, transparent 79px, transparent 160px),
+    radial-gradient(ellipse at 92% 24%, rgba(255, 255, 255, 0.95) 0 4%, rgba(38, 231, 255, 0.7) 12%, transparent 48%);
+  background-size: 190% 100%, 160% 100%, 180% 100%, auto;
+  clip-path: polygon(0 5%, 100% 26%, 100% 62%, 0 100%);
+  opacity: 0.8;
+  filter: blur(0.6px) saturate(1.8);
+  animation: exhaustLineTravel 1.85s linear infinite, exhaustIntensity 1.15s ease-in-out infinite alternate;
+}
+
+.launch-flow::after {
+  right: -160px;
+  top: -50px;
+  width: 1050px;
+  height: 400px;
+  background:
+    repeating-linear-gradient(10deg, transparent 0 35px, rgba(21, 116, 255, 0.5) 36px, transparent 40px, transparent 106px),
+    repeating-linear-gradient(-10deg, transparent 0 54px, rgba(38, 231, 255, 0.42) 55px, transparent 58px, transparent 135px),
+    radial-gradient(ellipse at 94% 28%, rgba(38, 231, 255, 0.5), transparent 48%);
+  background-size: 170% 100%, 150% 100%, auto;
+  clip-path: polygon(0 0, 100% 18%, 100% 72%, 0 94%);
+  opacity: 0.58;
+  filter: blur(5px);
+  animation: exhaustLineTravel 2.6s linear infinite reverse, exhaustIntensity 1.7s ease-in-out infinite alternate;
+}
+
+.flow-ribbon {
+  height: 4px;
+  opacity: 1;
+  box-shadow: 0 0 18px rgba(38, 231, 255, 0.7), 0 0 42px rgba(38, 231, 255, 0.25);
+  animation: flowRibbon 1.15s linear infinite, ribbonIntensity 1.2s ease-in-out infinite alternate;
+}
+
+.flow-particle {
+  opacity: 1;
+  animation: flowParticle 1.7s ease-out infinite;
+}
+
+@keyframes heroFlowBackground {
+  from { background-position: 0 0, 0 0, 0 0, 0% 0%, 100% 0%; }
+  to { background-position: 0 0, 0 0, 0 0, 100% 100%, 0% 100%; }
+}
+
+@keyframes heroMagicStreams {
+  from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+  to { background-position: -520px 280px, -390px 210px, -620px 310px, 0 0, 0 0; }
+}
+
+@keyframes heroMagicPulse {
+  from { opacity: 0.32; filter: blur(0.4px) saturate(1.2); }
+  to { opacity: 0.74; filter: blur(0) saturate(1.9); }
+}
+
+@keyframes heroWideSweep {
+  0%, 100% { opacity: 0.22; background-position: 0% 60%, 100% 40%, 0% 50%; }
+  50% { opacity: 0.56; background-position: 90% 10%, 0% 80%, 100% 30%; }
+}
+
+@keyframes exhaustLineTravel {
+  from { background-position: 900px 0, 640px 0, 780px 0, 0 0; }
+  to { background-position: -180px 0, -240px 0, -160px 0, 0 0; }
+}
+
+@keyframes exhaustIntensity {
+  from { opacity: 0.42; filter: blur(1.2px) saturate(1.25); }
+  45% { opacity: 0.96; }
+  to { opacity: 0.68; filter: blur(0.2px) saturate(2); }
+}
+
+@keyframes ribbonIntensity {
+  from { opacity: 0.42; filter: brightness(0.75); }
+  to { opacity: 1; filter: brightness(1.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-hero,
+  .launch-hero::before,
+  .launch-hero::after,
+  .launch-flow::before,
+  .launch-flow::after,
+  .flow-ribbon,
+  .flow-particle {
+    animation: none !important;
+  }
+}
+
+/* Magic-flow refinement: remove glassy panes, keep only line energy. */
+.launch-flow::before {
+  right: -220px !important;
+  top: -175px !important;
+  width: 1480px !important;
+  height: 650px !important;
+  background:
+    repeating-linear-gradient(4deg, transparent 0 18px, rgba(255, 255, 255, 0.88) 19px, rgba(255, 255, 255, 0.12) 21px, transparent 24px, transparent 62px),
+    repeating-linear-gradient(-5deg, transparent 0 28px, rgba(38, 231, 255, 0.96) 30px, rgba(38, 231, 255, 0.08) 34px, transparent 38px, transparent 92px),
+    repeating-linear-gradient(11deg, transparent 0 44px, rgba(247, 67, 255, 0.86) 46px, rgba(247, 67, 255, 0.1) 49px, transparent 54px, transparent 142px),
+    repeating-linear-gradient(-13deg, transparent 0 68px, rgba(83, 141, 255, 0.7) 70px, transparent 75px, transparent 172px);
+  background-size: 220% 100%, 190% 100%, 210% 100%, 170% 100% !important;
+  clip-path: none !important;
+  opacity: 0.92 !important;
+  filter: drop-shadow(0 0 12px rgba(38, 231, 255, 0.72)) drop-shadow(0 0 28px rgba(247, 67, 255, 0.35)) saturate(1.9) !important;
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.98) 9%, #000 74%, transparent 100%), linear-gradient(12deg, transparent 0%, #000 22%, #000 72%, transparent 100%);
+  mask-composite: intersect;
+  animation: exhaustLineTravelFast 1.42s linear infinite, exhaustLineBreath 0.92s ease-in-out infinite alternate !important;
+}
+
+.launch-flow::after {
+  right: -320px !important;
+  top: -110px !important;
+  width: 1520px !important;
+  height: 560px !important;
+  background:
+    repeating-linear-gradient(2deg, transparent 0 24px, rgba(38, 231, 255, 0.46) 25px, transparent 29px, transparent 78px),
+    repeating-linear-gradient(-9deg, transparent 0 36px, rgba(255, 255, 255, 0.34) 38px, transparent 41px, transparent 118px),
+    repeating-linear-gradient(16deg, transparent 0 58px, rgba(212, 45, 255, 0.48) 60px, transparent 64px, transparent 155px);
+  background-size: 180% 100%, 210% 100%, 165% 100% !important;
+  clip-path: none !important;
+  opacity: 0.72 !important;
+  filter: blur(2.5px) drop-shadow(0 0 18px rgba(38, 231, 255, 0.45)) saturate(1.7) !important;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 82%, transparent 100%), linear-gradient(10deg, transparent 0%, #000 28%, #000 70%, transparent 100%);
+  mask-composite: intersect;
+  animation: exhaustLineTravelSlow 2.15s linear infinite reverse, exhaustLineBreath 1.28s ease-in-out infinite alternate !important;
+}
+
+.flow-ribbon {
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, rgba(38, 231, 255, 0.2) 12%, rgba(255, 255, 255, 0.95) 42%, rgba(247, 67, 255, 0.82) 64%, transparent 100%) !important;
+  opacity: 0.9 !important;
+  box-shadow: 0 0 10px rgba(38, 231, 255, 0.78), 0 0 22px rgba(247, 67, 255, 0.34) !important;
+  animation: flowRibbon 1.02s linear infinite, ribbonNeedlePulse 0.82s ease-in-out infinite alternate !important;
+}
+
+.flow-particle {
+  box-shadow: 0 0 14px rgba(38, 231, 255, 0.88), 0 0 26px rgba(247, 67, 255, 0.52) !important;
+}
+
+.launch-hero::before {
+  background:
+    repeating-linear-gradient(116deg, transparent 0 34px, rgba(38, 231, 255, 0.13) 35px, transparent 38px, transparent 106px),
+    repeating-linear-gradient(123deg, transparent 0 60px, rgba(247, 67, 255, 0.11) 62px, transparent 66px, transparent 154px),
+    repeating-linear-gradient(109deg, transparent 0 82px, rgba(255, 255, 255, 0.07) 84px, transparent 87px, transparent 190px),
+    radial-gradient(ellipse at 72% 36%, rgba(38, 231, 255, 0.2), transparent 35rem),
+    radial-gradient(ellipse at 35% 78%, rgba(247, 67, 255, 0.13), transparent 34rem) !important;
+  opacity: 0.76 !important;
+  filter: blur(0.15px) saturate(1.8) !important;
+}
+
+.launch-hero::after {
+  background:
+    repeating-linear-gradient(118deg, transparent 0 96px, rgba(38, 231, 255, 0.1) 98px, transparent 104px, transparent 230px),
+    repeating-linear-gradient(126deg, transparent 0 128px, rgba(247, 67, 255, 0.09) 130px, transparent 136px, transparent 278px),
+    radial-gradient(circle at 68% 39%, rgba(38, 231, 255, 0.18), transparent 30rem) !important;
+  opacity: 0.5 !important;
+  filter: blur(3px) saturate(1.7) !important;
+}
+
+@keyframes exhaustLineTravelFast {
+  from { background-position: 1180px 0, 940px 0, 1060px 0, 760px 0; }
+  to { background-position: -260px 0, -320px 0, -220px 0, -400px 0; }
+}
+
+@keyframes exhaustLineTravelSlow {
+  from { background-position: 920px 0, 1220px 0, 840px 0; }
+  to { background-position: -360px 0, -180px 0, -420px 0; }
+}
+
+@keyframes exhaustLineBreath {
+  0% { opacity: 0.46; filter: blur(1.8px) saturate(1.2) brightness(0.85); }
+  42% { opacity: 1; filter: blur(0.2px) saturate(2.2) brightness(1.75); }
+  100% { opacity: 0.72; filter: blur(0.8px) saturate(1.7) brightness(1.18); }
+}
+
+@keyframes ribbonNeedlePulse {
+  from { opacity: 0.38; filter: brightness(0.9); }
+  to { opacity: 1; filter: brightness(2); }
+}
+
+/* Perlin-flow correction: background carries the magic, rocket exhaust stays restrained. */
+.launch-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 70% 30%, rgba(28, 171, 255, 0.16), transparent 29rem),
+    radial-gradient(circle at 88% 26%, rgba(255, 55, 221, 0.12), transparent 25rem),
+    radial-gradient(circle at 36% 84%, rgba(45, 217, 255, 0.08), transparent 32rem),
+    linear-gradient(135deg, #020413 0%, #050822 44%, #12051f 100%) !important;
+  animation: none !important;
+}
+
+.launch-perlin-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.82;
+  mix-blend-mode: screen;
+  filter: saturate(1.35) contrast(1.05);
+}
+
+.launch-copy,
+.launch-stage {
+  position: relative;
+  z-index: 1;
+}
+
+.launch-hero::before {
+  background:
+    radial-gradient(circle at 67% 39%, rgba(28, 206, 255, 0.18), transparent 30rem),
+    radial-gradient(circle at 78% 28%, rgba(255, 55, 221, 0.12), transparent 24rem) !important;
+  opacity: 0.58 !important;
+  filter: blur(7px) saturate(1.4) !important;
+  animation: heroAuraOnly 5.5s ease-in-out infinite alternate !important;
+}
+
+.launch-hero::after {
+  background: none !important;
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.launch-flow::before,
+.launch-flow::after {
+  display: block !important;
+  clip-path: none !important;
+  pointer-events: none;
+}
+
+.launch-flow::before {
+  right: 55px !important;
+  top: 52px !important;
+  width: 520px !important;
+  height: 150px !important;
+  background:
+    linear-gradient(90deg, transparent 0%, rgba(35, 226, 255, 0.2) 18%, rgba(255, 255, 255, 0.62) 54%, rgba(255, 67, 229, 0.18) 78%, transparent 100%),
+    repeating-linear-gradient(2deg, transparent 0 38px, rgba(50, 224, 255, 0.45) 39px, transparent 42px, transparent 96px) !important;
+  background-size: 130% 100%, 180% 100% !important;
+  opacity: 0.34 !important;
+  filter: blur(1.6px) saturate(1.45) !important;
+  mask-image: radial-gradient(ellipse at 85% 48%, #000 0%, rgba(0, 0, 0, 0.72) 24%, transparent 70%) !important;
+  animation: rocketTrailCalm 1.8s linear infinite, rocketTrailPulse 1.7s ease-in-out infinite alternate !important;
+}
+
+.launch-flow::after {
+  right: 80px !important;
+  top: 74px !important;
+  width: 440px !important;
+  height: 104px !important;
+  background: radial-gradient(ellipse at 88% 52%, rgba(255, 255, 255, 0.72), rgba(36, 219, 255, 0.28) 28%, transparent 68%) !important;
+  opacity: 0.28 !important;
+  filter: blur(12px) saturate(1.35) !important;
+  mask-image: radial-gradient(ellipse at 80% 50%, #000 0%, transparent 72%) !important;
+  animation: rocketTrailPulse 1.9s ease-in-out infinite alternate !important;
+}
+
+.flow-ribbon {
+  height: 1px !important;
+  opacity: 0.38 !important;
+  background: linear-gradient(90deg, transparent, rgba(43, 225, 255, 0.42), rgba(255, 255, 255, 0.58), transparent) !important;
+  box-shadow: 0 0 8px rgba(43, 225, 255, 0.42) !important;
+  animation: rocketTrailCalm 2.2s linear infinite, ribbonNeedlePulse 1.8s ease-in-out infinite alternate !important;
+}
+
+.flow-ribbon--two,
+.flow-ribbon--three {
+  opacity: 0.22 !important;
+}
+
+.flow-particle {
+  width: 4px !important;
+  height: 4px !important;
+  opacity: 0.34 !important;
+  box-shadow: 0 0 10px rgba(43, 225, 255, 0.52) !important;
+}
+
+.flow-word {
+  right: 670px !important;
+  font-size: clamp(1.35rem, 2vw, 2.15rem) !important;
+  letter-spacing: 0.12em !important;
+  opacity: 0.66 !important;
+  text-shadow: 0 0 12px rgba(43, 225, 255, 0.62), 0 0 24px rgba(255, 67, 229, 0.22) !important;
+  animation: wordLanePulse 3.6s ease-in-out infinite alternate !important;
+}
+
+.flow-word--one { top: 122px !important; right: 660px !important; }
+.flow-word--two { top: 174px !important; right: 780px !important; animation-delay: -0.4s !important; }
+.flow-word--three { top: 82px !important; right: 760px !important; animation-delay: -0.9s !important; }
+.flow-word--four { top: 232px !important; right: 890px !important; animation-delay: -1.2s !important; }
+.flow-word--five { top: 286px !important; right: 720px !important; animation-delay: -1.7s !important; color: rgba(255, 101, 235, 0.9) !important; }
+
+@keyframes heroAuraOnly {
+  from { opacity: 0.42; transform: scale(1); }
+  to { opacity: 0.64; transform: scale(1.035); }
+}
+
+@keyframes rocketTrailCalm {
+  from { background-position: 160px 0, 280px 0; }
+  to { background-position: -240px 0, -180px 0; }
+}
+
+@keyframes rocketTrailPulse {
+  from { opacity: 0.18; filter: blur(3px) saturate(1.1); }
+  to { opacity: 0.38; filter: blur(1.2px) saturate(1.6); }
+}
+
+@keyframes wordLanePulse {
+  from { opacity: 0.42; transform: translate3d(0, 0, 0); }
+  to { opacity: 0.76; transform: translate3d(10px, -2px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-perlin-canvas {
+    display: none;
+  }
+}
