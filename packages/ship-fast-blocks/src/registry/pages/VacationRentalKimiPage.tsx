@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { z } from "zod/v4"
 import { defineComponent } from "@openuidev/react-lang"
 import { cn } from "#/lib/utils.ts"
@@ -195,6 +196,7 @@ export const VacationRentalKimiPage = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
+    const [mobileOpen, setMobileOpen] = useState(false)
     const brand = props.brand ?? "Airbnb"
     const nav = props.nav?.length
       ? props.nav
@@ -646,8 +648,10 @@ export const VacationRentalKimiPage = defineComponent({
                 </button>
                 <button
                   type="button"
-                  onClick={() => go(nav[0])}
+                  onClick={() => setMobileOpen((v: boolean) => !v)}
                   aria-label="Menu"
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
                   className="flex items-center gap-2 rounded-full border border-border p-1.5 pl-3 transition-shadow hover:shadow-md"
                 >
                   <svg
@@ -674,6 +678,26 @@ export const VacationRentalKimiPage = defineComponent({
                   </span>
                 </button>
               </div>
+              {mobileOpen && (
+                <div
+                  id="mobile-menu"
+                  className="flex flex-col border-t border-border bg-background px-4 py-6 pb-8 md:hidden gap-4"
+                >
+                  {nav.map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false)
+                        go(label)
+                      }}
+                      className="text-base font-medium text-foreground/90 transition-colors hover:text-foreground text-left"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </header>
