@@ -153,7 +153,6 @@ export const renderTermsPage = () => {
         </p>
       </section>
     </main>
-    ${renderLaunchBackdropScript()}
   </body>
 </html>`
 }
