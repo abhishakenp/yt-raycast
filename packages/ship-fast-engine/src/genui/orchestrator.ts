@@ -41,6 +41,8 @@ export type GenUIEvent =
 const MAX_PARALLEL = 8
 const SUBTREE_TIMEOUT_MS = 60_000
 const SUBTREE_RETRIES = 4
+/** Programs shorter than this are almost always block-default stubs, not real LLM output. */
+const STUB_PROGRAM_MAX_CHARS = 900
 
 // Randomness, the same way generate.ts does it (Math.random). A factory so the
 // pseudo-random source is named + swappable without touching call sites.
