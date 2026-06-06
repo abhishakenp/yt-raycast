@@ -21,7 +21,11 @@ export function validateOpenUISource(source) {
     return { ok: false, errors: [{ message: 'Missing root assignment' }], hasRoot: false }
   }
   if (!/^\s*root\s*=\s*Stack\s*\(\s*\[/m.test(text)) {
-    return { ok: false, errors: [{ message: 'Root must be Stack([childRefs], ...)' }], hasRoot: true }
+    return {
+      ok: false,
+      errors: [{ message: 'Root must be Stack([childRefs], ...)' }],
+      hasRoot: true,
+    }
   }
   const result = getParser().parse(text)
   const errors = result.meta?.errors || []

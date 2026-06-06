@@ -2,18 +2,28 @@ import { CHIP_SCALES, createChipScale, createIconRow } from '../controls'
 import type { EditorController } from '../shell'
 import type { PanelClassification, PanelOpenPayload, TabContext, TabDef } from '../types'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="4.5" height="4.5"/><rect x="9" y="2.5" width="4.5" height="4.5"/><rect x="2.5" y="9" width="4.5" height="4.5"/><rect x="9" y="9" width="4.5" height="4.5"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="4.5" height="4.5"/><rect x="9" y="2.5" width="4.5" height="4.5"/><rect x="2.5" y="9" width="4.5" height="4.5"/><rect x="9" y="9" width="4.5" height="4.5"/></svg>'
 
-const ICON_STACK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2.5" width="10" height="3" rx="0.5"/><rect x="3" y="6.5" width="10" height="3" rx="0.5"/><rect x="3" y="10.5" width="10" height="3" rx="0.5"/></svg>'
-const ICON_ROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3" width="3" height="10" rx="0.5"/><rect x="6.5" y="3" width="3" height="10" rx="0.5"/><rect x="10.5" y="3" width="3" height="10" rx="0.5"/></svg>'
-const ICON_GRID = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="5" height="5" rx="0.5"/><rect x="8.5" y="2.5" width="5" height="5" rx="0.5"/><rect x="2.5" y="8.5" width="5" height="5" rx="0.5"/><rect x="8.5" y="8.5" width="5" height="5" rx="0.5"/></svg>'
+const ICON_STACK =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2.5" width="10" height="3" rx="0.5"/><rect x="3" y="6.5" width="10" height="3" rx="0.5"/><rect x="3" y="10.5" width="10" height="3" rx="0.5"/></svg>'
+const ICON_ROW =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="3" width="3" height="10" rx="0.5"/><rect x="6.5" y="3" width="3" height="10" rx="0.5"/><rect x="10.5" y="3" width="3" height="10" rx="0.5"/></svg>'
+const ICON_GRID =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="5" height="5" rx="0.5"/><rect x="8.5" y="2.5" width="5" height="5" rx="0.5"/><rect x="2.5" y="8.5" width="5" height="5" rx="0.5"/><rect x="8.5" y="8.5" width="5" height="5" rx="0.5"/></svg>'
 
-const ICON_ALIGN_LEFT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="2" x2="2" y2="14"/><rect x="3" y="4" width="7" height="3"/><rect x="3" y="9" width="10" height="3"/></svg>'
-const ICON_ALIGN_CENTER_H = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="2" x2="8" y2="14"/><rect x="4.5" y="4" width="7" height="3"/><rect x="3" y="9" width="10" height="3"/></svg>'
-const ICON_ALIGN_RIGHT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="14" y1="2" x2="14" y2="14"/><rect x="6" y="4" width="7" height="3"/><rect x="3" y="9" width="10" height="3"/></svg>'
-const ICON_ALIGN_TOP = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="2" x2="14" y2="2"/><rect x="4" y="3" width="3" height="7"/><rect x="9" y="3" width="3" height="10"/></svg>'
-const ICON_ALIGN_MIDDLE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="8" x2="14" y2="8"/><rect x="4" y="4.5" width="3" height="7"/><rect x="9" y="3" width="3" height="10"/></svg>'
-const ICON_ALIGN_BOTTOM = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="14" x2="14" y2="14"/><rect x="4" y="6" width="3" height="7"/><rect x="9" y="3" width="3" height="10"/></svg>'
+const ICON_ALIGN_LEFT =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="2" x2="2" y2="14"/><rect x="3" y="4" width="7" height="3"/><rect x="3" y="9" width="10" height="3"/></svg>'
+const ICON_ALIGN_CENTER_H =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="2" x2="8" y2="14"/><rect x="4.5" y="4" width="7" height="3"/><rect x="3" y="9" width="10" height="3"/></svg>'
+const ICON_ALIGN_RIGHT =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="14" y1="2" x2="14" y2="14"/><rect x="6" y="4" width="7" height="3"/><rect x="3" y="9" width="10" height="3"/></svg>'
+const ICON_ALIGN_TOP =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="2" x2="14" y2="2"/><rect x="4" y="3" width="3" height="7"/><rect x="9" y="3" width="3" height="10"/></svg>'
+const ICON_ALIGN_MIDDLE =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="8" x2="14" y2="8"/><rect x="4" y="4.5" width="3" height="7"/><rect x="9" y="3" width="3" height="10"/></svg>'
+const ICON_ALIGN_BOTTOM =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="14" x2="14" y2="14"/><rect x="4" y="6" width="3" height="7"/><rect x="9" y="3" width="3" height="10"/></svg>'
 
 interface Arrangement {
   id: string
@@ -80,7 +90,10 @@ function currentAlignIds(state: PanelOpenPayload): string[] {
   return out
 }
 
-function matchChipId(chips: ReadonlyArray<{ id: string; value: string }>, v: string): string | undefined {
+function matchChipId(
+  chips: ReadonlyArray<{ id: string; value: string }>,
+  v: string,
+): string | undefined {
   if (!v) return undefined
   const hit = chips.find((c) => c.value === v)
   if (hit) return hit.id

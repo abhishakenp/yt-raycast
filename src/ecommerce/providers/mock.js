@@ -2,9 +2,13 @@ export class MockProvider {
   name = 'mock'
   displayName = 'Mock (Preview)'
 
-  getDependencies() { return {} }
+  getDependencies() {
+    return {}
+  }
 
-  getEnvTemplate() { return '# Mock e-commerce provider — no configuration needed\n' }
+  getEnvTemplate() {
+    return '# Mock e-commerce provider — no configuration needed\n'
+  }
 
   getClientCode() {
     return `import siteSpec from './site-spec'
@@ -30,6 +34,16 @@ export async function initiatePayment() { return { payment_session: { id: 'mock-
   }
 
   getInterface() {
-    return ['fetchProducts', 'fetchProduct', 'fetchCategories', 'createCart', 'addItem', 'getCart', 'checkout', 'listPaymentProviders', 'initiatePayment']
+    return [
+      'fetchProducts',
+      'fetchProduct',
+      'fetchCategories',
+      'createCart',
+      'addItem',
+      'getCart',
+      'checkout',
+      'listPaymentProviders',
+      'initiatePayment',
+    ]
   }
 }

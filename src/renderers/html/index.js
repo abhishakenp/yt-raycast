@@ -62,10 +62,13 @@ function applySeoToExactCloneDocument(html, siteSpec, page) {
   }
 
   if (/<html\b[^>]*>/i.test(withLang)) {
-    return withLang.replace(/<html\b[^>]*>/i, (match) => `${match}
+    return withLang.replace(
+      /<html\b[^>]*>/i,
+      (match) => `${match}
   <head>
     ${markup}
-  </head>`)
+  </head>`,
+    )
   }
 
   return `<!doctype html>
@@ -98,7 +101,9 @@ const SPLIDE_CDN_CSS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist
 const SPLIDE_CDN_JS = 'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js'
 
 function renderPageDocument(siteSpec, page, siteCssHref, siteMotionHref, useSwiper = false) {
-  const sections = (page.sections || []).map((section) => renderSectionHtml(section, siteSpec)).join('\n')
+  const sections = (page.sections || [])
+    .map((section) => renderSectionHtml(section, siteSpec))
+    .join('\n')
   const { htmlLang, markup } = renderSeoHeadMarkup(siteSpec, page)
   const indianFontMarkup = getLanguageFontMarkup(siteSpec._indiaMode)
   const cssHref = escapeHtml(siteCssHref)
@@ -178,7 +183,10 @@ export function renderHtmlProject(siteSpec) {
             rating: typeof p.rating === 'number' ? p.rating : undefined,
           }))
         }
-        if (section.type === 'featured-products' && (!section.items || section.items.length === 0)) {
+        if (
+          section.type === 'featured-products' &&
+          (!section.items || section.items.length === 0)
+        ) {
           section.items = siteSpec.ecommerce.products.slice(0, 4).map((p) => ({
             id: p.id,
             title: p.title,

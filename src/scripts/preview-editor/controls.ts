@@ -61,7 +61,11 @@ export const GRADIENT_PRESETS: { id: string; label: string; css: string }[] = [
   { id: 'soft', label: 'Soft', css: 'linear-gradient(135deg, var(--primary), var(--accent))' },
   { id: 'sunset', label: 'Sunset', css: 'linear-gradient(135deg, var(--accent), var(--primary))' },
   { id: 'ocean', label: 'Ocean', css: 'linear-gradient(180deg, var(--primary), var(--muted))' },
-  { id: 'emerald', label: 'Emerald', css: 'linear-gradient(135deg, var(--primary), var(--surface))' },
+  {
+    id: 'emerald',
+    label: 'Emerald',
+    css: 'linear-gradient(135deg, var(--primary), var(--surface))',
+  },
   { id: 'mono', label: 'Monochrome', css: 'linear-gradient(180deg, var(--surface), var(--muted))' },
 ]
 

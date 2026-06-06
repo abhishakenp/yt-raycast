@@ -27,11 +27,25 @@ function ShipLogo() {
         <path d="M22 38L26 48L30 38L26 40L22 38Z" fill="#888888" opacity="0.7" />
         <circle cx="26" cy="16" r="2" fill="#ededed" />
         <defs>
-          <linearGradient id="sfLaunchG1" x1="8" y1="4" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="sfLaunchG1"
+            x1="8"
+            y1="4"
+            x2="44"
+            y2="48"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop stopColor="#ffffff" />
             <stop offset="1" stopColor="#ededed" />
           </linearGradient>
-          <linearGradient id="sfLaunchG2" x1="14" y1="22" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="sfLaunchG2"
+            x1="14"
+            y1="22"
+            x2="38"
+            y2="40"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop stopColor="#888888" />
             <stop offset="1" stopColor="#555555" />
           </linearGradient>
@@ -46,7 +60,9 @@ export type OpenUIPreviewLaunchPhase = 'compose' | 'restore'
 /**
  * Same experiential thread as the main dashboard intro: warp canvas, launch SFX, logo beat, status line.
  */
-export function OpenUIPreviewLaunchLoading({ phase = 'compose' }: { phase?: OpenUIPreviewLaunchPhase } = {}) {
+export function OpenUIPreviewLaunchLoading({
+  phase = 'compose',
+}: { phase?: OpenUIPreviewLaunchPhase } = {}) {
   const lines = phase === 'restore' ? RESTORE_STATUS_LINE : STATUS_LINE
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)

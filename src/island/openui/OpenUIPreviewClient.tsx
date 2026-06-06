@@ -2,7 +2,15 @@ import OpenUIViewer from './OpenUIViewer'
 import { OpenUIPreviewLaunchLoading } from './OpenUIPreviewLaunchLoading'
 import { openUIPreviewReadyToDisplay } from '@/lib/openui-preview-gate'
 import { isTranslatableLocale } from '../../config/languages.js'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
 
 type OpenUIProviderConfig = Record<string, string | null>
 
@@ -227,7 +235,11 @@ export function OpenUIPreviewClient() {
     settledRef.current = false
     const ac = new AbortController()
 
-    const finalizeFromOpenUIPayload = (j: { source?: string; theme?: unknown; locale?: unknown }): boolean => {
+    const finalizeFromOpenUIPayload = (j: {
+      source?: string
+      theme?: unknown
+      locale?: unknown
+    }): boolean => {
       if (settledRef.current) return true
       const source = typeof j.source === 'string' ? j.source : ''
       if (!source) return false
@@ -304,9 +316,7 @@ export function OpenUIPreviewClient() {
         openuiReady?: boolean
         integrations?: OpenUISessionIntegrations
       }
-      setSessionIntegrations(
-        normalizeOpenUISessionIntegrations(session?.integrations ?? session),
-      )
+      setSessionIntegrations(normalizeOpenUISessionIntegrations(session?.integrations ?? session))
 
       const artifactOnDisk = Boolean(session.openuiReady)
 
@@ -331,7 +341,7 @@ export function OpenUIPreviewClient() {
             { signal: ac.signal },
           )
           if (htmlResponse.ok) {
-            const htmlData = await htmlResponse.json() as { html?: string }
+            const htmlData = (await htmlResponse.json()) as { html?: string }
             if (htmlData.html && htmlData.html.length > 100) {
               setFinal({ source: htmlData.html, theme: {} })
               setBootError(null)
@@ -423,7 +433,11 @@ export function OpenUIPreviewClient() {
           console.error('[WebSocket] Error:', error)
         }
         ws.onclose = (event) => {
-          console.log('[WebSocket] Closed:', { code: event.code, reason: event.reason, wasClean: event.wasClean })
+          console.log('[WebSocket] Closed:', {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean,
+          })
           if (closed) return
 
           // Generation already settled (stream_done / saved artifact shown): the close
@@ -439,7 +453,9 @@ export function OpenUIPreviewClient() {
           if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
             reconnectAttempts++
             const delay = BASE_RECONNECT_DELAY_MS * Math.pow(2, reconnectAttempts - 1)
-            console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
+            console.log(
+              `[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`,
+            )
             reconnectTimer = setTimeout(connect, delay)
           } else {
             console.error('[WebSocket] Max reconnection attempts reached. Giving up.')
@@ -492,8 +508,7 @@ export function OpenUIPreviewClient() {
             if (source) {
               console.log('[WebSocket] Chunk, source length:', source.length)
               setStreamText(source)
-            }
-            else if (token) setStreamText((current) => current + token)
+            } else if (token) setStreamText((current) => current + token)
             setIsStreaming(true)
             setLoadingSavedPreview(false)
             return
@@ -547,7 +562,8 @@ export function OpenUIPreviewClient() {
           }
           if (message.type === 'openui-error') {
             console.error('[WebSocket] Error:', message.error)
-            const error = typeof message.error === 'string' ? message.error : 'OpenUI generation failed'
+            const error =
+              typeof message.error === 'string' ? message.error : 'OpenUI generation failed'
             setBootError(error)
             setLoadingSavedPreview(false)
             setIsStreaming(false)
@@ -589,15 +605,12 @@ export function OpenUIPreviewClient() {
     fontFamily: 'var(--font-sans, system-ui, sans-serif)',
   }
 
-  const streamUiReady = useMemo(
-    () => openUIPreviewReadyToDisplay(streamText),
-    [streamText],
-  )
+  const streamUiReady = useMemo(() => openUIPreviewReadyToDisplay(streamText), [streamText])
 
   // Choose the live source once it has enough structure to render meaningfully.
   // Until the new stream passes the gate, keep showing the saved/previous `final`
   // so regen never blanks the screen back to a loader.
-  const liveSource = streamUiReady ? streamText : final?.source ?? ''
+  const liveSource = streamUiReady ? streamText : (final?.source ?? '')
   const liveTheme = viewerPalette
   const liveIsStreaming = streamUiReady && isStreaming
   const hasSource = liveSource.length > 0

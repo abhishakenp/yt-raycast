@@ -48,7 +48,14 @@ function buildLanguageMode(code, name, nativeName, script, knownEntry) {
     isIndian,
     // Backward compat: mirrors old indiaMode.language shape
     language: isIndian
-      ? { code, name, nativeName, fontFamily, skipFullTranslation, keywords: knownEntry?.keywords || [] }
+      ? {
+          code,
+          name,
+          nativeName,
+          fontFamily,
+          skipFullTranslation,
+          keywords: knownEntry?.keywords || [],
+        }
       : null,
   }
   return mode
@@ -62,17 +69,31 @@ function buildLanguageMode(code, name, nativeName, script, knownEntry) {
  * indiaMode shape (isIndian, language properties preserved).
  */
 export function resolveLanguageModeFromPreference(preferredLanguage) {
-  const requested = String(preferredLanguage || '').trim().toLowerCase()
+  const requested = String(preferredLanguage || '')
+    .trim()
+    .toLowerCase()
   if (requested && requested !== 'en') {
     if (isRomanizedIndicCode(requested)) {
       const romanized = lookupKnownLanguage(requested)
       if (romanized) {
-        return buildLanguageMode(romanized.code, romanized.name, romanized.nativeName, 'Latin', romanized)
+        return buildLanguageMode(
+          romanized.code,
+          romanized.name,
+          romanized.nativeName,
+          'Latin',
+          romanized,
+        )
       }
     }
     const known = KNOWN_LANGUAGES.find((l) => l.code === requested)
     if (known) {
-      return buildLanguageMode(known.code, known.name, known.nativeName, guessScript(known.fontFamily), known)
+      return buildLanguageMode(
+        known.code,
+        known.name,
+        known.nativeName,
+        guessScript(known.fontFamily),
+        known,
+      )
     }
     return buildLanguageMode(requested, requested, requested, 'Latin', null)
   }
@@ -82,7 +103,12 @@ export function resolveLanguageModeFromPreference(preferredLanguage) {
 export async function detectLanguage(prompt, preferredLanguage) {
   const fromPref = resolveLanguageModeFromPreference(preferredLanguage)
   if (fromPref.code !== 'en') return fromPref
-  if (String(preferredLanguage || '').trim().toLowerCase() === 'en') return ENGLISH_MODE
+  if (
+    String(preferredLanguage || '')
+      .trim()
+      .toLowerCase() === 'en'
+  )
+    return ENGLISH_MODE
   if (!prompt) return ENGLISH_MODE
 
   const romanHint = preferRomanizedBcp47FromSnippet(prompt)
@@ -153,13 +179,21 @@ Examples:
     if (!jsonMatch) return ENGLISH_MODE
 
     const parsed = JSON.parse(jsonMatch[0])
-    const code = String(parsed.code || 'en').trim().toLowerCase()
+    const code = String(parsed.code || 'en')
+      .trim()
+      .toLowerCase()
     if (code === 'en') return ENGLISH_MODE
 
     if (isRomanizedIndicCode(code)) {
       const romanized = lookupKnownLanguage(code)
       if (romanized) {
-        return buildLanguageMode(romanized.code, romanized.name, romanized.nativeName, 'Latin', romanized)
+        return buildLanguageMode(
+          romanized.code,
+          romanized.name,
+          romanized.nativeName,
+          'Latin',
+          romanized,
+        )
       }
     }
 

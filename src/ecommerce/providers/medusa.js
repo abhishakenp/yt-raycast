@@ -16,7 +16,8 @@ export class MedusaProvider {
   getClientCode(framework = 'nextjs') {
     const envPrefix = framework === 'react' ? 'import.meta.env.' : 'process.env.'
     const backendUrlVar = framework === 'react' ? 'VITE_MEDUSA_BACKEND_URL' : 'MEDUSA_BACKEND_URL'
-    const keyVar = framework === 'react' ? 'VITE_MEDUSA_PUBLISHABLE_KEY' : 'NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY'
+    const keyVar =
+      framework === 'react' ? 'VITE_MEDUSA_PUBLISHABLE_KEY' : 'NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY'
 
     return `import Medusa from '@medusajs/js-sdk'
 
@@ -104,6 +105,16 @@ export async function initiatePayment(cartId, providerId = 'pp_system_default') 
   }
 
   getInterface() {
-    return ['fetchProducts', 'fetchProduct', 'fetchCategories', 'createCart', 'addItem', 'getCart', 'checkout', 'listPaymentProviders', 'initiatePayment']
+    return [
+      'fetchProducts',
+      'fetchProduct',
+      'fetchCategories',
+      'createCart',
+      'addItem',
+      'getCart',
+      'checkout',
+      'listPaymentProviders',
+      'initiatePayment',
+    ]
   }
 }

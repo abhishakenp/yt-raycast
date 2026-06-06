@@ -18,7 +18,8 @@ export function routeToOpenUIFile(route = '/') {
 export function buildOpenUIManifest(siteSpec, entries = []) {
   const byRoute = new Map(entries.map((entry) => [entry.route || '/', entry]))
   const pages = (siteSpec?.pages || []).map((page, index) => {
-    const route = page.route || (index === 0 ? '/' : `/${slug(page.name || page.title || `page-${index}`)}`)
+    const route =
+      page.route || (index === 0 ? '/' : `/${slug(page.name || page.title || `page-${index}`)}`)
     const file = routeToOpenUIFile(route)
     const entry = byRoute.get(route) || {}
     return {
@@ -121,4 +122,3 @@ export function openUIArtifactsReady(workspace, siteSpec) {
   }
   return true
 }
-

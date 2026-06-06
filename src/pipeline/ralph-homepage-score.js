@@ -28,9 +28,15 @@ export const scoreRalphHomepage = (
   if (htmlLooksDegenerate(s, { prompt })) {
     const nova = explainNovaMarketingBarFailures(s)
     const bits = []
-    if (promptExpectsNovaDenseMarketing(prompt) && nova.length) bits.push(`Nova bar: ${nova.join('; ')}`)
+    if (promptExpectsNovaDenseMarketing(prompt) && nova.length)
+      bits.push(`Nova bar: ${nova.join('; ')}`)
     bits.push('Also satisfy valid HTML, no repetition walls, adequate structure tags.')
-    return { ok: false, score: 0, reasons: ['htmlLooksDegenerate', ...nova], feedback: bits.join(' ') }
+    return {
+      ok: false,
+      score: 0,
+      reasons: ['htmlLooksDegenerate', ...nova],
+      feedback: bits.join(' '),
+    }
   }
 
   const reasons = []
@@ -45,10 +51,13 @@ export const scoreRalphHomepage = (
   const minBands = siteSt === 'docs' ? 5 : 6
   if (bands >= minBands) score += 30
   else reasons.push(`section bands ${bands} (target >= ${minBands})`)
-if (/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) score += 25
+  if (/(?:cdn\.tailwindcss\.com|\/scripts\/tailwind-browser\.js)/i.test(s)) score += 25
   else reasons.push('missing Tailwind runtime (/scripts/tailwind-browser.js)')
   if (hookRe.test(s)) score += 25
-  else reasons.push('missing wired data-* hooks (nav, accordion, tabs, carousel, counter, pricing toggle, or storefront cart)')
+  else
+    reasons.push(
+      'missing wired data-* hooks (nav, accordion, tabs, carousel, counter, pricing toggle, or storefront cart)',
+    )
 
   if (refPath && existsSync(refPath)) {
     const ref = readFileSync(refPath, 'utf8')

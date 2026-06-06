@@ -11,8 +11,7 @@ const SOCIAL_HOST_RE =
   /(^|\.)((facebook|instagram|linkedin|youtube|youtu|x|twitter|tiktok|pinterest|threads|wa\.me)\.)/i
 const SEARCH_RESULT_RE =
   /title:"((?:\\.|[^"\\])*)",url:"(https?:\/\/[^"]+)"[\s\S]{0,1600}?description:"((?:\\.|[^"\\])*)"[\s\S]{0,800}?type:"search_result"/g
-const JSON_LD_RE =
-  /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+const JSON_LD_RE = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
 const META_RE = /<meta\b([^>]+?)>/gi
 const IMG_RE = /<img\b([^>]+?)>/gi
 const LINK_RE = /<link\b([^>]+?)>/gi
@@ -50,14 +49,61 @@ const BRAND_STOP_WORDS = new Set([
 // "a coffee shop", "an online store", "the website" are NOT brand-driven —
 // they should skip web resolution and fall through to LLM-only generation.
 const GENERIC_BUSINESS_NOUNS = new Set([
-  'agency', 'app', 'application', 'bar', 'blog', 'boutique', 'brand', 'business',
-  'cafe', 'coffee', 'clinic', 'club', 'college', 'company', 'dashboard',
-  'ecommerce', 'fitness', 'gallery', 'group', 'gym', 'homepage', 'hospital',
-  'hotel', 'institute', 'landing', 'library', 'marketplace', 'market', 'motel',
-  'museum', 'network', 'online', 'organization', 'page', 'platform', 'portfolio',
-  'project', 'pub', 'restaurant', 'salon', 'saas', 'school', 'service',
-  'services', 'shop', 'site', 'software', 'startup', 'store', 'studio', 'team',
-  'tool', 'university', 'web', 'website',
+  'agency',
+  'app',
+  'application',
+  'bar',
+  'blog',
+  'boutique',
+  'brand',
+  'business',
+  'cafe',
+  'coffee',
+  'clinic',
+  'club',
+  'college',
+  'company',
+  'dashboard',
+  'ecommerce',
+  'fitness',
+  'gallery',
+  'group',
+  'gym',
+  'homepage',
+  'hospital',
+  'hotel',
+  'institute',
+  'landing',
+  'library',
+  'marketplace',
+  'market',
+  'motel',
+  'museum',
+  'network',
+  'online',
+  'organization',
+  'page',
+  'platform',
+  'portfolio',
+  'project',
+  'pub',
+  'restaurant',
+  'salon',
+  'saas',
+  'school',
+  'service',
+  'services',
+  'shop',
+  'site',
+  'software',
+  'startup',
+  'store',
+  'studio',
+  'team',
+  'tool',
+  'university',
+  'web',
+  'website',
 ])
 
 const SOCIAL_NETWORKS = [
@@ -128,7 +174,9 @@ function stripTags(value = '') {
 
 function parseAttributes(raw = '') {
   const attrs = {}
-  for (const match of String(raw).matchAll(/([a-zA-Z_:.-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g)) {
+  for (const match of String(raw).matchAll(
+    /([a-zA-Z_:.-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g,
+  )) {
     const key = String(match[1] || '').toLowerCase()
     const value = decodeHtmlEntities(match[3] ?? match[4] ?? match[5] ?? '')
     attrs[key] = value
@@ -210,7 +258,11 @@ function scoreSearchResult(result, brandName, domainCounts = new Map()) {
   score += Math.round(diceCoefficient(brandName, hostname) * 3)
   score += Math.max(0, (domainCounts.get(hostname) || 0) - 1)
 
-  if (/(official|shop|boutique|wedding|bridal|store|legacy|heritage|contact)/i.test(result.description)) {
+  if (
+    /(official|shop|boutique|wedding|bridal|store|legacy|heritage|contact)/i.test(
+      result.description,
+    )
+  ) {
     score += 1
   }
   if (BLACKLISTED_PRIMARY_HOST_RE.test(`${hostname}.`)) score -= 6
@@ -271,7 +323,8 @@ export function extractOrganizationCandidate(prompt = '') {
   const quoted = input.match(/["“]([^"”]{3,80})["”]/)
   if (quoted) {
     const candidate = trimCandidate(quoted[1] || '')
-    if (candidate && candidate.length >= 3 && !looksLikeGenericNounPhrase(candidate)) return candidate
+    if (candidate && candidate.length >= 3 && !looksLikeGenericNounPhrase(candidate))
+      return candidate
   }
 
   const lines = input
@@ -499,7 +552,12 @@ function canonicalizeSocialUrl(url = '') {
 
     let canonicalParts = parts
 
-    if (network === 'instagram' || network === 'facebook' || network === 'x' || network === 'twitter') {
+    if (
+      network === 'instagram' ||
+      network === 'facebook' ||
+      network === 'x' ||
+      network === 'twitter'
+    ) {
       canonicalParts = parts.slice(0, 1)
     } else if (network === 'youtube') {
       canonicalParts = parts[0]?.startsWith('@') ? parts.slice(0, 1) : parts.slice(0, 2)
@@ -623,7 +681,12 @@ function collectPageSignals(page, brandName = '') {
       ...extractEmails(plainText),
       ...links
         .filter((item) => item.href.startsWith('mailto:'))
-        .map((item) => item.href.replace(/^mailto:/i, '').trim().toLowerCase()),
+        .map((item) =>
+          item.href
+            .replace(/^mailto:/i, '')
+            .trim()
+            .toLowerCase(),
+        ),
     ]).filter(Boolean),
     phones: uniqueValues([
       ...organizations.map((item) => normalizePhone(item.telephone || '')),
@@ -648,7 +711,8 @@ function collectPageSignals(page, brandName = '') {
 function collectRelevantSourceUrls(homepage, searchResults = []) {
   const candidates = []
   const homepageOrigin = getOrigin(homepage.url)
-  const linkKeywords = /(about|story|legacy|contact|visit|store|location|reach|bridal|collections?)/i
+  const linkKeywords =
+    /(about|story|legacy|contact|visit|store|location|reach|bridal|collections?)/i
   const fallbackPaths = [
     '/pages/about-us',
     '/pages/contact',
@@ -711,11 +775,7 @@ function buildBrandProfile({
     (item) => item.url,
   )
   const sourceUrls = dedupeBy(
-    [
-      officialUrl,
-      selectedResult?.url || '',
-      ...allSignals.map((item) => item.url),
-    ].filter(Boolean),
+    [officialUrl, selectedResult?.url || '', ...allSignals.map((item) => item.url)].filter(Boolean),
     (value) => value,
   )
 
@@ -758,7 +818,10 @@ export async function enrichBrandProfile(prompt, workspace, log = () => {}) {
 
   log(`  brand-profile: resolving ${explicitUrl || `"${brandName}"`} from the web`)
 
-  const brandfetch = await resolveBrandfetchBrandProfile({ query: brandName, timeoutMs: 5500 }).catch(() => null)
+  const brandfetch = await resolveBrandfetchBrandProfile({
+    query: brandName,
+    timeoutMs: 5500,
+  }).catch(() => null)
   if (brandfetch?.ok && brandfetch.logo?.src) {
     const profile = buildBrandProfile({
       brandName,
@@ -868,7 +931,8 @@ function buildFallbackBrandProfile(brandName) {
 function profileFromSignals(homepageSignals, extraSignals, brandName) {
   const all = [homepageSignals, ...(extraSignals || [])].filter(Boolean)
   const logoUrl = all.find((item) => item.logoUrl)?.logoUrl || ''
-  const officialName = all.find((item) => item.name && item.name.toLowerCase() !== 'home')?.name || brandName
+  const officialName =
+    all.find((item) => item.name && item.name.toLowerCase() !== 'home')?.name || brandName
   if (!logoUrl) return null
   return {
     kind: 'remote',
@@ -882,7 +946,10 @@ function profileFromSignals(homepageSignals, extraSignals, brandName) {
 function buildFallbackSvgLogo(name = '') {
   const safeName = String(name || '').trim() || 'Brand'
   const parts = safeName.split(/\s+/).filter(Boolean)
-  const initialsRaw = parts.slice(0, 2).map((p) => p[0] || '').join('')
+  const initialsRaw = parts
+    .slice(0, 2)
+    .map((p) => p[0] || '')
+    .join('')
   const initials = (initialsRaw || safeName.slice(0, 2)).toUpperCase()
   const hash = Array.from(safeName).reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) >>> 0, 7)
   const hue = hash % 360

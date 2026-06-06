@@ -20,7 +20,11 @@ function collectLinkedRoutes(siteSpec) {
     const pathOnly = h.split('?')[0].split('#')[0]
     set.add(normalizePath(pathOnly))
   }
-  for (const list of [siteSpec.navigation?.global, siteSpec.navigation?.footer, siteSpec.navigation?.ctas]) {
+  for (const list of [
+    siteSpec.navigation?.global,
+    siteSpec.navigation?.footer,
+    siteSpec.navigation?.ctas,
+  ]) {
     for (const a of list || []) addHref(a?.href)
   }
   for (const page of siteSpec.pages || []) {

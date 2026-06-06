@@ -1392,7 +1392,10 @@ if (heroCard) {
     const rect = heroCard.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
-    setHeroGlow(`${Math.max(0, Math.min(100, x)).toFixed(1)}%`, `${Math.max(0, Math.min(100, y)).toFixed(1)}%`)
+    setHeroGlow(
+      `${Math.max(0, Math.min(100, x)).toFixed(1)}%`,
+      `${Math.max(0, Math.min(100, y)).toFixed(1)}%`,
+    )
   })
 
   heroCard.addEventListener('pointerleave', () => {
@@ -1715,8 +1718,7 @@ sessionPageNext?.addEventListener('click', () => {
 window.addEventListener('popstate', () => {
   const params = new URLSearchParams(location.search)
   const page = Math.max(1, parseInt(params.get('page') || '1', 10) || 1)
-  const source: GallerySource =
-    params.get('source') === 'user' && currentUser ? 'user' : 'public'
+  const source: GallerySource = params.get('source') === 'user' && currentUser ? 'user' : 'public'
   if (source === 'user') {
     userGalleryPage = page
     void loadUserSessionsPage()

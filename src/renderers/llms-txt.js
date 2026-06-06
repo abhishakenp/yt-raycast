@@ -20,7 +20,11 @@ function llmsLine(name, url, note) {
   return n ? `- [${name}](${url}): ${n}` : `- [${name}](${url})`
 }
 
-export function renderShipFastLlmsTxt({ siteUrl, includeBlog = false, includeInstitutional = false }) {
+export function renderShipFastLlmsTxt({
+  siteUrl,
+  includeBlog = false,
+  includeInstitutional = false,
+}) {
   const base = normalizeSiteUrl(siteUrl || '')
   const link = (path, name, note) => llmsLine(name, base ? joinUrl(base, path) : path, note)
 
@@ -61,7 +65,8 @@ export function renderShipFastLlmsTxt({ siteUrl, includeBlog = false, includeIns
 }
 
 export function renderGeneratedSiteLlmsTxt(siteSpec) {
-  const siteName = String(siteSpec?.seo?.siteName || siteSpec?.projectName || 'Site').trim() || 'Site'
+  const siteName =
+    String(siteSpec?.seo?.siteName || siteSpec?.projectName || 'Site').trim() || 'Site'
   const siteUrl = normalizeSiteUrl(siteSpec?.seo?.siteUrl || '')
   const desc = String(siteSpec?.seo?.description || '').trim()
   const pages = (siteSpec?.pages || []).filter((p) => p?.seo?.noIndex !== true)

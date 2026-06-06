@@ -3,11 +3,15 @@ import { createIconRow } from '../controls'
 import type { EditorController } from '../shell'
 import type { TabContext, TabDef } from '../types'
 
-const ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 L9.2 6.4 L13.6 7.6 L10.4 10.8 L11.2 15.2 L8 12.8 L4.8 15.2 L5.6 10.8 L2.4 7.6 L6.8 6.4 Z"/></svg>'
+const ICON =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2 L9.2 6.4 L13.6 7.6 L10.4 10.8 L11.2 15.2 L8 12.8 L4.8 15.2 L5.6 10.8 L2.4 7.6 L6.8 6.4 Z"/></svg>'
 
-const ICON_EL = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="10" height="10" rx="1.5"/></svg>'
-const ICON_SECTION = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="4" rx="0.5"/><rect x="2" y="9" width="12" height="4" rx="0.5"/></svg>'
-const ICON_PAGE = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="10" height="12" rx="1"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg>'
+const ICON_EL =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="10" height="10" rx="1.5"/></svg>'
+const ICON_SECTION =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="4" rx="0.5"/><rect x="2" y="9" width="12" height="4" rx="0.5"/></svg>'
+const ICON_PAGE =
+  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="10" height="12" rx="1"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg>'
 
 function render(body: HTMLElement, ctx: TabContext): () => void {
   let scope: 'element' | 'section' | 'page' = 'element'
@@ -82,7 +86,12 @@ function render(body: HTMLElement, ctx: TabContext): () => void {
   body.appendChild(status)
 
   const result = document.createElement('div')
-  Object.assign(result.style, { display: 'none', flexDirection: 'column', gap: '6px', marginTop: '6px' })
+  Object.assign(result.style, {
+    display: 'none',
+    flexDirection: 'column',
+    gap: '6px',
+    marginTop: '6px',
+  })
   body.appendChild(result)
 
   function setStatus(text: string, isError?: boolean): void {

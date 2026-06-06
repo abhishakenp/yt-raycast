@@ -45,7 +45,10 @@ export function readDesignReferenceFingerprintFromWorkspace(workspace) {
 
 export function writeDesignReferencesFile(workspace, urls = [], notes = '') {
   if (!workspace || !Array.isArray(urls) || !urls.length) return
-  const list = urls.map((u) => String(u || '').trim()).filter(Boolean).slice(0, 4)
+  const list = urls
+    .map((u) => String(u || '').trim())
+    .filter(Boolean)
+    .slice(0, 4)
   if (!list.length) return
   const n = String(notes || '')
     .trim()

@@ -1,8 +1,8 @@
-import { escapeHtml } from "./escape-html"
-import type { SiteSettings } from "./sanity-site-settings"
+import { escapeHtml } from './escape-html'
+import type { SiteSettings } from './sanity-site-settings'
 
 export const applyPricingMainHtmlOverrides = (html: string, settings: SiteSettings) => {
-  if (!settings || typeof html !== "string") return html
+  if (!settings || typeof html !== 'string') return html
   let out = html
   if (settings.pricingHeroHeadline?.trim()) {
     const h = settings.pricingHeroHeadline.trim()

@@ -995,7 +995,10 @@ export function buildGlobalCss(theme = {}, layout = {}) {
   // through to system-ui because the font isn't loaded.
   const googleFontFamilies = [typography.heading, typography.body]
     .map((f) => String(f || '').trim())
-    .filter((f) => f && !/^(system-ui|sans-serif|serif|monospace|inherit|initial|arial|helvetica)$/i.test(f))
+    .filter(
+      (f) =>
+        f && !/^(system-ui|sans-serif|serif|monospace|inherit|initial|arial|helvetica)$/i.test(f),
+    )
   const fontImport = googleFontFamilies.length
     ? `@import url('https://fonts.googleapis.com/css2?${[...new Set(googleFontFamilies)]
         .map((f) => `family=${f.replace(/\s+/g, '+')}:wght@400;500;600;700`)
