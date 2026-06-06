@@ -81,5 +81,15 @@ export async function runHomepageOrchestrator(p: {
     throw new Error(firstError || 'orchestrator produced an empty program')
   }
 
+  if (firstError) {
+    throw new Error(firstError)
+  }
+
+  if (source.length <= STUB_PROGRAM_MAX_CHARS) {
+    throw new Error(
+      'Generated site is too small — the AI model likely failed. Check GROQ_API_KEY and restart the dev server after updating .env.',
+    )
+  }
+
   return { source, theme, locale, brand }
 }
