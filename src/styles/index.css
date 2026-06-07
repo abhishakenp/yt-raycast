@@ -2266,14 +2266,14 @@ body::before {
 }
 
 .logo-icon {
-  width: 39px;
-  height: 39px;
+  width: clamp(44px, 4vw, 52px);
+  height: clamp(44px, 4vw, 52px);
   filter: drop-shadow(0 0 18px rgba(38, 231, 255, 0.58));
 }
 
 .logo-text {
   font-family: var(--font-sans);
-  font-size: 31px;
+  font-size: clamp(42px, 4.2vw, 56px);
   font-weight: 800;
   letter-spacing: -0.055em;
   text-transform: none;
@@ -2372,17 +2372,18 @@ body::before {
 .launch-title {
   max-width: 640px;
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(50px, 4.7vw, 78px);
-  line-height: 0.98;
-  letter-spacing: -0.055em;
-  text-transform: uppercase;
-  color: var(--launch-ink);
+  font-family: var(--font-sans);
+  font-size: clamp(22px, 2.4vw, 34px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: rgba(221, 236, 255, 0.92);
   text-wrap: balance;
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6),
-    0 0 32px rgba(255, 255, 255, 0.16),
-    0 18px 44px rgba(0, 0, 0, 0.48);
+    0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 24px rgba(255, 255, 255, 0.1),
+    0 12px 32px rgba(0, 0, 0, 0.38);
 }
 
 .launch-stage {
@@ -2553,7 +2554,7 @@ body::before {
   }
 
   .logo-text {
-    font-size: 21px;
+    font-size: clamp(32px, 9vw, 40px);
     letter-spacing: -0.035em;
   }
 
@@ -2567,7 +2568,7 @@ body::before {
   }
 
   .launch-title {
-    font-size: clamp(40px, 12vw, 56px);
+    font-size: clamp(20px, 5.5vw, 28px);
   }
 
   .launch-stage {
