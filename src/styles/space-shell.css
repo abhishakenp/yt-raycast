@@ -58,6 +58,30 @@ html {
   -webkit-font-smoothing: antialiased;
   background: var(--stitch-bg);
   scroll-padding-top: 84px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+/* Transparent scrollbar gutters sitewide — stable gutter keeps layout steady;
+   transparent tracks avoid a visible colored band beside content. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: transparent;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track-piece {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Smooth scroll only when motion is welcome — always-on smooth scroll races

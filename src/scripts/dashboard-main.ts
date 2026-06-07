@@ -2787,21 +2787,25 @@ const INTRO_PLACEHOLDER_BACKGROUNDS = [
 ]
 
 const FUN_LOADING_MESSAGES = [
-  'Herding pixels',
-  'Teaching CSS to behave',
-  'Converting coffee to code',
-  'Persuading divs to align',
-  'Negotiating with browsers',
-  'Polishing the pixels',
-  'Warming up the servers',
-  'Counting to infinity',
-  'Defying gravity',
-  'Bending spacetime',
-  'Summoning layouts',
-  'Taming the wild markup',
-  'Optimizing the vibes',
-  'Calibrating the magic',
-  'Consulting the oracle',
+  'Rerouting auxiliary power from life support to CSS compiler...',
+  'Calibrating sub-orbital margin engines...',
+  'Warning: Gravity levels dropping below W3C specifications...',
+  'Negotiating with quantum flexbox layout nodes...',
+  'Injecting pure warp-drive vibes into the codebase...',
+  'Decoupling landing thrusters from the body margin...',
+  'AI is currently learning the difference between margin and padding...',
+  'Compressing hyperspace folders to fit into your browser...',
+  'Assembling glassmorphic control panels...',
+  'Powering up Pexels stock-photo thrusters...',
+  'Spinning up the anti-gravity visual generators...',
+  'Calculating trajectory to bypass Internet Explorer...',
+  'Evading space debris and unclosed div tags...',
+  'AI has entered the zone and is pair programming with itself...',
+  'Warming up the warp core using standard JavaScript array filters...',
+  'Stitching together parallel universes to compile your homepage...',
+  'Consulting the galactic manual for proper vertical centering...',
+  'Initializing rocket exhaust backdrop systems...',
+  'Refueling the rocket with high-octane Tailwind configurations...',
 ]
 
 let funMessageIndex = 0
@@ -2856,16 +2860,15 @@ function getIntroPhotoUrl(photo) {
 }
 
 function seedIntroMediaPreviews(photos = []) {
-  // Disabled - no media previews
-  return
   const orbit = document.getElementById('intro-media-orbit')
-  // Ignore photos parameter - we use placeholder rectangles instead of images
   if (!orbit) return
-  if (introMediaSeeded) return
-  introMediaSeeded = true
   orbit.innerHTML = ''
-  for (let i = 0; i < INTRO_MEDIA_LAYOUT.length; i++) {
-    const chip = document.createElement('span')
+  introMediaSeeded = true
+
+  const count = photos && photos.length ? Math.min(photos.length, INTRO_MEDIA_LAYOUT.length) : 4
+  
+  for (let i = 0; i < count; i++) {
+    const chip = document.createElement('div')
     const [x, y, rot, delay, dockX, dockY] = INTRO_MEDIA_LAYOUT[i]
     chip.className = 'intro-media-chip'
     chip.style.setProperty('--chip-x', x)
@@ -2874,8 +2877,17 @@ function seedIntroMediaPreviews(photos = []) {
     chip.style.setProperty('--chip-delay', delay)
     chip.style.setProperty('--dock-x', dockX)
     chip.style.setProperty('--dock-y', dockY)
-    // Use gradient backgrounds only - no images
+    
     chip.style.setProperty('--chip-bg', INTRO_PLACEHOLDER_BACKGROUNDS[i % INTRO_PLACEHOLDER_BACKGROUNDS.length])
+    
+    chip.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="media-placeholder-icon" style="width: 22px; height: 22px; color: #69f8ff; filter: drop-shadow(0 0 6px rgba(26, 184, 255, 0.8)); margin-bottom: 2px;">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+      <span style="font-size: 8px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 0 4px rgba(105, 248, 255, 0.4);">Pexels</span>
+    `
     orbit.appendChild(chip)
   }
 }
@@ -2899,7 +2911,7 @@ function syncIntroProgressFromTasks() {
 }
 
 function startIntro() {
-  // document.body.classList.add('intro-loading-active')
+  document.body.classList.add('intro-loading-active')
   resetIntroMediaPreviews()
   seedIntroMediaPreviews()
   funMessageIndex = 0 // Reset fun message index for new session
@@ -3065,6 +3077,12 @@ function exitIntro() {
   document.body.classList.add('dashboard-active')
   overlay.classList.add('exiting')
   wrap.classList.add('active')
+
+  const iframe = document.getElementById('preview-iframe')
+  if (iframe) {
+    animateRectanglesToSite(iframe)
+  }
+
   setTimeout(() => {
     overlay.classList.add('hidden')
     document.body.classList.remove('intro-loading-active')
@@ -3666,7 +3684,7 @@ function maybeRunIntroMediaFlip(iframe) {
 }
 
 // Animate placeholder rectangles to actual image positions when page loads
-function animateRectanglesToImages(iframe) {
+function animateRectanglesToSite(iframe) {
   if (introRectanglesAnimated) return
   introRectanglesAnimated = true
 
@@ -3679,15 +3697,17 @@ function animateRectanglesToImages(iframe) {
   } catch {
     // Cross-origin restriction - fade out rectangles instead
     orbit.querySelectorAll('.intro-media-chip').forEach((chip) => {
-      chip.style.transition = 'opacity 0.6s ease-out'
-      chip.style.opacity = '0'
+      if (chip instanceof HTMLElement) {
+        chip.style.transition = 'opacity 0.6s ease-out'
+        chip.style.opacity = '0'
+      }
     })
     return
   }
   if (!doc) return
 
-  const rectangles = [...orbit.querySelectorAll('.intro-media-chip')]
-  const images = [...doc.querySelectorAll('img')].slice(0, rectangles.length)
+  const rectangles = [...orbit.querySelectorAll('.intro-media-chip')] as HTMLElement[]
+  const images = [...doc.querySelectorAll('img')].slice(0, rectangles.length) as HTMLImageElement[]
 
   if (images.length === 0) {
     // No images found, fade out rectangles
@@ -3697,6 +3717,8 @@ function animateRectanglesToImages(iframe) {
     })
     return
   }
+
+  const iframeRect = iframe.getBoundingClientRect()
 
   // Map rectangles to images by index
   const pairs = rectangles.map((rect, index) => ({
@@ -3715,51 +3737,61 @@ function animateRectanglesToImages(iframe) {
     const rectRect = rect.getBoundingClientRect()
     const imgRect = target.getBoundingClientRect()
 
-    // Calculate position relative to viewport
-    const fromX = rectRect.left + rectRect.width / 2
-    const fromY = rectRect.top + rectRect.height / 2
-    const toX = imgRect.left + imgRect.width / 2
-    const toY = imgRect.top + imgRect.height / 2
+    // Calculate position relative to parent document body
+    const fromX = rectRect.left
+    const fromY = rectRect.top
+    const toX = iframeRect.left + imgRect.left
+    const toY = iframeRect.top + imgRect.top
 
     // Create a clone for animation
     const clone = rect.cloneNode(true) as HTMLElement
     clone.style.position = 'fixed'
-    clone.style.left = `${rectRect.left}px`
-    clone.style.top = `${rectRect.top}px`
+    clone.style.left = `${fromX}px`
+    clone.style.top = `${fromY}px`
     clone.style.width = `${rectRect.width}px`
     clone.style.height = `${rectRect.height}px`
     clone.style.margin = '0'
     clone.style.zIndex = '9999'
     clone.style.pointerEvents = 'none'
+    clone.style.animation = 'none' // Disable initial animations on clone
     document.body.appendChild(clone)
 
     // Hide original
     rect.style.opacity = '0'
 
+    // Set target image opacity to 0 and apply transition
+    const originalOpacity = target.style.opacity || '1'
+    target.style.opacity = '0'
+    target.style.transition = 'opacity 0.6s ease-out'
+
     // Animate clone to target position
     const anim = clone.animate(
       [
         {
-          left: `${rectRect.left}px`,
-          top: `${rectRect.top}px`,
+          left: `${fromX}px`,
+          top: `${fromY}px`,
           width: `${rectRect.width}px`,
           height: `${rectRect.height}px`,
           opacity: 1,
           transform: 'rotate(0deg)',
         },
         {
-          left: `${imgRect.left}px`,
-          top: `${imgRect.top}px`,
+          left: `${toX}px`,
+          top: `${toY}px`,
           width: `${imgRect.width}px`,
           height: `${imgRect.height}px`,
-          opacity: 0,
+          opacity: 0.2,
           transform: 'rotate(0deg)',
         },
       ],
-      { duration: 800, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' },
+      { duration: 850, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' }
     )
 
-    anim.onfinish = () => clone.remove()
+    anim.onfinish = () => {
+      // Fade in the target image in iframe
+      target.style.opacity = originalOpacity
+      clone.remove()
+    }
   })
 }
 
@@ -4734,7 +4766,7 @@ function connectSSE() {
         if (drawerOpen && ev.route === '/') expandPreviewForLiveOpenUI()
         // Fallback: animate rectangles if first-paint didn't fire
         const iframe = document.getElementById('preview-iframe')
-        if (iframe && !introRectanglesAnimated) animateRectanglesToImages(iframe)
+        if (iframe && !introRectanglesAnimated) animateRectanglesToSite(iframe)
         break
 
       case 'run_completed':
@@ -5033,7 +5065,7 @@ window.addEventListener('message', (event) => {
     expandPreviewForLiveOpenUI()
     // Animate placeholder rectangles to actual image positions
     const iframe = document.getElementById('preview-iframe')
-    if (iframe) animateRectanglesToImages(iframe)
+    if (iframe) animateRectanglesToSite(iframe)
     return
   }
   if (data.type === 'SF_PREVIEW_TOOLS_READY') {

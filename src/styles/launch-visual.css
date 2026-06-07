@@ -7,7 +7,10 @@
 
 .launch-hero .launch-visual {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: calc(-1 * (100vw - 100%) / 2);
   z-index: 0;
   overflow: visible;
   pointer-events: none;
@@ -15,22 +18,23 @@
 
 .launch-visual .launch-rocket {
   position: absolute;
-  left: -6%;
-  top: -60px;
-  right: auto;
-  bottom: auto;
+  top: -40px;
+  right: -60px;
+  bottom: -40px;
+  left: auto;
   z-index: -1;
   display: block;
-  width: min(122%, 760px);
+  width: auto;
   max-width: none;
-  min-width: 0;
-  height: auto;
+  height: calc(100% + 80px);
   margin: 0;
+  object-fit: contain;
+  object-position: right center;
   pointer-events: none;
   user-select: none;
   opacity: 1;
-  transform: translate3d(0, 0, 0);
-  transform-origin: 82% 78%;
+  transform: scale(1.1);
+  transform-origin: right center;
   filter: drop-shadow(20px -10px 42px rgba(223, 53, 255, 0.18));
 }
 
@@ -353,12 +357,16 @@
   }
 
   .launch-visual .launch-rocket {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    width: min(100%, 680px);
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
     max-width: 100%;
-    margin: 28px auto 0;
+    height: 100%;
+    margin: 0;
+    object-fit: contain;
+    object-position: top right;
   }
 }
 
@@ -368,8 +376,11 @@
   }
 
   .launch-visual .launch-rocket {
-    width: min(112%, 620px);
-    margin-top: 18px;
+    top: 0;
+    height: 100%;
+    max-width: 100%;
+    margin: 0;
+    object-position: top right;
   }
 
   .launch-flow {

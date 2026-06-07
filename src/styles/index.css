@@ -1682,11 +1682,12 @@ button.share-icon.pill {
 
 .session-thumbnail img.session-thumb-img {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 8px);
   object-fit: cover;
   object-position: top center;
   display: block;
   pointer-events: none;
+  margin-top: 8px;
 }
 
 .session-badges {
@@ -2296,7 +2297,7 @@ body::before {
   justify-content: center;
   align-items: start;
   min-height: 100svh;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 0;
   padding: clamp(82px, 7vw, 102px) clamp(42px, 3.4vw, 58px) clamp(32px, 5vw, 62px) 0;
   isolation: isolate;

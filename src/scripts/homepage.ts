@@ -1841,12 +1841,18 @@ function renderSessions(sessions: SessionItem[]): void {
   section.style.display = 'block'
 
   const scaleIframes = (): void => {
-    list.querySelectorAll<HTMLElement>('.session-thumbnail iframe').forEach((iframe) => {
+    list.querySelectorAll<HTMLIFrameElement>('.session-thumbnail iframe').forEach((iframe) => {
       const parent = iframe.parentElement as HTMLElement | null
       const containerWidth = parent?.offsetWidth || 0
-      if (!containerWidth) return
-      const scale = containerWidth / 1280
+      const containerHeight = parent?.offsetHeight || 0
+      if (!containerWidth || !containerHeight) return
+      const scale = Math.max(containerWidth / 1280, containerHeight / 800)
+      const scaledWidth = 1280 * scale
+      const left = (containerWidth - scaledWidth) / 2
+      iframe.style.left = `${left}px`
+      iframe.style.top = '0'
       iframe.style.transform = `scale(${scale})`
+      iframe.style.transformOrigin = 'top left'
     })
   }
 
