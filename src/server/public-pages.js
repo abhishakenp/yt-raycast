@@ -364,14 +364,14 @@ export function renderHomePage(siteSettings = null) {
       ${renderLogo()}
       ${heroBlock}
 
-      <section class="launch-hero" aria-label="Instant AI websites">
+      <section class="launch-hero" aria-label="Print your mind in seconds">
         <div class="launch-visual" aria-hidden="true">
           <img class="launch-rocket" src="/assets/launch-scene.png" alt="" loading="eager" decoding="async" />
         </div>
 
         <div class="launch-copy">
           <p class="launch-eyebrow">Prompt. Generate. Launch.</p>
-          <h2 class="launch-title">Instant AI Websites</h2>
+          <h2 class="launch-title">Print your mind<br>in seconds</h2>
         </div>
 
         <div class="launch-stage">
