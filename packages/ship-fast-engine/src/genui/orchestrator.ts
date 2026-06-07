@@ -76,9 +76,10 @@ function oneLine(d: string): string {
 }
 
 function pageBlockCatalog(): Array<{ name: string; description: string }> {
-  return componentCatalog()
+  const catalog = componentCatalog()
     .filter((c) => c.name in BLOCK_TAXONOMY && typeof c.description === "string" && c.description)
     .map((c) => ({ name: c.name, description: oneLine(c.description as string) }))
+  return catalog
 }
 
 // Derive a passable brand from the raw prompt when the model gives us none.

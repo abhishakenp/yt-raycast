@@ -3066,7 +3066,6 @@ function setPhaseLabel(text) {
 }
 
 function exitIntro() {
-  console.log('[DEBUG] exitIntro called, introActive:', introActive)
   if (!introActive) return
   introActive = false
   introWarpCanvas.stop()
@@ -3093,7 +3092,6 @@ function exitIntro() {
 // Keep the intro launch loader on screen and load the preview behind it; the loader
 // is dismissed later by resolveIntroExit() on first paint (or a terminal fallback).
 function deferIntroExit() {
-  console.log('[DEBUG] deferIntroExit called, setting introExitPending = true')
   introExitPending = true
   openDrawer() // boots the preview iframe BEHIND the still-visible intro overlay
   if (introExitSafetyTimer) clearTimeout(introExitSafetyTimer)
@@ -3103,7 +3101,6 @@ function deferIntroExit() {
 
 // Dismiss the deferred intro loader, fading straight into the now-painted preview.
 function resolveIntroExit() {
-  console.log('[DEBUG] resolveIntroExit called, introExitPending:', introExitPending, 'introActive:', introActive)
   if (!introExitPending) return
   introExitPending = false
   if (introExitSafetyTimer) {
@@ -4590,11 +4587,9 @@ hydrateCurrentPalette()
 // ─── SSE: Connect to server ─────────────────────────
 function connectSSE() {
   const SSE_URL = `/api/sessions/${SESSION_ID}/stream`
-  console.log('[DEBUG] Connecting to SSE:', SSE_URL)
   eventSource = new EventSource(SSE_URL)
 
   eventSource.onopen = () => {
-    console.log('[DEBUG] SSE connection opened')
     wsConnected = true
     debugLog('sse_connected', null)
     if (!introActive && !hydratedComplete) {
@@ -4603,7 +4598,7 @@ function connectSSE() {
   }
 
   eventSource.onerror = (error) => {
-    console.log('[DEBUG] SSE connection error:', error)
+    console.warn('[SSE] Connection error', error)
   }
 
   eventSource.addEventListener('message', (e) => {
@@ -4613,7 +4608,6 @@ function connectSSE() {
     } catch {
       return
     }
-    console.log('[DEBUG] SSE message received, type:', ev.type)
     debugLog(ev.type, ev)
 
     switch (ev.type) {
@@ -4735,7 +4729,6 @@ function connectSSE() {
         break
 
       case 'deployed':
-        console.log('[DEBUG] deployed event received, calling resolveIntroExit')
         renderDeploymentState({ slug: ev.slug, url: ev.url, deployedAt: ev.deployedAt })
         resolveIntroExit()
         break
@@ -4872,27 +4865,23 @@ function connectSSE() {
   })
 
   eventSource.addEventListener('deployed', (e) => {
-    console.log('[DEBUG] deployed named event received')
     let ev
     try {
       ev = JSON.parse(e.data)
     } catch {
       return
     }
-    console.log('[DEBUG] deployed event parsed, calling resolveIntroExit')
     renderDeploymentState({ slug: ev.slug, url: ev.url, deployedAt: ev.deployedAt })
     resolveIntroExit()
   })
 
   eventSource.addEventListener('openui_stream_chunk', (e) => {
-    console.log('[DEBUG] openui_stream_chunk named event received')
     let ev
     try {
       ev = JSON.parse(e.data)
     } catch {
       return
     }
-    console.log('[DEBUG] openui_stream_chunk parsed, calling resolveIntroExit')
     hasSeenLiveUpdate = true
     syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
     setIntroProgress(0.86)
