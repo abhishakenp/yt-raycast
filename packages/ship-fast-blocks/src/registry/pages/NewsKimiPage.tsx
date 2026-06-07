@@ -3,6 +3,7 @@ import { defineComponent } from "@openuidev/react-lang"
 import { cn } from "#/lib/utils.ts"
 import { useNavigate } from "#/lib/use-navigate.tsx"
 import { Image } from "#/lib/img.tsx"
+import { useState } from "react"
 
 /**
  * NewsKimiPage — a complete, self-contained NEWS / EDITORIAL homepage.

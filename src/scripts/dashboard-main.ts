@@ -4884,6 +4884,21 @@ function connectSSE() {
     resolveIntroExit()
   })
 
+  eventSource.addEventListener('openui_stream_chunk', (e) => {
+    console.log('[DEBUG] openui_stream_chunk named event received')
+    let ev
+    try {
+      ev = JSON.parse(e.data)
+    } catch {
+      return
+    }
+    console.log('[DEBUG] openui_stream_chunk parsed, calling resolveIntroExit')
+    hasSeenLiveUpdate = true
+    syncOpenUIActiveClass({ preferredExportTarget: 'openui', tasks })
+    setIntroProgress(0.86)
+    resolveIntroExit()
+  })
+
   eventSource.onerror = () => {
     wsConnected = false
     debugLog('sse_disconnected', null)

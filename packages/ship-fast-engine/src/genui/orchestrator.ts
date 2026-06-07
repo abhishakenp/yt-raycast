@@ -404,6 +404,7 @@ export async function* generateUI(
       let plan: Plan
       let usedFallbackPlan = false
       let moduleFailureCount = 0
+      console.log(`[KIMI ORCHESTRATOR] Starting plan generation for prompt:`, prompt.slice(0, 200))
       try {
         const raw = await generateText(
           modelId,
@@ -413,6 +414,8 @@ export async function* generateUI(
           2,
         )
         plan = parsePlan(raw, rng, prompt)
+        console.log(`[KIMI ORCHESTRATOR] Plan generated: brand=${plan.brand} theme=${plan.theme} pages=${plan.pages.length}`)
+        console.log(`[KIMI ORCHESTRATOR] Pages:`, plan.pages.map(p => ({ id: p.id, label: p.label, block: p.block })))
       } catch (planErr) {
         if (isHardLlmFailure(planErr)) {
           ch.push({ type: "error", message: formatLlmFailureMessage(planErr) })
@@ -421,6 +424,7 @@ export async function* generateUI(
         console.warn("[genui] plan call failed, using fallback:", planErr)
         plan = fallbackPlan(prompt, rng)
         usedFallbackPlan = true
+        console.log(`[KIMI ORCHESTRATOR] Using fallback plan: brand=${plan.brand} theme=${plan.theme}`)
       }
 
       // Emit the chosen theme ASAP so the preview can apply it before content lands.
@@ -431,6 +435,7 @@ export async function* generateUI(
       // chosen block is an auth block: render just that screen, no fan-out.
       const homeBlock = plan.pages[0].block
       if (plan.pages.length === 1 && BLOCK_TAXONOMY[homeBlock]?.category === "auth") {
+        console.log(`[KIMI ORCHESTRATOR] AUTH single-page mode: block=${homeBlock}`)
         ch.push({ type: "status", message: "Building sign-in…" })
         ch.push({ type: "skeleton", text: "" })
         ch.push({ type: "plan", ids: ["root"] })
@@ -447,12 +452,14 @@ export async function* generateUI(
           )
           const safe = stripFences(text)
           const ok = /(^|\n)\s*root\s*=\s*\w+\(/.test(safe)
+          console.log(`[KIMI ORCHESTRATOR] AUTH page generated: length=${safe.length} valid=${ok}`)
           ch.push({
             type: "module",
             id: "root",
             text: ok ? safe : `root = ${homeBlock}(${JSON.stringify(plan.brand)})`,
           })
         } catch {
+          console.log(`[KIMI ORCHESTRATOR] AUTH page generation failed, using fallback`)
           ch.push({
             type: "module",
             id: "root",
@@ -477,14 +484,17 @@ export async function* generateUI(
       // 4. Fan out ALL pages in parallel.
       ch.push({ type: "plan", ids })
       ch.push({ type: "status", message: `Building ${pages.length} pages in parallel…` })
+      console.log(`[KIMI ORCHESTRATOR] Starting parallel page generation: ${pages.length} pages`)
 
       const running = new Set<Promise<void>>()
       let next = 0
       const startOne = (page: PlannedPage) => {
+        console.log(`[KIMI ORCHESTRATOR] Starting page generation: id=${page.id} label=${page.label} block=${page.block}`)
         ch.push({ type: "module_start", id: page.id })
         // No valid kimi block for this page -> emit the server-authored unstyled
         // "Coming soon" placeholder node directly. No model call, no ComingSoon block.
         if (!isKnownBlock(page.block)) {
+          console.log(`[KIMI ORCHESTRATOR] Unknown block for page ${page.id}, using placeholder`)
           ch.push({ type: "module", id: page.id, text: placeholderNode(page.id), failed: true })
           return
         }
@@ -500,9 +510,11 @@ export async function* generateUI(
           .then((text) => {
             const { text: safe, failed } = validateModule(page, text, plan.brand, labels)
             if (failed) moduleFailureCount += 1
+            console.log(`[KIMI ORCHESTRATOR] Page ${page.id} generated: length=${safe.length} failed=${failed}`)
             ch.push({ type: "module", id: page.id, text: safe, failed })
           })
           .catch((moduleErr) => {
+            console.log(`[KIMI ORCHESTRATOR] Page ${page.id} generation failed:`, moduleErr)
             if (isHardLlmFailure(moduleErr)) {
               moduleFailureCount += 1
               ch.push({
@@ -544,6 +556,7 @@ export async function* generateUI(
         moduleFailureCount >= pages.length &&
         (usedFallbackPlan || Date.now() - startedAt < 2_000)
       ) {
+        console.log(`[KIMI ORCHESTRATOR] All pages failed, aborting`)
         ch.push({
           type: "error",
           message:
@@ -553,7 +566,9 @@ export async function* generateUI(
       }
 
       // 5. done.
-      ch.push({ type: "done", modules: pages.length, ms: Date.now() - startedAt })
+      const elapsed = Date.now() - startedAt
+      console.log(`[KIMI ORCHESTRATOR] Generation complete: modules=${pages.length} elapsed=${elapsed}ms failures=${moduleFailureCount}`)
+      ch.push({ type: "done", modules: pages.length, ms: elapsed })
     } catch (e) {
       const err = e as { name?: string; message?: string }
       if (err?.name !== "AbortError") {

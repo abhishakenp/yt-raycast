@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useCallback, type ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useRef, useCallback, useState, type ReactNode } from "react";
 import { useQuery } from "@ship-fast/blocks";
 import { translateOnDevice } from "./chrome-translator";
 
