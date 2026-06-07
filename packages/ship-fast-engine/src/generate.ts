@@ -48,6 +48,12 @@ async function once(
   const onAbort = () => ac.abort()
   signal.addEventListener("abort", onAbort, { once: true })
   try {
+    const systemPreview = system.length > 500 ? system.slice(0, 500) + `... (${system.length} chars)` : system
+    const userPreview = user.length > 500 ? user.slice(0, 500) + `... (${user.length} chars)` : user
+    console.log(`[KIMI REQUEST] model=${modelId}`)
+    console.log(`[KIMI REQUEST] system:`, systemPreview)
+    console.log(`[KIMI REQUEST] user:`, userPreview)
+
     const stream =
       getProvider(modelId) === "talaas"
         ? talaasChat(modelId, system, user, ac.signal)
@@ -64,6 +70,11 @@ async function once(
       else if (chunk.type === "RUN_ERROR") runError = chunk.message ?? "run error"
     }
     if (runError && !text.trim()) throw new Error(runError)
+
+    const responsePreview = text.length > 500 ? text.slice(0, 500) + `... (${text.length} chars)` : text
+    console.log(`[KIMI RESPONSE] model=${modelId} length=${text.length}`)
+    console.log(`[KIMI RESPONSE] content:`, responsePreview)
+
     return text
   } finally {
     signal.removeEventListener("abort", onAbort)
@@ -91,10 +102,12 @@ export async function generateText(
       if ((e as { name?: string })?.name === "AbortError") throw e
       last = e
       const msg = String((e as { message?: string })?.message ?? e)
+      console.log(`[KIMI ERROR] model=${modelId} attempt=${attempt + 1}/${retries + 1} error:`, msg)
       // non-retryable hard error -> fail fast
       if (!RETRYABLE.test(msg)) throw e
     }
     if (attempt < retries) {
+      console.log(`[KIMI RETRY] model=${modelId} attempt=${attempt + 1}/${retries + 1}`)
       onRetry?.(attempt + 1)
       await sleep(Math.min(8000, 600 * 2 ** attempt) + Math.floor(Math.random() * 300), signal)
     }
