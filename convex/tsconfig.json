@@ -12,7 +12,12 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@ship-fast/engine/genui/orchestrator.ts": ["./types/engine-genui-orchestrator.d.ts"],
+      "@ship-fast/engine/genui/model-list.ts": ["./types/engine-genui-model-list.d.ts"]
+    }
   },
   "include": ["./**/*"],
   "exclude": ["./_generated"]

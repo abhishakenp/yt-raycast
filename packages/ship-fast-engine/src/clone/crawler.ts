@@ -1,3 +1,5 @@
+"use node"
+
 import { URL } from "url"
 import { parseHTML } from "linkedom"
 import type { PageGraph, CloneOptions } from "./types.ts"

@@ -1,3 +1,5 @@
+"use node"
+
 import { URL } from "url"
 import { lookup } from "dns/promises"
 import { isIP } from "net"

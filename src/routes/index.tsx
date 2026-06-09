@@ -124,6 +124,7 @@ function StartHome() {
     }
 
     function resize() {
+      if (!canvas) return
       width = Math.max(1, window.innerWidth)
       height = Math.max(1, window.innerHeight)
       canvas.width = Math.floor(width * dpr)
