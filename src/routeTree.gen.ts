@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionSessionIdRouteImport } from './routes/session.$sessionId'
 import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessionId'
-import { Route as ApiStartSessionsSessionIdDownloadTargetRouteImport } from './routes/api/start/sessions/$sessionId/download/$target'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,58 +28,35 @@ const GenerateSessionIdRoute = GenerateSessionIdRouteImport.update({
   path: '/generate/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiStartSessionsSessionIdDownloadTargetRoute =
-  ApiStartSessionsSessionIdDownloadTargetRouteImport.update({
-    id: '/api/start/sessions/$sessionId/download/$target',
-    path: '/api/start/sessions/$sessionId/download/$target',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
-  '/api/start/sessions/$sessionId/download/$target': typeof ApiStartSessionsSessionIdDownloadTargetRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
-  '/api/start/sessions/$sessionId/download/$target': typeof ApiStartSessionsSessionIdDownloadTargetRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
   '/session/$sessionId': typeof SessionSessionIdRoute
-  '/api/start/sessions/$sessionId/download/$target': typeof ApiStartSessionsSessionIdDownloadTargetRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/generate/$sessionId'
-    | '/session/$sessionId'
-    | '/api/start/sessions/$sessionId/download/$target'
+  fullPaths: '/' | '/generate/$sessionId' | '/session/$sessionId'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/generate/$sessionId'
-    | '/session/$sessionId'
-    | '/api/start/sessions/$sessionId/download/$target'
-  id:
-    | '__root__'
-    | '/'
-    | '/generate/$sessionId'
-    | '/session/$sessionId'
-    | '/api/start/sessions/$sessionId/download/$target'
+  to: '/' | '/generate/$sessionId' | '/session/$sessionId'
+  id: '__root__' | '/' | '/generate/$sessionId' | '/session/$sessionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GenerateSessionIdRoute: typeof GenerateSessionIdRoute
   SessionSessionIdRoute: typeof SessionSessionIdRoute
-  ApiStartSessionsSessionIdDownloadTargetRoute: typeof ApiStartSessionsSessionIdDownloadTargetRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -106,13 +82,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GenerateSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/start/sessions/$sessionId/download/$target': {
-      id: '/api/start/sessions/$sessionId/download/$target'
-      path: '/api/start/sessions/$sessionId/download/$target'
-      fullPath: '/api/start/sessions/$sessionId/download/$target'
-      preLoaderRoute: typeof ApiStartSessionsSessionIdDownloadTargetRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -120,8 +89,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GenerateSessionIdRoute: GenerateSessionIdRoute,
   SessionSessionIdRoute: SessionSessionIdRoute,
-  ApiStartSessionsSessionIdDownloadTargetRoute:
-    ApiStartSessionsSessionIdDownloadTargetRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

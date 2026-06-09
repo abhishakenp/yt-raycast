@@ -108,3 +108,48 @@ export const claimLegacySession = mutation({
     return session._id
   },
 })
+
+export const saveProgramOverride = mutation({
+  args: {
+    sessionId: v.id('sessions'),
+    program: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.sessionId, {
+      programOverride: args.program,
+    })
+  },
+})
+
+export const deleteSession = mutation({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    const userId = identity?.subject
+
+    const session = await ctx.db.get(args.sessionId)
+    if (!session) throw new Error('Session not found')
+    if (session.userId && session.userId !== userId) throw new Error('Not authorized')
+
+    await ctx.db.delete(args.sessionId)
+  },
+})
+
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    const userId = identity?.subject
+
+    const sessions = await ctx.db
+      .query('sessions')
+      .filter((q) => q.eq(q.field('userId'), userId ?? null))
+      .order('desc', 'createdAt')
+      .take(20)
+      .collect()
+
+    return sessions
+  },
+})
