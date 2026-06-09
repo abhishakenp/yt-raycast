@@ -198,6 +198,27 @@ export function createSession(baseDir, prompt, userId, options = {}) {
     }
   }
 
+  // Persist prompt to disk (required for filesystem-session-repository)
+  try {
+    writeFileSync(join(workspace, 'prompt.txt'), prompt, 'utf8')
+  } catch {
+    /* ignore */
+  }
+
+  // Persist createdAt to disk
+  try {
+    writeFileSync(join(workspace, 'createdAt.txt'), String(createdAt), 'utf8')
+  } catch {
+    /* ignore */
+  }
+
+  // Persist empty tasks.json (required for filesystem-session-repository)
+  try {
+    writeFileSync(join(workspace, 'tasks.json'), JSON.stringify([]), 'utf8')
+  } catch {
+    /* ignore */
+  }
+
   // Load alternativeDesign if it exists
   let alternativeDesign = null
   try {
@@ -899,6 +920,12 @@ export function makeSessionState(session) {
   const setTasks = (tasks) => {
     session.tasks = tasks
     broadcast({ type: 'tasks_loaded', tasks })
+    // Persist tasks to disk (required for filesystem-session-repository)
+    try {
+      writeFileSync(join(session.workspace, 'tasks.json'), JSON.stringify({ tasks }), 'utf8')
+    } catch {
+      /* ignore */
+    }
   }
 
   const setSiteSpec = (siteSpec) => {

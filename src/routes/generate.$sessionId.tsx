@@ -923,7 +923,7 @@ function GenerateWorkspace() {
         <TopBar
           id={sessionId}
           prompt={session.prompt}
-          moduleCount={readiness.moduleCount}
+          moduleCount={readiness.taskCount}
           elapsed={readiness.elapsed}
           themeName={selectedTheme}
           isDark={isDark}
@@ -944,6 +944,34 @@ function GenerateWorkspace() {
           onToggleAgentation={handleToggleAgentation}
         />
 
+        <div className="generate-preview-body">
+        <div className="generate-preview-main">
+        {hasPreview ? (
+          <iframe
+            ref={iframeRef}
+            className="generate-preview-frame"
+            title={`Preview for ${session.prompt || session.id}`}
+            src={hasLocalPreview ? undefined : links.preview}
+            srcDoc={hasLocalPreview ? currentPreviewHtml : undefined}
+          />
+        ) : null}
+
+        {aiSelection && (
+          <AIPromptBox
+            text={aiSelection.text}
+            rect={aiSelection.rect}
+            onSubmit={handleAIRewriteSubmit}
+            onCancel={() => setAiSelection(null)}
+            isLoading={rewriteStatus === 'rewriting'}
+          />
+        )}
+
+        {!hasPreview ? (
+          <IntroLoader phase="compose" progress={readiness.taskCount} />
+        ) : null}
+        </div>{/* end generate-preview-main */}
+
+        <aside className="generate-panel">
         {editMode && hasLocalPreview ? (
           <form
             className="edit-toolbar"
@@ -1279,29 +1307,8 @@ function GenerateWorkspace() {
           </section>
         ) : null}
 
-        {hasPreview ? (
-          <iframe
-            ref={iframeRef}
-            className="generate-preview-frame"
-            title={`Preview for ${session.prompt || session.id}`}
-            src={hasLocalPreview ? undefined : links.preview}
-            srcDoc={hasLocalPreview ? currentPreviewHtml : undefined}
-          />
-        ) : null}
-
-        {aiSelection && (
-          <AIPromptBox
-            text={aiSelection.text}
-            rect={aiSelection.rect}
-            onSubmit={handleAIRewriteSubmit}
-            onCancel={() => setAiSelection(null)}
-            isLoading={rewriteStatus === 'rewriting'}
-          />
-        )}
-
-        {!hasPreview ? (
-          <IntroLoader phase="compose" progress={readiness.moduleCount} />
-        ) : null}
+        </aside>{/* end generate-panel */}
+        </div>{/* end generate-preview-body */}
       </section>
     </main>
   )
