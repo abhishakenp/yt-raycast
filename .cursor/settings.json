@@ -3,5 +3,10 @@
     "openMode": "browser",
     "autoOpenOnStart": false,
     "defaultUrl": "http://localhost:7420/"
+  },
+  "plugins": {
+    "convex": {
+      "enabled": true
+    }
   }
 }

@@ -3,8 +3,7 @@
 import { cn } from "#/lib/utils.ts";
 import type { MotionProps } from "motion/react";
 import { motion } from "motion/react";
-import type { CSSProperties, ElementType, JSX } from "react";
-import { memo, useMemo } from "react";
+import { memo, useMemo, type CSSProperties, type ElementType, type JSX } from "react";
 
 type MotionHTMLProps = MotionProps & Record<string, unknown>;
 
