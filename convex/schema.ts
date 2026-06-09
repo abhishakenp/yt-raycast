@@ -25,6 +25,11 @@ export default defineSchema({
     agentationEnabled: v.optional(v.boolean()),
     agentationSessionId: v.optional(v.string()),
     agentationEnabledAt: v.optional(v.number()),
+    programOverride: v.optional(v.string()),
+    genuiStatus: v.optional(v.string()),
+    genuiSkeleton: v.optional(v.string()),
+    genuiTheme: v.optional(v.string()),
+    genuiError: v.optional(v.string()),
   })
     .index('by_userId', ['userId'])
     .index('by_legacySessionId', ['legacySessionId'])
@@ -58,4 +63,71 @@ export default defineSchema({
   })
     .index('by_sessionId', ['sessionId'])
     .index('by_sessionId_annotationId', ['sessionId', 'annotationId']),
+
+  genuiModules: defineTable({
+    sessionId: v.id('sessions'),
+    moduleId: v.string(),
+    text: v.string(),
+    failed: v.boolean(),
+    startedAt: v.number(),
+    completedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_moduleId', ['sessionId', 'moduleId']),
+
+  siteSpecs: defineTable({
+    sessionId: v.id('sessions'),
+    spec: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId']),
+
+  exports: defineTable({
+    sessionId: v.id('sessions'),
+    target: v.string(),
+    status: v.string(),
+    url: v.optional(v.string()),
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId']),
+
+  previewHistory: defineTable({
+    sessionId: v.id('sessions'),
+    html: v.string(),
+    timestamp: v.number(),
+  })
+    .index('by_sessionId', ['sessionId']),
+
+  cmsConfigs: defineTable({
+    sessionId: v.id('sessions'),
+    cmsType: v.string(),
+    config: v.any(),
+    createdAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId']),
+
+  themeOverrides: defineTable({
+    sessionId: v.id('sessions'),
+    themeName: v.string(),
+    styles: v.any(),
+    createdAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId']),
+
+  chatMessages: defineTable({
+    sessionId: v.id('sessions'),
+    role: v.string(),
+    content: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId']),
+
+  chatSummaries: defineTable({
+    sessionId: v.id('sessions'),
+    summary: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId']),
 })

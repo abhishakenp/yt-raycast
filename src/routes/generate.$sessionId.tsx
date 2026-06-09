@@ -19,6 +19,11 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
+import ThemePicker from '../genui/components/ThemePicker'
+import { applyThemeVars, injectThemeFonts, resolveThemeStyles } from '../genui/theme-apply'
+import TopBar from '../components/GenUI/TopBar'
+import { AIPromptBox } from '../components/GenUI/AIPromptBox'
+import { IntroLoader } from '../components/GenUI/IntroLoader'
 
 const CURRENT_APP_ORIGIN = 'http://localhost:7420'
 
@@ -289,6 +294,10 @@ function GenerateWorkspace() {
   const [cmsState, setCmsState] = useState(cms)
   const [cmsStatus, setCmsStatus] = useState<'idle' | 'provisioning' | 'ready' | 'error'>('idle')
   const [cmsMessage, setCmsMessage] = useState('')
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
+  const [isDark, setIsDark] = useState(false)
+  const [aiEditMode, setAiEditMode] = useState(false)
+  const [aiSelection, setAiSelection] = useState<{ text: string; rect: DOMRect } | null>(null)
 
   useEffect(() => {
     setCurrentPreviewHtml(previewHtml || '')
@@ -470,6 +479,78 @@ function GenerateWorkspace() {
     }
   }, [agentation.agentationSessionId, agentationEnabled, annotationComment, currentPreviewHtml, sessionId])
 
+  useEffect(() => {
+    const iframe = iframeRef.current
+    const doc = iframe?.contentDocument
+    if (!doc || !currentPreviewHtml) return
+
+    const styles = selectedTheme ? resolveThemeStyles(selectedTheme) : null
+    if (styles) {
+      applyThemeVars(doc.documentElement, styles, isDark)
+      injectThemeFonts(doc, styles)
+    } else {
+      // Clear theme vars if no theme selected
+      for (const key of [
+        'background', 'foreground', 'card', 'card-foreground', 'popover', 'popover-foreground',
+        'primary', 'primary-foreground', 'secondary', 'secondary-foreground', 'muted', 'muted-foreground',
+        'accent', 'accent-foreground', 'destructive', 'destructive-foreground', 'border', 'input', 'ring',
+        'chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5', 'sidebar', 'sidebar-foreground',
+        'sidebar-primary', 'sidebar-primary-foreground', 'sidebar-accent', 'sidebar-accent-foreground',
+        'sidebar-border', 'sidebar-ring', 'font-sans', 'font-serif', 'font-mono', 'radius',
+        'shadow-color', 'shadow-opacity', 'shadow-blur', 'shadow-spread', 'shadow-offset-x', 'shadow-offset-y',
+        'letter-spacing', 'spacing'
+      ]) {
+        doc.documentElement.style.removeProperty(`--${key}`)
+      }
+      doc.documentElement.classList.remove('dark')
+      doc.documentElement.style.colorScheme = ''
+    }
+  }, [selectedTheme, isDark, currentPreviewHtml])
+
+  // AI text edit selection detection
+  useEffect(() => {
+    const iframe = iframeRef.current
+    const doc = iframe?.contentDocument
+    const frameWindow = iframe?.contentWindow
+    if (!doc || !frameWindow || !aiEditMode) return
+
+    const handleSelectionChange = () => {
+      const selection = frameWindow.getSelection()
+      if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+        return
+      }
+
+      const range = selection.getRangeAt(0)
+      const text = range.toString().trim()
+      if (!text || text.length < 2 || text.length > 500) return
+
+      const rect = range.getBoundingClientRect()
+      setAiSelection({ text, rect })
+    }
+
+    const handleMouseUp = () => {
+      setTimeout(handleSelectionChange, 50)
+    }
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (iframe && !iframe.contains(target)) {
+        setAiSelection(null)
+      }
+    }
+
+    doc.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('selectionchange', handleSelectionChange)
+    document.addEventListener('click', handleClickOutside)
+
+    return () => {
+      doc.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('selectionchange', handleSelectionChange)
+      document.removeEventListener('click', handleClickOutside)
+      setAiSelection(null)
+    }
+  }, [aiEditMode, iframeRef])
+
   const handleSaveTextEdit = useCallback(async () => {
     const oldText = selectedText.trim()
     if (!oldText || replacementText === selectedText) return
@@ -523,6 +604,40 @@ function GenerateWorkspace() {
       setRewriteMessage(error instanceof Error ? error.message : 'AI rewrite failed')
     }
   }, [rewriteInstruction, selectedText])
+
+  const handleAIRewriteSubmit = useCallback(async (instruction: string) => {
+    if (!aiSelection) return
+
+    setRewriteStatus('rewriting')
+    setRewriteMessage('')
+    try {
+      const result = await rewritePreviewText({
+        data: {
+          text: aiSelection.text,
+          instruction,
+        },
+      })
+      if (result.rewritten) {
+        // Apply the rewrite to the preview HTML
+        const iframe = iframeRef.current
+        const doc = iframe?.contentDocument
+        if (doc) {
+          const html = currentPreviewHtml.replace(aiSelection.text, result.rewritten)
+          setCurrentPreviewHtml(html)
+          setRewriteStatus('rewritten')
+          setRewriteMessage('Rewritten')
+          window.setTimeout(() => setRewriteStatus('idle'), 1800)
+        }
+        setAiSelection(null)
+        return
+      }
+      setRewriteStatus('error')
+      setRewriteMessage('Rewrite failed')
+    } catch (error) {
+      setRewriteStatus('error')
+      setRewriteMessage(error instanceof Error ? error.message : 'Rewrite failed')
+    }
+  }, [aiSelection, currentPreviewHtml])
 
   const handleToggleAgentation = useCallback(async () => {
     const enabled = !agentationEnabled
@@ -805,54 +920,29 @@ function GenerateWorkspace() {
       </section>
 
       <section className="generate-preview-shell" aria-label="Generated website preview">
-        <div className="preview-toolbar">
-          <div>
-            <p className="eyebrow">Live preview bridge</p>
-            <h1>{session.prompt || 'Untitled generation'}</h1>
-          </div>
-          <div className="preview-actions">
-            <button
-              type="button"
-              className="icon-action"
-              title="Refresh generation state"
-              onClick={() => void router.invalidate()}
-            >
-              <RefreshCw aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={`icon-action ${editMode ? 'is-active' : ''}`}
-              title={editMode ? 'Exit text edit mode' : 'Edit text content'}
-              onClick={() => {
-                setEditMode((value) => !value)
-                setSaveStatus('idle')
-                setSaveMessage('')
-                setRewriteStatus('idle')
-                setRewriteMessage('')
-              }}
-              disabled={!hasLocalPreview}
-            >
-              <Type aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={`icon-action ${agentationEnabled ? 'is-active' : ''}`}
-              title={agentationEnabled ? 'Disable annotations' : 'Enable annotations'}
-              onClick={() => void handleToggleAgentation()}
-              disabled={!hasLocalPreview || annotationStatus === 'saving'}
-            >
-              <MessageSquarePlus aria-hidden="true" />
-              {annotations.length ? <span className="icon-badge">{annotations.length}</span> : null}
-            </button>
-            <a className="secondary-action" href={links.currentDashboard}>
-              Current dashboard
-            </a>
-            <a className="primary-action" href={links.preview}>
-              <ExternalLink aria-hidden="true" />
-              Open preview
-            </a>
-          </div>
-        </div>
+        <TopBar
+          id={sessionId}
+          prompt={session.prompt}
+          moduleCount={readiness.moduleCount}
+          elapsed={readiness.elapsed}
+          themeName={selectedTheme}
+          isDark={isDark}
+          onSelectTheme={setSelectedTheme}
+          onToggleMode={() => setIsDark((v) => !v)}
+          editMode={editMode}
+          onToggleEditMode={() => {
+            setEditMode((value) => !value)
+            setSaveStatus('idle')
+            setSaveMessage('')
+            setRewriteStatus('idle')
+            setRewriteMessage('')
+          }}
+          aiEditMode={aiEditMode}
+          onToggleAIEditMode={() => setAiEditMode((v) => !v)}
+          agentationEnabled={agentationEnabled}
+          agentationAnnotationCount={annotations.length}
+          onToggleAgentation={handleToggleAgentation}
+        />
 
         {editMode && hasLocalPreview ? (
           <form
@@ -1197,13 +1287,21 @@ function GenerateWorkspace() {
             src={hasLocalPreview ? undefined : links.preview}
             srcDoc={hasLocalPreview ? currentPreviewHtml : undefined}
           />
-        ) : (
-          <div className="preview-pending">
-            <p className="eyebrow">Generating</p>
-            <h2>The current Shipfast engine has not produced a preview yet.</h2>
-            <p>Waiting for the preview artifact.</p>
-          </div>
+        ) : null}
+
+        {aiSelection && (
+          <AIPromptBox
+            text={aiSelection.text}
+            rect={aiSelection.rect}
+            onSubmit={handleAIRewriteSubmit}
+            onCancel={() => setAiSelection(null)}
+            isLoading={rewriteStatus === 'rewriting'}
+          />
         )}
+
+        {!hasPreview ? (
+          <IntroLoader phase="compose" progress={readiness.moduleCount} />
+        ) : null}
       </section>
     </main>
   )
