@@ -19,11 +19,13 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
+import { Renderer, library } from '@ship-fast/blocks'
 import ThemePicker from '../genui/components/ThemePicker'
 import { applyThemeVars, injectThemeFonts, resolveThemeStyles } from '../genui/theme-apply'
 import TopBar from '../components/GenUI/TopBar'
 import { AIPromptBox } from '../components/GenUI/AIPromptBox'
 import { IntroLoader } from '../components/GenUI/IntroLoader'
+import DirectPreview from '../components/GenUI/DirectPreview'
 import { getStartClerkToken } from '../lib/clerk-token'
 
 const CURRENT_APP_ORIGIN = 'http://localhost:7420'
@@ -94,6 +96,9 @@ const getGeneratedSession = createServerFn({ method: 'GET' })
     const { readGeneratedPreviewHtml } = await import(
       '../session-domain/generated-preview-html.js'
     )
+    const { readGeneratedOpenUI } = await import(
+      '../session-domain/generated-openui.js'
+    )
     const { readAgentationState } = await import(
       '../session-domain/agentation-annotations.js'
     )
@@ -120,6 +125,7 @@ const getGeneratedSession = createServerFn({ method: 'GET' })
       session,
       readiness,
       previewHtml: readGeneratedPreviewHtml(data.sessionId),
+      openuiSource: readGeneratedOpenUI(data.sessionId),
       agentation: readAgentationState(data.sessionId),
       exports,
       deployment,
@@ -265,9 +271,10 @@ export const Route = createFileRoute('/generate/$sessionId')({
 
 function GenerateWorkspace() {
   const router = useRouter()
-  const { session, readiness, previewHtml, agentation, exports, deployment, github, cms, links } = Route.useLoaderData()
+  const { session, readiness, previewHtml, openuiSource, agentation, exports, deployment, github, cms, links } = Route.useLoaderData()
   const sessionId = Route.useParams().sessionId
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const directPreviewRef = useRef<HTMLDivElement | null>(null)
   const [currentPreviewHtml, setCurrentPreviewHtml] = useState(previewHtml || '')
   const [editMode, setEditMode] = useState(false)
   const [selectedText, setSelectedText] = useState('')
@@ -885,7 +892,8 @@ function GenerateWorkspace() {
   }
 
   const hasPreview = readiness.homepageReady || readiness.openuiReady
-  const hasLocalPreview = Boolean(currentPreviewHtml)
+  const hasLocalPreview = Boolean(currentPreviewHtml || openuiSource)
+  const hasOpenUI = Boolean(openuiSource)
   const elapsedLabel = typeof readiness.elapsed === 'number' ? `${readiness.elapsed.toFixed(1)}s` : 'Pending'
   const progressLabel = `${readiness.done}/${readiness.taskCount} tasks`
 
@@ -945,13 +953,25 @@ function GenerateWorkspace() {
         <div className="generate-preview-body">
         <div className="generate-preview-main">
         {hasPreview ? (
-          <iframe
-            ref={iframeRef}
-            className="generate-preview-frame"
-            title={`Preview for ${session.prompt || session.id}`}
-            src={hasLocalPreview ? undefined : links.preview}
-            srcDoc={hasLocalPreview ? currentPreviewHtml : undefined}
-          />
+          <>
+            {hasOpenUI ? (
+              <DirectPreview
+                ref={directPreviewRef}
+                themeStyles={selectedTheme ? resolveThemeStyles(selectedTheme) : null}
+                isDark={false}
+              >
+                <Renderer response={openuiSource} library={library} isStreaming={false} />
+              </DirectPreview>
+            ) : (
+              <iframe
+                ref={iframeRef}
+                className="generate-preview-frame"
+                title={`Preview for ${session.prompt || session.id}`}
+                src={hasLocalPreview ? undefined : links.preview}
+                srcDoc={hasLocalPreview ? currentPreviewHtml : undefined}
+              />
+            )}
+          </>
         ) : null}
 
         {aiSelection && (

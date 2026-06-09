@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { db } from '../auth/firebase-admin.js'
+import { ConvexHttpClient } from 'convex/browser'
+
+const convex = new ConvexHttpClient(process.env.VITE_CONVEX_URL || process.env.CONVEX_URL)
 
 import {
   MAX_FREE_PER_MONTH,
@@ -68,19 +70,13 @@ function readEarlyAdopterCountFromFile() {
   }
 }
 
-// ─── Firestore-backed early adopter helpers ─────────────────
-function earlyAdopterDoc() {
-  return db.collection('billing').doc('early_adopters')
-}
-
+// ─── Convex-backed early adopter helpers ─────────────────
 async function readEarlyAdopterCount() {
   try {
-    const doc = await earlyAdopterDoc().get()
-    if (!doc.exists) return { count: 0, users: [] }
-    const data = doc.data()
-    return { count: data.count ?? 0, users: data.users ?? [] }
+    const data = await convex.query('billing:getEarlyAdopterStatus')
+    return { count: data.count || 0, users: data.users || [] }
   } catch (err) {
-    console.warn('[early-adopter] Firestore read failed, falling back to file:', err?.message)
+    console.warn('[early-adopter] Convex read failed, falling back to file:', err?.message)
     return readEarlyAdopterCountFromFile()
   }
 }
@@ -117,44 +113,47 @@ export async function getUserGenerationQuota(userId, clientIp) {
 
 export async function incrementEarlyAdopterCount(uid) {
   try {
-    await db.runTransaction(async (tx) => {
-      const doc = await tx.get(earlyAdopterDoc())
-      const data = doc.exists ? doc.data() : { count: 0, users: [] }
-      const users = data.users ?? []
-      const count = data.count ?? 0
-
-      if (users.includes(uid)) return // already counted
-      if (count >= EARLY_ADOPTER_MAX) {
-        console.warn(
-          `[early-adopter] Slot limit reached (${EARLY_ADOPTER_MAX}), rejecting uid=${uid}`,
-        )
-        return
-      }
-
-      tx.set(earlyAdopterDoc(), { count: count + 1, users: [...users, uid] })
-    })
+    await convex.mutation('billing:incrementEarlyAdopterCount', { userId: uid })
   } catch (err) {
     console.error(
-      '[early-adopter] Firestore transaction failed, NOT falling back to file (consistency):',
+      '[early-adopter] Convex mutation failed:',
       err?.message,
     )
   }
 }
 
 export async function isEarlyAdopterSlotAvailable() {
-  const data = await readEarlyAdopterCount()
-  return data.count < EARLY_ADOPTER_MAX
+  try {
+    return await convex.query('billing:isEarlyAdopterSlotAvailable')
+  } catch (err) {
+    console.warn('[early-adopter] Convex query failed, falling back to file:', err?.message)
+    const data = await readEarlyAdopterCount()
+    return data.count < EARLY_ADOPTER_MAX
+  }
 }
 
 export async function getEarlyAdopterStatus() {
-  const data = await readEarlyAdopterCount()
-  return {
-    eligible:
-      data.count < EARLY_ADOPTER_MAX &&
-      Boolean(EARLY_ADOPTER_PLAN_ID || STRIPE_EARLY_ADOPTER_PRICE_ID),
-    slotsRemaining: Math.max(0, EARLY_ADOPTER_MAX - data.count),
-    totalSlots: EARLY_ADOPTER_MAX,
-    priceId: EARLY_ADOPTER_PLAN_ID,
+  try {
+    const data = await convex.query('billing:getEarlyAdopterStatus')
+    return {
+      eligible:
+        data.count < EARLY_ADOPTER_MAX &&
+        Boolean(EARLY_ADOPTER_PLAN_ID || STRIPE_EARLY_ADOPTER_PRICE_ID),
+      slotsRemaining: data.slotsRemaining,
+      totalSlots: EARLY_ADOPTER_MAX,
+      priceId: EARLY_ADOPTER_PLAN_ID,
+    }
+  } catch (err) {
+    console.warn('[early-adopter] Convex query failed, falling back to file:', err?.message)
+    const data = await readEarlyAdopterCount()
+    return {
+      eligible:
+        data.count < EARLY_ADOPTER_MAX &&
+        Boolean(EARLY_ADOPTER_PLAN_ID || STRIPE_EARLY_ADOPTER_PRICE_ID),
+      slotsRemaining: Math.max(0, EARLY_ADOPTER_MAX - data.count),
+      totalSlots: EARLY_ADOPTER_MAX,
+      priceId: EARLY_ADOPTER_PLAN_ID,
+    }
   }
 }
 
@@ -270,39 +269,20 @@ const SUBSCRIPTION_ACTIVE_STATUSES = ['active', 'trialing', 'authenticated']
 
 export async function hasActiveSubscription(uid) {
   if (!uid) return false
-  const subsRef = db.collection('customers').doc(uid).collection('subscriptions')
-  const snapshot = await subsRef.where('status', 'in', SUBSCRIPTION_ACTIVE_STATUSES).limit(1).get()
-  return !snapshot.empty
+  try {
+    return await convex.query('billing:hasActiveSubscription', { userId: uid })
+  } catch (err) {
+    console.error('[payments] hasActiveSubscription error:', err?.message)
+    return false
+  }
 }
 
 export async function hadActiveSubscriptionDuring(uid, timestamp) {
   if (!uid || !timestamp) return false
   try {
-    const subsRef = db.collection('customers').doc(uid).collection('subscriptions')
-    const snapshot = await subsRef.get()
-    if (snapshot.empty) return false
-
-    const sessionTime = new Date(timestamp).getTime()
-
-    for (const doc of snapshot.docs) {
-      const sub = doc.data()
-      const status = sub.status
-      const legacy = ['active', 'trialing', 'canceled', 'past_due', 'unpaid', 'cancelled']
-      const rz = [...SUBSCRIPTION_ACTIVE_STATUSES, 'cancelled', 'completed', 'halted', 'inactive']
-      if (!legacy.includes(status) && !rz.includes(status)) continue
-
-      const created = toMs(sub.created) || toMs(sub.createdAt)
-      if (!created || created > sessionTime) continue
-
-      if (SUBSCRIPTION_ACTIVE_STATUSES.includes(status) || status === 'authenticated') return true
-
-      const canceledAt = toMs(sub.canceled_at ?? sub.cancel_at ?? sub.cancelledAt)
-
-      if (!canceledAt || canceledAt > sessionTime) return true
-    }
-    return false
+    return await convex.query('billing:hadActiveSubscriptionDuring', { userId: uid, timestamp })
   } catch (err) {
-    console.error('[payments] hadActiveSubscriptionDuring error:', err?.message ?? err)
+    console.error('[payments] hadActiveSubscriptionDuring error:', err?.message)
     return false
   }
 }
@@ -310,64 +290,39 @@ export async function hadActiveSubscriptionDuring(uid, timestamp) {
 export async function getUserCredits(uid) {
   if (!uid) return 0
   try {
-    const doc = await db.collection('customers').doc(uid).get()
-    return doc.data()?.credits?.remaining ?? 0
-  } catch {
+    return await convex.query('billing:getUserCredits', { userId: uid })
+  } catch (err) {
+    console.error('[payments] getUserCredits error:', err?.message)
     return 0
   }
 }
 
 export async function addUserCredits(uid, amount, paymentRef = null) {
   if (!uid) return
-  const ref = db.collection('customers').doc(uid)
-  await db.runTransaction(async (tx) => {
-    const doc = await tx.get(ref)
-    const data = doc.data() ?? {}
-    const credits = data.credits ?? { remaining: 0, history: [] }
-    if (paymentRef && credits.history?.some((h) => h.paymentRef === paymentRef)) return
-    credits.remaining = (credits.remaining ?? 0) + amount
-    credits.history = [
-      ...(credits.history ?? []),
-      { type: 'purchase', amount, paymentRef, at: new Date().toISOString() },
-    ]
-    if (credits.history.length > 100) credits.history = credits.history.slice(-100)
-    tx.set(ref, { credits }, { merge: true })
-  })
+  try {
+    await convex.mutation('billing:addUserCredits', { userId: uid, amount, paymentRef })
+  } catch (err) {
+    console.error('[payments] addUserCredits error:', err?.message)
+  }
 }
 
 export async function consumeUserCredit(uid) {
   if (!uid) return false
-  const ref = db.collection('customers').doc(uid)
-  let consumed = false
-  await db.runTransaction(async (tx) => {
-    const doc = await tx.get(ref)
-    const data = doc.data() ?? {}
-    const credits = data.credits ?? { remaining: 0, history: [] }
-    if ((credits.remaining ?? 0) <= 0) return
-    credits.remaining -= 1
-    credits.history = [
-      ...(credits.history ?? []),
-      { type: 'consume', at: new Date().toISOString() },
-    ]
-    if (credits.history.length > 100) credits.history = credits.history.slice(-100)
-    tx.set(ref, { credits }, { merge: true })
-    consumed = true
-  })
-  return consumed
+  try {
+    return await convex.mutation('billing:consumeUserCredit', { userId: uid })
+  } catch (err) {
+    console.error('[payments] consumeUserCredit error:', err?.message)
+    return false
+  }
 }
 
 export async function zeroUserCredits(uid) {
   if (!uid) return
-  const ref = db.collection('customers').doc(uid)
-  await db.runTransaction(async (tx) => {
-    const doc = await tx.get(ref)
-    const data = doc.data() ?? {}
-    const credits = data.credits ?? { remaining: 0, history: [] }
-    credits.history = [...(credits.history ?? []), { type: 'refund', at: new Date().toISOString() }]
-    if (credits.history.length > 100) credits.history = credits.history.slice(-100)
-    credits.remaining = 0
-    tx.set(ref, { credits }, { merge: true })
-  })
+  try {
+    await convex.mutation('billing:zeroUserCredits', { userId: uid })
+  } catch (err) {
+    console.error('[payments] zeroUserCredits error:', err?.message)
+  }
 }
 
 async function resolveExportZipAccess(session) {

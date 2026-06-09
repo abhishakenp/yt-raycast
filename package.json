@@ -86,8 +86,6 @@
     "cookie": "^1.1.1",
     "dotenv": "^17.4.2",
     "express": "^4.22.2",
-    "firebase": "^12.14.0",
-    "firebase-admin": "^13.10.0",
     "franc-min": "^6.2.0",
     "http-proxy": "^1.18.1",
     "idb-keyval": "^6.2.5",

@@ -130,4 +130,54 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index('by_sessionId', ['sessionId']),
+
+  // Billing tables
+  earlyAdopters: defineTable({
+    count: v.number(),
+    users: v.array(v.string()),
+  }).index('by_count', ['count']),
+
+  customerCredits: defineTable({
+    userId: v.string(),
+    remaining: v.number(),
+    history: v.array(
+      v.object({
+        type: v.union(v.literal('purchase'), v.literal('consume'), v.literal('refund')),
+        amount: v.number(),
+        paymentRef: v.optional(v.string()),
+        at: v.string(),
+      }),
+    ),
+  }).index('by_userId', ['userId']),
+
+  subscriptions: defineTable({
+    userId: v.string(),
+    provider: v.union(v.literal('stripe'), v.literal('razorpay')),
+    status: v.union(
+      v.literal('active'),
+      v.literal('cancelled'),
+      v.literal('trialing'),
+      v.literal('authenticated'),
+      v.literal('past_due'),
+    ),
+    planId: v.string(),
+    price: v.string(),
+    stripeSubscriptionId: v.optional(v.string()),
+    razorpaySubscriptionId: v.optional(v.string()),
+    stripeCheckoutSessionId: v.optional(v.string()),
+    rawStatus: v.optional(v.string()),
+    canceledAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_userId', ['userId'])
+    .index('by_userId_status', ['userId', 'status'])
+    .index('by_stripeSubscriptionId', ['stripeSubscriptionId'])
+    .index('by_razorpaySubscriptionId', ['razorpaySubscriptionId']),
+
+  webhookEvents: defineTable({
+    idempotencyKey: v.string(),
+    provider: v.union(v.literal('stripe'), v.literal('razorpay')),
+    processedAt: v.number(),
+  }).index('by_idempotencyKey', ['idempotencyKey']),
 })

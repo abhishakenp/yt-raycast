@@ -1,5 +1,4 @@
-import type React from "react";
-import { forwardRef } from "react";
+import { forwardRef, type React } from "react";
 
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { cva } from "class-variance-authority";

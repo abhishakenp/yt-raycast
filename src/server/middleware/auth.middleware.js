@@ -1,5 +1,4 @@
 // @ts-check
-import { verifyIdToken } from '../../auth/firebase-admin.js'
 import { resolveStartClerkUser } from '../../session-domain/start-auth.js'
 
 async function resolveBearerUser(authHeader) {
@@ -10,12 +9,11 @@ async function resolveBearerUser(authHeader) {
     return { uid: clerkUser.uid, email: clerkUser.email, provider: 'clerk' }
   }
 
-  const decoded = await verifyIdToken(authHeader.slice(7))
-  return { uid: decoded.uid, email: decoded.email, provider: 'firebase' }
+  return null
 }
 
 /**
- * Requires a valid Clerk Bearer token. Firebase remains as legacy fallback.
+ * Requires a valid Clerk Bearer token.
  * Sets req.user = { uid, email } on success.
  * Returns 401 if missing or invalid.
  */
@@ -23,7 +21,11 @@ export async function requireAuth(req, res, next) {
   const auth = req.headers.authorization
   if (!auth?.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' })
   try {
-    req.user = await resolveBearerUser(auth)
+    const user = await resolveBearerUser(auth)
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+    req.user = user
     next()
   } catch (err) {
     console.error('[auth] token verification failed:', err?.message ?? err)
@@ -32,7 +34,7 @@ export async function requireAuth(req, res, next) {
 }
 
 /**
- * Optionally decodes a Clerk Bearer token if present. Firebase remains as legacy fallback.
+ * Optionally decodes a Clerk Bearer token if present.
  * Sets req.user if valid, continues without error if missing/invalid.
  */
 export async function optionalAuth(req, res, next) {
@@ -48,7 +50,7 @@ export async function optionalAuth(req, res, next) {
 }
 
 /**
- * Requires either a valid Clerk/Firebase Bearer token or the internal provision secret.
+ * Requires either a valid Clerk Bearer token or the internal provision secret.
  * Used by server-to-server provision routes that may also be called from the browser.
  */
 export async function requireProvisionAuth(req, res, next) {
@@ -62,8 +64,11 @@ export async function requireProvisionAuth(req, res, next) {
 
   if (authHeader?.startsWith('Bearer ')) {
     try {
-      req.user = await resolveBearerUser(authHeader)
-      return next()
+      const user = await resolveBearerUser(authHeader)
+      if (user) {
+        req.user = user
+        return next()
+      }
     } catch (err) {
       console.error('[auth] provision token verification failed:', err?.message ?? err)
     }

@@ -8,8 +8,12 @@
  * @module
  */
 
+import type * as billing from "../billing.js";
 import type * as genui from "../genui.js";
+import type * as http from "../http.js";
+import type * as razorpay from "../razorpay.js";
 import type * as sessions from "../sessions.js";
+import type * as stripe from "../stripe.js";
 
 import type {
   ApiFromModules,
@@ -18,8 +22,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  billing: typeof billing;
   genui: typeof genui;
+  http: typeof http;
+  razorpay: typeof razorpay;
   sessions: typeof sessions;
+  stripe: typeof stripe;
 }>;
 
 /**

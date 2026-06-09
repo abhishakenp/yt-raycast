@@ -10,7 +10,7 @@ import {
   decorateExportTargetsForRequest,
   getSessionPaymentDetails,
 } from '../billing/payments.js'
-import { verifyIdToken } from '../auth/firebase-admin.js'
+import { resolveStartClerkUser } from '../session-domain/start-auth.js'
 import { razorpayStartHandler } from './razorpay.js'
 import { stripeStartHandler } from './stripe.js'
 
@@ -64,7 +64,11 @@ async function authUser(req) {
   const header = req.headers.authorization || ''
   if (!header.startsWith('Bearer ')) return null
   try {
-    return await verifyIdToken(header.slice(7))
+    const clerkUser = await resolveStartClerkUser({ authorization: header })
+    if (clerkUser?.uid) {
+      return { uid: clerkUser.uid, email: clerkUser.email, provider: 'clerk' }
+    }
+    return null
   } catch {
     return null
   }
@@ -74,10 +78,6 @@ export function mountNextApiPort(app, { requireAuth }) {
   // GET /api/config — browser auth + Medusa admin flags
   app.get('/api/config', (_req, res) => {
     res.json({
-      apiKey: process.env.FIREBASE_API_KEY ?? '',
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
-      projectId: process.env.FIREBASE_PROJECT_ID ?? '',
-      appId: process.env.FIREBASE_APP_ID ?? '',
       clerkPublishableKey:
         process.env.CLERK_PUBLISHABLE_KEY ||
         process.env.VITE_CLERK_PUBLISHABLE_KEY ||

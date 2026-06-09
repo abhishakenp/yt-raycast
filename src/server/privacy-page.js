@@ -101,10 +101,9 @@ export const renderPrivacyPage = () => {
         <h2 id="h-collect">3. What we collect</h2>
         <h3>3.1 Account and authentication</h3>
         <p>
-          If you sign in, we use <strong>Firebase Authentication</strong> (Google LLC) and may process your
-          Firebase user ID, email address, and profile details provided by your identity provider (such as Google or
-          GitHub) when you choose those options. If you use email and password sign-in, we process your email address
-          and credentials through Firebase.
+          If you sign in, we use <strong>Clerk Authentication</strong> and may process your
+          Clerk user ID, email address, and profile details provided by your identity provider (such as Google or
+          GitHub) when you choose those options.
         </p>
         <h3>3.2 Projects, prompts, and generated output</h3>
         <p>
@@ -130,7 +129,7 @@ export const renderPrivacyPage = () => {
           Paid features are processed through <strong>Razorpay</strong>.
           We do not receive your full payment card number on our servers; payment data is handled by the payment
           provider. We receive status information (for example subscription state or credit purchases) through our
-          billing integration and may store it in <strong>Google Cloud Firestore</strong> associated with your
+          billing integration and may store it in <strong>Convex</strong> associated with your
           account.
         </p>
         <h3>3.6 Optional operations notifications</h3>
@@ -180,7 +179,8 @@ export const renderPrivacyPage = () => {
         <h2 id="h-sharing">6. Recipients and subprocessors</h2>
         <p>We share data with categories of recipients including:</p>
         <ul>
-          <li>Google (Firebase Authentication, Firestore, and related Google Cloud services)</li>
+          <li>Clerk (Authentication services)</li>
+          <li>Convex (Database and backend services for billing data)</li>
           <li>Razorpay (payments)</li>
           <li>Plausible Analytics</li>
           <li>AI, GPU, or inference providers (for example Groq, Runpod) and stock imagery APIs (for example Pexels, Unsplash)</li>

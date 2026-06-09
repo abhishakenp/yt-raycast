@@ -49,8 +49,7 @@ export const SPACE_BACKDROP_HTML = `
 export const renderLaunchBackdropScript = () =>
   `<script type="module" src="/scripts/launch-backdrop.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>`
 
-export const renderMarketingTopBarScript = () =>
-  `<script type="module" src="/scripts/top-actions-auth.js${process.env.NODE_ENV === 'production' ? '' : `?v=${Date.now()}`}"></script>`
+export const renderMarketingTopBarScript = () => ''
 
 export const renderMarketingFonts = () => `
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -133,15 +132,6 @@ export const renderTopActions = ({ showBrand = false } = {}) => {
     ${brand}
     <div class="top-actions-right">
       ${sfGlassPillAnchor({ className: 'pill--top-actions', href: '/pricing', text: 'Pricing' })}
-      <div class="top-actions-auth-slot">
-        ${sfGlassPillBody({ id: 'signin-btn', className: 'pill--top-actions', bodyHtml: 'Sign in' })}
-        ${sfGlassPillBody({
-          id: 'signout-btn',
-          className: 'pill--top-actions',
-          bodyHtml:
-            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign out',
-        })}
-      </div>
     </div>
   </nav>`
 }

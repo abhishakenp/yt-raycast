@@ -10,22 +10,13 @@ import { anonIpDailyHits, shareBonusIps, userMonthlyHits } from '../lib/rate-lim
 
 let subscribedUids = new Set<string>()
 
-vi.mock('../auth/firebase-admin.js', () => ({
-  db: {
-    collection: () => ({
-      doc: (uid: string) => ({
-        collection: () => ({
-          where: () => ({
-            limit: () => ({
-              get: async () => ({ empty: !subscribedUids.has(uid) }),
-            }),
-          }),
-        }),
-        get: async () => ({ data: () => ({ credits: { remaining: 0 } }) }),
-      }),
-    }),
-  },
-}))
+vi.mock('../billing/payments.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../billing/payments.js')>()
+  return {
+    ...actual,
+    hasActiveSubscription: async (uid: string) => subscribedUids.has(uid),
+  }
+})
 
 describe('generation quota details', () => {
   beforeEach(() => {

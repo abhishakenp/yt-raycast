@@ -4,13 +4,8 @@ import {
   SignInButton,
   UserButton,
 } from '@clerk/clerk-react'
-import { isClerkConfigured } from './provider'
 
 export default function HeaderUser() {
-  if (!isClerkConfigured()) {
-    return <span className="auth-status">Clerk not configured</span>
-  }
-
   return (
     <>
       <SignedIn>
