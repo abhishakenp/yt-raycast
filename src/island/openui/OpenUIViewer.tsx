@@ -49,7 +49,7 @@ class RendererErrorBoundary extends Component<
 export default function OpenUIViewer({
   response,
   isStreaming,
-  theme,
+  theme: _theme,
   locale,
   embed,
   sessionId,
@@ -80,7 +80,6 @@ export default function OpenUIViewer({
   onFirstPaint?: () => void
 }) {
   const inEmbed = embed === true
-  void theme
   const renderHostRef = useRef<HTMLDivElement>(null)
   const firedRef = useRef(false)
   const rafRef = useRef<number | null>(null)

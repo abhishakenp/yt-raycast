@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ZapIcon } from 'lucide-react'
 import HeaderUser from '../integrations/clerk/header-user'
 import styles from './index.module.css'
+import { getStartClerkToken } from '../lib/clerk-token'
 
 const getRecentSessions = createServerFn({ method: 'GET' }).handler(async () => {
   const { createFilesystemSessionRepository } = await import(
@@ -58,7 +59,6 @@ function StartHome() {
   const animRef = useRef<{ index: number; length: number; mode: 'typing' | 'holding' | 'deleting'; timer: number | null }>({ index: 0, length: 0, mode: 'typing', timer: null })
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  // Canvas animation
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -440,12 +440,4 @@ function LogoBolt() {
   )
 }
 
-async function getStartClerkToken() {
-  const clerk = typeof window !== 'undefined' ? (window as any).Clerk : null
-  if (!clerk?.session) return ''
-  try {
-    return (await clerk.session.getToken()) || ''
-  } catch {
-    return ''
-  }
-}
+
