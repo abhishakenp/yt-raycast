@@ -10,6 +10,10 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
 } from 'firebase/auth'
+import {
+  getClerkSessionToken,
+  initClerkBrowserAuth,
+} from './clerk-browser-auth'
 
 declare global {
   interface Window {
@@ -32,8 +36,18 @@ const GITHUB_TOKEN_STORAGE_KEY = 'sf_github_access_token'
 
 let auth: ReturnType<typeof getAuth> | null = null
 let currentUser: import('firebase/auth').User | null = null
+let clerkAuth:
+  | {
+      ready: Promise<unknown>
+      getCurrentIdToken: () => Promise<string>
+      signInWithGoogle: () => Promise<unknown>
+      signInWithGithub: () => Promise<unknown>
+      signInWithEmail: (email: string, password: string) => Promise<unknown>
+      signUpWithEmail: (email: string, password: string) => Promise<unknown>
+    }
+  | null = null
 
-const ready: Promise<ReturnType<typeof getAuth>> = initDashboardAuth()
+const ready: Promise<ReturnType<typeof getAuth> | unknown> = initDashboardAuth()
 
 function readGithubAccessToken(): string {
   return sessionStorage.getItem(GITHUB_TOKEN_STORAGE_KEY) || ''
@@ -43,9 +57,30 @@ function storeGithubAccessToken(token: string): void {
   if (token) sessionStorage.setItem(GITHUB_TOKEN_STORAGE_KEY, token)
 }
 
-async function initDashboardAuth(): Promise<ReturnType<typeof getAuth>> {
+async function initDashboardAuth(): Promise<ReturnType<typeof getAuth> | unknown> {
   const response = await fetch('/api/config')
-  const config: Record<string, unknown> & { apiKey?: string } = await response.json()
+  const config: Record<string, unknown> & {
+    apiKey?: string
+    clerkPublishableKey?: string
+  } = await response.json()
+
+  if (config?.clerkPublishableKey) {
+    const clerk = await initClerkBrowserAuth(config.clerkPublishableKey)
+    if (!clerk) throw new Error('Dashboard auth is not configured.')
+    const openClerkSignIn = async () => {
+      clerk.openSignIn()
+      return clerk.user
+    }
+    clerkAuth = {
+      ready: Promise.resolve(clerk),
+      getCurrentIdToken: () => getClerkSessionToken(clerk),
+      signInWithGoogle: openClerkSignIn,
+      signInWithGithub: openClerkSignIn,
+      signInWithEmail: openClerkSignIn,
+      signUpWithEmail: openClerkSignIn,
+    }
+    return clerk
+  }
 
   if (!config?.apiKey) {
     throw new Error('Dashboard auth is not configured.')
@@ -66,6 +101,15 @@ async function initDashboardAuth(): Promise<ReturnType<typeof getAuth>> {
 
 async function requireCurrentUser(): Promise<import('firebase/auth').User> {
   await ready
+  if (clerkAuth) {
+    const token = await clerkAuth.getCurrentIdToken()
+    if (!token) {
+      throw new Error(
+        'Sign in on the homepage with the same Ship Fast account before pushing to GitHub.',
+      )
+    }
+    return { getIdToken: async () => token } as import('firebase/auth').User
+  }
   if (!currentUser) {
     throw new Error(
       'Sign in on the homepage with the same Ship Fast account before pushing to GitHub.',
@@ -81,6 +125,10 @@ function isFirebaseAuthError(error: unknown): error is { code?: string } {
 async function ensureGithubRepoAccessToken(): Promise<string> {
   const existingToken = readGithubAccessToken()
   if (existingToken) return existingToken
+
+  if (clerkAuth) {
+    throw new Error('Paste a GitHub access token after signing in with Clerk.')
+  }
 
   const user = await requireCurrentUser()
   const provider = new GithubAuthProvider()
@@ -128,6 +176,7 @@ async function authFetch(url: string, options: RequestInit = {}): Promise<Respon
 
 async function getCurrentIdToken(): Promise<string> {
   await ready
+  if (clerkAuth) return clerkAuth.getCurrentIdToken()
   if (!currentUser) return ''
   return currentUser.getIdToken()
 }
@@ -164,6 +213,7 @@ window.shipFastDashboardGithub = {
 
 async function signInWithGoogle(): Promise<import('firebase/auth').User> {
   await ready
+  if (clerkAuth) return (await clerkAuth.signInWithGoogle()) as import('firebase/auth').User
   const provider = new GoogleAuthProvider()
   const result = await signInWithPopup(auth as ReturnType<typeof getAuth>, provider)
   currentUser = result.user
@@ -172,6 +222,7 @@ async function signInWithGoogle(): Promise<import('firebase/auth').User> {
 
 async function signInWithGithub(): Promise<import('firebase/auth').User> {
   await ready
+  if (clerkAuth) return (await clerkAuth.signInWithGithub()) as import('firebase/auth').User
   const provider = new GithubAuthProvider()
   const result = await signInWithPopup(auth as ReturnType<typeof getAuth>, provider)
   currentUser = result.user
@@ -183,6 +234,9 @@ async function signInWithEmail(
   password: string,
 ): Promise<import('firebase/auth').User> {
   await ready
+  if (clerkAuth) {
+    return (await clerkAuth.signInWithEmail(email, password)) as import('firebase/auth').User
+  }
   const result = await signInWithEmailAndPassword(
     auth as ReturnType<typeof getAuth>,
     email,
@@ -197,6 +251,9 @@ async function signUpWithEmail(
   password: string,
 ): Promise<import('firebase/auth').User> {
   await ready
+  if (clerkAuth) {
+    return (await clerkAuth.signUpWithEmail(email, password)) as import('firebase/auth').User
+  }
   const result = await createUserWithEmailAndPassword(
     auth as ReturnType<typeof getAuth>,
     email,

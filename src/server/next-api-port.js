@@ -71,13 +71,18 @@ async function authUser(req) {
 }
 
 export function mountNextApiPort(app, { requireAuth }) {
-  // GET /api/config — Firebase + Medusa admin flags
+  // GET /api/config — browser auth + Medusa admin flags
   app.get('/api/config', (_req, res) => {
     res.json({
       apiKey: process.env.FIREBASE_API_KEY ?? '',
       authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? '',
       projectId: process.env.FIREBASE_PROJECT_ID ?? '',
       appId: process.env.FIREBASE_APP_ID ?? '',
+      clerkPublishableKey:
+        process.env.CLERK_PUBLISHABLE_KEY ||
+        process.env.VITE_CLERK_PUBLISHABLE_KEY ||
+        '',
+      convexUrl: process.env.CONVEX_URL || process.env.VITE_CONVEX_URL || '',
       medusaAdminConfigured: Boolean(
         process.env.MEDUSA_ADMIN_APP_URL || process.env.NEXT_PUBLIC_MEDUSA_ADMIN_URL,
       ),

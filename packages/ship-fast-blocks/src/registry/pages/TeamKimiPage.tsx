@@ -56,7 +56,7 @@ export const TeamKimiPage = defineComponent({
               role: z.string(),
               bio: z.string(),
               photoAlt: z.string(),
-              socials: z.array(z.string()),
+              socials: z.array(z.string()).optional(),
             }),
           )
           .optional(),
@@ -182,9 +182,7 @@ export const TeamKimiPage = defineComponent({
     const leadershipDesc =
       props.leadership?.description ??
       "The experienced practitioners guiding our vision and operations."
-    const leadershipMembers = props.leadership?.members?.length
-      ? props.leadership.members
-      : [
+    const defaultLeadershipMembers = [
           {
             name: "Marcus Chen",
             role: "CEO & Co-founder",
@@ -234,6 +232,15 @@ export const TeamKimiPage = defineComponent({
             socials: ["LinkedIn"],
           },
         ]
+    const leadershipMembers = (props.leadership?.members?.length
+      ? props.leadership.members
+      : defaultLeadershipMembers
+    ).map((member, index) => ({
+      ...member,
+      socials: member.socials?.length
+        ? member.socials
+        : defaultLeadershipMembers[index % defaultLeadershipMembers.length].socials,
+    }))
 
     const deptHeading = props.departmentLeads?.heading ?? "Department Leads"
     const deptPeople = props.departmentLeads?.people?.length

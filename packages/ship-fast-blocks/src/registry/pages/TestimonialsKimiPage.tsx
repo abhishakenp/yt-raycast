@@ -88,9 +88,9 @@ export const TestimonialsKimiPage = defineComponent({
               title: z.string(),
               body: z.string(),
               imageAlt: z.string(),
-              metrics: z.array(
-                z.object({ value: z.string(), label: z.string() }),
-              ),
+              metrics: z
+                .array(z.object({ value: z.string(), label: z.string() }))
+                .optional(),
             }),
           )
           .optional(),
@@ -241,9 +241,7 @@ export const TestimonialsKimiPage = defineComponent({
       props.caseStudies?.description ??
       "Detailed breakdowns of how organizations achieved measurable results with FlowSync."
     const caseReadMore = props.caseStudies?.readMore ?? "Read full case study"
-    const caseItems = props.caseStudies?.items?.length
-      ? props.caseStudies.items
-      : [
+    const defaultCaseItems = [
           {
             tag: "SaaS",
             meta: "250+ employees",
@@ -297,6 +295,14 @@ export const TestimonialsKimiPage = defineComponent({
             ],
           },
         ]
+    const caseItems = props.caseStudies?.items?.length
+      ? props.caseStudies.items.map((item, index) => ({
+          ...item,
+          metrics: item.metrics?.length
+            ? item.metrics
+            : (defaultCaseItems[index % defaultCaseItems.length]?.metrics ?? []),
+        }))
+      : defaultCaseItems
 
     const reviewsHeading = props.reviews?.heading ?? "Verified reviews"
     const reviewsDesc =

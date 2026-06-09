@@ -42,7 +42,7 @@ import {
   enrichSiteSpecWithWorkspaceBlueprints,
   ensureCompatibleSiteSpec,
 } from '../spec/index.js'
-import { ensureSanityCorsOrigins, ensureSanityCorsForTenant } from '../sanity/ensure-cors.js'
+import { ensureSanityCorsOrigins } from '../sanity/ensure-cors.js'
 import { groq } from '@ship-fast/engine/llm/groq.js'
 import { hex1 } from '../llm/hex1.js'
 import { resolveLanguageModeFromPreference } from '../pipeline/detect-language.js'
@@ -52,7 +52,11 @@ import {
   writeDesignReferencesFile,
   designReferenceFingerprintFromUrls,
 } from '../pipeline/ecommerce-design-references.js'
-import { readOpenUIFileForRoute, readSiteSpecThemeColors, readSiteSpecLocale } from '../pipeline/openui-artifacts.js'
+import {
+  readOpenUIFileForRoute,
+  readSiteSpecThemeColors,
+  readSiteSpecLocale,
+} from '../pipeline/openui-artifacts.js'
 import { buildThemeHeadFromTokens } from '@ship-fast/engine/renderers/index.js'
 import {
   compactStyleFragmentHtml,
@@ -155,6 +159,7 @@ import { renderTermsPage } from './terms-page.js'
 import { renderPricingPage } from './pricing-page.js'
 import { parseGalleryPagination, paginateGalleryList } from './gallery-pagination.js'
 import { getPublicGalleryList } from './public-gallery-cache.js'
+import { buildSessionApiResponse } from '../session-domain/session-api-response.js'
 import {
   captureGalleryThumb,
   hasGalleryThumb,
@@ -163,13 +168,8 @@ import {
   readGalleryThumb,
 } from './session-gallery-thumbnail.js'
 import { pushSessionToGitHub } from './github.js'
-import {
-  getDeploymentBySlug,
-  getDeploymentBySessionId,
-  initDeployments,
-  registerDeployment,
-} from './deployments.js'
-import { generateSlug } from './slug-generator.js'
+import { getDeploymentBySlug, getDeploymentBySessionId, initDeployments } from './deployments.js'
+import { provisionDeploymentIfNeeded } from './session-deployments.js'
 import { getPartialPromptSuggestions } from './prompt-suggestions.js'
 import { normalizePromptText, requirePromptText } from '../prompt.js'
 import {
@@ -681,49 +681,6 @@ export async function startServer(sessionsDir) {
         'This project was created in another browser or session. Open it from the device where you generated it, or sign in on the home page and claim your Ship Fast history.',
     })
     return false
-  }
-
-  async function provisionDeploymentIfNeeded(session) {
-    let deployment = session.deployment || getDeploymentBySessionId(session.id)
-    if (deployment) {
-      if (!deployment.url && deployment.slug) {
-        deployment = { ...deployment, url: `https://${deployment.slug}.${BASE_DOMAIN}` }
-        session.deployment = deployment
-        try {
-          writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(deployment, null, 2))
-        } catch {
-          void 0
-        }
-      }
-      return deployment
-    }
-    let projectContext = {}
-    try {
-      const contextPath = join(session.workspace, 'project-context.json')
-      if (existsSync(contextPath)) projectContext = JSON.parse(readFileSync(contextPath, 'utf-8'))
-    } catch {
-      void 0
-    }
-    const slug = await generateSlug(projectContext)
-    const created = registerDeployment(slug, session.id)
-    const url = `https://${created.slug}.${BASE_DOMAIN}`
-    deployment = {
-      slug: created.slug,
-      url,
-      deployedAt: created.deployedAt,
-    }
-    session.deployment = deployment
-    try {
-      writeFileSync(join(session.workspace, 'deploy.json'), JSON.stringify(deployment, null, 2))
-    } catch {
-      void 0
-    }
-    const state = makeSessionState(session)
-    state.broadcast({ type: 'deployed', slug: deployment.slug, url: deployment.url })
-    if (session.sanityConfig?.projectId && deployment.url) {
-      void ensureSanityCorsForTenant(session.sanityConfig, [deployment.url]).catch(() => {})
-    }
-    return deployment
   }
 
   app.post('/api/prompt-suggestions', async (req, res) => {
@@ -1312,7 +1269,14 @@ export async function startServer(sessionsDir) {
           })
           try {
             renderPreviewToWorkspace(
-              { brand, tagline: '', theme: cloneTheme, locale: 'en', skeleton: '', modules: { home: fullSource } },
+              {
+                brand,
+                tagline: '',
+                theme: cloneTheme,
+                locale: 'en',
+                skeleton: '',
+                modules: { home: fullSource },
+              },
               session.workspace,
             )
           } catch (bakeErr) {
@@ -1405,7 +1369,9 @@ export async function startServer(sessionsDir) {
       })
 
     if (req.user) {
-      console.log(`[auto-build] User authenticated, setting up export chain for session ${session.id}`)
+      console.log(
+        `[auto-build] User authenticated, setting up export chain for session ${session.id}`,
+      )
       generation
         .then(async (tailPromise) => {
           console.log(`[auto-build] Generation promise resolved for session ${session.id}`)
@@ -1419,7 +1385,9 @@ export async function startServer(sessionsDir) {
             try {
               console.log(`[auto-build] Generating ${target} export for session ${session.id}`)
               generateSessionExport(session, target)
-              console.log(`[auto-build] Broadcasting export_ready for ${target} to session ${session.id}`)
+              console.log(
+                `[auto-build] Broadcasting export_ready for ${target} to session ${session.id}`,
+              )
               sessionCtx.broadcast({ type: 'export_ready', target })
             } catch (err) {
               console.error(`[auto-build] ${target} failed: ${err.message}`)
@@ -1431,7 +1399,9 @@ export async function startServer(sessionsDir) {
           console.error(`[auto-build] Export chain failed for session ${session.id}:`, err)
         })
     } else {
-      console.log(`[auto-build] User not authenticated, skipping auto-build exports for session ${session.id}`)
+      console.log(
+        `[auto-build] User not authenticated, skipping auto-build exports for session ${session.id}`,
+      )
     }
 
     if (req.user) {
@@ -1560,7 +1530,7 @@ ${themeHead}
           console.error(`[Gallery] Failed to read index.html for session ${item.id}:`, error)
           return { ...item, html: null }
         }
-      })
+      }),
     )
 
     res.set('Cache-Control', 'public, max-age=20, stale-while-revalidate=120')
@@ -1592,11 +1562,11 @@ ${themeHead}
 
   // ─── API: Claim anonymous sessions ─────────────────────────
   app.post('/api/sessions/claim', requireAuth, (req, res) => {
-    const { sessionIds } = req.body
-    if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
-      return res.status(400).json({ error: 'sessionIds array is required' })
+    const claimEntries = Array.isArray(req.body?.claims) ? req.body.claims : req.body?.sessionIds
+    if (!Array.isArray(claimEntries) || claimEntries.length === 0) {
+      return res.status(400).json({ error: 'claims array is required' })
     }
-    const result = claimSessionsByIds(sessionIds, req.user.uid)
+    const result = claimSessionsByIds(claimEntries, req.user.uid)
     res.json(result)
   })
 
@@ -1637,50 +1607,7 @@ ${themeHead}
       ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || null,
       headers: req.headers,
     })
-    res.json({
-      id: session.id,
-      prompt: session.prompt,
-      createdAt: session.createdAt,
-      deployment: session.deployment || null,
-      homepageReady: session.homepageReady,
-      siteSpecReady: session.siteSpecReady ?? false,
-      preferredExportTarget: session.preferredExportTarget || 'html',
-      preferredLanguage: session.preferredLanguage || 'en',
-      exportTargets: targets,
-      payment,
-      themeOverride: session.themeOverride ?? null,
-      taskCount: session.tasks.length,
-      done: session.tasks.filter((t) => t.status === 'DONE').length,
-      tasks: session.tasks,
-      elapsed: session.elapsed ?? null,
-      cost: session.cost ?? null,
-      isAnonymous: !session.userId,
-      ecommerce: false,
-      openuiReady: session.openuiReady ?? false,
-      integrations: {
-        sanity: {
-          enabled: Boolean(session.sanityConfig?.projectId || session.sanityConfig?.dataset),
-          config: session.sanityConfig
-            ? {
-                projectId: session.sanityConfig.projectId,
-                dataset: session.sanityConfig.dataset,
-                apiVersion: session.sanityConfig.apiVersion,
-              }
-            : null,
-        },
-        medusa: {
-          enabled: Boolean(session.medusaConfig?.backendUrl || session.medusaConfig?.adminBaseUrl),
-          config: session.medusaConfig
-            ? {
-                backendUrl:
-                  session.medusaConfig.backendUrl || session.medusaConfig.adminBaseUrl || null,
-                storefrontUrl: session.medusaConfig.storefrontUrl || null,
-              }
-            : null,
-        },
-      },
-      medusaAdminEmbed: { show: false, url: null },
-    })
+    res.json(buildSessionApiResponse(session, { exportTargets: targets, payment }))
   })
 
   app.get('/api/sessions/:id/openui', optionalAuth, (req, res) => {
@@ -1737,7 +1664,8 @@ ${themeHead}
     if (tasks.length > 0) sendSSEEvent(res, 'tasks_loaded', { tasks })
     if (siteSpecReady) sendSSEEvent(res, 'site_spec_ready', { ready: true })
     if (homepageReady) sendSSEEvent(res, 'homepage_ready', {})
-    if (alternativeDesign) sendSSEEvent(res, 'alternative_design_ready', { design: alternativeDesign })
+    if (alternativeDesign)
+      sendSSEEvent(res, 'alternative_design_ready', { design: alternativeDesign })
     if (themeOverride) sendSSEEvent(res, 'theme_override_loaded', { theme: themeOverride })
     if (deployment?.url) {
       sendSSEEvent(res, 'deployed', { slug: deployment.slug, url: deployment.url })
@@ -1759,13 +1687,13 @@ ${themeHead}
       const { getSessionExportTargets } = await import('./exports.js')
       const currentTargets = getSessionExportTargets(session)
       const hasAnyExport = currentTargets.some((t) => t.ready)
-      
+
       console.log(`[SSE] Export targets for session ${session.id}:`, {
         hasAnyExport,
         targetCount: currentTargets.length,
         targets: currentTargets.map((t) => ({ target: t.target, ready: t.ready })),
       })
-      
+
       if (!hasAnyExport) {
         console.log(`[SSE] Triggering auto-build exports for existing session ${session.id}`)
         const sessionCtx = makeSessionState(session)
@@ -1784,7 +1712,10 @@ ${themeHead}
         console.log(`[SSE] Exports already exist for session ${session.id}, skipping auto-build`)
       }
     } else {
-      console.log(`[SSE] Skipping auto-build exports for session ${session.id} (conditions not met)`, { homepageReady, siteSpecReady })
+      console.log(
+        `[SSE] Skipping auto-build exports for session ${session.id} (conditions not met)`,
+        { homepageReady, siteSpecReady },
+      )
     }
 
     // Send keepalive every 30 seconds to prevent timeout
@@ -1848,14 +1779,14 @@ ${themeHead}
     const session = getSession(req.params.id)
     if (!session) return res.status(404).json({ error: 'Session not found' })
     if (!ensureSessionArtifactAccess(req, res, session)) return
-    
+
     try {
       const siteSpecPath = join(session.workspace, 'site-spec.json')
       let pages = []
-      
+
       if (existsSync(siteSpecPath)) {
         const siteSpec = JSON.parse(readFileSync(siteSpecPath, 'utf-8'))
-        
+
         // First try traditional pages array
         if (Array.isArray(siteSpec.pages)) {
           pages = siteSpec.pages.map((page) => ({
@@ -1863,7 +1794,7 @@ ${themeHead}
             name: page.name || page.title || 'Untitled',
             route: page.route || '/',
           }))
-        } 
+        }
         // Then try OpenUI PageSwitch format
         else if (siteSpec.modules && siteSpec.modules.home) {
           const homeModule = siteSpec.modules.home
@@ -1874,9 +1805,9 @@ ${themeHead}
             // Parse the array of page names
             const pageNames = pageNamesStr
               .split(',')
-              .map(name => name.trim().replace(/"/g, ''))
+              .map((name) => name.trim().replace(/"/g, ''))
               .filter(Boolean)
-            
+
             pages = pageNames.map((name, index) => ({
               id: `page-${index}`,
               name: name,
@@ -1885,7 +1816,7 @@ ${themeHead}
           }
         }
       }
-      
+
       res.json({ pages })
     } catch (error) {
       console.error('[Pages API] Error reading site spec:', error)
@@ -3042,9 +2973,13 @@ ${themeHead}
       const session = getSession(req.params.sessionId)
       if (!session) return res.status(404).send('Session not found')
       const fp = filePathForPreviewRequest(session.workspace, req)
-      
+
       // For index.html, serve client shell with React bundle for interactivity
-      if (fp && extname(fp) === '.html' && (fp.endsWith('index.html') || fp.endsWith('/index.html'))) {
+      if (
+        fp &&
+        extname(fp) === '.html' &&
+        (fp.endsWith('index.html') || fp.endsWith('/index.html'))
+      ) {
         const openuiPath = join(session.workspace, 'home.openui')
         if (existsSync(openuiPath)) {
           try {
@@ -3052,8 +2987,12 @@ ${themeHead}
             const themeHead = buildThemeHead(`${brand}\n`, null)
             const siteSpec = readFileSync(join(session.workspace, 'site-spec.json'), 'utf8')
             const siteSpecData = JSON.parse(siteSpec)
-            const previewSeoHead = buildPreviewSeoHead(siteSpecData, brand, String(siteSpecData?.tagline || ''))
-            
+            const previewSeoHead = buildPreviewSeoHead(
+              siteSpecData,
+              brand,
+              String(siteSpecData?.tagline || ''),
+            )
+
             // Client shell HTML that loads React bundle for interactive rendering
             const clientShellHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -3068,7 +3007,7 @@ ${themeHead}
   <script type="module" src="/scripts/openui-island.js"></script>
 </body>
 </html>`
-            
+
             res
               .type('html')
               .send(
@@ -3087,7 +3026,7 @@ ${themeHead}
           }
         }
       }
-      
+
       // Fall back to static file serving
       if (fp && extname(fp) === '.html') {
         try {

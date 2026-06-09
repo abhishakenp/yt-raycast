@@ -309,6 +309,13 @@ export const SpaWellnessKimiPage = defineComponent({
               "Aromatic herbal body wrap with fresh eucalyptus and lavender botanicals on white spa linens",
           },
         ]
+    const normalizedTreatItems = treatItems.map((item) => ({
+      ...item,
+      features:
+        Array.isArray(item.features) && item.features.length > 0
+          ? item.features
+          : ["Personalized consultation", "Expert practitioner care"],
+    }))
 
     const journeyEyebrow = props.journey?.eyebrow ?? "Your Wellness Journey"
     const journeyHeading = props.journey?.heading ?? "From Arrival to Renewal"
@@ -829,7 +836,7 @@ export const SpaWellnessKimiPage = defineComponent({
               </div>
 
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {treatItems.map((item) => (
+                {normalizedTreatItems.map((item) => (
                   <article
                     key={item.title}
                     className="group overflow-hidden rounded-xl bg-card shadow-sm transition-shadow hover:shadow-md"

@@ -3,11 +3,13 @@ import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import {
+  claimSessionsByIds,
   createSession,
   getAllSessions,
   getOpenUIStreamReplayMessages,
   getSession,
   initSessionDir,
+  readAnonOwnerSecret,
   sessionBroadcast,
 } from './sessions.js'
 import { getPublicGalleryList, invalidatePublicGallery } from './public-gallery-cache.js'
@@ -45,9 +47,14 @@ describe('session disk recovery', () => {
     tmpRoot = mkdtempSync(join(tmpdir(), 'ship-fast-sessions-'))
     initSessionDir(tmpRoot)
 
-    const created = createSession(tmpRoot, 'a private landing page for a funded startup', 'user-a', {
-      isPrivate: true,
-    })
+    const created = createSession(
+      tmpRoot,
+      'a private landing page for a funded startup',
+      'user-a',
+      {
+        isPrivate: true,
+      },
+    )
     const reloaded = getSession(created.id)
 
     expect(created.isPrivate).toBe(true)
@@ -77,6 +84,33 @@ describe('session disk recovery', () => {
 
     expect(galleryIds).toContain(publicSession.id)
     expect(galleryIds).not.toContain(privateSession.id)
+  })
+})
+
+describe('anonymous session claiming', () => {
+  it('requires the anonymous owner secret before assigning a user', () => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'ship-fast-sessions-'))
+    initSessionDir(tmpRoot)
+    const session = createSession(tmpRoot, 'a public landing page for a bakery', null)
+    const secret = readAnonOwnerSecret(session.workspace)
+
+    expect(claimSessionsByIds([session.id], 'user-a')).toEqual({
+      claimed: [],
+      failed: [session.id],
+    })
+    expect(getSession(session.id)?.userId).toBeNull()
+
+    expect(claimSessionsByIds([{ id: session.id, secret: 'wrong' }], 'user-a')).toEqual({
+      claimed: [],
+      failed: [session.id],
+    })
+    expect(getSession(session.id)?.userId).toBeNull()
+
+    expect(claimSessionsByIds([{ id: session.id, secret }], 'user-a')).toEqual({
+      claimed: [session.id],
+      failed: [],
+    })
+    expect(getSession(session.id)?.userId).toBe('user-a')
   })
 })
 
