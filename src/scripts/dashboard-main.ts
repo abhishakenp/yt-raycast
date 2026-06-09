@@ -644,6 +644,7 @@ function populateCmsForm(siteSettings) {
 let eventSource = null
 let reconnectTimer = null
 let leavingDashboard = false
+let sessionReadyPollTimer = null
 const DEV_PROMPT_EXAMPLES = [
   'Build a bold landing page for a premium pet wellness app with a booking section and customer testimonials.',
   'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
@@ -654,6 +655,10 @@ function cleanupRealtime() {
   if (reconnectTimer) {
     clearTimeout(reconnectTimer)
     reconnectTimer = null
+  }
+  if (sessionReadyPollTimer) {
+    clearInterval(sessionReadyPollTimer)
+    sessionReadyPollTimer = null
   }
   if (eventSource) {
     eventSource.onopen = null
@@ -1824,6 +1829,97 @@ function getTaskCounts() {
     backendDone,
     totalDone: frontendDone + backendDone,
   }
+}
+
+function setGeneratedStatus(elapsed = persistedElapsed) {
+  const n = Number(elapsed)
+  const hasElapsed = Number.isFinite(n) && n > 0
+  const phaseText = hasElapsed ? `Project generated in ${n}s` : 'Project generated'
+  document.getElementById('phase-text').textContent = phaseText
+  const timingEl = document.getElementById('gen-timing')
+  if (!timingEl) return
+  const counts = getTaskCounts()
+  if (counts.frontendTotal > 0) {
+    timingEl.textContent = hasElapsed
+      ? `Generated in ${n}s · ${counts.frontendDone}/${counts.frontendTotal} frontend steps`
+      : `Generated · ${counts.frontendDone}/${counts.frontendTotal} frontend steps`
+  } else {
+    timingEl.textContent = hasElapsed ? `Generated in ${n}s` : 'Generated'
+  }
+}
+
+function markFrontendTasksDone() {
+  let changed = false
+  tasks = tasks.map((task) => {
+    if (!isFrontendTask(task) || task.status === 'DONE' || task.status === 'FAILED') return task
+    changed = true
+    return { ...task, status: 'DONE' }
+  })
+  if (changed) renderTasks()
+}
+
+function stopSessionReadyPoll() {
+  if (!sessionReadyPollTimer) return
+  clearInterval(sessionReadyPollTimer)
+  sessionReadyPollTimer = null
+}
+
+function applyReadySessionState(session) {
+  if (!session || typeof session !== 'object') return false
+  const isDone = Number(session.taskCount) > 0 && Number(session.done) === Number(session.taskCount)
+  const ready = Boolean(session.homepageReady) || isDone
+  if (!ready) return false
+
+  if (Array.isArray(session.tasks)) {
+    tasks = session.tasks
+    taskMap = {}
+    tasks.forEach((task) => {
+      if (task?.id) taskMap[task.id] = task
+    })
+  }
+  persistedElapsed = Number.isFinite(Number(session.elapsed)) ? Number(session.elapsed) : persistedElapsed
+  homepageReady = Boolean(session.homepageReady) || homepageReady
+  siteSpecReady = Boolean(session.siteSpecReady) || siteSpecReady
+  hydratedComplete = isDone || hydratedComplete
+  syncOpenUIActiveClass(session)
+  if (tasks.length > 0) renderTasks()
+  markFrontendTasksDone()
+  syncProvisionStateFromSession(session)
+  if (session.medusaAdminEmbed) medusaAdminEmbedState = session.medusaAdminEmbed
+  applyMedusaAdminControls()
+  if (Array.isArray(session.exportTargets)) {
+    exportTargets = session.exportTargets
+    renderExportPanel()
+  }
+  syncPreviewChrome()
+  showPreviewChatDock()
+  openPreviewChatPanel()
+  if (introActive) skipIntro()
+  else {
+    openDrawer()
+    forcePreviewFrameLoad(true)
+  }
+  setGeneratedStatus(persistedElapsed)
+  stopSessionReadyPoll()
+  return true
+}
+
+function startSessionReadyPoll() {
+  if (!SESSION_ID || sessionReadyPollTimer) return
+  sessionReadyPollTimer = setInterval(async () => {
+    if (homepageReady && hydratedComplete && !isBlankPreviewFrame(document.getElementById('preview-iframe'))) {
+      stopSessionReadyPoll()
+      return
+    }
+    try {
+      const res = await apiFetch(`/api/sessions/${SESSION_ID}`)
+      if (!res.ok) return
+      const session = await res.json().catch(() => null)
+      applyReadySessionState(session)
+    } catch {
+      void 0
+    }
+  }, 3000)
 }
 
 function hasOpenUIArtifact(taskList = tasks) {
@@ -3132,8 +3228,8 @@ function skipIntro() {
   frontendComplete = true
   leftPanel.classList.add('drawer-open', 'collapsed')
   rightPanel.classList.add('expanded')
-  document.getElementById('preview-loading').classList.add('hidden')
-  loadPreview()
+  document.getElementById('preview-loading')?.classList.add('hidden')
+  forcePreviewFrameLoad(true)
 }
 
 // ─── Pixel art sprites for agent avatars ───────────────────
@@ -3358,7 +3454,9 @@ function updateStats() {
   const finished = done + failed
 
   const timingEl = document.getElementById('gen-timing')
-  if (timingEl && !allDone) {
+  if (timingEl && (hydratedComplete || allDone || (total > 0 && finished >= total))) {
+    setGeneratedStatus(persistedElapsed)
+  } else if (timingEl) {
     if (total === 0) {
       timingEl.textContent = 'Preparing to generate…'
     } else {
@@ -3814,6 +3912,21 @@ function getPreviewFrameSrc(cacheBust) {
   return cacheBust ? `${PREVIEW_BASE}?t=${Date.now()}` : PREVIEW_BASE
 }
 
+function isBlankPreviewFrame(iframe) {
+  if (!iframe) return true
+  const src = iframe.getAttribute('src') || iframe.src || ''
+  return !src || src === 'about:blank'
+}
+
+function forcePreviewFrameLoad(cacheBust = true) {
+  const iframe = document.getElementById('preview-iframe')
+  if (!iframe || !SESSION_ID) return false
+  preloadStarted = true
+  iframe.onload = () => onPreviewIframeLoaded()
+  iframe.src = getPreviewFrameSrc(cacheBust)
+  return true
+}
+
 function resetPreviewToSessionHtml() {
   nextPreviewActive = false
   nextPreviewBase = ''
@@ -3831,9 +3944,7 @@ function resetPreviewToSessionHtml() {
     syncPreviewChrome()
     return
   }
-  preloadStarted = true
-  iframe.src = getPreviewFrameSrc(true)
-  iframe.onload = () => onPreviewIframeLoaded()
+  forcePreviewFrameLoad(true)
 }
 
 function maybeWarmNextDevServerInBackground() {
@@ -3872,14 +3983,14 @@ function maybeWarmNextDevServerInBackground() {
 
 function preloadPreview() {
   if (preloadStarted) return
-  preloadStarted = true
-  const iframe = document.getElementById('preview-iframe')
-  iframe.src = getPreviewFrameSrc(false)
-  iframe.onload = () => onPreviewIframeLoaded()
+  forcePreviewFrameLoad(false)
 }
 
 function loadPreview() {
   if (!preloadStarted) preloadPreview()
+  else if (!previewLoaded && isBlankPreviewFrame(document.getElementById('preview-iframe'))) {
+    forcePreviewFrameLoad(true)
+  }
   else if (previewLoaded) {
     const iframe = document.getElementById('preview-iframe')
     iframe.onload = () => onPreviewIframeLoaded()
@@ -4769,6 +4880,19 @@ function connectSSE() {
         if (iframe && !introRectanglesAnimated) animateRectanglesToSite(iframe)
         break
 
+      case 'openui_ready':
+        if (ev.route === '/') {
+          homepageReady = true
+          hydratedComplete = true
+          markFrontendTasksDone()
+          resetPreviewToSessionHtml()
+          setGeneratedStatus()
+          resolveIntroExit()
+          if (drawerOpen) expandPreviewForLiveOpenUI()
+          stopSessionReadyPoll()
+        }
+        break
+
       case 'run_completed':
         hydratedComplete = true
         persistedElapsed = Number.isFinite(Number(ev.elapsed))
@@ -4787,6 +4911,7 @@ function connectSSE() {
         }
         resetPreviewToSessionHtml()
         resolveIntroExit() // terminal fallback: never leave the intro loader stuck
+        stopSessionReadyPoll()
         checkAllDone()
         if (chatAwaitingEdit) {
           chatAwaitingEdit = false
@@ -5359,10 +5484,9 @@ function beginSessionDashboard(session) {
     const sfx = document.getElementById('launch-sfx')
     if (sfx) sfx.remove()
     if (persistedElapsed != null) {
-      document.getElementById('phase-text').textContent =
-        `Project generated in ${persistedElapsed}s`
       document.getElementById('toast-elapsed').textContent = persistedElapsed + 's'
     }
+    setGeneratedStatus(persistedElapsed)
   }
   homepageReady = Boolean(session.homepageReady) || homepageReady
   siteSpecReady = Boolean(session.siteSpecReady) || siteSpecReady
@@ -5393,16 +5517,30 @@ function beginSessionDashboard(session) {
     startIntro()
   }
   connectSSE()
+  startSessionReadyPoll()
 }
 
 apiFetch(`/api/sessions/${SESSION_ID}`)
   .then((r) => r.json())
   .then((session) => {
-    beginSessionDashboard(session)
+    try {
+      beginSessionDashboard(session)
+    } catch (error) {
+      console.error('[dashboard] session init failed', error)
+      if (session?.homepageReady || (session?.taskCount > 0 && session?.done === session?.taskCount)) {
+        applyReadySessionState(session)
+        connectSSE()
+        return
+      }
+      startIntro()
+      connectSSE()
+      startSessionReadyPoll()
+    }
   })
   .catch(() => {
     startIntro()
     connectSSE()
+    startSessionReadyPoll()
   })
 
 // ─── New prompt overlay ─────────────────────────────────

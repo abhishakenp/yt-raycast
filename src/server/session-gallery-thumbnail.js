@@ -21,6 +21,7 @@ export const GALLERY_THUMB_FILENAME = '.gallery-thumb.png'
 const CAPTURE_WIDTH = 1280
 const CAPTURE_HEIGHT = 800
 const CAPTURE_TIMEOUT_MS = 45_000
+const BRAVE_EXECUTABLE = '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'
 
 /** @type {Map<string, Promise<string|null>>} */
 const inFlight = new Map()
@@ -58,8 +59,16 @@ function previewUrlForSession(sessionId) {
   return `http://127.0.0.1:${DASHBOARD_PORT}/preview/${sessionId}/?gallery=1`
 }
 
-function runAgentBrowser(args) {
-  const r = spawnSync('agent-browser', args, {
+function agentBrowserArgs(sessionName, args) {
+  const base = ['--session', sessionName, '--headed']
+  if (existsSync(BRAVE_EXECUTABLE)) {
+    base.push('--executable-path', BRAVE_EXECUTABLE)
+  }
+  return [...base, ...args]
+}
+
+function runAgentBrowser(args, sessionName) {
+  const r = spawnSync('agent-browser', agentBrowserArgs(sessionName, args), {
     stdio: 'ignore',
     shell: false,
     timeout: CAPTURE_TIMEOUT_MS,
@@ -107,18 +116,19 @@ async function captureViaExternalService(previewUrl) {
 /** Viewport screenshot via agent-browser (scripts/homepage-quality-gate.mjs pattern). */
 function captureViaAgentBrowser(previewUrl, outPath) {
   if (process.env.GALLERY_THUMB_DISABLE_AGENT_BROWSER === '1') return false
+  const sessionName = `ship-fast-gallery-thumb-${process.pid}-${Date.now()}`
 
   try {
     const ok =
-      runAgentBrowser(['set', 'viewport', String(CAPTURE_WIDTH), String(CAPTURE_HEIGHT)]) &&
-      runAgentBrowser(['open', previewUrl]) &&
-      runAgentBrowser(['wait', '--load', 'networkidle']) &&
-      runAgentBrowser(['wait', '2000']) &&
-      runAgentBrowser(['screenshot', outPath])
+      runAgentBrowser(['set', 'viewport', String(CAPTURE_WIDTH), String(CAPTURE_HEIGHT)], sessionName) &&
+      runAgentBrowser(['open', previewUrl], sessionName) &&
+      runAgentBrowser(['wait', '--load', 'networkidle'], sessionName) &&
+      runAgentBrowser(['wait', '2000'], sessionName) &&
+      runAgentBrowser(['screenshot', outPath], sessionName)
 
     return ok && existsSync(outPath) && statSync(outPath).size > 0
   } finally {
-    runAgentBrowser(['close'])
+    runAgentBrowser(['close'], sessionName)
   }
 }
 

@@ -78,7 +78,7 @@ export const ConsultingKimiPage2 = defineComponent({
             z.object({
               title: z.string(),
               description: z.string(),
-              points: z.array(z.string()),
+              points: z.array(z.string()).optional(),
             }),
           )
           .optional(),
@@ -258,9 +258,7 @@ export const ConsultingKimiPage2 = defineComponent({
     const servicesDesc =
       props.services?.description ??
       "We bring deep functional expertise across strategy, operations, technology, and organization to deliver lasting impact."
-    const serviceItems = props.services?.items?.length
-      ? props.services.items
-      : [
+    const defaultServiceItems = [
         {
           title: "Strategy & Growth",
           description:
@@ -322,6 +320,15 @@ export const ConsultingKimiPage2 = defineComponent({
           ],
         },
       ]
+    const serviceItems = (props.services?.items?.length
+      ? props.services.items
+      : defaultServiceItems
+    ).map((item, index) => ({
+      ...item,
+      points: item.points?.length
+        ? item.points
+        : defaultServiceItems[index % defaultServiceItems.length].points,
+    }))
 
     const caseEyebrow = props.caseStudies?.eyebrow ?? "Case Studies"
     const caseHeading = props.caseStudies?.heading ?? "Real results, lasting impact"

@@ -82,9 +82,9 @@ export function isSlugTaken(slug) {
   return deploymentMap.has(normalizeSlug(slug))
 }
 
-export function registerDeployment(slug, sessionId) {
+export function registerDeployment(slug, sessionId, deployedAt = Date.now()) {
   const key = normalizeSlug(slug)
-  return setDeployment(key, String(sessionId || ''), Date.now())
+  return setDeployment(key, String(sessionId || ''), deployedAt)
 }
 
 export function removeDeploymentBySessionId(sessionId) {

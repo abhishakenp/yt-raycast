@@ -214,6 +214,13 @@ export const PricingKimiPage = defineComponent({
               ],
             },
           ]
+    const normalizedPlans = plans.map((plan) => ({
+      ...plan,
+      features:
+        Array.isArray(plan.features) && plan.features.length > 0
+          ? plan.features
+          : ["Core features included", "Flexible setup", "Support included"],
+    }))
 
     const comparisonHeading =
       props.comparison?.heading ?? "Compare everything side-by-side"
@@ -453,7 +460,7 @@ export const PricingKimiPage = defineComponent({
               </div>
 
               <div className="grid items-start gap-6 md:grid-cols-3">
-                {plans.map((plan) => (
+                {normalizedPlans.map((plan) => (
                   <div
                     key={plan.name}
                     className={cn(

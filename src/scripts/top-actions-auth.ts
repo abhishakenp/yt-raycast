@@ -10,6 +10,10 @@ import {
   signInWithPopup,
   signOut,
 } from 'firebase/auth'
+import {
+  getClerkSessionToken,
+  initClerkBrowserAuth,
+} from './clerk-browser-auth'
 
 const GITHUB_TOKEN_STORAGE_KEY = 'sf:github-access-token'
 
@@ -22,6 +26,14 @@ declare global {
       signInEmail: (email: string, password: string) => Promise<void>
       signUpEmail: (email: string, password: string) => Promise<void>
       signOut: () => Promise<void>
+    }
+    shipFastDashboardAuth?: {
+      ready: Promise<unknown>
+      getCurrentIdToken: () => Promise<string>
+      signInWithGoogle: () => Promise<unknown>
+      signInWithGithub: () => Promise<unknown>
+      signInWithEmail: (email: string, password: string) => Promise<unknown>
+      signUpWithEmail: (email: string, password: string) => Promise<unknown>
     }
     __sfAuthUnavailable?: boolean
   }
@@ -69,7 +81,80 @@ const main = async (): Promise<void> => {
 
   try {
     const response = await fetch('/api/config')
-    const cfg: { apiKey?: string } = await response.json()
+    const cfg: { apiKey?: string; clerkPublishableKey?: string } = await response.json()
+    if (cfg?.clerkPublishableKey) {
+      const clerk = await initClerkBrowserAuth(cfg.clerkPublishableKey)
+      if (!clerk) throw new Error('missing')
+
+      const ready = Promise.resolve(clerk)
+      const openClerkSignIn = async () => {
+        await ready
+        clerk.openSignIn()
+      }
+      const signOutClerk = async () => {
+        await ready
+        await clerk.signOut()
+      }
+      const emitState = () => {
+        const user = clerk.user ?? null
+        if (user) {
+          setSignedInUi()
+          closeOverlay()
+        } else {
+          setSignedOutUi()
+        }
+        window.dispatchEvent(new CustomEvent('sf-home-auth-state', { detail: { user } }))
+      }
+
+      window.__sfAuthApi = {
+        signInGoogle: openClerkSignIn,
+        signInGithub: openClerkSignIn,
+        signInEmail: async () => openClerkSignIn(),
+        signUpEmail: async () => openClerkSignIn(),
+        signOut: signOutClerk,
+      }
+      window.shipFastDashboardAuth = {
+        ready,
+        getCurrentIdToken: () => getClerkSessionToken(clerk),
+        signInWithGoogle: openClerkSignIn,
+        signInWithGithub: openClerkSignIn,
+        signInWithEmail: async () => {
+          await openClerkSignIn()
+          return clerk.user
+        },
+        signUpWithEmail: async () => {
+          await openClerkSignIn()
+          return clerk.user
+        },
+      }
+
+      emitState()
+      clerk.addListener(emitState)
+
+      signoutBtn?.addEventListener('click', () => {
+        void window.__sfAuthApi?.signOut()
+      })
+      signinBtn?.addEventListener('click', () => openOverlay())
+      window.addEventListener('sf-request-auth-overlay', () => openOverlay())
+      authOverlay?.addEventListener('click', (event) => {
+        if (event.target === authOverlay && !clerk.user) closeOverlay()
+      })
+
+      const wrap =
+        (fn: () => Promise<unknown>): ((event: Event) => void) =>
+        (event) => {
+          event.preventDefault()
+          if (authErrorEl) authErrorEl.textContent = ''
+          fn().catch(showAuthError)
+        }
+
+      document.getElementById('google-signin-btn')?.addEventListener('click', wrap(openClerkSignIn))
+      document.getElementById('github-signin-btn')?.addEventListener('click', wrap(openClerkSignIn))
+      document.getElementById('email-signin-btn')?.addEventListener('click', wrap(openClerkSignIn))
+      document.getElementById('email-signup-btn')?.addEventListener('click', wrap(openClerkSignIn))
+      document.getElementById('auth-email-form')?.addEventListener('submit', wrap(openClerkSignIn))
+      return
+    }
     if (!cfg?.apiKey) throw new Error('missing')
     auth = getAuth(initializeApp(cfg))
   } catch {

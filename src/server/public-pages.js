@@ -366,7 +366,7 @@ export function renderHomePage(siteSettings = null) {
 
       <section class="launch-hero" aria-label="Print your mind in seconds">
         <div class="launch-visual" aria-hidden="true">
-          <img class="launch-rocket" src="/assets/launch-scene.png" alt="" loading="eager" decoding="async" />
+          <img class="launch-rocket" src="/assets/rocket-transparent.png" alt="" loading="eager" decoding="async" />
         </div>
 
         <div class="launch-copy">

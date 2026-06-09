@@ -1,7 +1,9 @@
-import type { User } from 'firebase/auth'
 import { ANON_SESSIONS_KEY } from '@/lib/home/constants'
 
 export type AnonSessionEntry = { id: string; prompt: string; secret?: string }
+export type SessionTokenUser = {
+  getIdToken: (forceRefresh?: boolean) => Promise<string>
+}
 
 export const readAnonSessions = (): AnonSessionEntry[] => {
   try {
@@ -35,15 +37,15 @@ export const clearAnonSessions = () => {
   localStorage.removeItem(ANON_SESSIONS_KEY)
 }
 
-export const claimAnonSessionsWithUser = async (user: User) => {
+export const claimAnonSessionsWithUser = async (user: SessionTokenUser) => {
   const stored = readAnonSessions()
   if (stored.length === 0) return
-  const sessionIds = stored.map((s) => s.id)
+  const claims = stored.map((s) => ({ id: s.id, secret: s.secret || '' }))
   const token = await user.getIdToken(true)
   const response = await fetch('/api/sessions/claim', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ sessionIds }),
+    body: JSON.stringify({ claims }),
   })
   if (!response.ok) return
   const result = (await response.json()) as { claimed?: string[] }

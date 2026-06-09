@@ -90,4 +90,57 @@ describe('export badge decoration', () => {
       badgeMode: 'free',
     })
   })
+
+  it.each([
+    {
+      target: 'react',
+      expectedFiles: ['package.json', 'index.html', 'src/App.jsx', 'src/main.jsx', 'src/site.css'],
+    },
+    {
+      target: 'nextjs',
+      expectedFiles: [
+        'package.json',
+        'next.config.mjs',
+        'app/layout.jsx',
+        'app/page.jsx',
+        'app/globals.css',
+      ],
+    },
+  ])(
+    'builds a runnable $target project bundle from a session site spec',
+    ({ target, expectedFiles }) => {
+      const session = writeHtmlExportSession()
+
+      const result = generateSessionExport(session, target)
+      const bundle = getSessionExportBundle(session, target)
+
+      expect(result).toMatchObject({
+        target,
+        downloadPath: `/api/sessions/session-html/download/${target}`,
+        siteSpecReady: true,
+      })
+      expect(result.fileCount).toBeGreaterThan(expectedFiles.length)
+      expect(bundle?.path).toBe(join(session.workspace, 'exports', `${target}.zip`))
+
+      for (const file of expectedFiles) {
+        expect(existsSync(join(session.workspace, 'exports', target, file))).toBe(true)
+      }
+
+      const packageJson = JSON.parse(
+        readFileSync(join(session.workspace, 'exports', target, 'package.json'), 'utf-8'),
+      )
+      expect(packageJson.scripts.build).toBeTruthy()
+
+      const zip = readFileSync(bundle.path)
+      expect(zip.subarray(0, 2).toString('utf-8')).toBe('PK')
+      expect(zip.toString('latin1')).toContain('package.json')
+
+      const metadata = JSON.parse(readFileSync(join(session.workspace, '.exports.json'), 'utf-8'))
+      expect(metadata.targets[target]).toMatchObject({
+        bundlePath: join('exports', `${target}.zip`),
+        fileCount: result.fileCount,
+        badgeMode: 'free',
+      })
+    },
+  )
 })

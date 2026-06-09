@@ -32,11 +32,14 @@ describe('homepage critical flow sanity', () => {
     const html = renderHomePage()
     const stylesheetHref = html.match(/<link[^>]+href="([^"]*\/styles\/index\.css[^"]*)"/)?.[1]
     const scriptSrc = html.match(/<script[^>]+src="([^"]*\/scripts\/homepage\.js[^"]*)"/)?.[1]
+    const rocketSrc = html.match(/<img[^>]+class="launch-rocket"[^>]+src="([^"]+)"/)?.[1]
 
     expect(stylesheetHref).toBeTruthy()
     expect(scriptSrc).toBeTruthy()
+    expect(rocketSrc).toBe('/assets/rocket-transparent.png')
     expect(existsSync(assetPathFromHref(stylesheetHref))).toBe(true)
     expect(existsSync(assetPathFromHref(scriptSrc))).toBe(true)
+    expect(existsSync(assetPathFromHref(rocketSrc))).toBe(true)
   })
 
   it('renders answer-engine metadata and llms.txt discovery', () => {

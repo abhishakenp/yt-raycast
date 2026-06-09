@@ -645,15 +645,31 @@ export function claimSession(sessionId, newUserId) {
   return session
 }
 
+function normalizeSessionClaim(entry) {
+  if (typeof entry === 'string') return { id: entry, secret: '' }
+  if (!entry || typeof entry !== 'object') return { id: '', secret: '' }
+  return {
+    id: String(entry.id || entry.sessionId || ''),
+    secret: String(entry.secret || entry.ownerSecret || ''),
+  }
+}
+
 export function claimSessionsByIds(sessionIds, newUserId) {
   const claimed = []
   const failed = []
-  for (const id of sessionIds) {
+  for (const entry of sessionIds) {
+    const { id, secret } = normalizeSessionClaim(entry)
     try {
+      const session = getSession(id)
+      if (!session) throw new Error('Session not found')
+      const expectedSecret = readAnonOwnerSecret(session.workspace)
+      if (expectedSecret && secret !== expectedSecret) {
+        throw new Error('Anonymous owner secret is required')
+      }
       claimSession(id, newUserId)
       claimed.push(id)
     } catch {
-      failed.push(id)
+      if (id) failed.push(id)
     }
   }
   return { claimed, failed }
@@ -821,14 +837,14 @@ function rememberOpenUIStreamMessage(session, msg) {
 export function getOpenUIStreamReplayMessages(session, route = '/') {
   const key = normalizeOpenUIStreamRoute(route)
   const stream = session?.openuiStreams?.[key]
-  
+
   // Read fresh OpenUI from disk instead of using cached stream.source
   // Fall back to cached if workspace is not available or file doesn't exist
   let freshSource = null
   if (session?.workspace) {
     freshSource = readOpenUIFileForRoute(session.workspace, route)
   }
-  
+
   if (freshSource) {
     console.log('[SessionBroadcast] replay_openui (fresh from disk)', {
       sessionId: session.id,
@@ -836,7 +852,7 @@ export function getOpenUIStreamReplayMessages(session, route = '/') {
       sourceLen: freshSource.length,
     })
   }
-  
+
   if (!stream || (!stream.active && !stream.done && !stream.error)) {
     // If stream doesn't exist but we have fresh source, still send it
     if (freshSource) {
@@ -848,16 +864,15 @@ export function getOpenUIStreamReplayMessages(session, route = '/') {
     }
     return []
   }
-  
+
   if (stream.error) {
     return [{ type: 'openui-error', route: key, error: stream.error }]
   }
-  
+
   const messages = [{ type: 'openui_stream_start', route: key }]
   // Use fresh source from disk if available, otherwise fall back to cached
   const sourceToUse = freshSource || stream.source
-  if (sourceToUse)
-    messages.push({ type: 'openui_stream_chunk', route: key, source: sourceToUse })
+  if (sourceToUse) messages.push({ type: 'openui_stream_chunk', route: key, source: sourceToUse })
   if (stream.done)
     messages.push({ type: 'openui_stream_done', route: key, source: sourceToUse || '' })
   return messages

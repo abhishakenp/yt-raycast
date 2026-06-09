@@ -8,6 +8,7 @@ import { preferRomanizedBcp47FromSnippet } from '../config/languages.js'
 import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
 import { LOCAL_DEV_PROMPT_SHORTCUTS } from '../lib/home/sample-prompts'
 import { getRandomPrompt } from '../lib/home/random-prompt'
+import { withAuthTokenHeader } from '../lib/home/auth-fetch'
 
 declare const __SF_DEV_SCRIPTS__: boolean
 import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed'
@@ -46,6 +47,9 @@ declare global {
   interface Window {
     __sfAuthFetch?: (url: string, options?: RequestInit) => Promise<Response>
     __sfHomeScriptReady?: boolean
+    shipFastDashboardAuth?: {
+      getCurrentIdToken?: () => Promise<string>
+    }
   }
 }
 
@@ -63,8 +67,10 @@ const openAuthOverlay = () => {
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const bridge = window.__sfAuthFetch
   if (bridge) return bridge(url, options)
-  const headers = { ...((options as any).headers || {}) }
-  return fetch(url, { ...options, headers })
+  const authedOptions = await withAuthTokenHeader(options, () =>
+    window.shipFastDashboardAuth?.getCurrentIdToken?.(),
+  )
+  return fetch(url, authedOptions)
 }
 
 async function showAnonymousApp() {
@@ -123,6 +129,7 @@ const GALLERY_RESTORE_SOURCE_KEY = 'sf_gallery_restore_source'
 let publicGalleryPage = 1
 let userGalleryPage = 1
 let gallerySource: GallerySource = 'public'
+let galleryLaunchSuspended = false
 let galleryMeta: GalleryMeta | null = null
 let anonSessionEntriesCacheT = 0
 let anonSessionEntriesCacheV: SessionItem[] | null = null
@@ -1116,6 +1123,40 @@ function getGenerationCount(): number {
   return parseInt(localStorage.getItem('sf_generation_count') || '0', 10)
 }
 
+const wait = (ms: number): Promise<void> => new Promise((resolve) => window.setTimeout(resolve, ms))
+
+async function waitForSessionReady(sessionId: string, timeoutMs = 90000): Promise<boolean> {
+  const startedAt = Date.now()
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const response = await authFetch(`/api/sessions/${encodeURIComponent(sessionId)}`)
+      const data = await response.json().catch(() => ({}))
+      if (data?.homepageReady && data?.siteSpecReady) return true
+    } catch {}
+    await wait(1000)
+  }
+  return false
+}
+
+function navigateToSession(sessionId: string): void {
+  const url = new URL(`/session/${encodeURIComponent(sessionId)}`, window.location.origin)
+  const targetWindow = window.top && window.top !== window ? window.top : window
+  targetWindow.location.assign(url.href)
+  window.setTimeout(() => {
+    if (window.location.pathname !== url.pathname) window.location.href = url.href
+  }, 500)
+}
+
+function suspendGalleryIframesForLaunch(): void {
+  galleryLaunchSuspended = true
+  document
+    .querySelectorAll<HTMLIFrameElement>('.session-thumbnail iframe')
+    .forEach((iframe) => {
+      iframe.removeAttribute('srcdoc')
+      iframe.removeAttribute('src')
+    })
+}
+
 function updateGenerationCounter(): void {
   const shareBonusPanel = getTypedElement<HTMLElement>('share-bonus-panel')
   const hideAll = () => {
@@ -1512,6 +1553,7 @@ form.addEventListener('submit', async (event) => {
 
   submitButton.classList.add('loading')
   syncSubmitButtonState()
+  suspendGalleryIframesForLaunch()
 
   const ref1 = getTypedElement<HTMLInputElement>('design-ref-url-1')?.value?.trim() || ''
   const ref2 = getTypedElement<HTMLInputElement>('design-ref-url-2')?.value?.trim() || ''
@@ -1537,19 +1579,20 @@ form.addEventListener('submit', async (event) => {
     const data = await response.json().catch(() => ({}))
 
     if (data.id) {
-      if (!currentUser) saveAnonSession(data.id, prompt, data.anonOwnerSecret)
+      const sessionId = String(data.id)
+      if (!currentUser) saveAnonSession(sessionId, prompt, data.anonOwnerSecret)
       localStorage.setItem('sf_generation_count', String(getGenerationCount() + 1))
       if (isMarketingHomePath()) {
-        localStorage.setItem(`sf_openui_prompt_${data.id}`, prompt)
-        openEmbeddedSession(data.id)
-        submitButton.classList.remove('loading')
-        syncSubmitButtonState()
+        sessionStorage.setItem('sf_return_home', '1')
+        localStorage.setItem(`sf_openui_prompt_${sessionId}`, prompt)
+        sessionStorage.setItem('sf_openui_prompt', prompt)
+        navigateToSession(sessionId)
         return
       }
       sessionStorage.setItem('sf_return_home', '1')
-      localStorage.setItem(`sf_openui_prompt_${data.id}`, prompt)
+      localStorage.setItem(`sf_openui_prompt_${sessionId}`, prompt)
       sessionStorage.setItem('sf_openui_prompt', prompt)
-      window.location.href = `/session/${data.id}`
+      navigateToSession(sessionId)
       return
     }
 
@@ -1783,6 +1826,7 @@ getTypedElement<HTMLElement>('session-list')?.addEventListener('click', (event: 
 function renderSessions(sessions: SessionItem[]): void {
   const section = getTypedElement<HTMLElement>('sessions-section')!
   const list = getTypedElement<HTMLElement>('session-list')!
+  if (galleryLaunchSuspended) return
 
   if (sessions.length === 0) {
     list.innerHTML = ''
@@ -1862,6 +1906,7 @@ function renderSessions(sessions: SessionItem[]): void {
   // via the JS property to avoid attribute-escaping the whole document; a doctype
   // is prepended so previews render in standards mode, not quirks.
   const assignSrcdoc = (iframe: HTMLIFrameElement): void => {
+    if (galleryLaunchSuspended) return
     const idx = iframe.dataset.srcdocIdx
     if (idx == null) return
     const html = sessions[Number(idx)]?.html
@@ -1885,6 +1930,7 @@ function renderSessions(sessions: SessionItem[]): void {
   }
 
   const loadLazyIframe = (iframe: HTMLIFrameElement): void => {
+    if (galleryLaunchSuspended) return
     if (iframe.dataset.srcdocIdx != null) {
       assignSrcdoc(iframe)
       return
@@ -1916,6 +1962,7 @@ function renderSessions(sessions: SessionItem[]): void {
   }
 
   const mountIframeFallback = (img: HTMLImageElement): void => {
+    if (galleryLaunchSuspended) return
     if (img.dataset.fallback === '1') return
     img.dataset.fallback = '1'
     const id = img.dataset.sessionId
