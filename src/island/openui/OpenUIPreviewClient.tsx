@@ -394,18 +394,15 @@ export function OpenUIPreviewClient() {
     const connect = () => {
       if (closed) return
       const url = `/api/sessions/${encodeURIComponent(id)}/stream`
-      console.log('[SSE] Connecting to:', url)
       try {
         eventSource = new EventSource(url)
         eventSource.onopen = () => {
-          console.log('[SSE] Connected')
           reconnectAttempts = 0
         }
         eventSource.onerror = (error) => {
           console.error('[SSE] Error:', error)
         }
         eventSource.addEventListener('close', () => {
-          console.log('[SSE] Close event received')
           if (closed) return
 
           // Generation already settled (stream_done / saved artifact shown): the close
@@ -413,24 +410,18 @@ export function OpenUIPreviewClient() {
           // storm that the message handler then ignores anyway. We gate purely on the
           // settled latch: once settled, every reconnect would be wasted regardless of
           // whether the socket reported wasClean.
-          if (settledRef.current) {
-            console.log('[SSE] Close after settle — not reconnecting')
-            return
-          }
+          if (settledRef.current) return
 
           if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
             reconnectAttempts++
             const delay = BASE_RECONNECT_DELAY_MS * Math.pow(2, reconnectAttempts - 1)
-            console.log(`[SSE] Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`)
             reconnectTimer = setTimeout(connect, delay)
           } else {
             console.error('[SSE] Max reconnection attempts reached. Giving up.')
           }
         })
 
-        // Handle all SSE messages
         eventSource.addEventListener('message', (event) => {
-          console.log('[SSE] Message:', event.data.substring(0, 100))
           if (closed) return
           let message: {
             type?: string
@@ -443,23 +434,14 @@ export function OpenUIPreviewClient() {
           try {
             message = JSON.parse(String(event.data))
           } catch {
-            console.warn('[SSE] Non-JSON message:', event.data)
             return
           }
           if (!message) return
           const messageRoute =
             typeof message.route === 'string' && message.route.trim() ? message.route.trim() : '/'
-          if (messageRoute !== previewRoute) {
-            console.log('[SSE] Ignored route mismatch', {
-              expected: previewRoute,
-              received: messageRoute,
-              type: message.type,
-            })
-            return
-          }
+          if (messageRoute !== previewRoute) return
           if (settledRef.current && message.type !== 'openui_stream_start') return
           if (message.type === 'openui_stream_start') {
-            console.log('[SSE] Stream start')
             settledRef.current = false
             stopArtifactLoadWait()
             setStreamText('')
@@ -474,7 +456,6 @@ export function OpenUIPreviewClient() {
             settledRef.current = false
             stopArtifactLoadWait()
             if (source) {
-              console.log('[SSE] Chunk, source length:', source.length)
               setStreamText(source)
             }
             else if (token) setStreamText((current) => current + token)
@@ -483,7 +464,6 @@ export function OpenUIPreviewClient() {
             return
           }
           if (message.type === 'openui_stream_done') {
-            console.log('[SSE] Stream done')
             const source = typeof message.source === 'string' ? message.source : ''
             if (typeof message.locale === 'string' && isTranslatableLocale(message.locale)) {
               setLocale(message.locale.trim().toLowerCase())

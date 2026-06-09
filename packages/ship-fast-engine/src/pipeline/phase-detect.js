@@ -43,10 +43,6 @@ export async function detectSiteType(prompt, log) {
 
   const tpsStr = formatTps(result) ? ` | ${formatTps(result)}` : ''
 
-  if (groqResponse.toLowerCase() !== siteType) {
-    console.log(`[SITE TYPE] Raw: "${groqResponse}" → cleaned: "${raw}" → matched: "${siteType}"`)
-  }
-
   log(`  site type: ${siteType}${tpsStr}`)
   return {
     siteType,

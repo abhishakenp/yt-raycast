@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { groqParallel } from '../llm/groq.js'
 import { stripFences, formatTps } from '../llm/utils.js'
 import { ensureLucideIconRuntime } from './lucide-icons.js'
-import { writeFile } from './workspace.js'
+import { writeFile, slug } from './workspace.js'
 import { navfixPrompt } from '../prompts/navfix.js'
 
 function sumTokens(results) {
@@ -17,13 +17,6 @@ function sumTokens(results) {
     cost += r.cost ?? 0
   }
   return { inputTokens, outputTokens, cost }
-}
-
-function slug(title = '') {
-  return String(title)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
 }
 
 function normalizeLinkText(value = '') {

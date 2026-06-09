@@ -6,6 +6,7 @@ import { saveSiteSpec } from '../spec/index.ts'
 // @ts-ignore - JS module without type definitions
 import { preferRomanizedBcp47FromSnippet, preferMixedEnglishBcp47FromSnippet } from '../config/languages.js'
 import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
+import { slug } from './workspace.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
 const OPENUI_PAGES_DIR = 'pages'
@@ -31,13 +32,6 @@ function upsertManifest(workspace: string, route: string, title: string, file: s
   })
   manifest.generatedAt = new Date().toISOString()
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
-}
-
-function slug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
 }
 
 async function simulateStream(
@@ -143,7 +137,6 @@ export async function generateAndWriteOpenUIHome(p: {
       // preview, then open the stream so the client island takes over rendering.
       writeShell()
       shellWritten = true
-      console.log('[Server] Broadcasting openui_stream_start')
       ctx?.broadcast?.({ type: 'openui_stream_start', route })
       ctx?.signalHomepageReady?.()
     }
@@ -153,7 +146,6 @@ export async function generateAndWriteOpenUIHome(p: {
     const currentLocale = localeName || 'en'
     const { html } = renderOpenUIToHTMLWithTheme(accumulated, null, currentLocale, null)
     
-    console.log('[Server] Broadcasting openui_stream_chunk as HTML, length:', html.length)
     ctx?.broadcast?.({ type: 'openui_stream_chunk', route, html: html, source: accumulated })
   }
 
@@ -189,8 +181,6 @@ export async function generateAndWriteOpenUIHome(p: {
   // otherwise the terminal `genui: … in Xs` undercounts vs the gallery badge.
   const ms = Date.now() - startedAt
 
-  console.log('[Server] Broadcasting openui_stream_done, source length:', source.length)
-  
   // Server-side render final HTML
   const { html: finalHtml, cssVars: themeCssVars } = renderOpenUIToHTMLWithTheme(source, null, locale, null)
   

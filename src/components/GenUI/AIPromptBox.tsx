@@ -20,7 +20,6 @@ export function AIPromptBox({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Focus input on mount
     inputRef.current?.focus();
   }, []);
 
@@ -39,7 +38,6 @@ export function AIPromptBox({
     }
   };
 
-  // Position below the selection, centered
   const left = rect.left + rect.width / 2;
   const top = rect.bottom + 8;
 
@@ -54,13 +52,11 @@ export function AIPromptBox({
         maxWidth: 400,
       }}
     >
-      {/* Selected text preview */}
       <div className="max-h-[60px] overflow-hidden text-xs text-muted-foreground">
         <span className="font-medium text-foreground">Selected:</span>{" "}
         "{text}"
       </div>
 
-      {/* Input form */}
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <input
           ref={inputRef}
@@ -94,7 +90,6 @@ export function AIPromptBox({
         </button>
       </form>
 
-      {/* Small arrow pointing up */}
       <div
         className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-border bg-background"
         style={{ pointerEvents: "none" }}

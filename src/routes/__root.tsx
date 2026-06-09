@@ -16,10 +16,10 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Ship Fast Start Shell' },
+      { title: 'Ship Fast' },
       {
         name: 'description',
-        content: 'TanStack Start migration shell for the Ship Fast and Ship Now merge.',
+        content: 'Generate and manage your Ship Fast website sessions.',
       },
     ],
     links: [{ rel: 'stylesheet', href: startShellCss }],
@@ -50,8 +50,8 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
                   <span className="shell-bolt" aria-hidden="true">S</span>
                   <span>Ship Fast</span>
                 </Link>
-                <nav aria-label="Migration links">
-                  <a href="http://localhost:7420/">Current generator</a>
+                <nav aria-label="Main navigation">
+                  <a href="http://localhost:7420/">Generator</a>
                   <a href="/pricing">Pricing</a>
                   <HeaderUser />
                 </nav>

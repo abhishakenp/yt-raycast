@@ -1,12 +1,6 @@
 import { HOME_LABELS } from '../config.js'
 import { routeToHtmlFile } from '../renderers/shared.js'
-
-function slug(title = '') {
-  return String(title)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
+import { slug } from '../pipeline/workspace.js'
 
 function isHomePage(page = {}) {
   const name = String(page.name || page.title || '').toLowerCase()

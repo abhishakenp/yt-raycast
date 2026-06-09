@@ -24,6 +24,7 @@ import { applyThemeVars, injectThemeFonts, resolveThemeStyles } from '../genui/t
 import TopBar from '../components/GenUI/TopBar'
 import { AIPromptBox } from '../components/GenUI/AIPromptBox'
 import { IntroLoader } from '../components/GenUI/IntroLoader'
+import { getStartClerkToken } from '../lib/clerk-token'
 
 const CURRENT_APP_ORIGIN = 'http://localhost:7420'
 
@@ -489,7 +490,6 @@ function GenerateWorkspace() {
       applyThemeVars(doc.documentElement, styles, isDark)
       injectThemeFonts(doc, styles)
     } else {
-      // Clear theme vars if no theme selected
       for (const key of [
         'background', 'foreground', 'card', 'card-foreground', 'popover', 'popover-foreground',
         'primary', 'primary-foreground', 'secondary', 'secondary-foreground', 'muted', 'muted-foreground',
@@ -507,7 +507,6 @@ function GenerateWorkspace() {
     }
   }, [selectedTheme, isDark, currentPreviewHtml])
 
-  // AI text edit selection detection
   useEffect(() => {
     const iframe = iframeRef.current
     const doc = iframe?.contentDocument
@@ -618,7 +617,6 @@ function GenerateWorkspace() {
         },
       })
       if (result.rewritten) {
-        // Apply the rewrite to the preview HTML
         const iframe = iframeRef.current
         const doc = iframe?.contentDocument
         if (doc) {
@@ -969,7 +967,7 @@ function GenerateWorkspace() {
         {!hasPreview ? (
           <IntroLoader phase="compose" progress={readiness.taskCount} />
         ) : null}
-        </div>{/* end generate-preview-main */}
+        </div>
 
         <aside className="generate-panel">
         {editMode && hasLocalPreview ? (
@@ -1307,8 +1305,8 @@ function GenerateWorkspace() {
           </section>
         ) : null}
 
-        </aside>{/* end generate-panel */}
-        </div>{/* end generate-preview-body */}
+        </aside>
+        </div>
       </section>
     </main>
   )
@@ -1371,12 +1369,4 @@ function buildElementPath(element: Element) {
   return parts.join(' > ')
 }
 
-async function getStartClerkToken() {
-  const clerk = typeof window !== 'undefined' ? (window as any).Clerk : null
-  if (!clerk?.session) return ''
-  try {
-    return (await clerk.session.getToken()) || ''
-  } catch {
-    return ''
-  }
-}
+
