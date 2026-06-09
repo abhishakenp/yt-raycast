@@ -145,10 +145,8 @@ export const list = query({
 
     const sessions = await ctx.db
       .query('sessions')
-      .filter((q) => q.eq(q.field('userId'), userId ?? null))
-      .order('desc', 'createdAt')
+      .withIndex('by_userId', (q) => q.eq('userId', userId ?? undefined))
       .take(20)
-      .collect()
 
     return sessions
   },
