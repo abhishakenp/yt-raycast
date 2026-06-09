@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { createServerFn, useServerFn } from '@tanstack/react-start'
 import { useEffect, useRef, useState } from 'react'
 import { ZapIcon } from 'lucide-react'
-import { LaunchBackdrop } from '../components/launch-backdrop'
 import HeaderUser from '../integrations/clerk/header-user'
+import styles from './index.module.css'
 
 const getRecentSessions = createServerFn({ method: 'GET' }).handler(async () => {
   const { createFilesystemSessionRepository } = await import(
@@ -56,6 +56,159 @@ function StartHome() {
   const [placeholderText, setPlaceholderText] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const animRef = useRef<{ index: number; length: number; mode: 'typing' | 'holding' | 'deleting'; timer: number | null }>({ index: 0, length: 0, mode: 'typing', timer: null })
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Canvas animation
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const reduce =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) return
+
+    const ctx = canvas.getContext('2d', { alpha: true })
+    if (!ctx) return
+    const context = ctx
+
+    const particles: Array<{
+      x: number
+      y: number
+      life: number
+      speed: number
+      size: number
+      seed: number
+      hue: number
+      alpha: number
+    }> = []
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    let width = 0
+    let height = 0
+    let tick = 0
+    let raf = 0
+
+    function noise2d(x: number, y: number) {
+      const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453
+      return n - Math.floor(n)
+    }
+
+    function smoothNoise(x: number, y: number) {
+      const ix = Math.floor(x)
+      const iy = Math.floor(y)
+      const fx = x - ix
+      const fy = y - iy
+      const a = noise2d(ix, iy)
+      const b = noise2d(ix + 1, iy)
+      const c = noise2d(ix, iy + 1)
+      const d = noise2d(ix + 1, iy + 1)
+      const ux = fx * fx * (3 - 2 * fx)
+      const uy = fy * fy * (3 - 2 * fy)
+      return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy
+    }
+
+    function resetParticle(
+      p: (typeof particles)[number],
+      edge?: 'left',
+    ) {
+      p.x = edge === 'left' ? -12 : Math.random() * width
+      p.y = Math.random() * height
+      p.life = 0.45 + Math.random() * 0.55
+      p.speed = 0.45 + Math.random() * 1.35
+      p.size = 0.45 + Math.random() * 1.05
+      p.seed = Math.random() * 200
+      p.hue = Math.random() > 0.42 ? 190 : 310
+      p.alpha =
+        p.hue === 310 ? 0.45 + Math.random() * 0.35 : 0.08 + Math.random() * 0.18
+    }
+
+    function resize() {
+      width = Math.max(1, window.innerWidth)
+      height = Math.max(1, window.innerHeight)
+      canvas.width = Math.floor(width * dpr)
+      canvas.height = Math.floor(height * dpr)
+      context.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+      const target = Math.max(
+        150,
+        Math.min(260, Math.floor((width * height) / 9000)),
+      )
+      while (particles.length < target) {
+        const p = {
+          x: 0,
+          y: 0,
+          life: 0,
+          speed: 0,
+          size: 0,
+          seed: 0,
+          hue: 0,
+          alpha: 0,
+        }
+        resetParticle(p)
+        particles.push(p)
+      }
+      particles.length = target
+    }
+
+    function draw() {
+      if (!document.body.contains(canvas)) return
+      raf = window.requestAnimationFrame(draw)
+      tick += 1
+
+      context.globalCompositeOperation = 'source-over'
+      context.fillStyle = 'rgba(2, 4, 18, 0.065)'
+      context.fillRect(0, 0, width, height)
+      context.globalCompositeOperation = 'lighter'
+
+      for (const p of particles) {
+        const px = p.x
+        const py = p.y
+        const n = smoothNoise(
+          p.x * 0.0036 + tick * 0.0007,
+          p.y * 0.0036 + p.seed,
+        )
+        const drift = smoothNoise(p.x * 0.0022, p.y * 0.0022 + 50)
+        const angle = n * Math.PI * 5.4 - Math.PI * 0.22
+        const speed = p.speed * (0.75 + drift * 1.45)
+
+        p.x += Math.cos(angle) * speed + 0.34
+        p.y += Math.sin(angle) * speed * 0.82
+        p.life -= 0.0011
+
+        if (
+          p.life <= 0 ||
+          p.x < -40 ||
+          p.x > width + 40 ||
+          p.y < -40 ||
+          p.y > height + 40
+        ) {
+          resetParticle(p, Math.random() > 0.35 ? 'left' : undefined)
+          continue
+        }
+
+        const pulse = 0.65 + Math.sin(tick * 0.035 + p.seed) * 0.35
+        const alpha = Math.max(0, p.life) * p.alpha * pulse
+        context.beginPath()
+        context.moveTo(px, py)
+        context.lineTo(p.x, p.y)
+        context.strokeStyle = `hsla(${p.hue}, 100%, ${p.hue === 310 ? 80 : 62}%, ${alpha})`
+        context.lineWidth = p.size
+        context.stroke()
+      }
+
+      context.globalAlpha = 1
+    }
+
+    resize()
+    window.addEventListener('resize', resize, { passive: true })
+    draw()
+
+    return () => {
+      window.removeEventListener('resize', resize)
+      cancelAnimationFrame(raf)
+    }
+  }, [])
 
   async function go(prompt: string) {
     const value = prompt.trim()
@@ -138,32 +291,37 @@ function StartHome() {
 
   return (
     <>
-      <LaunchBackdrop />
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-end px-6 py-4">
+      <div className={styles.backdrop}>
+        <div className={styles.backdropBg}>
+          <div className={styles.backdropAura} />
+          <canvas ref={canvasRef} className={styles.backdropCanvas} />
+        </div>
+      </div>
+      <nav className={styles.nav}>
         <HeaderUser />
       </nav>
 
-      <div className="relative z-10 w-full max-w-[1200px] mx-auto px-0 py-0 min-h-screen grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-[clamp(28px,2.6vw,44px)] items-start pt-[clamp(82px,7vw,102px)] pr-0 pb-[clamp(32px,5vw,62px)] pl-[clamp(42px,3.4vw,58px)] max-[1100px]:max-w-[760px] max-[1100px]:grid-cols-[1fr] max-[1100px]:min-h-auto max-[1100px]:pt-[96px] max-[760px]:w-[calc(100%-24px)] max-[760px]:pt-[22px] max-[760px]:rounded-[22px] max-[760px]:px-[22px]">
-        <div className="absolute top-[34px] left-0 z-14 flex items-start gap-3 max-[760px]:top-[34px] max-[760px]:left-0 max-[760px]:w-auto">
-          <div className="flex items-center gap-[13px] max-[760px]:gap-[8px]">
-            <div className="w-[clamp(44px,4vw,52px)] h-[clamp(44px,4vw,52px)] drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] max-[760px]:w-[32px] max-[760px]:h-[32px]">
+      <div className={styles.layout}>
+        <div className={styles.logoContainer}>
+          <div className={styles.logoInner}>
+            <div className={styles.logoIcon}>
               <LogoBolt />
             </div>
-            <span className="text-[clamp(42px,4.2vw,56px)] font-extrabold tracking-[-0.055em] bg-gradient-to-br from-white via-[#dffbff] to-[#23e5ff] bg-[length:180%_180%] bg-clip-text text-transparent font-sans max-[760px]:text-[clamp(32px,9vw,40px)] max-[760px]:tracking-[-0.035em]">SHIP FAST</span>
+            <span className={styles.logoText}>SHIP FAST</span>
           </div>
         </div>
 
-        <div className="relative z-4 flex flex-col items-start justify-start text-left pt-[clamp(34px,3vw,44px)] w-full max-[1100px]:p-0 max-[1100px]:items-center max-[1100px]:text-center max-[760px]:pt-[92px]">
-          <p className="mb-[18px] font-mono text-[12px] font-bold tracking-[0.16em] uppercase text-[#26e7ff] drop-shadow-[0_0_18px_rgba(38,231,255,0.48)]" style={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>Prompt. Generate. Launch.</p>
-          <h1 className="max-w-[640px] m-0 font-sans text-[clamp(22px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[-0.02em] text-[rgba(221,236,255,0.92)] text-wrap-balance drop-shadow-[0_1px_0_rgba(255,255,255,0.35),0_0_24px_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.38)] max-[760px]:text-[clamp(20px,5.5vw,28px)]" style={{ fontFamily: 'Manrope, ui-sans-serif, system-ui, sans-serif' }}>
+        <div className={styles.heroSection}>
+          <p className={styles.eyebrow}>Prompt. Generate. Launch.</p>
+          <h1 className={styles.title}>
             Print your mind<br />in seconds
           </h1>
         </div>
 
-        <div className="relative z-1 flex flex-col items-stretch justify-start w-full min-h-[clamp(360px,34vw,420px)] max-[1100px]:relative max-[1100px]:min-h-[720px] max-[760px]:min-h-[760px]">
-          <div className="flex flex-col gap-0 relative z-8 w-full max-w-none mx-0 pointer-events-auto max-[1100px]:w-[min(100%,680px)] max-[1100px]:mx-auto">
-            <div className="w-full rounded-[22px] bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.015))] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,255,255,0.08),0_0_60px_rgba(100,80,200,0.04)] p-[1px] overflow-hidden isolate">
-              <div className="relative z-2 bg-transparent rounded-[21px] p-[clamp(22px,2.1vw,30px)] min-w-0 overflow-hidden max-[760px]:p-[20px]">
+        <div className={styles.formSection}>
+          <div className={styles.formContainer}>
+            <div className={styles.formCard}>
+              <div className={styles.formInner}>
                 <form
                   className="flex flex-col"
                   onSubmit={(e) => {
@@ -176,47 +334,44 @@ function StartHome() {
                     <textarea
                       autoFocus
                       placeholder=""
-                      className="w-full min-h-[105px] p-[14px] bg-[rgba(0,0,0,0.35)] border border-[rgba(255,255,255,0.08)] rounded-[16px] text-[#f0f0f5] resize-none outline-none transition-all duration-[320ms] ease-out hover:border-[rgba(255,255,255,0.18)] focus:border-[rgba(138,180,255,0.4)] focus:shadow-[0_0_0_3px_rgba(138,180,255,0.08),0_0_30px_rgba(138,180,255,0.06)]"
-                      style={{ fontFamily: 'Manrope, ui-sans-serif, system-ui, sans-serif', fontSize: '15px', lineHeight: '1.6', caretColor: 'rgba(138,180,255,0.9)' }}
+                      className={styles.textarea}
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       rows={3}
                     />
-                    <div className={`absolute top-[14px] left-[14px] right-[14px] bottom-[14px] flex flex-col items-start gap-[6px] pointer-events-none opacity-1 transition-opacity duration-[200ms] ease ${hasValue ? 'opacity-0' : ''}`} aria-hidden="true">
-                      <span className="text-[11px] font-semibold tracking-[0.1em] uppercase text-[rgba(180,140,255,0.8)]" style={{ fontFamily: 'Manrope, ui-sans-serif, system-ui, sans-serif' }}>{placeholderLabel}</span>
-                      <span className="block max-w-full max-h-[calc(1.6em*3)] overflow-hidden text-[rgba(255,255,255,0.32)] text-[15px] leading-[1.6]" style={{ WebkitMaskImage: 'linear-gradient(180deg, #000 70%, transparent)', maskImage: 'linear-gradient(180deg, #000 70%, transparent)' }}>
+                    <div className={`${styles.placeholder} ${hasValue ? styles.hidden : ''}`} aria-hidden="true">
+                      <span className={styles.placeholderLabel}>{placeholderLabel}</span>
+                      <span className={styles.placeholderText}>
                         {!hasValue ? placeholderText : ''}
-                        {!hasValue && <span className="inline-block w-[2px] h-[1.6em] ml-[1px] bg-[rgba(138,180,255,0.9)] align-[-0.2em] animate-[caretBlink_1s_step-end_infinite]" />}
+                        {!hasValue && <span className={styles.caret} />}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-[12px] w-full mt-[6px] max-[760px]:gap-[8px] max-[760px]:flex-wrap">
+                  <div className={styles.formActions}>
                     <button
                       type="submit"
-                      className="relative self-end px-[28px] py-[12px] bg-[rgba(255,255,255,0.045)] text-[#f0f0f5] border-none rounded-[9999px] font-semibold cursor-pointer whitespace-nowrap inline-flex items-center justify-center gap-[8px] isolate transition-all duration-[320ms] ease-out shadow-[0_0_0_1px_rgba(255,255,255,0.15),0_0_0_0_transparent,0_12px_28px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] hover:not(:disabled):translate-y-[-1px] hover:not(:disabled):shadow-[0_0_0_1px_rgba(255,255,255,0.4),0_0_28px_rgba(138,180,255,0.2),0_16px_36px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.22)] active:not(:disabled):translate-y-[0px] active:not(:disabled):duration-[120ms] disabled:opacity-[0.3] disabled:cursor-not-allowed max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:p-0"
-                      style={{ fontFamily: 'Manrope, ui-sans-serif, system-ui, sans-serif', fontSize: '14px', minHeight: '44px' }}
+                      className={styles.submitBtn}
                       disabled={inputValue.trim().length === 0 || isGenerating}
                     >
                       <ZapIcon className="w-4 h-4 flex-shrink-0" />
-                      <span className="max-[760px]:hidden">{isGenerating ? 'Generating...' : 'Generate'}</span>
+                      <span className={styles.submitTextMobile}>{isGenerating ? 'Generating...' : 'Generate'}</span>
                     </button>
                   </div>
                 </form>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-[8px] mt-[14px] mx-auto p-[10px_12px] rounded-[14px] max-w-fit justify-center bg-[rgba(20,20,24,0.35)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[14px] saturate-[150%] shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_8px_32px_rgba(0,0,0,0.35)] max-[760px]:justify-start max-[760px]:flex-wrap">
+            <div className={styles.chips}>
               {EXAMPLE_CHIPS.map((chip, idx) => (
                 <button
                   key={chip.label}
                   type="button"
-                  className="inline-flex items-center gap-[6px] px-[11px] py-[5px] rounded-[999px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] backdrop-blur-[8px] text-[rgba(237,237,239,0.88)] font-mono text-[11px] tracking-[0.02em] cursor-pointer transition-all duration-[150ms] ease-out hover:bg-[rgba(124,58,237,0.22)] hover:border-[rgba(124,58,237,0.55)] hover:text-white hover:translate-y-[-1px] active:translate-y-[0px]"
-                  style={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}
+                  className={styles.chip}
                   title={chip.text}
                   onClick={() => go(chip.text)}
                 >
-                  <span className="inline-flex items-center justify-center min-w-[14px] h-[14px] px-[4px] rounded-[4px] bg-[rgba(124,58,237,0.55)] text-white text-[10px] font-bold">{idx + 1}</span>
-                  <span className="whitespace-nowrap">{chip.label}</span>
+                  <span className={styles.chipNumber}>{idx + 1}</span>
+                  <span className={styles.chipLabel}>{chip.label}</span>
                 </button>
               ))}
             </div>
@@ -224,13 +379,13 @@ function StartHome() {
         </div>
       </div>
 
-      <footer className="relative z-4 w-full max-w-[1200px] mx-auto mb-6 px-[28px] py-[22px] rounded-[20px] flex items-center justify-between gap-5 flex-wrap bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.015))] border border-[rgba(255,255,255,0.08)] backdrop-blur-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08),0_0_60px_rgba(100,80,200,0.04)]">
-        <span className="font-mono text-[13px] text-[rgba(255,255,255,0.62)] tracking-[0.12em]" style={{ fontFamily: 'JetBrains Mono, ui-monospace, monospace' }}>SHIP FAST © 2026</span>
-        <nav className="flex items-center gap-5 flex-wrap" aria-label="Footer links">
-          <Link to="/" className="text-[13px] text-[rgba(255,255,255,0.62)] no-underline transition-colors duration-[200ms] ease hover:text-[#f0f0f5]">Home</Link>
+      <footer className={styles.footer}>
+        <span className={styles.footerText}>SHIP FAST © 2026</span>
+        <nav className={styles.footerNav} aria-label="Footer links">
+          <Link to="/" className={styles.footerLink}>Home</Link>
           {sessions[0] ? (
             <Link
-              className="text-[13px] text-[rgba(255,255,255,0.62)] no-underline transition-colors duration-[200ms] ease hover:text-[#f0f0f5]"
+              className={styles.footerLink}
               to="/generate/$sessionId"
               params={{ sessionId: sessions[0].id }}
             >
