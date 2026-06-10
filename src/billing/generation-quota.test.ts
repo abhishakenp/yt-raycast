@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   DAILY_WINDOW_MS,
   MAX_ANON_PER_DAY,
@@ -7,16 +7,9 @@ import {
   SHARE_BONUS_EXTRA,
 } from './constants'
 import { anonIpDailyHits, shareBonusIps, userMonthlyHits } from '../lib/rate-limit'
+import { getUserGenerationQuota, setActiveSubscriptionLookupForTest } from './payments.js'
 
 let subscribedUids = new Set<string>()
-
-vi.mock('../billing/payments.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../billing/payments.js')>()
-  return {
-    ...actual,
-    hasActiveSubscription: async (uid: string) => subscribedUids.has(uid),
-  }
-})
 
 describe('generation quota details', () => {
   beforeEach(() => {
@@ -24,10 +17,14 @@ describe('generation quota details', () => {
     userMonthlyHits.clear()
     anonIpDailyHits.clear()
     shareBonusIps.clear()
+    setActiveSubscriptionLookupForTest((uid: string) => subscribedUids.has(uid))
+  })
+
+  afterEach(() => {
+    setActiveSubscriptionLookupForTest(null)
   })
 
   it('reports anonymous daily quota including share bonus', async () => {
-    const { getUserGenerationQuota } = await import('./payments.js')
     const ip = '203.0.113.10'
     const today = new Date().toISOString().slice(0, 10)
     anonIpDailyHits.set(ip, [Date.now(), Date.now() - DAILY_WINDOW_MS - 1])
@@ -43,7 +40,6 @@ describe('generation quota details', () => {
   }, 120000)
 
   it('reports signed-up free monthly quota', async () => {
-    const { getUserGenerationQuota } = await import('./payments.js')
     userMonthlyHits.set('free-user', [Date.now(), Date.now()])
 
     await expect(getUserGenerationQuota('free-user', '203.0.113.11')).resolves.toMatchObject({
@@ -56,7 +52,6 @@ describe('generation quota details', () => {
   }, 120000)
 
   it('reports subscribed monthly quota', async () => {
-    const { getUserGenerationQuota } = await import('./payments.js')
     subscribedUids.add('paid-user')
     userMonthlyHits.set('paid-user', [Date.now(), Date.now(), Date.now()])
 
