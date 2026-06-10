@@ -13,9 +13,6 @@ type ChartFrame = 'default' | 'flush' | 'emphasis' | undefined
 
 // Placeholder chart components — contract props stay valid for weak-model generation.
 export const EvilArea = ({
-  data,
-  xKey,
-  series,
   height,
   chartFrame,
 }: {
@@ -34,9 +31,6 @@ export const EvilArea = ({
 )
 
 export const EvilBar = ({
-  data,
-  xKey,
-  series,
   height,
   stacked,
   chartFrame,
@@ -59,9 +53,6 @@ export const EvilBar = ({
 )
 
 export const EvilLine = ({
-  data,
-  xKey,
-  series,
   height,
   chartFrame,
 }: {
@@ -80,7 +71,6 @@ export const EvilLine = ({
 )
 
 export const EvilPie = ({
-  data,
   height,
   donut,
   chartFrame,
@@ -99,9 +89,6 @@ export const EvilPie = ({
 )
 
 export const EvilRadar = ({
-  data,
-  axisKey,
-  series,
   height,
   chartFrame,
 }: {

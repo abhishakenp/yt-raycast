@@ -288,19 +288,7 @@ select {
   color: var(--text-primary);
 }
 
-.top-actions-auth-slot {
-  position: relative;
-  display: grid;
-  grid-template-columns: max-content;
-  align-items: center;
-  justify-items: end;
-  min-height: 36px;
-  flex-shrink: 0;
-}
-
-.top-action-link,
-#signout-btn,
-#signin-btn {
+.top-action-link {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -328,9 +316,7 @@ select {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.top-action-link::before,
-#signout-btn::before,
-#signin-btn::before {
+.top-action-link::before {
   content: '';
   position: absolute;
   inset: -6px;
@@ -345,9 +331,7 @@ select {
     transform var(--dur) var(--ease-out);
 }
 
-.top-action-link:hover,
-#signout-btn:hover,
-#signin-btn:hover {
+.top-action-link:hover {
   color: var(--text-primary);
   transform: translateY(-1px);
   box-shadow:
@@ -357,46 +341,13 @@ select {
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-.top-action-link:hover::before,
-#signout-btn:hover::before,
-#signin-btn:hover::before {
+.top-action-link:hover::before {
   opacity: 0.6;
   transform: scale(1);
 }
 
-.top-action-link:active,
-#signout-btn:active,
-#signin-btn:active {
+.top-action-link:active {
   transform: translateY(0);
-  transition-duration: 120ms;
-}
-
-#signout-btn {
-  display: none;
-}
-
-#signin-btn.pill,
-#signout-btn.pill {
-  background: transparent;
-  box-shadow: none;
-  height: auto;
-}
-
-#signin-btn.pill::before,
-#signout-btn.pill::before {
-  content: none;
-}
-
-#signin-btn.pill:hover,
-#signout-btn.pill:hover {
-  color: var(--text-primary);
-  transform: translateY(-1px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
-}
-
-#signin-btn.pill:active,
-#signout-btn.pill:active {
-  transform: scale(0.97);
   transition-duration: 120ms;
 }
 
@@ -434,28 +385,12 @@ button.share-icon.pill {
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
 }
 
-.auth-btn.pill {
-  width: 100%;
-  background: transparent;
-  box-shadow: none;
-  font-weight: 500;
-}
-
-.auth-btn.pill:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
-}
-
 .private-gen-modal-close.pill {
   background: transparent;
 }
 
 .pill--top-actions .pill__body {
   gap: 6px;
-}
-
-.auth-btn .pill__body {
-  gap: 12px;
 }
 
 .submit-btn .pill__body {
@@ -618,7 +553,7 @@ button.share-icon.pill {
   padding: 24px;
 }
 
-/* Local dev: glass chip bar below `#hero-card` (see `homepage.ts` mount) */
+/* Example prompt chips */
 .dev-prompt-chips {
   display: flex;
   flex-wrap: wrap;
@@ -1895,147 +1830,6 @@ button.share-icon.pill {
   color: var(--text-primary);
 }
 
-#auth-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgba(7, 7, 16, 0.55);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#auth-overlay.hidden {
-  display: none;
-}
-
-.auth-box {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  padding: 40px 32px;
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  box-shadow: var(--glass-shadow);
-}
-
-.auth-logo {
-  font-family: var(--font-sans);
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-  text-shadow: 0 0 20px rgba(138, 180, 255, 0.15);
-}
-
-.auth-title {
-  font-size: 14px;
-  color: var(--text-secondary);
-  text-align: center;
-}
-
-.auth-btn {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px 20px;
-  border-radius: 9999px;
-  border: none;
-  background: rgba(255, 255, 255, 0.045);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    color var(--dur) var(--ease-out),
-    transform var(--dur) var(--ease-out),
-    box-shadow var(--dur) var(--ease-out);
-  box-shadow:
-    0 0 0 1px var(--ring),
-    0 8px 20px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.auth-btn:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 0 0 1px var(--ring-strong),
-    0 0 20px var(--glow),
-    0 12px 28px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-}
-
-.auth-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.auth-divider {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border-primary);
-}
-
-.auth-input {
-  width: 100%;
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-primary);
-  border-radius: 9999px;
-  color: var(--text-primary);
-  font-size: 14px;
-  outline: none;
-  transition: all 0.3s var(--ease-out);
-}
-
-.auth-input:focus {
-  border-color: var(--border-accent);
-  box-shadow: 0 0 0 3px rgba(138, 180, 255, 0.06);
-}
-
-.auth-input::placeholder {
-  color: var(--text-muted);
-}
-
-.auth-email-row {
-  width: 100%;
-  display: flex;
-  gap: 12px;
-}
-
-.auth-email-row .auth-btn {
-  flex: 1;
-  padding: 12px 16px;
-  font-size: 13px;
-}
-
-.auth-error {
-  color: var(--error);
-  font-size: 13px;
-  text-align: center;
-  min-height: 16px;
-}
-
 .wappalyzer-banner {
   display: none;
   position: fixed;
@@ -2096,17 +1890,8 @@ button.share-icon.pill {
     gap: 6px;
   }
 
-  .top-action-link,
-  #signout-btn,
-  #signin-btn {
+  .top-action-link {
     height: 32px;
-    padding: 0 12px;
-    font-size: 12px;
-  }
-
-  #signin-btn.pill,
-  #signout-btn.pill {
-    min-height: 32px;
     padding: 0 12px;
     font-size: 12px;
   }
@@ -2282,8 +2067,8 @@ body.sf-launch-homepage .launch-visual .launch-rocket {
 
 .container.sidebar-panel {
   position: relative;
-  width: min(var(--homepage-track-max), calc(100% - var(--homepage-track-gutter)));
-  max-width: var(--homepage-track-max);
+  width: calc(100% - var(--homepage-track-gutter));
+  max-width: none;
   margin-inline: auto;
   min-height: auto;
   padding: 0;

@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 
-import { mutation, query } from './_generated/server'
+import { internal } from './_generated/api'
+import { internalMutation, internalQuery, mutation, query } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
 import type { MutationCtx } from './_generated/server'
 
@@ -11,6 +12,13 @@ const engineTaskStatus = v.union(
   v.literal('IN_PROGRESS'),
   v.literal('DONE'),
   v.literal('FAILED'),
+)
+
+const taskStatus = v.union(
+  v.literal('pending'),
+  v.literal('running'),
+  v.literal('succeeded'),
+  v.literal('failed'),
 )
 
 const engineTask = v.object({
@@ -179,7 +187,7 @@ const upsertSiteSpec = async (
       })
 }
 
-const upsertGeneratedModule = async (
+const upsertHomeGeneratedModule = async (
   ctx: MutationCtx,
   sessionId: Id<'sessions'>,
   source: string | undefined,
@@ -259,15 +267,109 @@ export const create = mutation({
       createdAt: now,
     })
 
+    const generationArgs =
+      args.anonymousOwnerSecret === undefined
+        ? { sessionId }
+        : { sessionId, anonymousOwnerSecret: args.anonymousOwnerSecret }
+
+    await ctx.scheduler.runAfter(0, (internal as any).generation.startGeneration, generationArgs)
+
     return { sessionId }
   },
 })
 
-export const addGenerationEvent = mutation({
+export const getGenerationSession = internalQuery({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => await ctx.db.get(args.sessionId),
+})
+
+export const markGenerationStarted = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now()
+    await ctx.db.patch(args.sessionId, {
+      status: 'streaming',
+      errorCode: undefined,
+      errorMessage: undefined,
+      updatedAt: now,
+    })
+
+    await upsertTask(
+      ctx,
+      args.sessionId,
+      {
+        id: 'homepage',
+        label: 'Generate homepage',
+        status: 'IN_PROGRESS',
+      },
+      0,
+      now,
+    )
+
+    await ctx.db.insert('generationEvents', {
+      sessionId: args.sessionId,
+      eventType: 'status',
+      message: 'Generation started',
+      createdAt: now,
+    })
+  },
+})
+
+export const upsertGenerationTask = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    task: engineTask,
+    order: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await upsertTask(ctx, args.sessionId, args.task, args.order, Date.now())
+  },
+})
+
+export const upsertGeneratedModule = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    moduleKey: v.string(),
+    source: v.string(),
+    status: v.optional(taskStatus),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now()
+    const existingModule = await ctx.db
+      .query('generatedModules')
+      .withIndex('by_sessionId_moduleKey', (index) =>
+        index.eq('sessionId', args.sessionId).eq('moduleKey', args.moduleKey),
+      )
+      .first()
+
+    existingModule === null
+      ? await ctx.db.insert('generatedModules', {
+          sessionId: args.sessionId,
+          moduleKey: args.moduleKey,
+          source: args.source,
+          status: args.status ?? 'succeeded',
+          createdAt: now,
+          updatedAt: now,
+        })
+      : await ctx.db.patch(existingModule._id, {
+          source: args.source,
+          status: args.status ?? 'succeeded',
+          errorMessage: undefined,
+          updatedAt: now,
+        })
+  },
+})
+
+export const addGenerationEvent = internalMutation({
   args: {
     sessionId: v.id('sessions'),
     eventType: v.string(),
-    message: v.string(),
+    message: v.optional(v.string()),
+    previewVersion: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const now = Date.now()
@@ -275,6 +377,7 @@ export const addGenerationEvent = mutation({
       sessionId: args.sessionId,
       eventType: args.eventType,
       message: args.message,
+      previewVersion: args.previewVersion,
       createdAt: now,
     })
 
@@ -283,6 +386,51 @@ export const addGenerationEvent = mutation({
         status: 'streaming',
         updatedAt: now,
       })
+    }
+  },
+})
+
+export const getGenerationView = query({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+
+    if (session === null) return null
+
+    const tasks = await ctx.db
+      .query('tasks')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .collect()
+    const events = await ctx.db
+      .query('generationEvents')
+      .withIndex('by_sessionId_createdAt', (index) => index.eq('sessionId', args.sessionId))
+      .order('desc')
+      .take(80)
+    const homeModule = await ctx.db
+      .query('generatedModules')
+      .withIndex('by_sessionId_moduleKey', (index) =>
+        index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+      )
+      .first()
+    const siteSpec = await ctx.db
+      .query('siteSpecs')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .first()
+    const latestPreview = await ctx.db
+      .query('previews')
+      .withIndex('by_sessionId_version', (index) => index.eq('sessionId', args.sessionId))
+      .order('desc')
+      .first()
+
+    return {
+      session: serializeSession(session),
+      tasks: tasks.sort((left, right) => left.order - right.order),
+      events: events.reverse(),
+      homeModule,
+      siteSpec,
+      latestPreview,
     }
   },
 })
@@ -588,7 +736,7 @@ export const completeMockGeneration = mutation({
   },
 })
 
-export const completeGeneration = mutation({
+export const completeGeneration = internalMutation({
   args: {
     sessionId: v.id('sessions'),
     anonymousOwnerSecret: v.optional(v.string()),
@@ -606,11 +754,9 @@ export const completeGeneration = mutation({
         throw new ConvexError({ code: 'NOT_FOUND', message: 'Session not found' })
       })()
 
-    await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
-
     await Promise.all(args.tasks.map((task, index) => upsertTask(ctx, args.sessionId, task, index, now)))
     await upsertSiteSpec(ctx, args.sessionId, args.siteSpecJson, now)
-    await upsertGeneratedModule(ctx, args.sessionId, args.openUiSource, now)
+    await upsertHomeGeneratedModule(ctx, args.sessionId, args.openUiSource, now)
 
     const previewVersion = session.previewVersion + 1
 
@@ -640,7 +786,7 @@ export const completeGeneration = mutation({
   },
 })
 
-export const failGeneration = mutation({
+export const failGeneration = internalMutation({
   args: {
     sessionId: v.id('sessions'),
     anonymousOwnerSecret: v.optional(v.string()),
@@ -654,8 +800,6 @@ export const failGeneration = mutation({
       (() => {
         throw new ConvexError({ code: 'NOT_FOUND', message: 'Session not found' })
       })()
-
-    await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
     const homepageTask = await ctx.db
       .query('tasks')

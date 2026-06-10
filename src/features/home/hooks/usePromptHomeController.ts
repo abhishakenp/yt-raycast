@@ -1,10 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import { useMutation } from 'convex/react'
 import { useMemo, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { startGeneration } from '@/features/generation/server/start-generation'
+import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '@/lib/content-policy'
 import { examplePrompts, normalizePromptDraft } from '@/features/home/services/home-prompts'
 import {
   createAnonymousOwnerSecret,
@@ -18,7 +17,6 @@ import {
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
   const createSession = useMutation(api.sessions.create)
-  const runGeneration = useServerFn(startGeneration)
   const [prompt, setPrompt] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -38,6 +36,10 @@ export const usePromptHomeController = () => {
     if (!hasPrompt || isSubmitting) {
       return
     }
+    if (!checkPromptContentPolicy(runtimePrompt).ok) {
+      setErrorMessage(CONTENT_POLICY_CLIENT_MESSAGE)
+      return
+    }
 
     setErrorMessage(undefined)
     setIsSubmitting(true)
@@ -53,13 +55,6 @@ export const usePromptHomeController = () => {
       }))
 
       persistAnonymousOwnerSecret(window.localStorage, sessionId, anonymousOwnerSecret)
-      void runGeneration({
-        data: {
-          sessionId,
-          prompt: runtimePrompt,
-          anonymousOwnerSecret,
-        },
-      }).catch(() => undefined)
 
       await navigate({
         to: '/generate/$sessionId',

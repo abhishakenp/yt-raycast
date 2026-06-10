@@ -1,6 +1,6 @@
-import { createShipFastEngineAdapter } from '@/features/generation/server/ship-fast-engine-adapter'
-import type { EngineWorkspaceTask } from '@/features/generation/server/engine-workspace'
-import type { RunShipFastEngine } from '@/features/generation/server/ship-fast-engine-adapter'
+import { createShipFastEngineAdapter } from './ship-fast-engine-adapter'
+import type { EngineWorkspaceTask } from './engine-workspace'
+import type { RunShipFastEngine, ShipFastEngineAdapterOptions } from './ship-fast-engine-adapter'
 
 export type PersistCompleteGenerationInput = {
   sessionId: string
@@ -29,6 +29,7 @@ export type RunEngineGenerationInput = {
   workspaceRoot: string
   runAll: RunShipFastEngine
   persistence: GenerationPersistence
+  onEvent?: ShipFastEngineAdapterOptions['onEvent']
 }
 
 export type RunEngineGenerationResult =
@@ -45,9 +46,10 @@ export const runEngineGeneration = async ({
   workspaceRoot,
   runAll,
   persistence,
+  onEvent,
 }: RunEngineGenerationInput): Promise<RunEngineGenerationResult> => {
   try {
-    const result = await createShipFastEngineAdapter({ runAll, workspaceRoot }).generate({
+    const result = await createShipFastEngineAdapter({ runAll, workspaceRoot, onEvent }).generate({
       sessionId,
       prompt,
     })

@@ -5,7 +5,7 @@ import {
   createEmptyPreviewState,
   getCurrentPreview,
   restorePreviewVersion,
-} from '@/features/preview/services/preview-version'
+} from './preview-version'
 
 describe('preview versions', () => {
   it('appends preview versions monotonically', () => {

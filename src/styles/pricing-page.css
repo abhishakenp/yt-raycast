@@ -607,8 +607,7 @@ body {
 
 
 /* Navbar glass hover glow without touching the liquid-glass layers. */
-.top-actions .pill.pill--top-actions:hover,
-.top-actions #signin-btn.pill.pill--top-actions:hover {
+.top-actions .pill.pill--top-actions:hover {
   box-shadow:
     0 0 0 1px var(--ring-strong),
     0 0 24px var(--glow),
@@ -616,7 +615,6 @@ body {
 }
 
 /* Navbar glass hover surface, matching the old top-action whitish lift. */
-.top-actions .pill.pill--top-actions:hover,
-.top-actions #signin-btn.pill.pill--top-actions:hover {
+.top-actions .pill.pill--top-actions:hover {
   background: rgba(255, 255, 255, 0.065);
 }

@@ -1,5 +1,4 @@
-import { pickBlock } from "@ship-fast/blocks"
-import type { BlockMeta } from "@ship-fast/blocks"
+import { pickBlock, type BlockMeta } from "../../../ship-fast-blocks/src/registry/taxonomy.ts"
 import type { SectionKind, ClonedSection, ExtractedTokens } from "./types.ts"
 import { parseHTML } from "linkedom"
 

@@ -7,10 +7,18 @@ import { renderSeoHeadMarkup } from './build-head.ts'
 
 export function buildPreviewSeoHead(siteSpec: SiteSpecLike | null | undefined, brand: string, prompt = ''): string {
   const base: SiteSpecLike = siteSpec && typeof siteSpec === 'object' ? siteSpec : {}
+  const looseBase = base as SiteSpecLike & {
+    tagline?: unknown
+    userPrompt?: unknown
+  }
+  const seoSiteName = typeof base.seo?.siteName === 'string' ? base.seo.siteName : undefined
+  const seoDescription = typeof base.seo?.description === 'string' ? base.seo.description : undefined
+  const tagline = typeof looseBase.tagline === 'string' ? looseBase.tagline : undefined
+  const userPrompt = typeof looseBase.userPrompt === 'string' ? looseBase.userPrompt : undefined
   const enriched = enrichSiteSpecAeo(
     {
       ...base,
-      projectName: base.projectName || base.seo?.siteName || brand,
+      projectName: base.projectName || seoSiteName || brand,
       pages:
         base.pages?.length
           ? base.pages
@@ -18,11 +26,11 @@ export function buildPreviewSeoHead(siteSpec: SiteSpecLike | null | undefined, b
               {
                 route: '/',
                 title: brand,
-                description: String(base.seo?.description || base.tagline || `${brand} preview`),
+                description: seoDescription || tagline || `${brand} preview`,
               } as SitePageLike,
             ],
     },
-    prompt || String(base.userPrompt || base.tagline || brand),
+    prompt || userPrompt || tagline || brand,
   )
 
   const homePage =
