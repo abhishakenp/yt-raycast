@@ -55,12 +55,15 @@ export default function ThemePicker({
           <Palette className="size-4" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-0">
-        <div className="border-b p-1">
+      <PopoverContent
+        align="end"
+        className="w-72 overflow-hidden border-white/10 bg-slate-950/72 p-0 text-slate-100 shadow-2xl shadow-black/35 backdrop-blur-2xl"
+      >
+        <div className="border-b border-white/10 p-1">
           <button
             type="button"
             onClick={onToggleMode}
-            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground"
+            className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-slate-100 hover:bg-white/10 hover:text-white"
           >
             {isDark ? (
               <Sun className="size-4" />
@@ -70,12 +73,12 @@ export default function ThemePicker({
             {isDark ? "Light mode" : "Dark mode"}
           </button>
         </div>
-        <Command>
-          <CommandInput placeholder="Search themes…" />
+        <Command className="bg-transparent text-slate-100">
+          <CommandInput placeholder="Search themes…" className="text-slate-100 placeholder:text-slate-400" />
           <CommandList>
             <ScrollArea className="max-h-[360px]">
               <CommandEmpty>No theme found.</CommandEmpty>
-              <CommandGroup>
+              <CommandGroup className="text-slate-100">
                 {THEME_CATALOG.map((entry) => {
                   const styles = defaultPresets[entry.name]?.styles[mode]
                   return (
@@ -83,7 +86,7 @@ export default function ThemePicker({
                       key={entry.name}
                       value={entry.name}
                       onSelect={() => onSelect(entry.name)}
-                      className="gap-2"
+                      className="gap-2 data-[selected=true]:bg-white/10 data-[selected=true]:text-white"
                     >
                       <div className="flex items-center gap-1">
                         <Swatch color={styles?.primary ?? "#888"} />

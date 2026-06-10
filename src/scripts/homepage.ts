@@ -46,6 +46,7 @@ type FrancFn = (input: string, options?: { minLength?: number }) => string | nul
 declare global {
   interface Window {
     __sfAuthFetch?: (url: string, options?: RequestInit) => Promise<Response>
+    __sfDelegatedSubmitReady?: boolean
     __sfHomeScriptReady?: boolean
     shipFastDashboardAuth?: {
       getCurrentIdToken?: () => Promise<string>
@@ -1130,7 +1131,12 @@ async function waitForSessionReady(sessionId: string, timeoutMs = 90000): Promis
   while (Date.now() - startedAt < timeoutMs) {
     try {
       const response = await authFetch(`/api/sessions/${encodeURIComponent(sessionId)}`)
-      const data = await response.json().catch(() => ({}))
+      let data: any = {}
+      try {
+        data = await response.json()
+      } catch {
+        data = {}
+      }
       if (data?.homepageReady && data?.siteSpecReady) return true
     } catch {}
     await wait(1000)
@@ -1139,7 +1145,7 @@ async function waitForSessionReady(sessionId: string, timeoutMs = 90000): Promis
 }
 
 function navigateToSession(sessionId: string): void {
-  const url = new URL(`/session/${encodeURIComponent(sessionId)}`, window.location.origin)
+  const url = new URL(`/generate/${encodeURIComponent(sessionId)}`, window.location.origin)
   const targetWindow = window.top && window.top !== window ? window.top : window
   targetWindow.location.assign(url.href)
   window.setTimeout(() => {
@@ -1576,7 +1582,12 @@ form.addEventListener('submit', async (event) => {
           : {}),
       }),
     })
-    const data = await response.json().catch(() => ({}))
+    let data: any = {}
+    try {
+      data = await response.json()
+    } catch {
+      data = {}
+    }
 
     if (data.id) {
       const sessionId = String(data.id)
@@ -1592,6 +1603,11 @@ form.addEventListener('submit', async (event) => {
       sessionStorage.setItem('sf_return_home', '1')
       localStorage.setItem(`sf_openui_prompt_${sessionId}`, prompt)
       sessionStorage.setItem('sf_openui_prompt', prompt)
+      try {
+        const launchAudio = new Audio('/assets/launch.mp3')
+        launchAudio.volume = 0.72
+        void launchAudio.play().catch(() => undefined)
+      } catch {}
       navigateToSession(sessionId)
       return
     }
@@ -1614,6 +1630,94 @@ form.addEventListener('submit', async (event) => {
   submitButton.classList.remove('loading')
   syncSubmitButtonState()
 })
+
+submitButton?.addEventListener('click', (event) => {
+  if (submitButton.disabled || submitButton.classList.contains('loading')) return
+  event.preventDefault()
+  event.stopPropagation()
+  const submitEvent =
+    typeof SubmitEvent === 'function'
+      ? new SubmitEvent('submit', {
+          bubbles: true,
+          cancelable: true,
+          submitter: submitButton,
+        })
+      : new Event('submit', { bubbles: true, cancelable: true })
+  form.dispatchEvent(submitEvent)
+})
+
+let delegatedPromptSubmitInFlight = false
+
+async function submitCurrentPromptForm(event?: Event): Promise<void> {
+  event?.preventDefault()
+  const currentForm = getTypedElement<HTMLFormElement>('prompt-form')
+  const currentInput = getTypedElement<HTMLTextAreaElement>('prompt-input')
+  const currentButton = getTypedElement<HTMLButtonElement>('submit-btn')
+  const currentLanguageSelect = getTypedElement<HTMLSelectElement>('prompt-language')
+  if (!currentForm || !currentInput || !currentButton || delegatedPromptSubmitInFlight) return
+
+  const prompt = currentInput.value.trim()
+  if (!prompt || !checkPromptContentPolicy(prompt).ok) return
+
+  const preferredLanguage = currentLanguageSelect?.value || 'en'
+  savePreferredLanguage(preferredLanguage)
+
+  if (isGenerationLimitReached()) {
+    openAuthOverlay()
+    return
+  }
+
+  delegatedPromptSubmitInFlight = true
+  currentButton.classList.add('loading')
+  currentButton.disabled = true
+
+  try {
+    const response = await authFetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, preferredLanguage }),
+    })
+    let data: any = {}
+    try {
+      data = await response.json()
+    } catch {
+      data = {}
+    }
+
+    if (data.id) {
+      const sessionId = String(data.id)
+      if (!currentUser) saveAnonSession(sessionId, prompt, data.anonOwnerSecret)
+      localStorage.setItem('sf_generation_count', String(getGenerationCount() + 1))
+      sessionStorage.setItem('sf_return_home', '1')
+      localStorage.setItem(`sf_openui_prompt_${sessionId}`, prompt)
+      sessionStorage.setItem('sf_openui_prompt', prompt)
+      navigateToSession(sessionId)
+      return
+    }
+
+    alert(data.error || 'Failed to create session')
+  } catch (error: unknown) {
+    alert(`Connection error: ${(error as Error).message}`)
+  } finally {
+    delegatedPromptSubmitInFlight = false
+    currentButton.classList.remove('loading')
+    currentButton.disabled = false
+  }
+}
+
+document.addEventListener('submit', (event) => {
+  if ((event.target as HTMLElement | null)?.id !== 'prompt-form') return
+  void submitCurrentPromptForm(event)
+})
+
+document.addEventListener('click', (event) => {
+  const target = event.target as Element | null
+  const currentButton = target?.closest?.('#submit-btn') as HTMLButtonElement | null
+  if (!currentButton || currentButton.disabled || currentButton.classList.contains('loading')) return
+  void submitCurrentPromptForm(event)
+})
+
+window.__sfDelegatedSubmitReady = true
 
 const ANON_SESSIONS_KEY = 'sf_anon_sessions'
 
@@ -2611,29 +2715,6 @@ window.addEventListener('sf-home-auth-state', (e: Event) => {
   else void showAnonymousApp()
 })
 
-// Initialize rocket exhaust effect on homepage
-if (typeof window !== 'undefined' && document.querySelector('.launch-rocket')) {
-  // Load the animated backgrounds script and initialize rocket exhaust
-  // Only initialize once
-  if (!(window as any).__rocketExhaustInitialized) {
-    (window as any).__rocketExhaustInitialized = true
-    const script = document.createElement('script')
-    script.type = 'module'
-    script.textContent = `
-      import('/scripts/odysseus-animated-backgrounds.js').then((module) => {
-        if (module.initRocketExhaust) {
-          module.initRocketExhaust()
-          console.log('Rocket exhaust initialized')
-        } else {
-          console.warn('initRocketExhaust not found in module')
-        }
-      }).catch((err) => {
-        console.warn('Failed to initialize rocket exhaust:', err)
-      })
-    `
-    document.head.appendChild(script)
-  }
-}
 
 window.__sfHomeScriptReady = true
 window.dispatchEvent(new CustomEvent('sf-home-script-ready'))

@@ -1,7 +1,0 @@
-
-## Round 3 — conversion/fallback/job general heuristics
-
-- Containment dedup is DIRECTIONAL: drop a node only when its text is a substring of (already covered by) an emitted node. NEVER drop a node merely because it is a SUPERSTRING of an emitted fragment — the longer node carries more copy and dropping it truncates content.
-- When a richer node contains an already-emitted shorter fragment (prefix/substring worth >=50% of the longer), SUBSUME the shorter: remove it and emit the fuller text. This upgrades a truncated title (e.g. a bare URL/anchor) to the complete heading instead of duplicating or clipping it.
-- Section padding/gap follows CONTENT SHAPE, not a single node-count threshold. Three regimes, all structural: dense index (>=8 nodes, or >=3 link/row entries with no media) → tight (gap sm, py-8); hero (lone heading + at most one extra, no link index) → tall (py-16); ordinary small block → comfortable but not hero-tall (py-10). This stops a compact "heading + intro + a few links" page from leaving the viewport mostly blank.
-- Reachability/content-validity gate on the HOME capture: count distinct extractable content strings (headings/paragraphs/list-items/link labels) across the home page's segmented sections; if below a small floor, the capture is an error/parked/unrelated stub — return success=false with an explicit error instead of emitting a misleading clone. Threshold is content-count based, never a hostname or copy match.

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { ArrowLeftIcon, MessageSquarePlus, Type, Wand2 } from "lucide-react";
 import ThemePicker from "../../genui/components/ThemePicker";
 
@@ -18,6 +19,7 @@ interface TopBarProps {
 	agentationEnabled?: boolean;
 	agentationAnnotationCount?: number;
 	onToggleAgentation?: () => void;
+	rightActions?: ReactNode;
 }
 
 function TopBar({
@@ -36,10 +38,11 @@ function TopBar({
 	agentationEnabled,
 	agentationAnnotationCount,
 	onToggleAgentation,
+	rightActions,
 }: TopBarProps) {
 	return (
 		<div
-			className="flex h-10 shrink-0 items-center gap-1 border-b border-border/60 bg-background px-2"
+			className="flex h-10 shrink-0 items-center gap-1 border-b border-border/60 bg-background py-0 pl-2 pr-4"
 			data-session-id={id}
 		>
 			<div className="flex flex-1 items-center gap-1">
@@ -119,6 +122,8 @@ function TopBar({
 						) : null}
 					</button>
 				)}
+
+				{rightActions}
 
 				<ThemePicker
 					value={themeName}

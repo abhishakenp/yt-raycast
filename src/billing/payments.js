@@ -2,7 +2,24 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { ConvexHttpClient } from 'convex/browser'
 
-const convex = new ConvexHttpClient(process.env.VITE_CONVEX_URL || process.env.CONVEX_URL)
+let convex = null
+
+function getConvexClient() {
+  if (convex) return convex
+
+  const deploymentUrl =
+    process.env.CONVEX_SELF_HOSTED_URL ||
+    process.env.CONVEX_URL ||
+    process.env.VITE_CONVEX_SELF_HOSTED_URL ||
+    process.env.VITE_CONVEX_URL
+
+  if (!deploymentUrl) {
+    throw new Error('Convex URL is not configured')
+  }
+
+  convex = new ConvexHttpClient(deploymentUrl)
+  return convex
+}
 
 import {
   MAX_FREE_PER_MONTH,
@@ -73,7 +90,7 @@ function readEarlyAdopterCountFromFile() {
 // ─── Convex-backed early adopter helpers ─────────────────
 async function readEarlyAdopterCount() {
   try {
-    const data = await convex.query('billing:getEarlyAdopterStatus')
+    const data = await getConvexClient().query('billing:getEarlyAdopterStatus')
     return { count: data.count || 0, users: data.users || [] }
   } catch (err) {
     console.warn('[early-adopter] Convex read failed, falling back to file:', err?.message)
@@ -113,7 +130,7 @@ export async function getUserGenerationQuota(userId, clientIp) {
 
 export async function incrementEarlyAdopterCount(uid) {
   try {
-    await convex.mutation('billing:incrementEarlyAdopterCount', { userId: uid })
+    await getConvexClient().mutation('billing:incrementEarlyAdopterCount', { userId: uid })
   } catch (err) {
     console.error(
       '[early-adopter] Convex mutation failed:',
@@ -124,7 +141,7 @@ export async function incrementEarlyAdopterCount(uid) {
 
 export async function isEarlyAdopterSlotAvailable() {
   try {
-    return await convex.query('billing:isEarlyAdopterSlotAvailable')
+    return await getConvexClient().query('billing:isEarlyAdopterSlotAvailable')
   } catch (err) {
     console.warn('[early-adopter] Convex query failed, falling back to file:', err?.message)
     const data = await readEarlyAdopterCount()
@@ -134,7 +151,7 @@ export async function isEarlyAdopterSlotAvailable() {
 
 export async function getEarlyAdopterStatus() {
   try {
-    const data = await convex.query('billing:getEarlyAdopterStatus')
+    const data = await getConvexClient().query('billing:getEarlyAdopterStatus')
     return {
       eligible:
         data.count < EARLY_ADOPTER_MAX &&
@@ -270,7 +287,7 @@ const SUBSCRIPTION_ACTIVE_STATUSES = ['active', 'trialing', 'authenticated']
 export async function hasActiveSubscription(uid) {
   if (!uid) return false
   try {
-    return await convex.query('billing:hasActiveSubscription', { userId: uid })
+    return await getConvexClient().query('billing:hasActiveSubscription', { userId: uid })
   } catch (err) {
     console.error('[payments] hasActiveSubscription error:', err?.message)
     return false
@@ -280,7 +297,7 @@ export async function hasActiveSubscription(uid) {
 export async function hadActiveSubscriptionDuring(uid, timestamp) {
   if (!uid || !timestamp) return false
   try {
-    return await convex.query('billing:hadActiveSubscriptionDuring', { userId: uid, timestamp })
+    return await getConvexClient().query('billing:hadActiveSubscriptionDuring', { userId: uid, timestamp })
   } catch (err) {
     console.error('[payments] hadActiveSubscriptionDuring error:', err?.message)
     return false
@@ -290,7 +307,7 @@ export async function hadActiveSubscriptionDuring(uid, timestamp) {
 export async function getUserCredits(uid) {
   if (!uid) return 0
   try {
-    return await convex.query('billing:getUserCredits', { userId: uid })
+    return await getConvexClient().query('billing:getUserCredits', { userId: uid })
   } catch (err) {
     console.error('[payments] getUserCredits error:', err?.message)
     return 0
@@ -300,7 +317,7 @@ export async function getUserCredits(uid) {
 export async function addUserCredits(uid, amount, paymentRef = null) {
   if (!uid) return
   try {
-    await convex.mutation('billing:addUserCredits', { userId: uid, amount, paymentRef })
+    await getConvexClient().mutation('billing:addUserCredits', { userId: uid, amount, paymentRef })
   } catch (err) {
     console.error('[payments] addUserCredits error:', err?.message)
   }
@@ -309,7 +326,7 @@ export async function addUserCredits(uid, amount, paymentRef = null) {
 export async function consumeUserCredit(uid) {
   if (!uid) return false
   try {
-    return await convex.mutation('billing:consumeUserCredit', { userId: uid })
+    return await getConvexClient().mutation('billing:consumeUserCredit', { userId: uid })
   } catch (err) {
     console.error('[payments] consumeUserCredit error:', err?.message)
     return false
@@ -319,7 +336,7 @@ export async function consumeUserCredit(uid) {
 export async function zeroUserCredits(uid) {
   if (!uid) return
   try {
-    await convex.mutation('billing:zeroUserCredits', { userId: uid })
+    await getConvexClient().mutation('billing:zeroUserCredits', { userId: uid })
   } catch (err) {
     console.error('[payments] zeroUserCredits error:', err?.message)
   }

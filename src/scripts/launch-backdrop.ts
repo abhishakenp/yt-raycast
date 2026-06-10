@@ -56,6 +56,7 @@ function initLaunchBackdrop() {
   }
 
   function resize() {
+    if (!canvas || !ctx) return
     width = Math.max(1, window.innerWidth)
     height = Math.max(1, window.innerHeight)
     canvas.width = Math.floor(width * dpr)
@@ -72,7 +73,7 @@ function initLaunchBackdrop() {
   }
 
   function draw() {
-    if (!document.body.contains(canvas)) return
+    if (!canvas || !ctx || !document.body.contains(canvas)) return
     window.requestAnimationFrame(draw)
     tick += 1
 

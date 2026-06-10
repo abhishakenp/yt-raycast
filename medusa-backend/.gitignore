@@ -1,8 +1,0 @@
-node_modules
-.medusa
-dist
-build
-*.log
-.env
-.env.*
-!.env.example

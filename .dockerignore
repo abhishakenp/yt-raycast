@@ -1,9 +1,0 @@
-node_modules
-.next
-sessions
-.git
-.env
-.env.local
-*.log
-medusa-backend/node_modules
-studio/node_modules

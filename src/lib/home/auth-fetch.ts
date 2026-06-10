@@ -6,7 +6,12 @@ export async function withAuthTokenHeader(
 ): Promise<RequestInit> {
   const headers = new Headers(options.headers || {})
   if (!headers.has('Authorization') && getToken) {
-    const token = await getToken().catch(() => '')
+    let token: string | null | undefined = ''
+    try {
+      token = await getToken()
+    } catch {
+      token = ''
+    }
     if (token) headers.set('Authorization', `Bearer ${token}`)
   }
   return { ...options, headers }

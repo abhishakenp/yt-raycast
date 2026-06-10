@@ -1,0 +1,44 @@
+@import url('./styles/index.css');
+@import url('./styles/launch-backdrop.css');
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app,
+#root,
+#__root {
+  min-height: 100%;
+}
+
+#app,
+#root,
+#__root {
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+}
+
+body {
+  margin: 0;
+}
+
+
+/* Global glass-pill hover effect approved from pricing navbar. */
+.pill:hover:not(:disabled),
+a.pill:hover,
+button.pill:hover:not(:disabled),
+#signin-btn.pill:hover,
+#signout-btn.pill:hover,
+.top-actions .pill.pill--top-actions:hover {
+  background: rgba(255, 255, 255, 0.065);
+  color: var(--text-primary, #f0f0f5);
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px var(--ring-strong, rgba(255, 255, 255, 0.4)),
+    0 0 24px var(--glow, rgba(138, 180, 255, 0.2)),
+    0 14px 32px rgba(0, 0, 0, 0.42);
+}
