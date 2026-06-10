@@ -1,26 +1,6 @@
 import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { ConvexHttpClient } from 'convex/browser'
-
-let convex = null
-
-function getConvexClient() {
-  if (convex) return convex
-
-  const deploymentUrl =
-    process.env.CONVEX_SELF_HOSTED_URL ||
-    process.env.CONVEX_URL ||
-    process.env.VITE_CONVEX_SELF_HOSTED_URL ||
-    process.env.VITE_CONVEX_URL
-
-  if (!deploymentUrl) {
-    throw new Error('Convex URL is not configured')
-  }
-
-  convex = new ConvexHttpClient(deploymentUrl)
-  return convex
-}
-
 import {
   MAX_FREE_PER_MONTH,
   MAX_PAID_PER_MONTH,
@@ -39,6 +19,26 @@ import {
   resolvePaymentCurrency,
   resolvePaymentGateway,
 } from './payment-routing.js'
+
+let convex = null
+let activeSubscriptionLookupForTest = null
+
+function getConvexClient() {
+  if (convex) return convex
+
+  const deploymentUrl =
+    process.env.CONVEX_SELF_HOSTED_URL ||
+    process.env.CONVEX_URL ||
+    process.env.VITE_CONVEX_SELF_HOSTED_URL ||
+    process.env.VITE_CONVEX_URL
+
+  if (!deploymentUrl) {
+    throw new Error('Convex URL is not configured')
+  }
+
+  convex = new ConvexHttpClient(deploymentUrl)
+  return convex
+}
 
 let billingDir = null
 
@@ -286,12 +286,17 @@ const SUBSCRIPTION_ACTIVE_STATUSES = ['active', 'trialing', 'authenticated']
 
 export async function hasActiveSubscription(uid) {
   if (!uid) return false
+  if (activeSubscriptionLookupForTest) return activeSubscriptionLookupForTest(uid)
   try {
     return await getConvexClient().query('billing:hasActiveSubscription', { userId: uid })
   } catch (err) {
     console.error('[payments] hasActiveSubscription error:', err?.message)
     return false
   }
+}
+
+export function setActiveSubscriptionLookupForTest(lookup) {
+  activeSubscriptionLookupForTest = typeof lookup === 'function' ? lookup : null
 }
 
 export async function hadActiveSubscriptionDuring(uid, timestamp) {
@@ -507,10 +512,8 @@ export async function decorateExportTargetsForRequest(session, targets) {
   }))
 }
 
-export async function getSessionPaymentDetails(
-  session,
-  { ip = null, countryCode = null, headers = {} } = {},
-) {
+export async function getSessionPaymentDetails(session, options = {}) {
+  const { ip = null, countryCode = null, headers = {} } = options
   const resolvedCountry = countryCode || resolveCountryCodeFromHeaders(headers) || 'GLOBAL'
   const isIndianUser = resolvedCountry === 'IN'
   const gateway = resolvePaymentGateway(resolvedCountry)

@@ -87,6 +87,7 @@ export async function generateAndWriteOpenUIHome(p: {
   log?: (msg: string) => void
   sessionCtx?: any
   variationSeed?: any
+  languageMode?: { code?: string } | null
 }) {
   const log = p.log || console.log
   log('Starting GenUI orchestrator...')
@@ -96,13 +97,17 @@ export async function generateAndWriteOpenUIHome(p: {
   const ctx = p.sessionCtx
   const tagline = p.siteSpec?.tagline || p.siteSpec?.metadata?.description || ''
   const specThemeName = typeof p.siteSpec?.theme === 'string' ? p.siteSpec.theme : null
+  const forcedLocale =
+    typeof p.languageMode?.code === 'string' && p.languageMode.code.trim()
+      ? p.languageMode.code.trim().toLowerCase()
+      : null
 
   // Live stream: stand up the themed host shell the moment the first statement
   // (the skeleton) lands — so the preview iframe mounts and subscribes — then push
   // the FULL accumulated program on every page, so each page pops into the preview
   // as it finishes generating instead of after the whole run completes.
   let themeName: string | null = null
-  let localeName = 'en'
+  let localeName = forcedLocale || 'en'
   let shellWritten = false
   const brandSoFar = projectTitle(p.siteSpec, p.prompt)
 
@@ -122,7 +127,7 @@ export async function generateAndWriteOpenUIHome(p: {
       themeName = event.name
       log(`  genui: theme → ${event.name}`)
     } else if (event.type === 'locale') {
-      localeName = event.code
+      if (!forcedLocale) localeName = event.code
       log(`  genui: locale → ${event.code}`)
     } else if (event.type === 'status') log(`  genui: ${event.message}`)
     else if (event.type === 'plan') log(`  genui: pages → ${event.ids.join(', ')}`)
@@ -143,7 +148,7 @@ export async function generateAndWriteOpenUIHome(p: {
     
     // Server-side render OpenUI to HTML before sending to client
     const currentTheme = themeName || specThemeName || 'modern-minimal'
-    const currentLocale = localeName || 'en'
+    const currentLocale = forcedLocale || localeName || 'en'
     const { html } = renderOpenUIToHTMLWithTheme(accumulated, null, currentLocale, null)
     
     ctx?.broadcast?.({ type: 'openui_stream_chunk', route, html: html, source: accumulated })
@@ -160,13 +165,13 @@ export async function generateAndWriteOpenUIHome(p: {
   const brand = result.brand || brandSoFar
   // The AI-picked theme name drives the preview palette (renderers/index.ts reads
   // it back from the site spec and applies the matching designed preset).
-  const theme = result.theme || themeName || specThemeName || 'modern-minimal'
+  const theme = result.theme || specThemeName || 'modern-minimal'
   // Deterministic override: an explicit language keyword in the prompt ("hinglish",
   // "roman hindi", "tamil english mix", …) is authoritative over the small planner
   // LLM's guess, which is unreliable at picking the variant codes.
   const promptLocale =
     preferRomanizedBcp47FromSnippet(p.prompt) || preferMixedEnglishBcp47FromSnippet(p.prompt)
-  const locale = promptLocale || result.locale || localeName || 'en'
+  const locale = promptLocale || forcedLocale || result.locale || localeName || 'en'
   const project = { brand, tagline, theme, locale, skeleton: '', modules: { home: source } }
 
   // Finalize: persist the complete program + shell (for reload), then close the

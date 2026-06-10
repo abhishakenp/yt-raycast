@@ -4,6 +4,7 @@ import { generateAndWriteOpenUIHome } from './phase-openui-home.ts'
 import { formatRunAllReport } from './report.js'
 import { loadSiteSpec } from '../spec/index.js'
 import { requirePromptText } from '../prompt.js'
+import { resolvePipelineLanguage } from './prompt-language.js'
 
 const log = (sessionCtx) => (msg) => {
   console.log(msg)
@@ -20,11 +21,17 @@ export async function runAll({
   workspace,
   sessionCtx,
   integrations,
+  preferredLanguage,
 } = {}) {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()
   const normalizedPrompt = requirePromptText(prompt)
+  const languageMode = await resolvePipelineLanguage({
+    prompt: normalizedPrompt,
+    preferredLanguage,
+    workspace,
+  })
   const timings = { t0 }
   const tasks = [
     {
@@ -53,7 +60,8 @@ export async function runAll({
     const openuiStats = await generateAndWriteOpenUIHome({
       workspace,
       siteSpec: loadSiteSpec(workspace),
-      prompt: normalizedPrompt,
+      prompt: languageMode.prompt,
+      languageMode,
       log: _log,
       sessionCtx,
       variationSeed: sessionCtx?.id || workspace,
