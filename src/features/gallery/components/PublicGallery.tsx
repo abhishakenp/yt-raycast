@@ -1,0 +1,336 @@
+import { Link } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+import { useGalleryController } from '../hooks/useGalleryController'
+
+export type GalleryCategory = string
+
+export type GalleryCategoryOption = {
+  count: number
+  label: string
+  value: string
+}
+
+export type GallerySession = {
+  sessionId: string
+  prompt?: string
+  status?: string | null
+  previewVersion?: number
+  createdAt?: number
+  elapsed?: number | null
+  html?: string | null
+  moduleSource?: string | null
+  preferredLanguage?: string | null
+  siteSpecJson?: string | null
+  categories?: string[]
+}
+
+export type GalleryPayload = {
+  items: GallerySession[]
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
+  availableCategories?: GalleryCategoryOption[]
+}
+
+const getPromptTitle = (prompt?: string) => {
+  const cleaned = prompt?.trim()
+  if (cleaned === undefined || cleaned.length === 0) return 'Generated website'
+
+  return cleaned
+}
+
+const getPreviewDocument = (html?: string | null) => {
+  if (html === undefined || html.trim().length === 0) return undefined
+  if (html.includes('id="ship-fast-generated-module"') && !html.includes('<main')) return undefined
+
+  return html
+}
+
+const galleryPreviewQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 30 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: Infinity,
+    },
+  },
+})
+
+const renderOpenUIPreview = async (session: GallerySession) => {
+  const response = await fetch('/api/openui-preview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      source: session.moduleSource,
+      sessionId: session.sessionId,
+      siteSpecJson: session.siteSpecJson,
+      locale: session.preferredLanguage ?? 'en',
+    }),
+  })
+
+  if (!response.ok) throw new Error('openui-preview-render')
+
+  const data = (await response.json()) as { html?: unknown }
+  if (typeof data.html !== 'string' || data.html.trim().length === 0) {
+    throw new Error('openui-preview-empty')
+  }
+
+  return data.html
+}
+
+export const GalleryCategoryTabs = ({
+  category,
+  categories,
+  onChange,
+}: {
+  category: GalleryCategory
+  categories?: GalleryCategoryOption[]
+  onChange: (category: GalleryCategory) => void
+}) => {
+  if (categories === undefined) {
+    return (
+      <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label="Gallery categories">
+        {Array.from({ length: 5 }, (_, index) => (
+          <span
+            key={index}
+            className={cn(
+              'h-9 animate-pulse rounded-full border border-white/10 bg-white/[0.055]',
+              index === 0 ? 'w-16' : 'w-24',
+            )}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  const tabs = [{ label: 'All', value: 'all', count: 0 }, ...categories]
+
+  return (
+    <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label="Gallery categories">
+      {tabs.map((item) => (
+        <button
+          key={item.value}
+          type="button"
+          className={cn(
+            'h-9 rounded-full border px-3 text-xs font-semibold text-white/58 transition-colors hover:border-cyan-200/45 hover:text-white',
+            category === item.value
+              ? 'border-cyan-200/55 bg-cyan-300/12 text-cyan-100'
+              : 'border-white/10 bg-white/[0.045]',
+          )}
+          onClick={() => onChange(item.value)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+const GalleryPreview = ({ session }: { session: GallerySession }) => {
+  const previewDocument = getPreviewDocument(session.html)
+  const hasModuleSource = typeof session.moduleSource === 'string' && session.moduleSource.trim().length > 0
+  const { data: renderedOpenUI } = useQuery({
+    enabled: hasModuleSource,
+    queryFn: () => renderOpenUIPreview(session),
+    queryKey: [
+      'gallery-openui-preview',
+      session.sessionId,
+      session.previewVersion ?? 0,
+      session.moduleSource?.length ?? 0,
+    ],
+  })
+
+  return (
+    <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
+      {renderedOpenUI !== undefined ? (
+        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
+          <div className="size-full" dangerouslySetInnerHTML={{ __html: renderedOpenUI }} />
+        </div>
+      ) : previewDocument !== undefined && !hasModuleSource ? (
+        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
+          <div className="size-full" dangerouslySetInnerHTML={{ __html: previewDocument }} />
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(34,211,238,0.22),transparent_32%),radial-gradient(circle_at_78%_22%,rgba(168,85,247,0.24),transparent_36%),linear-gradient(135deg,#050816_0%,#0f172a_58%,#111827_100%)]">
+          <div className="absolute inset-x-5 top-4 flex items-center justify-between gap-3">
+            <div className="h-2 w-24 rounded-full bg-white/18" />
+            <div className="flex gap-1.5">
+              <span className="size-2 rounded-full bg-cyan-300/70" />
+              <span className="size-2 rounded-full bg-violet-300/70" />
+              <span className="size-2 rounded-full bg-white/40" />
+            </div>
+          </div>
+          <div className="absolute left-5 top-12 max-w-[72%]">
+            <h2 className="line-clamp-2 text-xl font-bold leading-tight tracking-normal text-white">
+              {getPromptTitle(session.prompt).split(/\s+/).slice(0, 4).join(' ')}
+            </h2>
+          </div>
+          <div className="absolute bottom-4 left-5 right-5 grid grid-cols-3 gap-2">
+            <span className="h-8 rounded-md border border-white/10 bg-white/[0.06]" />
+            <span className="h-8 rounded-md border border-white/10 bg-white/[0.06]" />
+            <span className="h-8 rounded-md border border-white/10 bg-white/[0.06]" />
+          </div>
+        </div>
+      )}
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/8" />
+    </div>
+  )
+}
+
+const GalleryCard = ({ session }: { session: GallerySession }) => (
+  <Link
+    className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
+    to="/generate/$sessionId"
+    params={{ sessionId: session.sessionId }}
+  >
+    <GalleryPreview session={session} />
+    <div className="p-4">
+      <p className="mb-3 line-clamp-2 min-h-10 text-sm leading-5 text-slate-100">{getPromptTitle(session.prompt)}</p>
+      <div className="flex min-w-0 flex-wrap gap-1.5">
+        {(session.categories?.length ? session.categories : ['website']).slice(0, 2).map((category) => (
+          <span
+            key={category}
+            className="rounded-full border border-white/10 bg-white/[0.045] px-2 py-0.5 text-[11px] capitalize text-white/48"
+          >
+            {category}
+          </span>
+        ))}
+      </div>
+    </div>
+  </Link>
+)
+
+const GallerySkeletonCard = ({ index }: { index: number }) => (
+  <div
+    className={cn(
+      'overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.22)]',
+      index % 3 === 1 && 'opacity-90',
+      index % 3 === 2 && 'opacity-80',
+    )}
+  >
+    <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
+      <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_80%_26%,rgba(168,85,247,0.18),transparent_35%),linear-gradient(135deg,#050816,#111827)]" />
+      <div className="absolute left-5 right-5 top-4 flex items-center justify-between">
+        <div className="h-2 w-24 rounded-full bg-white/15" />
+        <div className="flex gap-1.5">
+          <span className="size-2 rounded-full bg-white/18" />
+          <span className="size-2 rounded-full bg-white/18" />
+          <span className="size-2 rounded-full bg-white/18" />
+        </div>
+      </div>
+      <div className="absolute left-5 top-14 h-5 w-2/3 rounded bg-white/14" />
+      <div className="absolute bottom-4 left-5 right-5 grid grid-cols-3 gap-2">
+        <span className="h-8 rounded-md bg-white/10" />
+        <span className="h-8 rounded-md bg-white/10" />
+        <span className="h-8 rounded-md bg-white/10" />
+      </div>
+    </div>
+    <div className="space-y-3 p-4">
+      <div className="h-3 w-28 rounded bg-white/12" />
+      <div className="h-4 w-full rounded bg-white/10" />
+      <div className="h-4 w-4/5 rounded bg-white/10" />
+      <div className="flex justify-between">
+        <div className="h-5 w-24 rounded-full bg-white/10" />
+        <div className="h-3 w-8 rounded bg-white/10" />
+      </div>
+    </div>
+  </div>
+)
+
+export const GalleryGrid = ({
+  className,
+  gallery,
+  skeletonCount = 6,
+}: {
+  className?: string
+  gallery?: GalleryPayload
+  skeletonCount?: number
+}) => {
+  const items = (gallery?.items ?? []) as GallerySession[]
+
+  return (
+    <QueryClientProvider client={galleryPreviewQueryClient}>
+      <div className={cn('grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3', className)}>
+        {items.length > 0
+          ? items.map((session) => <GalleryCard key={session.sessionId} session={session} />)
+          : Array.from({ length: skeletonCount }, (_, index) => <GallerySkeletonCard key={index} index={index} />)}
+      </div>
+    </QueryClientProvider>
+  )
+}
+
+export const GalleryPagination = ({
+  hasNext,
+  hasPrev,
+  onNext,
+  onPrev,
+  page,
+  totalPages,
+}: {
+  hasNext: boolean
+  hasPrev: boolean
+  onNext: () => void
+  onPrev: () => void
+  page: number
+  totalPages: number
+}) => (
+  <nav className="flex flex-wrap items-center justify-between gap-3" aria-label="Gallery pages">
+    <p className="text-sm text-white/48">
+      Page {page} of {totalPages}
+    </p>
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        className="border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+        disabled={!hasPrev}
+        onClick={onPrev}
+      >
+        <ChevronLeft className="size-4" />
+        Previous
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        className="border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+        disabled={!hasNext}
+        onClick={onNext}
+      >
+        Next
+        <ChevronRight className="size-4" />
+      </Button>
+    </div>
+  </nav>
+)
+
+export const HomeGallerySection = () => {
+  const { gallery } = useGalleryController({ limit: 12 })
+
+  return (
+    <section className="mb-16 mt-12 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-5 shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] md:p-6" aria-live="polite">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">Gallery</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-normal text-white">See what other speedsters generated</h2>
+        </div>
+        <Link
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 text-sm font-semibold text-white/80 transition-colors hover:border-cyan-200/45 hover:text-white"
+          to="/gallery"
+        >
+          View all
+          <ArrowRight className="size-4" />
+        </Link>
+      </div>
+      <GalleryGrid gallery={gallery} skeletonCount={12} className="lg:grid-cols-4" />
+    </section>
+  )
+}

@@ -2,6 +2,7 @@ import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
+import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
 import { GLASS_LENS_FILTER_ID } from '@/lib/glass-pill-html'
 import { cn } from '@/lib/utils'
@@ -558,7 +559,7 @@ export const HomePage = () => {
                         <div className="flex shrink-0 items-center gap-2.5">
                           <input
                             type="checkbox"
-                            className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-[var(--border-primary)] bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-[var(--text-muted)] before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
+                            className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
                             id="design-ref-toggle"
                             checked={designRefOpen}
                             onChange={(event) => setDesignRefOpen(event.currentTarget.checked)}
@@ -687,21 +688,7 @@ export const HomePage = () => {
             </div>
           </section>
 
-          <section className="hidden" id="sessions-section" aria-live="polite">
-            <h2>See what other speedsters generated</h2>
-            <ul className="grid gap-4" id="session-list" />
-            <nav className="mt-5 flex items-center justify-between gap-3" id="session-pagination" aria-label="Gallery pages" hidden>
-              <p className="m-0 text-sm text-white/50" id="session-page-status" aria-live="polite" />
-              <div className="flex items-center gap-2" id="session-pagination-actions">
-                <GlassPillButton className="min-h-9 px-5 py-0 font-sans text-[13px] font-medium text-[var(--text-primary,#f0f0f5)]" id="session-page-prev">
-                  Previous
-                </GlassPillButton>
-                <GlassPillButton className="min-h-9 px-5 py-0 font-sans text-[13px] font-medium text-[var(--text-primary,#f0f0f5)]" id="session-page-next">
-                  Next
-                </GlassPillButton>
-              </div>
-            </nav>
-          </section>
+          <HomeGallerySection />
         </div>
       </div>
 

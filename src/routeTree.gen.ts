@@ -19,6 +19,7 @@ import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessio
 import { Route as ApiStudioEmbedReadyRouteImport } from './routes/api/studio-embed-ready'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
+import { Route as ApiOpenuiPreviewRouteImport } from './routes/api/openui-preview'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 
 const TermsRoute = TermsRouteImport.update({
@@ -71,6 +72,11 @@ const ApiPromptSuggestionsRoute = ApiPromptSuggestionsRouteImport.update({
   path: '/api/prompt-suggestions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOpenuiPreviewRoute = ApiOpenuiPreviewRouteImport.update({
+  id: '/api/openui-preview',
+  path: '/api/openui-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
   id: '/export/$sessionId/$target',
   path: '/export/$sessionId/$target',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/studio'
     | '/terms'
+    | '/api/openui-preview'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/studio'
     | '/terms'
+    | '/api/openui-preview'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/studio'
     | '/terms'
+    | '/api/openui-preview'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   StudioRoute: typeof StudioRoute
   TermsRoute: typeof TermsRoute
+  ApiOpenuiPreviewRoute: typeof ApiOpenuiPreviewRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
   ApiStudioEmbedReadyRoute: typeof ApiStudioEmbedReadyRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPromptSuggestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/openui-preview': {
+      id: '/api/openui-preview'
+      path: '/api/openui-preview'
+      fullPath: '/api/openui-preview'
+      preLoaderRoute: typeof ApiOpenuiPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/export/$sessionId/$target': {
       id: '/export/$sessionId/$target'
       path: '/export/$sessionId/$target'
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   StudioRoute: StudioRoute,
   TermsRoute: TermsRoute,
+  ApiOpenuiPreviewRoute: ApiOpenuiPreviewRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
   ApiStudioEmbedReadyRoute: ApiStudioEmbedReadyRoute,

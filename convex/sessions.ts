@@ -21,7 +21,89 @@ const taskStatus = v.union(
   v.literal('failed'),
 )
 
-const publicGalleryStatuses = ['homepage_ready', 'site_spec_ready', 'preview_ready', 'failed'] as const
+const ongoingGalleryStatuses = new Set(['created', 'queued', 'validating', 'streaming'])
+
+const hasGalleryReadySignal = (session: Doc<'sessions'>): boolean =>
+  session.genuiStatus === 'done' ||
+  session.homepageReady === true ||
+  session.siteSpecReady === true ||
+  session.openuiReady === true ||
+  (session.previewVersion ?? 0) > 0
+
+const isGalleryVisibleSession = (session: Doc<'sessions'>): boolean => {
+  const status = session.status
+  if (status !== undefined && ongoingGalleryStatuses.has(status)) return hasGalleryReadySignal(session)
+  if (status !== undefined) return true
+
+  return hasGalleryReadySignal(session)
+}
+
+const galleryCategoryTerms = {
+  saas: ['saas', 'software', 'platform', 'dashboard', 'analytics', 'copilot', 'ai'],
+  commerce: ['store', 'shop', 'ecommerce', 'commerce', 'product', 'checkout', 'subscription'],
+  portfolio: ['portfolio', 'studio', 'agency', 'consultancy', 'case studies', 'architecture'],
+  blog: ['blog', 'publication', 'news', 'story', 'stories', 'article'],
+  service: ['service', 'booking', 'local', 'gym', 'wellness', 'grooming', 'restaurant'],
+  app: ['app', 'mobile', 'tool', 'planner', 'manager', 'studio'],
+} as const
+
+const getGalleryCategories = (prompt: string): string[] => {
+  const normalizedPrompt = prompt.toLowerCase()
+
+  return Object.entries(galleryCategoryTerms)
+    .filter(([, terms]) => terms.some((term) => normalizedPrompt.includes(term)))
+    .map(([category]) => category)
+}
+
+const formatGalleryCategory = (category: string): string =>
+  category
+    .split(/[-_\s]+/)
+    .filter((part) => part.length > 0)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(' ')
+
+const getGalleryCategoryOptions = (sessions: Doc<'sessions'>[]) => {
+  const counts = new Map<string, number>()
+
+  for (const session of sessions) {
+    for (const category of getGalleryCategories(session.prompt)) {
+      counts.set(category, (counts.get(category) ?? 0) + 1)
+    }
+  }
+
+  return Array.from(counts.entries())
+    .sort(([categoryA, countA], [categoryB, countB]) => countB - countA || categoryA.localeCompare(categoryB))
+    .map(([value, count]) => ({
+      value,
+      label: formatGalleryCategory(value),
+      count,
+    }))
+}
+
+const matchesGalleryFilters = (
+  session: Doc<'sessions'>,
+  search: string | undefined,
+  category: string | undefined,
+): boolean => {
+  const categories = getGalleryCategories(session.prompt)
+  const normalizedCategory = category?.trim().toLowerCase()
+  if (normalizedCategory !== undefined && normalizedCategory.length > 0 && !categories.includes(normalizedCategory)) {
+    return false
+  }
+
+  const normalizedSearch = search?.trim().toLowerCase()
+  if (normalizedSearch === undefined || normalizedSearch.length === 0) return true
+
+  return [
+    session._id,
+    session.prompt,
+    session.status,
+    session.genuiStatus,
+    ...(categories.length > 0 ? categories : ['website']),
+  ]
+    .filter((value): value is string => typeof value === 'string')
+    .some((value) => value.toLowerCase().includes(normalizedSearch))
+}
 
 const engineTask = v.object({
   id: v.string(),
@@ -1499,32 +1581,73 @@ export const getCommerceConfig = query({
 export const listPublicSessions = query({
   args: {
     limit: v.optional(v.number()),
+    page: v.optional(v.number()),
+    search: v.optional(v.string()),
+    category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const limit = Math.min(Math.max(args.limit ?? 48, 1), 96)
-    const sessionsByStatus = await Promise.all(
-      publicGalleryStatuses.map((status) =>
-        ctx.db
-          .query('sessions')
-          .withIndex('by_public_status_createdAt', (index) =>
-            index.eq('isPrivate', false).eq('status', status),
-          )
-          .order('desc')
-          .take(limit),
-      ),
-    )
-    const sessions = sessionsByStatus
-      .flat()
-      .sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0))
-      .slice(0, limit)
+    const limit = Math.min(Math.max(args.limit ?? 12, 1), 48)
+    const requestedPage = Math.max(args.page ?? 1, 1)
+    const scanLimit = Math.min(Math.max((requestedPage + 1) * limit * 6, 96), 300)
+    const publicSessions = await ctx.db
+      .query('sessions')
+      .withIndex('by_public_createdAt', (index) => index.eq('isPrivate', false))
+      .order('desc')
+      .take(scanLimit)
+    const visibleSessions = publicSessions.filter(isGalleryVisibleSession)
+    const searchFilteredSessions = visibleSessions.filter((session) => matchesGalleryFilters(session, args.search, undefined))
+    const availableCategories = getGalleryCategoryOptions(searchFilteredSessions)
+    const filteredSessions = searchFilteredSessions.filter((session) => matchesGalleryFilters(session, undefined, args.category))
 
-    return sessions.map((session) => ({
-      sessionId: session._id,
-      prompt: session.prompt,
-      status: session.status,
-      previewVersion: session.previewVersion,
-      createdAt: session.createdAt,
-      elapsed: session.elapsed,
-    }))
+    const total = filteredSessions.length
+    const totalPages = Math.max(1, Math.ceil(total / limit))
+    const page = Math.min(requestedPage, totalPages)
+    const sessions = filteredSessions.slice((page - 1) * limit, page * limit)
+    const items = await Promise.all(
+      sessions.map(async (session) => {
+        const [preview, homeModule, siteSpec] = await Promise.all([
+          ctx.db
+            .query('previews')
+            .withIndex('by_sessionId_version', (index) => index.eq('sessionId', session._id))
+            .order('desc')
+            .first(),
+          ctx.db
+            .query('generatedModules')
+            .withIndex('by_sessionId_moduleKey', (index) =>
+              index.eq('sessionId', session._id).eq('moduleKey', 'home'),
+            )
+            .first(),
+          ctx.db
+            .query('siteSpecs')
+            .withIndex('by_sessionId', (index) => index.eq('sessionId', session._id))
+            .first(),
+        ])
+
+        return {
+          sessionId: session._id,
+          prompt: session.prompt,
+          preferredLanguage: session.preferredLanguage,
+          status: session.status ?? null,
+          previewVersion: preview?.version ?? session.previewVersion ?? 0,
+          createdAt: session.createdAt,
+          elapsed: session.elapsed ?? null,
+          html: preview?.html ?? null,
+          moduleSource: homeModule?.source ?? null,
+          siteSpecJson: siteSpec?.specJson ?? siteSpec?.spec ?? null,
+          categories: getGalleryCategories(session.prompt),
+        }
+      }),
+    )
+
+    return {
+      items,
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+      availableCategories,
+    }
   },
 })

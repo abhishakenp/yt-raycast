@@ -1,8 +1,21 @@
 import type { ImgHTMLAttributes } from "react"
 
-function slugify(alt: string | undefined): string {
+function normalizeAlt(alt: unknown): string {
+  if (typeof alt === "string") return alt.trim() || "image"
+  if (typeof alt === "number" || typeof alt === "boolean" || typeof alt === "bigint") return String(alt)
+  if (alt && typeof alt === "object") {
+    for (const key of ["alt", "label", "title", "name", "description"]) {
+      const value = (alt as Record<string, unknown>)[key]
+      if (typeof value === "string" && value.trim().length > 0) return value.trim()
+    }
+  }
+
+  return "image"
+}
+
+function slugify(alt: unknown): string {
   return (
-    (alt ?? "image")
+    normalizeAlt(alt)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
@@ -11,13 +24,13 @@ function slugify(alt: string | undefined): string {
 }
 
 /** Legacy fallback — deterministic placeholder from alt text. */
-export function picsum(alt: string | undefined, w = 800, h = 600): string {
+export function picsum(alt: unknown, w = 800, h = 600): string {
   const seed = slugify(alt)
   return `https://picsum.photos/seed/${seed}/${w}/${h}`
 }
 
 /** Generate proxy URL for Pexels image. */
-function getPexelsProxyUrl(alt: string | undefined, w: number, h: number): string {
+function getPexelsProxyUrl(alt: unknown, w: number, h: number): string {
   const seed = slugify(alt)
   return `/api/pexels?query=${encodeURIComponent(seed)}&w=${w}&h=${h}`
 }
@@ -34,17 +47,18 @@ export function Image({
   loading,
   ...rest
 }: {
-  alt?: string
+  alt?: unknown
   src?: string
   w?: number
   h?: number
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "alt" | "width" | "height">) {
+  const normalizedAlt = normalizeAlt(alt)
   const explicitSrc = typeof src === "string" && src.trim() ? src : null
   if (explicitSrc) {
     return (
       <img
         src={explicitSrc}
-        alt={alt}
+        alt={normalizedAlt}
         width={w}
         height={h}
         className={className}
@@ -59,7 +73,7 @@ export function Image({
   return (
     <img
       src={proxyUrl}
-      alt={alt}
+      alt={normalizedAlt}
       width={w}
       height={h}
       className={className}
