@@ -23,7 +23,7 @@ export const MarketingShell = ({
       <GlassPillSvgDefs />
       <LaunchBackdrop />
       <nav
-        className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-[var(--top-actions-inset-inline)] py-[var(--top-actions-inset-block)]"
+        className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4"
         aria-label="Primary"
       >
         <div className="pointer-events-auto ml-auto flex items-center gap-2">

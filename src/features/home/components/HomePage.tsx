@@ -308,7 +308,7 @@ const PrivateGenerationModal = ({
 )
 
 const TopActions = () => (
-  <nav className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-[var(--top-actions-inset-inline)] py-[var(--top-actions-inset-block)]" aria-label="Primary">
+  <nav className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4" aria-label="Primary">
     <div className="pointer-events-auto ml-auto flex items-center gap-2">
       <GlassPillAnchor className="min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[var(--text-primary,#f0f0f5)] [&>span:last-child]:gap-1.5" href="/pricing">
         Pricing
