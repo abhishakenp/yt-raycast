@@ -10,6 +10,10 @@ import {
   createAnonymousOwnerSecret,
   persistAnonymousOwnerSecret,
 } from '@/features/session/services/anonymous-owner-secret'
+import {
+  buildCreateSessionPayload,
+  createSessionWorkspaceKey,
+} from '@/features/session/services/session-create-payload'
 
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
@@ -40,13 +44,13 @@ export const usePromptHomeController = () => {
 
     try {
       const anonymousOwnerSecret = createAnonymousOwnerSecret()
-      const { sessionId } = await createSession({
+      const { sessionId } = await createSession(buildCreateSessionPayload({
         prompt: runtimePrompt,
         preferredLanguage,
-        preferredExportTarget: 'html',
         isPrivate,
         anonymousOwnerSecret,
-      })
+        workspace: createSessionWorkspaceKey(),
+      }))
 
       persistAnonymousOwnerSecret(window.localStorage, sessionId, anonymousOwnerSecret)
       void runGeneration({

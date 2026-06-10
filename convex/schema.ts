@@ -34,15 +34,39 @@ const integrationStatus = v.union(
 export default defineSchema({
   sessions: defineTable({
     userId: v.optional(v.string()),
+    legacySessionId: v.optional(v.string()),
+    anonOwnerSecret: v.optional(v.string()),
     anonOwnerSecretHash: v.optional(v.string()),
+    workspace: v.optional(v.string()),
     prompt: v.string(),
-    status: generationStatus,
+    status: v.optional(generationStatus),
+    genuiStatus: v.optional(v.string()),
+    homepageReady: v.optional(v.boolean()),
+    siteSpecReady: v.optional(v.boolean()),
+    openuiReady: v.optional(v.boolean()),
+    elapsed: v.optional(v.number()),
+    cost: v.optional(v.number()),
+    agentationEnabled: v.optional(v.boolean()),
+    agentationEnabledAt: v.optional(v.number()),
+    agentationSessionId: v.optional(v.string()),
+    sanityConfig: v.optional(v.any()),
+    medusaConfig: v.optional(v.any()),
+    alternativeDesign: v.optional(v.any()),
+    themeOverride: v.optional(v.any()),
+    deploymentSlug: v.optional(v.string()),
+    deploymentUrl: v.optional(v.string()),
+    deployedAt: v.optional(v.number()),
+    programOverride: v.optional(v.string()),
+    genuiProgramOverride: v.optional(v.string()),
+    genuiSkeleton: v.optional(v.string()),
+    genuiTheme: v.optional(v.string()),
+    genuiError: v.optional(v.string()),
     preferredLanguage: v.string(),
-    preferredExportTarget: exportTarget,
+    preferredExportTarget: v.string(),
     isPrivate: v.boolean(),
-    previewVersion: v.number(),
+    previewVersion: v.optional(v.number()),
     createdAt: v.number(),
-    updatedAt: v.number(),
+    updatedAt: v.optional(v.number()),
     errorCode: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
   })
@@ -51,13 +75,19 @@ export default defineSchema({
 
   tasks: defineTable({
     sessionId: v.id('sessions'),
-    taskKey: v.string(),
+    taskKey: v.optional(v.string()),
+    taskId: v.optional(v.string()),
     title: v.string(),
-    status: taskStatus,
-    order: v.number(),
+    status: v.string(),
+    order: v.optional(v.number()),
+    filename: v.optional(v.string()),
+    description: v.optional(v.string()),
+    dependsOn: v.optional(v.array(v.string())),
+    files: v.optional(v.array(v.string())),
+    actions: v.optional(v.array(v.string())),
     errorMessage: v.optional(v.string()),
     createdAt: v.number(),
-    updatedAt: v.number(),
+    updatedAt: v.optional(v.number()),
   })
     .index('by_sessionId', ['sessionId'])
     .index('by_sessionId_taskKey', ['sessionId', 'taskKey']),
@@ -82,9 +112,10 @@ export default defineSchema({
 
   siteSpecs: defineTable({
     sessionId: v.id('sessions'),
-    specJson: v.string(),
+    specJson: v.optional(v.string()),
+    spec: v.optional(v.string()),
     createdAt: v.number(),
-    updatedAt: v.number(),
+    updatedAt: v.optional(v.number()),
   }).index('by_sessionId', ['sessionId']),
 
   previews: defineTable({
@@ -116,11 +147,14 @@ export default defineSchema({
   agentationAnnotations: defineTable({
     sessionId: v.id('sessions'),
     annotationId: v.string(),
-    agentationSessionKey: v.string(),
+    agentationSessionKey: v.optional(v.string()),
+    agentationSessionId: v.optional(v.string()),
     comment: v.string(),
-    elementLabel: v.string(),
-    elementPath: v.string(),
+    element: v.optional(v.string()),
+    elementLabel: v.optional(v.string()),
+    elementPath: v.optional(v.string()),
     url: v.optional(v.string()),
+    payload: v.optional(v.any()),
     payloadJson: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -128,11 +162,13 @@ export default defineSchema({
 
   exports: defineTable({
     sessionId: v.id('sessions'),
-    target: exportTarget,
-    status: v.union(v.literal('waiting'), v.literal('building'), v.literal('ready'), v.literal('failed')),
+    target: v.string(),
+    status: v.string(),
     artifactPath: v.optional(v.string()),
+    url: v.optional(v.string()),
     fileCount: v.optional(v.number()),
-    requiresPayment: v.boolean(),
+    requiresPayment: v.optional(v.boolean()),
+    error: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -152,7 +188,9 @@ export default defineSchema({
 
   cmsConfigs: defineTable({
     sessionId: v.id('sessions'),
-    status: integrationStatus,
+    status: v.optional(integrationStatus),
+    cmsType: v.optional(v.string()),
+    config: v.optional(v.any()),
     projectId: v.optional(v.string()),
     dataset: v.optional(v.string()),
     configJson: v.optional(v.string()),
@@ -176,10 +214,40 @@ export default defineSchema({
 
   chatMessages: defineTable({
     sessionId: v.id('sessions'),
-    role: v.union(v.literal('user'), v.literal('assistant'), v.literal('system')),
+    role: v.string(),
     content: v.string(),
     createdAt: v.number(),
   }).index('by_sessionId_createdAt', ['sessionId', 'createdAt']),
+
+  genuiModules: defineTable({
+    sessionId: v.id('sessions'),
+    moduleId: v.string(),
+    text: v.string(),
+    failed: v.boolean(),
+    startedAt: v.number(),
+    completedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_moduleId', ['sessionId', 'moduleId']),
+
+  previewHistory: defineTable({
+    sessionId: v.id('sessions'),
+    html: v.string(),
+    timestamp: v.number(),
+  }).index('by_sessionId', ['sessionId']),
+
+  themeOverrides: defineTable({
+    sessionId: v.id('sessions'),
+    themeName: v.string(),
+    styles: v.any(),
+    createdAt: v.number(),
+  }).index('by_sessionId', ['sessionId']),
+
+  chatSummaries: defineTable({
+    sessionId: v.id('sessions'),
+    summary: v.string(),
+    createdAt: v.number(),
+  }).index('by_sessionId', ['sessionId']),
 
   customerCredits: defineTable({
     userId: v.string(),

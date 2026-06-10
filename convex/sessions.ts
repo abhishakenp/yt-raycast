@@ -96,13 +96,14 @@ const serializeSession = (session: Doc<'sessions'>) => ({
   userId: session.userId,
   canClaimAnonymous: session.userId === undefined && session.anonOwnerSecretHash !== undefined,
   prompt: session.prompt,
-  status: session.status,
+  workspace: session.workspace,
+  status: session.status ?? (session.genuiStatus === 'done' ? 'preview_ready' : 'queued'),
   preferredLanguage: session.preferredLanguage,
   preferredExportTarget: session.preferredExportTarget,
   isPrivate: session.isPrivate,
-  previewVersion: session.previewVersion,
+  previewVersion: session.previewVersion ?? 0,
   createdAt: session.createdAt,
-  updatedAt: session.updatedAt,
+  updatedAt: session.updatedAt ?? session.createdAt,
   errorCode: session.errorCode,
   errorMessage: session.errorMessage,
 })
@@ -213,6 +214,7 @@ export const create = mutation({
     preferredLanguage: v.string(),
     preferredExportTarget: exportTarget,
     isPrivate: v.boolean(),
+    workspace: v.string(),
     anonymousOwnerSecret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -229,6 +231,7 @@ export const create = mutation({
     const sessionId = await ctx.db.insert('sessions', {
       userId,
       anonOwnerSecretHash,
+      workspace: args.workspace,
       prompt,
       status: 'queued',
       preferredLanguage: args.preferredLanguage,
