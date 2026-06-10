@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import styles from './IntroLoader.module.css'
+
+import { cn } from '@/lib/utils'
 
 const FUN_MESSAGES = [
   'Igniting fusion reactors...',
@@ -52,10 +53,15 @@ export function IntroTyping() {
   }, [])
 
   return (
-    <div className={`${styles.typing} ${isVisible ? styles.visible : ''}`}>
+    <div
+      className={cn(
+        'relative z-[2] mt-9 w-[90%] max-w-[800px] text-center opacity-0 transition-[opacity,transform,margin-top,max-width] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]',
+        isVisible && 'opacity-100',
+      )}
+    >
       <span style={{ fontSize: '18px', color: '#ededef', fontFamily: 'ui-monospace, monospace' }}>
         {text}
-        <span style={{ animation: 'blink 1s step-end infinite' }}>|</span>
+        <span className="animate-pulse">|</span>
       </span>
     </div>
   )

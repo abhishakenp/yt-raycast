@@ -1,5 +1,4 @@
 import { MarketingShell } from '../pricing/-MarketingShell'
-import '@/styles/privacy-page.css'
 
 const SITE_NAME = 'Ship Fast'
 const SITE_URL = 'https://ship-fast.devliv.io'
@@ -12,8 +11,8 @@ const LEGAL_CONTROLLER_ADDRESS = ''
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 
 const controllerAddressHtml = LEGAL_CONTROLLER_ADDRESS
-  ? `<p class="legal-address">${(LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).join('<br />')}</p>`
-  : `<p class="legal-address">Postal address: supplied on a verified request to <a href="${mailtoHref}">${PRIVACY_CONTACT_EMAIL}</a> (please send your request from the email address associated with your account, if any).</p>`
+  ? `<p class="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]">${(LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).join('<br />')}</p>`
+  : `<p class="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]">Postal address: supplied on a verified request to <a href="${mailtoHref}">${PRIVACY_CONTACT_EMAIL}</a> (please send your request from the email address associated with your account, if any).</p>`
 
 const jurisdictionBlock = PRIVACY_POLICY_JURISDICTION
   ? `<p>Activities described in this notice include processing connected to <strong>${PRIVACY_POLICY_JURISDICTION}</strong>. Depending on your location, other laws may apply in addition.</p>`
@@ -22,11 +21,11 @@ const jurisdictionBlock = PRIVACY_POLICY_JURISDICTION
 export const PrivacyPage = () => {
   return (
     <MarketingShell footer>
-      <main className="page legal-doc">
-      <header className="legal-header">
-        <p className="kicker">Legal</p>
+      <main className="relative z-[1] mx-auto w-[min(760px,calc(100%-48px))] px-0 pt-[88px] pb-24 font-sans text-base leading-[1.65] text-[var(--text-primary)] [&_a]:text-[var(--accent-primary)] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-[var(--accent-hover)] [&_h2]:mb-3.5 [&_h2]:font-sans [&_h2]:text-[1.15rem] [&_h2]:tracking-[-0.02em] [&_h2]:text-[var(--text-primary)] [&_h3]:mt-5 [&_h3]:mb-2.5 [&_h3]:font-sans [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-[#c4c9d4] [&_header_h1]:mb-3.5 [&_header_h1]:font-[var(--font-display)] [&_header_h1]:text-[clamp(1.75rem,4vw,2.25rem)] [&_header_h1]:tracking-[-0.03em] [&_header_h1]:text-white [&_li]:mb-2 [&_p]:mb-3 [&_section]:mb-6 [&_section]:rounded-[var(--radius-lg)] [&_section]:border [&_section]:border-[var(--glass-border)] [&_section]:bg-[var(--glass-bg)] [&_section]:px-6 [&_section]:py-[22px] [&_section]:shadow-[var(--glass-shadow)] [&_ul]:my-2.5 [&_ul]:ml-5">
+      <header className="mb-10 border-b border-white/10 pb-7">
+        <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Legal</p>
         <h1>Privacy policy</h1>
-        <p className="legal-meta">
+        <p className="text-sm text-[#c4c9d4]">
           <strong>{SITE_NAME}</strong> ({SITE_URL}, "we", "us") · Effective date:{' '}
           <time dateTime={PRIVACY_POLICY_EFFECTIVE_DATE}>{PRIVACY_POLICY_EFFECTIVE_DATE}</time>
         </p>

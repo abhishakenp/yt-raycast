@@ -1,14 +1,16 @@
-import styles from './IntroLoader.module.css'
+import { cn } from '@/lib/utils'
 
 export function IntroLogo({ logoClass }: { logoClass: 'hidden' | 'visible' | 'shaking' | 'settled' }) {
-  const className = [styles.logo]
-  if (logoClass !== 'hidden') className.push(styles.visible)
-  if (logoClass === 'shaking') className.push(styles.shaking)
-  if (logoClass === 'settled') className.push(styles.settled)
-
   return (
-    <div className={className.join(' ')}>
-      <div className={styles.logoIcon}>
+    <div
+      className={cn(
+        'relative z-[2] flex scale-[2.8] items-center gap-4 opacity-0 transition-[transform,opacity,margin-top,filter] duration-1000 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] motion-reduce:animate-none',
+        logoClass !== 'hidden' && 'opacity-100',
+        logoClass === 'shaking' && 'animate-pulse',
+        logoClass === 'settled' && '-mt-[6vh] scale-[1.1]',
+      )}
+    >
+      <div className="relative size-[52px] [&_svg]:size-full [&_svg]:brightness-200 [&_svg]:grayscale">
         <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
           <path d="M26 4L8 20L14 22L26 10L38 22L44 20L26 4Z" fill="url(#sfLaunchG1)" opacity="0.9" />
           <path d="M14 22L14 40L22 36V24L14 22Z" fill="url(#sfLaunchG2)" opacity="0.8" />
@@ -28,7 +30,7 @@ export function IntroLogo({ logoClass }: { logoClass: 'hidden' | 'visible' | 'sh
           </defs>
         </svg>
       </div>
-      <span className={styles.logoText}>SHIP FAST</span>
+      <span className="font-mono text-[64px] font-bold tracking-[6px] text-[#ededef] [-webkit-text-fill-color:#ededef]">SHIP FAST</span>
     </div>
   )
 }
