@@ -10,14 +10,6 @@ const LEGAL_CONTROLLER_ADDRESS = ''
 
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 
-const controllerAddressHtml = LEGAL_CONTROLLER_ADDRESS
-  ? `<p class="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]">${(LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).join('<br />')}</p>`
-  : `<p class="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]">Postal address: supplied on a verified request to <a href="${mailtoHref}">${PRIVACY_CONTACT_EMAIL}</a> (please send your request from the email address associated with your account, if any).</p>`
-
-const jurisdictionBlock = PRIVACY_POLICY_JURISDICTION
-  ? `<p>Activities described in this notice include processing connected to <strong>${PRIVACY_POLICY_JURISDICTION}</strong>. Depending on your location, other laws may apply in addition.</p>`
-  : `<p>Depending on your location (for example the EEA, UK, Switzerland, India, or US states with privacy laws), you may have additional rights alongside those below. Nothing in this notice limits statutory protections.</p>`
-
 export const PrivacyPage = () => {
   return (
     <MarketingShell footer>
@@ -37,12 +29,29 @@ export const PrivacyPage = () => {
           The data controller for personal data processed through this service, unless stated otherwise, is
         </p>
         <p><strong>{LEGAL_CONTROLLER_NAME}</strong></p>
-        <div dangerouslySetInnerHTML={{ __html: controllerAddressHtml }} />
+        {LEGAL_CONTROLLER_ADDRESS ? (
+          <p className="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]">
+            {(LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).map((line, idx) => (
+              <span key={idx}>
+                {line}
+                {idx < (LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).length - 1 && <br />}
+              </span>
+            ))}
+          </p>
+        ) : (
+          <p className="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]">
+            Postal address: supplied on a verified request to <a href={mailtoHref}>{PRIVACY_CONTACT_EMAIL}</a> (please send your request from the email address associated with your account, if any).
+          </p>
+        )}
         <p>
           Privacy and data-protection requests:{' '}
           <a href={mailtoHref}>{PRIVACY_CONTACT_EMAIL}</a>
         </p>
-        <div dangerouslySetInnerHTML={{ __html: jurisdictionBlock }} />
+        {PRIVACY_POLICY_JURISDICTION ? (
+          <p>Activities described in this notice include processing connected to <strong>{PRIVACY_POLICY_JURISDICTION}</strong>. Depending on your location, other laws may apply in addition.</p>
+        ) : (
+          <p>Depending on your location (for example the EEA, UK, Switzerland, India, or US states with privacy laws), you may have additional rights alongside those below. Nothing in this notice limits statutory protections.</p>
+        )}
       </section>
 
       <section aria-labelledby="h-summary">

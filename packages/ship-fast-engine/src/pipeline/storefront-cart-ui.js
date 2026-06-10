@@ -98,7 +98,17 @@ header .utilities>a[href*="search"],header .utilities button[aria-label="Search"
     if(!cartBtn)return;
     var badge=countEl;
     var n=badge?badge.textContent:'0';
-    cartBtn.innerHTML=bagSvg()+(badge?'<span class="cart-badge" id="cart-count">'+n+'</span>':'');
+    cartBtn.textContent='';
+    var tempDiv=document.createElement('div');
+    tempDiv.innerHTML=bagSvg();
+    while(tempDiv.firstChild)cartBtn.appendChild(tempDiv.firstChild);
+    if(badge){
+      var badgeSpan=document.createElement('span');
+      badgeSpan.className='cart-badge';
+      badgeSpan.id='cart-count';
+      badgeSpan.textContent=n;
+      cartBtn.appendChild(badgeSpan);
+    }
     countEl=document.getElementById('cart-count');
     if(cartBtn.style){
       cartBtn.style.removeProperty('background');
@@ -121,7 +131,7 @@ header .utilities>a[href*="search"],header .utilities button[aria-label="Search"
     var n=items.reduce(function(a,it){return a+(it.quantity||0);},0);
     if(countEl)countEl.textContent=String(n);
     if(!linesEl)return;
-    linesEl.innerHTML='';
+    while(linesEl.firstChild)linesEl.removeChild(linesEl.firstChild);
     for(var i=0;i<items.length;i++){
       var it=items[i];
       var li=document.createElement('li');

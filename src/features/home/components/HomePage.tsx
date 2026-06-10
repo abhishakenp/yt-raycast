@@ -429,9 +429,9 @@ export const HomePage = () => {
       </div>
 
       <div className="flex w-full flex-col items-center">
-        <div className="relative z-[4] flex w-full max-w-[1280px] min-w-0 flex-col items-center px-6 pt-[120px] pb-[60px]">
+        <div className="relative z-[4] flex w-full max-w-[640px] min-w-0 flex-col items-center px-6 pt-[120px] pb-[60px] max-[760px]:px-6 max-[760px]:pt-[112px] max-[760px]:pb-10">
           <h1 className="sr-only">Ship Fast - AI website generator</h1>
-          <div className="mb-7 flex flex-col items-center gap-2">
+          <div className="mb-10 flex w-full flex-col items-center gap-2">
             <div className="flex items-center gap-3">
               <div className="size-12 text-cyan-300 drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] [&_svg]:size-full">
                 <LogoMark />
@@ -441,10 +441,10 @@ export const HomePage = () => {
             <p className="m-0 text-center font-mono text-xs uppercase tracking-[0.18em] text-white/45" id="logo-tagline" aria-live="polite" aria-hidden="true" />
           </div>
 
-          <section className="relative grid min-h-[calc(100vh-180px)] w-full grid-cols-[minmax(280px,0.8fr)_minmax(420px,1fr)] items-center gap-10 max-[900px]:grid-cols-1 max-[900px]:pt-8" aria-label="Print your mind in seconds">
+          <section className="relative flex w-full flex-col items-center gap-6" aria-label="Print your mind in seconds">
             <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center opacity-80" aria-hidden="true">
               <img
-                className="w-[min(44vw,560px)] max-w-full translate-y-4 opacity-80 drop-shadow-[0_0_80px_rgba(38,231,255,0.22)]"
+                className="w-[min(88vw,560px)] max-w-full translate-y-10 opacity-65 drop-shadow-[0_0_80px_rgba(38,231,255,0.22)]"
                 src="/assets/rocket-transparent.png"
                 alt=""
                 loading="eager"
@@ -452,9 +452,9 @@ export const HomePage = () => {
               />
             </div>
 
-            <div className="relative z-[2] max-w-[520px]">
+            <div className="relative z-[2] w-full text-center">
               <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-cyan-200/75">Prompt. Generate. Launch.</p>
-              <h2 className="font-[var(--font-display)] text-[clamp(3rem,7vw,6rem)] leading-[0.9] tracking-[-0.06em] text-white">
+              <h2 className="font-[var(--font-display)] text-[clamp(2.5rem,8vw,4.6rem)] leading-[0.92] tracking-[-0.055em] text-white">
                 Print your mind
                 <br />
                 in seconds
@@ -462,7 +462,7 @@ export const HomePage = () => {
             </div>
 
             <div className="relative z-[3] w-full">
-              <div className="grid w-full gap-6">
+              <div className="grid w-full gap-4">
                 <div className="rounded-[28px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-2 shadow-[var(--glass-shadow)] backdrop-blur-[20px]" id="hero-card">
                   <div className="rounded-[22px] border border-white/10 bg-black/25 p-5">
                     <form id="prompt-form" className="grid gap-4" onSubmit={handleSubmit}>
@@ -666,7 +666,7 @@ export const HomePage = () => {
                 </div>
 
                 <div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-1" aria-label="Example prompts">
+                  <div className="grid grid-cols-2 gap-3 max-[460px]:grid-cols-2" aria-label="Example prompts">
                     {EXAMPLE_CHIPS.map(([label, value], index) => (
                       <button
                         key={label}

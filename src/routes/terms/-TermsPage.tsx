@@ -12,22 +12,6 @@ const LEGAL_REFUND_POLICY = ''
 
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 
-const missingValue = (label: string) =>
-  `<span class="text-[var(--warning)]">Pending incorporation data: ${label}</span>`
-
-const jurisdiction = LEGAL_INCORPORATION_JURISDICTION
-  ? LEGAL_INCORPORATION_JURISDICTION
-  : missingValue('jurisdiction')
-const registration = LEGAL_COMPANY_REGISTRATION_NUMBER
-  ? LEGAL_COMPANY_REGISTRATION_NUMBER
-  : missingValue('company registration number')
-const address = LEGAL_CONTROLLER_ADDRESS
-  ? (LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).join('<br />')
-  : missingValue('registered address')
-const refunds = LEGAL_REFUND_POLICY
-  ? LEGAL_REFUND_POLICY
-  : 'Paid subscriptions and one-off purchases are provided according to the checkout terms shown at purchase time. Statutory rights are not limited.'
-
 export const TermsPage = () => {
   return (
     <MarketingShell footer>
@@ -44,9 +28,20 @@ export const TermsPage = () => {
         <section aria-labelledby="h-operator">
           <h2 id="h-operator">1. Operator</h2>
           <p>These terms are between you and <strong>{LEGAL_CONTROLLER_NAME}</strong>, operating {SITE_NAME}.</p>
-          <p>Incorporation jurisdiction: <span dangerouslySetInnerHTML={{ __html: jurisdiction }} /></p>
-          <p>Company registration number: <span dangerouslySetInnerHTML={{ __html: registration }} /></p>
-          <p className="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]" dangerouslySetInnerHTML={{ __html: address }} />
+          <p>Incorporation jurisdiction: <span>{LEGAL_INCORPORATION_JURISDICTION || <span className="text-[var(--warning)]">Pending incorporation data: jurisdiction</span>}</span></p>
+          <p>Company registration number: <span>{LEGAL_COMPANY_REGISTRATION_NUMBER || <span className="text-[var(--warning)]">Pending incorporation data: company registration number</span>}</span></p>
+          <p className="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]">
+            {LEGAL_CONTROLLER_ADDRESS ? (
+              (LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).map((line, idx) => (
+                <span key={idx}>
+                  {line}
+                  {idx < (LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).length - 1 && <br />}
+                </span>
+              ))
+            ) : (
+              <span className="text-[var(--warning)]">Pending incorporation data: registered address</span>
+            )}
+          </p>
           <p>Contact: <a href={mailtoHref}>{PRIVACY_CONTACT_EMAIL}</a></p>
         </section>
 
@@ -93,7 +88,7 @@ export const TermsPage = () => {
             Payments may be processed by Stripe or Razorpay depending on checkout route, region, and payment method.
             Partner coupons apply only when accepted by the relevant payment provider.
           </p>
-          <p dangerouslySetInnerHTML={{ __html: refunds }} />
+          <p>{LEGAL_REFUND_POLICY || 'Paid subscriptions and one-off purchases are provided according to the checkout terms shown at purchase time. Statutory rights are not limited.'}</p>
         </section>
 
         <section aria-labelledby="h-availability">

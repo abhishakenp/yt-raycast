@@ -603,7 +603,7 @@ export const AiProductKimiPage8 = defineComponent({
 
     return (
       <div className={cn("min-h-svh bg-background text-foreground antialiased", props.className)}>
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style>{`
           @keyframes marquee {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -611,7 +611,7 @@ export const AiProductKimiPage8 = defineComponent({
           .animate-marquee {
             animation: marquee 20s linear infinite;
           }
-        ` }} />
+        `}</style>
 
         {/* Navbar */}
         <header className="fixed top-0 left-0 right-0 z-50 border-b-4 border-foreground bg-foreground">

@@ -6,36 +6,36 @@ const lockIcon15 = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" 
 
 const lockIcon16 = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
 
-export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min(1180px,calc(100%-48px))] pt-[150px] pb-[96px] text-[var(--text-primary,#f0f0f5)] max-[720px]:w-[min(100%,calc(100%-32px))] max-[720px]:pt-[124px]">
+export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min(1160px,calc(100%-48px))] pt-[88px] pb-20 text-[var(--text-primary,#f0f0f5)] max-[720px]:w-[min(100%,calc(100%-32px))] max-[720px]:pt-20">
 
-      <section class="mb-[84px] grid justify-items-center text-center" aria-labelledby="pricing-heading">
-        <span class="mb-4 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/75">Pricing</span>
-        <h1 class="m-0 font-[var(--font-display)] text-[clamp(3.5rem,8vw,7.5rem)] leading-[0.86] tracking-[-0.07em] text-white" id="pricing-heading">Simple pricing.<br>No surprises.</h1>
-        <p class="mt-6 mb-0 max-w-[620px] text-lg leading-8 text-white/62">Start free. Upgrade when you're ready. Lock the early adopter rate before it's gone&nbsp;forever.</p>
-        <div class="mt-8 flex flex-wrap justify-center gap-3">
-          <span class="inline-flex min-h-10 items-center gap-3 rounded-full border border-white/10 bg-white/[0.055] px-4 text-sm text-white/72 backdrop-blur-[14px]" aria-label="347 of 500 early adopter slots taken">
-            <div class="h-2 w-24 overflow-hidden rounded-full bg-white/10" aria-hidden="true"><div class="h-full w-[69.4%] rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.45)]"></div></div>
+      <section class="mb-[72px] flex flex-col items-center gap-[18px] py-12 pb-14 text-center" aria-labelledby="pricing-heading">
+        <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Pricing</span>
+        <h1 class="m-0 max-w-[14ch] text-balance font-[var(--font-display)] text-[clamp(2.4rem,5vw,4rem)] uppercase leading-[1.05] tracking-[-0.04em] text-[#fffdf6]" id="pricing-heading">Simple pricing.<br>No surprises.</h1>
+        <p class="m-0 max-w-[52ch] text-lg leading-[1.6] text-[#c4c9d4]">Start free. Upgrade when you're ready. Lock the early adopter rate before it's gone&nbsp;forever.</p>
+        <div class="mt-1 flex flex-wrap justify-center gap-3.5">
+          <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/8 px-4 py-2 font-mono text-xs text-emerald-300" aria-label="347 of 500 early adopter slots taken">
+            <div class="h-1 w-20 overflow-hidden rounded-full bg-emerald-500/20" aria-hidden="true"><div class="h-full w-[69%] rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300"></div></div>
             347 / 500 slots taken
           </span>
-          <span class="inline-flex min-h-10 items-center gap-2 rounded-full border border-cyan-300/18 bg-cyan-300/8 px-4 text-sm text-cyan-100/80 backdrop-blur-[14px]" id="countdown-badge" aria-live="polite">
-            <span class="size-2 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" aria-hidden="true"></span>
+          <span class="inline-flex items-center gap-2 rounded-full border border-red-500/50 bg-red-500/8 px-4 py-2 font-mono text-xs tracking-[0.05em] text-red-300" id="countdown-badge" aria-live="polite">
+            <span class="size-[7px] rounded-full bg-red-500" aria-hidden="true"></span>
             <span id="countdown-text">Early adopter slots still open</span>
           </span>
         </div>
       </section>
 
-      <section class="mb-[84px]" aria-labelledby="plans-heading">
+      <section class="mb-[72px]" aria-labelledby="plans-heading">
         <h2 id="plans-heading" class="sr-only">Plans</h2>
-        <div class="grid grid-cols-3 items-stretch gap-5 max-[980px]:grid-cols-1">
+        <div class="mb-12 grid grid-cols-3 items-stretch gap-[22px] max-[1024px]:grid-cols-2 max-[720px]:grid-cols-1">
 
-          <div class="relative grid gap-5 rounded-[28px] border border-white/10 bg-white/[0.045] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.3)] backdrop-blur-[18px]">
-            <p class="m-0 font-mono text-xs font-bold uppercase tracking-[0.16em] text-white/48">Free</p>
+          <div class="relative flex flex-col rounded-[26px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-[32px_28px_28px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
+            <p class="mb-3.5 font-mono text-xs uppercase tracking-[0.18em] text-[#97a0b0]">Free</p>
             <div class="flex items-end gap-2">
-              <span class="font-sans text-5xl font-extrabold tracking-[-0.06em] text-white">₹0</span>
+              <span class="font-[var(--font-display)] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹0</span>
             </div>
-            <p class="m-0 min-h-12 text-sm leading-6 text-white/58">Preview the magic — no card needed.</p>
-            <div class="h-px bg-white/10"></div>
-            <ul class="grid gap-3 p-0 m-0 list-none text-sm text-white/72">
+            <p class="mb-6 mt-1.5 text-sm leading-[1.55] text-[#c4c9d4]">Preview the magic — no card needed.</p>
+            <div class="mb-5 h-px bg-white/[0.06]"></div>
+            <ul class="mb-7 flex flex-1 list-none flex-col gap-2.5 p-0 text-sm text-[#cdd1d8]">
               <li class="flex items-start gap-3">
                 <svg class="mt-0.5 size-[17px] shrink-0 text-cyan-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                 Generate website preview
@@ -61,25 +61,25 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
                 Community &amp; monthly drops
               </li>
             </ul>
-            ${glassPillButtonHtml({ className: 'mt-auto min-h-11 w-full px-5 py-0 text-sm text-white/82', extraAttrs: goHome, text: 'Start free' })}
+            ${glassPillButtonHtml({ className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]', extraAttrs: goHome, text: 'Start free' })}
           </div>
 
-          <div class="relative grid scale-[1.035] gap-5 rounded-[28px] border border-cyan-300/35 bg-cyan-300/[0.075] p-6 shadow-[0_22px_80px_rgba(34,211,238,0.14),0_24px_70px_rgba(0,0,0,0.36)] backdrop-blur-[20px] max-[980px]:scale-100">
-            <div class="absolute right-5 top-5 rounded-full border border-cyan-300/30 bg-cyan-300/14 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-cyan-100" aria-label="Most popular plan">Most Popular</div>
-            <p class="m-0 font-mono text-xs font-bold uppercase tracking-[0.16em] text-cyan-100">Pro</p>
-            <div class="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100" aria-label="Early adopter offer">
-              <span class="size-1.5 rounded-full bg-cyan-300" aria-hidden="true"></span>
+          <div class="relative flex scale-[1.03] flex-col rounded-[26px] border border-[rgba(138,180,255,0.22)] bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-[32px_28px_28px] shadow-[var(--glass-shadow),0_0_0_1px_rgba(138,180,255,0.12),0_0_48px_rgba(28,171,255,0.1),0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-[20px] max-[1024px]:scale-100">
+            <div class="absolute left-1/2 top-[-13px] -translate-x-1/2 rounded-full bg-[linear-gradient(135deg,rgba(109,251,255,0.95),rgba(56,168,255,0.95))] px-3.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#00121a] shadow-[0_4px_18px_rgba(38,231,255,0.25)]" aria-label="Most popular plan">Most Popular</div>
+            <p class="mb-3.5 font-mono text-xs uppercase tracking-[0.18em] text-[#c4c9d4]">Pro</p>
+            <div class="mb-2.5 inline-flex w-fit items-center gap-1.5 rounded-md border border-white/12 bg-white/[0.06] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[#cdd1d8]" aria-label="Early adopter offer">
+              <span class="size-[5px] rounded-full bg-[#c4c9d4]" aria-hidden="true"></span>
               Early Adopter — Limited slots
             </div>
             <div class="flex items-end gap-2">
-              <span class="font-sans text-5xl font-extrabold tracking-[-0.06em] text-white">₹199</span>
-              <span class="pb-2 text-sm text-white/48">/month</span>
+              <span class="font-[var(--font-display)] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹199</span>
+              <span class="pb-1 text-[15px] text-[#97a0b0]">/month</span>
             </div>
-            <p class="m-0 text-sm text-white/38 line-through">₹399/month after slots fill</p>
-            <span class="w-fit rounded-full bg-cyan-300 px-3 py-1 font-mono text-[11px] font-extrabold tracking-[0.08em] text-slate-950">50% OFF — locked forever</span>
-            <p class="m-0 min-h-12 text-sm leading-6 text-white/68">Discount stays as long as your subscription is active. Cancel&nbsp;→&nbsp;lose&nbsp;it.</p>
-            <div class="h-px bg-cyan-300/18"></div>
-            <ul class="grid gap-3 p-0 m-0 list-none text-sm text-white/82">
+            <p class="mb-1 font-mono text-xs text-[#97a0b0] line-through">₹399/month after slots fill</p>
+            <span class="mb-4 inline-block w-fit rounded-[5px] border border-emerald-500/35 bg-emerald-500/15 px-2.5 py-[3px] font-mono text-[11px] font-semibold tracking-[0.05em] text-emerald-300">50% OFF — locked forever</span>
+            <p class="mb-6 text-sm leading-[1.55] text-[#c4c9d4]">Discount stays as long as your subscription is active. Cancel&nbsp;→&nbsp;lose&nbsp;it.</p>
+            <div class="mb-5 h-px bg-white/[0.06]"></div>
+            <ul class="mb-7 flex flex-1 list-none flex-col gap-2.5 p-0 text-sm text-[#cdd1d8]">
               <li class="flex items-start gap-3">
                 <svg class="mt-0.5 size-[17px] shrink-0 text-cyan-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                 30 generations/month
@@ -106,23 +106,23 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
               </li>
             </ul>
             ${glassPillButtonHtml({
-              className: 'mt-auto min-h-11 w-full px-5 py-0 text-sm text-white',
+              className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-bold uppercase tracking-[0.1em] text-[#e8f8ff]',
               extraAttrs: goHome,
               html: `${lockIcon15}
               Lock lifetime discount`,
             })}
-            <p class="m-0 text-center text-xs text-white/45">First 500 users only · cancel anytime</p>
+            <p class="mt-2.5 text-center font-mono text-[11px] tracking-[0.06em] text-[#97a0b0]">First 500 users only · cancel anytime</p>
           </div>
 
-          <div class="relative grid gap-5 rounded-[28px] border border-white/8 bg-white/[0.025] p-6 opacity-70 shadow-[0_18px_60px_rgba(0,0,0,0.24)] backdrop-blur-[18px]" aria-label="Future full price plan">
-            <p class="m-0 font-mono text-xs font-bold uppercase tracking-[0.16em] text-white/48">Pro</p>
+          <div class="relative flex flex-col rounded-[26px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-[32px_28px_28px] opacity-60 shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[1024px]:hidden max-[720px]:flex" aria-label="Future full price plan">
+            <p class="mb-3.5 font-mono text-xs uppercase tracking-[0.18em] text-[#97a0b0]">Pro</p>
             <div class="flex items-end gap-2">
-              <span class="font-sans text-5xl font-extrabold tracking-[-0.06em] text-white">₹399</span>
-              <span class="pb-2 text-sm text-white/48">/month</span>
+              <span class="font-[var(--font-display)] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹399</span>
+              <span class="pb-1 text-[15px] text-[#97a0b0]">/month</span>
             </div>
-            <p class="m-0 min-h-12 text-sm leading-6 text-white/58">Full price once early adopter slots are gone.</p>
-            <div class="h-px bg-white/10"></div>
-            <ul class="grid gap-3 p-0 m-0 list-none text-sm text-white/72">
+            <p class="mb-6 mt-1.5 text-sm leading-[1.55] text-[#c4c9d4]">Full price once early adopter slots are gone.</p>
+            <div class="mb-5 h-px bg-white/[0.06]"></div>
+            <ul class="mb-7 flex flex-1 list-none flex-col gap-2.5 p-0 text-sm text-[#cdd1d8]">
               <li class="flex items-start gap-3">
                 <svg class="mt-0.5 size-[17px] shrink-0 text-cyan-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                 Everything in Early Adopter Pro
@@ -137,7 +137,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
               </li>
             </ul>
             ${glassPillButtonHtml({
-              className: 'mt-auto min-h-11 w-full px-5 py-0 text-sm text-white/40 opacity-60',
+              className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)] opacity-35',
               disabled: true,
               extraAttrs: ' aria-disabled="true"',
               text: 'Available when slots fill',
@@ -148,13 +148,13 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
         <p class="mt-6 text-center text-sm text-white/45 [&_a]:text-cyan-200 [&_a]:underline-offset-4 hover:[&_a]:underline">Need more than 30 generations/month? <a href="https://x.com/LivioGama" target="_blank" rel="noopener">Contact us</a></p>
       </section>
 
-      <section class="mb-[84px]" aria-labelledby="packs-heading">
-        <div class="mb-8 text-center">
-          <span class="mb-3 block font-mono text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/75">Pay-as-you-go</span>
-          <h2 class="m-0 font-[var(--font-display)] text-[clamp(2.4rem,5vw,4.8rem)] leading-[0.92] tracking-[-0.06em] text-white" id="packs-heading">No subscription?<br>No problem.</h2>
-          <p class="mx-auto mt-4 mb-0 max-w-[560px] text-base leading-7 text-white/56">Buy a credit pack and download only when you need it.</p>
+      <section class="mb-14" aria-labelledby="packs-heading">
+        <div class="mb-2.5 text-center">
+          <span class="mb-2.5 block font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Pay-as-you-go</span>
+          <h2 class="m-0 text-balance font-[var(--font-display)] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="packs-heading">No subscription?<br>No problem.</h2>
+          <p class="mx-auto mt-2.5 mb-0 max-w-[560px] text-[15px] leading-7 text-[#c4c9d4]">Buy a credit pack and download only when you need it.</p>
         </div>
-        <div class="mx-auto grid max-w-[820px] grid-cols-2 gap-5 max-[760px]:grid-cols-1">
+        <div class="mx-auto mt-7 grid grid-cols-[repeat(2,minmax(0,420px))] justify-center gap-[18px] max-[760px]:grid-cols-1">
 
           <div class="grid gap-5 rounded-[24px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_16px_50px_rgba(0,0,0,0.26)] backdrop-blur-[16px]">
             <div class="flex items-center justify-between gap-3">
@@ -216,12 +216,12 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
         </div>
       </section>
 
-      <section class="mb-[84px]" aria-labelledby="compare-heading">
-        <div class="mb-8 text-center">
-          <span class="mb-3 block font-mono text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/75">Compare</span>
-          <h2 class="m-0 font-[var(--font-display)] text-[clamp(2.4rem,5vw,4.8rem)] leading-[0.92] tracking-[-0.06em] text-white" id="compare-heading">Everything, side by side.</h2>
+      <section class="mb-14" aria-labelledby="compare-heading">
+        <div class="mb-2.5 text-center">
+          <span class="mb-2.5 block font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Compare</span>
+          <h2 class="m-0 text-balance font-[var(--font-display)] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="compare-heading">Everything, side by side.</h2>
         </div>
-        <div class="overflow-x-auto rounded-[24px] border border-white/10 bg-white/[0.035] shadow-[0_16px_60px_rgba(0,0,0,0.24)] backdrop-blur-[16px]">
+        <div class="mt-7 overflow-x-auto rounded-[18px] border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
           <table class="w-full min-w-[720px] border-collapse text-left text-sm text-white/58 [&_td]:border-t [&_td]:border-white/8 [&_td]:px-5 [&_td]:py-4 [&_th]:px-5 [&_th]:py-4 [&_th]:font-mono [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.12em] [&_th]:text-white/45" aria-label="Feature comparison between plans">
             <thead>
               <tr>
@@ -279,12 +279,12 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
         </div>
       </section>
 
-      <section class="mb-[84px]" aria-labelledby="faq-heading">
-        <div class="mb-8 text-center">
-          <span class="mb-3 block font-mono text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/75">FAQ</span>
-          <h2 class="m-0 font-[var(--font-display)] text-[clamp(2.4rem,5vw,4.8rem)] leading-[0.92] tracking-[-0.06em] text-white" id="faq-heading">Questions answered.</h2>
+      <section class="mb-14" aria-labelledby="faq-heading">
+        <div class="mb-2.5 text-center">
+          <span class="mb-2.5 block font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">FAQ</span>
+          <h2 class="m-0 text-balance font-[var(--font-display)] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="faq-heading">Questions answered.</h2>
         </div>
-        <div class="mx-auto grid max-w-[820px] gap-3">
+        <div class="mx-auto mt-7 grid max-w-none gap-3">
 
           <details class="group rounded-[20px] border border-white/10 bg-white/[0.035] p-5 text-white/68 shadow-[0_12px_42px_rgba(0,0,0,0.22)] backdrop-blur-[16px] [&_p]:mt-4 [&_p]:mb-0 [&_p]:text-sm [&_p]:leading-7 [&_p]:text-white/55">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-sans text-base font-semibold text-white marker:hidden [&::-webkit-details-marker]:hidden">
@@ -337,10 +337,10 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
         </div>
       </section>
 
-      <section class="mx-auto grid max-w-[860px] justify-items-center rounded-[32px] border border-cyan-300/18 bg-cyan-300/[0.055] px-8 py-12 text-center shadow-[0_24px_80px_rgba(34,211,238,0.11),0_24px_70px_rgba(0,0,0,0.28)] backdrop-blur-[20px]" aria-labelledby="cta-heading">
-        <span class="mb-4 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/75">Ready to ship?</span>
-        <h2 class="m-0 font-[var(--font-display)] text-[clamp(2.6rem,6vw,5.4rem)] leading-[0.9] tracking-[-0.065em] text-white" id="cta-heading">Build your SaaS in seconds.<br>Lock the rate forever.</h2>
-        <p class="mx-auto mt-5 mb-7 max-w-[560px] text-base leading-7 text-white/60">153 slots remaining. Once they're gone, the price goes up — and it won't come back.</p>
+      <section class="mb-8 flex flex-col items-center gap-5 rounded-[26px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-10 py-[52px] text-center shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:px-6 max-[720px]:py-9" aria-labelledby="cta-heading">
+        <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Ready to ship?</span>
+        <h2 class="m-0 max-w-[18ch] text-balance font-[var(--font-display)] text-[clamp(1.8rem,4vw,2.8rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="cta-heading">Build your SaaS in seconds.<br>Lock the rate forever.</h2>
+        <p class="m-0 max-w-[46ch] text-base leading-[1.65] text-[#c4c9d4]">153 slots remaining. Once they're gone, the price goes up — and it won't come back.</p>
         ${glassPillButtonHtml({
           className: 'min-h-12 px-6 py-0 text-sm text-white',
           extraAttrs: goHome,
