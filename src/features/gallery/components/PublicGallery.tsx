@@ -63,7 +63,7 @@ const formatGenerationTime = (elapsed?: number | null) => {
 }
 
 const getPreviewDocument = (html?: string | null) => {
-  if (html === undefined || html.trim().length === 0) return undefined
+  if (!html?.trim()?.length) return undefined
   if (html.includes('id="ship-fast-generated-module"') && !html.includes('<main')) return undefined
 
   return html
