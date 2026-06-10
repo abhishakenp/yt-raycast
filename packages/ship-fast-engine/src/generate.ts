@@ -59,6 +59,7 @@ async function once(
             reasoning_effort: 'low',
             include_reasoning: false,
             citation_options: 'disabled',
+            top_p: 1,
           },
           abortController: ac,
         })

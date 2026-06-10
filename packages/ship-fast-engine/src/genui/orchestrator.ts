@@ -169,8 +169,8 @@ function normalizeBlockName(raw: string): string | undefined {
 function pickFrom(rng: () => number, names: unknown, fallback: string): string {
   const normalized = Array.isArray(names)
     ? names.map((name) => (typeof name === "string" ? normalizeBlockName(name) : undefined)).filter(
-        (name): name is string => Boolean(name),
-      )
+      (name): name is string => Boolean(name),
+    )
     : []
 
   const valid = normalized.filter(isKnownBlock)
@@ -407,12 +407,13 @@ export async function* generateUI(
         const raw = await generateText(
           modelId,
           planSystem(),
-          planUser(prompt, catalog, THEME_CATALOG),
+          planUser(prompt, catalog, THEME_CATALOG) + "<|end|><|start|>assistant<|channel|>analysis<|message|><|end|><|start|>assistant<|channel|>",
           abort.signal,
           2,
         )
         plan = parsePlan(raw, rng, prompt)
       } catch (planErr) {
+        console.warn("[genui] plan call failed", planErr)
         if (isHardLlmFailure(planErr)) {
           ch.push({ type: "error", message: formatLlmFailureMessage(planErr) })
           return
@@ -941,12 +942,12 @@ export async function* generateFromClone(
             sectionProgramValid(section)
               ? section
               : generateFallbackSection(
-                  section.kind,
-                  page.url,
-                  section.index,
-                  theme,
-                  sourceHtmlOf(section),
-                ),
+                section.kind,
+                page.url,
+                section.index,
+                theme,
+                sourceHtmlOf(section),
+              ),
           )
           if (!pageProgramValid(id, sections)) {
             console.warn(`[clone] page "${id}" invalid after fallback`)

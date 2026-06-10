@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * SpaWellnessKimiPage — a complete, self-contained luxury spa & wellness-retreat
@@ -30,7 +31,7 @@ import { Image } from "#/lib/img.tsx"
  * from the source copy make it render great with no props at all.
  */
 export const SpaWellnessKimiPage = defineComponent({
-  name: "SpaWellnessKimiPage",
+  name: 'SpaWellnessKimiPage',
   description:
     "Complete luxury spa, wellness-retreat & holistic-healing LANDING page with a calm, editorial sand-and-sage aesthetic: serif display headings, generous whitespace, a full-bleed photographic hero with overlay, and soft rounded cards. Includes a fixed translucent navbar with a circular brand mark, a hero (eyebrow + serif headline + dual CTAs + rating/awards trust strip), a 'recognized excellence' certification logo row, a 6-up treatments/services grid (photo + duration & price + inclusion bullets), a 4-step wellness-journey timeline, a dark gallery of sanctuary spaces, a 3-tier wellness-packages pricing block with a featured middle tier, a 4-up stats band, a 3-up guest-testimonials grid with star ratings and avatars, a 6-item FAQ list, a split booking CTA with phone/email/address contact details plus a real reservation form (name, email, phone, date, guests, package, requests), and a dark 4-column footer with social icons. Use as the ROOT/home page for a spa, day spa, wellness retreat, massage studio, sauna/bathhouse, med-spa, holistic healing center, yoga or meditation sanctuary, or any serene beauty/relaxation/self-care business wanting a premium, tranquil, conversion-focused site with treatment menu, packages, booking and social proof. Supply content only — brand, nav, hero, certifications, treatments, journey, gallery, packages, stats, testimonials, faq, booking, footer; the block owns all layout and styling.",
   props: z.object({
@@ -153,9 +154,7 @@ export const SpaWellnessKimiPage = defineComponent({
         eyebrow: z.string().optional(),
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Booking CTA + reservation form. */
@@ -181,9 +180,7 @@ export const SpaWellnessKimiPage = defineComponent({
       .object({
         about: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         contact: z.array(z.string()).optional(),
         copyright: z.string().optional(),
@@ -196,117 +193,112 @@ export const SpaWellnessKimiPage = defineComponent({
   component: ({ props }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Serenity Springs"
+    const brand = props.brand ?? 'Serenity Springs'
     const nav = props.nav?.length
       ? props.nav
-      : ["Treatments", "Gallery", "Packages", "Reviews", "FAQ"]
+      : ['Treatments', 'Gallery', 'Packages', 'Reviews', 'FAQ']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "Est. 2008 · Napa Valley"
+    const heroEyebrow = props.hero?.eyebrow ?? 'Est. 2008 · Napa Valley'
     const heroHeading =
-      props.hero?.heading ?? "Where Mind, Body & Spirit Find Harmony"
+      props.hero?.heading ?? 'Where Mind, Body & Spirit Find Harmony'
     const heroSub =
       props.hero?.subheading ??
-      "Escape to Serenity Springs, an award-winning wellness sanctuary offering transformative treatments, ancient healing traditions, and modern therapeutic techniques in a pristine natural setting."
-    const heroPrimary = props.hero?.primaryCta ?? "Reserve Your Retreat"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore Treatments"
-    const heroBook = props.hero?.bookCta ?? "Book Now"
+      'Escape to Serenity Springs, an award-winning wellness sanctuary offering transformative treatments, ancient healing traditions, and modern therapeutic techniques in a pristine natural setting.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Reserve Your Retreat'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore Treatments'
+    const heroBook = props.hero?.bookCta ?? 'Book Now'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Serene spa interior with candlelight reflecting on water basin surrounded by smooth river stones"
+      'Serene spa interior with candlelight reflecting on water basin surrounded by smooth river stones'
     const heroTrust = props.hero?.trust?.length
       ? props.hero.trust
-      : ["4.9 Rating", "Spa Awards 2024 Winner"]
+      : ['4.9 Rating', 'Spa Awards 2024 Winner']
 
-    const certHeading =
-      props.certifications?.heading ?? "Recognized Excellence"
+    const certHeading = props.certifications?.heading ?? 'Recognized Excellence'
     const certItems = props.certifications?.items?.length
       ? props.certifications.items
       : [
-          "Forbes Travel Guide",
-          "AAA Five Diamond",
-          "Conde Nast Traveler",
-          "SpaFinder Wellness",
+          'Forbes Travel Guide',
+          'AAA Five Diamond',
+          'Conde Nast Traveler',
+          'SpaFinder Wellness',
         ]
 
-    const treatEyebrow =
-      props.treatments?.eyebrow ?? "Our Signature Offerings"
+    const treatEyebrow = props.treatments?.eyebrow ?? 'Our Signature Offerings'
     const treatHeading =
-      props.treatments?.heading ?? "Curated Treatments for Complete Renewal"
+      props.treatments?.heading ?? 'Curated Treatments for Complete Renewal'
     const treatDesc =
       props.treatments?.description ??
-      "Each therapy is designed by our master practitioners, combining time-honored traditions with contemporary wellness science."
-    const treatCta = props.treatments?.cta ?? "View Full Treatment Menu"
+      'Each therapy is designed by our master practitioners, combining time-honored traditions with contemporary wellness science.'
+    const treatCta = props.treatments?.cta ?? 'View Full Treatment Menu'
     const treatItems = props.treatments?.items?.length
       ? props.treatments.items
       : [
           {
-            title: "Hot Stone Therapy",
-            meta: "90 min · $295",
+            title: 'Hot Stone Therapy',
+            meta: '90 min · $295',
             description:
-              "Warm basalt stones melt away tension as our therapists use ancient techniques to restore energy flow and deep muscle relief.",
-            features: [
-              "Volcanic basalt stones",
-              "Aromatherapy oils included",
-            ],
+              'Warm basalt stones melt away tension as our therapists use ancient techniques to restore energy flow and deep muscle relief.',
+            features: ['Volcanic basalt stones', 'Aromatherapy oils included'],
             imageAlt:
               "Hot stone massage therapy with smooth black basalt stones arranged on a client's back in warm candlelight",
           },
           {
-            title: "Honey & Gold Facial",
-            meta: "75 min · $245",
+            title: 'Honey & Gold Facial',
+            meta: '75 min · $245',
             description:
-              "Luxurious Manuka honey combined with 24k gold-infused serums brighten, hydrate, and restore youthful radiance.",
+              'Luxurious Manuka honey combined with 24k gold-infused serums brighten, hydrate, and restore youthful radiance.',
             features: [
-              "Organic Manuka honey UMF 20+",
-              "Collagen-boosting treatment",
+              'Organic Manuka honey UMF 20+',
+              'Collagen-boosting treatment',
             ],
             imageAlt:
-              "Luxury facial treatment with golden honey mask being applied using natural brush tools",
+              'Luxury facial treatment with golden honey mask being applied using natural brush tools',
           },
           {
-            title: "Deep Tissue Renewal",
-            meta: "60 min · $195",
+            title: 'Deep Tissue Renewal',
+            meta: '60 min · $195',
             description:
-              "Intensive therapeutic massage targeting chronic tension, sports recovery, and postural alignment with custom pressure.",
+              'Intensive therapeutic massage targeting chronic tension, sports recovery, and postural alignment with custom pressure.',
             features: [
-              "Therapeutic-grade essential oils",
-              "Post-treatment stretching guide",
+              'Therapeutic-grade essential oils',
+              'Post-treatment stretching guide',
             ],
             imageAlt:
-              "Therapeutic deep tissue massage in progress on a spa treatment table with white linens",
+              'Therapeutic deep tissue massage in progress on a spa treatment table with white linens',
           },
           {
-            title: "Guided Meditation",
-            meta: "45 min · $125",
+            title: 'Guided Meditation',
+            meta: '45 min · $125',
             description:
-              "Personalized mindfulness sessions in our Zen garden, combining breathwork, visualization, and sound healing for mental clarity.",
-            features: ["Tibetan singing bowls", "Take-home meditation guide"],
+              'Personalized mindfulness sessions in our Zen garden, combining breathwork, visualization, and sound healing for mental clarity.',
+            features: ['Tibetan singing bowls', 'Take-home meditation guide'],
             imageAlt:
-              "Zen meditation garden with raked sand patterns and meditation cushion in bamboo grove",
+              'Zen meditation garden with raked sand patterns and meditation cushion in bamboo grove',
           },
           {
-            title: "Halotherapy Sanctuary",
-            meta: "60 min · $165",
+            title: 'Halotherapy Sanctuary',
+            meta: '60 min · $165',
             description:
-              "Breathe easier in our Himalayan salt cave. Micro-particles cleanse respiratory passages and skin while you recline in zero-gravity chairs.",
+              'Breathe easier in our Himalayan salt cave. Micro-particles cleanse respiratory passages and skin while you recline in zero-gravity chairs.',
             features: [
-              "100% pure Himalayan salt",
-              "Respiratory wellness focus",
+              '100% pure Himalayan salt',
+              'Respiratory wellness focus',
             ],
             imageAlt:
-              "Himalayan salt room with pink salt bricks glowing warmly and comfortable lounge seating",
+              'Himalayan salt room with pink salt bricks glowing warmly and comfortable lounge seating',
           },
           {
-            title: "Herbal Detox Wrap",
-            meta: "90 min · $275",
+            title: 'Herbal Detox Wrap',
+            meta: '90 min · $275',
             description:
-              "Full-body treatment using organic seaweed, clay, and essential oils to eliminate toxins, reduce cellulite, and restore skin vitality.",
+              'Full-body treatment using organic seaweed, clay, and essential oils to eliminate toxins, reduce cellulite, and restore skin vitality.',
             features: [
-              "Irish moss & kelp extracts",
-              "Infrared heat therapy included",
+              'Irish moss & kelp extracts',
+              'Infrared heat therapy included',
             ],
             imageAlt:
-              "Aromatic herbal body wrap with fresh eucalyptus and lavender botanicals on white spa linens",
+              'Aromatic herbal body wrap with fresh eucalyptus and lavender botanicals on white spa linens',
           },
         ]
     const normalizedTreatItems = treatItems.map((item) => ({
@@ -314,11 +306,11 @@ export const SpaWellnessKimiPage = defineComponent({
       features:
         Array.isArray(item.features) && item.features.length > 0
           ? item.features
-          : ["Personalized consultation", "Expert practitioner care"],
+          : ['Personalized consultation', 'Expert practitioner care'],
     }))
 
-    const journeyEyebrow = props.journey?.eyebrow ?? "Your Wellness Journey"
-    const journeyHeading = props.journey?.heading ?? "From Arrival to Renewal"
+    const journeyEyebrow = props.journey?.eyebrow ?? 'Your Wellness Journey'
+    const journeyHeading = props.journey?.heading ?? 'From Arrival to Renewal'
     const journeyDesc =
       props.journey?.description ??
       "We've perfected every moment of your experience for seamless tranquility."
@@ -326,247 +318,253 @@ export const SpaWellnessKimiPage = defineComponent({
       ? props.journey.steps
       : [
           {
-            title: "Reserve Online",
+            title: 'Reserve Online',
             description:
-              "Book your preferred treatments and arrival time through our seamless booking system. Receive instant confirmation and pre-visit guidance.",
+              'Book your preferred treatments and arrival time through our seamless booking system. Receive instant confirmation and pre-visit guidance.',
           },
           {
-            title: "Arrive & Unwind",
+            title: 'Arrive & Unwind',
             description:
-              "Enjoy complimentary valet parking, herbal welcome tea, and a personalized consultation with your wellness concierge upon arrival.",
+              'Enjoy complimentary valet parking, herbal welcome tea, and a personalized consultation with your wellness concierge upon arrival.',
           },
           {
-            title: "Transform",
+            title: 'Transform',
             description:
-              "Experience your curated treatments in private suites with premium amenities, temperature-controlled environments, and expert therapists.",
+              'Experience your curated treatments in private suites with premium amenities, temperature-controlled environments, and expert therapists.',
           },
           {
-            title: "Extend Serenity",
+            title: 'Extend Serenity',
             description:
-              "Relax in our tranquility lounge with light refreshments. Depart with personalized wellness recommendations and exclusive product samples.",
+              'Relax in our tranquility lounge with light refreshments. Depart with personalized wellness recommendations and exclusive product samples.',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Visual Journey"
-    const galleryHeading = props.gallery?.heading ?? "Sanctuary Spaces"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Visual Journey'
+    const galleryHeading = props.gallery?.heading ?? 'Sanctuary Spaces'
     const galleryDesc =
       props.gallery?.description ??
-      "Experience the environments crafted for your complete restoration."
+      'Experience the environments crafted for your complete restoration.'
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-          "Luxury spa treatment room with massage table draped in white linens and soft natural lighting",
-          "Infinity pool overlooking vineyard hills with teak lounge chairs and white umbrellas at golden hour",
-          "Relaxation lounge with comfortable daybeds, sheer curtains, and calming water feature",
-          "Private outdoor soaking tub surrounded by bamboo and tropical plants for open-air bathing",
-          "Steam room interior with marble benches and soft ambient lighting creating a misty atmosphere",
-          "Massage therapy in progress with warm towels and essential oil diffusers creating aromatherapy ambiance",
-          "Spa product display with artisanal soaps, botanical oils, and natural skincare arranged on marble",
-          "Yoga pavilion with wooden floors overlooking lush gardens for morning wellness classes",
-          "Reception area with living plant wall, natural wood accents, and welcoming seating area",
+          'Luxury spa treatment room with massage table draped in white linens and soft natural lighting',
+          'Infinity pool overlooking vineyard hills with teak lounge chairs and white umbrellas at golden hour',
+          'Relaxation lounge with comfortable daybeds, sheer curtains, and calming water feature',
+          'Private outdoor soaking tub surrounded by bamboo and tropical plants for open-air bathing',
+          'Steam room interior with marble benches and soft ambient lighting creating a misty atmosphere',
+          'Massage therapy in progress with warm towels and essential oil diffusers creating aromatherapy ambiance',
+          'Spa product display with artisanal soaps, botanical oils, and natural skincare arranged on marble',
+          'Yoga pavilion with wooden floors overlooking lush gardens for morning wellness classes',
+          'Reception area with living plant wall, natural wood accents, and welcoming seating area',
         ]
 
-    const pkgEyebrow = props.packages?.eyebrow ?? "Wellness Packages"
-    const pkgHeading = props.packages?.heading ?? "Curated Experiences"
+    const pkgEyebrow = props.packages?.eyebrow ?? 'Wellness Packages'
+    const pkgHeading = props.packages?.heading ?? 'Curated Experiences'
     const pkgDesc =
       props.packages?.description ??
-      "Choose the journey that speaks to your wellness goals. All packages include full-day facility access."
+      'Choose the journey that speaks to your wellness goals. All packages include full-day facility access.'
     const pkgNote =
       props.packages?.note ??
-      "All packages include complimentary robe, slippers, and locker. Gratuity not included. 24-hour cancellation policy applies."
+      'All packages include complimentary robe, slippers, and locker. Gratuity not included. 24-hour cancellation policy applies.'
     const pkgItems = props.packages?.items?.length
       ? props.packages.items
       : [
           {
-            name: "Essential Escape",
-            tagline: "Half-day renewal",
-            price: "$395",
-            unit: "/person",
+            name: 'Essential Escape',
+            tagline: 'Half-day renewal',
+            price: '$395',
+            unit: '/person',
             features: [
-              "60-minute Swedish massage",
-              "45-minute express facial",
-              "Sauna & steam access (4 hours)",
-              "Organic light lunch",
-              "Wellness elixir tasting",
+              '60-minute Swedish massage',
+              '45-minute express facial',
+              'Sauna & steam access (4 hours)',
+              'Organic light lunch',
+              'Wellness elixir tasting',
             ],
-            cta: "Book Essential Escape",
+            cta: 'Book Essential Escape',
           },
           {
-            name: "Signature Retreat",
-            tagline: "Full-day transformation",
-            price: "$795",
-            unit: "/person",
+            name: 'Signature Retreat',
+            tagline: 'Full-day transformation',
+            price: '$795',
+            unit: '/person',
             features: [
-              "90-minute hot stone massage",
-              "75-minute honey & gold facial",
-              "60-minute halotherapy session",
-              "Private meditation session",
-              "Gourmet wellness lunch & wine",
-              "Take-home product gift set ($150 value)",
+              '90-minute hot stone massage',
+              '75-minute honey & gold facial',
+              '60-minute halotherapy session',
+              'Private meditation session',
+              'Gourmet wellness lunch & wine',
+              'Take-home product gift set ($150 value)',
             ],
-            cta: "Book Signature Retreat",
+            cta: 'Book Signature Retreat',
             featured: true,
-            badge: "Most Popular",
+            badge: 'Most Popular',
           },
           {
-            name: "Ultimate Sanctuary",
-            tagline: "Two-day immersion",
-            price: "$1,595",
-            unit: "/person",
+            name: 'Ultimate Sanctuary',
+            tagline: 'Two-day immersion',
+            price: '$1,595',
+            unit: '/person',
             features: [
-              "Everything in Signature Retreat",
-              "90-minute herbal detox wrap",
-              "Private yoga instruction",
-              "Overnight suite accommodation",
-              "Champagne breakfast in bed",
-              "Personalized wellness roadmap",
+              'Everything in Signature Retreat',
+              '90-minute herbal detox wrap',
+              'Private yoga instruction',
+              'Overnight suite accommodation',
+              'Champagne breakfast in bed',
+              'Personalized wellness roadmap',
             ],
-            cta: "Book Ultimate Sanctuary",
+            cta: 'Book Ultimate Sanctuary',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "16", label: "Years of Excellence" },
-          { value: "50K+", label: "Treatments Delivered" },
-          { value: "28", label: "Expert Therapists" },
-          { value: "4.9", label: "Average Rating" },
+          { value: '16', label: 'Years of Excellence' },
+          { value: '50K+', label: 'Treatments Delivered' },
+          { value: '28', label: 'Expert Therapists' },
+          { value: '4.9', label: 'Average Rating' },
         ]
 
-    const tEyebrow = props.testimonials?.eyebrow ?? "Guest Stories"
-    const tHeading = props.testimonials?.heading ?? "Words of Tranquility"
+    const tEyebrow = props.testimonials?.eyebrow ?? 'Guest Stories'
+    const tHeading = props.testimonials?.heading ?? 'Words of Tranquility'
     const tDesc =
       props.testimonials?.description ??
-      "Hear from those who have experienced the Serenity Springs difference."
+      'Hear from those who have experienced the Serenity Springs difference.'
     const tItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "The Signature Retreat was absolutely transformative. From the moment I arrived, every detail was attended to. The hot stone massage melted years of tension, and the facial left my skin glowing for weeks. This is now my annual pilgrimage.",
-            name: "Eleanor Whitfield",
-            role: "Marketing Director, San Francisco",
+              'The Signature Retreat was absolutely transformative. From the moment I arrived, every detail was attended to. The hot stone massage melted years of tension, and the facial left my skin glowing for weeks. This is now my annual pilgrimage.',
+            name: 'Eleanor Whitfield',
+            role: 'Marketing Director, San Francisco',
             avatarAlt:
-              "Professional headshot of a smiling woman with shoulder-length brown hair and warm expression",
+              'Professional headshot of a smiling woman with shoulder-length brown hair and warm expression',
           },
           {
             quote:
               "As a physician, I'm particular about wellness practices. The halotherapy sessions here significantly improved my respiratory issues. The medical-grade approach combined with genuine hospitality makes Serenity Springs truly exceptional.",
-            name: "Dr. Marcus Chen",
-            role: "Pulmonologist, Palo Alto",
+            name: 'Dr. Marcus Chen',
+            role: 'Pulmonologist, Palo Alto',
             avatarAlt:
-              "Professional headshot of a middle-aged man with glasses and friendly confident expression",
+              'Professional headshot of a middle-aged man with glasses and friendly confident expression',
           },
           {
             quote:
               "I surprised my wife with the Ultimate Sanctuary package for our anniversary. Two days of pure bliss. The private yoga instruction and personalized wellness roadmap were unexpected highlights. We're already planning our return.",
-            name: "James Morrison",
-            role: "Tech Executive, Menlo Park",
+            name: 'James Morrison',
+            role: 'Tech Executive, Menlo Park',
             avatarAlt:
-              "Professional headshot of a smiling man with short dark hair and business casual attire",
+              'Professional headshot of a smiling man with short dark hair and business casual attire',
           },
         ]
 
-    const faqEyebrow = props.faq?.eyebrow ?? "Common Questions"
-    const faqHeading = props.faq?.heading ?? "Planning Your Visit"
+    const faqEyebrow = props.faq?.eyebrow ?? 'Common Questions'
+    const faqHeading = props.faq?.heading ?? 'Planning Your Visit'
     const faqDesc =
       props.faq?.description ??
-      "Everything you need to know before your wellness journey begins."
+      'Everything you need to know before your wellness journey begins.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
           {
-            q: "What should I bring to my appointment?",
+            q: 'What should I bring to my appointment?',
             a: "We provide everything you need: plush robes, organic cotton slippers, premium skincare products, and hair care amenities. Simply arrive with yourself—we'll handle the rest. If you have specific skincare sensitivities, you're welcome to bring your own products.",
           },
           {
-            q: "How early should I arrive before my treatment?",
-            a: "We recommend arriving 30 minutes prior to your first appointment to complete your wellness consultation, change into your robe, and enjoy our tranquil relaxation lounge with complimentary herbal tea.",
+            q: 'How early should I arrive before my treatment?',
+            a: 'We recommend arriving 30 minutes prior to your first appointment to complete your wellness consultation, change into your robe, and enjoy our tranquil relaxation lounge with complimentary herbal tea.',
           },
           {
-            q: "What is your cancellation policy?",
-            a: "We require 24 hours notice for cancellations or rescheduling. Cancellations within 24 hours may be subject to a 50% charge. No-shows will be charged the full treatment amount.",
+            q: 'What is your cancellation policy?',
+            a: 'We require 24 hours notice for cancellations or rescheduling. Cancellations within 24 hours may be subject to a 50% charge. No-shows will be charged the full treatment amount.',
           },
           {
-            q: "Are gratuities included in package prices?",
-            a: "Gratuities are not included. While never expected, if you wish to recognize exceptional service, our staff graciously accepts gratuities. A 20% gratuity is customary for exceptional service.",
+            q: 'Are gratuities included in package prices?',
+            a: 'Gratuities are not included. While never expected, if you wish to recognize exceptional service, our staff graciously accepts gratuities. A 20% gratuity is customary for exceptional service.',
           },
           {
-            q: "Do you accommodate special dietary needs?",
-            a: "Absolutely. Our culinary team prepares organic, locally-sourced meals that accommodate vegan, vegetarian, gluten-free, dairy-free, and allergy-specific requirements. Please inform us of any needs when booking.",
+            q: 'Do you accommodate special dietary needs?',
+            a: 'Absolutely. Our culinary team prepares organic, locally-sourced meals that accommodate vegan, vegetarian, gluten-free, dairy-free, and allergy-specific requirements. Please inform us of any needs when booking.',
           },
           {
-            q: "Is there a minimum age requirement?",
-            a: "Our spa environment is designed for adults 18 and older. We offer select teen treatments (ages 14-17) when accompanied by a parent or guardian. Please inquire about our Teen Wellness offerings.",
+            q: 'Is there a minimum age requirement?',
+            a: 'Our spa environment is designed for adults 18 and older. We offer select teen treatments (ages 14-17) when accompanied by a parent or guardian. Please inquire about our Teen Wellness offerings.',
           },
         ]
 
-    const bookEyebrow = props.booking?.eyebrow ?? "Begin Your Journey"
+    const bookEyebrow = props.booking?.eyebrow ?? 'Begin Your Journey'
     const bookHeading =
-      props.booking?.heading ?? "Reserve Your Sanctuary Experience"
+      props.booking?.heading ?? 'Reserve Your Sanctuary Experience'
     const bookDesc =
       props.booking?.description ??
-      "Transformative wellness awaits. Our concierge team is ready to curate your perfect retreat. Book online instantly or contact us for personalized package recommendations."
-    const bookPhone = props.booking?.phone ?? "(707) 555-Serenity (555-737-3689)"
-    const bookEmail =
-      props.booking?.email ?? "reservations@serenitysprings.com"
+      'Transformative wellness awaits. Our concierge team is ready to curate your perfect retreat. Book online instantly or contact us for personalized package recommendations.'
+    const bookPhone =
+      props.booking?.phone ?? '(707) 555-Serenity (555-737-3689)'
+    const bookEmail = props.booking?.email ?? 'reservations@serenitysprings.com'
     const bookAddress =
       props.booking?.address ??
-      "1425 Spring Mountain Road, St. Helena, CA 94574"
-    const bookPrimary = props.booking?.primaryCta ?? "Book Online Now"
-    const bookSecondary = props.booking?.secondaryCta ?? "Request Consultation"
-    const bookFormHeading = props.booking?.formHeading ?? "Quick Reservation"
-    const bookSubmit = props.booking?.submit ?? "Request Reservation"
+      '1425 Spring Mountain Road, St. Helena, CA 94574'
+    const bookPrimary = props.booking?.primaryCta ?? 'Book Online Now'
+    const bookSecondary = props.booking?.secondaryCta ?? 'Request Consultation'
+    const bookFormHeading = props.booking?.formHeading ?? 'Quick Reservation'
+    const bookSubmit = props.booking?.submit ?? 'Request Reservation'
     const bookFormNote =
       props.booking?.formNote ??
-      "Our concierge will confirm availability within 2 hours. No payment required to reserve."
+      'Our concierge will confirm availability within 2 hours. No payment required to reserve.'
     const guestOptions = props.booking?.guestOptions?.length
       ? props.booking.guestOptions
-      : ["1 Guest", "2 Guests", "3 Guests", "4+ Guests"]
+      : ['1 Guest', '2 Guests', '3 Guests', '4+ Guests']
     const packageOptions = props.booking?.packageOptions?.length
       ? props.booking.packageOptions
       : [
-          "Select a package",
-          "Essential Escape - $395",
-          "Signature Retreat - $795",
-          "Ultimate Sanctuary - $1,595",
-          "Custom Treatment Menu",
+          'Select a package',
+          'Essential Escape - $395',
+          'Signature Retreat - $795',
+          'Ultimate Sanctuary - $1,595',
+          'Custom Treatment Menu',
         ]
 
     const footerAbout =
       props.footer?.about ??
-      "A sanctuary of wellness nestled in the heart of Napa Valley, offering transformative treatments since 2008."
+      'A sanctuary of wellness nestled in the heart of Napa Valley, offering transformative treatments since 2008.'
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Explore",
-            links: ["Treatments", "Packages", "Gallery", "Reviews", "Gift Cards"],
+            title: 'Explore',
+            links: [
+              'Treatments',
+              'Packages',
+              'Gallery',
+              'Reviews',
+              'Gift Cards',
+            ],
           },
           {
-            title: "Company",
-            links: ["Our Story", "Careers", "Press", "Sustainability", "FAQ"],
+            title: 'Company',
+            links: ['Our Story', 'Careers', 'Press', 'Sustainability', 'FAQ'],
           },
         ]
     const footerContact = props.footer?.contact?.length
       ? props.footer.contact
       : [
-          "1425 Spring Mountain Road",
-          "St. Helena, CA 94574",
-          "(707) 555-7373",
-          "reservations@serenitysprings.com",
-          "Open Daily: 9am - 8pm",
+          '1425 Spring Mountain Road',
+          'St. Helena, CA 94574',
+          '(707) 555-7373',
+          'reservations@serenitysprings.com',
+          'Open Daily: 9am - 8pm',
         ]
     const footerCopyright =
       props.footer?.copyright ??
-      "Serenity Springs Wellness Retreat. All rights reserved."
+      'Serenity Springs Wellness Retreat. All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Accessibility"]
+      : ['Privacy Policy', 'Terms of Service', 'Accessibility']
     const footerSocial = props.footer?.social?.length
       ? props.footer.social
-      : ["Instagram", "Facebook", "Pinterest"]
+      : ['Instagram', 'Facebook', 'Pinterest']
 
     // Circular brand mark (decorative inline SVG — checkmark inside a disc).
     const BrandMark = ({ className }: { className?: string }) => (
@@ -607,16 +605,36 @@ export const SpaWellnessKimiPage = defineComponent({
     )
 
     const certIcons: ReactNode[] = [
-      <svg key="award" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg
+        key="award"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
       </svg>,
-      <svg key="diamond" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg
+        key="diamond"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <circle cx="12" cy="12" r="10" />
       </svg>,
-      <svg key="heart" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg
+        key="heart"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
       </svg>,
-      <svg key="cert" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg
+        key="cert"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
       </svg>,
     ]
@@ -634,13 +652,13 @@ export const SpaWellnessKimiPage = defineComponent({
     }
 
     const inputCls =
-      "w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-    const labelCls = "block text-sm font-medium text-foreground/80 mb-1.5"
+      'w-full rounded-lg border border-input bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring'
+    const labelCls = 'block text-sm font-medium text-foreground/80 mb-1.5'
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -734,50 +752,50 @@ export const SpaWellnessKimiPage = defineComponent({
         <main>
           {/* Hero */}
           <section
-            className="relative flex min-h-screen items-center pt-20"
+            className="relative flex min-h-screen items-center overflow-hidden bg-background pt-20"
             aria-labelledby="hero-heading"
           >
-            <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 z-0">
               <Image
                 alt={heroImageAlt}
                 w={1920}
                 h={1080}
                 className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-foreground/30" />
+              <div className="absolute inset-0 bg-background/60" />
             </div>
 
-            <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
+            <div className="relative z-10 mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
               <div className="max-w-2xl">
-                <p className="mb-4 text-sm font-medium uppercase tracking-widest text-background/90">
+                <p className="mb-4 text-sm font-medium uppercase tracking-widest text-foreground/85">
                   {heroEyebrow}
                 </p>
                 <h1
                   id="hero-heading"
-                  className="mb-6 font-serif text-4xl font-medium leading-tight text-background sm:text-5xl lg:text-6xl"
+                  className="mb-6 font-serif text-4xl font-medium leading-tight text-foreground sm:text-5xl lg:text-6xl"
                 >
                   {heroHeading}
                 </h1>
-                <p className="mb-8 max-w-xl text-lg leading-relaxed text-background/90 sm:text-xl">
+                <p className="mb-8 max-w-xl text-lg leading-relaxed text-foreground/90 sm:text-xl">
                   {heroSub}
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <button
                     type="button"
                     onClick={() => go(heroPrimary)}
-                    className="inline-flex items-center justify-center rounded-full bg-background px-8 py-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                    className="inline-flex items-center justify-center rounded-full bg-foreground px-8 py-3.5 text-sm font-semibold text-background shadow-sm transition-colors hover:bg-foreground/90"
                   >
                     {heroPrimary}
                   </button>
                   <button
                     type="button"
                     onClick={() => go(heroSecondary)}
-                    className="inline-flex items-center justify-center rounded-full border border-background/40 px-8 py-3.5 text-sm font-medium text-background transition-colors hover:bg-background/10"
+                    className="inline-flex items-center justify-center rounded-full border border-foreground/45 px-8 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10"
                   >
                     {heroSecondary}
                   </button>
                 </div>
-                <div className="mt-12 flex items-center gap-8 text-sm text-background/80">
+                <div className="mt-12 flex items-center gap-8 text-sm text-foreground/80">
                   {heroTrust.map((t) => (
                     <div key={t} className="flex items-center gap-2">
                       <Star className="h-5 w-5 text-primary" />
@@ -947,9 +965,9 @@ export const SpaWellnessKimiPage = defineComponent({
                   <div
                     key={alt}
                     className={cn(
-                      "aspect-square overflow-hidden rounded-lg",
-                      i === 1 && "row-span-2",
-                      i === 8 && "hidden md:block",
+                      'aspect-square overflow-hidden rounded-lg',
+                      i === 1 && 'row-span-2',
+                      i === 8 && 'hidden md:block',
                     )}
                   >
                     <Image
@@ -989,10 +1007,10 @@ export const SpaWellnessKimiPage = defineComponent({
                   <div
                     key={pkg.name}
                     className={cn(
-                      "relative flex flex-col rounded-xl p-8",
+                      'relative flex flex-col rounded-xl p-8',
                       pkg.featured
-                        ? "bg-primary shadow-lg"
-                        : "bg-card shadow-sm",
+                        ? 'bg-primary shadow-lg'
+                        : 'bg-card shadow-sm',
                     )}
                   >
                     {pkg.badge ? (
@@ -1005,20 +1023,20 @@ export const SpaWellnessKimiPage = defineComponent({
                     <div className="mb-6">
                       <h3
                         className={cn(
-                          "mb-2 font-serif text-2xl font-medium",
+                          'mb-2 font-serif text-2xl font-medium',
                           pkg.featured
-                            ? "text-primary-foreground"
-                            : "text-card-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {pkg.name}
                       </h3>
                       <p
                         className={cn(
-                          "text-sm",
+                          'text-sm',
                           pkg.featured
-                            ? "text-primary-foreground/80"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/80'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {pkg.tagline}
@@ -1027,10 +1045,10 @@ export const SpaWellnessKimiPage = defineComponent({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "font-serif text-4xl font-medium",
+                          'font-serif text-4xl font-medium',
                           pkg.featured
-                            ? "text-primary-foreground"
-                            : "text-card-foreground",
+                            ? 'text-primary-foreground'
+                            : 'text-card-foreground',
                         )}
                       >
                         {pkg.price}
@@ -1038,8 +1056,8 @@ export const SpaWellnessKimiPage = defineComponent({
                       <span
                         className={cn(
                           pkg.featured
-                            ? "text-primary-foreground/80"
-                            : "text-muted-foreground",
+                            ? 'text-primary-foreground/80'
+                            : 'text-muted-foreground',
                         )}
                       >
                         {pkg.unit}
@@ -1047,20 +1065,20 @@ export const SpaWellnessKimiPage = defineComponent({
                     </div>
                     <ul
                       className={cn(
-                        "mb-8 flex-grow space-y-3 text-sm",
+                        'mb-8 flex-grow space-y-3 text-sm',
                         pkg.featured
-                          ? "text-primary-foreground/90"
-                          : "text-muted-foreground",
+                          ? 'text-primary-foreground/90'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {pkg.features.map((f) => (
                         <li key={f} className="flex items-start gap-3">
                           <Check
                             className={cn(
-                              "h-5 w-5 flex-shrink-0",
+                              'h-5 w-5 flex-shrink-0',
                               pkg.featured
-                                ? "text-primary-foreground"
-                                : "text-primary",
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
                             )}
                           />
                           <span>{f}</span>
@@ -1071,10 +1089,10 @@ export const SpaWellnessKimiPage = defineComponent({
                       type="button"
                       onClick={() => go(pkg.cta)}
                       className={cn(
-                        "inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-colors",
+                        'inline-flex w-full items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-colors',
                         pkg.featured
-                          ? "bg-background text-primary hover:bg-muted"
-                          : "border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground",
+                          ? 'bg-background text-primary hover:bg-muted'
+                          : 'border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground',
                       )}
                     >
                       {pkg.cta}
@@ -1154,7 +1172,9 @@ export const SpaWellnessKimiPage = defineComponent({
                         <cite className="font-medium not-italic text-card-foreground">
                           {t.name}
                         </cite>
-                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {t.role}
+                        </p>
                       </div>
                     </footer>
                   </blockquote>
@@ -1198,7 +1218,10 @@ export const SpaWellnessKimiPage = defineComponent({
           </section>
 
           {/* Booking CTA */}
-          <section className="bg-primary py-24" aria-labelledby="booking-heading">
+          <section
+            className="bg-primary py-24"
+            aria-labelledby="booking-heading"
+          >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid items-center gap-16 lg:grid-cols-2">
                 <div>
@@ -1383,7 +1406,7 @@ export const SpaWellnessKimiPage = defineComponent({
                         id="spa-notes"
                         rows={3}
                         placeholder="Allergies, accessibility needs, occasion celebration..."
-                        className={cn(inputCls, "resize-none")}
+                        className={cn(inputCls, 'resize-none')}
                       />
                     </div>
                     <button

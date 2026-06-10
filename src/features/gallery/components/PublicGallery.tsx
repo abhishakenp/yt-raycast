@@ -285,7 +285,7 @@ export const GalleryGrid = ({
   gallery?: GalleryPayload
   skeletonCount?: number
 }) => {
-  const items = (gallery?.items ?? []) as GallerySession[]
+  const items = gallery?.items ?? []
 
   return (
     <QueryClientProvider client={galleryPreviewQueryClient}>
