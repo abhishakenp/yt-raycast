@@ -36,7 +36,17 @@ const newBadgeClass =
 const stateBadgeClass =
   'shrink-0 rounded-md border border-white/12 bg-black/30 px-1.5 py-[3px] font-mono text-[9px] font-bold leading-none tracking-[0.04em] text-white/60'
 
-const themeStripeStyle = (
+const formatThemeName = (name: string | null | undefined): string => {
+  if (!name) return 'Default'
+
+  return name
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ')
+}
+
+const themeButtonStyle = (
   styles: ReturnType<typeof resolveThemeStyles>,
   isDark: boolean,
 ): CSSProperties | undefined => {
@@ -53,8 +63,19 @@ const themeStripeStyle = (
 
   if (stops.length === 0) return undefined
 
+  const paletteGradient = `linear-gradient(110deg, ${stops.join(', ')})`
+
   return {
-    background: `linear-gradient(90deg, ${stops.join(', ')})`,
+    backgroundImage: [
+      'linear-gradient(90deg, rgba(8,10,18,0.86), rgba(8,10,18,0.58) 44%, rgba(8,10,18,0.74))',
+      'radial-gradient(circle at 88% 18%, rgba(255,255,255,0.22), transparent 34%)',
+      paletteGradient,
+    ].join(', '),
+    backgroundBlendMode: 'normal, soft-light, normal',
+    borderColor: palette.primary ?? palette.accent ?? 'rgba(255,255,255,0.16)',
+    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.16), 0 16px 34px -24px ${palette.primary ?? 'rgba(255,255,255,0.45)'}`,
+    backdropFilter: 'blur(18px) saturate(1.35)',
+    WebkitBackdropFilter: 'blur(18px) saturate(1.35)',
   }
 }
 
@@ -118,8 +139,9 @@ export function Dashboard({ sessionId }: DashboardProps) {
   const aiTheme = useMemo(() => readSiteThemeName(generationView?.siteSpec?.specJson), [generationView?.siteSpec?.specJson])
   const effectiveTheme = selectedTheme ?? aiTheme
   const themeStyles = resolveThemeStyles(effectiveTheme)
-  const activeThemeStripeStyle = useMemo(
-    () => themeStripeStyle(themeStyles, isDark),
+  const activeThemeLabel = useMemo(() => formatThemeName(effectiveTheme), [effectiveTheme])
+  const activeThemeButtonStyle = useMemo(
+    () => themeButtonStyle(themeStyles, isDark),
     [themeStyles, isDark],
   )
 
@@ -180,9 +202,9 @@ export function Dashboard({ sessionId }: DashboardProps) {
                 </svg>
               </button>
               <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/8 bg-black/25 px-3 py-2 text-sm text-white/48">
-                <span className="size-2 shrink-0 rounded-full bg-emerald-300/80">&#9679;</span>
-                <a className="min-w-0 truncate font-mono text-xs text-white/56 no-underline" id="url-text" href={`/generate/${sessionId}`} aria-label="Current generation">
-                  /generate/{sessionId}
+                <span className="size-2 shrink-0 rounded-full bg-emerald-300/80" />
+                <a className="min-w-0 truncate font-mono text-xs text-white/56 no-underline" id="url-text" href={generationView?.session.deploymentSlug ? `https://${generationView.session.deploymentSlug}.ship-fast.io` : `/generate/${sessionId}`} aria-label="Current generation">
+                  {generationView?.session.deploymentSlug ? `https://${generationView.session.deploymentSlug}.ship-fast.io` : `/generate/${sessionId}`}
                 </a>
               </div>
               <div className="flex shrink-0 items-center gap-2" id="preview-frame-tools" aria-label="Preview controls">
@@ -360,20 +382,27 @@ export function Dashboard({ sessionId }: DashboardProps) {
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">Design</div>
                     <ThemePicker
                       value={effectiveTheme}
-                        isDark={isDark}
-                        onSelect={setSelectedTheme}
-                        onToggleMode={() => setIsDark((dark) => !dark)}
-                        trigger={
-                        <button type="button" className={cn(railRowClass, 'pt-[15px]')} data-rail-action="palette">
-                          <span className="absolute inset-x-0 top-0 h-1 opacity-95 shadow-[0_0_18px_rgba(255,255,255,0.2)]" style={activeThemeStripeStyle} aria-hidden="true" />
-                          <span className={railIconClass} aria-hidden="true">
+                      isDark={isDark}
+                      onSelect={setSelectedTheme}
+                      onToggleMode={() => setIsDark((dark) => !dark)}
+                      trigger={
+                        <button
+                          type="button"
+                          className={cn(
+                            railRowClass,
+                            'border-white/14 bg-white/[0.04] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]',
+                          )}
+                          style={activeThemeButtonStyle}
+                          data-rail-action="palette"
+                        >
+                          <span className={cn(railIconClass, 'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28')} aria-hidden="true">
                             <Palette className="size-3.5" strokeWidth={1.9} />
                           </span>
                           <span className="grid min-w-0 flex-1 gap-0.5">
                             <span className="truncate">Theme</span>
-                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">{effectiveTheme ?? 'Default'}</span>
+                            <span className="truncate font-mono text-[10px] leading-tight tracking-[0.04em] text-white/64">{activeThemeLabel}</span>
                           </span>
-                          <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[0.04] text-white/52" aria-hidden="true">
+                          <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md" aria-hidden="true">
                             <Palette className="size-4" strokeWidth={1.8} />
                           </span>
                         </button>
@@ -394,7 +423,9 @@ export function Dashboard({ sessionId }: DashboardProps) {
                         <span className="truncate">Export</span>
                         <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">HTML / React / Next.js</span>
                       </span>
-                      <span className={cn(stateBadgeClass, 'border-transparent bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)] text-[#0a0a0b]')} data-state="premium">Pro only</span>
+                      <div className={cn(stateBadgeClass, 'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]')} data-state="premium">
+                        <span className="text-[#0a0a0b]">Pro only</span>
+                      </div>
                     </button>
                     <button type="button" className={railRowClass} data-rail-action="domain">
                       <span className={railIconClass} aria-hidden="true">

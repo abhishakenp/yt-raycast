@@ -63,7 +63,7 @@ export const MarketingShell = ({
       {children}
 
       {footer && (
-        <footer className="relative z-[1] mx-auto mb-6 flex w-[min(1160px,calc(100%-48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-7 py-[22px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%-32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
+        <footer className="relative z-[1] mx-auto mb-6 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-7 py-[22px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
           <span className="font-mono text-[13px] tracking-[0.12em] text-[#97a0b0]">SHIP FAST © {new Date().getFullYear()}</span>
           <nav className="flex flex-wrap items-center gap-5 [&_a]:text-[13px] [&_a]:text-[#97a0b0] [&_a]:transition-colors hover:[&_a]:text-[#EDEDEF]" aria-label="Footer links">
             <a href="/">Home</a>

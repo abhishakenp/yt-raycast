@@ -71,7 +71,8 @@ export default defineSchema({
     errorMessage: v.optional(v.string()),
   })
     .index('by_userId', ['userId'])
-    .index('by_public_createdAt', ['isPrivate', 'createdAt']),
+    .index('by_public_createdAt', ['isPrivate', 'createdAt'])
+    .index('by_deploymentSlug', ['deploymentSlug']),
 
   tasks: defineTable({
     sessionId: v.id('sessions'),

@@ -6,7 +6,7 @@ const lockIcon15 = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" 
 
 const lockIcon16 = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
 
-export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min(1160px,calc(100%-48px))] pt-[88px] pb-20 text-[var(--text-primary,#f0f0f5)] max-[720px]:w-[min(100%,calc(100%-32px))] max-[720px]:pt-20">
+export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min(1160px,calc(100%_-_48px))] pt-[88px] pb-20 text-[var(--text-primary,#f0f0f5)] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:pt-20">
 
       <section class="mb-[72px] flex flex-col items-center gap-[18px] py-12 pb-14 text-center" aria-labelledby="pricing-heading">
         <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Pricing</span>
