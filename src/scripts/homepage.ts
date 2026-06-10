@@ -9,6 +9,7 @@ import { INDIAN_SAMPLE_PROMPTS } from '../lib/home/indian-sample-prompts'
 import { LOCAL_DEV_PROMPT_SHORTCUTS } from '../lib/home/sample-prompts'
 import { getRandomPrompt } from '../lib/home/random-prompt'
 import { withAuthTokenHeader } from '../lib/home/auth-fetch'
+import { bindHomepageClerkSignIn } from '../lib/home/clerk-signin'
 
 declare const __SF_DEV_SCRIPTS__: boolean
 import { openEmbeddedSession, isMarketingHomePath } from './home-session-embed'
@@ -64,6 +65,8 @@ let hasSessionResizeListener = false
 const openAuthOverlay = () => {
   window.dispatchEvent(new CustomEvent('sf-request-auth-overlay'))
 }
+
+bindHomepageClerkSignIn({ win: window, doc: document })
 
 async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const bridge = window.__sfAuthFetch

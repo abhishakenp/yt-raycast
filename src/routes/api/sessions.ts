@@ -3,6 +3,10 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../convex/_generated/api'
 import { startGenerationInBackground } from '@/features/generation/server/start-generation'
+import {
+  buildCreateSessionPayload,
+  createSessionWorkspaceKey,
+} from '@/features/session/services/session-create-payload'
 import { getRuntimeConvexUrl } from '@/shared/env/convex-runtime'
 
 const json = (body: unknown, init?: ResponseInit) =>
@@ -48,13 +52,13 @@ export const Route = createFileRoute('/api/sessions')({
         const client = new ConvexHttpClient(getRuntimeConvexUrl())
 
         try {
-          const { sessionId } = await client.mutation(api.sessions.create, {
+          const { sessionId } = await client.mutation(api.sessions.create, buildCreateSessionPayload({
             prompt,
             preferredLanguage,
-            preferredExportTarget: 'html',
             isPrivate: body.isPrivate === true,
             anonymousOwnerSecret: anonOwnerSecret,
-          })
+            workspace: createSessionWorkspaceKey(),
+          }))
 
           void (async () => {
             try {
