@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { WorkspacePage } from '@/features/workspace/components/WorkspacePage'
+import { Dashboard } from '@/features/dashboard/components/Dashboard'
 
 const GenerateRoute = () => {
   const { sessionId } = Route.useParams()
 
-  return <WorkspacePage sessionId={sessionId} />
+  return <Dashboard sessionId={sessionId} />
 }
 
 export const Route = createFileRoute('/generate/$sessionId')({

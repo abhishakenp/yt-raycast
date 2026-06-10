@@ -1,6 +1,6 @@
 import { cn } from "#/lib/utils.ts";
 
-import PlayerProfileCard from "#/components/ui/8bit/blocks/player-profile-card";
+import PlayerProfileCard from "#/components/ui/8bit/blocks/player-profile-card.tsx";
 
 import "#/components/ui/8bit/styles/retro.css";
 

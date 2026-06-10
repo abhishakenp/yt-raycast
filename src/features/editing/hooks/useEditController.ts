@@ -6,7 +6,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 export const useEditController = (sessionId: string) => {
-  const createEdit = useMutation(api.sessions.createEdit)
+  const createEdit = useMutation(api.sessions['createEdit'])
   const edits = useQuery(api.sessions.listEdits, { sessionId: sessionId as Id<'sessions'> })
   const [editError, setEditError] = useState<string>()
   const [isEditing, setIsEditing] = useState(false)

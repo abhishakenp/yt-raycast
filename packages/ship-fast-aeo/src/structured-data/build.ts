@@ -12,7 +12,7 @@ function entitySignals(siteSpec: SiteSpecLike | null | undefined, page: SitePage
   return { ...(homeSignals || {}), ...(pageSignals || {}) }
 }
 
-function inferBreadcrumbs(siteSpec: SiteSpecLike | null | undefined, page: SitePageLike | null | undefined) {
+function inferBreadcrumbs(_siteSpec: SiteSpecLike | null | undefined, page: SitePageLike | null | undefined) {
   if (Array.isArray(page?.breadcrumbs) && page.breadcrumbs.length) {
     return page.breadcrumbs
   }
@@ -36,7 +36,7 @@ function inferBreadcrumbs(siteSpec: SiteSpecLike | null | undefined, page: SiteP
   return crumbs
 }
 
-function isProductPage(page: SitePageLike | null | undefined, siteSpec: SiteSpecLike | null | undefined) {
+function isProductPage(page: SitePageLike | null | undefined, _siteSpec: SiteSpecLike | null | undefined) {
   const route = normalizePath(page?.route || '/')
   if (route.includes('/product')) return true
   return (page?.sections || []).some((section) => section.type === 'product-detail')

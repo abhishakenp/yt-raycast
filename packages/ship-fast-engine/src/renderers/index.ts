@@ -14,6 +14,7 @@ import { renderGeneratedSiteLlmsTxt } from './llms-txt.js'
 import { renderRobotsTxt, renderSitemapXml } from './seo.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
+type OpenUIRenderResult = { html: string; cssVars?: string }
 const TAILWIND_BROWSER_SCRIPT_RELATIVE = 'scripts/tailwind-browser.js'
 const RENDERER_DIR = dirname(fileURLToPath(import.meta.url))
 
@@ -264,7 +265,7 @@ export function buildThemeHead(seedText: string, requested?: string | null): str
 // extracted tokens, derive sensible *-foreground pairs (a color sits on its
 // foreground), and provide defaults for everything the scrape can't infer, all in
 // bare RGB channels so Tailwind v3 opacity modifiers (bg-primary/80) decompose.
-export function buildThemeHeadFromTokens(tokens: ExtractedTokens, brand: string): string {
+export function buildThemeHeadFromTokens(tokens: ExtractedTokens, _brand: string): string {
   const ch = (hex: string) => hexToRgbChannels(hex)
   const bg = ch(tokens.background)
   const fg = ch(tokens.foreground)
@@ -414,7 +415,12 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
 
   // Server-side render the OpenUI to HTML for instant loading in gallery
   const themeHead = buildThemeHead(`${brand}\n${source}`, readSiteThemeName(workspace))
-  const { html, cssVars } = renderOpenUIToHTMLWithTheme(source, null, 'en', null)
+  const { html, cssVars } = renderOpenUIToHTMLWithTheme(
+    source,
+    undefined,
+    'en',
+    undefined,
+  ) as OpenUIRenderResult
   const siteSpec = readSiteSpecJson(workspace)
   const previewSeoHead = buildPreviewSeoHead(siteSpec, brand, String(siteSpec?.tagline || ''))
   return `<!DOCTYPE html>
@@ -589,7 +595,7 @@ function renderStaticHomepage(spec: any, brand: string, tagline: string): string
     </main>`
 }
 
-export function renderProject(siteSpec: SiteSpecProject, target: string, session?: any) {
+export function renderProject(siteSpec: SiteSpecProject, target: string, _session?: any) {
   const files: Record<string, string> = {}
   const spec: any = siteSpec
   const brand = spec.brand || spec.projectName || 'Generated Site'
@@ -708,7 +714,7 @@ export function renderPreviewToWorkspace(
   siteSpec: SiteSpecProject,
   workspace: string,
   session?: any,
-  options?: any,
+  _options?: any,
 ) {
   const rendered = renderProject(siteSpec, 'html', session)
   const spec: any = siteSpec

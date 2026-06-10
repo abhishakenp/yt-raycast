@@ -15,16 +15,11 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SessionSessionIdRouteImport } from './routes/session.$sessionId'
-import { Route as PreviewLookupRouteImport } from './routes/preview.$lookup'
 import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessionId'
 import { Route as ApiStudioEmbedReadyRouteImport } from './routes/api/studio-embed-ready'
-import { Route as ApiSessionsRouteImport } from './routes/api/sessions'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
-import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
-import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -56,16 +51,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SessionSessionIdRoute = SessionSessionIdRouteImport.update({
-  id: '/session/$sessionId',
-  path: '/session/$sessionId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PreviewLookupRoute = PreviewLookupRouteImport.update({
-  id: '/preview/$lookup',
-  path: '/preview/$lookup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const GenerateSessionIdRoute = GenerateSessionIdRouteImport.update({
   id: '/generate/$sessionId',
   path: '/generate/$sessionId',
@@ -74,11 +59,6 @@ const GenerateSessionIdRoute = GenerateSessionIdRouteImport.update({
 const ApiStudioEmbedReadyRoute = ApiStudioEmbedReadyRouteImport.update({
   id: '/api/studio-embed-ready',
   path: '/api/studio-embed-ready',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSessionsRoute = ApiSessionsRouteImport.update({
-  id: '/api/sessions',
-  path: '/api/sessions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRewriteRoute = ApiRewriteRouteImport.update({
@@ -96,17 +76,6 @@ const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
   path: '/export/$sessionId/$target',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiSessionsSessionIdRoute = ApiSessionsSessionIdRouteImport.update({
-  id: '/$sessionId',
-  path: '/$sessionId',
-  getParentRoute: () => ApiSessionsRoute,
-} as any)
-const ApiSessionsSessionIdStreamRoute =
-  ApiSessionsSessionIdStreamRouteImport.update({
-    id: '/stream',
-    path: '/stream',
-    getParentRoute: () => ApiSessionsSessionIdRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -117,14 +86,9 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
-  '/api/sessions': typeof ApiSessionsRouteWithChildren
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
-  '/preview/$lookup': typeof PreviewLookupRoute
-  '/session/$sessionId': typeof SessionSessionIdRoute
-  '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
-  '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -135,14 +99,9 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
-  '/api/sessions': typeof ApiSessionsRouteWithChildren
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
-  '/preview/$lookup': typeof PreviewLookupRoute
-  '/session/$sessionId': typeof SessionSessionIdRoute
-  '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
-  '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -154,14 +113,9 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
-  '/api/sessions': typeof ApiSessionsRouteWithChildren
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
-  '/preview/$lookup': typeof PreviewLookupRoute
-  '/session/$sessionId': typeof SessionSessionIdRoute
-  '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
-  '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -174,14 +128,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
-    | '/api/sessions'
     | '/api/studio-embed-ready'
     | '/generate/$sessionId'
-    | '/preview/$lookup'
-    | '/session/$sessionId'
-    | '/api/sessions/$sessionId'
     | '/export/$sessionId/$target'
-    | '/api/sessions/$sessionId/stream'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -192,14 +141,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
-    | '/api/sessions'
     | '/api/studio-embed-ready'
     | '/generate/$sessionId'
-    | '/preview/$lookup'
-    | '/session/$sessionId'
-    | '/api/sessions/$sessionId'
     | '/export/$sessionId/$target'
-    | '/api/sessions/$sessionId/stream'
   id:
     | '__root__'
     | '/'
@@ -210,14 +154,9 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
-    | '/api/sessions'
     | '/api/studio-embed-ready'
     | '/generate/$sessionId'
-    | '/preview/$lookup'
-    | '/session/$sessionId'
-    | '/api/sessions/$sessionId'
     | '/export/$sessionId/$target'
-    | '/api/sessions/$sessionId/stream'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -229,11 +168,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
-  ApiSessionsRoute: typeof ApiSessionsRouteWithChildren
   ApiStudioEmbedReadyRoute: typeof ApiStudioEmbedReadyRoute
   GenerateSessionIdRoute: typeof GenerateSessionIdRoute
-  PreviewLookupRoute: typeof PreviewLookupRoute
-  SessionSessionIdRoute: typeof SessionSessionIdRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
 }
 
@@ -281,20 +217,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/session/$sessionId': {
-      id: '/session/$sessionId'
-      path: '/session/$sessionId'
-      fullPath: '/session/$sessionId'
-      preLoaderRoute: typeof SessionSessionIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/preview/$lookup': {
-      id: '/preview/$lookup'
-      path: '/preview/$lookup'
-      fullPath: '/preview/$lookup'
-      preLoaderRoute: typeof PreviewLookupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/generate/$sessionId': {
       id: '/generate/$sessionId'
       path: '/generate/$sessionId'
@@ -307,13 +229,6 @@ declare module '@tanstack/react-router' {
       path: '/api/studio-embed-ready'
       fullPath: '/api/studio-embed-ready'
       preLoaderRoute: typeof ApiStudioEmbedReadyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sessions': {
-      id: '/api/sessions'
-      path: '/api/sessions'
-      fullPath: '/api/sessions'
-      preLoaderRoute: typeof ApiSessionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rewrite': {
@@ -337,45 +252,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExportSessionIdTargetRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/sessions/$sessionId': {
-      id: '/api/sessions/$sessionId'
-      path: '/$sessionId'
-      fullPath: '/api/sessions/$sessionId'
-      preLoaderRoute: typeof ApiSessionsSessionIdRouteImport
-      parentRoute: typeof ApiSessionsRoute
-    }
-    '/api/sessions/$sessionId/stream': {
-      id: '/api/sessions/$sessionId/stream'
-      path: '/stream'
-      fullPath: '/api/sessions/$sessionId/stream'
-      preLoaderRoute: typeof ApiSessionsSessionIdStreamRouteImport
-      parentRoute: typeof ApiSessionsSessionIdRoute
-    }
   }
 }
-
-interface ApiSessionsSessionIdRouteChildren {
-  ApiSessionsSessionIdStreamRoute: typeof ApiSessionsSessionIdStreamRoute
-}
-
-const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
-  ApiSessionsSessionIdStreamRoute: ApiSessionsSessionIdStreamRoute,
-}
-
-const ApiSessionsSessionIdRouteWithChildren =
-  ApiSessionsSessionIdRoute._addFileChildren(ApiSessionsSessionIdRouteChildren)
-
-interface ApiSessionsRouteChildren {
-  ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
-}
-
-const ApiSessionsRouteChildren: ApiSessionsRouteChildren = {
-  ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
-}
-
-const ApiSessionsRouteWithChildren = ApiSessionsRoute._addFileChildren(
-  ApiSessionsRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -386,11 +264,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
-  ApiSessionsRoute: ApiSessionsRouteWithChildren,
   ApiStudioEmbedReadyRoute: ApiStudioEmbedReadyRoute,
   GenerateSessionIdRoute: GenerateSessionIdRoute,
-  PreviewLookupRoute: PreviewLookupRoute,
-  SessionSessionIdRoute: SessionSessionIdRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
 }
 export const routeTree = rootRouteImport

@@ -2,8 +2,8 @@ import {
   createEngineWorkspacePath,
   prepareEngineWorkspace,
   readEngineWorkspaceArtifacts,
-} from '@/features/generation/server/engine-workspace'
-import type { EngineWorkspaceArtifacts, EngineWorkspaceTask } from '@/features/generation/server/engine-workspace'
+} from './engine-workspace'
+import type { EngineWorkspaceArtifacts, EngineWorkspaceTask } from './engine-workspace'
 
 export type ShipFastEngineSessionEvent =
   | { type: 'log'; message: string }
@@ -48,39 +48,55 @@ export type ShipFastEngineAdapterOptions = {
   runAll: RunShipFastEngine
   workspaceRoot: string
   now?: () => number
+  onEvent?: (
+    event: ShipFastEngineSessionEvent,
+    context: { sessionId: string; prompt: string; workspace: string },
+  ) => void | Promise<void>
 }
 
 const createSessionContext = (
   sessionId: string,
-  events: ShipFastEngineSessionEvent[],
+  emit: (event: ShipFastEngineSessionEvent) => void,
 ): ShipFastEngineSessionContext => ({
   id: sessionId,
-  broadcast: (payload) => events.push({ type: 'broadcast', payload }),
-  setPrompt: (message) => events.push({ type: 'log', message }),
-  setTasks: (tasks) => events.push({ type: 'tasks', tasks }),
-  updateTask: (task) => events.push({ type: 'task', task }),
-  signalHomepageReady: () => events.push({ type: 'preview_ready' }),
-  signalOpenuiReady: () => events.push({ type: 'openui_ready' }),
-  setElapsed: (elapsed) => events.push({ type: 'status', message: String(elapsed), phase: 'elapsed' }),
-  setCost: (cost) => events.push({ type: 'status', message: String(cost), phase: 'cost' }),
+  broadcast: (payload) => emit({ type: 'broadcast', payload }),
+  setPrompt: (message) => emit({ type: 'log', message }),
+  setTasks: (tasks) => emit({ type: 'tasks', tasks }),
+  updateTask: (task) => emit({ type: 'task', task }),
+  signalHomepageReady: () => emit({ type: 'preview_ready' }),
+  signalOpenuiReady: () => emit({ type: 'openui_ready' }),
+  setElapsed: (elapsed) => emit({ type: 'status', message: String(elapsed), phase: 'elapsed' }),
+  setCost: (cost) => emit({ type: 'status', message: String(cost), phase: 'cost' }),
 })
 
 export const createShipFastEngineAdapter = ({
   runAll,
   workspaceRoot,
   now = Date.now,
+  onEvent,
 }: ShipFastEngineAdapterOptions) => ({
   generate: async ({ sessionId, prompt }: ShipFastEngineAdapterInput): Promise<ShipFastEngineAdapterResult> => {
     const startedAt = now()
     const events: ShipFastEngineSessionEvent[] = []
+    const pendingEventWrites: Promise<void>[] = []
     const workspace = createEngineWorkspacePath(workspaceRoot, sessionId)
+    const emit = (event: ShipFastEngineSessionEvent) => {
+      events.push(event)
+
+      if (onEvent) {
+        pendingEventWrites.push(
+          Promise.resolve(onEvent(event, { sessionId, prompt, workspace })).catch(() => undefined),
+        )
+      }
+    }
 
     prepareEngineWorkspace(workspace)
     await runAll({
       prompt,
       workspace,
-      sessionCtx: createSessionContext(sessionId, events),
+      sessionCtx: createSessionContext(sessionId, emit),
     })
+    await Promise.all(pendingEventWrites)
 
     return {
       ...readEngineWorkspaceArtifacts(workspace),

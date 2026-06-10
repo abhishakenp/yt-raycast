@@ -5,7 +5,7 @@ type WarpController = {
   stop: () => void
 }
 
-export function useWarpCanvas(canvasRef: React.RefObject<HTMLCanvasElement>) {
+export function useWarpCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const controllerRef = useRef<WarpController | null>(null)
 
   useEffect(() => {

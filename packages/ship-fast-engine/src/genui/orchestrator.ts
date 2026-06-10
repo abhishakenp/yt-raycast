@@ -3,8 +3,8 @@ import { formatLlmFailureMessage, generateText, isHardLlmFailure } from "../gene
 import { pageSystemPrompt, componentCatalog } from "./prompt.ts"
 import { stripFences } from "./parser.ts"
 import { DEFAULT_MODEL } from "./model-list.ts"
-import { BLOCK_TAXONOMY, pickBlock, componentNames } from "@ship-fast/blocks"
-import { THEME_CATALOG, isKnownTheme, pickRandomTheme } from "@ship-fast/blocks"
+import { BLOCK_TAXONOMY, pickBlock } from "../../../ship-fast-blocks/src/registry/taxonomy.ts"
+import { THEME_CATALOG, isKnownTheme, pickRandomTheme } from "../../../ship-fast-blocks/src/theme-apply.ts"
 import type { ClonedPage, ClonedSection, ExtractedTokens } from "../clone/types.ts"
 import { generateFallbackSection } from "../clone/fallback.ts"
 import { validateOpenUISource } from "../pipeline/openui-validate.js"
@@ -41,8 +41,6 @@ export type GenUIEvent =
 const MAX_PARALLEL = 8
 const SUBTREE_TIMEOUT_MS = 60_000
 const SUBTREE_RETRIES = 4
-/** Programs shorter than this are almost always block-default stubs, not real LLM output. */
-const STUB_PROGRAM_MAX_CHARS = 900
 
 // Randomness, the same way generate.ts does it (Math.random). A factory so the
 // pseudo-random source is named + swappable without touching call sites.
@@ -636,10 +634,7 @@ const PRIMITIVE_SPINE = [
   "Stack", "Grid", "Box", "Section", "Spacer", "Heading", "Text",
   "Button", "Card", "Badge", "Tabs", "Separator", "Image",
 ] as const
-const LIBRARY_COMPONENT_NAMES = new Set<string>(componentNames)
-const ALLOWED_COMPONENT_NAMES = new Set<string>(
-  PRIMITIVE_SPINE.filter((name) => LIBRARY_COMPONENT_NAMES.has(name)),
-)
+const ALLOWED_COMPONENT_NAMES = new Set<string>(PRIMITIVE_SPINE)
 
 // A section program must define EXACTLY `section_${kind}_${index}` and may
 // reference ONLY the primitive spine. We probe it by wrapping the defined var in

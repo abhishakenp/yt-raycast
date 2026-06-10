@@ -250,7 +250,7 @@ export const AboutKimiPage = defineComponent({
             bio: "Turns user interviews into product insights. Advocate for inclusive research practices.",
           },
         ]
-    const teamMembers = props.team?.members?.length
+    const teamMembers: Array<{ name: string; role: string; bio: string; imageAlt?: string }> = props.team?.members?.length
       ? props.team.members
           .filter((member): member is NonNullable<typeof member> => Boolean(member))
           .map((member, index) => ({

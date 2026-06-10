@@ -10,7 +10,7 @@ export const SAMPLE_PROMPTS = [
   ...INDIAN_SAMPLE_PROMPTS,
 ]
 
-/** First N entries used for local dev (`homepage.ts` keyboard shortcuts + glass chip bar). */
+/** First N entries used for local dev prompt quick-picks. */
 export const LOCAL_DEV_PROMPT_QUICK_PICK_COUNT = 4
 
 export const LOCAL_DEV_PROMPT_SHORTCUTS = [

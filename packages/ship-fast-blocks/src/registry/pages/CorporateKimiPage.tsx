@@ -199,7 +199,10 @@ export const CorporateKimiPage = defineComponent({
       if (!Array.isArray(value)) return fallback
       return value.filter((item): item is T => {
         if (!isRecord(item)) return false
-        return requiredKeys.every((key) => typeof item[key] === 'string' && String(item[key]).trim().length > 0)
+        return requiredKeys.every((key) => {
+          const value = item[String(key)]
+          return typeof value === 'string' && value.trim().length > 0
+        })
       })
     }
 

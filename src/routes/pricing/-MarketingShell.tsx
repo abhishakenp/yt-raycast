@@ -1,17 +1,10 @@
-import { glassPillAnchorHtml, glassPillButtonHtml, glassPillSvgDefs } from '@/lib/glass-pill-html'
+import { glassPillAnchorHtml, glassPillSvgDefs } from '@/lib/glass-pill-html'
 import { useEffect } from 'react'
+import { LaunchBackdrop } from '@/components/launch-backdrop'
 import styles from './MarketingShell.module.css'
 
 const topActionsRightHtml = `<div class="top-actions-right">
       ${glassPillAnchorHtml({ className: 'pill--top-actions', href: '/pricing', html: 'Pricing' })}
-      <div class="top-actions-auth-slot">
-        ${glassPillButtonHtml({ className: 'pill--top-actions', id: 'signin-btn', html: 'Sign in' })}
-        ${glassPillButtonHtml({
-          className: 'pill--top-actions',
-          id: 'signout-btn',
-          html: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign out',
-        })}
-      </div>
     </div>`
 
 export const MarketingShell = ({
@@ -25,19 +18,6 @@ export const MarketingShell = ({
     if (typeof window === 'undefined') return
     document.body.classList.add('sf-marketing-page')
 
-    void import('@/scripts/launch-backdrop').catch(() => {
-      // Non-critical page atmosphere.
-    })
-
-    const scriptId = 'sf-marketing-top-actions-auth'
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement('script')
-      script.id = scriptId
-      script.type = 'module'
-      script.src = '/scripts/top-actions-auth.js'
-      document.head.appendChild(script)
-    }
-
     return () => {
       document.body.classList.remove('sf-marketing-page')
     }
@@ -46,9 +26,7 @@ export const MarketingShell = ({
   return (
     <>
       <div dangerouslySetInnerHTML={{ __html: glassPillSvgDefs() }} />
-      <div className="global-launch-backdrop" aria-hidden="true">
-        <canvas className="global-launch-backdrop__canvas" />
-      </div>
+      <LaunchBackdrop />
       <nav className="top-actions" aria-label="Primary" dangerouslySetInnerHTML={{ __html: topActionsRightHtml }} />
       <div className={styles.logoBlock}>
         <a href="/" className={styles.logo} aria-label="SHIP FAST home">

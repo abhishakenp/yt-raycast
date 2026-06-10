@@ -34,10 +34,7 @@ const DirectPreview = forwardRef<
   }, [themeStyles, isDark, root])
 
   return (
-    <div
-      ref={root}
-      className="genui-preview size-full bg-background overflow-auto"
-    >
+    <div ref={root} className="genui-preview size-full bg-background overflow-auto">
       {children}
     </div>
   )

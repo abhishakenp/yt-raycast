@@ -132,7 +132,7 @@ export default function OpenUIViewer({
       alignSelf: 'stretch',
       width: '100%',
       minWidth: 0,
-      minHeight: '100dvh',
+      minHeight: 0,
       height: '100%',
       borderRadius: 0,
       overflow: 'hidden',

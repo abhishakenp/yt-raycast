@@ -6,7 +6,7 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 export const useAgentationController = (sessionId: string) => {
-  const createAnnotation = useMutation(api.sessions.createAnnotation)
+  const createAnnotation = useMutation(api.sessions['createAnnotation'])
   const deleteAnnotation = useMutation(api.sessions.deleteAnnotation)
   const annotations = useQuery(api.sessions.listAnnotations, { sessionId: sessionId as Id<'sessions'> })
   const [annotationError, setAnnotationError] = useState<string>()

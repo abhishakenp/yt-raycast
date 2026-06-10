@@ -60,7 +60,7 @@ function Badge({
   );
 
   return (
-    <div className={cn("relative inline-flex items-stretch", containerClasses)}>
+    <div className={cn("relative inline-flex items-stretch", ...containerClasses)}>
       <ShadcnBadge
         {...props}
         className={cn(
@@ -68,7 +68,7 @@ function Badge({
           "rounded-none",
           "w-full",
           font !== "normal" && "retro",
-          visualClasses
+          ...visualClasses
         )}
         variant={variant}
       >
@@ -80,7 +80,7 @@ function Badge({
         className={cn(
           "-left-1.5 absolute inset-y-[4px] w-1.5",
           color,
-          visualClasses
+          ...visualClasses
         )}
       />
       {/* Right pixel bar */}
@@ -88,7 +88,7 @@ function Badge({
         className={cn(
           "-right-1.5 absolute inset-y-[4px] w-1.5",
           color,
-          visualClasses
+          ...visualClasses
         )}
       />
     </div>

@@ -11,6 +11,7 @@ import { slug } from './workspace.js'
 const HOME_OPENUI_FILE = 'home.openui'
 const OPENUI_PAGES_DIR = 'pages'
 const OPENUI_MANIFEST_FILE = 'openui-manifest.json'
+type OpenUIRenderResult = { html: string; cssVars?: string }
 
 function upsertManifest(workspace: string, route: string, title: string, file: string) {
   const manifestPath = join(workspace, OPENUI_MANIFEST_FILE)
@@ -147,9 +148,13 @@ export async function generateAndWriteOpenUIHome(p: {
     }
     
     // Server-side render OpenUI to HTML before sending to client
-    const currentTheme = themeName || specThemeName || 'modern-minimal'
     const currentLocale = forcedLocale || localeName || 'en'
-    const { html } = renderOpenUIToHTMLWithTheme(accumulated, null, currentLocale, null)
+    const { html } = renderOpenUIToHTMLWithTheme(
+      accumulated,
+      undefined,
+      currentLocale,
+      undefined,
+    ) as OpenUIRenderResult
     
     ctx?.broadcast?.({ type: 'openui_stream_chunk', route, html: html, source: accumulated })
   }
@@ -187,7 +192,12 @@ export async function generateAndWriteOpenUIHome(p: {
   const ms = Date.now() - startedAt
 
   // Server-side render final HTML
-  const { html: finalHtml, cssVars: themeCssVars } = renderOpenUIToHTMLWithTheme(source, null, locale, null)
+  const { html: finalHtml, cssVars: themeCssVars } = renderOpenUIToHTMLWithTheme(
+    source,
+    undefined,
+    locale,
+    undefined,
+  ) as OpenUIRenderResult
   
   ctx?.broadcast?.({ 
     type: 'openui_stream_done', 
@@ -227,7 +237,6 @@ export async function generateAndWriteOpenUIPage(p: {
     return generateAndWriteOpenUIHome(p)
   }
   
-  const pagesDir = join(p.workspace, OPENUI_PAGES_DIR)
   const pageId = p.page.id || slug(p.page.title || p.page.name || 'page')
   const file = join(OPENUI_PAGES_DIR, `${pageId}.openui`)
   const fullPath = join(p.workspace, file)
