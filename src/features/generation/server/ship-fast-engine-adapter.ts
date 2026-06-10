@@ -31,11 +31,13 @@ export type RunShipFastEngine = (input: {
   workspace: string
   sessionCtx: ShipFastEngineSessionContext
   integrations?: unknown
+  preferredLanguage?: string
 }) => Promise<unknown>
 
 export type ShipFastEngineAdapterInput = {
   sessionId: string
   prompt: string
+  preferredLanguage?: string
 }
 
 export type ShipFastEngineAdapterResult = EngineWorkspaceArtifacts & {
@@ -75,7 +77,11 @@ export const createShipFastEngineAdapter = ({
   now = Date.now,
   onEvent,
 }: ShipFastEngineAdapterOptions) => ({
-  generate: async ({ sessionId, prompt }: ShipFastEngineAdapterInput): Promise<ShipFastEngineAdapterResult> => {
+  generate: async ({
+    sessionId,
+    prompt,
+    preferredLanguage,
+  }: ShipFastEngineAdapterInput): Promise<ShipFastEngineAdapterResult> => {
     const startedAt = now()
     const events: ShipFastEngineSessionEvent[] = []
     const pendingEventWrites: Promise<void>[] = []
@@ -95,6 +101,7 @@ export const createShipFastEngineAdapter = ({
       prompt,
       workspace,
       sessionCtx: createSessionContext(sessionId, emit),
+      preferredLanguage,
     })
     await Promise.all(pendingEventWrites)
 

@@ -9,7 +9,9 @@ const createTempRoot = (): string => mkdtempSync(join(tmpdir(), 'ship-fast-v2-ad
 
 describe('ship fast engine adapter', () => {
   it('runs the engine in an isolated workspace and returns generated artifacts', async () => {
-    const runAll: RunShipFastEngine = async ({ prompt, workspace, sessionCtx }) => {
+    const seenLanguages: Array<string | undefined> = []
+    const runAll: RunShipFastEngine = async ({ prompt, workspace, sessionCtx, preferredLanguage }) => {
+      seenLanguages.push(preferredLanguage)
       mkdirSync(workspace, { recursive: true })
       sessionCtx.setPrompt(prompt)
       sessionCtx.setTasks([{ id: 'home.openui', label: 'Generate Home page', status: 'PENDING' }])
@@ -39,8 +41,10 @@ describe('ship fast engine adapter', () => {
     const result = await adapter.generate({
       sessionId: 'Session 123 / Demo!',
       prompt: 'Landing page for a billing tool',
+      preferredLanguage: 'fr',
     })
 
+    expect(seenLanguages).toEqual(['fr'])
     expect(result.workspace).toMatch(/session-123-demo$/)
     expect(result.html).toContain('<h1>Generated</h1>')
     expect(result.siteSpecJson).toBe('{"brand":"Generated"}')

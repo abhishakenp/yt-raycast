@@ -1,6 +1,11 @@
 import { franc } from 'franc-min'
 import { preferMixedEnglishBcp47FromSnippet } from './mixed-english-hints'
 import { PROMPT_LANG_DETECT_SNIPPET_MAX, SUBMIT_BTN_DEFAULT_LABEL } from './constants'
+import {
+  KNOWN_LANGUAGES,
+  preferIndicBcp47FromRomanizedPrompt,
+  preferRomanizedBcp47FromSnippet,
+} from '../../config/languages.js'
 
 export const FRANC_ISO639_3_TO_BCP47: Record<string, string> = {
   eng: 'en',
@@ -304,12 +309,40 @@ export const getLogoTaglineText = (bcp47: string) => {
   return (base && SHIPFAST_TAGLINE_BY_LANG[base]) || ''
 }
 
+const detectExplicitLanguageKeyword = (text: string) => {
+  const lower = String(text || '').toLowerCase()
+  const ordered = [...KNOWN_LANGUAGES].sort(
+    (a, b) =>
+      Math.max(...b.keywords.map((k: string) => k.length), b.name.length) -
+      Math.max(...a.keywords.map((k: string) => k.length), a.name.length),
+  )
+  for (const language of ordered) {
+    const keywords = [language.code, language.name, ...language.keywords]
+    for (const keyword of keywords) {
+      const value = keyword.toLowerCase()
+      if (/^[a-z0-9-]+$/.test(value)) {
+        const pattern = new RegExp(`(^|\\b)${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\b|$)`)
+        if (pattern.test(lower)) return language.code
+      } else if (lower.includes(value)) {
+        return language.code
+      }
+    }
+  }
+  return null
+}
+
 export const detectSnippetLanguageBcp47 = async (fullText: string) => {
   const snippet = String(fullText || '').slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX)
   const frenchFirst = preferFrenchCode3ForPrompt(snippet, 'und')
   if (frenchFirst === 'fra') return 'fr'
+  const fromRomanizedHint = preferRomanizedBcp47FromSnippet(fullText)
+  if (fromRomanizedHint) return fromRomanizedHint
   const fromMixedHint = preferMixedEnglishBcp47FromSnippet(fullText)
   if (fromMixedHint) return fromMixedHint
+  const explicit = detectExplicitLanguageKeyword(fullText)
+  if (explicit) return explicit
+  const fromRomanizedPrompt = preferIndicBcp47FromRomanizedPrompt(fullText)
+  if (fromRomanizedPrompt) return fromRomanizedPrompt
   let code3: string
   try {
     code3 = franc(snippet, { minLength: 10 }) || 'und'

@@ -2,6 +2,17 @@ import { describe, expect, it } from 'vitest'
 import { detectSnippetLanguageBcp47 } from './prompt-language-core'
 
 describe('detectSnippetLanguageBcp47', () => {
+  const romanizedMalayalamBrief =
+    'oru marketing compny de website undaakuka, athil services list, client success stories, blog section okke include cheyyuka; target audience small business owners aanu, design sleek, colors brandine reflect cheyyunna professional tone with clear CTA buttons.'
+
+  it('detects short explicit language requests', async () => {
+    await expect(detectSnippetLanguageBcp47('Build a Hindi website')).resolves.toBe('hi')
+  })
+
+  it('detects romanized Malayalam website briefs as Malayalam', async () => {
+    await expect(detectSnippetLanguageBcp47(romanizedMalayalamBrief)).resolves.toBe('ml')
+  })
+
   it('detects short French prompts with accents as French', async () => {
     await expect(
       detectSnippetLanguageBcp47('Créer un site moderne pour une boutique française.'),
