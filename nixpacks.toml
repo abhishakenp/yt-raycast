@@ -4,5 +4,8 @@ nixPkgs = ["nodejs_20", "bun"]
 [phases.install]
 cmds = ["bun install --no-save"]
 
+[phases.build]
+cmds = ["NODE_ENV=production bun run build"]
+
 [start]
-cmd = "bun src/index.js"
+cmd = "NODE_ENV=production bun .output/server/index.mjs"

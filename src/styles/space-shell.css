@@ -243,7 +243,19 @@ select {
   color: var(--text-primary);
 }
 
-.top-action-link {
+.top-actions-auth-slot {
+  position: relative;
+  display: grid;
+  grid-template-columns: max-content;
+  align-items: center;
+  justify-items: end;
+  min-height: 36px;
+  flex-shrink: 0;
+}
+
+.top-action-link,
+#signout-btn,
+#signin-btn {
   position: relative;
   display: inline-flex;
   align-items: center;

@@ -2,7 +2,7 @@ import styles from './IntroLoader.module.css'
 
 export function IntroLogo({ logoClass }: { logoClass: 'hidden' | 'visible' | 'shaking' | 'settled' }) {
   const className = [styles.logo]
-  if (logoClass === 'visible') className.push(styles.visible)
+  if (logoClass !== 'hidden') className.push(styles.visible)
   if (logoClass === 'shaking') className.push(styles.shaking)
   if (logoClass === 'settled') className.push(styles.settled)
 
@@ -28,7 +28,7 @@ export function IntroLogo({ logoClass }: { logoClass: 'hidden' | 'visible' | 'sh
           </defs>
         </svg>
       </div>
-      <span className={styles.logoText}>SHIP NOW</span>
+      <span className={styles.logoText}>SHIP FAST</span>
     </div>
   )
 }

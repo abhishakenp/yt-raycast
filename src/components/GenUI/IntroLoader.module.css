@@ -374,6 +374,43 @@
     font-weight 1.25s cubic-bezier(0.33, 1, 0.25, 1);
 }
 
+.logStack {
+  position: absolute;
+  right: clamp(20px, 4vw, 56px);
+  bottom: clamp(72px, 10vh, 118px);
+  z-index: 3;
+  display: grid;
+  gap: 8px;
+  width: min(420px, calc(100vw - 40px));
+  pointer-events: none;
+}
+
+.logLine {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid rgba(104, 222, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(5, 8, 20, 0.54);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(14px);
+}
+
+.logLine span {
+  color: rgba(105, 248, 255, 0.74);
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.logLine p {
+  margin: 0;
+  color: rgba(237, 237, 239, 0.84);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .phaseLabel.visible {
   opacity: 1;
   bottom: 32px;
