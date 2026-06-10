@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "generatedAt": "2026-06-09T14:55:38.441Z",
+  "home": "home.openui",
+  "pages": [
+    {
+      "route": "/",
+      "title": "Home",
+      "file": "home.openui",
+      "ready": true
+    }
+  ]
+}

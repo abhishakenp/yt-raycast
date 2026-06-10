@@ -1,0 +1,13 @@
+{
+  "tasks": [
+    {
+      "id": "home.openui",
+      "label": "Generate Home page",
+      "status": "FAILED",
+      "filename": "home.openui",
+      "files": [
+        "home.openui"
+      ]
+    }
+  ]
+}

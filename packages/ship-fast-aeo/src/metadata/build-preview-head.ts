@@ -33,13 +33,10 @@ export function buildPreviewSeoHead(siteSpec: SiteSpecLike | null | undefined, b
     ...homePage,
     seo: {
       ...(homePage.seo || {}),
-      noIndex: true,
       title: homePage.seo?.title || `${brand} - Preview`,
     },
   })
 
   const structuredData = buildStructuredData(enriched, homePage)
-  return renderSeoHeadMarkup(seo, serializeStructuredData(structuredData), {
-    includeLlmsTxtLink: false,
-  }).markup
+  return renderSeoHeadMarkup(seo, serializeStructuredData(structuredData)).markup
 }
