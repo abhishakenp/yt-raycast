@@ -1,110 +1,120 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, SearchIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
+import { Kbd } from '@/components/ui/kbd'
+
+import {
+  GalleryCategoryTabs,
+  GalleryGrid,
+  GalleryPagination,
+  type GalleryCategory,
+} from './PublicGallery'
 import { useGalleryController } from '../hooks/useGalleryController'
 
-type GallerySession = {
-  sessionId: string
-  prompt?: string
-  status?: string
-  previewVersion?: number
-  createdAt?: number
-  elapsed?: number
-}
-
-const getPreviewWords = (prompt?: string) =>
-  (prompt ?? 'Generated website')
-    .replace(/[^\w\s-]/g, ' ')
-    .split(/\s+/)
-    .filter((word) => word.length > 2)
-    .slice(0, 7)
-
-const StaticPreview = ({ session }: { session: GallerySession }) => {
-  const words = getPreviewWords(session.prompt)
-  const title = words.slice(0, 3).join(' ') || 'Generated site'
-
-  return (
-    <div className="relative aspect-[16/10] overflow-hidden rounded-t-[8px] border-b border-white/10 bg-[#050816]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(34,211,238,0.22),transparent_32%),radial-gradient(circle_at_78%_22%,rgba(168,85,247,0.24),transparent_36%),linear-gradient(135deg,#050816_0%,#0f172a_58%,#111827_100%)]" />
-      <div className="absolute inset-x-5 top-4 flex items-center justify-between gap-3">
-        <div className="h-2 w-24 rounded-full bg-white/18" />
-        <div className="flex gap-1.5">
-          <span className="size-2 rounded-full bg-cyan-300/70" />
-          <span className="size-2 rounded-full bg-violet-300/70" />
-          <span className="size-2 rounded-full bg-white/40" />
-        </div>
-      </div>
-      <div className="absolute left-5 top-12 max-w-[70%]">
-        <p className="mb-2 font-mono text-[9px] uppercase tracking-[0.18em] text-cyan-200/75">
-          {session.status?.replaceAll('_', ' ') ?? 'ready'}
-        </p>
-        <h2 className="line-clamp-2 text-xl font-bold leading-tight tracking-normal text-white">{title}</h2>
-      </div>
-      <div className="absolute bottom-4 left-5 right-5 grid grid-cols-3 gap-2">
-        {words.slice(3, 6).map((word) => (
-          <span key={word} className="h-8 rounded-md border border-white/10 bg-white/[0.06] px-2 py-2 text-[10px] text-white/60">
-            {word}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
+const PAGE_SIZE = 12
 
 export const GalleryPage = () => {
-  const { sessions } = useGalleryController(48)
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState<GalleryCategory>('all')
+  const [page, setPage] = useState(1)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const { gallery } = useGalleryController({
+    category: category === 'all' ? '' : category,
+    limit: PAGE_SIZE,
+    page,
+    search,
+  })
+
+  const handleCategoryChange = (nextCategory: GalleryCategory) => {
+    setCategory(nextCategory)
+    setPage(1)
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <main className="min-h-screen bg-[#030511] text-slate-100">
       <div className="flex min-h-screen flex-col">
-        <header className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-          <div className="flex items-center gap-3">
-            <Link
-              className="grid size-9 place-items-center rounded-[8px] border border-white/10 bg-white/[0.06] text-slate-200"
-              to="/"
-            >
-              <ArrowLeft className="size-4" />
-            </Link>
-            <div>
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">Gallery</p>
-              <h1 className="text-lg font-bold tracking-normal">Public Sessions</h1>
+        <header className="sticky top-0 z-20 border-b border-white/10 bg-[#030511]/88 px-4 py-3 backdrop-blur-xl md:px-5">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <Link
+                className="grid size-9 shrink-0 place-items-center rounded-[8px] border border-white/10 bg-white/[0.06] text-slate-200"
+                to="/"
+                aria-label="Back to home"
+              >
+                <ArrowLeft className="size-4" />
+              </Link>
+              <div className="min-w-0">
+                <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">Gallery</p>
+                <h1 className="truncate text-lg font-bold tracking-normal">Public Sessions</h1>
+              </div>
             </div>
+
+            <InputGroup className="h-10 max-w-xl border-white/10 bg-white/[0.055] text-white shadow-[0_12px_42px_rgba(0,0,0,0.18)] focus-within:border-white/10 focus-within:ring-0 has-[[data-slot=input-group-control]:focus-visible]:!border-white/10 has-[[data-slot=input-group-control]:focus-visible]:!ring-0">
+              <InputGroupAddon>
+                <SearchIcon className="text-white/45" />
+              </InputGroupAddon>
+              <InputGroupInput
+                ref={searchInputRef}
+                className="placeholder:text-white/35 focus-visible:!border-transparent focus-visible:!outline-none focus-visible:!ring-0"
+                placeholder="Search prompts, categories, sessions..."
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.currentTarget.value)
+                  setPage(1)
+                }}
+              />
+              <InputGroupAddon align="inline-end" className="hidden sm:flex">
+                <Kbd className="border-white/10 bg-white/[0.07] text-white/45">⌘K</Kbd>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
         </header>
 
-        <section className="p-6">
-          <div className="mx-auto max-w-6xl">
-            {sessions && sessions.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {(sessions as GallerySession[]).map((session) => (
-                  <Link
-                    className="block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.06] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.08]"
-                    key={session.sessionId}
-                    to="/generate/$sessionId"
-                    params={{ sessionId: session.sessionId }}
-                  >
-                    <StaticPreview session={session} />
-                    <div className="p-4">
-                      <div className="mb-3 flex items-center gap-2">
-                        <Sparkles className="size-4 text-cyan-200" />
-                        <span className="text-xs font-semibold uppercase text-slate-400">
-                          {session.status?.replaceAll('_', ' ') ?? 'ready'}
-                        </span>
-                        {typeof session.elapsed === 'number' ? (
-                          <span className="ml-auto text-xs text-slate-500">{Math.round(session.elapsed)}s</span>
-                        ) : null}
-                      </div>
-                      <p className="mb-2 line-clamp-2 text-sm text-slate-200">{session.prompt}</p>
-                      <p className="text-xs text-slate-500">v{session.previewVersion ?? 0}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="flex min-h-[50vh] items-center justify-center">
-                <p className="text-slate-400">No public sessions yet. Generate one to see it here!</p>
-              </div>
-            )}
+        <section className="px-4 py-6 md:px-6">
+          <div className="mx-auto flex max-w-7xl flex-col gap-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <GalleryCategoryTabs
+                category={category}
+                categories={gallery?.availableCategories}
+                onChange={handleCategoryChange}
+              />
+              {gallery === undefined ? (
+                <span className="h-4 w-24 animate-pulse rounded-full bg-white/10" />
+              ) : (
+                <p className="text-sm text-white/45">{gallery.total} previews</p>
+              )}
+            </div>
+
+            <GalleryGrid
+              gallery={gallery}
+              skeletonCount={PAGE_SIZE}
+            />
+
+            {gallery !== undefined ? (
+              <GalleryPagination
+                hasNext={gallery.hasNext}
+                hasPrev={gallery.hasPrev}
+                onNext={() => setPage((currentPage) => Math.min(currentPage + 1, gallery.totalPages))}
+                onPrev={() => setPage((currentPage) => Math.max(currentPage - 1, 1))}
+                page={gallery.page}
+                totalPages={gallery.totalPages}
+              />
+            ) : null}
           </div>
         </section>
       </div>

@@ -7,10 +7,32 @@ import { internalAction } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
 import type { ActionCtx } from './_generated/server'
 import { runHomepageOrchestrator } from '../packages/ship-fast-engine/src/genui/run.ts'
+import { renderOpenUIToHTMLWithTheme } from '../packages/ship-fast-engine/src/openui-ssr.js'
 import type { GenUIEvent } from '../packages/ship-fast-engine/src/genui/orchestrator.ts'
 import type { EngineWorkspaceTask } from '../src/features/generation/server/engine-workspace'
 
 const internalFunctions = internal as any
+
+const renderStaticPreviewHtml = (source: string, locale: string): string => {
+  const { html, cssVars } = renderOpenUIToHTMLWithTheme(source, null, locale, null)
+
+  return `<!doctype html>
+<html lang="${locale}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/scripts/tailwind-browser.js"></script>
+  <style>
+    #openui-root {
+      ${cssVars || ''}
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-background text-foreground">
+  <div id="openui-root">${html}</div>
+</body>
+</html>`
+}
 
 const eventMessage = (event: GenUIEvent): string | undefined => {
   switch (event.type) {
@@ -137,10 +159,11 @@ export const startGeneration = internalAction({
           home: result.source,
         },
       }
+      const staticPreviewHtml = renderStaticPreviewHtml(result.source, result.locale ?? session.preferredLanguage ?? 'en')
       await ctx.runMutation(internalFunctions.sessions.completeGeneration, {
         sessionId: args.sessionId,
         anonymousOwnerSecret: args.anonymousOwnerSecret,
-        html: '<!doctype html><html><body><div id="ship-fast-generated-module"></div></body></html>',
+        html: staticPreviewHtml,
         siteSpecJson: JSON.stringify(siteSpec),
         openUiSource: result.source,
         tasks: [completedTask],
