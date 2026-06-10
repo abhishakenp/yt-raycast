@@ -749,6 +749,7 @@ export function renderReactProject(siteSpec, session) {
     <meta name="twitter:card" content="${escapeHtml(homeSeo.ogImage ? homeSeo.twitterCard : 'summary')}" />
     <meta name="twitter:title" content="${escapeHtml(homeSeo.title)}" />
     <meta name="twitter:description" content="${escapeHtml(homeSeo.description)}" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />
     ${homeStructuredData.length ? `<script type="application/ld+json">${serializeStructuredData(homeStructuredData)}</script>` : ''}
   </head>
   <body>

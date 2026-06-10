@@ -1,0 +1,14 @@
+{
+  "preferredExportTarget": "html",
+  "preferredLanguage": "en",
+  "isPrivate": false,
+  "generationStatus": "done",
+  "sanityConfig": {
+    "projectId": "4psv23nu",
+    "dataset": "production",
+    "apiVersion": "2024-01-01",
+    "readToken": "sk0Bh658LCiquX7CSIGmfEQBWf2i9pDnNBbMu7DS6qM99GRoZXmDLILOj4bcJ4TIsZSGoJXQ3qOcBOAHBRuYE9jDewIrVHf7ZORLGSoxmNLLcZ4g9kLtOrt43d13QMpVs59oTGdgy283YapX1QOSy78kCJs6DXJvEyye1gdqmMWD6C6A3OA9",
+    "writeToken": "skWXPwkmNC3i3q91eeVSon87t7cbAcc7WJyGfBxCcOkSZCVU23c3v1CBehuem5qo9TYI7KdBUPxJvDDSkb05jG1D9ZsQYQrf02xuniaxt3MZYzHMgWfBycG7cQrp9UR7W5OFsaQqeGefF9npiQAGCldUqbIkqIkRZfwEtaPLWgMOEd6AAAfw",
+    "provisionedAt": "2026-06-09T14:09:45.201Z"
+  }
+}

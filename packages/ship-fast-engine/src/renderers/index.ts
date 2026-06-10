@@ -8,6 +8,10 @@ import type { ExtractedTokens } from '../clone/types.ts'
 import { looksSerif } from '../clone/tokens.ts'
 // @ts-ignore - JS module without type definitions
 import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
+// @ts-ignore - JS module without type definitions
+import { renderGeneratedSiteLlmsTxt } from './llms-txt.js'
+// @ts-ignore - JS module without type definitions
+import { renderRobotsTxt, renderSitemapXml } from './seo.js'
 
 const HOME_OPENUI_FILE = 'home.openui'
 const TAILWIND_BROWSER_SCRIPT_RELATIVE = 'scripts/tailwind-browser.js'
@@ -441,6 +445,50 @@ function readSiteSpecJson(workspace: string): Record<string, unknown> | null {
   }
 }
 
+function normalizeSessionAeoSpec(siteSpec: any, brand: string, tagline = '') {
+  const base = siteSpec && typeof siteSpec === 'object' ? siteSpec : {}
+  const projectName = base.projectName || base.seo?.siteName || base.brand || brand || 'Generated Site'
+  const description = base.seo?.description || base.tagline || tagline || `${projectName} preview`
+  const pages =
+    Array.isArray(base.pages) && base.pages.length
+      ? base.pages
+      : [
+          {
+            id: 'home',
+            route: '/',
+            title: projectName,
+            description,
+            seo: {
+              title: `${projectName} - Preview`,
+              description,
+              canonicalPath: '/',
+            },
+          },
+        ]
+
+  return {
+    ...base,
+    projectName,
+    seo: {
+      ...(base.seo || {}),
+      siteName: base.seo?.siteName || projectName,
+      description,
+    },
+    pages,
+  }
+}
+
+function buildSessionAeoFiles(siteSpec: any, brand: string, tagline = '') {
+  const aeoSpec = normalizeSessionAeoSpec(siteSpec, brand, tagline)
+  const files: Record<string, string> = {
+    'llms.txt': renderGeneratedSiteLlmsTxt(aeoSpec),
+    'robots.txt': renderRobotsTxt(aeoSpec),
+  }
+  const sitemapXml = renderSitemapXml(aeoSpec)
+  if (sitemapXml) files['sitemap.xml'] = sitemapXml
+  return files
+}
+
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -561,16 +609,16 @@ export function renderProject(siteSpec: SiteSpecProject, target: string, session
   const moduleNames = Object.keys(modules)
 
   files['site-spec.json'] = JSON.stringify(siteSpec, null, 2)
+  Object.assign(files, buildSessionAeoFiles(siteSpec, brand, tagline))
   files['README.md'] =
     `# ${brand}\n\n${tagline}\n\nThis project was generated with the **${theme}** theme.\n\n## Structure\n- Brand: ${brand}\n- Tagline: ${tagline}\n- Theme: ${theme}\n- Pages: ${moduleNames.join(', ')}\n`
 
   if (target === 'html') {
+    const previewSeoHead = buildPreviewSeoHead(siteSpec, brand, tagline)
     files['index.html'] = `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${brand} - Preview</title>
+  ${previewSeoHead}
   <script src="/scripts/tailwind-browser.js"></script>
 </head>
 <body class="min-h-screen bg-[radial-gradient(circle_at_top_left,#312e81,transparent_35%),linear-gradient(135deg,#050506,#111827_55%,#052e2b)] text-zinc-50">
@@ -710,7 +758,13 @@ ${themeHead}
   <script src="/scripts/openui-preview-client.js"></script>
 </body>
 </html>`
-  writeRenderedFiles(workspace, attachTailwindBrowserScript({ 'index.html': html }))
+  writeRenderedFiles(
+    workspace,
+    attachTailwindBrowserScript({
+      'index.html': html,
+      ...buildSessionAeoFiles(siteSpec, brand, String(siteSpec?.tagline || '')),
+    }),
+  )
 }
 
 export function writeNextAppToWorkspace(

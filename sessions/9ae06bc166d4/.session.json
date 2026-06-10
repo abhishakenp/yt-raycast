@@ -1,0 +1,14 @@
+{
+  "preferredExportTarget": "html",
+  "preferredLanguage": "en",
+  "isPrivate": false,
+  "generationStatus": "failed",
+  "sanityConfig": {
+    "projectId": "cm90zp6m",
+    "dataset": "production",
+    "apiVersion": "2024-01-01",
+    "readToken": "skQwNd7Zq4dQ8OA8wzYcdWnxZUhVg7yqXLmg1tPAJ4rJ5xYhSXvPxzq5tisi7XbBYw91BWPtR0l7QL0741qUsb0CYwkqo41fYrFl9WfXsSLq2lvBLXZiytNpHpk0joUZEytWH27FqV4uYjiB1MYaIefHnZCV09kff4BLpFlhbHChs9nWUyRe",
+    "writeToken": "skpFPFsP8k3em8p30WWn04VugkpXb9kzfKTsURUBhcTDR9CWXlfVL4gYwTROodX5VgwoMcg6HSLCJCglea7kV5wBi4zTugAi4osPwe2CmJiMFujDZpVKBik4w3cPkkhEq0h4tVbQ3xWwxN8uuH4AjhHOOcTMmFL1Ofdq9q3XLBQeaIRC9mZb",
+    "provisionedAt": "2026-06-09T14:09:45.113Z"
+  }
+}

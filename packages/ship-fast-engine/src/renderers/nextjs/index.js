@@ -2315,7 +2315,11 @@ export default nextConfig
     ? { rules: [{ userAgent: '*', allow: '/' }], sitemap: `${siteSeo.siteUrl}/sitemap.xml` }
     : { rules: [{ userAgent: '*', allow: '/' }] }
   const fontLines = buildNextLayoutFontLinkLines(siteSpec)
-  const layoutHeadBlock = fontLines.trim() ? `      <head>${fontLines}      </head>\n` : ''
+  const llmsTxtLinkLine =
+    '        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />'
+  const layoutHeadBlock = `      <head>
+${llmsTxtLinkLine}
+${fontLines.trim() ? fontLines.replace(/^\n/, '') : ''}      </head>\n`
   const layoutEcommerceImport = isEcommerce
     ? `import EcommerceClientRoot from '../components/ecommerce/EcommerceClientRoot'
 `
