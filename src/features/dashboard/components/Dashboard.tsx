@@ -1,5 +1,7 @@
 import { useQuery } from 'convex/react'
+import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
+import { Box, Crown, Download, Github, Globe2, List, Package, Palette } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -16,10 +18,45 @@ interface DashboardProps {
 type RailMode = 'tools' | 'cms' | 'commerce' | 'export'
 
 const crownIcon = (
-  <svg className="size-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M3 7l4 3 5-6 5 6 4-3-2 11H5L3 7zm3 13h12v2H6v-2z" />
-  </svg>
+  <Crown className="size-3" strokeWidth={2.2} aria-hidden="true" />
 )
+
+const railRowClass =
+  'group relative flex w-full items-center justify-between gap-2.5 overflow-hidden rounded-xl border border-white/8 bg-white/[0.04] px-3 py-[11px] text-left text-[13px] font-medium text-[#ededf0] transition-[background,border-color,transform,box-shadow] duration-150 hover:-translate-y-px hover:border-white/15 hover:bg-white/[0.075] hover:text-white'
+
+const railIconClass =
+  'grid size-[22px] shrink-0 place-items-center rounded-[7px] border border-white/8 bg-white/[0.05] text-white/72 transition-[background,border-color,color,transform] duration-150 group-hover:-translate-y-0.5 group-hover:border-white/16 group-hover:bg-white/10 group-hover:text-white'
+
+const premiumBadgeClass =
+  'grid size-5 shrink-0 place-items-center rounded-md bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)] text-[#0a0a0b] outline-none focus-visible:shadow-[0_0_0_2px_rgba(232,184,109,0.45)]'
+
+const newBadgeClass =
+  'shrink-0 rounded-md bg-cyan-300/14 px-1.5 py-[3px] font-mono text-[9px] font-bold leading-none tracking-[0.04em] text-cyan-100'
+
+const stateBadgeClass =
+  'shrink-0 rounded-md border border-white/12 bg-black/30 px-1.5 py-[3px] font-mono text-[9px] font-bold leading-none tracking-[0.04em] text-white/60'
+
+const themeStripeStyle = (
+  styles: ReturnType<typeof resolveThemeStyles>,
+  isDark: boolean,
+): CSSProperties | undefined => {
+  if (!styles) return undefined
+  const palette = styles[isDark ? 'dark' : 'light']
+  const stops = [
+    palette.primary,
+    palette.secondary,
+    palette.accent,
+    palette['chart-1'],
+    palette['chart-2'],
+    palette['chart-3'],
+  ].filter(Boolean)
+
+  if (stops.length === 0) return undefined
+
+  return {
+    background: `linear-gradient(90deg, ${stops.join(', ')})`,
+  }
+}
 
 const readSiteThemeName = (specJson: string | undefined): string | null => {
   if (!specJson) return null
@@ -49,7 +86,6 @@ export function Dashboard({ sessionId }: DashboardProps) {
   useEffect(() => {
     const reduce =
       typeof window !== 'undefined' &&
-      window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     if (reduce) {
@@ -82,6 +118,10 @@ export function Dashboard({ sessionId }: DashboardProps) {
   const aiTheme = useMemo(() => readSiteThemeName(generationView?.siteSpec?.specJson), [generationView?.siteSpec?.specJson])
   const effectiveTheme = selectedTheme ?? aiTheme
   const themeStyles = resolveThemeStyles(effectiveTheme)
+  const activeThemeStripeStyle = useMemo(
+    () => themeStripeStyle(themeStyles, isDark),
+    [themeStyles, isDark],
+  )
 
   const navigateHome = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -293,29 +333,25 @@ export function Dashboard({ sessionId }: DashboardProps) {
                 <div className={cn('flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4', railMode !== 'tools' && 'hidden')}>
                   <div className="grid gap-2">
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">Manage content</div>
-                    <button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3 text-left text-sm text-white/74 transition-colors hover:bg-white/[0.075] hover:text-white" data-rail-action="cms-studio" onClick={() => setRailMode('cms')}>
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-white" aria-hidden="true">
+                    <button type="button" className={cn(railRowClass, 'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]')} data-rail-action="cms-studio" onClick={() => setRailMode('cms')}>
+                      <span className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px" aria-hidden="true">
                         <svg viewBox="0 -10 28 32" width="30" height="32" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
                           <path d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                           <path d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z" fill="#ffffff" />
                         </svg>
                       </span>
                       <span className="min-w-0 flex-1 truncate">Edit content</span>
-                      <span className="rounded-full bg-cyan-300/14 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-100">NEW</span>
+                      <span className={newBadgeClass}>NEW</span>
                     </button>
-                    <button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3 text-left text-sm text-white/74 transition-colors hover:bg-white/[0.075] hover:text-white" data-rail-action="ecommerce" onClick={() => setRailMode('commerce')}>
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-white" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                          <path d="M3 6h18" />
-                          <path d="M16 10a4 4 0 0 1-8 0" />
-                        </svg>
+                    <button type="button" className={railRowClass} data-rail-action="ecommerce" onClick={() => setRailMode('commerce')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Package className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">E-commerce</span>
-                      <span className="rounded-full bg-cyan-300/14 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-100">
+                      <span className={newBadgeClass}>
                         {commerceConfig?.status === 'ready' ? 'READY' : 'NEW'}
                       </span>
-                      <span className="grid size-5 place-items-center rounded-full bg-amber-300/14 text-amber-200" aria-label="Pro only - upgrade to unlock" tabIndex={0}>
+                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>
                         {crownIcon}
                       </span>
                     </button>
@@ -324,83 +360,58 @@ export function Dashboard({ sessionId }: DashboardProps) {
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">Design</div>
                     <ThemePicker
                       value={effectiveTheme}
-                      isDark={isDark}
-                      onSelect={setSelectedTheme}
-                      onToggleMode={() => setIsDark((dark) => !dark)}
-                      trigger={
-                        <button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3 text-left text-sm text-white/74 transition-colors hover:bg-white/[0.075] hover:text-white" data-rail-action="palette">
-                          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-white" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                              <circle cx="13.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-                              <circle cx="17.5" cy="10.5" r="1" fill="currentColor" stroke="none" />
-                              <circle cx="8.5" cy="7.5" r="1" fill="currentColor" stroke="none" />
-                              <circle cx="6.5" cy="12.5" r="1" fill="currentColor" stroke="none" />
-                              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10a1.7 1.7 0 0 0 1.7-1.7c0-.4-.2-.8-.5-1.1-.3-.3-.5-.7-.5-1.2a1.7 1.7 0 0 1 1.7-1.7H16c3.3 0 6-2.7 6-6 0-4.4-4.5-8-10-8Z" />
-                            </svg>
+                        isDark={isDark}
+                        onSelect={setSelectedTheme}
+                        onToggleMode={() => setIsDark((dark) => !dark)}
+                        trigger={
+                        <button type="button" className={cn(railRowClass, 'pt-[15px]')} data-rail-action="palette">
+                          <span className="absolute inset-x-0 top-0 h-1 opacity-95 shadow-[0_0_18px_rgba(255,255,255,0.2)]" style={activeThemeStripeStyle} aria-hidden="true" />
+                          <span className={railIconClass} aria-hidden="true">
+                            <Palette className="size-3.5" strokeWidth={1.9} />
                           </span>
                           <span className="grid min-w-0 flex-1 gap-0.5">
                             <span className="truncate">Theme</span>
-                            <span className="truncate text-xs text-white/38">{effectiveTheme ?? 'Default'}</span>
+                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">{effectiveTheme ?? 'Default'}</span>
                           </span>
-                          <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-white/52" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                              <circle cx="13.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-                              <circle cx="17.5" cy="10.5" r="1" fill="currentColor" stroke="none" />
-                              <circle cx="8.5" cy="7.5" r="1" fill="currentColor" stroke="none" />
-                              <circle cx="6.5" cy="12.5" r="1" fill="currentColor" stroke="none" />
-                              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10a1.7 1.7 0 0 0 1.7-1.7c0-.4-.2-.8-.5-1.1-.3-.3-.5-.7-.5-1.2a1.7 1.7 0 0 1 1.7-1.7H16c3.3 0 6-2.7 6-6 0-4.4-4.5-8-10-8Z" />
-                            </svg>
+                          <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/8 bg-white/[0.04] text-white/52" aria-hidden="true">
+                            <Palette className="size-4" strokeWidth={1.8} />
                           </span>
                         </button>
                       }
                     />
-                    <button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3 text-left text-sm text-white/74 transition-colors hover:bg-white/[0.075] hover:text-white" data-rail-action="github">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-white" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-                        </svg>
+                    <button type="button" className={railRowClass} data-rail-action="github">
+                      <span className={railIconClass} aria-hidden="true">
+                        <Github className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">GitHub</span>
-                      <span className="grid size-5 place-items-center rounded-full bg-amber-300/14 text-amber-200" aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
+                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
                     </button>
-                    <button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3 text-left text-sm text-white/74 transition-colors hover:bg-white/[0.075] hover:text-white" data-rail-action="export" aria-haspopup="dialog" onClick={() => setRailMode('export')}>
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-white" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <path d="m7 10 5 5 5-5" />
-                          <path d="M12 15V3" />
-                        </svg>
+                    <button type="button" className={railRowClass} data-rail-action="export" aria-haspopup="dialog" onClick={() => setRailMode('export')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Download className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="grid min-w-0 flex-1 gap-0.5">
                         <span className="truncate">Export</span>
-                        <span className="truncate text-xs text-white/38">HTML / React / Next.js</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">HTML / React / Next.js</span>
                       </span>
-                      <span className="rounded-full bg-amber-300/14 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-200" data-state="premium">Pro only</span>
+                      <span className={cn(stateBadgeClass, 'border-transparent bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)] text-[#0a0a0b]')} data-state="premium">Pro only</span>
                     </button>
-                    <button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.04] px-3 py-3 text-left text-sm text-white/74 transition-colors hover:bg-white/[0.075] hover:text-white" data-rail-action="domain">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[0.06] text-white" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M2 12h20" />
-                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z" />
-                        </svg>
+                    <button type="button" className={railRowClass} data-rail-action="domain">
+                      <span className={railIconClass} aria-hidden="true">
+                        <Globe2 className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">Assign custom domain</span>
-                      <span className="grid size-5 place-items-center rounded-full bg-amber-300/14 text-amber-200" aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
+                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
                     </button>
                   </div>
                   <div className="grid gap-2">
                     <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">Three JS</div>
-                    <button type="button" className="flex w-full items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.025] px-3 py-3 text-left text-sm text-white/34" disabled data-rail-action="3d">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/[0.04] text-white/38" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-                          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                          <path d="m3.3 7 8.7 5 8.7-5" />
-                          <path d="M12 22V12" />
-                        </svg>
+                    <button type="button" className={cn(railRowClass, 'cursor-not-allowed bg-white/[0.025] text-white/34 opacity-55 hover:translate-y-0 hover:border-white/8 hover:bg-white/[0.025] hover:text-white/34')} disabled data-rail-action="3d">
+                      <span className={cn(railIconClass, 'text-white/38 group-hover:translate-y-0 group-hover:border-white/8 group-hover:bg-white/[0.05] group-hover:text-white/38')} aria-hidden="true">
+                        <Box className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">3D</span>
-                      <span className="rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[10px] font-bold text-white/38">SOON</span>
+                      <span className={cn(stateBadgeClass, 'bg-white/[0.06] text-white/38')}>SOON</span>
                     </button>
                   </div>
                 </div>
@@ -424,9 +435,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
                   <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black/18">
                     <div className="border-b border-white/10 p-2" id="rail-editor-tabs">
                       <button type="button" className="grid size-9 place-items-center rounded-xl bg-cyan-300/12 text-cyan-100" data-active="true" aria-label={railMode}>
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 7h16M4 12h16M4 17h10" />
-                        </svg>
+                        <List className="size-[18px]" strokeWidth={1.8} />
                       </button>
                     </div>
                     <div className="max-h-[calc(100vh-260px)] overflow-y-auto p-4" id="rail-editor-body">
@@ -447,7 +456,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
                         <div className="grid gap-4 [&_input]:mt-2 [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-white/10 [&_input]:bg-white/[0.04] [&_input]:px-3 [&_input]:py-2 [&_input]:text-sm [&_input]:text-white [&_input]:outline-none [&_label]:grid [&_label]:gap-1 [&_label]:text-xs [&_label]:font-semibold [&_label]:uppercase [&_label]:tracking-[0.08em] [&_label]:text-white/45">
                           <p className="m-0 text-sm leading-6 text-white/55">Export will use the Convex generated module source for this session.</p>
                           <label>Module<input type="text" readOnly value={homeModule?.moduleKey ?? 'home'} /></label>
-                          <label>Source bytes<input type="text" readOnly value={String(homeModule?.source?.length ?? 0)} /></label>
+                          <label>Source bytes<input type="text" readOnly value={String(homeModule?.source.length ?? 0)} /></label>
                         </div>
                       )}
                     </div>
