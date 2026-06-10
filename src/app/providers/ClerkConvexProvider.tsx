@@ -4,7 +4,7 @@ import { ConvexProviderWithClerk } from 'convex/react-clerk'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 
-import { resolveProviderMode } from '@/app/providers/provider-config'
+import { clerkFrostedGlassAppearance, resolveProviderMode } from '@/app/providers/provider-config'
 
 type ClerkConvexProviderProps = {
   children: ReactNode
@@ -26,7 +26,11 @@ export const ClerkConvexProvider = ({ children }: ClerkConvexProviderProps) => {
   )
 
   return mode === 'clerk_convex' && convex ? (
-    <ClerkProvider publishableKey={clerkPublishableKey} afterSignOutUrl="/">
+    <ClerkProvider
+      publishableKey={clerkPublishableKey}
+      afterSignOutUrl="/"
+      appearance={clerkFrostedGlassAppearance}
+    >
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         {children}
       </ConvexProviderWithClerk>
