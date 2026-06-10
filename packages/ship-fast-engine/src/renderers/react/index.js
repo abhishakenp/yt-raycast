@@ -738,14 +738,13 @@ export function renderReactProject(siteSpec, session) {
     ${homeSeo.canonicalUrl ? `<meta property="og:url" content="${escapeHtml(homeSeo.canonicalUrl)}" />` : ''}
     <meta property="og:site_name" content="${escapeHtml(homeSeo.siteName)}" />
     <meta property="og:locale" content="${escapeHtml(homeSeo.locale)}" />
-    ${
-      homeSeo.ogImage
+    ${homeSeo.ogImage
         ? `<meta property="og:image" content="${escapeHtml(homeSeo.ogImage)}" />
     <meta property="og:image:alt" content="${escapeHtml(homeSeo.ogImageAlt)}" />
     <meta name="twitter:image" content="${escapeHtml(homeSeo.ogImage)}" />
     <meta name="twitter:image:alt" content="${escapeHtml(homeSeo.ogImageAlt)}" />`
         : ''
-    }
+      }
     <meta name="twitter:card" content="${escapeHtml(homeSeo.ogImage ? homeSeo.twitterCard : 'summary')}" />
     <meta name="twitter:title" content="${escapeHtml(homeSeo.title)}" />
     <meta name="twitter:description" content="${escapeHtml(homeSeo.description)}" />
@@ -771,13 +770,12 @@ export default defineConfig({
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './styles.css'
-${
-  useSwiper
-    ? `import 'swiper/css'
+${useSwiper
+        ? `import 'swiper/css'
 import 'swiper/css/pagination'
 `
-    : ''
-}
+        : ''
+      }
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

@@ -1,5 +1,4 @@
 import { MarketingShell } from '../pricing/-MarketingShell'
-import '@/styles/privacy-page.css'
 
 const SITE_NAME = 'Ship Fast'
 const SITE_URL = 'https://ship-fast.devliv.io'
@@ -14,7 +13,7 @@ const LEGAL_REFUND_POLICY = ''
 const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 
 const missingValue = (label: string) =>
-  `<span class="legal-placeholder">Pending incorporation data: ${label}</span>`
+  `<span class="text-[var(--warning)]">Pending incorporation data: ${label}</span>`
 
 const jurisdiction = LEGAL_INCORPORATION_JURISDICTION
   ? LEGAL_INCORPORATION_JURISDICTION
@@ -32,11 +31,11 @@ const refunds = LEGAL_REFUND_POLICY
 export const TermsPage = () => {
   return (
     <MarketingShell footer>
-      <main className="page legal-doc">
-        <header className="legal-header">
-          <p className="kicker">Legal</p>
+      <main className="relative z-[1] mx-auto w-[min(760px,calc(100%-48px))] px-0 pt-[88px] pb-24 font-sans text-base leading-[1.65] text-[var(--text-primary)] [&_a]:text-[var(--accent-primary)] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-[var(--accent-hover)] [&_h2]:mb-3.5 [&_h2]:font-sans [&_h2]:text-[1.15rem] [&_h2]:tracking-[-0.02em] [&_h2]:text-[var(--text-primary)] [&_h3]:mt-5 [&_h3]:mb-2.5 [&_h3]:font-sans [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-[#c4c9d4] [&_header_h1]:mb-3.5 [&_header_h1]:font-[var(--font-display)] [&_header_h1]:text-[clamp(1.75rem,4vw,2.25rem)] [&_header_h1]:tracking-[-0.03em] [&_header_h1]:text-white [&_li]:mb-2 [&_p]:mb-3 [&_section]:mb-6 [&_section]:rounded-[var(--radius-lg)] [&_section]:border [&_section]:border-[var(--glass-border)] [&_section]:bg-[var(--glass-bg)] [&_section]:px-6 [&_section]:py-[22px] [&_section]:shadow-[var(--glass-shadow)] [&_ul]:my-2.5 [&_ul]:ml-5">
+        <header className="mb-10 border-b border-white/10 pb-7">
+          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Legal</p>
           <h1>Terms of service</h1>
-          <p className="legal-meta">
+          <p className="text-sm text-[#c4c9d4]">
             <strong>{SITE_NAME}</strong> ({SITE_URL}) · Effective date:{' '}
             <time dateTime={TERMS_EFFECTIVE_DATE}>{TERMS_EFFECTIVE_DATE}</time>
           </p>
@@ -47,7 +46,7 @@ export const TermsPage = () => {
           <p>These terms are between you and <strong>{LEGAL_CONTROLLER_NAME}</strong>, operating {SITE_NAME}.</p>
           <p>Incorporation jurisdiction: <span dangerouslySetInnerHTML={{ __html: jurisdiction }} /></p>
           <p>Company registration number: <span dangerouslySetInnerHTML={{ __html: registration }} /></p>
-          <p className="legal-address" dangerouslySetInnerHTML={{ __html: address }} />
+          <p className="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[var(--text-primary)]" dangerouslySetInnerHTML={{ __html: address }} />
           <p>Contact: <a href={mailtoHref}>{PRIVACY_CONTACT_EMAIL}</a></p>
         </section>
 

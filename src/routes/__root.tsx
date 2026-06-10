@@ -1,21 +1,30 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 
 import { AppProviders } from '@/app/providers/AppProviders'
 
 import appCss from '../styles.css?url'
 
-const RootDocument = ({ children }: { children: ReactNode }) => (
-  <html lang="en">
-    <head>
-      <HeadContent />
-    </head>
-    <body>
-      <AppProviders>{children}</AppProviders>
-      <Scripts />
-    </body>
-  </html>
-)
+const RootDocument = ({ children }: { children: ReactNode }) => {
+  useEffect(() => {
+    const isDark = localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    document.documentElement.classList.toggle('dark', isDark)
+  }, [])
+
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <AppProviders>{children}</AppProviders>
+        <Scripts />
+      </body>
+    </html>
+  )
+}
 
 export const Route = createRootRoute({
   head: () => ({

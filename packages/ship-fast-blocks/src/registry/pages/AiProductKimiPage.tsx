@@ -217,37 +217,37 @@ export const AiProductKimiPage = defineComponent({
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
-          {
-            title: "AI-Powered Suggestions",
-            description:
-              "Get intelligent completions, rewrites, and tone adjustments as you type. Trained on millions of professional documents to match your style.",
-          },
-          {
-            title: "Grammar & Clarity",
-            description:
-              "Catch grammar errors, awkward phrasing, and unclear sentences before you publish. Our AI explains every suggestion so you learn as you edit.",
-          },
-          {
-            title: "Tone & Voice Control",
-            description:
-              "Switch between professional, casual, persuasive, or friendly tones with one click. Perfect for adapting content for different audiences.",
-          },
-          {
-            title: "Templates Library",
-            description:
-              "Start with 200+ professionally crafted templates for emails, blog posts, social media, proposals, and more. Customizable to your brand voice.",
-          },
-          {
-            title: "Team Collaboration",
-            description:
-              "Share documents, leave comments, and maintain a consistent brand voice across your entire team with shared style guides and approval workflows.",
-          },
-          {
-            title: "API & Integrations",
-            description:
-              "Connect WriteFlow to your existing tools with our REST API and native integrations for VS Code, Chrome, Slack, Notion, and Google Docs.",
-          },
-        ]
+        {
+          title: "AI-Powered Suggestions",
+          description:
+            "Get intelligent completions, rewrites, and tone adjustments as you type. Trained on millions of professional documents to match your style.",
+        },
+        {
+          title: "Grammar & Clarity",
+          description:
+            "Catch grammar errors, awkward phrasing, and unclear sentences before you publish. Our AI explains every suggestion so you learn as you edit.",
+        },
+        {
+          title: "Tone & Voice Control",
+          description:
+            "Switch between professional, casual, persuasive, or friendly tones with one click. Perfect for adapting content for different audiences.",
+        },
+        {
+          title: "Templates Library",
+          description:
+            "Start with 200+ professionally crafted templates for emails, blog posts, social media, proposals, and more. Customizable to your brand voice.",
+        },
+        {
+          title: "Team Collaboration",
+          description:
+            "Share documents, leave comments, and maintain a consistent brand voice across your entire team with shared style guides and approval workflows.",
+        },
+        {
+          title: "API & Integrations",
+          description:
+            "Connect WriteFlow to your existing tools with our REST API and native integrations for VS Code, Chrome, Slack, Notion, and Google Docs.",
+        },
+      ]
 
     const stepsHeading =
       props.steps?.heading ?? "Start writing smarter in 3 steps"
@@ -258,22 +258,22 @@ export const AiProductKimiPage = defineComponent({
     const stepItems = props.steps?.items?.length
       ? props.steps.items
       : [
-          {
-            title: "Create your account",
-            description:
-              "Sign up with your email or Google account. No credit card required for the 14-day trial. Choose your primary use case during onboarding.",
-          },
-          {
-            title: "Set your preferences",
-            description:
-              "Tell us about your writing style, preferred tone, and industry. The AI learns from examples you provide to match your unique voice.",
-          },
-          {
-            title: "Start creating",
-            description:
-              "Open the editor, pick a template or start from scratch, and experience AI-assisted writing. Export to any format or publish directly.",
-          },
-        ]
+        {
+          title: "Create your account",
+          description:
+            "Sign up with your email or Google account. No credit card required for the 14-day trial. Choose your primary use case during onboarding.",
+        },
+        {
+          title: "Set your preferences",
+          description:
+            "Tell us about your writing style, preferred tone, and industry. The AI learns from examples you provide to match your unique voice.",
+        },
+        {
+          title: "Start creating",
+          description:
+            "Open the editor, pick a template or start from scratch, and experience AI-assisted writing. Export to any format or publish directly.",
+        },
+      ]
 
     const galleryHeading =
       props.gallery?.heading ?? "See WriteFlow in action"
@@ -283,31 +283,31 @@ export const AiProductKimiPage = defineComponent({
     const galleryItems = props.gallery?.items?.length
       ? props.gallery.items
       : [
-          {
-            title: "Distraction-free editor",
-            description: "Clean interface that keeps you focused on writing.",
-          },
-          {
-            title: "Real-time collaboration",
-            description: "Work together with your team in real-time.",
-          },
-          {
-            title: "Writing analytics",
-            description: "Track productivity and improvement over time.",
-          },
-          {
-            title: "Template library",
-            description: "200+ templates to jumpstart any writing project.",
-          },
-          {
-            title: "Idea capture",
-            description: "Quick capture tools for inspiration anywhere.",
-          },
-          {
-            title: "Export anywhere",
-            description: "Publish to Word, PDF, Markdown, or your CMS.",
-          },
-        ]
+        {
+          title: "Distraction-free editor",
+          description: "Clean interface that keeps you focused on writing.",
+        },
+        {
+          title: "Real-time collaboration",
+          description: "Work together with your team in real-time.",
+        },
+        {
+          title: "Writing analytics",
+          description: "Track productivity and improvement over time.",
+        },
+        {
+          title: "Template library",
+          description: "200+ templates to jumpstart any writing project.",
+        },
+        {
+          title: "Idea capture",
+          description: "Quick capture tools for inspiration anywhere.",
+        },
+        {
+          title: "Export anywhere",
+          description: "Publish to Word, PDF, Markdown, or your CMS.",
+        },
+      ]
 
     const pricingHeading =
       props.pricing?.heading ?? "Simple, transparent pricing"
@@ -321,59 +321,59 @@ export const AiProductKimiPage = defineComponent({
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
-          {
-            name: "Free",
-            tagline: "Perfect for trying out WriteFlow",
-            price: "$0",
-            period: "/month",
-            cta: "Get started free",
-            features: [
-              "10 AI generations per day",
-              "Basic grammar & spelling",
-              "25 templates",
-              "Chrome extension",
-            ],
-          },
-          {
-            name: "Pro",
-            tagline: "For serious writers & professionals",
-            price: "$19",
-            period: "/month",
-            cta: "Start 14-day free trial",
-            featured: true,
-            features: [
-              "Unlimited AI generations",
-              "Advanced tone & style controls",
-              "200+ templates",
-              "Plagiarism detection",
-              "All integrations",
-              "Priority support",
-            ],
-          },
-          {
-            name: "Team",
-            tagline: "For teams that write together",
-            price: "$49",
-            period: "/user/month",
-            cta: "Contact sales",
-            features: [
-              "Everything in Pro",
-              "Team style guides",
-              "Admin controls & analytics",
-              "SSO & advanced security",
-              "Dedicated success manager",
-            ],
-          },
-        ]
+        {
+          name: "Free",
+          tagline: "Perfect for trying out WriteFlow",
+          price: "$0",
+          period: "/month",
+          cta: "Get started free",
+          features: [
+            "10 AI generations per day",
+            "Basic grammar & spelling",
+            "25 templates",
+            "Chrome extension",
+          ],
+        },
+        {
+          name: "Pro",
+          tagline: "For serious writers & professionals",
+          price: "$19",
+          period: "/month",
+          cta: "Start 14-day free trial",
+          featured: true,
+          features: [
+            "Unlimited AI generations",
+            "Advanced tone & style controls",
+            "200+ templates",
+            "Plagiarism detection",
+            "All integrations",
+            "Priority support",
+          ],
+        },
+        {
+          name: "Team",
+          tagline: "For teams that write together",
+          price: "$49",
+          period: "/user/month",
+          cta: "Contact sales",
+          features: [
+            "Everything in Pro",
+            "Team style guides",
+            "Admin controls & analytics",
+            "SSO & advanced security",
+            "Dedicated success manager",
+          ],
+        },
+      ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "50K+", label: "Active writers" },
-          { value: "12M+", label: "Documents created" },
-          { value: "4.9", label: "Average rating" },
-          { value: "3.2 hrs", label: "Saved per day on average" },
-        ]
+        { value: "50K+", label: "Active writers" },
+        { value: "12M+", label: "Documents created" },
+        { value: "4.9", label: "Average rating" },
+        { value: "3.2 hrs", label: "Saved per day on average" },
+      ]
 
     const testimonialsHeading =
       props.testimonials?.heading ?? "Loved by writers worldwide"
@@ -383,55 +383,55 @@ export const AiProductKimiPage = defineComponent({
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
-          {
-            quote:
-              "WriteFlow has completely changed how I approach content creation. What used to take me 4 hours now takes 90 minutes. The tone adjustment feature alone is worth the subscription.",
-            name: "Sarah Chen",
-            role: "Content Lead at Notion",
-            avatarAlt:
-              "Professional headshot of Sarah Chen, a content marketing manager with dark hair",
-          },
-          {
-            quote:
-              "As a freelance copywriter, I juggle 15+ clients with different brand voices. WriteFlow's style guides help me switch between them instantly. Game changer for my business.",
-            name: "Marcus Thompson",
-            role: "Freelance Copywriter",
-            avatarAlt:
-              "Professional headshot of Marcus Thompson, a copywriter with short beard and glasses",
-          },
-          {
-            quote:
-              "Our marketing team doubled output after adopting WriteFlow. The collaborative features and brand voice consistency have made us significantly more efficient.",
-            name: "Elena Rodriguez",
-            role: "Marketing Director at Figma",
-            avatarAlt:
-              "Professional headshot of Elena Rodriguez, a marketing director with curly brown hair",
-          },
-          {
-            quote:
-              "I was skeptical about AI writing tools until I tried WriteFlow. It doesn't replace my voice—it amplifies it. My editor noticed the improvement immediately.",
-            name: "David Park",
-            role: "Author & Journalist",
-            avatarAlt:
-              "Professional headshot of David Park, an author with thoughtful expression",
-          },
-          {
-            quote:
-              "The Chrome extension is incredible—I use it for emails, social posts, and even comments. It's like having a professional editor looking over my shoulder.",
-            name: "Amara Wilson",
-            role: "CEO at TechFlow",
-            avatarAlt:
-              "Professional headshot of Amara Wilson, a startup founder with bright smile",
-          },
-          {
-            quote:
-              "We evaluated 8 different AI writing tools. WriteFlow won on output quality, UI design, and customer support. Our whole team is on it now.",
-            name: "James Miller",
-            role: "CTO at StackBlitz",
-            avatarAlt:
-              "Professional headshot of James Miller, a CTO with confident expression",
-          },
-        ]
+        {
+          quote:
+            "WriteFlow has completely changed how I approach content creation. What used to take me 4 hours now takes 90 minutes. The tone adjustment feature alone is worth the subscription.",
+          name: "Sarah Chen",
+          role: "Content Lead at Notion",
+          avatarAlt:
+            "Professional headshot of Sarah Chen, a content marketing manager with dark hair",
+        },
+        {
+          quote:
+            "As a freelance copywriter, I juggle 15+ clients with different brand voices. WriteFlow's style guides help me switch between them instantly. Game changer for my business.",
+          name: "Marcus Thompson",
+          role: "Freelance Copywriter",
+          avatarAlt:
+            "Professional headshot of Marcus Thompson, a copywriter with short beard and glasses",
+        },
+        {
+          quote:
+            "Our marketing team doubled output after adopting WriteFlow. The collaborative features and brand voice consistency have made us significantly more efficient.",
+          name: "Elena Rodriguez",
+          role: "Marketing Director at Figma",
+          avatarAlt:
+            "Professional headshot of Elena Rodriguez, a marketing director with curly brown hair",
+        },
+        {
+          quote:
+            "I was skeptical about AI writing tools until I tried WriteFlow. It doesn't replace my voice—it amplifies it. My editor noticed the improvement immediately.",
+          name: "David Park",
+          role: "Author & Journalist",
+          avatarAlt:
+            "Professional headshot of David Park, an author with thoughtful expression",
+        },
+        {
+          quote:
+            "The Chrome extension is incredible—I use it for emails, social posts, and even comments. It's like having a professional editor looking over my shoulder.",
+          name: "Amara Wilson",
+          role: "CEO at TechFlow",
+          avatarAlt:
+            "Professional headshot of Amara Wilson, a startup founder with bright smile",
+        },
+        {
+          quote:
+            "We evaluated 8 different AI writing tools. WriteFlow won on output quality, UI design, and customer support. Our whole team is on it now.",
+          name: "James Miller",
+          role: "CTO at StackBlitz",
+          avatarAlt:
+            "Professional headshot of James Miller, a CTO with confident expression",
+        },
+      ]
 
     const faqHeading = props.faq?.heading ?? "Frequently asked questions"
     const faqDesc =
@@ -441,37 +441,37 @@ export const AiProductKimiPage = defineComponent({
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
-          {
-            question: "How does WriteFlow's AI actually work?",
-            answer:
-              "WriteFlow uses a combination of large language models (including GPT-4) trained specifically on high-quality professional writing. When you use our suggestions feature, the AI analyzes your context, writing style, and intent to provide relevant completions and improvements. Your data is never used to train our models—your writing stays private.",
-          },
-          {
-            question: "Is my content secure and private?",
-            answer:
-              "Absolutely. We use enterprise-grade encryption (AES-256) for all data at rest and in transit. Your documents are never used to train AI models. We're SOC 2 Type II certified and GDPR compliant. For enterprise customers, we offer data residency options and custom security configurations.",
-          },
-          {
-            question: "Can I cancel my subscription anytime?",
-            answer:
-              "Yes, you can cancel anytime with no questions asked. If you cancel, you'll continue to have access until the end of your billing period. We also offer a 30-day money-back guarantee for annual plans if you're not completely satisfied.",
-          },
-          {
-            question: "What integrations do you support?",
-            answer:
-              "We offer native integrations with Google Docs, Notion, Slack, VS Code, Chrome, Microsoft Word, and Figma. Our REST API and Zapier integration let you connect to 5,000+ other apps. New integrations are released monthly based on user requests.",
-          },
-          {
-            question: "Do you offer discounts for students or non-profits?",
-            answer:
-              "Yes! We offer 50% off Pro plans for verified students and educators through GitHub Education. Registered non-profits receive 40% off Team plans. Contact our sales team with your organization's documentation to get set up.",
-          },
-          {
-            question: "What's included in the 14-day free trial?",
-            answer:
-              "The trial includes full access to all Pro features: unlimited AI generations, all 200+ templates, tone adjustments, plagiarism detection, and all integrations. No credit card required to start. At the end of 14 days, choose a plan or continue with our generous free tier.",
-          },
-        ]
+        {
+          question: "How does WriteFlow's AI actually work?",
+          answer:
+            "WriteFlow uses a combination of large language models (including GPT-4) trained specifically on high-quality professional writing. When you use our suggestions feature, the AI analyzes your context, writing style, and intent to provide relevant completions and improvements. Your data is never used to train our models—your writing stays private.",
+        },
+        {
+          question: "Is my content secure and private?",
+          answer:
+            "Absolutely. We use enterprise-grade encryption (AES-256) for all data at rest and in transit. Your documents are never used to train AI models. We're SOC 2 Type II certified and GDPR compliant. For enterprise customers, we offer data residency options and custom security configurations.",
+        },
+        {
+          question: "Can I cancel my subscription anytime?",
+          answer:
+            "Yes, you can cancel anytime with no questions asked. If you cancel, you'll continue to have access until the end of your billing period. We also offer a 30-day money-back guarantee for annual plans if you're not completely satisfied.",
+        },
+        {
+          question: "What integrations do you support?",
+          answer:
+            "We offer native integrations with Google Docs, Notion, Slack, VS Code, Chrome, Microsoft Word, and Figma. Our REST API and Zapier integration let you connect to 5,000+ other apps. New integrations are released monthly based on user requests.",
+        },
+        {
+          question: "Do you offer discounts for students or non-profits?",
+          answer:
+            "Yes! We offer 50% off Pro plans for verified students and educators through GitHub Education. Registered non-profits receive 40% off Team plans. Contact our sales team with your organization's documentation to get set up.",
+        },
+        {
+          question: "What's included in the 14-day free trial?",
+          answer:
+            "The trial includes full access to all Pro features: unlimited AI generations, all 200+ templates, tone adjustments, plagiarism detection, and all integrations. No credit card required to start. At the end of 14 days, choose a plan or continue with our generous free tier.",
+        },
+      ]
 
     const finalHeading =
       props.finalCta?.heading ?? "Start writing better today"
@@ -490,40 +490,40 @@ export const AiProductKimiPage = defineComponent({
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
-          {
-            title: "Product",
-            links: [
-              "Features",
-              "Pricing",
-              "Integrations",
-              "Changelog",
-              "Roadmap",
-            ],
-          },
-          {
-            title: "Resources",
-            links: [
-              "Documentation",
-              "API Reference",
-              "Templates",
-              "Blog",
-              "Community",
-            ],
-          },
-          {
-            title: "Company",
-            links: ["About", "Careers", "Press Kit", "Contact"],
-          },
-          {
-            title: "Legal",
-            links: [
-              "Privacy Policy",
-              "Terms of Service",
-              "Cookie Policy",
-              "Security",
-            ],
-          },
-        ]
+        {
+          title: "Product",
+          links: [
+            "Features",
+            "Pricing",
+            "Integrations",
+            "Changelog",
+            "Roadmap",
+          ],
+        },
+        {
+          title: "Resources",
+          links: [
+            "Documentation",
+            "API Reference",
+            "Templates",
+            "Blog",
+            "Community",
+          ],
+        },
+        {
+          title: "Company",
+          links: ["About", "Careers", "Press Kit", "Contact"],
+        },
+        {
+          title: "Legal",
+          links: [
+            "Privacy Policy",
+            "Terms of Service",
+            "Cookie Policy",
+            "Security",
+          ],
+        },
+      ]
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand} AI, Inc. All rights reserved.`

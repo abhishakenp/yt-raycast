@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import styles from './IntroLoader.module.css'
+import { cn } from '@/lib/utils'
 import { IntroBeams } from './IntroBeams'
 import { IntroPreviewFrame } from './IntroPreviewFrame'
 import { IntroLogo } from './IntroLogo'
@@ -102,16 +102,16 @@ export function IntroLoader({
   useEffect(() => {
     if (effectiveProgress >= 1 && !isExiting) {
       setIsExiting(true)
-      if (overlayRef.current) {
-        overlayRef.current.classList.add(styles.exiting)
-      }
     }
   }, [effectiveProgress, isExiting])
 
   return (
     <div 
       ref={overlayRef}
-      className={`${styles.introOverlay} ${isExiting ? styles.exiting : ''}`}
+      className={cn(
+        'group pointer-events-none fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_38%,rgba(41,232,255,0.2),transparent_22%),radial-gradient(circle_at_73%_20%,rgba(166,74,255,0.2),transparent_31%),radial-gradient(circle_at_22%_78%,rgba(17,72,214,0.2),transparent_34%),linear-gradient(180deg,#050714_0%,#0a0e25_46%,#030511_100%)] transition-[opacity,transform] duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] before:absolute before:inset-[-20%] before:z-0 before:animate-pulse before:bg-[linear-gradient(105deg,transparent_0_38%,rgba(32,225,255,0.1)_43%,transparent_49%),linear-gradient(72deg,transparent_0_58%,rgba(170,70,255,0.12)_63%,transparent_69%)] before:opacity-80 before:blur-[2px] after:absolute after:inset-x-[-12%] after:bottom-[-16%] after:z-0 after:h-[50vh] after:translate-y-[var(--intro-glow-y,12vh)] after:bg-[radial-gradient(ellipse_at_50%_0%,rgba(31,228,255,0.18),transparent_62%),linear-gradient(90deg,transparent,rgba(45,232,255,0.16),transparent)] after:blur-[22px] after:transition-transform after:duration-1000',
+        isExiting && 'is-exiting opacity-0',
+      )}
       style={{
         '--intro-progress': effectiveProgress,
         '--intro-frame-y': `${58 - effectiveProgress * 58}vh`,
@@ -128,16 +128,21 @@ export function IntroLoader({
       <IntroLogo logoClass={logoClass} />
       <IntroTyping />
       {logs.length > 0 && (
-        <div className={styles.logStack} aria-live="polite">
+        <div className="pointer-events-none absolute right-[clamp(20px,4vw,56px)] bottom-[clamp(72px,10vh,118px)] z-[3] grid w-[min(420px,calc(100vw-40px))] gap-2" aria-live="polite">
           {logs.slice(-4).map((log) => (
-            <div className={styles.logLine} key={`${log.createdAt}-${log.eventType}-${log.message}`}>
+            <div className="grid gap-[3px] rounded-[14px] border border-cyan-300/20 bg-[#050814]/55 px-3 py-2.5 shadow-[0_16px_38px_rgba(0,0,0,0.24)] backdrop-blur-[14px] [&_p]:m-0 [&_p]:text-xs [&_p]:leading-[1.35] [&_p]:text-white/85 [&_span]:font-mono [&_span]:text-[10px] [&_span]:uppercase [&_span]:tracking-[0.18em] [&_span]:text-cyan-200/75" key={`${log.createdAt}-${log.eventType}-${log.message}`}>
               <span>{log.eventType}</span>
               <p>{log.message}</p>
             </div>
           ))}
         </div>
       )}
-      <div className={`${styles.phaseLabel} ${phaseVisible ? styles.visible : ''}`}>
+      <div
+        className={cn(
+          'absolute bottom-8 left-1/2 z-[2] -translate-x-1/2 font-mono text-[13px] uppercase tracking-[0.15em] text-[#4e5259] opacity-0 transition-[opacity,bottom,font-size,color,transform,letter-spacing,text-shadow,font-weight] duration-700',
+          phaseVisible && 'text-gray-500 opacity-100',
+        )}
+      >
         {phaseVisible ? STATUS_LINE[statusIdx % STATUS_LINE.length] : '\u00a0'}
       </div>
     </div>

@@ -1,5 +1,3 @@
-import styles from './IntroLoader.module.css'
-
 const INTRO_MEDIA_LAYOUT = [
   ['20%', '35%', '-12deg', '0.2s', '50%', '50%'],
   ['75%', '25%', '8deg', '0.4s', '50%', '50%'],
@@ -16,11 +14,11 @@ const INTRO_PLACEHOLDER_BACKGROUNDS = [
 
 export function IntroMediaChips() {
   return (
-    <div className={styles.mediaOrbit}>
+    <div className="pointer-events-none absolute inset-0 z-[2]">
       {INTRO_MEDIA_LAYOUT.map(([x, y, rot, delay, dockX, dockY], i) => (
         <div
           key={i}
-          className={styles.mediaChip}
+          className="absolute left-[var(--chip-x)] top-[var(--chip-y)] flex aspect-[4/3] w-[clamp(72px,8vw,128px)] -translate-x-1/2 -translate-y-1/2 rotate-[var(--chip-rot)] scale-100 animate-pulse flex-col items-center justify-center rounded-[18px] border border-cyan-300/35 bg-[image:var(--chip-bg)] bg-cover bg-center opacity-90 shadow-[0_0_34px_rgba(32,226,255,0.22),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-[12px] transition-all duration-700 ease-out after:absolute after:inset-[-1px] after:rounded-[inherit] after:bg-[linear-gradient(120deg,transparent_0_35%,rgba(255,255,255,0.32),transparent_62%)] after:mix-blend-screen after:opacity-50 group-[.is-exiting]:left-[var(--dock-x)] group-[.is-exiting]:top-[var(--dock-y)] group-[.is-exiting]:scale-30 group-[.is-exiting]:opacity-0"
           style={{
             '--chip-x': x,
             '--chip-y': y,
@@ -29,6 +27,7 @@ export function IntroMediaChips() {
             '--dock-x': dockX,
             '--dock-y': dockY,
             '--chip-bg': INTRO_PLACEHOLDER_BACKGROUNDS[i % INTRO_PLACEHOLDER_BACKGROUNDS.length],
+            animationDelay: delay,
           } as React.CSSProperties}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: '22px', height: '22px', color: '#69f8ff', filter: 'drop-shadow(0 0 6px rgba(26, 184, 255, 0.8))', marginBottom: '2px' }}>
