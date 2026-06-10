@@ -93,6 +93,7 @@ export const startGeneration = internalAction({
 
       const result = await runHomepageOrchestrator({
         prompt: session.prompt,
+        preferredLanguage: session.preferredLanguage,
         signal: new AbortController().signal,
         onSource: (source) => {
           if (source !== lastPersistedOpenUiSource) {
