@@ -18,11 +18,9 @@ export type IntroPhase = 'compose' | 'restore'
 export function IntroLoader({
   phase = 'compose',
   progress = 0,
-  logs = [],
 }: {
   phase?: IntroPhase
   progress?: number
-  logs?: { eventType: string; message?: string; createdAt: number }[]
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [logoClass, setLogoClass] = useState<'hidden' | 'visible' | 'shaking' | 'settled'>('hidden')
@@ -127,16 +125,6 @@ export function IntroLoader({
       <IntroPreviewFrame />
       <IntroLogo logoClass={logoClass} />
       <IntroTyping />
-      {logs.length > 0 && (
-        <div className="pointer-events-none absolute right-[clamp(20px,4vw,56px)] bottom-[clamp(72px,10vh,118px)] z-[3] grid w-[min(420px,calc(100vw-40px))] gap-2" aria-live="polite">
-          {logs.slice(-4).map((log) => (
-            <div className="grid gap-[3px] rounded-[14px] border border-cyan-300/20 bg-[#050814]/55 px-3 py-2.5 shadow-[0_16px_38px_rgba(0,0,0,0.24)] backdrop-blur-[14px] [&_p]:m-0 [&_p]:text-xs [&_p]:leading-[1.35] [&_p]:text-white/85 [&_span]:font-mono [&_span]:text-[10px] [&_span]:uppercase [&_span]:tracking-[0.18em] [&_span]:text-cyan-200/75" key={`${log.createdAt}-${log.eventType}-${log.message}`}>
-              <span>{log.eventType}</span>
-              <p>{log.message}</p>
-            </div>
-          ))}
-        </div>
-      )}
       <div
         className={cn(
           'absolute bottom-8 left-1/2 z-[2] -translate-x-1/2 font-mono text-[13px] uppercase tracking-[0.15em] text-[#4e5259] opacity-0 transition-[opacity,bottom,font-size,color,transform,letter-spacing,text-shadow,font-weight] duration-700',

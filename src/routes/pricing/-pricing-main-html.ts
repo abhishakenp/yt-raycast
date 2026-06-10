@@ -6,11 +6,11 @@ const lockIcon15 = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" 
 
 const lockIcon16 = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
 
-export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min(1160px,calc(100%_-_48px))] pt-[88px] pb-20 text-[var(--text-primary,#f0f0f5)] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:pt-20">
+export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min(1160px,calc(100%_-_48px))] pt-[88px] pb-20 text-[#f0f0f5] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:pt-20">
 
       <section class="mb-[72px] flex flex-col items-center gap-[18px] py-12 pb-14 text-center" aria-labelledby="pricing-heading">
         <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Pricing</span>
-        <h1 class="m-0 max-w-[14ch] text-balance font-[var(--font-display)] text-[clamp(2.4rem,5vw,4rem)] uppercase leading-[1.05] tracking-[-0.04em] text-[#fffdf6]" id="pricing-heading">Simple pricing.<br>No surprises.</h1>
+        <h1 class="m-0 max-w-[14ch] text-balance font-['Fraunces',Georgia,serif] text-[clamp(2.4rem,5vw,4rem)] uppercase leading-[1.05] tracking-[-0.04em] text-[#fffdf6]" id="pricing-heading">Simple pricing.<br>No surprises.</h1>
         <p class="m-0 max-w-[52ch] text-lg leading-[1.6] text-[#c4c9d4]">Start free. Upgrade when you're ready. Lock the early adopter rate before it's gone&nbsp;forever.</p>
         <div class="mt-1 flex flex-wrap justify-center gap-3.5">
           <span class="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/8 px-4 py-2 font-mono text-xs text-emerald-300" aria-label="347 of 500 early adopter slots taken">
@@ -28,7 +28,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
         <h2 id="plans-heading" class="sr-only">Plans</h2>
         <div class="mb-12 grid grid-cols-3 items-stretch gap-[22px] max-[1024px]:grid-cols-2 max-[720px]:grid-cols-1">
 
-          <div class="relative flex flex-col rounded-[26px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-[32px_28px_28px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
+          <div class="relative flex flex-col rounded-[26px] border border-white/6 bg-[rgba(17,17,19,0.72)] p-[32px_28px_28px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
             <p class="mb-3.5 font-mono text-xs uppercase tracking-[0.18em] text-[#97a0b0]">Free</p>
             <div class="flex items-end gap-2">
               <span class="font-[var(--font-display)] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹0</span>
@@ -61,7 +61,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
                 Community &amp; monthly drops
               </li>
             </ul>
-            ${glassPillButtonHtml({ className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]', extraAttrs: goHome, text: 'Start free' })}
+            ${glassPillButtonHtml({ className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-semibold uppercase tracking-[0.1em] text-[#c4c9d4]', extraAttrs: goHome, text: 'Start free' })}
           </div>
 
           <div class="relative flex scale-[1.03] flex-col rounded-[26px] border border-[rgba(138,180,255,0.22)] bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-[32px_28px_28px] shadow-[var(--glass-shadow),0_0_0_1px_rgba(138,180,255,0.12),0_0_48px_rgba(28,171,255,0.1),0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-[20px] max-[1024px]:scale-100">
@@ -72,7 +72,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
               Early Adopter — Limited slots
             </div>
             <div class="flex items-end gap-2">
-              <span class="font-[var(--font-display)] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹199</span>
+              <span class="font-['Fraunces',Georgia,serif] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹199</span>
               <span class="pb-1 text-[15px] text-[#97a0b0]">/month</span>
             </div>
             <p class="mb-1 font-mono text-xs text-[#97a0b0] line-through">₹399/month after slots fill</p>
@@ -137,7 +137,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
               </li>
             </ul>
             ${glassPillButtonHtml({
-              className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)] opacity-35',
+              className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-semibold uppercase tracking-[0.1em] text-[#c4c9d4] opacity-35',
               disabled: true,
               extraAttrs: ' aria-disabled="true"',
               text: 'Available when slots fill',
@@ -151,7 +151,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
       <section class="mb-14" aria-labelledby="packs-heading">
         <div class="mb-2.5 text-center">
           <span class="mb-2.5 block font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Pay-as-you-go</span>
-          <h2 class="m-0 text-balance font-[var(--font-display)] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="packs-heading">No subscription?<br>No problem.</h2>
+          <h2 class="m-0 text-balance font-['Fraunces',Georgia,serif] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="packs-heading">No subscription?<br>No problem.</h2>
           <p class="mx-auto mt-2.5 mb-0 max-w-[560px] text-[15px] leading-7 text-[#c4c9d4]">Buy a credit pack and download only when you need it.</p>
         </div>
         <div class="mx-auto mt-7 grid grid-cols-[repeat(2,minmax(0,420px))] justify-center gap-[18px] max-[760px]:grid-cols-1">
@@ -221,7 +221,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
           <span class="mb-2.5 block font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Compare</span>
           <h2 class="m-0 text-balance font-[var(--font-display)] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="compare-heading">Everything, side by side.</h2>
         </div>
-        <div class="mt-7 overflow-x-auto rounded-[18px] border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
+        <div class="mt-7 overflow-x-auto rounded-[18px] border border-white/6 bg-[rgba(17,17,19,0.72)] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
           <table class="w-full min-w-[720px] border-collapse text-left text-sm text-white/58 [&_td]:border-t [&_td]:border-white/8 [&_td]:px-5 [&_td]:py-4 [&_th]:px-5 [&_th]:py-4 [&_th]:font-mono [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.12em] [&_th]:text-white/45" aria-label="Feature comparison between plans">
             <thead>
               <tr>
@@ -282,7 +282,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
       <section class="mb-14" aria-labelledby="faq-heading">
         <div class="mb-2.5 text-center">
           <span class="mb-2.5 block font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">FAQ</span>
-          <h2 class="m-0 text-balance font-[var(--font-display)] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="faq-heading">Questions answered.</h2>
+          <h2 class="m-0 text-balance font-['Fraunces',Georgia,serif] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="faq-heading">Questions answered.</h2>
         </div>
         <div class="mx-auto mt-7 grid max-w-none gap-3">
 
@@ -339,7 +339,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
 
       <section class="mb-8 flex flex-col items-center gap-5 rounded-[26px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-10 py-[52px] text-center shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:px-6 max-[720px]:py-9" aria-labelledby="cta-heading">
         <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Ready to ship?</span>
-        <h2 class="m-0 max-w-[18ch] text-balance font-[var(--font-display)] text-[clamp(1.8rem,4vw,2.8rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="cta-heading">Build your SaaS in seconds.<br>Lock the rate forever.</h2>
+        <h2 class="m-0 max-w-[18ch] text-balance font-['Fraunces',Georgia,serif] text-[clamp(1.8rem,4vw,2.8rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="cta-heading">Build your SaaS in seconds.<br>Lock the rate forever.</h2>
         <p class="m-0 max-w-[46ch] text-base leading-[1.65] text-[#c4c9d4]">153 slots remaining. Once they're gone, the price goes up — and it won't come back.</p>
         ${glassPillButtonHtml({
           className: 'min-h-12 px-6 py-0 text-sm text-white',

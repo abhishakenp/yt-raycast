@@ -162,11 +162,6 @@ export function Dashboard({ sessionId }: DashboardProps) {
       {!isPreviewReady ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
-          logs={generationView?.events.map((event) => ({
-            eventType: event.eventType,
-            message: event.message,
-            createdAt: event.createdAt,
-          })) ?? []}
         />
       ) : null}
 
