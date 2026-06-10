@@ -19,6 +19,7 @@ import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessio
 import { Route as ApiStudioEmbedReadyRouteImport } from './routes/api/studio-embed-ready'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
+import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
 import { Route as ApiOpenuiPreviewRouteImport } from './routes/api/openui-preview'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 
@@ -72,6 +73,11 @@ const ApiPromptSuggestionsRoute = ApiPromptSuggestionsRouteImport.update({
   path: '/api/prompt-suggestions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPexelsRoute = ApiPexelsRouteImport.update({
+  id: '/api/pexels',
+  path: '/api/pexels',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiOpenuiPreviewRoute = ApiOpenuiPreviewRouteImport.update({
   id: '/api/openui-preview',
   path: '/api/openui-preview',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
+  '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
+  '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
+  '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/terms'
     | '/api/openui-preview'
+    | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/terms'
     | '/api/openui-preview'
+    | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/terms'
     | '/api/openui-preview'
+    | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   StudioRoute: typeof StudioRoute
   TermsRoute: typeof TermsRoute
   ApiOpenuiPreviewRoute: typeof ApiOpenuiPreviewRoute
+  ApiPexelsRoute: typeof ApiPexelsRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
   ApiStudioEmbedReadyRoute: typeof ApiStudioEmbedReadyRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPromptSuggestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/pexels': {
+      id: '/api/pexels'
+      path: '/api/pexels'
+      fullPath: '/api/pexels'
+      preLoaderRoute: typeof ApiPexelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/openui-preview': {
       id: '/api/openui-preview'
       path: '/api/openui-preview'
@@ -283,6 +303,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudioRoute: StudioRoute,
   TermsRoute: TermsRoute,
   ApiOpenuiPreviewRoute: ApiOpenuiPreviewRoute,
+  ApiPexelsRoute: ApiPexelsRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
   ApiStudioEmbedReadyRoute: ApiStudioEmbedReadyRoute,

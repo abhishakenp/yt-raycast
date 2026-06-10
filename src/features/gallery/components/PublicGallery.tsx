@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Timer } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -45,6 +45,21 @@ const getPromptTitle = (prompt?: string) => {
   if (cleaned === undefined || cleaned.length === 0) return 'Generated website'
 
   return cleaned
+}
+
+const formatGenerationTime = (elapsed?: number | null) => {
+  if (typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0) return undefined
+
+  const seconds = elapsed / 1000
+  if (seconds < 1) return '<1s'
+  if (seconds < 10) return `${seconds.toFixed(1)}s`
+  if (seconds < 60) return `${Math.round(seconds)}s`
+
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.round(seconds % 60)
+  if (remainingSeconds === 0) return `${minutes}m`
+
+  return `${minutes}m ${remainingSeconds}s`
 }
 
 const getPreviewDocument = (html?: string | null) => {
@@ -186,28 +201,43 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
   )
 }
 
-const GalleryCard = ({ session }: { session: GallerySession }) => (
-  <Link
-    className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
-    to="/generate/$sessionId"
-    params={{ sessionId: session.sessionId }}
-  >
-    <GalleryPreview session={session} />
-    <div className="p-4">
-      <p className="mb-3 line-clamp-2 min-h-10 text-sm leading-5 text-slate-100">{getPromptTitle(session.prompt)}</p>
-      <div className="flex min-w-0 flex-wrap gap-1.5">
-        {(session.categories?.length ? session.categories : ['website']).slice(0, 2).map((category) => (
-          <span
-            key={category}
-            className="rounded-full border border-white/10 bg-white/[0.045] px-2 py-0.5 text-[11px] capitalize text-white/48"
-          >
-            {category}
-          </span>
-        ))}
+const GalleryCard = ({ session }: { session: GallerySession }) => {
+  const generationTime = formatGenerationTime(session.elapsed)
+
+  return (
+    <Link
+      className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
+      to="/generate/$sessionId"
+      params={{ sessionId: session.sessionId }}
+    >
+      <GalleryPreview session={session} />
+      <div className="p-4">
+        <p className="mb-3 line-clamp-2 min-h-10 text-sm leading-5 text-slate-100">{getPromptTitle(session.prompt)}</p>
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap gap-1.5">
+            {(session.categories?.length ? session.categories : ['website']).slice(0, 2).map((category) => (
+              <span
+                key={category}
+                className="rounded-full border border-white/10 bg-white/[0.045] px-2 py-0.5 text-[11px] capitalize text-white/48"
+              >
+                {category}
+              </span>
+            ))}
+          </div>
+          {generationTime !== undefined ? (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-cyan-200/15 bg-cyan-300/[0.055] px-2 py-0.5 text-[11px] font-medium text-cyan-100/72"
+              aria-label={`Generated in ${generationTime}`}
+            >
+              <Timer className="size-3" aria-hidden="true" />
+              {generationTime}
+            </span>
+          ) : null}
+        </div>
       </div>
-    </div>
-  </Link>
-)
+    </Link>
+  )
+}
 
 const GallerySkeletonCard = ({ index }: { index: number }) => (
   <div
