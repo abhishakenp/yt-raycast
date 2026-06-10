@@ -18,6 +18,9 @@ const makeWorkspace = (preferredLanguage) => {
 }
 
 describe('pipeline prompt language enforcement', () => {
+  const romanizedMalayalamBrief =
+    'oru marketing compny de website undaakuka, athil services list, client success stories, blog section okke include cheyyuka; target audience small business owners aanu, design sleek, colors brandine reflect cheyyunna professional tone with clear CTA buttons.'
+
   it('uses workspace preferred language when runAll does not receive one', async () => {
     const mode = await resolvePipelineLanguage({
       prompt: 'Build a landing page for a school',
@@ -50,6 +53,17 @@ describe('pipeline prompt language enforcement', () => {
 
     expect(mode.code).toBe('hi-latn')
     expect(mode.prompt).toContain('Romanized Hindi')
+  })
+
+  it('detects romanized Malayalam prompts even when the default dropdown submits English', async () => {
+    const mode = await resolvePipelineLanguage({
+      prompt: romanizedMalayalamBrief,
+      preferredLanguage: 'en',
+    })
+
+    expect(mode.code).toBe('ml')
+    expect(mode.name).toBe('Malayalam')
+    expect(mode.prompt).toContain('server language code `ml`')
   })
 
   it('keeps English prompts explicitly constrained to English', () => {

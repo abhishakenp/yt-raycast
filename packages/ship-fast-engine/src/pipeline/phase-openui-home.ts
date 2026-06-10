@@ -5,6 +5,8 @@ import { renderPreviewToWorkspace, writeStreamingShellToWorkspace } from '../ren
 import { saveSiteSpec } from '../spec/index.ts'
 // @ts-ignore - JS module without type definitions
 import { preferRomanizedBcp47FromSnippet, preferMixedEnglishBcp47FromSnippet } from '../config/languages.js'
+// @ts-ignore - JS module without type definitions
+import { translateHtml } from '../llm/translator.js'
 import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
 import { slug } from './workspace.js'
 
@@ -88,7 +90,7 @@ export async function generateAndWriteOpenUIHome(p: {
   log?: (msg: string) => void
   sessionCtx?: any
   variationSeed?: any
-  languageMode?: { code?: string } | null
+  languageMode?: { code?: string; needsTranslation?: boolean } | null
 }) {
   const log = p.log || console.log
   log('Starting GenUI orchestrator...')
@@ -192,12 +194,36 @@ export async function generateAndWriteOpenUIHome(p: {
   const ms = Date.now() - startedAt
 
   // Server-side render final HTML
-  const { html: finalHtml, cssVars: themeCssVars } = renderOpenUIToHTMLWithTheme(
+  const { html: renderedFinalHtml, cssVars: themeCssVars } = renderOpenUIToHTMLWithTheme(
     source,
     undefined,
     locale,
     undefined,
   ) as OpenUIRenderResult
+  let finalHtml = renderedFinalHtml
+  if (p.languageMode?.needsTranslation) {
+    try {
+      const previewPath = join(p.workspace, 'index.html')
+      if (existsSync(previewPath)) {
+        const translatedPreview = await translateHtml(
+          readFileSync(previewPath, 'utf-8'),
+          p.languageMode,
+        )
+        if (translatedPreview?.content && !translatedPreview.error) {
+          writeFileSync(previewPath, translatedPreview.content)
+        }
+      }
+      const translatedFinal = await translateHtml(renderedFinalHtml, p.languageMode)
+      if (translatedFinal?.content && !translatedFinal.error) {
+        finalHtml = translatedFinal.content
+        log(`  genui: translated preview to ${p.languageMode.code}`)
+      } else {
+        log(`  genui: translation skipped — ${translatedFinal?.error ?? 'empty response'}`)
+      }
+    } catch (error: any) {
+      log(`  genui: translation error — ${error?.message || String(error)}`)
+    }
+  }
   
   ctx?.broadcast?.({ 
     type: 'openui_stream_done', 

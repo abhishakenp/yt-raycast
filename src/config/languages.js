@@ -197,6 +197,18 @@ const MIXED_ENGLISH_SLANG_KEYWORDS = {
   ne: ['nepali english mix'],
 }
 
+const ROMANIZED_PROMPT_LANGUAGE_HINTS = {
+  hi: ['aur', 'hai', 'hain', 'ke', 'ki', 'ka', 'mein', 'liye', 'banao', 'karo', 'chahiye'],
+  ta: ['oru', 'irukku', 'venum', 'seyyunga', 'panna', 'oda', 'la', 'ku', 'inga'],
+  te: ['oka', 'undali', 'undi', 'cheyyandi', 'kosam', 'lo', 'ki', 'tho', 'meeru'],
+  kn: ['ondu', 'beku', 'ide', 'maadi', 'alli', 'ge', 'nanna', 'nimma'],
+  ml: ['oru', 'aanu', 'athil', 'okke', 'cheyyuka', 'cheyyunna', 'undaakuka', 'venam', 'ente', 'de'],
+  bn: ['ekta', 'ache', 'korun', 'jonno', 'amar', 'apnar'],
+  mr: ['ahe', 'karaycha', 'sathi', 'madhe', 'majha', 'tumcha'],
+  gu: ['che', 'mate', 'karvu', 'ma', 'mari', 'tamari'],
+  pa: ['hai', 'lai', 'vich', 'banao', 'mera', 'tuhada'],
+}
+
 const ROMANIZED_LATIN_LANGUAGES = INDIC_PURE_LANGUAGES.map((l) => {
   const n = l.name.toLowerCase()
   return {
@@ -316,6 +328,23 @@ export const preferRomanizedBcp47FromSnippet = (snippet) => {
       return `${l.code}-latn`
   }
   return null
+}
+
+export const preferIndicBcp47FromRomanizedPrompt = (snippet) => {
+  const words = new Set(
+    String(snippet || '')
+      .toLowerCase()
+      .match(/\b[a-z][a-z']{1,}\b/g) || [],
+  )
+  if (words.size < 4) return null
+
+  let best = null
+  for (const [code, hints] of Object.entries(ROMANIZED_PROMPT_LANGUAGE_HINTS)) {
+    const hits = hints.filter((hint) => words.has(hint))
+    if (hits.length < 3) continue
+    if (!best || hits.length > best.hits) best = { code, hits: hits.length }
+  }
+  return best ? best.code : null
 }
 
 export const SCRIPT_FONT_MAP = {

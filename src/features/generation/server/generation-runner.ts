@@ -25,6 +25,7 @@ export type GenerationPersistence = {
 export type RunEngineGenerationInput = {
   sessionId: string
   prompt: string
+  preferredLanguage?: string
   anonymousOwnerSecret?: string
   workspaceRoot: string
   runAll: RunShipFastEngine
@@ -42,6 +43,7 @@ const toErrorMessage = (error: unknown): string =>
 export const runEngineGeneration = async ({
   sessionId,
   prompt,
+  preferredLanguage,
   anonymousOwnerSecret,
   workspaceRoot,
   runAll,
@@ -52,6 +54,7 @@ export const runEngineGeneration = async ({
     const result = await createShipFastEngineAdapter({ runAll, workspaceRoot, onEvent }).generate({
       sessionId,
       prompt,
+      preferredLanguage,
     })
     const persisted = await persistence.completeGeneration({
       sessionId,

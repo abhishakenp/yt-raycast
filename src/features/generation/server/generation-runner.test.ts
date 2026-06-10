@@ -12,7 +12,9 @@ describe('generation runner', () => {
   it('persists completed engine artifacts', async () => {
     const completedInputs: unknown[] = []
     const failedInputs: unknown[] = []
-    const runAll: RunShipFastEngine = async ({ workspace }) => {
+    const seenLanguages: Array<string | undefined> = []
+    const runAll: RunShipFastEngine = async ({ workspace, preferredLanguage }) => {
+      seenLanguages.push(preferredLanguage)
       mkdirSync(workspace, { recursive: true })
       writeFileSync(join(workspace, 'index.html'), '<!doctype html><h1>Generated</h1>')
       writeFileSync(join(workspace, 'site-spec.json'), '{"brand":"Generated"}')
@@ -39,6 +41,7 @@ describe('generation runner', () => {
       runEngineGeneration({
         sessionId: 'session-1',
         prompt: 'Generate a SaaS homepage',
+        preferredLanguage: 'fr',
         anonymousOwnerSecret: 'secret',
         workspaceRoot: createTempRoot(),
         runAll,
@@ -56,6 +59,7 @@ describe('generation runner', () => {
         tasks: [{ id: 'home.openui', label: 'Generate Home page', status: 'DONE' }],
       },
     ])
+    expect(seenLanguages).toEqual(['fr'])
     expect(failedInputs).toEqual([])
   })
 

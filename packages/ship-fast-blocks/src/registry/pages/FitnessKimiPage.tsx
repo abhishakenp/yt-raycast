@@ -313,7 +313,7 @@ export const FitnessKimiPage = defineComponent({
           "Saturday",
           "Sunday",
         ]
-    const scheduleRows = props.schedule?.rows?.length
+    const rawScheduleRows = props.schedule?.rows?.length
       ? props.schedule.rows
       : [
           {
@@ -393,6 +393,14 @@ export const FitnessKimiPage = defineComponent({
             ],
           },
         ]
+    const scheduleRows = rawScheduleRows.map((row, rowIndex) => {
+      const rawSlots = Array.isArray(row.slots) ? row.slots : []
+
+      return {
+        time: row.time || `Class ${rowIndex + 1}`,
+        slots: scheduleDays.map((_, slotIndex) => rawSlots[slotIndex] ?? "—"),
+      }
+    })
     const scheduleLegend = props.schedule?.legend?.length
       ? props.schedule.legend
       : ["HIIT", "Strength", "Cycle", "Yoga", "Pilates", "Boxing"]

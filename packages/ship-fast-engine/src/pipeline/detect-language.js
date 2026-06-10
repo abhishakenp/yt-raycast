@@ -6,6 +6,7 @@ import {
   getDefaultFontForScript,
   RTL_SCRIPTS,
   lookupKnownLanguage,
+  preferIndicBcp47FromRomanizedPrompt,
   preferMixedEnglishBcp47FromSnippet,
   preferRomanizedBcp47FromSnippet,
   isRomanizedIndicCode,
@@ -97,6 +98,14 @@ export async function detectLanguage(prompt, preferredLanguage) {
     const m = lookupKnownLanguage(mixHint)
     if (m) {
       return buildLanguageMode(m.code, m.name, m.nativeName, guessScript(m.fontFamily), m)
+    }
+  }
+
+  const romanizedPromptHint = preferIndicBcp47FromRomanizedPrompt(prompt)
+  if (romanizedPromptHint) {
+    const r = lookupKnownLanguage(romanizedPromptHint)
+    if (r) {
+      return buildLanguageMode(r.code, r.name, r.nativeName, guessScript(r.fontFamily), r)
     }
   }
 
