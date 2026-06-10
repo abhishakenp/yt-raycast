@@ -79,6 +79,7 @@ export const startGeneration = internalAction({
     anonymousOwnerSecret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const startedAt = Date.now()
     const session: Doc<'sessions'> | null = await ctx.runQuery(internalFunctions.sessions.getGenerationSession, {
       sessionId: args.sessionId,
     })
@@ -160,6 +161,7 @@ export const startGeneration = internalAction({
         },
       }
       const staticPreviewHtml = renderStaticPreviewHtml(result.source, result.locale ?? session.preferredLanguage ?? 'en')
+      const elapsed = Date.now() - startedAt
       await ctx.runMutation(internalFunctions.sessions.completeGeneration, {
         sessionId: args.sessionId,
         anonymousOwnerSecret: args.anonymousOwnerSecret,
@@ -167,6 +169,7 @@ export const startGeneration = internalAction({
         siteSpecJson: JSON.stringify(siteSpec),
         openUiSource: result.source,
         tasks: [completedTask],
+        elapsed,
       })
 
       await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
@@ -182,6 +185,7 @@ export const startGeneration = internalAction({
         sessionId: args.sessionId,
         anonymousOwnerSecret: args.anonymousOwnerSecret,
         message,
+        elapsed: Date.now() - startedAt,
       })
       await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
         sessionId: args.sessionId,

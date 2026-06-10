@@ -194,6 +194,7 @@ const serializeSession = (session: Doc<'sessions'>) => ({
   preferredExportTarget: session.preferredExportTarget,
   isPrivate: session.isPrivate,
   previewVersion: session.previewVersion ?? 0,
+  elapsed: session.elapsed ?? null,
   createdAt: session.createdAt,
   updatedAt: session.updatedAt ?? session.createdAt,
   errorCode: session.errorCode,
@@ -230,20 +231,20 @@ const upsertTask = async (
 
   existingTask === null
     ? await ctx.db.insert('tasks', {
-        sessionId,
-        taskKey,
-        title: task.label,
-        status: toTaskStatus(task.status),
-        order,
-        createdAt: now,
-        updatedAt: now,
-      })
+      sessionId,
+      taskKey,
+      title: task.label,
+      status: toTaskStatus(task.status),
+      order,
+      createdAt: now,
+      updatedAt: now,
+    })
     : await ctx.db.patch(existingTask._id, {
-        title: task.label,
-        status: toTaskStatus(task.status),
-        order,
-        updatedAt: now,
-      })
+      title: task.label,
+      status: toTaskStatus(task.status),
+      order,
+      updatedAt: now,
+    })
 }
 
 const upsertSiteSpec = async (
@@ -261,15 +262,15 @@ const upsertSiteSpec = async (
 
   existingSpec === null
     ? await ctx.db.insert('siteSpecs', {
-        sessionId,
-        specJson,
-        createdAt: now,
-        updatedAt: now,
-      })
+      sessionId,
+      specJson,
+      createdAt: now,
+      updatedAt: now,
+    })
     : await ctx.db.patch(existingSpec._id, {
-        specJson,
-        updatedAt: now,
-      })
+      specJson,
+      updatedAt: now,
+    })
 }
 
 const upsertHomeGeneratedModule = async (
@@ -287,18 +288,18 @@ const upsertHomeGeneratedModule = async (
 
   existingModule === null
     ? await ctx.db.insert('generatedModules', {
-        sessionId,
-        moduleKey: 'home',
-        source,
-        status: 'succeeded',
-        createdAt: now,
-        updatedAt: now,
-      })
+      sessionId,
+      moduleKey: 'home',
+      source,
+      status: 'succeeded',
+      createdAt: now,
+      updatedAt: now,
+    })
     : await ctx.db.patch(existingModule._id, {
-        source,
-        status: 'succeeded',
-        updatedAt: now,
-      })
+      source,
+      status: 'succeeded',
+      updatedAt: now,
+    })
 }
 
 export const create = mutation({
@@ -357,32 +358,32 @@ export const create = mutation({
         ? { sessionId }
         : { sessionId, anonymousOwnerSecret: args.anonymousOwnerSecret }
 
-    await ctx.scheduler.runAfter(0, (internal as any).generation.startGeneration, generationArgs)
+    await ctx.scheduler.runAfter(0, internal.generation.startGeneration, generationArgs)
 
-    // Generate unique slug for session (fire-and-forget, no await)
-    ;(async () => {
-      const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
-      let finalSlug = baseSlug
-      let attempts = 0
-      const maxAttempts = 10
+      // Generate unique slug for session (fire-and-forget, no await)
+      ; (async () => {
+        const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
+        let finalSlug = baseSlug
+        let attempts = 0
+        const maxAttempts = 10
 
-      while (attempts < maxAttempts) {
-        const existing = await ctx.db
-          .query('sessions')
-          .withIndex('by_deploymentSlug', (index) => index.eq('deploymentSlug', finalSlug))
-          .first()
+        while (attempts < maxAttempts) {
+          const existing = await ctx.db
+            .query('sessions')
+            .withIndex('by_deploymentSlug', (index) => index.eq('deploymentSlug', finalSlug))
+            .first()
 
-        if (!existing || existing._id === sessionId) {
-          break
+          if (!existing || existing._id === sessionId) {
+            break
+          }
+
+          const randomSuffix = Math.random().toString(16).slice(2, 6)
+          finalSlug = `${baseSlug}-${randomSuffix}`
+          attempts++
         }
 
-        const randomSuffix = Math.random().toString(16).slice(2, 6)
-        finalSlug = `${baseSlug}-${randomSuffix}`
-        attempts++
-      }
-
-      await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
-    })()
+        await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
+      })()
 
     return { sessionId }
   },
@@ -458,19 +459,19 @@ export const upsertGeneratedModule = internalMutation({
 
     existingModule === null
       ? await ctx.db.insert('generatedModules', {
-          sessionId: args.sessionId,
-          moduleKey: args.moduleKey,
-          source: args.source,
-          status: args.status ?? 'succeeded',
-          createdAt: now,
-          updatedAt: now,
-        })
+        sessionId: args.sessionId,
+        moduleKey: args.moduleKey,
+        source: args.source,
+        status: args.status ?? 'succeeded',
+        createdAt: now,
+        updatedAt: now,
+      })
       : await ctx.db.patch(existingModule._id, {
-          source: args.source,
-          status: args.status ?? 'succeeded',
-          errorMessage: undefined,
-          updatedAt: now,
-        })
+        source: args.source,
+        status: args.status ?? 'succeeded',
+        errorMessage: undefined,
+        updatedAt: now,
+      })
   },
 })
 
@@ -573,12 +574,12 @@ export const getWorkspace = query({
     return session === null
       ? null
       : {
-          session: serializeSession(session),
-          tasks: tasks.sort((left, right) => left.order - right.order),
-          preview,
-          deployment,
-          events: events.reverse(),
-        }
+        session: serializeSession(session),
+        tasks: tasks.sort((left, right) => left.order - right.order),
+        preview,
+        deployment,
+        events: events.reverse(),
+      }
   },
 })
 
@@ -644,9 +645,9 @@ export const getPublicPreview = query({
     const deployment =
       directSession === null
         ? await ctx.db
-            .query('deployments')
-            .withIndex('by_slug', (index) => index.eq('slug', args.lookup))
-            .first()
+          .query('deployments')
+          .withIndex('by_slug', (index) => index.eq('slug', args.lookup))
+          .first()
         : null
     const session = directSession ?? (deployment === null ? null : await ctx.db.get(deployment.sessionId))
 
@@ -660,19 +661,19 @@ export const getPublicPreview = query({
 
     return preview === null
       ? {
-          sessionId: session._id,
-          slug: deployment?.slug,
-          status: session.status,
-          previewVersion: session.previewVersion,
-          html: undefined,
-        }
+        sessionId: session._id,
+        slug: deployment?.slug,
+        status: session.status,
+        previewVersion: session.previewVersion,
+        html: undefined,
+      }
       : {
-          sessionId: session._id,
-          slug: deployment?.slug,
-          status: session.status,
-          previewVersion: preview.version,
-          html: preview.html,
-        }
+        sessionId: session._id,
+        slug: deployment?.slug,
+        status: session.status,
+        previewVersion: preview.version,
+        html: preview.html,
+      }
   },
 })
 
@@ -749,29 +750,29 @@ export const publishPreview = mutation({
       .withIndex('by_slug', (index) => index.eq('slug', slug))
       .first()
 
-    ;(existingBySlug === null || existingBySlug.sessionId === args.sessionId) ||
-      (() => {
-        throw new ConvexError({ code: 'SLUG_TAKEN', message: 'Deployment slug is already taken' })
-      })()
+      ; (existingBySlug === null || existingBySlug.sessionId === args.sessionId) ||
+        (() => {
+          throw new ConvexError({ code: 'SLUG_TAKEN', message: 'Deployment slug is already taken' })
+        })()
 
     const url = createDeploymentUrl(slug)
 
     existingDeployment === null
       ? await ctx.db.insert('deployments', {
-          sessionId: args.sessionId,
-          slug,
-          url,
-          status: 'ready',
-          createdAt: now,
-          updatedAt: now,
-        })
+        sessionId: args.sessionId,
+        slug,
+        url,
+        status: 'ready',
+        createdAt: now,
+        updatedAt: now,
+      })
       : await ctx.db.patch(existingDeployment._id, {
-          slug,
-          url,
-          status: 'ready',
-          errorMessage: undefined,
-          updatedAt: now,
-        })
+        slug,
+        url,
+        status: 'ready',
+        errorMessage: undefined,
+        updatedAt: now,
+      })
 
     await ctx.db.insert('generationEvents', {
       sessionId: args.sessionId,
@@ -854,6 +855,7 @@ export const completeGeneration = internalMutation({
     siteSpecJson: v.optional(v.string()),
     openUiSource: v.optional(v.string()),
     tasks: v.array(engineTask),
+    elapsed: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId)
@@ -889,6 +891,7 @@ export const completeGeneration = internalMutation({
     await ctx.db.patch(args.sessionId, {
       status: 'preview_ready',
       previewVersion,
+      elapsed: args.elapsed,
       updatedAt: now,
     })
 
@@ -901,6 +904,7 @@ export const failGeneration = internalMutation({
     sessionId: v.id('sessions'),
     anonymousOwnerSecret: v.optional(v.string()),
     message: v.string(),
+    elapsed: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId)
@@ -936,6 +940,7 @@ export const failGeneration = internalMutation({
       status: 'failed',
       errorCode: 'GENERATION_FAILED',
       errorMessage: args.message,
+      elapsed: args.elapsed,
       updatedAt: now,
     })
 
@@ -1036,15 +1041,15 @@ export const createExport = mutation({
       existingExport !== null
         ? existingExport._id
         : await ctx.db.insert('exports', {
-            sessionId: args.sessionId,
-            target: args.target,
-            status: 'ready',
-            artifactPath: `preview-${preview.version}.html`,
-            fileCount: 1,
-            requiresPayment: false,
-            createdAt: now,
-            updatedAt: now,
-          })
+          sessionId: args.sessionId,
+          target: args.target,
+          status: 'ready',
+          artifactPath: `preview-${preview.version}.html`,
+          fileCount: 1,
+          requiresPayment: false,
+          createdAt: now,
+          updatedAt: now,
+        })
 
     if (existingExport !== null) {
       await ctx.db.patch(exportId, {
@@ -1089,15 +1094,15 @@ export const getExport = query({
     return exportRecord === null
       ? null
       : {
-          exportId: exportRecord._id,
-          target: exportRecord.target,
-          status: exportRecord.status,
-          fileCount: exportRecord.fileCount,
-          requiresPayment: exportRecord.requiresPayment,
-          errorMessage: exportRecord.errorMessage,
-          createdAt: exportRecord.createdAt,
-          updatedAt: exportRecord.updatedAt,
-        }
+        exportId: exportRecord._id,
+        target: exportRecord.target,
+        status: exportRecord.status,
+        fileCount: exportRecord.fileCount,
+        requiresPayment: exportRecord.requiresPayment,
+        errorMessage: exportRecord.errorMessage,
+        createdAt: exportRecord.createdAt,
+        updatedAt: exportRecord.updatedAt,
+      }
   },
 })
 
@@ -1363,8 +1368,8 @@ export const deleteAnnotation = mutation({
     annotation !== null && annotation.sessionId === args.sessionId
       ? await ctx.db.delete(args.annotationId)
       : (() => {
-          throw new ConvexError({ code: 'NOT_FOUND', message: 'Annotation not found for this session' })
-        })()
+        throw new ConvexError({ code: 'NOT_FOUND', message: 'Annotation not found for this session' })
+      })()
 
     return { sessionId: args.sessionId }
   },
@@ -1488,15 +1493,15 @@ export const getCmsConfig = query({
     return config === null
       ? null
       : {
-          configId: config._id,
-          status: config.status,
-          projectId: config.projectId,
-          dataset: config.dataset,
-          configJson: config.configJson,
-          errorMessage: config.errorMessage,
-          createdAt: config.createdAt,
-          updatedAt: config.updatedAt,
-        }
+        configId: config._id,
+        status: config.status,
+        projectId: config.projectId,
+        dataset: config.dataset,
+        configJson: config.configJson,
+        errorMessage: config.errorMessage,
+        createdAt: config.createdAt,
+        updatedAt: config.updatedAt,
+      }
   },
 })
 
@@ -1564,17 +1569,17 @@ export const getCommerceConfig = query({
     return config === null
       ? null
       : {
-          configId: config._id,
-          status: config.status,
-          backendUrl: config.backendUrl,
-          adminUrl: config.adminUrl,
-          storefrontUrl: config.storefrontUrl,
-          productCount: config.productCount,
-          configJson: config.configJson,
-          errorMessage: config.errorMessage,
-          createdAt: config.createdAt,
-          updatedAt: config.updatedAt,
-        }
+        configId: config._id,
+        status: config.status,
+        backendUrl: config.backendUrl,
+        adminUrl: config.adminUrl,
+        storefrontUrl: config.storefrontUrl,
+        productCount: config.productCount,
+        configJson: config.configJson,
+        errorMessage: config.errorMessage,
+        createdAt: config.createdAt,
+        updatedAt: config.updatedAt,
+      }
   },
 })
 

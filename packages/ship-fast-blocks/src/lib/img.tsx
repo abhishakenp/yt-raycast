@@ -29,8 +29,15 @@ export function picsum(alt: unknown, w = 800, h = 600): string {
   return `https://picsum.photos/seed/${seed}/${w}/${h}`
 }
 
-/** Drop-in replacement for `<img>`.
- *  Pass a static `src` such as `/api/pexels?query=...&w=800&h=600`; the component renders it verbatim for SSR. */
+/** Generate proxy URL for Pexels image. */
+function getPexelsProxyUrl(alt: unknown, w: number, h: number): string {
+  const seed = slugify(alt)
+  return `/api/pexels?query=${encodeURIComponent(seed)}&w=${w}&h=${h}`
+}
+
+/** Drop-in replacement for `<img>` that resolves a relevant Pexels image from `alt` text.
+ *  Uses server-side proxy for SSR compatibility. Pass an explicit `src` to use a pre-resolved URL verbatim
+ *  (e.g. a photo already synced to Medusa), bypassing Pexels resolution entirely. */
 export function Image({
   alt,
   src,
@@ -46,7 +53,7 @@ export function Image({
   h?: number
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "alt" | "width" | "height">) {
   const normalizedAlt = normalizeAlt(alt)
-  const imageSrc = typeof src === "string" && src.trim() ? src : picsum(normalizedAlt, w, h)
+  const imageSrc = typeof src === "string" && src.trim() ? src : getPexelsProxyUrl(normalizedAlt, w, h)
 
   return (
     <img
