@@ -31,7 +31,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
           <div class="relative flex flex-col rounded-[26px] border border-white/6 bg-[rgba(17,17,19,0.72)] p-[32px_28px_28px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
             <p class="mb-3.5 font-mono text-xs uppercase tracking-[0.18em] text-[#97a0b0]">Free</p>
             <div class="flex items-end gap-2">
-              <span class="font-[var(--font-display)] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹0</span>
+              <span class="font-['Fraunces',Georgia,serif] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹0</span>
             </div>
             <p class="mb-6 mt-1.5 text-sm leading-[1.55] text-[#c4c9d4]">Preview the magic — no card needed.</p>
             <div class="mb-5 h-px bg-white/[0.06]"></div>
@@ -64,7 +64,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
             ${glassPillButtonHtml({ className: 'mt-auto min-h-11 w-full px-5 py-0 font-mono text-[13px] font-semibold uppercase tracking-[0.1em] text-[#c4c9d4]', extraAttrs: goHome, text: 'Start free' })}
           </div>
 
-          <div class="relative flex scale-[1.03] flex-col rounded-[26px] border border-[rgba(138,180,255,0.22)] bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-[32px_28px_28px] shadow-[var(--glass-shadow),0_0_0_1px_rgba(138,180,255,0.12),0_0_48px_rgba(28,171,255,0.1),0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-[20px] max-[1024px]:scale-100">
+          <div class="relative flex scale-[1.03] flex-col rounded-[26px] border border-[rgba(138,180,255,0.22)] bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-[32px_28px_28px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_0_1px_rgba(138,180,255,0.12),0_0_48px_rgba(28,171,255,0.1),0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-[20px] max-[1024px]:scale-100">
             <div class="absolute left-1/2 top-[-13px] -translate-x-1/2 rounded-full bg-[linear-gradient(135deg,rgba(109,251,255,0.95),rgba(56,168,255,0.95))] px-3.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#00121a] shadow-[0_4px_18px_rgba(38,231,255,0.25)]" aria-label="Most popular plan">Most Popular</div>
             <p class="mb-3.5 font-mono text-xs uppercase tracking-[0.18em] text-[#c4c9d4]">Pro</p>
             <div class="mb-2.5 inline-flex w-fit items-center gap-1.5 rounded-md border border-white/12 bg-white/[0.06] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-[#cdd1d8]" aria-label="Early adopter offer">
@@ -114,10 +114,10 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
             <p class="mt-2.5 text-center font-mono text-[11px] tracking-[0.06em] text-[#97a0b0]">First 500 users only · cancel anytime</p>
           </div>
 
-          <div class="relative flex flex-col rounded-[26px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-[32px_28px_28px] opacity-60 shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[1024px]:hidden max-[720px]:flex" aria-label="Future full price plan">
+          <div class="relative flex flex-col rounded-[26px] border border-white/6 bg-[rgba(17,17,19,0.72)] p-[32px_28px_28px] opacity-60 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[1024px]:hidden max-[720px]:flex" aria-label="Future full price plan">
             <p class="mb-3.5 font-mono text-xs uppercase tracking-[0.18em] text-[#97a0b0]">Pro</p>
             <div class="flex items-end gap-2">
-              <span class="font-[var(--font-display)] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹399</span>
+              <span class="font-['Fraunces',Georgia,serif] text-5xl font-normal leading-none tracking-[-0.04em] text-[#EDEDEF]">₹399</span>
               <span class="pb-1 text-[15px] text-[#97a0b0]">/month</span>
             </div>
             <p class="mb-6 mt-1.5 text-sm leading-[1.55] text-[#c4c9d4]">Full price once early adopter slots are gone.</p>
@@ -219,7 +219,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
       <section class="mb-14" aria-labelledby="compare-heading">
         <div class="mb-2.5 text-center">
           <span class="mb-2.5 block font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Compare</span>
-          <h2 class="m-0 text-balance font-[var(--font-display)] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="compare-heading">Everything, side by side.</h2>
+          <h2 class="m-0 text-balance font-['Fraunces',Georgia,serif] text-[clamp(1.6rem,3vw,2.4rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="compare-heading">Everything, side by side.</h2>
         </div>
         <div class="mt-7 overflow-x-auto rounded-[18px] border border-white/6 bg-[rgba(17,17,19,0.72)] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px]">
           <table class="w-full min-w-[720px] border-collapse text-left text-sm text-white/58 [&_td]:border-t [&_td]:border-white/8 [&_td]:px-5 [&_td]:py-4 [&_th]:px-5 [&_th]:py-4 [&_th]:font-mono [&_th]:text-xs [&_th]:font-bold [&_th]:uppercase [&_th]:tracking-[0.12em] [&_th]:text-white/45" aria-label="Feature comparison between plans">
@@ -337,7 +337,7 @@ export const PRICING_PAGE_MAIN_HTML = `<div class="relative z-[1] mx-auto w-[min
         </div>
       </section>
 
-      <section class="mb-8 flex flex-col items-center gap-5 rounded-[26px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-10 py-[52px] text-center shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:px-6 max-[720px]:py-9" aria-labelledby="cta-heading">
+      <section class="mb-8 flex flex-col items-center gap-5 rounded-[26px] border border-white/6 bg-[rgba(17,17,19,0.72)] px-10 py-[52px] text-center shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:px-6 max-[720px]:py-9" aria-labelledby="cta-heading">
         <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Ready to ship?</span>
         <h2 class="m-0 max-w-[18ch] text-balance font-['Fraunces',Georgia,serif] text-[clamp(1.8rem,4vw,2.8rem)] uppercase leading-[1.1] tracking-[-0.03em] text-[#fffdf6]" id="cta-heading">Build your SaaS in seconds.<br>Lock the rate forever.</h2>
         <p class="m-0 max-w-[46ch] text-base leading-[1.65] text-[#c4c9d4]">153 slots remaining. Once they're gone, the price goes up — and it won't come back.</p>

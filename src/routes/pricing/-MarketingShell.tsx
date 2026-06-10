@@ -29,7 +29,7 @@ export const MarketingShell = ({
         <div className="pointer-events-auto ml-auto flex items-center gap-2">
           <a
             href="/pricing"
-            className="relative isolate inline-flex min-h-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-4 py-0 font-sans text-[13px] font-medium text-[var(--text-primary,#f0f0f5)] shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            className="relative isolate inline-flex min-h-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
           >
             <span className="relative z-[7] inline-flex items-center justify-center gap-1.5 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">
               Pricing
@@ -63,7 +63,7 @@ export const MarketingShell = ({
       {children}
 
       {footer && (
-        <footer className="relative z-[1] mx-auto mb-6 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-7 py-[22px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
+        <footer className="relative z-[1] mx-auto mb-6 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-white/6 bg-[rgba(17,17,19,0.72)] px-7 py-[22px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
           <span className="font-mono text-[13px] tracking-[0.12em] text-[#97a0b0]">SHIP FAST © {new Date().getFullYear()}</span>
           <nav className="flex flex-wrap items-center gap-5 [&_a]:text-[13px] [&_a]:text-[#97a0b0] [&_a]:transition-colors hover:[&_a]:text-[#EDEDEF]" aria-label="Footer links">
             <a href="/">Home</a>
