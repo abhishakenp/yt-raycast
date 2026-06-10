@@ -21,6 +21,8 @@ const taskStatus = v.union(
   v.literal('failed'),
 )
 
+const publicGalleryStatuses = ['homepage_ready', 'site_spec_ready', 'preview_ready', 'failed'] as const
+
 const engineTask = v.object({
   id: v.string(),
   label: v.string(),
@@ -114,6 +116,7 @@ const serializeSession = (session: Doc<'sessions'>) => ({
   updatedAt: session.updatedAt ?? session.createdAt,
   errorCode: session.errorCode,
   errorMessage: session.errorMessage,
+  deploymentSlug: session.deploymentSlug,
 })
 
 const toTaskStatus = (status: 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'FAILED') =>
@@ -273,6 +276,31 @@ export const create = mutation({
         : { sessionId, anonymousOwnerSecret: args.anonymousOwnerSecret }
 
     await ctx.scheduler.runAfter(0, (internal as any).generation.startGeneration, generationArgs)
+
+    // Generate unique slug for session (fire-and-forget, no await)
+    ;(async () => {
+      const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
+      let finalSlug = baseSlug
+      let attempts = 0
+      const maxAttempts = 10
+
+      while (attempts < maxAttempts) {
+        const existing = await ctx.db
+          .query('sessions')
+          .withIndex('by_deploymentSlug', (index) => index.eq('deploymentSlug', finalSlug))
+          .first()
+
+        if (!existing || existing._id === sessionId) {
+          break
+        }
+
+        const randomSuffix = Math.random().toString(16).slice(2, 6)
+        finalSlug = `${baseSlug}-${randomSuffix}`
+        attempts++
+      }
+
+      await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
+    })()
 
     return { sessionId }
   },
@@ -1473,19 +1501,30 @@ export const listPublicSessions = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 20
-    const sessions = await ctx.db
-      .query('sessions')
-      .withIndex('by_public_createdAt', (index) => index.eq('isPrivate', false))
-      .order('desc')
-      .collect()
+    const limit = Math.min(Math.max(args.limit ?? 48, 1), 96)
+    const sessionsByStatus = await Promise.all(
+      publicGalleryStatuses.map((status) =>
+        ctx.db
+          .query('sessions')
+          .withIndex('by_public_status_createdAt', (index) =>
+            index.eq('isPrivate', false).eq('status', status),
+          )
+          .order('desc')
+          .take(limit),
+      ),
+    )
+    const sessions = sessionsByStatus
+      .flat()
+      .sort((left, right) => (right.createdAt ?? 0) - (left.createdAt ?? 0))
+      .slice(0, limit)
 
-    return sessions.slice(0, limit).map((session) => ({
+    return sessions.map((session) => ({
       sessionId: session._id,
       prompt: session.prompt,
       status: session.status,
       previewVersion: session.previewVersion,
       createdAt: session.createdAt,
+      elapsed: session.elapsed,
     }))
   },
 })

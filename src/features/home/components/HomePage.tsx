@@ -428,23 +428,23 @@ export const HomePage = () => {
         Sorry, Wappalyzer won't help you this time
       </div>
 
-      <div className="flex w-full flex-col items-center">
-        <div className="relative z-[4] flex w-full max-w-[640px] min-w-0 flex-col items-center px-6 pt-[120px] pb-[60px] max-[760px]:px-6 max-[760px]:pt-[112px] max-[760px]:pb-10">
+      <div className="w-full">
+        <div className="relative z-[4] mx-auto flex w-[min(1200px,calc(100%_-_48px))] max-w-[1200px] min-w-0 flex-col items-stretch p-0 max-[1100px]:w-[min(760px,calc(100%_-_48px))] max-[760px]:w-[calc(100%_-_24px)]">
           <h1 className="sr-only">Ship Fast - AI website generator</h1>
-          <div className="mb-10 flex w-full flex-col items-center gap-2">
-            <div className="flex items-center gap-3">
-              <div className="size-12 text-cyan-300 drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] [&_svg]:size-full">
+          <div className="absolute left-0 top-[34px] z-[14] mb-0 flex w-auto flex-col items-start gap-2">
+            <div className="flex items-center gap-[13px] max-[760px]:gap-2">
+              <div className="size-[clamp(44px,4vw,52px)] text-cyan-300 drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] max-[760px]:size-8 [&_svg]:size-full">
                 <LogoMark />
               </div>
-              <span className="bg-[linear-gradient(135deg,#ffffff_0%,#dffbff_46%,#23e5ff_100%)] bg-[length:180%_180%] bg-clip-text font-sans text-[34px] font-extrabold tracking-[-0.055em] text-transparent [-webkit-text-fill-color:transparent]">SHIP FAST</span>
+              <span className="bg-[linear-gradient(135deg,#ffffff_0%,#dffbff_46%,#23e5ff_100%)] bg-[length:180%_180%] bg-clip-text font-sans text-[clamp(42px,4.2vw,56px)] font-extrabold tracking-[-0.055em] text-transparent [-webkit-text-fill-color:transparent] max-[760px]:text-[clamp(32px,9vw,40px)] max-[760px]:tracking-[-0.035em]">SHIP FAST</span>
             </div>
             <p className="m-0 text-center font-mono text-xs uppercase tracking-[0.18em] text-white/45" id="logo-tagline" aria-live="polite" aria-hidden="true" />
           </div>
 
-          <section className="relative flex w-full flex-col items-center gap-6" aria-label="Print your mind in seconds">
-            <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center opacity-80" aria-hidden="true">
+          <section className="relative grid min-h-[100svh] w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(32px,5vw,62px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:min-h-[760px] max-[760px]:rounded-[22px] max-[760px]:p-[22px]" aria-label="Print your mind in seconds">
+            <div className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-visible" aria-hidden="true">
               <img
-                className="w-[min(88vw,560px)] max-w-full translate-y-10 opacity-65 drop-shadow-[0_0_80px_rgba(38,231,255,0.22)]"
+                className="absolute left-0 top-0 z-[-1] block h-screen max-h-screen w-screen max-w-screen select-none object-contain object-right opacity-100 drop-shadow-[20px_-10px_42px_rgba(223,53,255,0.18)]"
                 src="/assets/rocket-transparent.png"
                 alt=""
                 loading="eager"
@@ -452,26 +452,26 @@ export const HomePage = () => {
               />
             </div>
 
-            <div className="relative z-[2] w-full text-center">
-              <p className="mb-4 font-mono text-xs uppercase tracking-[0.2em] text-cyan-200/75">Prompt. Generate. Launch.</p>
-              <h2 className="font-[var(--font-display)] text-[clamp(2.5rem,8vw,4.6rem)] leading-[0.92] tracking-[-0.055em] text-white">
+            <div className="relative z-[4] flex w-full flex-col items-start justify-start pt-[clamp(34px,3vw,44px)] text-left max-[1100px]:items-center max-[1100px]:pt-0 max-[1100px]:text-center max-[760px]:pt-[92px]">
+              <p className="m-0 mb-[18px] font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#26e7ff] [text-shadow:0_0_18px_rgba(38,231,255,0.48)]">Prompt. Generate. Launch.</p>
+              <h2 className="m-0 max-w-[640px] text-balance font-sans text-[clamp(22px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[-0.02em] text-[rgba(221,236,255,0.92)] [text-shadow:0_1px_0_rgba(255,255,255,0.35),0_0_24px_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.38)] max-[760px]:text-[clamp(20px,5.5vw,28px)]">
                 Print your mind
                 <br />
                 in seconds
               </h2>
             </div>
 
-            <div className="relative z-[3] w-full">
-              <div className="grid w-full gap-4">
-                <div className="rounded-[28px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-2 shadow-[var(--glass-shadow)] backdrop-blur-[20px]" id="hero-card">
-                  <div className="rounded-[22px] border border-white/10 bg-black/25 p-5">
-                    <form id="prompt-form" className="grid gap-4" onSubmit={handleSubmit}>
+            <div className="relative z-[1] flex min-h-[clamp(360px,34vw,420px)] w-full flex-col items-stretch justify-start max-[1100px]:min-h-[720px]">
+              <div className="relative z-[8] mx-auto flex w-full max-w-none flex-col gap-0 max-[1100px]:w-[min(100%,680px)]">
+                <div className="relative isolate w-full overflow-hidden rounded-[26px] bg-[linear-gradient(145deg,rgba(7,15,38,0.78),rgba(4,6,18,0.62)),radial-gradient(circle_at_50%_0%,rgba(38,231,255,0.2),transparent_32rem)] p-px shadow-[0_0_0_1px_rgba(38,231,255,0.26),0_0_0_5px_rgba(38,231,255,0.04),0_24px_70px_rgba(0,0,0,0.42),0_0_70px_rgba(32,136,255,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.6] before:pointer-events-none before:absolute before:inset-[-1px] before:z-0 before:rounded-[inherit] before:bg-[radial-gradient(ellipse_82%_70%_at_50%_0%,rgba(38,231,255,0.24),transparent_58%),linear-gradient(120deg,rgba(38,231,255,0.28),transparent_24%,rgba(223,53,255,0.2)_76%,transparent)] before:opacity-70 after:pointer-events-none after:absolute after:bottom-0 after:left-[6%] after:right-[6%] after:z-[1] after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(38,231,255,0.66),rgba(223,53,255,0.55),transparent)]" id="hero-card">
+                  <div className="relative z-[2] min-w-0 overflow-hidden rounded-[25px] bg-transparent p-[clamp(22px,2.1vw,30px)]">
+                    <form id="prompt-form" className="flex w-full min-w-0 flex-col gap-[11px]" onSubmit={handleSubmit}>
                       <label className="sr-only" htmlFor="prompt-input">
                         Describe the website you want to build
                       </label>
-                      <div className="relative">
+                      <div className="relative w-full [--prompt-caption-block:calc(11px*1.25)] [--prompt-caption-gap:8px] [--prompt-inset-bottom:48px] [--prompt-inset-top:16px] [--prompt-inset-x:16px] [--prompt-text-start:calc(var(--prompt-inset-top)+var(--prompt-caption-block)+var(--prompt-caption-gap))]">
                         <textarea
-                          className="min-h-32 w-full resize-none rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-input)] px-5 py-4 font-sans text-base leading-relaxed text-[var(--text-primary)] outline-none transition-all duration-300 placeholder:text-transparent focus:border-[var(--border-accent)] focus:shadow-[0_0_0_3px_rgba(138,180,255,0.08),0_0_20px_rgba(138,180,255,0.06)]"
+                          className="min-h-[clamp(142px,14vw,166px)] w-full resize-y rounded-[var(--radius-lg)] border border-[rgba(38,231,255,0.2)] bg-[rgba(0,8,22,0.72)] px-[var(--prompt-inset-x)] pt-[var(--prompt-text-start)] pb-[var(--prompt-inset-bottom)] font-sans text-[15px] leading-[1.6] text-[#f6fdff] caret-[var(--accent-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),inset_0_-22px_70px_rgba(32,136,255,0.08)] outline-none transition-all duration-300 placeholder:text-transparent hover:border-[rgba(38,231,255,0.62)] focus:border-[rgba(38,231,255,0.62)] focus:shadow-[0_0_0_3px_rgba(38,231,255,0.11),0_0_35px_rgba(38,231,255,0.13),inset_0_-22px_70px_rgba(32,136,255,0.1)]"
                           id="prompt-input"
                           name="prompt"
                           placeholder=""
@@ -483,9 +483,9 @@ export const HomePage = () => {
                           value={prompt}
                           onChange={(event) => setPrompt(event.currentTarget.value)}
                         />
-                        <div className={cn('pointer-events-none absolute inset-x-5 top-4 text-left', prompt && 'hidden')} id="prompt-placeholder" aria-hidden="true">
-                          <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">Try a prompt like</span>
-                          <span className="block text-base leading-relaxed text-white/45">
+                        <div className={cn('pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200', prompt && 'opacity-0')} id="prompt-placeholder" aria-hidden="true">
+                          <span className="block font-sans text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-[rgba(38,231,255,0.88)]">Try a prompt like</span>
+                          <span className="block max-h-[calc(1.6em*3)] max-w-full overflow-hidden text-[15px] leading-[1.6] text-[rgba(219,237,255,0.48)] [mask-image:linear-gradient(180deg,#000_70%,transparent)]">
                             <span id="prompt-placeholder-text">
                               {prompt ? '' : visiblePlaceholder}
                             </span>
@@ -554,27 +554,27 @@ export const HomePage = () => {
                       <input type="hidden" id="design-ref-url-2" name="design-ref-url-2" value="" />
                       <input type="hidden" id="design-ref-notes" name="design-ref-notes" value="" />
 
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
+                      <div className="mt-1.5 flex w-full flex-wrap items-center justify-between gap-3">
+                        <div className="flex shrink-0 items-center gap-2.5">
                           <input
                             type="checkbox"
-                            className="size-4 accent-cyan-300"
+                            className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-[var(--border-primary)] bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-[var(--text-muted)] before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
                             id="design-ref-toggle"
                             checked={designRefOpen}
                             onChange={(event) => setDesignRefOpen(event.currentTarget.checked)}
                           />
-                          <label className="text-sm text-white/60" htmlFor="design-ref-toggle">
+                          <label className="text-sm text-[rgba(219,237,255,0.75)]" htmlFor="design-ref-toggle">
                             Layout inspiration
                           </label>
                         </div>
                         <GlassPillButton
                           type="submit"
-                          className={cn('min-h-12 px-5 py-0 text-sm text-white', isSubmitting && 'opacity-70')}
+                          className={cn('min-h-11 px-[22px] py-2.5 text-sm font-extrabold text-[#00121a] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset,0_0_34px_rgba(38,231,255,0.22),0_16px_34px_rgba(0,0,0,0.34)] disabled:text-[rgba(230,248,255,0.46)] max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:px-0', canSubmit && 'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)]', isSubmitting && 'opacity-70')}
                           id="submit-btn"
                           disabled={!canSubmit}
                         >
                           <ZapIcon />
-                          <span>Generate</span>
+                          <span className="max-[760px]:hidden">Generate</span>
                           <div className={cn('hidden size-4 animate-spin rounded-full border-2 border-white/20 border-t-white', isSubmitting && 'block')} />
                         </GlassPillButton>
                       </div>
@@ -666,19 +666,19 @@ export const HomePage = () => {
                 </div>
 
                 <div>
-                  <div className="grid grid-cols-2 gap-3 max-[460px]:grid-cols-2" aria-label="Example prompts">
+                  <div className="mx-auto mt-3.5 flex max-w-full flex-wrap justify-center gap-2 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:justify-start" aria-label="Example prompts">
                     {EXAMPLE_CHIPS.map(([label, value], index) => (
                       <button
                         key={label}
                         type="button"
-                        className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 text-left text-white/80 shadow-[0_8px_24px_rgba(0,0,0,0.22)] backdrop-blur-[14px] transition-all duration-300 hover:-translate-y-px hover:border-white/20 hover:bg-white/[0.07]"
+                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.05] px-[11px] py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
                         data-prompt={value}
                         data-react-owned="true"
                         title={value}
                         onClick={() => handleExamplePrompt(value)}
                       >
-                        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-cyan-300/10 font-mono text-xs text-cyan-200">{index + 1}</span>
-                        <span className="text-sm font-medium">{label}</span>
+                        <span className="inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded bg-violet-600/55 px-1 text-[10px] font-bold text-white">{index + 1}</span>
+                        <span className="whitespace-nowrap">{label}</span>
                       </button>
                     ))}
                   </div>
@@ -705,7 +705,7 @@ export const HomePage = () => {
         </div>
       </div>
 
-      <footer className="relative z-[1] mx-auto mb-8 flex w-[min(1160px,calc(100%-48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-7 py-[22px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%-32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
+      <footer className="relative z-[1] mx-auto mb-8 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-7 py-[22px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
         <span className="font-mono text-[13px] tracking-[0.12em] text-[#97a0b0]">SHIP FAST © {footerYear}</span>
         <nav className="flex flex-wrap items-center gap-5 [&_a]:text-[13px] [&_a]:text-[#97a0b0] [&_a]:transition-colors hover:[&_a]:text-[#EDEDEF]" aria-label="Footer links">
           <a href="/">Home</a>
