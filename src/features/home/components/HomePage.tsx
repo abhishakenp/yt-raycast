@@ -310,14 +310,14 @@ const PrivateGenerationModal = ({
 const TopActions = () => (
   <nav className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4" aria-label="Primary">
     <div className="pointer-events-auto ml-auto flex items-center gap-2">
-      <GlassPillAnchor className="min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[var(--text-primary,#f0f0f5)] [&>span:last-child]:gap-1.5" href="/pricing">
+      <GlassPillAnchor className="min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5" href="/pricing">
         Pricing
       </GlassPillAnchor>
       {isClerkConfigured ? (
         <>
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <GlassPillButton className="min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[var(--text-primary,#f0f0f5)] [&>span:last-child]:gap-1.5">Sign in</GlassPillButton>
+              <GlassPillButton className="min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5">Sign in</GlassPillButton>
             </SignInButton>
           </Show>
           <Show when="signed-in">
@@ -418,7 +418,7 @@ export const HomePage = () => {
   const footerYear = new Date().getFullYear()
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden text-[var(--text-primary)]">
+    <div className="min-h-screen w-full overflow-x-hidden text-[#f0f0f5]">
       <GlassDefs />
       <LaunchBackdrop />
 
@@ -692,7 +692,7 @@ export const HomePage = () => {
         </div>
       </div>
 
-      <footer className="relative z-[1] mx-auto mb-8 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] px-7 py-[22px] shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
+      <footer className="relative z-[1] mx-auto mb-8 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-white/6 bg-[rgba(17,17,19,0.72)] px-7 py-[22px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
         <span className="font-mono text-[13px] tracking-[0.12em] text-[#97a0b0]">SHIP FAST © {footerYear}</span>
         <nav className="flex flex-wrap items-center gap-5 [&_a]:text-[13px] [&_a]:text-[#97a0b0] [&_a]:transition-colors hover:[&_a]:text-[#EDEDEF]" aria-label="Footer links">
           <a href="/">Home</a>
