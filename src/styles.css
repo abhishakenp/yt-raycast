@@ -416,6 +416,21 @@ a {
   flex-wrap: wrap;
 }
 
+.genui-preview[data-preview-device='mobile']
+  :where([class*="hidden"][class*="md:flex"], [class*="hidden"][class*="lg:flex"], [class*="hidden"][class*="xl:flex"]) {
+  display: none !important;
+}
+
+.genui-preview[data-preview-device='mobile']
+  :where(button[class*="md:hidden"], button[class*="lg:hidden"], button[class*="xl:hidden"], summary[class*="md:hidden"], summary[class*="lg:hidden"], summary[class*="xl:hidden"], [role="button"][class*="md:hidden"], [role="button"][class*="lg:hidden"], [role="button"][class*="xl:hidden"]) {
+  display: inline-flex !important;
+}
+
+.genui-preview[data-preview-device='mobile']
+  :where(div[class*="flex"][class*="md:hidden"], div[class*="flex"][class*="lg:hidden"], div[class*="flex"][class*="xl:hidden"], nav[class*="flex"][class*="md:hidden"], nav[class*="flex"][class*="lg:hidden"], nav[class*="flex"][class*="xl:hidden"], ul[class*="flex"][class*="md:hidden"], ul[class*="flex"][class*="lg:hidden"], ul[class*="flex"][class*="xl:hidden"], aside[class*="flex"][class*="md:hidden"], aside[class*="flex"][class*="lg:hidden"], aside[class*="flex"][class*="xl:hidden"]) {
+  display: flex !important;
+}
+
 .genui-preview[data-preview-device='tablet']
   :where([class*="lg:grid-cols-"], [class*="xl:grid-cols-"]) {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
