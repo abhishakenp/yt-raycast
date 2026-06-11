@@ -5,8 +5,7 @@ import { createExportResponse } from '@/features/exports/server/create-export-re
 export const Route = createFileRoute('/export/$sessionId/$target')({
   server: {
     handlers: {
-      GET: async ({ params }) =>
-        await createExportResponse(params.sessionId, params.target as 'html' | 'react' | 'next'),
+      GET: async ({ params, request }) => await createExportResponse(params.sessionId, params.target, request),
     },
   },
 })
