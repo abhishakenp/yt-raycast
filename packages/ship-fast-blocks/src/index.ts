@@ -8,6 +8,8 @@ export { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-quer
 export { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
 import componentSpec from "./generated/component-spec.json"
 export { componentSpec }
+import reactExportSources from "./generated/react-export-sources.json"
+export { reactExportSources }
 
 export {
   IntegrationProvider,
