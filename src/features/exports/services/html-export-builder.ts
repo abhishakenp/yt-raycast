@@ -5,6 +5,18 @@ const SHIP_FAST_BADGE_LOGO_SVG =
 
 export interface HtmlExportOptions {
   includeBadge?: boolean
+  canonicalUrl?: string
+}
+
+export function injectCanonicalUrl(html: string, canonicalUrl: string): string {
+  const clean = String(html || '')
+  const canonicalTag = `<link rel="canonical" href="${canonicalUrl}" />`
+  
+  if (/<head>/i.test(clean)) {
+    return clean.replace(/(<head>)/i, `$1${canonicalTag}`)
+  }
+  
+  return `${canonicalTag}${clean}`
 }
 
 export function injectShipFastBadge(html: string): string {
@@ -15,7 +27,16 @@ export function injectShipFastBadge(html: string): string {
 }
 
 export function buildHtmlExport(previewHtml: string, options: HtmlExportOptions = {}): string {
-  const { includeBadge = true } = options
-  if (!includeBadge) return previewHtml
-  return injectShipFastBadge(previewHtml)
+  const { includeBadge = true, canonicalUrl } = options
+  let html = previewHtml
+  
+  if (canonicalUrl) {
+    html = injectCanonicalUrl(html, canonicalUrl)
+  }
+  
+  if (includeBadge) {
+    html = injectShipFastBadge(html)
+  }
+  
+  return html
 }
