@@ -710,32 +710,29 @@ export const create = mutation({
       generationArgs,
     )
 
-    // Generate unique slug for session (fire-and-forget, no await)
-    ;(async () => {
-      const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
-      let finalSlug = baseSlug
-      let attempts = 0
-      const maxAttempts = 10
+    const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
+    let finalSlug = baseSlug
+    let attempts = 0
+    const maxAttempts = 10
 
-      while (attempts < maxAttempts) {
-        const existing = await ctx.db
-          .query('sessions')
-          .withIndex('by_deploymentSlug', (index) =>
-            index.eq('deploymentSlug', finalSlug),
-          )
-          .first()
+    while (attempts < maxAttempts) {
+      const existing = await ctx.db
+        .query('sessions')
+        .withIndex('by_deploymentSlug', (index) =>
+          index.eq('deploymentSlug', finalSlug),
+        )
+        .first()
 
-        if (!existing || existing._id === sessionId) {
-          break
-        }
-
-        const randomSuffix = Math.random().toString(16).slice(2, 6)
-        finalSlug = `${baseSlug}-${randomSuffix}`
-        attempts++
+      if (!existing || existing._id === sessionId) {
+        break
       }
 
-      await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
-    })()
+      const randomSuffix = Math.random().toString(16).slice(2, 6)
+      finalSlug = `${baseSlug}-${randomSuffix}`
+      attempts++
+    }
+
+    await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
 
     return {
       sessionId,
@@ -2771,7 +2768,7 @@ export const provisionMedusaTenant = internalMutation({
     } else {
       await ctx.db.insert('commerceConfigs', {
         sessionId: args.sessionId,
-        status: 'connected',
+        status: 'ready',
         backendUrl: args.backendUrl,
         adminUrl: args.adminUrl,
         storefrontUrl: args.storefrontUrl,
@@ -2951,20 +2948,6 @@ export const listCmsRevisions = internalQuery({
       .collect()
 
     return revisions
-  },
-})
-
-export const getCommerceConfig = query({
-  args: {
-    sessionId: v.id('sessions'),
-  },
-  handler: async (ctx, args) => {
-    const config = await ctx.db
-      .query('commerceConfigs')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
-      .first()
-
-    return config
   },
 })
 
