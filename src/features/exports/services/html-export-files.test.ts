@@ -12,6 +12,9 @@ describe('createHtmlExportFiles', () => {
     )
 
     expect(files['index.html']).toContain('href="/llms.txt"')
+    expect(files['index.html']).toContain(
+      '<link rel="canonical" href="https://atlas.example/demo/" />',
+    )
     expect(files['robots.txt']).toContain(
       'Sitemap: https://atlas.example/demo/sitemap.xml',
     )
@@ -20,5 +23,17 @@ describe('createHtmlExportFiles', () => {
     )
     expect(files['llms.txt']).toContain('# Atlas Notes')
     expect(files['llms.txt']).toContain('Shared launch docs for small teams.')
+  })
+
+  it('does not inject an example.com canonical URL when no public site URL exists', () => {
+    const files = createHtmlExportFiles(
+      'session_123',
+      'html',
+      '<html><head><title>Draft</title></head><body><h1>Draft</h1></body></html>',
+      { includeBadge: false },
+    )
+
+    expect(files['index.html']).not.toContain('rel="canonical"')
+    expect(files['robots.txt']).toContain('https://example.com/sitemap.xml')
   })
 })

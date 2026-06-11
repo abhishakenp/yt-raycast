@@ -119,6 +119,7 @@ export const createExportResponse = async (
       previewHtml: generationView.latestPreview?.html,
       sessionId,
       target: normalizedTarget,
+      includeBadge: exportRecord.requiresPayment !== false,
       ...readExportThemeOptions(request),
     })
 

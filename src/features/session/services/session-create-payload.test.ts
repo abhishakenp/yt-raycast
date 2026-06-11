@@ -56,4 +56,38 @@ describe('session create payload', () => {
       workspace: 'workspace_abc123',
     })
   })
+
+  it('includes optional design reference context when provided', () => {
+    expect(
+      buildCreateSessionPayload({
+        prompt: 'build a fashion portfolio',
+        preferredLanguage: 'en',
+        isPrivate: false,
+        anonymousOwnerSecret: 'owner-secret',
+        anonymousClientId: 'anon-client',
+        workspace: 'workspace_abc123',
+        designReferenceUrls: [
+          ' https://example.com/editorial ',
+          '',
+          'https://example.com/lookbook',
+        ],
+        designReferenceNotes: ' Use the spacious editorial rhythm. ',
+        cloneUrl: ' https://example.com/editorial ',
+      }),
+    ).toEqual({
+      prompt: 'build a fashion portfolio',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      anonymousOwnerSecret: 'owner-secret',
+      anonymousClientId: 'anon-client',
+      workspace: 'workspace_abc123',
+      designReferenceUrls: [
+        'https://example.com/editorial',
+        'https://example.com/lookbook',
+      ],
+      designReferenceNotes: 'Use the spacious editorial rhythm.',
+      cloneUrl: 'https://example.com/editorial',
+    })
+  })
 })

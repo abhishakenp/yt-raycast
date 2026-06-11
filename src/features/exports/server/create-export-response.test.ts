@@ -4,6 +4,8 @@ import { createExportResponse } from './create-export-response'
 
 const queryMock = vi.fn()
 const fakeClient = { query: queryMock } as never
+const openUiSource = `root = SaasKimiPage("Paid export", ["Home"], {"heading": "Paid export", "highlight": "export"})`
+const siteSpecJson = JSON.stringify({ projectName: 'Paid export' })
 
 describe('createExportResponse', () => {
   beforeEach(() => {
@@ -28,14 +30,19 @@ describe('createExportResponse', () => {
     expect(queryMock).toHaveBeenCalledTimes(1)
   })
 
-  it('returns a badge-free ZIP for ready entitled exports', async () => {
+  it('returns badge-free standalone HTML for ready entitled exports', async () => {
     queryMock
       .mockResolvedValueOnce({
         status: 'ready',
         requiresPayment: false,
       })
       .mockResolvedValueOnce({
-        html: '<html><body><h1>Paid export</h1></body></html>',
+        homeModule: { source: openUiSource },
+        siteSpec: { specJson: siteSpecJson },
+        latestPreview: {
+          html: '<html><body><h1>Paid export</h1></body></html>',
+          version: 1,
+        },
       })
 
     const response = await createExportResponse(
@@ -43,15 +50,11 @@ describe('createExportResponse', () => {
       'html',
       fakeClient,
     )
-    const zip = Buffer.from(await response.arrayBuffer()).toString('utf8')
+    const html = await response.text()
 
     expect(response.status).toBe(200)
-    expect(response.headers.get('content-type')).toBe('application/zip')
-    expect(zip).toContain('index.html')
-    expect(zip).toContain('llms.txt')
-    expect(zip).toContain('robots.txt')
-    expect(zip).toContain('sitemap.xml')
-    expect(zip).toContain('Paid export')
-    expect(zip).not.toContain('data-ship-fast-export-badge="1"')
+    expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8')
+    expect(html).toContain('Paid export')
+    expect(html).not.toContain('data-ship-fast-export-badge="1"')
   })
 })

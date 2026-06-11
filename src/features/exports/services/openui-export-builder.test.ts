@@ -3,8 +3,7 @@ import { strFromU8, unzipSync } from 'fflate'
 
 import { buildOpenUIExport, decodeExportBody, parseOpenUIForExport } from './openui-export-builder'
 
-const source = `root = Stack([hero])
-hero = Heading("Hello export", "1")`
+const source = `root = SaasKimiPage("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
 
 const siteSpecJson = JSON.stringify({ projectName: 'Export Demo' })
 
@@ -19,7 +18,7 @@ describe('openui-export-builder', () => {
 
     expect(parsed.projectName).toBe('Export Demo')
     expect(parsed.routes).toEqual(['Home'])
-    expect(parsed.root.typeName).toBe('Stack')
+    expect(parsed.root.typeName).toBe('SaasKimiPage')
   })
 
   it('builds standalone HTML without exposing OpenUI source', () => {
@@ -51,14 +50,20 @@ describe('openui-export-builder', () => {
     const files = unzipTextFiles(result.body as Uint8Array)
 
     expect(Object.keys(files).sort()).toEqual([
+      '.env.local',
       'README.md',
       'index.html',
       'package.json',
-      'src/App.jsx',
-      'src/main.jsx',
+      'src/App.tsx',
+      'src/components/SaasKimiPage.tsx',
+      'src/data/pages.ts',
+      'src/lib/cn.ts',
+      'src/lib/image.tsx',
+      'src/main.tsx',
       'src/styles.css',
+      'tsconfig.json',
     ])
-    expect(files['src/App.jsx']).toContain('Hello export')
+    expect(files['src/data/pages.ts']).toContain('Hello export')
     expect(Object.values(files).join('\n')).not.toContain('@openuidev')
     expect(Object.values(files).join('\n')).not.toContain('defineComponent')
     expect(Object.values(files).join('\n')).not.toContain('root = Stack')
@@ -73,8 +78,8 @@ describe('openui-export-builder', () => {
     })
     const files = unzipTextFiles(result.body as Uint8Array)
 
-    expect(files['app/page.jsx']).toContain('Hello export')
-    expect(files['app/layout.jsx']).toContain('Export Demo')
+    expect(files['src/data/pages.ts']).toContain('Hello export')
+    expect(files['app/layout.tsx']).toContain('Export Demo')
     expect(Object.values(files).join('\n')).not.toContain('@openuidev')
     expect(Object.values(files).join('\n')).not.toContain('defineComponent')
     expect(Object.values(files).join('\n')).not.toContain('root = Stack')

@@ -5,13 +5,20 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
+const createTestSession = (t: ReturnType<typeof convexTest>, prompt = 'Test store') =>
+  t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_test',
+    anonymousClientId: `anon-${prompt}`,
+  })
+
 test('provisionMedusaTenant creates or updates commerce config', async () => {
   const t = convexTest(schema, modules)
 
-  const sessionId = await t.runMutation(api.sessions.create, {
-    prompt: 'Test store',
-    anonymousClientIdHash: 'test-hash',
-  })
+  const { sessionId } = await createTestSession(t)
 
   const result = await t.runMutation(internal.sessions.provisionMedusaTenant, {
     sessionId,
@@ -29,10 +36,7 @@ test('provisionMedusaTenant creates or updates commerce config', async () => {
 test('syncMedusaProducts updates product count', async () => {
   const t = convexTest(schema, modules)
 
-  const sessionId = await t.runMutation(api.sessions.create, {
-    prompt: 'Test store',
-    anonymousClientIdHash: 'test-hash',
-  })
+  const { sessionId } = await createTestSession(t)
 
   await t.runMutation(internal.sessions.provisionMedusaTenant, {
     sessionId,

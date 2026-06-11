@@ -3,7 +3,8 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    environmentMatchGlobs: [['convex/**/*.test.ts', 'edge-runtime']],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'convex/**/*.test.ts'],
   },
   resolve: {
     alias: {

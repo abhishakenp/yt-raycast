@@ -21,6 +21,7 @@ export type OpenUIExportInput = {
   target: ExportTarget
   themeName?: string
   isDark?: boolean
+  includeBadge?: boolean
 }
 
 export type BuiltExport = {
@@ -829,7 +830,7 @@ ${css}
     ${buildRouteScript(parsed.routes)}
   </script>
 </body>
-</html>`, { includeBadge: true })
+</html>`, { includeBadge: input.includeBadge ?? true })
 }
 
 const escapeHtml = (value: string): string =>

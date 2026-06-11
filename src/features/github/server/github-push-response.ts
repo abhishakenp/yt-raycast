@@ -20,6 +20,8 @@ type GitHubPushBody = {
   branch?: unknown
 }
 
+type GitHubExportTarget = 'html' | 'react' | 'next'
+
 type GitHubRepo = {
   id?: number
   name: string
@@ -35,7 +37,7 @@ type GitHubRef = {
 }
 
 const DEFAULT_GITHUB_API_BASE = 'https://api.github.com'
-const VALID_TARGETS = new Set(['html', 'react', 'next'])
+const VALID_TARGETS = new Set<GitHubExportTarget>(['html', 'react', 'next'])
 const REPO_FULL_NAME_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/
 const BRANCH_RE = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$/
 
@@ -69,12 +71,16 @@ const sanitizeRepoName = (value: string): string =>
     .replace(/^[.-]+|[.-]+$/g, '')
     .slice(0, 90)
 
-const deriveRepoName = (body: GitHubPushBody, prompt: string): string => {
+const deriveRepoName = (
+  body: GitHubPushBody,
+  prompt: string,
+  target: GitHubExportTarget,
+): string => {
   const explicit = sanitizeRepoName(normalizeString(body.repoName))
   if (explicit) return explicit
 
   const fromPrompt = sanitizeRepoName(prompt).split('-').slice(0, 5).join('-')
-  return fromPrompt ? `${fromPrompt}-html` : 'ship-fast-export-html'
+  return fromPrompt ? `${fromPrompt}-${target}` : `ship-fast-export-${target}`
 }
 
 const normalizeBranch = (value: unknown, fallback: string): string => {
@@ -157,6 +163,7 @@ const createRepository = async (
   fetchFn: FetchFn,
   token: string,
   name: string,
+  target: GitHubExportTarget,
 ) =>
   await githubRequest<GitHubRepo>('/user/repos', {
     env,
@@ -168,7 +175,7 @@ const createRepository = async (
       name,
       private: true,
       auto_init: true,
-      description: 'Generated with Ship Fast as an HTML export.',
+      description: `Generated with Ship Fast as a ${target} export.`,
     },
   })
 
@@ -243,6 +250,7 @@ const createCommit = async (
   repoFullName: string,
   treeSha: string,
   parentSha: string,
+  target: GitHubExportTarget,
 ) =>
   await githubRequest<{ sha: string }>(`/repos/${repoFullName}/git/commits`, {
     env,
@@ -251,7 +259,7 @@ const createCommit = async (
     method: 'POST',
     expectedStatus: [201],
     body: {
-      message: 'Ship Fast export (HTML)',
+      message: `Ship Fast export (${target})`,
       tree: treeSha,
       parents: [parentSha],
     },
@@ -283,6 +291,7 @@ const ensureRepository = async (
   token: string,
   body: GitHubPushBody,
   prompt: string,
+  target: GitHubExportTarget,
 ): Promise<{ repo: GitHubRepo; created: boolean }> => {
   const requestedRepo = normalizeString(body.repoFullName)
   if (requestedRepo) {
@@ -298,7 +307,8 @@ const ensureRepository = async (
     env,
     fetchFn,
     token,
-    deriveRepoName(body, prompt),
+    deriveRepoName(body, prompt, target),
+    target,
   )
   if (repo === null) throw new Error('Unable to create GitHub repository.')
   return { repo, created: true }
@@ -334,12 +344,13 @@ export async function createGitHubPushResponse(
   }
 
   const target = normalizeString(body.target) || 'html'
-  if (!VALID_TARGETS.has(target)) {
+  if (!VALID_TARGETS.has(target as GitHubExportTarget)) {
     return json(
       { error: 'Only HTML, React, and Next.js GitHub push is supported.' },
       { status: 400 },
     )
   }
+  const exportTarget = target as GitHubExportTarget
 
   const githubAccessToken = normalizeString(body.githubAccessToken)
   if (!githubAccessToken) {
@@ -353,7 +364,7 @@ export async function createGitHubPushResponse(
       api.sessions.getOwnedExportForGitHubPush,
       {
         sessionId: sessionId as any,
-        target: 'html',
+        target: exportTarget,
       },
     )
     const fetchFn = fetchOverride ?? fetch
@@ -371,6 +382,7 @@ export async function createGitHubPushResponse(
       githubAccessToken,
       body,
       exportData.prompt,
+      exportTarget,
     )
     const branch = normalizeBranch(body.branch, repo.default_branch || 'main')
     let ref = await getBranchRef(
@@ -404,7 +416,7 @@ export async function createGitHubPushResponse(
 
     let files: Record<string, string>
 
-    if (target === 'html') {
+    if (exportTarget === 'html') {
       files = createHtmlExportFiles(
         String(exportData.sessionId),
         'html',
@@ -413,7 +425,7 @@ export async function createGitHubPushResponse(
           includeBadge: exportData.includeBadge,
         },
       )
-    } else if (target === 'react') {
+    } else if (exportTarget === 'react') {
       files = createReactExportFiles(
         String(exportData.sessionId),
         'react',
@@ -422,7 +434,7 @@ export async function createGitHubPushResponse(
           includeBadge: exportData.includeBadge,
         },
       )
-    } else if (target === 'next') {
+    } else if (exportTarget === 'next') {
       files = createNextExportFiles(
         String(exportData.sessionId),
         'next',
@@ -452,6 +464,7 @@ export async function createGitHubPushResponse(
       repo.full_name,
       tree?.sha ?? '',
       ref.object.sha,
+      exportTarget,
     )
 
     if (!commit?.sha) throw new Error('GitHub commit failed.')
@@ -467,7 +480,7 @@ export async function createGitHubPushResponse(
 
     return json({
       ok: true,
-      target: 'html',
+      target: exportTarget,
       repoFullName: repo.full_name,
       repoName: repo.name,
       repoUrl: repo.html_url,

@@ -7,16 +7,19 @@ import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-
 
 export const useEditController = (sessionId: string) => {
   const createEdit = useMutation(api.sessions['createEdit'])
+  const restorePreviewVersion = useMutation(api.sessions.restorePreviewVersion)
   const edits = useQuery(api.sessions.listEdits, { sessionId: sessionId as Id<'sessions'> })
+  const history = useQuery(api.sessions.listPreviewHistory, { sessionId: sessionId as Id<'sessions'> })
   const [editError, setEditError] = useState<string>()
   const [isEditing, setIsEditing] = useState(false)
 
   const applyEdit = async (
-    editType: 'text' | 'ai_rewrite' | 'chat',
+    editType: 'text' | 'ai_rewrite' | 'chat' | 'style',
     targetLabel: string | undefined,
     beforeText: string | undefined,
     afterText: string | undefined,
     instruction: string | undefined,
+    afterHtml?: string,
   ) => {
     setEditError(undefined)
     setIsEditing(true)
@@ -32,6 +35,7 @@ export const useEditController = (sessionId: string) => {
         targetLabel,
         beforeText,
         afterText,
+        afterHtml,
         instruction,
       })
     } catch (error) {
@@ -41,10 +45,32 @@ export const useEditController = (sessionId: string) => {
     }
   }
 
+  const restoreVersion = async (version: number) => {
+    setEditError(undefined)
+    setIsEditing(true)
+
+    try {
+      const anonymousOwnerSecret =
+        typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
+
+      await restorePreviewVersion({
+        sessionId: sessionId as Id<'sessions'>,
+        anonymousOwnerSecret,
+        version,
+      })
+    } catch (error) {
+      setEditError(error instanceof Error ? error.message : 'Restore failed')
+    } finally {
+      setIsEditing(false)
+    }
+  }
+
   return {
     applyEdit,
     editError,
     edits,
+    history,
     isEditing,
+    restoreVersion,
   }
 }

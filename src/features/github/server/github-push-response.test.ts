@@ -46,29 +46,17 @@ function createGitHubFetch() {
       )
     }
 
-    if (
-      method === 'GET' &&
-      parsed.pathname ===
-        '/repos/shipfast-test-user/a-product-website-for-atlas-html/git/ref/heads/main'
-    ) {
+    if (method === 'GET' && /\/git\/ref\/heads\/main$/.test(parsed.pathname)) {
       return new Response(
         JSON.stringify({ ref: 'refs/heads/main', object: { sha: 'base-sha' } }),
       )
     }
 
-    if (
-      method === 'POST' &&
-      parsed.pathname ===
-        '/repos/shipfast-test-user/a-product-website-for-atlas-html/git/trees'
-    ) {
+    if (method === 'POST' && /\/git\/trees$/.test(parsed.pathname)) {
       return new Response(JSON.stringify({ sha: 'tree-sha' }), { status: 201 })
     }
 
-    if (
-      method === 'POST' &&
-      parsed.pathname ===
-        '/repos/shipfast-test-user/a-product-website-for-atlas-html/git/commits'
-    ) {
+    if (method === 'POST' && /\/git\/commits$/.test(parsed.pathname)) {
       return new Response(JSON.stringify({ sha: 'commit-sha' }), {
         status: 201,
       })
@@ -76,8 +64,7 @@ function createGitHubFetch() {
 
     if (
       method === 'PATCH' &&
-      parsed.pathname ===
-        '/repos/shipfast-test-user/a-product-website-for-atlas-html/git/refs/heads/main'
+      /\/git\/refs\/heads\/main$/.test(parsed.pathname)
     ) {
       return new Response(
         JSON.stringify({
@@ -156,8 +143,13 @@ describe('createGitHubPushResponse', () => {
 
     expect(response.status).toBe(200)
     expect(client.setAuth).toHaveBeenCalledWith('app-token')
+    expect(client.query).toHaveBeenCalledWith(expect.anything(), {
+      sessionId: 'session_123',
+      target: 'html',
+    })
     expect(await response.json()).toMatchObject({
       ok: true,
+      target: 'html',
       repoFullName: 'shipfast-test-user/a-product-website-for-atlas-html',
       branch: 'main',
       commitSha: 'commit-sha',
@@ -199,6 +191,69 @@ describe('createGitHubPushResponse', () => {
     ])
   })
 
+  it('pushes React target files when requested', async () => {
+    const { fetchMock, requests } = createGitHubFetch()
+
+    client.query.mockResolvedValueOnce({
+      ...exportData,
+      target: 'react',
+      includeBadge: true,
+    })
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: 'Bearer app-token' },
+          body: JSON.stringify({
+            target: 'react',
+            githubAccessToken: 'ghp_test',
+          }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      fetchMock as never,
+    )
+
+    expect(response.status).toBe(200)
+    expect(client.query).toHaveBeenCalledWith(expect.anything(), {
+      sessionId: 'session_123',
+      target: 'react',
+    })
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      target: 'react',
+      repoFullName: 'shipfast-test-user/a-product-website-for-atlas-react',
+      files: [
+        'README.md',
+        'index.html',
+        'llms.txt',
+        'package.json',
+        'robots.txt',
+        'sitemap.xml',
+        'vite.config.js',
+      ],
+    })
+
+    const createRepoRequest = requests.find(
+      (request) => request.method === 'POST' && request.path === '/user/repos',
+    )
+    expect(createRepoRequest?.body).toMatchObject({
+      name: 'a-product-website-for-atlas-react',
+      description: 'Generated with Ship Fast as a react export.',
+    })
+
+    const commitRequest = requests.find((request) =>
+      request.path.endsWith('/git/commits'),
+    )
+    expect(commitRequest?.body).toMatchObject({
+      message: 'Ship Fast export (react)',
+    })
+  })
+
   it('maps Convex ownership errors to forbidden responses', async () => {
     client.query.mockRejectedValueOnce(
       new Error('FORBIDDEN: You do not own this session'),
@@ -223,5 +278,34 @@ describe('createGitHubPushResponse', () => {
     )
 
     expect(response.status).toBe(403)
+  })
+
+  it('maps missing paid export access to an actionable payment response', async () => {
+    client.query.mockRejectedValueOnce(
+      new Error('PAYMENT_REQUIRED: Subscribe before exporting'),
+    )
+
+    const response = await createGitHubPushResponse(
+      new Request(
+        'https://ship-fast.test/api/sessions/session_123/github/push',
+        {
+          method: 'POST',
+          headers: { authorization: 'Bearer app-token' },
+          body: JSON.stringify({
+            target: 'html',
+            githubAccessToken: 'ghp_test',
+          }),
+        },
+      ),
+      'session_123',
+      env,
+      client,
+      vi.fn() as never,
+    )
+
+    expect(response.status).toBe(402)
+    expect(await response.json()).toMatchObject({
+      error: 'PAYMENT_REQUIRED: Subscribe before exporting',
+    })
   })
 })
