@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { createSessionEventStreamResponse } from './session-event-stream-route'
 
@@ -62,5 +62,41 @@ describe('createSessionEventStreamResponse', () => {
     expect(response.status).toBe(404)
     expect(text).toContain('event: error')
     expect(text).toContain('Session not found')
+  })
+
+  it('forwards bearer auth and anonymous owner secret to Convex', async () => {
+    const setAuth = vi.fn()
+    const client = {
+      query: async (_ref: unknown, args: unknown) => {
+        expect(args).toEqual({
+          lookup: 'session_123',
+          since: 100,
+          anonymousOwnerSecret: 'owner-secret',
+        })
+        return {
+          session: { id: 'session_123' },
+          cursor: 100,
+          events: [],
+        }
+      },
+      setAuth,
+    }
+
+    const response = await createSessionEventStreamResponse(
+      'session_123',
+      new Request(
+        'http://localhost/api/sessions/session_123/stream?since=100',
+        {
+          headers: {
+            authorization: 'Bearer token_123',
+            'x-ship-fast-owner-secret': 'owner-secret',
+          },
+        },
+      ),
+      client,
+    )
+
+    expect(response.status).toBe(200)
+    expect(setAuth).toHaveBeenCalledWith('token_123')
   })
 })

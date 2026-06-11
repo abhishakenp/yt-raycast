@@ -9,7 +9,7 @@ import {
   query,
 } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
-import type { MutationCtx } from './_generated/server'
+import type { MutationCtx, QueryCtx } from './_generated/server'
 
 const internalFunctions = internal as any
 
@@ -1092,9 +1092,57 @@ const toHex = (bytes: ArrayBuffer): string =>
 const hashOwnerSecret = async (ownerSecret: string): Promise<string> =>
   toHex(await crypto.subtle.digest('SHA-256', textEncoder.encode(ownerSecret)))
 
-const getUserId = async (ctx: MutationCtx) => {
+type AuthCtx = Pick<MutationCtx, 'auth'> | Pick<QueryCtx, 'auth'>
+
+const getUserId = async (ctx: AuthCtx) => {
   const identity = await ctx.auth.getUserIdentity()
   return identity?.tokenIdentifier ?? identity?.subject
+}
+
+const isSessionOwner = async (
+  ctx: AuthCtx,
+  session: { userId?: string; anonOwnerSecretHash?: string },
+  anonymousOwnerSecret?: string,
+): Promise<boolean> => {
+  const userId = await getUserId(ctx)
+  const anonymousOwnerSecretHash =
+    anonymousOwnerSecret === undefined
+      ? undefined
+      : await hashOwnerSecret(anonymousOwnerSecret)
+
+  return (
+    (session.userId !== undefined && session.userId === userId) ||
+    (session.userId === undefined &&
+      session.anonOwnerSecretHash !== undefined &&
+      session.anonOwnerSecretHash === anonymousOwnerSecretHash)
+  )
+}
+
+const assertCanReadOwnedSession = async (
+  ctx: AuthCtx,
+  session: { userId?: string; anonOwnerSecretHash?: string },
+  anonymousOwnerSecret?: string,
+) => {
+  ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
+    (() => {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'You do not own this session',
+      })
+    })()
+}
+
+const assertCanReadPrivateSession = async (
+  ctx: AuthCtx,
+  session: {
+    isPrivate?: boolean
+    userId?: string
+    anonOwnerSecretHash?: string
+  },
+  anonymousOwnerSecret?: string,
+) => {
+  if (session.isPrivate !== true) return
+  await assertCanReadOwnedSession(ctx, session, anonymousOwnerSecret)
 }
 
 const getExportEntitlement = async (
@@ -1555,19 +1603,7 @@ const assertCanMutateSession = async (
   session: { userId?: string; anonOwnerSecretHash?: string },
   anonymousOwnerSecret?: string,
 ) => {
-  const userId = await getUserId(ctx)
-  const anonymousOwnerSecretHash =
-    anonymousOwnerSecret === undefined
-      ? undefined
-      : await hashOwnerSecret(anonymousOwnerSecret)
-  const isUserOwner = session.userId !== undefined && session.userId === userId
-  const isAnonymousOwner =
-    session.userId === undefined &&
-    session.anonOwnerSecretHash !== undefined &&
-    session.anonOwnerSecretHash === anonymousOwnerSecretHash
-
-  isUserOwner ||
-    isAnonymousOwner ||
+  ;(await isSessionOwner(ctx, session, anonymousOwnerSecret)) ||
     (() => {
       throw new ConvexError({
         code: 'FORBIDDEN',
@@ -2289,6 +2325,7 @@ export const getEventStream = query({
     lookup: v.optional(v.string()),
     since: v.optional(v.number()),
     limit: v.optional(v.number()),
+    anonymousOwnerSecret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const sessionId: Id<'sessions'> | null =
@@ -2301,6 +2338,11 @@ export const getEventStream = query({
 
     const session = await ctx.db.get(sessionId)
     if (session === null) return null
+    await assertCanReadPrivateSession(
+      ctx,
+      session,
+      args.anonymousOwnerSecret,
+    )
 
     const limit = Math.max(1, Math.min(args.limit ?? 100, 250))
     const events = await ctx.db
@@ -3136,6 +3178,88 @@ export const getExport = query({
           createdAt: exportRecord.createdAt,
           updatedAt: exportRecord.updatedAt,
       }
+  },
+})
+
+export const getOwnedExportDownload = query({
+  args: {
+    sessionId: v.id('sessions'),
+    target: exportTarget,
+    anonymousOwnerSecret: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+
+    session !== null ||
+      (() => {
+        throw new ConvexError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        })
+      })()
+
+    await assertCanReadOwnedSession(
+      ctx,
+      session,
+      args.anonymousOwnerSecret,
+    )
+
+    const exportRecord = await ctx.db
+      .query('exports')
+      .withIndex('by_sessionId_target', (index) =>
+        index.eq('sessionId', args.sessionId).eq('target', args.target),
+      )
+      .first()
+
+    if (exportRecord === null) return null
+
+    const exportPayload = {
+      exportId: exportRecord._id,
+      target: exportRecord.target,
+      status: exportRecord.status,
+      fileCount: exportRecord.fileCount,
+      previewVersion: exportRecord.previewVersion,
+      requiresPayment: exportRecord.requiresPayment,
+      errorMessage: exportRecord.errorMessage,
+      createdAt: exportRecord.createdAt,
+      updatedAt: exportRecord.updatedAt,
+    }
+
+    if (
+      exportRecord.status === 'payment_required' ||
+      exportRecord.requiresPayment === true ||
+      exportRecord.status !== 'ready'
+    ) {
+      return { export: exportPayload }
+    }
+
+    const latestPreview = await ctx.db
+      .query('previews')
+      .withIndex('by_sessionId_version', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
+      .order('desc')
+      .first()
+    const homeModule = await ctx.db
+      .query('generatedModules')
+      .withIndex('by_sessionId_moduleKey', (index) =>
+        index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+      )
+      .first()
+    const siteSpec = await ctx.db
+      .query('siteSpecs')
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
+      .first()
+
+    return {
+      export: exportPayload,
+      source: homeModule?.source,
+      siteSpecJson: siteSpec?.specJson,
+      previewHtml: latestPreview?.html,
+      latestPreviewVersion: latestPreview?.version,
+    }
   },
 })
 
