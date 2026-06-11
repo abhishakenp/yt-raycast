@@ -324,6 +324,17 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_userId', ['userId']),
 
+  creditLedger: defineTable({
+    userId: v.string(),
+    sessionId: v.optional(v.id('sessions')),
+    amount: v.number(),
+    balanceAfter: v.number(),
+    reason: v.string(),
+    createdAt: v.number(),
+  })
+    .index('by_userId', ['userId'])
+    .index('by_userId_createdAt', ['userId', 'createdAt']),
+
   subscriptions: defineTable({
     userId: v.string(),
     provider,
