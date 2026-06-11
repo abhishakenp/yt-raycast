@@ -312,12 +312,22 @@ export default defineSchema({
   sessionData: defineTable({
     sessionId: v.id('sessions'),
     capsule: v.string(),
+    ownerKey: v.optional(v.string()),
+    userId: v.optional(v.string()),
+    anonymousOwnerSecretHash: v.optional(v.string()),
     data: v.record(v.string(), v.any()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index('by_sessionId', ['sessionId'])
-    .index('by_sessionId_capsule', ['sessionId', 'capsule']),
+    .index('by_sessionId_ownerKey', ['sessionId', 'ownerKey'])
+    .index('by_sessionId_capsule', ['sessionId', 'capsule'])
+    .index('by_sessionId_capsule_ownerKey', [
+      'sessionId',
+      'capsule',
+      'ownerKey',
+    ])
+    .index('by_userId', ['userId']),
 
   themeOverrides: defineTable({
     sessionId: v.id('sessions'),

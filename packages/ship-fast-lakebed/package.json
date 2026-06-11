@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/server.ts",
+    "./auth": "./src/auth.tsx",
     "./react": "./src/react.tsx",
     "./server": "./src/server.ts"
   },

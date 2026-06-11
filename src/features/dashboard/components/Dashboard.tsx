@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, Bot, Box, Building2, CreditCard, Crown, Download, Edit3, Github, Globe2, Languages, List, MessageSquare, Package, Palette } from 'lucide-react'
+import { Activity, Bot, Box, Building2, CreditCard, Crown, Download, Edit3, Github, Globe2, Languages, List, MessageSquare, Package, Palette, Shield } from 'lucide-react'
+import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 
 import { api } from '../../../../convex/_generated/api'
 import type { Id } from '../../../../convex/_generated/dataModel'
@@ -13,6 +14,7 @@ import { BrandMediaPanel } from '@/features/brand/components/BrandMediaPanel'
 import { ChatPanel } from '@/features/chat/components/ChatPanel'
 import { CmsPanel } from '@/features/cms/components/CmsPanel'
 import { CommercePanel } from '@/features/commerce/components/CommercePanel'
+import { LakebedAdminPanel } from '@/features/admin/components/LakebedAdminPanel'
 import { DeploymentPanel } from '@/features/deployments/components/DeploymentPanel'
 import { EditPanel } from '@/features/editing/components/EditPanel'
 import { ExportPanel } from '@/features/exports/components/ExportPanel'
@@ -26,6 +28,7 @@ import { cn } from '#/lib/utils'
 
 interface DashboardProps {
   sessionId: string
+  initialAdminView?: boolean
 }
 
 type RailMode =
@@ -116,13 +119,14 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
-export function Dashboard({ sessionId }: DashboardProps) {
+export function Dashboard({ sessionId, initialAdminView = false }: DashboardProps) {
   const [isDashboardActive, setIsDashboardActive] = useState(false)
   const [currentDevice, setCurrentDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
   const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>('select')
   const [railMode, setRailMode] = useState<RailMode>('tools')
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(true)
+  const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
   const [publishError, setPublishError] = useState<string>()
   const generationView = useQuery(api.sessions.getGenerationView, {
@@ -142,6 +146,18 @@ export function Dashboard({ sessionId }: DashboardProps) {
       : { sessionId: resolvedSessionId as Id<'sessions'> },
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const syncAdminState = () => {
+      setIsAdminActive(window.location.pathname.replace(/\/+$/, '').endsWith('/admin'))
+    }
+
+    syncAdminState()
+    window.addEventListener('popstate', syncAdminState)
+    return () => window.removeEventListener('popstate', syncAdminState)
+  }, [])
 
   useEffect(() => {
     const reduce =
@@ -204,7 +220,15 @@ export function Dashboard({ sessionId }: DashboardProps) {
 
   const publishedUrl =
     deploymentStatus?.status === 'ready' ? deploymentStatus.url : undefined
-  const currentUrl = publishedUrl ?? `/generate/${sessionId}`
+  const activeSessionId = resolvedSessionId ?? sessionId
+  const activeAnonymousOwnerSecret =
+    typeof window === 'undefined'
+      ? undefined
+      : readAnonymousOwnerSecret(window.localStorage, activeSessionId)
+  const basePreviewUrl = publishedUrl ?? `/generate/${sessionId}`
+  const currentUrl = isAdminActive
+    ? `${basePreviewUrl.replace(/\/+$/, '')}/admin`
+    : basePreviewUrl
   const railModeTitle =
     railMode === 'cms'
       ? 'Content'
@@ -253,6 +277,19 @@ export function Dashboard({ sessionId }: DashboardProps) {
     }
   }
 
+  const toggleAdminView = () => {
+    setIsAdminActive((active) => {
+      const nextActive = !active
+      if (typeof window !== 'undefined') {
+        const nextPath = nextActive
+          ? `/generate/${sessionId}/admin`
+          : `/generate/${sessionId}`
+        window.history.pushState(null, '', nextPath)
+      }
+      return nextActive
+    })
+  }
+
   return (
     <>
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_50%_-10%,rgba(35,229,255,0.18),transparent_34%),linear-gradient(180deg,#070913_0%,#0a0d16_100%)] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]" aria-hidden="true">
@@ -262,7 +299,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
-      {!isPreviewReady ? (
+      {!isPreviewReady && !isAdminActive ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
         />
@@ -274,11 +311,11 @@ export function Dashboard({ sessionId }: DashboardProps) {
       )} id="dashboard-wrap">
         <div className={cn(
           'mx-auto flex min-h-[calc(100vh-32px)] w-full max-w-[1680px] items-center justify-center',
-          isPreviewReady && 'items-stretch',
+          (isPreviewReady || isAdminActive) && 'items-stretch',
         )} id="right-panel">
           <div className={cn(
             'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14]/88 shadow-[0_24px_90px_rgba(0,0,0,0.48)] backdrop-blur-[22px]',
-            isPreviewReady && 'bg-[#080a10]/92',
+            (isPreviewReady || isAdminActive) && 'bg-[#080a10]/92',
           )}>
             <div className="flex h-14 shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.035] px-3">
               <button
@@ -306,6 +343,21 @@ export function Dashboard({ sessionId }: DashboardProps) {
                 </a>
               </div>
               <div className="flex shrink-0 items-center gap-2" id="preview-frame-tools" aria-label="Preview controls">
+                <button
+                  type="button"
+                  className={cn(
+                    'grid size-9 place-items-center rounded-full border text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white disabled:cursor-not-allowed disabled:opacity-45',
+                    isAdminActive
+                      ? 'border-cyan-300/30 bg-cyan-300/14 text-cyan-100'
+                      : 'border-white/10 bg-white/[0.055]',
+                  )}
+                  onClick={toggleAdminView}
+                  data-tip={isAdminActive ? 'View generated site' : 'Open auto admin'}
+                  aria-label={isAdminActive ? 'View generated site' : 'Open auto admin'}
+                  aria-pressed={isAdminActive}
+                >
+                  <Shield className="size-4" strokeWidth={2} />
+                </button>
                 <button
                   type="button"
                   className="inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
@@ -416,7 +468,14 @@ export function Dashboard({ sessionId }: DashboardProps) {
                 </div>
               </div>
             </div>
-            <div className="relative grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_280px] max-[1100px]:grid-cols-1">
+            <div
+              className={cn(
+                'relative grid min-h-0 flex-1',
+                isAdminActive
+                  ? 'grid-cols-1'
+                  : 'grid-cols-[minmax(0,1fr)_280px] max-[1100px]:grid-cols-1',
+              )}
+            >
               {publishError && (
                 <div className="absolute right-6 top-6 z-20 max-w-sm rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-100 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
                   {publishError}
@@ -424,15 +483,26 @@ export function Dashboard({ sessionId }: DashboardProps) {
               )}
               <div className="relative min-h-0 overflow-hidden bg-[#05070c]">
                 <div className={cn(
-                  'flex h-full min-h-0 items-center justify-center overflow-auto',
+                  'h-full min-h-0',
+                  isAdminActive
+                    ? 'overflow-hidden'
+                    : 'flex items-center justify-center overflow-auto',
                 )} id="preview-stage">
-                  <div id="preview-device-frame" data-preview-device={currentDevice} style={previewDeviceStyle}>
-                    <div
-                      className="h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300"
-                      id="preview-device-shell"
-                      data-preview-device={currentDevice}
-                      style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: '100%' }}
+                  {isAdminActive ? (
+                    <LakebedSessionProvider
+                      anonymousOwnerSecret={activeAnonymousOwnerSecret}
+                      sessionId={activeSessionId}
                     >
+                      <LakebedAdminPanel />
+                    </LakebedSessionProvider>
+                  ) : (
+                    <div id="preview-device-frame" data-preview-device={currentDevice} style={previewDeviceStyle}>
+                      <div
+                        className="h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300"
+                        id="preview-device-shell"
+                        data-preview-device={currentDevice}
+                        style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: '100%' }}
+                      >
                       {homeModule?.source ? (
                         <GeneratedModulePreview
                           source={homeModule.source}
@@ -451,10 +521,11 @@ export function Dashboard({ sessionId }: DashboardProps) {
                       )}
                       </div>
                     </div>
+                  )}
                 </div>
                 <div className={cn(
                   'absolute inset-x-10 bottom-8 rounded-full border border-white/10 bg-black/35 p-1 backdrop-blur',
-                  isPreviewReady && 'hidden',
+                  (isPreviewReady || isAdminActive) && 'hidden',
                 )} id="preview-loading">
                   <div className="h-2 overflow-hidden rounded-full bg-white/10">
                     <div className="h-full rounded-full bg-cyan-300 transition-[width] duration-300" id="preview-progress-fill" style={{ width: `${progress}%` }}></div>
@@ -465,6 +536,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
                 className={cn(
                   'relative flex min-h-0 flex-col border-l border-white/10 bg-[#0c1018]/92 max-[1100px]:hidden',
                   railMode !== 'tools' && 'bg-[#0d111b]/96',
+                  isAdminActive && 'hidden',
                 )}
                 id="preview-site-rail"
                 aria-label="Site tools"

@@ -2,6 +2,7 @@ import DirectPreview from '@/components/GenUI/DirectPreview'
 import OpenUIViewer from '@/island/openui/OpenUIViewer'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
+import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 type GeneratedModulePreviewProps = {
   source: string
@@ -64,8 +65,16 @@ export function GeneratedModulePreview({
   themeStyles = null,
   deviceMode = 'desktop',
 }: GeneratedModulePreviewProps) {
+  const anonymousOwnerSecret =
+    typeof window === 'undefined'
+      ? undefined
+      : readAnonymousOwnerSecret(window.localStorage, sessionId)
+
   return (
-    <LakebedSessionProvider sessionId={sessionId}>
+    <LakebedSessionProvider
+      anonymousOwnerSecret={anonymousOwnerSecret}
+      sessionId={sessionId}
+    >
       <DirectPreview themeStyles={themeStyles} isDark={isDark} deviceMode={deviceMode}>
         <OpenUIModuleRenderer
           source={source}
