@@ -238,6 +238,7 @@ export const recordWebhookEvent = internalMutation({
 export const consumeCreditForExport = internalMutation({
   args: {
     userId: v.string(),
+    sessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -256,6 +257,15 @@ export const consumeCreditForExport = internalMutation({
     const remaining = existing.remaining - 1
     await ctx.db.patch(existing._id, { remaining, updatedAt: now })
 
+    await ctx.db.insert('creditLedger', {
+      userId: args.userId,
+      sessionId: args.sessionId,
+      amount: -1,
+      balanceAfter: remaining,
+      reason: 'export',
+      createdAt: now,
+    })
+
     return { creditsId: existing._id, remaining }
   },
 })
@@ -263,8 +273,16 @@ export const consumeCreditForExport = internalMutation({
 export const getCreditLedger = query({
   args: {
     userId: v.string(),
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const limit = Math.min(args.limit ?? 50, 100)
+    const transactions = await ctx.db
+      .query('creditLedger')
+      .withIndex('by_userId_createdAt', (index) => index.eq('userId', args.userId))
+      .order('desc')
+      .take(limit)
+
     const credits = await ctx.db
       .query('customerCredits')
       .withIndex('by_userId', (index) => index.eq('userId', args.userId))
@@ -272,7 +290,7 @@ export const getCreditLedger = query({
 
     return {
       current: credits?.remaining ?? 0,
-      history: [], // TODO: Add creditLedger table for full transaction history
+      history: transactions,
     }
   },
 })
