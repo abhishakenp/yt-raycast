@@ -3,14 +3,21 @@ import { useMutation } from 'convex/react'
 import { useMemo, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
-import { checkPromptContentPolicy, CONTENT_POLICY_CLIENT_MESSAGE } from '@/lib/content-policy'
-import { examplePrompts, normalizePromptDraft } from '@/features/home/services/home-prompts'
+import {
+  checkPromptContentPolicy,
+  CONTENT_POLICY_CLIENT_MESSAGE,
+} from '@/lib/content-policy'
+import {
+  examplePrompts,
+  normalizePromptDraft,
+} from '@/features/home/services/home-prompts'
 import {
   createAnonymousOwnerSecret,
   persistAnonymousOwnerSecret,
 } from '@/features/session/services/anonymous-owner-secret'
 import {
   buildCreateSessionPayload,
+  createAnonymousClientId,
   createSessionWorkspaceKey,
 } from '@/features/session/services/session-create-payload'
 
@@ -46,15 +53,26 @@ export const usePromptHomeController = () => {
 
     try {
       const anonymousOwnerSecret = createAnonymousOwnerSecret()
-      const { sessionId } = await createSession(buildCreateSessionPayload({
-        prompt: runtimePrompt,
-        preferredLanguage,
-        isPrivate,
-        anonymousOwnerSecret,
-        workspace: createSessionWorkspaceKey(),
-      }))
+      const anonymousClientId = createAnonymousClientId(window.localStorage)
+      const result = await createSession(
+        buildCreateSessionPayload({
+          prompt: runtimePrompt,
+          preferredLanguage,
+          isPrivate,
+          anonymousOwnerSecret,
+          anonymousClientId,
+          workspace: createSessionWorkspaceKey(),
+        }),
+      )
+      const sessionId = result.sessionId
 
-      persistAnonymousOwnerSecret(window.localStorage, sessionId, anonymousOwnerSecret)
+      if (result.cached !== true) {
+        persistAnonymousOwnerSecret(
+          window.localStorage,
+          sessionId,
+          anonymousOwnerSecret,
+        )
+      }
 
       await navigate({
         to: '/generate/$sessionId',
@@ -72,7 +90,9 @@ export const usePromptHomeController = () => {
     setPrompt(value)
   }
 
-  const submitButtonLabel = isSubmitting ? 'Starting generation' : 'Start generating'
+  const submitButtonLabel = isSubmitting
+    ? 'Starting generation'
+    : 'Start generating'
 
   return {
     canSubmit,

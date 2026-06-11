@@ -19,7 +19,11 @@ const taskStatus = v.union(
   v.literal('failed'),
 )
 
-const exportTarget = v.union(v.literal('html'), v.literal('react'), v.literal('next'))
+const exportTarget = v.union(
+  v.literal('html'),
+  v.literal('react'),
+  v.literal('next'),
+)
 
 const provider = v.union(v.literal('stripe'), v.literal('razorpay'))
 
@@ -37,6 +41,7 @@ export default defineSchema({
     legacySessionId: v.optional(v.string()),
     anonOwnerSecret: v.optional(v.string()),
     anonOwnerSecretHash: v.optional(v.string()),
+    anonymousClientIdHash: v.optional(v.string()),
     workspace: v.optional(v.string()),
     prompt: v.string(),
     status: v.optional(generationStatus),
@@ -63,6 +68,11 @@ export default defineSchema({
     genuiError: v.optional(v.string()),
     preferredLanguage: v.string(),
     preferredExportTarget: v.string(),
+    designReferenceUrls: v.optional(v.array(v.string())),
+    designReferenceNotes: v.optional(v.string()),
+    cloneUrl: v.optional(v.string()),
+    designReferenceFingerprint: v.optional(v.string()),
+    promptCacheKey: v.optional(v.string()),
     isPrivate: v.boolean(),
     previewVersion: v.optional(v.number()),
     createdAt: v.number(),
@@ -71,6 +81,8 @@ export default defineSchema({
     errorMessage: v.optional(v.string()),
   })
     .index('by_userId', ['userId'])
+    .index('by_anonymousClientIdHash', ['anonymousClientIdHash'])
+    .index('by_promptCacheKey', ['promptCacheKey'])
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])
     .index('by_deploymentSlug', ['deploymentSlug']),
 
@@ -136,10 +148,16 @@ export default defineSchema({
   edits: defineTable({
     sessionId: v.id('sessions'),
     previewVersion: v.number(),
-    editType: v.union(v.literal('text'), v.literal('ai_rewrite'), v.literal('chat')),
+    editType: v.union(
+      v.literal('text'),
+      v.literal('ai_rewrite'),
+      v.literal('chat'),
+      v.literal('style'),
+    ),
     targetLabel: v.optional(v.string()),
     beforeText: v.optional(v.string()),
     afterText: v.optional(v.string()),
+    afterHtml: v.optional(v.string()),
     instruction: v.optional(v.string()),
     createdAt: v.number(),
     userId: v.optional(v.string()),
