@@ -2879,14 +2879,16 @@ export const getUserUsageMetrics = query({
     since: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const query = ctx.db
+    const userMetrics = await ctx.db
       .query('usageMetrics')
       .withIndex('by_userId', (index) => index.eq('userId', args.userId))
+      .order('desc')
+      .take(500)
 
     const metrics =
       args.since !== undefined
-        ? await query.filter((m) => m.timestamp >= args.since).collect()
-        : await query.collect()
+        ? userMetrics.filter((metric) => metric.timestamp >= args.since!)
+        : userMetrics
 
     return {
       totalCost: metrics.reduce((sum, m) => sum + m.cost, 0),
@@ -2963,5 +2965,56 @@ export const getCommerceConfig = query({
       .first()
 
     return config
+  },
+})
+
+export const sendSlackNotification = internalMutation({
+  args: {
+    message: v.string(),
+    webhookUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const webhookUrl = args.webhookUrl || process.env.SLACK_WEBHOOK_URL
+    if (!webhookUrl) {
+      return { sent: false, reason: 'no_webhook_url' }
+    }
+
+    try {
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: args.message }),
+      })
+      return { sent: true }
+    } catch (error) {
+      return { sent: false, reason: error?.message || 'fetch_failed' }
+    }
+  },
+})
+
+export const sendTelegramNotification = internalMutation({
+  args: {
+    message: v.string(),
+    botToken: v.optional(v.string()),
+    chatId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const botToken = args.botToken || process.env.TELEGRAM_BOT_TOKEN
+    const chatId = args.chatId || process.env.TELEGRAM_CHAT_ID
+
+    if (!botToken || !chatId) {
+      return { sent: false, reason: 'missing_credentials' }
+    }
+
+    try {
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: args.message }),
+      })
+      return { sent: true }
+    } catch (error) {
+      return { sent: false, reason: error?.message || 'fetch_failed' }
+    }
   },
 })
