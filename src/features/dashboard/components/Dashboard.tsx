@@ -1,9 +1,10 @@
 import { useQuery } from 'convex/react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Crown, Download, Github, Globe2, List, Package, Palette } from 'lucide-react'
+import { Box, Code2, Crown, Download, FileArchive, Github, Globe2, List, Package, Palette, PanelsTopLeft } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import ThemePicker from '@/genui/components/ThemePicker'
@@ -14,7 +15,7 @@ interface DashboardProps {
   sessionId: string
 }
 
-type RailMode = 'tools' | 'cms' | 'commerce' | 'export'
+type RailMode = 'tools' | 'cms' | 'commerce'
 
 const crownIcon = (
   <Crown className="size-3" strokeWidth={2.2} aria-hidden="true" />
@@ -88,6 +89,24 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
     return null
   }
 }
+
+const exportOptions = [
+  {
+    label: 'HTML',
+    meta: 'Static site bundle',
+    icon: FileArchive,
+  },
+  {
+    label: 'React',
+    meta: 'React app scaffold',
+    icon: Code2,
+  },
+  {
+    label: 'Next.js',
+    meta: 'App Router project',
+    icon: PanelsTopLeft,
+  },
+]
 
 export function Dashboard({ sessionId }: DashboardProps) {
   const [isDashboardActive, setIsDashboardActive] = useState(false)
@@ -427,18 +446,57 @@ export function Dashboard({ sessionId }: DashboardProps) {
                       <span className="min-w-0 flex-1 truncate">GitHub</span>
                       <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="export" aria-haspopup="dialog" onClick={() => setRailMode('export')}>
-                      <span className={railIconClass} aria-hidden="true">
-                        <Download className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="grid min-w-0 flex-1 gap-0.5">
-                        <span className="truncate">Export</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">HTML / React / Next.js</span>
-                      </span>
-                      <div className={cn(stateBadgeClass, 'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]')} data-state="premium">
-                        <span className="text-[#0a0a0b]">Pro only</span>
-                      </div>
-                    </button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button type="button" className={railRowClass} data-rail-action="export" aria-haspopup="dialog">
+                          <span className={railIconClass} aria-hidden="true">
+                            <Download className="size-3.5" strokeWidth={1.9} />
+                          </span>
+                          <span className="grid min-w-0 flex-1 gap-0.5">
+                            <span className="truncate">Export</span>
+                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">HTML / React / Next.js</span>
+                          </span>
+                          <div className={cn(stateBadgeClass, 'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]')} data-state="premium">
+                            <span className="text-[#0a0a0b]">Pro only</span>
+                          </div>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        side="left"
+                        align="start"
+                        className="w-[min(300px,calc(100vw-24px))] rounded-2xl border border-white/12 bg-[#0b0f18]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+                      >
+                        <div className="grid gap-3">
+                          <div className="grid gap-1 px-1">
+                            <div className="text-sm font-semibold text-white">Project export</div>
+                            <p className="m-0 text-xs leading-5 text-white/52">Choose an export format. Download actions are coming next.</p>
+                          </div>
+                          <div className="grid gap-1.5">
+                            {exportOptions.map((option) => {
+                              const Icon = option.icon
+
+                              return (
+                                <button
+                                  key={option.label}
+                                  type="button"
+                                  className="group/export flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075]"
+                                  disabled
+                                >
+                                  <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-white/10 bg-black/24 text-white/70 transition-colors group-hover/export:border-white/16 group-hover/export:bg-white/[0.06] group-hover/export:text-white" aria-hidden="true">
+                                    <Icon className="size-4" strokeWidth={1.8} />
+                                  </span>
+                                  <span className="grid min-w-0 flex-1 gap-0.5">
+                                    <span className="truncate text-sm font-semibold text-white">{option.label}</span>
+                                    <span className="truncate text-xs text-white/46">{option.meta}</span>
+                                  </span>
+                                  <span className={cn(stateBadgeClass, 'border-white/10 bg-white/[0.06] text-white/46')}>Soon</span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                     <button type="button" className={railRowClass} data-rail-action="domain">
                       <span className={railIconClass} aria-hidden="true">
                         <Globe2 className="size-3.5" strokeWidth={1.9} />
@@ -463,7 +521,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
                     <div className="size-10 rounded-2xl bg-cyan-300/14" id="rail-editor-thumb"></div>
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold text-white" id="rail-editor-label-title">
-                        {railMode === 'cms' ? 'Content' : railMode === 'commerce' ? 'Medusa commerce' : 'Export'}
+                        {railMode === 'cms' ? 'Content' : 'Medusa commerce'}
                       </div>
                       <div className="truncate text-xs text-white/42" id="rail-editor-label-sub">
                         {generationView?.session.status.replaceAll('_', ' ') ?? 'loading'}
@@ -488,18 +546,12 @@ export function Dashboard({ sessionId }: DashboardProps) {
                           <label>Homepage title override<input type="text" defaultValue="" /></label>
                           <label>Generation prompt<textarea rows={5} defaultValue={generationView?.session.prompt ?? ''} /></label>
                         </div>
-                      ) : railMode === 'commerce' ? (
+                      ) : (
                         <div className="grid gap-4 [&_input]:mt-2 [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-white/10 [&_input]:bg-white/[0.04] [&_input]:px-3 [&_input]:py-2 [&_input]:text-sm [&_input]:text-white [&_input]:outline-none [&_label]:grid [&_label]:gap-1 [&_label]:text-xs [&_label]:font-semibold [&_label]:uppercase [&_label]:tracking-[0.08em] [&_label]:text-white/45">
                           <p className="m-0 text-sm leading-6 text-white/55">Medusa config is read from Convex for this session.</p>
                           <label>Status<input type="text" readOnly value={commerceConfig?.status ?? 'not configured'} /></label>
                           <label>Backend URL<input type="url" readOnly value={commerceConfig?.backendUrl ?? ''} /></label>
                           <label>Admin URL<input type="url" readOnly value={commerceConfig?.adminUrl ?? ''} /></label>
-                        </div>
-                      ) : (
-                        <div className="grid gap-4 [&_input]:mt-2 [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-white/10 [&_input]:bg-white/[0.04] [&_input]:px-3 [&_input]:py-2 [&_input]:text-sm [&_input]:text-white [&_input]:outline-none [&_label]:grid [&_label]:gap-1 [&_label]:text-xs [&_label]:font-semibold [&_label]:uppercase [&_label]:tracking-[0.08em] [&_label]:text-white/45">
-                          <p className="m-0 text-sm leading-6 text-white/55">Export will use the Convex generated module source for this session.</p>
-                          <label>Module<input type="text" readOnly value={homeModule?.moduleKey ?? 'home'} /></label>
-                          <label>Source bytes<input type="text" readOnly value={String(homeModule?.source.length ?? 0)} /></label>
                         </div>
                       )}
                     </div>
