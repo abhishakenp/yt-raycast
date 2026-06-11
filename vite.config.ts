@@ -7,7 +7,8 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
-import { PEXELS_API_KEY } from '@ship-fast/engine/config.js'
+
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY
 
 type PexelsPhoto = {
   src?: {

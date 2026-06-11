@@ -1,6 +1,7 @@
 import DirectPreview from '@/components/GenUI/DirectPreview'
 import OpenUIViewer from '@/island/openui/OpenUIViewer'
 import type { ThemeStyles } from '@/genui/theme-presets'
+import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 
 type GeneratedModulePreviewProps = {
   source: string
@@ -64,13 +65,15 @@ export function GeneratedModulePreview({
   deviceMode = 'desktop',
 }: GeneratedModulePreviewProps) {
   return (
-    <DirectPreview themeStyles={themeStyles} isDark={isDark} deviceMode={deviceMode}>
-      <OpenUIModuleRenderer
-        source={source}
-        sessionId={sessionId}
-        siteSpecJson={siteSpecJson}
-        locale={locale}
-      />
-    </DirectPreview>
+    <LakebedSessionProvider sessionId={sessionId}>
+      <DirectPreview themeStyles={themeStyles} isDark={isDark} deviceMode={deviceMode}>
+        <OpenUIModuleRenderer
+          source={source}
+          sessionId={sessionId}
+          siteSpecJson={siteSpecJson}
+          locale={locale}
+        />
+      </DirectPreview>
+    </LakebedSessionProvider>
   )
 }

@@ -32,6 +32,7 @@
         "@ship-fast/aeo": "workspace:*",
         "@ship-fast/blocks": "workspace:*",
         "@ship-fast/engine": "workspace:*",
+        "@ship-fast/lakebed": "workspace:*",
         "@streamdown/cjk": "^1.0.3",
         "@streamdown/code": "^1.1.1",
         "@streamdown/math": "^1.0.2",
@@ -129,6 +130,9 @@
     "packages/ship-fast-blocks": {
       "name": "@ship-fast/blocks",
       "version": "1.0.0",
+      "dependencies": {
+        "@ship-fast/lakebed": "workspace:*",
+      },
     },
     "packages/ship-fast-engine": {
       "name": "@ship-fast/engine",
@@ -143,6 +147,17 @@
         "linkedom": "^0.18.6",
         "playwright": "^1.50.0",
         "zod": "^4.4.3",
+      },
+    },
+    "packages/ship-fast-lakebed": {
+      "name": "@ship-fast/lakebed",
+      "version": "1.0.0",
+      "dependencies": {
+        "lakebed": "0.0.25",
+      },
+      "peerDependencies": {
+        "convex": "^1.41.0",
+        "react": "^19.2.0",
       },
     },
   },
@@ -694,6 +709,8 @@
     "@ship-fast/blocks": ["@ship-fast/blocks@workspace:packages/ship-fast-blocks"],
 
     "@ship-fast/engine": ["@ship-fast/engine@workspace:packages/ship-fast-engine"],
+
+    "@ship-fast/lakebed": ["@ship-fast/lakebed@workspace:packages/ship-fast-lakebed"],
 
     "@sinclair/typebox": ["@sinclair/typebox@0.27.10", "", {}, "sha512-MTBk/3jGLNB2tVxv6uLlFh1iu64iYOQ2PbdOSK3NW8JZsmlaOh2q6sdtKowBhfw8QFLmYNzTW4/oK4uATIi6ZA=="],
 

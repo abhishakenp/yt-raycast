@@ -1,9 +1,39 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
-import { defineCapsule } from "./openui.ts"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import { defineCapsule } from './openui.ts'
+import { number, string, table } from '@ship-fast/lakebed/server'
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '#/components/ui/command.tsx'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '#/components/ui/sheet.tsx'
+import { Button } from '#/components/ui/button.tsx'
+
+const priceAmount = (price: string) => {
+  const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
+  return Number.isFinite(amount) ? amount : 0
+}
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-US', {
+    currency: 'USD',
+    style: 'currency',
+  }).format(amount)
 
 /**
  * EcommerceKimiPage — a faithful, self-contained online-sneaker STORE-FRONT / product-grid ecommerce page.
@@ -26,9 +56,9 @@ import { defineCapsule } from "./openui.ts"
  * defaults make it render beautifully with zero arguments.
  */
 export const EcommerceKimiPage = defineCapsule({
-  name: "EcommerceKimiPage",
+  name: 'EcommerceKimiPage',
   description:
-    "A complete, conversion-focused ecommerce product-grid STOREFRONT with a sticky glass navbar, split hero with lifestyle photography and floating product chip, brand trust strip, category browse cards with gradient overlays, a dense multi-row product grid (badges, wishlist, strike-through pricing), feature trust-band with icon highlights, testimonial quote cards with star ratings and avatars, a native FAQ accordion, a dark newsletter subscription CTA, and a multi-column footer. Use as the ROOT / home page for sneaker, fashion, apparel, gadget, gift-shop, furniture, DTC, or any multi-category online store when a full browsing + trust-building + conversion layout is needed. Supply only content data; the block owns every spacing, color, and responsive rule.",
+    'A complete, conversion-focused ecommerce product-grid STOREFRONT with a sticky glass navbar, split hero with lifestyle photography and floating product chip, brand trust strip, category browse cards with gradient overlays, a dense multi-row product grid (badges, wishlist, strike-through pricing), feature trust-band with icon highlights, testimonial quote cards with star ratings and avatars, a native FAQ accordion, a dark newsletter subscription CTA, and a multi-column footer. Use as the ROOT / home page for sneaker, fashion, apparel, gadget, gift-shop, furniture, DTC, or any multi-category online store when a full browsing + trust-building + conversion layout is needed. Supply only content data; the block owns every spacing, color, and responsive rule.',
   props: z.object({
     /** Brand / store name shown in the navbar, CTA, and footer. */
     brand: z.string().optional(),
@@ -160,273 +190,394 @@ export const EcommerceKimiPage = defineCapsule({
       .optional(),
     className: z.string().optional(),
   }),
-  component: ({ props }) => {
+  lakebed: {
+    schema: {
+      products: table({
+        alt: string(),
+        badge: string(),
+        brand: string(),
+        image: string(),
+        name: string(),
+        oldPrice: string(),
+        price: string(),
+      }),
+      cartItems: table({
+        productId: string(),
+        quantity: number(),
+      }),
+      favorites: table({
+        productName: string(),
+      }),
+    },
+    queries: {
+      products: ({ db }) => db.products.orderBy('createdAt').all(),
+      cartLines: ({ db }) =>
+        db.cartItems.all().flatMap((item) => {
+          const product = db.products.get(item.productId)
+          return product ? [{ ...item, product }] : []
+        }),
+      favoriteProductNames: ({ db }) =>
+        new Set(db.favorites.all().map((favorite) => favorite.productName)),
+    },
+    mutations: {
+      addToCart: ({ db }, productName: string) => {
+        const product = db.products.where('name', productName).all()[0]
+        if (!product) return db.cartItems.all()
+
+        const existingItem = db.cartItems
+          .where('productId', product.id)
+          .all()[0]
+
+        if (existingItem) {
+          db.cartItems.update(existingItem.id, {
+            quantity: existingItem.quantity + 1,
+          })
+        } else {
+          db.cartItems.insert({
+            productId: product.id,
+            quantity: 1,
+          })
+        }
+
+        return db.cartItems.all()
+      },
+      updateCartQuantity: ({ db }, productId: string, quantity: number) => {
+        const nextQuantity = Math.max(0, Math.floor(quantity))
+
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          if (nextQuantity) {
+            db.cartItems.update(item.id, { quantity: nextQuantity })
+          } else {
+            db.cartItems.delete(item.id)
+          }
+        }
+
+        return db.cartItems.all()
+      },
+      removeFromCart: ({ db }, productId: string) => {
+        for (const item of db.cartItems.where('productId', productId).all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return db.cartItems.all()
+      },
+      clearCart: ({ db }) => {
+        for (const item of db.cartItems.all()) {
+          db.cartItems.delete(item.id)
+        }
+
+        return []
+      },
+      toggleFavorite: ({ db }, productName: string) => {
+        const existingFavorite = db.favorites
+          .where('productName', productName)
+          .all()[0]
+
+        if (existingFavorite) {
+          db.favorites.delete(existingFavorite.id)
+          return false
+        }
+
+        db.favorites.insert({ productName })
+        return true
+      },
+    },
+  },
+  component: ({ props, lakebed }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "KICKS"
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [cartOpen, setCartOpen] = useState(false)
+    const brand = props.brand ?? 'KICKS'
 
     const nav = props.nav?.length
       ? props.nav
-      : ["New Arrivals", "Men", "Women", "Kids", "Sale"]
+      : ['New Arrivals', 'Men', 'Women', 'Kids', 'Sale']
 
-    const heroChip = props.hero?.chip ?? "New Collection 2024"
-    const heroHeading =
-      props.hero?.heading ?? "Step Into\nTomorrow"
+    const heroChip = props.hero?.chip ?? 'New Collection 2024'
+    const heroHeading = props.hero?.heading ?? 'Step Into\nTomorrow'
     const heroSub =
       props.hero?.subheading ??
-      "Discover the latest drops from Nike, Adidas, New Balance, and more. Premium sneakers curated for the modern lifestyle."
-    const heroPrimary = props.hero?.primaryCta ?? "Shop Now"
-    const heroSecondary = props.hero?.secondaryCta ?? "View Lookbook"
+      'Discover the latest drops from Nike, Adidas, New Balance, and more. Premium sneakers curated for the modern lifestyle.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Shop Now'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Lookbook'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Premium white Nike Air Jordan sneaker with subtle peach accents displayed on clean studio background"
+      'Premium white Nike Air Jordan sneaker with subtle peach accents displayed on clean studio background'
     const heroFeatured = props.hero?.featured ?? {
-      label: "Featured",
-      name: "Air Jordan 1 High OG",
-      price: "$180",
+      label: 'Featured',
+      name: 'Air Jordan 1 High OG',
+      price: '$180',
     }
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "50K+", label: "Happy Customers" },
-          { value: "200+", label: "Brands Available" },
-          { value: "Free", label: "Shipping $150+" },
-        ]
+        { value: '50K+', label: 'Happy Customers' },
+        { value: '200+', label: 'Brands Available' },
+        { value: 'Free', label: 'Shipping $150+' },
+      ]
 
     const logosHeading =
       props.logosHeading ?? "Trusted by the world's leading brands"
 
-    const categoriesHeading =
-      props.categories?.heading ?? "Shop by Category"
+    const categoriesHeading = props.categories?.heading ?? 'Shop by Category'
     const categoriesSub =
       props.categories?.subheading ??
-      "Find your perfect pair across our curated collections. From performance runners to street-ready classics."
+      'Find your perfect pair across our curated collections. From performance runners to street-ready classics.'
     const categoryItems = props.categories?.items?.length
       ? props.categories.items
       : [
-          {
-            label: "Men's Running",
-            count: "248 styles",
-            alt: "Men's running sneaker in vibrant red displayed on clean white background",
-          },
-          {
-            label: "Women's Lifestyle",
-            count: "186 styles",
-            alt: "Women's lifestyle sneaker in soft pink displayed on minimal studio background",
-          },
-          {
-            label: "Basketball",
-            count: "94 styles",
-            alt: "High-top basketball sneaker in black and neon green on white background",
-          },
-          {
-            label: "Limited Edition",
-            count: "24 drops",
-            alt: "Limited edition collaboration sneaker with premium leather details on neutral background",
-          },
-        ]
+        {
+          label: "Men's Running",
+          count: '248 styles',
+          alt: "Men's running sneaker in vibrant red displayed on clean white background",
+        },
+        {
+          label: "Women's Lifestyle",
+          count: '186 styles',
+          alt: "Women's lifestyle sneaker in soft pink displayed on minimal studio background",
+        },
+        {
+          label: 'Basketball',
+          count: '94 styles',
+          alt: 'High-top basketball sneaker in black and neon green on white background',
+        },
+        {
+          label: 'Limited Edition',
+          count: '24 drops',
+          alt: 'Limited edition collaboration sneaker with premium leather details on neutral background',
+        },
+      ]
 
-    const productsHeading = props.products?.heading ?? "New Arrivals"
+    const productsHeading = props.products?.heading ?? 'New Arrivals'
     const productsSub =
-      props.products?.subheading ??
-      "Fresh drops for this week — January 2024"
-    const productsLink = props.products?.link ?? "View All"
+      props.products?.subheading ?? 'Fresh drops for this week — January 2024'
+    const productsLink = props.products?.link ?? 'View All'
     const productItems = props.products?.items?.length
       ? props.products.items
       : [
-          {
-            brand: "Nike",
-            name: "Air Max 97 Off-White",
-            alt: "Nike Air Max 97 Off-White sneaker in black and metallic silver colorway",
-            price: "$195",
-            oldPrice: "$230",
-            badge: "New",
-          },
-          {
-            brand: "Adidas",
-            name: "Yeezy Boost 350 V2",
-            alt: "Adidas Yeezy Boost 350 V2 sneaker in cream white colorway",
-            price: "$250",
-          },
-          {
-            brand: "New Balance",
-            name: "990v6 Made in USA",
-            alt: "New Balance 990v6 running shoe in grey and navy colorway",
-            price: "$175",
-            oldPrice: "$210",
-            badge: "Sale",
-          },
-          {
-            brand: "ASICS",
-            name: "Gel-Kayano 30",
-            alt: "ASICS Gel-Kayano 30 running shoe in black and yellow colorway",
-            price: "$160",
-          },
-          {
-            brand: "Puma",
-            name: "RS-X Reinvention",
-            alt: "Puma RS-X sneaker in bold multi-color design on white background",
-            price: "$120",
-          },
-          {
-            brand: "Converse",
-            name: "Chuck 70 High",
-            alt: "Converse Chuck 70 high-top sneaker in classic black canvas",
-            price: "$85",
-            badge: "Bestseller",
-          },
-          {
-            brand: "Jordan",
-            name: "Jordan 4 Retro",
-            alt: "Jordan 4 Retro sneaker in white and cement grey colorway",
-            price: "$210",
-          },
-          {
-            brand: "Nike",
-            name: "Dunk Low Panda",
-            alt: "Nike Dunk Low sneaker in classic Panda black and white colorway",
-            price: "$95",
-            oldPrice: "$110",
-            badge: "-15%",
-          },
-        ]
+        {
+          brand: 'Nike',
+          name: 'Air Max 97 Off-White',
+          alt: 'Nike Air Max 97 Off-White sneaker in black and metallic silver colorway',
+          price: '$195',
+          oldPrice: '$230',
+          badge: 'New',
+        },
+        {
+          brand: 'Adidas',
+          name: 'Yeezy Boost 350 V2',
+          alt: 'Adidas Yeezy Boost 350 V2 sneaker in cream white colorway',
+          price: '$250',
+        },
+        {
+          brand: 'New Balance',
+          name: '990v6 Made in USA',
+          alt: 'New Balance 990v6 running shoe in grey and navy colorway',
+          price: '$175',
+          oldPrice: '$210',
+          badge: 'Sale',
+        },
+        {
+          brand: 'ASICS',
+          name: 'Gel-Kayano 30',
+          alt: 'ASICS Gel-Kayano 30 running shoe in black and yellow colorway',
+          price: '$160',
+        },
+        {
+          brand: 'Puma',
+          name: 'RS-X Reinvention',
+          alt: 'Puma RS-X sneaker in bold multi-color design on white background',
+          price: '$120',
+        },
+        {
+          brand: 'Converse',
+          name: 'Chuck 70 High',
+          alt: 'Converse Chuck 70 high-top sneaker in classic black canvas',
+          price: '$85',
+          badge: 'Bestseller',
+        },
+        {
+          brand: 'Jordan',
+          name: 'Jordan 4 Retro',
+          alt: 'Jordan 4 Retro sneaker in white and cement grey colorway',
+          price: '$210',
+        },
+        {
+          brand: 'Nike',
+          name: 'Dunk Low Panda',
+          alt: 'Nike Dunk Low sneaker in classic Panda black and white colorway',
+          price: '$95',
+          oldPrice: '$110',
+          badge: '-15%',
+        },
+      ]
+    const normalizedProductItems = productItems.map((product) => ({
+      alt: product.alt,
+      badge: product.badge ?? '',
+      brand: product.brand ?? '',
+      image: product.image ?? '',
+      name: product.name,
+      oldPrice: product.oldPrice ?? '',
+      price: product.price,
+    }))
+    const storedProducts = lakebed.useQuery('products')
+    const cartLines = lakebed.useQuery('cartLines')
+    const favoriteProductNames = lakebed.useQuery('favoriteProductNames')
+    const addToCart = lakebed.useMutation('addToCart')
+    const updateCartQuantity = lakebed.useMutation('updateCartQuantity')
+    const removeFromCart = lakebed.useMutation('removeFromCart')
+    const clearCart = lakebed.useMutation('clearCart')
+    const toggleFavorite = lakebed.useMutation('toggleFavorite')
+    const displayProducts =
+      storedProducts && storedProducts.length > 0
+        ? storedProducts
+        : normalizedProductItems
+    const safeCartLines = cartLines ?? []
+    const cartItemCount = safeCartLines.reduce(
+      (total, item) => total + item.quantity,
+      0,
+    )
+    const cartSubtotal = safeCartLines.reduce(
+      (total, item) => total + priceAmount(item.product.price) * item.quantity,
+      0,
+    )
+    const shipping = cartSubtotal > 0 && cartSubtotal < 150 ? 12 : 0
+    const cartTotal = cartSubtotal + shipping
 
-    const featuresHeading = props.features?.heading ?? "Why Choose KICKS"
+    const featuresHeading = props.features?.heading ?? 'Why Choose KICKS'
     const featuresSub =
       props.features?.subheading ??
       "We're committed to providing the most authentic sneaker shopping experience online. Every pair is verified, every purchase is protected."
     const featuresImageAlt =
       props.features?.imageAlt ??
-      "Close-up detail shot of Nike sneaker sole showing textured rubber tread and air cushioning unit"
+      'Close-up detail shot of Nike sneaker sole showing textured rubber tread and air cushioning unit'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
-          {
-            title: "100% Authentic",
-            description:
-              "Every sneaker is verified by our expert team before shipping.",
-          },
-          {
-            title: "Free Shipping",
-            description:
-              "Complimentary delivery on all orders over $150.",
-          },
-          {
-            title: "30-Day Returns",
-            description:
-              "Not perfect? Return unworn sneakers within 30 days.",
-          },
-          {
-            title: "Size Guarantee",
-            description:
-              "Free size exchanges to ensure the perfect fit.",
-          },
-        ]
+        {
+          title: '100% Authentic',
+          description:
+            'Every sneaker is verified by our expert team before shipping.',
+        },
+        {
+          title: 'Free Shipping',
+          description: 'Complimentary delivery on all orders over $150.',
+        },
+        {
+          title: '30-Day Returns',
+          description: 'Not perfect? Return unworn sneakers within 30 days.',
+        },
+        {
+          title: 'Size Guarantee',
+          description: 'Free size exchanges to ensure the perfect fit.',
+        },
+      ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Sneakerheads Say"
+      props.testimonials?.heading ?? 'What Sneakerheads Say'
     const testimonialsSub =
       props.testimonials?.subheading ??
-      "Join thousands of satisfied customers who trust KICKS for their sneaker needs."
+      'Join thousands of satisfied customers who trust KICKS for their sneaker needs.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
-          {
-            quote:
-              "I've ordered from KICKS five times now and every pair has been flawless. The authentication process gives me total confidence. Fast shipping too — my Dunks arrived in 2 days!",
-            name: "Marcus Chen",
-            role: "Verified Buyer · Los Angeles, CA",
-            alt: "Professional headshot of a smiling young man with short curly hair and warm expression",
-          },
-          {
-            quote:
-              "As a reseller and collector, authenticity is everything. KICKS understands the culture. Their packaging is pristine, their selection is fire, and customer service actually responds within hours.",
-            name: "Jordan Williams",
-            role: "Verified Buyer · Brooklyn, NY",
-            alt: "Professional headshot of a young woman with dark hair and confident smile",
-          },
-          {
-            quote:
-              "First time buying limited edition sneakers online and KICKS made it stress-free. The Jordan 4s I got were deadstock perfect. Already planning my next purchase!",
-            name: "David Park",
-            role: "Verified Buyer · Chicago, IL",
-            alt: "Professional headshot of a bearded man in his thirties with friendly expression",
-          },
-        ]
+        {
+          quote:
+            "I've ordered from KICKS five times now and every pair has been flawless. The authentication process gives me total confidence. Fast shipping too — my Dunks arrived in 2 days!",
+          name: 'Marcus Chen',
+          role: 'Verified Buyer · Los Angeles, CA',
+          alt: 'Professional headshot of a smiling young man with short curly hair and warm expression',
+        },
+        {
+          quote:
+            'As a reseller and collector, authenticity is everything. KICKS understands the culture. Their packaging is pristine, their selection is fire, and customer service actually responds within hours.',
+          name: 'Jordan Williams',
+          role: 'Verified Buyer · Brooklyn, NY',
+          alt: 'Professional headshot of a young woman with dark hair and confident smile',
+        },
+        {
+          quote:
+            'First time buying limited edition sneakers online and KICKS made it stress-free. The Jordan 4s I got were deadstock perfect. Already planning my next purchase!',
+          name: 'David Park',
+          role: 'Verified Buyer · Chicago, IL',
+          alt: 'Professional headshot of a bearded man in his thirties with friendly expression',
+        },
+      ]
 
-    const faqHeading = props.faq?.heading ?? "Frequently Asked Questions"
+    const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqSub =
-      props.faq?.subheading ?? "Everything you need to know before you buy."
+      props.faq?.subheading ?? 'Everything you need to know before you buy.'
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
-          {
-            question: "How do you verify sneaker authenticity?",
-            answer:
-              "Every pair of sneakers goes through our multi-point authentication process conducted by trained experts. We inspect stitching, materials, tags, box labels, and all unique identifiers specific to each model. Only sneakers that pass our rigorous inspection are shipped to you.",
-          },
-          {
-            question: "What is your shipping and delivery timeline?",
-            answer:
-              "Standard shipping takes 3-5 business days. Express shipping (1-2 business days) is available for $15. All orders over $150 qualify for free standard shipping. Once your order ships, you'll receive tracking information via email and SMS.",
-          },
-          {
-            question: "Can I return or exchange my sneakers?",
-            answer:
-              "Yes! We offer free returns within 30 days for unworn sneakers in original condition with all tags and packaging intact. Size exchanges are also free. Limited edition releases marked as \"Final Sale\" are non-returnable. Contact our support team to initiate a return.",
-          },
-          {
-            question: "Do you offer international shipping?",
-            answer:
-              "We currently ship to the United States, Canada, UK, EU, Australia, and Japan. International shipping rates vary by destination and are calculated at checkout. Delivery times range from 7-14 business days depending on your location.",
-          },
-          {
-            question: "How do I find my correct sneaker size?",
-            answer:
-              "Each product page includes a detailed size guide with measurements in US, UK, and EU sizing. We recommend measuring your foot and comparing to our size chart. If you're between sizes, we suggest sizing up for most sneaker styles. Our free size exchange policy ensures you'll get the perfect fit.",
-          },
-        ]
+        {
+          question: 'How do you verify sneaker authenticity?',
+          answer:
+            'Every pair of sneakers goes through our multi-point authentication process conducted by trained experts. We inspect stitching, materials, tags, box labels, and all unique identifiers specific to each model. Only sneakers that pass our rigorous inspection are shipped to you.',
+        },
+        {
+          question: 'What is your shipping and delivery timeline?',
+          answer:
+            "Standard shipping takes 3-5 business days. Express shipping (1-2 business days) is available for $15. All orders over $150 qualify for free standard shipping. Once your order ships, you'll receive tracking information via email and SMS.",
+        },
+        {
+          question: 'Can I return or exchange my sneakers?',
+          answer:
+            'Yes! We offer free returns within 30 days for unworn sneakers in original condition with all tags and packaging intact. Size exchanges are also free. Limited edition releases marked as "Final Sale" are non-returnable. Contact our support team to initiate a return.',
+        },
+        {
+          question: 'Do you offer international shipping?',
+          answer:
+            'We currently ship to the United States, Canada, UK, EU, Australia, and Japan. International shipping rates vary by destination and are calculated at checkout. Delivery times range from 7-14 business days depending on your location.',
+        },
+        {
+          question: 'How do I find my correct sneaker size?',
+          answer:
+            "Each product page includes a detailed size guide with measurements in US, UK, and EU sizing. We recommend measuring your foot and comparing to our size chart. If you're between sizes, we suggest sizing up for most sneaker styles. Our free size exchange policy ensures you'll get the perfect fit.",
+        },
+      ]
 
     const newsletterHeading =
-      props.newsletter?.heading ?? "Join the KICKS Community"
+      props.newsletter?.heading ?? 'Join the KICKS Community'
     const newsletterSub =
       props.newsletter?.subheading ??
-      "Get early access to limited drops, exclusive discounts, and insider sneaker news. No spam, just heat."
-    const newsletterCta = props.newsletter?.cta ?? "Subscribe"
+      'Get early access to limited drops, exclusive discounts, and insider sneaker news. No spam, just heat.'
+    const newsletterCta = props.newsletter?.cta ?? 'Subscribe'
     const newsletterPrivacy =
       props.newsletter?.privacy ??
-      "By subscribing, you agree to our Privacy Policy. Unsubscribe anytime."
+      'By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.'
 
     const footerTagline =
       props.footer?.tagline ??
-      "Premium sneakers for the modern lifestyle. Authenticity guaranteed since 2019."
+      'Premium sneakers for the modern lifestyle. Authenticity guaranteed since 2019.'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
       : [
-          "New Arrivals",
-          "Best Sellers",
-          "Men's Sneakers",
-          "Women's Sneakers",
-          "Kids",
-          "Sale",
-          "Help Center",
-          "Order Status",
-          "Returns & Exchanges",
-          "Size Guide",
-          "Contact Us",
-          "About Us",
-          "Careers",
-          "Press",
-          "Sustainability",
-          "Privacy Policy",
-          "Terms of Service",
-        ]
+        'New Arrivals',
+        'Best Sellers',
+        "Men's Sneakers",
+        "Women's Sneakers",
+        'Kids',
+        'Sale',
+        'Help Center',
+        'Order Status',
+        'Returns & Exchanges',
+        'Size Guide',
+        'Contact Us',
+        'About Us',
+        'Careers',
+        'Press',
+        'Sustainability',
+        'Privacy Policy',
+        'Terms of Service',
+      ]
 
     // --- shared sub-components ---
 
     const LogoMark = ({ className }: { className?: string }) => (
       <svg
-        className={cn("size-8 text-foreground", className)}
+        className={cn('size-8 text-foreground', className)}
         viewBox="0 0 40 40"
         fill="none"
         aria-hidden="true"
@@ -438,10 +589,13 @@ export const EcommerceKimiPage = defineCapsule({
       </svg>
     )
 
-    const HeartIcon = () => (
+    const HeartIcon = ({ active = false }: { active?: boolean }) => (
       <svg
-        className="size-5 text-foreground"
-        fill="none"
+        className={cn(
+          'size-5',
+          active ? 'text-primary-foreground' : 'text-foreground',
+        )}
+        fill={active ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
@@ -498,7 +652,7 @@ export const EcommerceKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -523,10 +677,10 @@ export const EcommerceKimiPage = defineCapsule({
                   type="button"
                   onClick={() => go(label)}
                   className={cn(
-                    "text-sm font-medium transition-colors hover:text-foreground",
-                    label.toLowerCase() === "sale"
-                      ? "text-destructive hover:text-destructive/80"
-                      : "text-muted-foreground",
+                    'text-sm font-medium transition-colors hover:text-foreground',
+                    label.toLowerCase() === 'sale'
+                      ? 'text-destructive hover:text-destructive/80'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {label}
@@ -538,7 +692,7 @@ export const EcommerceKimiPage = defineCapsule({
             <div className="flex items-center gap-4">
               <button
                 type="button"
-                onClick={() => go("Search")}
+                onClick={() => setSearchOpen(true)}
                 aria-label="Search"
                 className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
@@ -557,7 +711,7 @@ export const EcommerceKimiPage = defineCapsule({
               </button>
               <button
                 type="button"
-                onClick={() => go("Account")}
+                onClick={() => go('Account')}
                 aria-label="Account"
                 className="hidden items-center gap-2 text-muted-foreground transition-colors hover:text-foreground sm:flex"
               >
@@ -574,29 +728,185 @@ export const EcommerceKimiPage = defineCapsule({
                   <circle cx="12" cy="7" r="4" />
                 </svg>
               </button>
-              <button
-                type="button"
-                onClick={() => go("Cart")}
-                aria-label="Shopping Cart"
-                className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <svg
-                  className="size-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  viewBox="0 0 24 24"
+              <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Shopping Cart"
+                    className="relative flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    {cartItemCount > 0 ? (
+                      <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
+                        {cartItemCount}
+                      </span>
+                    ) : null}
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-full gap-0 p-0 sm:max-w-md"
                 >
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <path d="M16 10a4 4 0 0 1-8 0" />
-                </svg>
-                <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-foreground text-[0.625rem] font-bold text-background">
-                  3
-                </span>
-              </button>
+                  <SheetHeader className="border-b border-border p-6">
+                    <SheetTitle className="text-xl">Shopping cart</SheetTitle>
+                    <SheetDescription>
+                      {cartItemCount > 0
+                        ? `${cartItemCount} item${cartItemCount === 1 ? '' : 's'} ready for checkout.`
+                        : 'Your cart is empty.'}
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto px-6 py-5">
+                    {safeCartLines.length ? (
+                      <div className="space-y-5">
+                        {safeCartLines.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[72px_1fr] gap-4 border-b border-border pb-5 last:border-0"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-lg bg-muted">
+                              <Image
+                                alt={item.product.alt}
+                                src={item.product.image || undefined}
+                                w={180}
+                                h={180}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    {item.product.brand || brand}
+                                  </p>
+                                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground">
+                                    {item.product.name}
+                                  </h3>
+                                </div>
+                                <p className="text-sm font-bold text-foreground">
+                                  {formatCurrency(
+                                    priceAmount(item.product.price) *
+                                    item.quantity,
+                                  )}
+                                </p>
+                              </div>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="inline-flex h-9 items-center rounded-full border border-border bg-background">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.productId,
+                                        item.quantity - 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Decrease ${item.product.name} quantity`}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="min-w-8 text-center text-sm font-semibold">
+                                    {item.quantity}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      void updateCartQuantity(
+                                        item.productId,
+                                        item.quantity + 1,
+                                      )
+                                    }
+                                    className="grid size-9 place-items-center text-muted-foreground hover:text-foreground"
+                                    aria-label={`Increase ${item.product.name} quantity`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void removeFromCart(item.productId)
+                                  }
+                                  className="text-xs font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 px-6 text-center">
+                        <p className="text-base font-semibold text-foreground">
+                          No products in cart
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Add a pair from New Arrivals to start a cart for this
+                          session.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <SheetFooter className="border-t border-border p-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>{formatCurrency(cartSubtotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Shipping</span>
+                        <span>
+                          {shipping ? formatCurrency(shipping) : 'Free'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between pt-2 text-base font-bold text-foreground">
+                        <span>Total</span>
+                        <span>{formatCurrency(cartTotal)}</span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!safeCartLines.length}
+                      className="w-full rounded-full"
+                      onClick={() => go('Checkout')}
+                    >
+                      Checkout
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={() => void clearCart()}
+                        disabled={!safeCartLines.length}
+                      >
+                        Clear
+                      </Button>
+                      <SheetClose asChild>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          Continue
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
               <button
                 type="button"
                 aria-label="Open menu"
@@ -642,6 +952,53 @@ export const EcommerceKimiPage = defineCapsule({
             )}
           </nav>
         </header>
+
+        <CommandDialog
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          title="Search products"
+          description="Search the products seeded for this session."
+          className="max-w-xl"
+        >
+          <CommandInput placeholder={`Search ${brand} products...`} />
+          <CommandList className="max-h-[420px]">
+            <CommandEmpty>No products found.</CommandEmpty>
+            <CommandGroup heading="Products">
+              {displayProducts.map((product) => (
+                <CommandItem
+                  key={product.name}
+                  value={`${product.brand} ${product.name} ${product.price}`}
+                  onSelect={() => {
+                    setSearchOpen(false)
+                    go(product.name)
+                  }}
+                  className="gap-3 py-3"
+                >
+                  <div className="size-12 overflow-hidden rounded-md bg-muted">
+                    <Image
+                      alt={product.alt}
+                      src={product.image || undefined}
+                      w={120}
+                      h={120}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {product.name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {product.brand || brand}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-foreground">
+                    {product.price}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </CommandDialog>
 
         {/* === Main === */}
         <main className="flex flex-1 flex-col">
@@ -727,17 +1084,22 @@ export const EcommerceKimiPage = defineCapsule({
                 {logosHeading}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
-                {["NIKE", "adidas", "New Balance", "ASICS", "PUMA", "Converse"].map(
-                  (name) => (
-                    <span
-                      key={name}
-                      className="text-lg font-bold tracking-tight text-muted-foreground/50"
-                      aria-hidden="true"
-                    >
-                      {name}
-                    </span>
-                  ),
-                )}
+                {[
+                  'NIKE',
+                  'adidas',
+                  'New Balance',
+                  'ASICS',
+                  'PUMA',
+                  'Converse',
+                ].map((name) => (
+                  <span
+                    key={name}
+                    className="text-lg font-bold tracking-tight text-muted-foreground/50"
+                    aria-hidden="true"
+                  >
+                    {name}
+                  </span>
+                ))}
               </div>
             </div>
           </section>
@@ -802,58 +1164,85 @@ export const EcommerceKimiPage = defineCapsule({
               </div>
 
               <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
-                {productItems.map((product) => (
-                  <article key={product.name} className="group">
-                    <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-background">
-                      <Image
-                        alt={product.alt}
-                        src={product.image}
-                        w={600}
-                        h={600}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      {product.badge ? (
-                        <span
-                          className={cn(
-                            "absolute left-3 top-3 rounded px-2 py-1 text-xs font-semibold text-primary-foreground",
-                            product.badge === "Sale" || product.badge === "-15%"
-                              ? "bg-destructive"
-                              : "bg-foreground",
-                          )}
-                        >
-                          {product.badge}
-                        </span>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => go(`Save ${product.name}`)}
-                        aria-label={`Add ${product.name} to wishlist`}
-                        className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-background/90 text-foreground opacity-0 shadow-md transition-opacity hover:bg-background group-hover:opacity-100"
-                      >
-                        <HeartIcon />
-                      </button>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                        {product.brand}
-                      </p>
-                      <h3 className="font-semibold text-foreground transition-colors group-hover:text-muted-foreground">
-                        {product.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground">
-                          {product.price}
-                        </span>
-                        {product.oldPrice ? (
-                          <span className="text-sm text-muted-foreground/60 line-through">
-                            {product.oldPrice}
+                {displayProducts.map((product) => {
+                  const isFavorite =
+                    favoriteProductNames?.has(product.name) ?? false
+
+                  return (
+                    <article key={product.name} className="group">
+                      <div className="relative mb-4 aspect-square overflow-hidden rounded-xl bg-background">
+                        <Image
+                          alt={product.alt}
+                          src={product.image || undefined}
+                          w={600}
+                          h={600}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        {product.badge ? (
+                          <span
+                            className={cn(
+                              'absolute left-3 top-3 rounded px-2 py-1 text-xs font-semibold text-primary-foreground',
+                              product.badge === 'Sale' ||
+                                product.badge === '-15%'
+                                ? 'bg-destructive'
+                                : 'bg-foreground',
+                            )}
+                          >
+                            {product.badge}
                           </span>
                         ) : null}
+                        <button
+                          type="button"
+                          onClick={() => void toggleFavorite(product.name)}
+                          aria-pressed={isFavorite}
+                          aria-label={
+                            isFavorite
+                              ? `Remove ${product.name} from favorites`
+                              : `Add ${product.name} to favorites`
+                          }
+                          className={cn(
+                            'absolute bottom-3 right-3 grid size-10 place-items-center rounded-full shadow-md transition-all hover:scale-105 group-hover:opacity-100',
+                            isFavorite
+                              ? 'bg-primary text-primary-foreground opacity-100'
+                              : 'bg-background/90 text-foreground opacity-0 hover:bg-background',
+                          )}
+                        >
+                          <HeartIcon active={isFavorite} />
+                        </button>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                      <div className="space-y-3">
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                          {product.brand || brand}
+                        </p>
+                        <h3 className="font-semibold text-foreground transition-colors group-hover:text-muted-foreground">
+                          {product.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-foreground">
+                            {product.price}
+                          </span>
+                          {product.oldPrice ? (
+                            <span className="text-sm text-muted-foreground/60 line-through">
+                              {product.oldPrice}
+                            </span>
+                          ) : null}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full rounded-full"
+                          onClick={() => {
+                            void addToCart(product.name)
+                            setCartOpen(true)
+                          }}
+                        >
+                          Add to cart
+                        </Button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -893,23 +1282,23 @@ export const EcommerceKimiPage = defineCapsule({
                             strokeLinejoin="round"
                             viewBox="0 0 24 24"
                           >
-                            {f.title === "100% Authentic" && (
+                            {f.title === '100% Authentic' && (
                               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             )}
-                            {f.title === "Free Shipping" && (
+                            {f.title === 'Free Shipping' && (
                               <>
                                 <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
                                 <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
                                 <line x1="12" y1="22.08" x2="12" y2="12" />
                               </>
                             )}
-                            {f.title === "30-Day Returns" && (
+                            {f.title === '30-Day Returns' && (
                               <>
                                 <polyline points="1 4 1 10 7 10" />
                                 <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
                               </>
                             )}
-                            {f.title === "Size Guarantee" && (
+                            {f.title === 'Size Guarantee' && (
                               <>
                                 <circle cx="12" cy="12" r="10" />
                                 <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72" />
@@ -1068,7 +1457,7 @@ export const EcommerceKimiPage = defineCapsule({
                 <div className="flex gap-4">
                   {[
                     {
-                      name: "Instagram",
+                      name: 'Instagram',
                       icon: (
                         <svg
                           className="size-5"
@@ -1081,7 +1470,7 @@ export const EcommerceKimiPage = defineCapsule({
                       ),
                     },
                     {
-                      name: "Twitter",
+                      name: 'Twitter',
                       icon: (
                         <svg
                           className="size-5"
@@ -1094,7 +1483,7 @@ export const EcommerceKimiPage = defineCapsule({
                       ),
                     },
                     {
-                      name: "TikTok",
+                      name: 'TikTok',
                       icon: (
                         <svg
                           className="size-5"
@@ -1143,11 +1532,11 @@ export const EcommerceKimiPage = defineCapsule({
                 <h4 className="mb-4 font-semibold text-foreground">Support</h4>
                 <ul className="space-y-3 text-sm">
                   {[
-                    "Help Center",
-                    "Order Status",
-                    "Returns & Exchanges",
-                    "Size Guide",
-                    "Contact Us",
+                    'Help Center',
+                    'Order Status',
+                    'Returns & Exchanges',
+                    'Size Guide',
+                    'Contact Us',
                   ].map((link) => (
                     <li key={link}>
                       <button
@@ -1167,11 +1556,11 @@ export const EcommerceKimiPage = defineCapsule({
                 <h4 className="mb-4 font-semibold text-foreground">Company</h4>
                 <ul className="space-y-3 text-sm">
                   {[
-                    "About Us",
-                    "Careers",
-                    "Press",
-                    "Sustainability",
-                    "Affiliates",
+                    'About Us',
+                    'Careers',
+                    'Press',
+                    'Sustainability',
+                    'Affiliates',
                   ].map((link) => (
                     <li key={link}>
                       <button
@@ -1191,10 +1580,10 @@ export const EcommerceKimiPage = defineCapsule({
                 <h4 className="mb-4 font-semibold text-foreground">Legal</h4>
                 <ul className="space-y-3 text-sm">
                   {[
-                    "Privacy Policy",
-                    "Terms of Service",
-                    "Cookie Policy",
-                    "Accessibility",
+                    'Privacy Policy',
+                    'Terms of Service',
+                    'Cookie Policy',
+                    'Accessibility',
                   ].map((link) => (
                     <li key={link}>
                       <button

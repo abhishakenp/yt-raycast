@@ -1,56 +1,126 @@
 import {
   createLibrary as createOpenUILibrary,
   defineComponent as defineOpenUIComponent,
-} from "@openuidev/react-lang"
-import type * as LakebedClient from "lakebed/client"
-import type * as LakebedServer from "lakebed/server"
-import type * as OpenUI from "@openuidev/react-lang"
-import type { z } from "zod/v4"
-import type { $ZodObject } from "zod/v4/core"
+} from '@openuidev/react-lang'
+import { createLakebedClient } from '@ship-fast/lakebed/react'
+import type { LakebedClientRuntime } from '@ship-fast/lakebed/react'
+import type {
+  JsonRecord,
+  LakebedDataFromSchema,
+  LakebedMutationMap,
+  LakebedQueryMap,
+  LakebedSessionSchema,
+  ShipFastLakebedDefinition,
+} from '@ship-fast/lakebed/server'
+import type * as OpenUI from '@openuidev/react-lang'
+import type { z } from 'zod/v4'
+import type { $ZodObject } from 'zod/v4/core'
 
-export type LakebedClientModule = typeof LakebedClient
-export type LakebedServerModule = typeof LakebedServer
+export type LakebedCapsuleDefinition<
+  TProps = JsonRecord,
+  TSchema extends LakebedSessionSchema | undefined =
+    | LakebedSessionSchema
+    | undefined,
+  TData extends JsonRecord = LakebedDataFromSchema<TSchema>,
+  TQueries extends LakebedQueryMap<TProps, TData> = LakebedQueryMap<
+    TProps,
+    TData
+  >,
+  TMutations extends LakebedMutationMap<TProps, TData> = LakebedMutationMap<
+    TProps,
+    TData
+  >,
+> = ShipFastLakebedDefinition<TProps, TSchema, TData, TQueries, TMutations>
 
-export type LakebedCapsuleDefinition = {
-  name: string
-  schema?: Record<string, LakebedServer.TableDefinition>
-  queries?: Record<string, ReturnType<typeof LakebedServer.query>>
-  mutations?: Record<string, ReturnType<typeof LakebedServer.mutation>>
-  endpoints?: Record<string, LakebedServer.EndpointDefinition>
-}
+export type LakebedServerFactory<TServer = LakebedCapsuleDefinition> = () =>
+  | TServer
+  | Promise<TServer>
 
-export type LakebedServerFactory<TServer extends LakebedCapsuleDefinition = LakebedCapsuleDefinition> =
-  () => TServer | Promise<TServer>
-
-export type LakebedClientFactory<TResult = unknown> = () => TResult | Promise<TResult>
+export type LakebedClientFactory<TResult = unknown> = () =>
+  | TResult
+  | Promise<TResult>
 
 export type CapsuleLakebedConfig<
-  TServer extends LakebedCapsuleDefinition = LakebedCapsuleDefinition,
+  TProps = JsonRecord,
+  TSchema extends LakebedSessionSchema | undefined =
+    | LakebedSessionSchema
+    | undefined,
+  TData extends JsonRecord = LakebedDataFromSchema<TSchema>,
+  TQueries extends LakebedQueryMap<TProps, TData> = LakebedQueryMap<
+    TProps,
+    TData
+  >,
+  TMutations extends LakebedMutationMap<TProps, TData> = LakebedMutationMap<
+    TProps,
+    TData
+  >,
   TClientResult = unknown,
-> = {
+> = LakebedCapsuleDefinition<TProps, TSchema, TData, TQueries, TMutations> & {
   client?: LakebedClientFactory<TClientResult>
-  server?: LakebedServerFactory<TServer>
+  server?: LakebedServerFactory<
+    LakebedCapsuleDefinition<TProps, TSchema, TData, TQueries, TMutations>
+  >
 }
+
+export type CapsuleComponentRenderer<
+  TProps,
+  TLakebed extends
+    | CapsuleLakebedConfig<TProps, any, any, any, any, any>
+    | undefined,
+> = (
+  input: OpenUI.ComponentRenderProps<TProps> & {
+    lakebed: LakebedClientRuntime<TLakebed>
+  },
+) => ReturnType<OpenUI.ComponentRenderer<TProps>>
 
 export type DefineCapsuleInput<
   TProps extends $ZodObject = $ZodObject,
-  TServer extends LakebedCapsuleDefinition = LakebedCapsuleDefinition,
+  TSchema extends LakebedSessionSchema | undefined =
+    | LakebedSessionSchema
+    | undefined,
+  TData extends JsonRecord = LakebedDataFromSchema<TSchema>,
+  TQueries extends LakebedQueryMap<z.infer<TProps>, TData> = LakebedQueryMap<
+    z.infer<TProps>,
+    TData
+  >,
+  TMutations extends LakebedMutationMap<z.infer<TProps>, TData> =
+    LakebedMutationMap<z.infer<TProps>, TData>,
   TClientResult = unknown,
 > = {
   name: string
   props: TProps
   description: string
-  component: OpenUI.ComponentRenderer<z.infer<TProps>>
-  lakebed?: CapsuleLakebedConfig<TServer, TClientResult>
+  component: CapsuleComponentRenderer<
+    z.infer<TProps>,
+    | CapsuleLakebedConfig<
+        z.infer<TProps>,
+        TSchema,
+        TData,
+        TQueries,
+        TMutations,
+        TClientResult
+      >
+    | undefined
+  >
+  lakebed?: CapsuleLakebedConfig<
+    z.infer<TProps>,
+    TSchema,
+    TData,
+    TQueries,
+    TMutations,
+    TClientResult
+  >
 }
 
 export type ShipFastCapsule<
   TClient extends OpenUI.DefinedComponent<any> = OpenUI.DefinedComponent<any>,
-  TServer extends LakebedCapsuleDefinition = LakebedCapsuleDefinition,
+  TServer extends CapsuleLakebedConfig<any, any, any, any, any, any> =
+    CapsuleLakebedConfig<any, any, any, any, any, any>,
   TClientResult = unknown,
 > = {
   client: TClient
-  lakebed?: CapsuleLakebedConfig<TServer, TClientResult>
+  lakebed?: TServer &
+    CapsuleLakebedConfig<any, any, any, any, any, TClientResult>
 }
 
 export type CapsuleLibraryInput = {
@@ -60,33 +130,76 @@ export type CapsuleLibraryInput = {
 
 export const defineCapsule = <
   TProps extends $ZodObject,
-  TServer extends LakebedCapsuleDefinition = LakebedCapsuleDefinition,
+  TSchema extends LakebedSessionSchema | undefined =
+    | LakebedSessionSchema
+    | undefined,
+  TData extends JsonRecord = LakebedDataFromSchema<TSchema>,
+  TQueries extends LakebedQueryMap<z.infer<TProps>, TData> = LakebedQueryMap<
+    z.infer<TProps>,
+    TData
+  >,
+  TMutations extends LakebedMutationMap<z.infer<TProps>, TData> =
+    LakebedMutationMap<z.infer<TProps>, TData>,
   TClientResult = unknown,
 >(
-  input: DefineCapsuleInput<TProps, TServer, TClientResult>,
-): ShipFastCapsule<OpenUI.DefinedComponent<TProps>, TServer, TClientResult> => {
-  const { lakebed, ...openUIInput } = input
+  input: DefineCapsuleInput<
+    TProps,
+    TSchema,
+    TData,
+    TQueries,
+    TMutations,
+    TClientResult
+  >,
+): ShipFastCapsule<
+  OpenUI.DefinedComponent<TProps>,
+  CapsuleLakebedConfig<
+    z.infer<TProps>,
+    TSchema,
+    TData,
+    TQueries,
+    TMutations,
+    TClientResult
+  >,
+  TClientResult
+> => {
+  const { component, lakebed, ...openUIInput } = input
 
   return {
-    client: defineOpenUIComponent(openUIInput),
+    client: defineOpenUIComponent({
+      ...openUIInput,
+      component: (componentInput) =>
+        component({
+          ...componentInput,
+          lakebed: createLakebedClient({
+            capsule: input.name,
+            definition: lakebed,
+            props: componentInput.props,
+          }),
+        }),
+    }),
     ...(lakebed ? { lakebed } : {}),
   }
 }
 
 export const isCapsule = (value: unknown): value is ShipFastCapsule =>
   !!value &&
-  typeof value === "object" &&
-  "client" in value &&
+  typeof value === 'object' &&
+  'client' in value &&
   isDefinedComponent(value.client)
 
-export const isDefinedComponent = (value: unknown): value is OpenUI.DefinedComponent<any> =>
+export const isDefinedComponent = (
+  value: unknown,
+): value is OpenUI.DefinedComponent<any> =>
   !!value &&
-  typeof value === "object" &&
-  "name" in value &&
-  "props" in value &&
-  "component" in value
+  typeof value === 'object' &&
+  'name' in value &&
+  'props' in value &&
+  'component' in value
 
-export const createLibrary = ({ capsules, root }: CapsuleLibraryInput): OpenUI.Library =>
+export const createLibrary = ({
+  capsules,
+  root,
+}: CapsuleLibraryInput): OpenUI.Library =>
   createOpenUILibrary({
     components: capsules.map((capsule) => capsule.client),
     root: root ?? capsules[0]?.client.name,
