@@ -16,12 +16,23 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessionId'
+import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription-status'
 import { Route as ApiStudioEmbedReadyRouteImport } from './routes/api/studio-embed-ready'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
 import { Route as ApiOpenuiPreviewRouteImport } from './routes/api/openui-preview'
+import { Route as ApiGalleryRouteImport } from './routes/api/gallery'
+import { Route as ApiCreditsRouteImport } from './routes/api/credits'
+import { Route as ApiBillingOverviewRouteImport } from './routes/api/billing-overview'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
+import { Route as ApiSessionsRecentRouteImport } from './routes/api/sessions.recent'
+import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
+import { Route as ApiRazorpayWebhookRouteImport } from './routes/api/razorpay.webhook'
+import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
+import { Route as ApiSessionsSessionIdGalleryThumbRouteImport } from './routes/api/sessions.$sessionId.gallery-thumb'
+import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api/sessions.$sessionId.github.push'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -58,6 +69,11 @@ const GenerateSessionIdRoute = GenerateSessionIdRouteImport.update({
   path: '/generate/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSubscriptionStatusRoute = ApiSubscriptionStatusRouteImport.update({
+  id: '/api/subscription-status',
+  path: '/api/subscription-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStudioEmbedReadyRoute = ApiStudioEmbedReadyRouteImport.update({
   id: '/api/studio-embed-ready',
   path: '/api/studio-embed-ready',
@@ -83,11 +99,63 @@ const ApiOpenuiPreviewRoute = ApiOpenuiPreviewRouteImport.update({
   path: '/api/openui-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGalleryRoute = ApiGalleryRouteImport.update({
+  id: '/api/gallery',
+  path: '/api/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCreditsRoute = ApiCreditsRouteImport.update({
+  id: '/api/credits',
+  path: '/api/credits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBillingOverviewRoute = ApiBillingOverviewRouteImport.update({
+  id: '/api/billing-overview',
+  path: '/api/billing-overview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
   id: '/export/$sessionId/$target',
   path: '/export/$sessionId/$target',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionsRecentRoute = ApiSessionsRecentRouteImport.update({
+  id: '/api/sessions/recent',
+  path: '/api/sessions/recent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionsSessionIdRoute = ApiSessionsSessionIdRouteImport.update({
+  id: '/api/sessions/$sessionId',
+  path: '/api/sessions/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRazorpayWebhookRoute = ApiRazorpayWebhookRouteImport.update({
+  id: '/api/razorpay/webhook',
+  path: '/api/razorpay/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCheckoutStartRoute = ApiCheckoutStartRouteImport.update({
+  id: '/api/checkout/start',
+  path: '/api/checkout/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionsSessionIdGalleryThumbRoute =
+  ApiSessionsSessionIdGalleryThumbRouteImport.update({
+    id: '/gallery-thumb',
+    path: '/gallery-thumb',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdGithubPushRoute =
+  ApiSessionsSessionIdGithubPushRouteImport.update({
+    id: '/github/push',
+    path: '/github/push',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,13 +164,24 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/api/billing-overview': typeof ApiBillingOverviewRoute
+  '/api/credits': typeof ApiCreditsRoute
+  '/api/gallery': typeof ApiGalleryRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
+  '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
+  '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
+  '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
+  '/api/sessions/recent': typeof ApiSessionsRecentRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
+  '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -111,13 +190,24 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/api/billing-overview': typeof ApiBillingOverviewRoute
+  '/api/credits': typeof ApiCreditsRoute
+  '/api/gallery': typeof ApiGalleryRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
+  '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
+  '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
+  '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
+  '/api/sessions/recent': typeof ApiSessionsRecentRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
+  '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,13 +217,24 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/studio': typeof StudioRoute
   '/terms': typeof TermsRoute
+  '/api/billing-overview': typeof ApiBillingOverviewRoute
+  '/api/credits': typeof ApiCreditsRoute
+  '/api/gallery': typeof ApiGalleryRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
   '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
+  '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
+  '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
+  '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
+  '/api/sessions/recent': typeof ApiSessionsRecentRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
+  '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -144,13 +245,24 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/studio'
     | '/terms'
+    | '/api/billing-overview'
+    | '/api/credits'
+    | '/api/gallery'
     | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
+    | '/api/subscription-status'
     | '/generate/$sessionId'
+    | '/api/checkout/start'
+    | '/api/razorpay/webhook'
+    | '/api/sessions/$sessionId'
+    | '/api/sessions/recent'
+    | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/api/sessions/$sessionId/gallery-thumb'
+    | '/api/sessions/$sessionId/github/push'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -159,13 +271,24 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/studio'
     | '/terms'
+    | '/api/billing-overview'
+    | '/api/credits'
+    | '/api/gallery'
     | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
+    | '/api/subscription-status'
     | '/generate/$sessionId'
+    | '/api/checkout/start'
+    | '/api/razorpay/webhook'
+    | '/api/sessions/$sessionId'
+    | '/api/sessions/recent'
+    | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/api/sessions/$sessionId/gallery-thumb'
+    | '/api/sessions/$sessionId/github/push'
   id:
     | '__root__'
     | '/'
@@ -174,13 +297,24 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/studio'
     | '/terms'
+    | '/api/billing-overview'
+    | '/api/credits'
+    | '/api/gallery'
     | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
     | '/api/studio-embed-ready'
+    | '/api/subscription-status'
     | '/generate/$sessionId'
+    | '/api/checkout/start'
+    | '/api/razorpay/webhook'
+    | '/api/sessions/$sessionId'
+    | '/api/sessions/recent'
+    | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/api/sessions/$sessionId/gallery-thumb'
+    | '/api/sessions/$sessionId/github/push'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -190,12 +324,21 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   StudioRoute: typeof StudioRoute
   TermsRoute: typeof TermsRoute
+  ApiBillingOverviewRoute: typeof ApiBillingOverviewRoute
+  ApiCreditsRoute: typeof ApiCreditsRoute
+  ApiGalleryRoute: typeof ApiGalleryRoute
   ApiOpenuiPreviewRoute: typeof ApiOpenuiPreviewRoute
   ApiPexelsRoute: typeof ApiPexelsRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
   ApiStudioEmbedReadyRoute: typeof ApiStudioEmbedReadyRoute
+  ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
   GenerateSessionIdRoute: typeof GenerateSessionIdRoute
+  ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
+  ApiRazorpayWebhookRoute: typeof ApiRazorpayWebhookRoute
+  ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
+  ApiSessionsRecentRoute: typeof ApiSessionsRecentRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
 }
 
@@ -250,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GenerateSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/subscription-status': {
+      id: '/api/subscription-status'
+      path: '/api/subscription-status'
+      fullPath: '/api/subscription-status'
+      preLoaderRoute: typeof ApiSubscriptionStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/studio-embed-ready': {
       id: '/api/studio-embed-ready'
       path: '/api/studio-embed-ready'
@@ -285,6 +435,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOpenuiPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/gallery': {
+      id: '/api/gallery'
+      path: '/api/gallery'
+      fullPath: '/api/gallery'
+      preLoaderRoute: typeof ApiGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/credits': {
+      id: '/api/credits'
+      path: '/api/credits'
+      fullPath: '/api/credits'
+      preLoaderRoute: typeof ApiCreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/billing-overview': {
+      id: '/api/billing-overview'
+      path: '/api/billing-overview'
+      fullPath: '/api/billing-overview'
+      preLoaderRoute: typeof ApiBillingOverviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/export/$sessionId/$target': {
       id: '/export/$sessionId/$target'
       path: '/export/$sessionId/$target'
@@ -292,8 +463,70 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExportSessionIdTargetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sessions/recent': {
+      id: '/api/sessions/recent'
+      path: '/api/sessions/recent'
+      fullPath: '/api/sessions/recent'
+      preLoaderRoute: typeof ApiSessionsRecentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sessions/$sessionId': {
+      id: '/api/sessions/$sessionId'
+      path: '/api/sessions/$sessionId'
+      fullPath: '/api/sessions/$sessionId'
+      preLoaderRoute: typeof ApiSessionsSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/razorpay/webhook': {
+      id: '/api/razorpay/webhook'
+      path: '/api/razorpay/webhook'
+      fullPath: '/api/razorpay/webhook'
+      preLoaderRoute: typeof ApiRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checkout/start': {
+      id: '/api/checkout/start'
+      path: '/api/checkout/start'
+      fullPath: '/api/checkout/start'
+      preLoaderRoute: typeof ApiCheckoutStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sessions/$sessionId/gallery-thumb': {
+      id: '/api/sessions/$sessionId/gallery-thumb'
+      path: '/gallery-thumb'
+      fullPath: '/api/sessions/$sessionId/gallery-thumb'
+      preLoaderRoute: typeof ApiSessionsSessionIdGalleryThumbRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/github/push': {
+      id: '/api/sessions/$sessionId/github/push'
+      path: '/github/push'
+      fullPath: '/api/sessions/$sessionId/github/push'
+      preLoaderRoute: typeof ApiSessionsSessionIdGithubPushRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
   }
 }
+
+interface ApiSessionsSessionIdRouteChildren {
+  ApiSessionsSessionIdGalleryThumbRoute: typeof ApiSessionsSessionIdGalleryThumbRoute
+  ApiSessionsSessionIdGithubPushRoute: typeof ApiSessionsSessionIdGithubPushRoute
+}
+
+const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
+  ApiSessionsSessionIdGalleryThumbRoute: ApiSessionsSessionIdGalleryThumbRoute,
+  ApiSessionsSessionIdGithubPushRoute: ApiSessionsSessionIdGithubPushRoute,
+}
+
+const ApiSessionsSessionIdRouteWithChildren =
+  ApiSessionsSessionIdRoute._addFileChildren(ApiSessionsSessionIdRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -302,12 +535,21 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   StudioRoute: StudioRoute,
   TermsRoute: TermsRoute,
+  ApiBillingOverviewRoute: ApiBillingOverviewRoute,
+  ApiCreditsRoute: ApiCreditsRoute,
+  ApiGalleryRoute: ApiGalleryRoute,
   ApiOpenuiPreviewRoute: ApiOpenuiPreviewRoute,
   ApiPexelsRoute: ApiPexelsRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
   ApiStudioEmbedReadyRoute: ApiStudioEmbedReadyRoute,
+  ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
   GenerateSessionIdRoute: GenerateSessionIdRoute,
+  ApiCheckoutStartRoute: ApiCheckoutStartRoute,
+  ApiRazorpayWebhookRoute: ApiRazorpayWebhookRoute,
+  ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
+  ApiSessionsRecentRoute: ApiSessionsRecentRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
 }
 export const routeTree = rootRouteImport
