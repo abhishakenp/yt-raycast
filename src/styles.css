@@ -374,6 +374,56 @@ a {
 .genui-preview {
   /* Ensure theme custom properties cascade within this container */
   isolation: isolate;
+  container-type: inline-size;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.genui-preview :where(*) {
+  box-sizing: border-box;
+}
+
+.genui-preview
+  :where(section, main, header, footer, nav, article, aside, div, ul, ol, li) {
+  min-width: 0;
+}
+
+.genui-preview
+  :where(h1, h2, h3, h4, h5, h6, p, span, a, button, li, dt, dd, blockquote, figcaption, label, th, td) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.genui-preview :where(img, svg, video, canvas, iframe) {
+  max-width: 100%;
+}
+
+.genui-preview :where(table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.genui-preview[data-preview-device='mobile']
+  :where([class*="grid-cols-"], [class*="sm:grid-cols-"], [class*="md:grid-cols-"], [class*="lg:grid-cols-"], [class*="xl:grid-cols-"]) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.genui-preview[data-preview-device='mobile']
+  :where([class*="flex-row"], [class*="sm:flex-row"], [class*="md:flex-row"], [class*="lg:flex-row"], [class*="xl:flex-row"]) {
+  flex-wrap: wrap;
+}
+
+.genui-preview[data-preview-device='tablet']
+  :where([class*="lg:grid-cols-"], [class*="xl:grid-cols-"]) {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.genui-preview[data-preview-device='tablet']
+  :where([class*="lg:flex-row"], [class*="xl:flex-row"]) {
+  flex-wrap: wrap;
 }
 
 @keyframes heroAuraOnly {
