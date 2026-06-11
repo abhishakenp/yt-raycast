@@ -2903,3 +2903,65 @@ export const getUserUsageMetrics = query({
     }
   },
 })
+
+export const listCmsEntries = query({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    const entries = await ctx.db
+      .query('cmsEntries')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .collect()
+
+    return entries
+  },
+})
+
+export const insertCmsBinding = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    selector: v.string(),
+    type: v.union(v.literal('text'), v.literal('richtext'), v.literal('image'), v.literal('link')),
+    field: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now()
+    const bindingId = await ctx.db.insert('cmsBindings', {
+      sessionId: args.sessionId,
+      selector: args.selector,
+      type: args.type,
+      field: args.field,
+      createdAt: now,
+    })
+    return bindingId
+  },
+})
+
+export const listCmsRevisions = internalQuery({
+  args: {
+    entryId: v.id('cmsEntries'),
+  },
+  handler: async (ctx, args) => {
+    const revisions = await ctx.db
+      .query('cmsRevisions')
+      .withIndex('by_entryId', (index) => index.eq('entryId', args.entryId))
+      .collect()
+
+    return revisions
+  },
+})
+
+export const getCommerceConfig = query({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    const config = await ctx.db
+      .query('commerceConfigs')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .first()
+
+    return config
+  },
+})
