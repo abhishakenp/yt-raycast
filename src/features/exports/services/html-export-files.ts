@@ -1,0 +1,244 @@
+import { buildHtmlExport } from './html-export-builder'
+
+export interface HtmlExportFilesOptions {
+  includeBadge?: boolean
+  siteUrl?: string
+}
+
+const stripTags = (value: string): string =>
+  value
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+const decodeBasicEntities = (value: string): string =>
+  value
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+
+const matchContent = (html: string, pattern: RegExp): string =>
+  decodeBasicEntities(stripTags(html.match(pattern)?.[1] ?? ''))
+
+const extractExportMetadata = (html: string) => {
+  const title =
+    matchContent(html, /<title\b[^>]*>([\s\S]*?)<\/title>/i) ||
+    matchContent(html, /<h1\b[^>]*>([\s\S]*?)<\/h1>/i) ||
+    'Generated Ship Fast Site'
+  const description =
+    decodeBasicEntities(
+      html.match(
+        /<meta\b[^>]*name=["']description["'][^>]*content=["']([^"']+)["'][^>]*>/i,
+      )?.[1] ??
+        html.match(
+          /<meta\b[^>]*content=["']([^"']+)["'][^>]*name=["']description["'][^>]*>/i,
+        )?.[1] ??
+        '',
+    ) ||
+    matchContent(html, /<p\b[^>]*>([\s\S]*?)<\/p>/i) ||
+    'A website generated with Ship Fast.'
+
+  return {
+    title: title.slice(0, 120),
+    description: description.slice(0, 240),
+  }
+}
+
+const normalizeSiteUrl = (value: string | undefined): string => {
+  if (!value) return 'https://example.com'
+  try {
+    const url = new URL(value)
+    url.hash = ''
+    url.search = ''
+    return url.toString().replace(/\/+$/, '')
+  } catch {
+    return 'https://example.com'
+  }
+}
+
+const ensureLlmsDiscoveryLink = (html: string): string => {
+  if (/href=["']\/?llms\.txt["']/i.test(html)) return html
+  const link =
+    '<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary">'
+  if (/<\/head>/i.test(html)) return html.replace(/<\/head>/i, `${link}</head>`)
+  return `${link}\n${html}`
+}
+
+const createRobotsTxt = (siteUrl: string): string =>
+  `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
+
+const createSitemapXml = (siteUrl: string): string =>
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${siteUrl}/</loc>\n  </url>\n</urlset>\n`
+
+const createLlmsTxt = (
+  siteUrl: string,
+  metadata: { title: string; description: string },
+): string =>
+  `# ${metadata.title}\n\n> ${metadata.description}\n\n- Site URL: ${siteUrl}/\n- Primary page: /\n- Export includes robots.txt, sitemap.xml, and this llms.txt summary for answer engines and crawlers.\n`
+
+const createPackageJson = (
+  sessionId: string,
+  target: 'html' | 'react' | 'next',
+): string => {
+  const base = {
+    name: `ship-fast-export-${sessionId}`,
+    version: '1.0.0',
+    description: 'Site generated with Ship Fast',
+    scripts: {},
+  }
+
+  if (target === 'react') {
+    return JSON.stringify(
+      {
+        ...base,
+        dependencies: {
+          react: '^18.2.0',
+          'react-dom': '^18.2.0',
+        },
+        scripts: {
+          dev: 'vite',
+          build: 'vite build',
+          preview: 'vite preview',
+        },
+      },
+      null,
+      2,
+    )
+  }
+
+  if (target === 'next') {
+    return JSON.stringify(
+      {
+        ...base,
+        dependencies: {
+          next: '^14.0.0',
+          react: '^18.2.0',
+          'react-dom': '^18.2.0',
+        },
+        scripts: {
+          dev: 'next dev',
+          build: 'next build',
+          start: 'next start',
+        },
+      },
+      null,
+      2,
+    )
+  }
+
+  return JSON.stringify(base, null, 2)
+}
+
+const createViteConfig = (): string =>
+  `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,
+  },
+})`
+
+const createNextConfig = (): string =>
+  `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+}
+
+module.exports = nextConfig`
+
+export function createHtmlExportFiles(
+  sessionId: string,
+  target: 'html',
+  previewHtml: string,
+  options: HtmlExportFilesOptions = {},
+): Record<string, string> {
+  const exportHtml = ensureLlmsDiscoveryLink(
+    buildHtmlExport(previewHtml, {
+      includeBadge: options.includeBadge,
+    }),
+  )
+  const siteUrl = normalizeSiteUrl(options.siteUrl)
+  const metadata = extractExportMetadata(exportHtml)
+
+  return {
+    'index.html': exportHtml,
+    'README.md': `# Ship Fast export\n\nSession: ${sessionId}\nTarget: ${target}\n`,
+    'robots.txt': createRobotsTxt(siteUrl),
+    'sitemap.xml': createSitemapXml(siteUrl),
+    'llms.txt': createLlmsTxt(siteUrl, metadata),
+  }
+}
+
+export function createReactExportFiles(
+  sessionId: string,
+  target: 'react',
+  previewHtml: string,
+  options: HtmlExportFilesOptions = {},
+): Record<string, string> {
+  const exportHtml = ensureLlmsDiscoveryLink(
+    buildHtmlExport(previewHtml, {
+      includeBadge: options.includeBadge,
+    }),
+  )
+  const siteUrl = normalizeSiteUrl(options.siteUrl)
+  const metadata = extractExportMetadata(exportHtml)
+
+  return {
+    'package.json': createPackageJson(sessionId, target),
+    'vite.config.js': createViteConfig(),
+    'index.html': exportHtml,
+    'README.md': `# Ship Fast React export\n\nSession: ${sessionId}\nTarget: ${target}\n\n## Development\n\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n\n## Build\n\n\`\`\`bash\nnpm run build\n\`\`\`\n`,
+    'robots.txt': createRobotsTxt(siteUrl),
+    'sitemap.xml': createSitemapXml(siteUrl),
+    'llms.txt': createLlmsTxt(siteUrl, metadata),
+  }
+}
+
+export function createNextExportFiles(
+  sessionId: string,
+  target: 'next',
+  previewHtml: string,
+  options: HtmlExportFilesOptions = {},
+): Record<string, string> {
+  const exportHtml = ensureLlmsDiscoveryLink(
+    buildHtmlExport(previewHtml, {
+      includeBadge: options.includeBadge,
+    }),
+  )
+  const siteUrl = normalizeSiteUrl(options.siteUrl)
+  const metadata = extractExportMetadata(exportHtml)
+
+  return {
+    'package.json': createPackageJson(sessionId, target),
+    'next.config.js': createNextConfig(),
+    'app/page.tsx': `export default function Home() {
+  return (
+    <div dangerouslySetInnerHTML={{ __html: \`${exportHtml.replace(/`/g, '\\`')}\` }} />
+  )
+}`,
+    'app/layout.tsx': `export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body>{children}</body>
+    </html>
+  )
+}`,
+    'README.md': `# Ship Fast Next.js export\n\nSession: ${sessionId}\nTarget: ${target}\n\n## Development\n\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n\n## Build\n\n\`\`\`bash\nnpm run build\n\`\`\`\n\n## Start\n\n\`\`\`bash\nnpm start\n\`\`\`\n`,
+    'robots.txt': createRobotsTxt(siteUrl),
+    'sitemap.xml': createSitemapXml(siteUrl),
+    'llms.txt': createLlmsTxt(siteUrl, metadata),
+  }
+}
