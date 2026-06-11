@@ -111,7 +111,26 @@ export default defineSchema({
     message: v.optional(v.string()),
     previewVersion: v.optional(v.number()),
     createdAt: v.number(),
+    elapsedMs: v.optional(v.number()),
+    cost: v.optional(v.number()),
+    provider: v.optional(v.string()),
+    error: v.optional(v.string()),
+    quotaHit: v.optional(v.boolean()),
+    cacheHit: v.optional(v.boolean()),
   }).index('by_sessionId_createdAt', ['sessionId', 'createdAt']),
+  usageMetrics: defineTable({
+    sessionId: v.id('sessions'),
+    eventType: v.string(),
+    timestamp: v.number(),
+    elapsedMs: v.number(),
+    cost: v.number(),
+    provider: v.string(),
+    userId: v.optional(v.string()),
+    anonymousClientIdHash: v.optional(v.string()),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_timestamp', ['timestamp'])
+    .index('by_userId', ['userId']),
 
   generatedModules: defineTable({
     sessionId: v.id('sessions'),
@@ -217,6 +236,37 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index('by_sessionId', ['sessionId']),
+
+  cmsBindings: defineTable({
+    sessionId: v.id('sessions'),
+    selector: v.string(),
+    type: v.union(v.literal('text'), v.literal('richtext'), v.literal('image'), v.literal('link')),
+    field: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_selector', ['sessionId', 'selector']),
+
+  cmsEntries: defineTable({
+    sessionId: v.id('sessions'),
+    bindingId: v.id('cmsBindings'),
+    content: v.string(),
+    contentType: v.optional(v.string()),
+    updatedAt: v.number(),
+    updatedBy: v.optional(v.string()),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_bindingId', ['bindingId']),
+
+  cmsRevisions: defineTable({
+    entryId: v.id('cmsEntries'),
+    content: v.string(),
+    contentType: v.optional(v.string()),
+    updatedBy: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index('by_entryId', ['entryId'])
+    .index('by_entryId_createdAt', ['entryId', 'createdAt']),
 
   commerceConfigs: defineTable({
     sessionId: v.id('sessions'),

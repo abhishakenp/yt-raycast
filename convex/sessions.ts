@@ -859,14 +859,22 @@ export const addGenerationEvent = internalMutation({
 
 export const getGenerationView = query({
   args: {
-    lookup: v.string(),
+    sessionId: v.optional(v.id('sessions')),
+    lookup: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const directSessionId = ctx.db.normalizeId('sessions', args.lookup)
-    const exportId = directSessionId === null ? ctx.db.normalizeId('exports', args.lookup) : null
+    const directSessionId: Id<'sessions'> | null =
+      args.sessionId ??
+      (args.lookup === undefined
+        ? null
+        : ctx.db.normalizeId('sessions', args.lookup))
+    const exportId =
+      directSessionId === null && args.lookup !== undefined
+        ? ctx.db.normalizeId('exports', args.lookup)
+        : null
     const exportRecord = exportId === null ? null : await ctx.db.get(exportId)
     const deployment =
-      directSessionId === null && exportRecord === null
+      directSessionId === null && exportRecord === null && args.lookup !== undefined
         ? await ctx.db
           .query('deployments')
           .withIndex('by_slug', (index) => index.eq('slug', args.lookup))
@@ -882,11 +890,15 @@ export const getGenerationView = query({
 
     const tasks = await ctx.db
       .query('tasks')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', sessionId),
+      )
       .collect()
     const events = await ctx.db
       .query('generationEvents')
-      .withIndex('by_sessionId_createdAt', (index) => index.eq('sessionId', sessionId))
+      .withIndex('by_sessionId_createdAt', (index) =>
+        index.eq('sessionId', sessionId),
+      )
       .order('desc')
       .take(80)
     const homeModule = await ctx.db
@@ -897,21 +909,168 @@ export const getGenerationView = query({
       .first()
     const siteSpec = await ctx.db
       .query('siteSpecs')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', sessionId),
+      )
       .first()
     const latestPreview = await ctx.db
       .query('previews')
-      .withIndex('by_sessionId_version', (index) => index.eq('sessionId', sessionId))
+      .withIndex('by_sessionId_version', (index) =>
+        index.eq('sessionId', sessionId),
+      )
       .order('desc')
       .first()
 
     return {
       session: serializeSession(session),
-      tasks: tasks.sort((left, right) => left.order - right.order),
+      tasks: tasks.sort(
+        (left, right) => (left.order ?? 0) - (right.order ?? 0),
+      ),
       events: events.reverse(),
       homeModule,
       siteSpec,
       latestPreview,
+    }
+  },
+})
+
+export const getEventStream = query({
+  args: {
+    sessionId: v.optional(v.id('sessions')),
+    lookup: v.optional(v.string()),
+    since: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const sessionId: Id<'sessions'> | null =
+      args.sessionId ??
+      (args.lookup === undefined
+        ? null
+        : ctx.db.normalizeId('sessions', args.lookup))
+
+    if (sessionId === null) return null
+
+    const session = await ctx.db.get(sessionId)
+    if (session === null) return null
+
+    const limit = Math.max(1, Math.min(args.limit ?? 100, 250))
+    const events = await ctx.db
+      .query('generationEvents')
+      .withIndex('by_sessionId_createdAt', (index) => {
+        const scoped = index.eq('sessionId', sessionId)
+        return args.since === undefined
+          ? scoped
+          : scoped.gt('createdAt', args.since)
+      })
+      .order('asc')
+      .take(limit)
+
+    return {
+      session: serializeSession(session),
+      events,
+      cursor:
+        events.length === 0 ? (args.since ?? null) : events.at(-1)!.createdAt,
+    }
+  },
+})
+
+export const getSessionApiResponse = query({
+  args: {
+    lookup: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.lookup)
+    if (sessionId === null) return null
+
+    const session = await ctx.db.get(sessionId)
+    if (session === null) return null
+
+    const [tasks, exports, deployment] = await Promise.all([
+      ctx.db
+        .query('tasks')
+        .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
+        .take(200),
+      ctx.db
+        .query('exports')
+        .withIndex('by_sessionId_target', (index) =>
+          index.eq('sessionId', sessionId),
+        )
+        .take(20),
+      ctx.db
+        .query('deployments')
+        .withIndex('by_sessionId', (index) =>
+          index.eq('sessionId', sessionId),
+        )
+        .order('desc')
+        .first(),
+    ])
+
+    const sortedTasks = tasks.sort(
+      (left, right) => (left.order ?? 0) - (right.order ?? 0),
+    )
+    const done = sortedTasks.filter(
+      (task) => task.status === 'succeeded' || task.status === 'failed',
+    ).length
+
+    return {
+      id: session._id,
+      sessionId: session._id,
+      prompt: session.prompt,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt ?? session.createdAt,
+      status:
+        session.status ??
+        (session.genuiStatus === 'done' ? 'preview_ready' : 'queued'),
+      deployment:
+        deployment === null
+          ? session.deploymentSlug !== undefined &&
+            session.deploymentUrl !== undefined
+            ? {
+                slug: session.deploymentSlug,
+                url: session.deploymentUrl,
+                status: 'ready',
+              }
+            : null
+          : {
+              slug: deployment.slug,
+              url: deployment.url,
+              status: deployment.status,
+            },
+      homepageReady: session.homepageReady === true,
+      siteSpecReady: session.siteSpecReady === true,
+      preferredExportTarget: session.preferredExportTarget,
+      preferredLanguage: session.preferredLanguage,
+      exportTargets: exports.map((exportRecord) => exportRecord.target),
+      payment: null,
+      themeOverride: session.themeOverride ?? null,
+      taskCount: sortedTasks.length,
+      done,
+      tasks: sortedTasks.map((task) => ({
+        id: task._id,
+        title: task.title,
+        status: task.status,
+        order: task.order ?? 0,
+        errorMessage: task.errorMessage ?? null,
+      })),
+      elapsed: session.elapsed ?? null,
+      cost: session.cost ?? null,
+      isAnonymous: session.userId === undefined,
+      ecommerce: session.medusaConfig !== undefined,
+      openuiReady: session.openuiReady === true,
+      integrations: {
+        sanity:
+          session.sanityConfig === undefined
+            ? null
+            : { enabled: true, config: session.sanityConfig },
+        medusa:
+          session.medusaConfig === undefined
+            ? null
+            : { enabled: true, config: session.medusaConfig },
+      },
+      medusaAdminEmbed: {
+        show: false,
+        url: null,
+      },
     }
   },
 })
@@ -2315,6 +2474,432 @@ export const listPublicSessions = query({
       hasNext: page < totalPages,
       hasPrev: page > 1,
       availableCategories,
+    }
+  },
+})
+
+export const getPublicGallerySession = query({
+  args: {
+    sessionId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const sessionId = ctx.db.normalizeId('sessions', args.sessionId)
+    if (sessionId === null) return null
+
+    const session = await ctx.db.get(sessionId)
+    if (
+      session === null ||
+      session.isPrivate === true ||
+      !isGalleryVisibleSession(session)
+    ) {
+      return null
+    }
+
+    const [preview, homeModule, siteSpec] = await Promise.all([
+      ctx.db
+        .query('previews')
+        .withIndex('by_sessionId_version', (index) =>
+          index.eq('sessionId', session._id),
+        )
+        .order('desc')
+        .first(),
+      ctx.db
+        .query('generatedModules')
+        .withIndex('by_sessionId_moduleKey', (index) =>
+          index.eq('sessionId', session._id).eq('moduleKey', 'home'),
+        )
+        .first(),
+      ctx.db
+        .query('siteSpecs')
+        .withIndex('by_sessionId', (index) =>
+          index.eq('sessionId', session._id),
+        )
+        .first(),
+    ])
+
+    const previewVersion = preview?.version ?? session.previewVersion ?? 0
+
+    return {
+      id: session._id,
+      sessionId: session._id,
+      prompt: session.prompt,
+      preferredLanguage: session.preferredLanguage,
+      status: session.status ?? null,
+      previewVersion,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt ?? session.createdAt,
+      html: preview?.html ?? null,
+      moduleSource: homeModule?.source ?? null,
+      siteSpecJson: siteSpec?.specJson ?? null,
+      categories: getGalleryCategories(session.prompt),
+      elapsed: session.elapsed ?? null,
+      cost: session.cost ?? null,
+      homepageReady: session.homepageReady ?? null,
+      siteSpecReady: session.siteSpecReady ?? null,
+      openuiReady: session.openuiReady ?? null,
+      readiness: {
+        homepageReady: session.homepageReady ?? null,
+        siteSpecReady: session.siteSpecReady ?? null,
+        openuiReady: session.openuiReady ?? null,
+        previewReady: session.status === 'preview_ready',
+      },
+    }
+  },
+})
+
+export const getDeploymentBySlug = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const deployment = await ctx.db
+      .query('deployments')
+      .withIndex('by_slug', (index) => index.eq('slug', args.slug))
+      .first()
+
+    if (deployment === null) {
+      return null
+    }
+
+    const session = await ctx.db.get(deployment.sessionId)
+    if (session === null) {
+      return null
+    }
+
+    return {
+      slug: deployment.slug,
+      url: deployment.url,
+      status: deployment.status,
+      sessionId: deployment.sessionId,
+      session: {
+        id: session._id,
+        prompt: session.prompt,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt ?? session.createdAt,
+        status: session.status ?? null,
+      },
+    }
+  },
+})
+
+export const getDeploymentStatus = query({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    const deployment = await ctx.db
+      .query('deployments')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .first()
+
+    if (deployment === null) {
+      return null
+    }
+
+    return {
+      slug: deployment.slug,
+      url: deployment.url,
+      status: deployment.status,
+      createdAt: deployment.createdAt,
+      updatedAt: deployment.updatedAt,
+    }
+  },
+})
+
+export const extractCmsBindings = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    html: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const selectorRegex = /data-cms="([^"]+)"/g
+    const bindings: Array<{ selector: string; type: string; field?: string }> = []
+    let match
+
+    while ((match = selectorRegex.exec(args.html)) !== null) {
+      const selector = match[1]
+      const typeMatch = selector.match(/type:(text|richtext|image|link)/)
+      const fieldMatch = selector.match(/field:([a-zA-Z0-9_-]+)/)
+      const type = typeMatch ? typeMatch[1] : 'text'
+      const field = fieldMatch ? fieldMatch[1] : undefined
+
+      bindings.push({ selector, type, field })
+    }
+
+    const now = Date.now()
+    for (const binding of bindings) {
+      await ctx.db.insert('cmsBindings', {
+        sessionId: args.sessionId,
+        selector: binding.selector,
+        type: binding.type as 'text' | 'richtext' | 'image' | 'link',
+        field: binding.field,
+        createdAt: now,
+      })
+    }
+
+    return { extracted: bindings.length }
+  },
+})
+
+export const updateCmsEntry = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    bindingId: v.id('cmsBindings'),
+    content: v.string(),
+    contentType: v.optional(v.string()),
+    updatedBy: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const binding = await ctx.db.get(args.bindingId)
+    if (binding === null || binding.sessionId !== args.sessionId) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'CMS binding not found',
+      })
+    }
+
+    const existingEntry = await ctx.db
+      .query('cmsEntries')
+      .withIndex('by_bindingId', (index) => index.eq('bindingId', args.bindingId))
+      .first()
+
+    const now = Date.now()
+
+    if (existingEntry !== null) {
+      await ctx.db.insert('cmsRevisions', {
+        entryId: existingEntry._id,
+        content: existingEntry.content,
+        contentType: existingEntry.contentType,
+        updatedBy: existingEntry.updatedBy,
+        createdAt: now,
+      })
+
+      await ctx.db.patch(existingEntry._id, {
+        content: args.content,
+        contentType: args.contentType,
+        updatedAt: now,
+        updatedBy: args.updatedBy,
+      })
+    } else {
+      await ctx.db.insert('cmsEntries', {
+        sessionId: args.sessionId,
+        bindingId: args.bindingId,
+        content: args.content,
+        contentType: args.contentType,
+        updatedAt: now,
+        updatedBy: args.updatedBy,
+      })
+    }
+
+    return { success: true }
+  },
+})
+
+export const restoreCmsRevision = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    revisionId: v.id('cmsRevisions'),
+  },
+  handler: async (ctx, args) => {
+    const revision = await ctx.db.get(args.revisionId)
+    if (revision === null) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'CMS revision not found',
+      })
+    }
+
+    const entry = await ctx.db.get(revision.entryId)
+    if (entry === null) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'CMS entry not found',
+      })
+    }
+
+    const binding = await ctx.db.get(entry.bindingId)
+    if (binding === null || binding.sessionId !== args.sessionId) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'CMS binding not found',
+      })
+    }
+
+    const now = Date.now()
+
+    await ctx.db.insert('cmsRevisions', {
+      entryId: entry._id,
+      content: entry.content,
+      contentType: entry.contentType,
+      updatedBy: entry.updatedBy,
+      createdAt: now,
+    })
+
+    await ctx.db.patch(entry._id, {
+      content: revision.content,
+      contentType: revision.contentType,
+      updatedAt: now,
+      updatedBy: revision.updatedBy,
+    })
+
+    return { success: true }
+  },
+})
+
+export const provisionMedusaTenant = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    backendUrl: v.string(),
+    adminUrl: v.string(),
+    storefrontUrl: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now()
+
+    const existingConfig = await ctx.db
+      .query('commerceConfigs')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .first()
+
+    if (existingConfig !== null) {
+      await ctx.db.patch(existingConfig._id, {
+        backendUrl: args.backendUrl,
+        adminUrl: args.adminUrl,
+        storefrontUrl: args.storefrontUrl,
+        updatedAt: now,
+      })
+    } else {
+      await ctx.db.insert('commerceConfigs', {
+        sessionId: args.sessionId,
+        status: 'connected',
+        backendUrl: args.backendUrl,
+        adminUrl: args.adminUrl,
+        storefrontUrl: args.storefrontUrl,
+        productCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      })
+    }
+
+    return { success: true }
+  },
+})
+
+export const syncMedusaProducts = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    products: v.array(
+      v.object({
+        id: v.string(),
+        title: v.string(),
+        handle: v.string(),
+        price: v.number(),
+        description: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const config = await ctx.db
+      .query('commerceConfigs')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .first()
+
+    if (config === null) {
+      throw new ConvexError({
+        code: 'NOT_CONFIGURED',
+        message: 'Medusa commerce config not found',
+      })
+    }
+
+    const now = Date.now()
+    await ctx.db.patch(config._id, {
+      productCount: args.products.length,
+      updatedAt: now,
+    })
+
+    return { synced: args.products.length }
+  },
+})
+
+export const recordUsageMetric = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    eventType: v.string(),
+    elapsedMs: v.number(),
+    cost: v.number(),
+    provider: v.string(),
+    userId: v.optional(v.string()),
+    anonymousClientIdHash: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now()
+    await ctx.db.insert('usageMetrics', {
+      sessionId: args.sessionId,
+      eventType: args.eventType,
+      timestamp: now,
+      elapsedMs: args.elapsedMs,
+      cost: args.cost,
+      provider: args.provider,
+      userId: args.userId,
+      anonymousClientIdHash: args.anonymousClientIdHash,
+    })
+    return { recorded: true }
+  },
+})
+
+export const getUsageMetrics = query({
+  args: {
+    sessionId: v.id('sessions'),
+  },
+  handler: async (ctx, args) => {
+    const metrics = await ctx.db
+      .query('usageMetrics')
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .collect()
+
+    return {
+      totalCost: metrics.reduce((sum, m) => sum + m.cost, 0),
+      totalElapsedMs: metrics.reduce((sum, m) => sum + m.elapsedMs, 0),
+      count: metrics.length,
+      byProvider: metrics.reduce((acc, m) => {
+        acc[m.provider] = (acc[m.provider] || 0) + 1
+        return acc
+      }, {} as Record<string, number>),
+      byEventType: metrics.reduce((acc, m) => {
+        acc[m.eventType] = (acc[m.eventType] || 0) + 1
+        return acc
+      }, {} as Record<string, number>),
+    }
+  },
+})
+
+export const getUserUsageMetrics = query({
+  args: {
+    userId: v.string(),
+    since: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const query = ctx.db
+      .query('usageMetrics')
+      .withIndex('by_userId', (index) => index.eq('userId', args.userId))
+
+    const metrics =
+      args.since !== undefined
+        ? await query.filter((m) => m.timestamp >= args.since).collect()
+        : await query.collect()
+
+    return {
+      totalCost: metrics.reduce((sum, m) => sum + m.cost, 0),
+      totalElapsedMs: metrics.reduce((sum, m) => sum + m.elapsedMs, 0),
+      count: metrics.length,
+      byProvider: metrics.reduce((acc, m) => {
+        acc[m.provider] = (acc[m.provider] || 0) + 1
+        return acc
+      }, {} as Record<string, number>),
+      byEventType: metrics.reduce((acc, m) => {
+        acc[m.eventType] = (acc[m.eventType] || 0) + 1
+        return acc
+      }, {} as Record<string, number>),
     }
   },
 })
