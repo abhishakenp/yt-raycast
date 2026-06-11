@@ -1,6 +1,6 @@
 import { ConvexHttpClient } from 'convex/browser'
 
-import { getRuntimeConvexUrl } from '@/shared/env/convex-runtime'
+import { getRuntimeConvexUrl } from '../env/convex-runtime'
 
 const DEFAULT_CONVEX_HTTP_TIMEOUT_MS = 5000
 
