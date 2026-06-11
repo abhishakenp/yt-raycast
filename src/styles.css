@@ -374,10 +374,13 @@ a {
 .genui-preview {
   /* Ensure theme custom properties cascade within this container */
   isolation: isolate;
+  position: relative;
   container-type: inline-size;
+  contain: layout paint style;
   min-width: 0;
   max-width: 100%;
   overflow-x: hidden;
+  transform: translateZ(0);
 }
 
 .genui-preview :where(*) {
