@@ -61,19 +61,21 @@ Remaining work:
 
 ### 4. Brandfetch Design-Reference Generation Proof
 
-Status: Brandfetch route/provider path verified; generation influence proof pending.
+Status: Brandfetch route/provider path and design-reference persistence verified; generation influence proof pending.
 
 Remaining work:
 
-- Generate a session from a design-reference URL while `BRANDFETCH_API_KEY` is configured.
 - Prove the generated artifacts include brand/design-reference context beyond basic URL persistence.
-- Verify route output still returns provider-backed brand data with no provider warning.
 - Capture preview/source/site-spec evidence showing brand profile or design reference influenced the generated site.
+- Add or run a verifier that waits for generation to complete instead of stopping at queued session persistence.
 
 Latest known evidence:
 
 - `/api/brand-profile?domain=https://linear.app/customers` returned provider-backed Linear data with `logoProvider:"brandfetch"` and no provider warning.
+- `/api/brand-profile?domain=https://stripe.com` returned provider-backed Stripe data with `logoProvider:"brandfetch"` and no provider warning.
 - `verify:brand-localization` passed against the local app.
+- Convex session `kh714nb2738923znw7pt8spcx588fd0e` persisted `designReferenceUrls:["https://linear.app/customers"]`, design-reference notes, and fingerprint `8a8f1cee`.
+- Local generation polling for that session stayed `queued`, so generated-page influence remains unproven.
 
 ### 5. Localization Browser Proof
 
