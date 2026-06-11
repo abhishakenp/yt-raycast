@@ -14,6 +14,13 @@ import {
 
 import { api } from '../../../convex/_generated/api.js'
 import type { Id } from '../../../convex/_generated/dataModel.js'
+import {
+  signInWithGoogle,
+  signOut,
+  useAuth as useLakebedAuth,
+} from './auth.tsx'
+import type { GoogleAuthOptions, LakebedAuthValue } from './auth.tsx'
+import type { LakebedAuthContext } from './auth-shared.ts'
 import { createLakebedHandlerContext } from './server.ts'
 import type {
   JsonRecord,
@@ -24,7 +31,26 @@ import type {
   ShipFastLakebedDefinition,
 } from './server.ts'
 
+export {
+  SignInWithGoogle,
+  ensureAuthInitialized,
+  getAuth,
+  getAuthToken,
+  getIdentity,
+  getIdentityClaims,
+  signInWithGoogle,
+  signOut,
+  useAuth,
+} from './auth.tsx'
+export type {
+  GoogleAuthOptions,
+  LakebedAuthValue,
+  PkceBundle,
+  SignInWithGoogleProps,
+} from './auth.tsx'
+
 type LakebedSessionContextValue = {
+  anonymousOwnerSecret?: string
   sessionId: Id<'sessions'>
 }
 
@@ -160,15 +186,20 @@ export function buildSeedPatchFromProps({
 }
 
 export function LakebedSessionProvider({
+  anonymousOwnerSecret,
   children,
   sessionId,
 }: {
+  anonymousOwnerSecret?: string
   children: ReactNode
   sessionId: string
 }) {
   const value = useMemo(
-    () => ({ sessionId: sessionId as Id<'sessions'> }),
-    [sessionId],
+    () => ({
+      ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
+      sessionId: sessionId as Id<'sessions'>,
+    }),
+    [anonymousOwnerSecret, sessionId],
   )
 
   return (
@@ -186,49 +217,67 @@ export function useLakebedSession(): LakebedSessionContextValue {
   return value
 }
 
+const lakebedSessionArgs = ({
+  anonymousOwnerSecret,
+  capsule,
+  sessionId,
+}: LakebedSessionContextValue & { capsule: string }) => ({
+  ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
+  capsule,
+  sessionId,
+})
+
+export function useSessionState<TData extends JsonRecord = JsonRecord>(
+  capsule: string,
+): { auth: LakebedAuthContext | null; canWrite: boolean; data: TData | null } {
+  const session = useLakebedSession()
+  const state = useConvexQuery(
+    lakebedApi.getSessionState,
+    lakebedSessionArgs({ ...session, capsule }),
+  ) as { auth: LakebedAuthContext; canWrite?: boolean; data: TData } | undefined
+
+  return state === undefined
+    ? { auth: null, canWrite: false, data: null }
+    : { auth: state.auth, canWrite: state.canWrite === true, data: state.data }
+}
+
 export function useSessionData<TData extends JsonRecord = JsonRecord>(
   capsule: string,
 ): TData | null {
-  const { sessionId } = useLakebedSession()
-  const data = useConvexQuery(lakebedApi.getSessionData, {
-    capsule,
-    sessionId,
-  }) as TData | undefined
+  const { data } = useSessionState<TData>(capsule)
 
-  return data === undefined ? null : data
+  return data
 }
 
 export function useMergeSessionData<TData extends JsonRecord = JsonRecord>(
   capsule: string,
 ): (patch: Partial<TData>) => Promise<TData> {
-  const { sessionId } = useLakebedSession()
+  const session = useLakebedSession()
   const mergeSessionData = useConvexMutation(lakebedApi.mergeSessionData)
 
   return useCallback(
     async (patch: Partial<TData>) =>
       (await mergeSessionData({
-        capsule,
+        ...lakebedSessionArgs({ ...session, capsule }),
         patch,
-        sessionId,
       })) as TData,
-    [capsule, mergeSessionData, sessionId],
+    [capsule, mergeSessionData, session],
   )
 }
 
 export function useReplaceSessionData<TData extends JsonRecord = JsonRecord>(
   capsule: string,
 ): (data: TData) => Promise<TData> {
-  const { sessionId } = useLakebedSession()
+  const session = useLakebedSession()
   const replaceSessionData = useConvexMutation(lakebedApi.replaceSessionData)
 
   return useCallback(
     async (data: TData) =>
       (await replaceSessionData({
-        capsule,
         data,
-        sessionId,
+        ...lakebedSessionArgs({ ...session, capsule }),
       })) as TData,
-    [capsule, replaceSessionData, sessionId],
+    [capsule, replaceSessionData, session],
   )
 }
 
@@ -241,11 +290,13 @@ function useAutoSeedFromProps<
   capsule,
   data,
   definition,
+  enabled = true,
   props,
 }: {
   capsule: string
   data: JsonRecord | null
   definition: TDefinition
+  enabled?: boolean
   props: TProps
 }) {
   const seededKey = useRef<string | null>(null)
@@ -272,7 +323,12 @@ function useAutoSeedFromProps<
   const seedKey = useMemo(() => JSON.stringify(seedPatch), [seedPatch])
 
   useEffect(() => {
-    if (data === null || seedKey === '{}' || seededKey.current === seedKey) {
+    if (
+      !enabled ||
+      data === null ||
+      seedKey === '{}' ||
+      seededKey.current === seedKey
+    ) {
       return
     }
 
@@ -286,6 +342,16 @@ export type LakebedClientRuntime<
     | ShipFastLakebedDefinition<any, any, any, any, any>
     | undefined,
 > = {
+  signInWithGoogle(options?: GoogleAuthOptions): Promise<{
+    bundle: {
+      challenge: string
+      state: string
+      verifier: string
+    }
+    url: string
+  }>
+  signOut(): void
+  useAuth(): LakebedAuthValue
   useData(): LakebedDataOf<NonNullable<TDefinition>> | null
   useQuery<
     TName extends Extract<
@@ -324,18 +390,41 @@ export function createLakebedClient<
   props: TProps
 }): LakebedClientRuntime<TDefinition> {
   return {
+    signInWithGoogle,
+    signOut,
+    useAuth: useLakebedAuth,
     useData() {
-      const data = useSessionData(capsule) as LakebedDataOf<
-        NonNullable<TDefinition>
-      > | null
-      useAutoSeedFromProps({ capsule, data, definition, props })
+      const state = useSessionState(capsule) as {
+        auth: LakebedAuthContext | null
+        canWrite: boolean
+        data: LakebedDataOf<NonNullable<TDefinition>> | null
+      }
+      const data = state.data
+      useAutoSeedFromProps({
+        capsule,
+        data,
+        definition,
+        enabled: state.canWrite,
+        props,
+      })
       return data
     },
     useQuery(name) {
-      const data = useSessionData(capsule) as LakebedDataOf<
-        NonNullable<TDefinition>
-      > | null
-      useAutoSeedFromProps({ capsule, data, definition, props })
+      const localAuth = useLakebedAuth()
+      const state = useSessionState(capsule) as {
+        auth: LakebedAuthContext | null
+        canWrite: boolean
+        data: LakebedDataOf<NonNullable<TDefinition>> | null
+      }
+      const data = state.data
+      const auth = state.auth ?? localAuth
+      useAutoSeedFromProps({
+        capsule,
+        data,
+        definition,
+        enabled: state.canWrite,
+        props,
+      })
       const handler = definition?.queries?.[name as string]
 
       return useMemo(() => {
@@ -348,21 +437,39 @@ export function createLakebedClient<
         }
 
         const { context } = createLakebedHandlerContext({
+          auth,
           data,
           props,
           schema: definition?.schema,
         })
 
         return handler(context)
-      }, [capsule, data, definition?.schema, handler, name, props]) as QueryResult<
-        LakebedQueriesOf<NonNullable<TDefinition>>[typeof name]
-      >
+      }, [
+        auth,
+        capsule,
+        data,
+        definition?.schema,
+        handler,
+        name,
+        props,
+      ]) as QueryResult<LakebedQueriesOf<NonNullable<TDefinition>>[typeof name]>
     },
     useMutation(name) {
-      const data = useSessionData(capsule) as LakebedDataOf<
-        NonNullable<TDefinition>
-      > | null
-      useAutoSeedFromProps({ capsule, data, definition, props })
+      const localAuth = useLakebedAuth()
+      const state = useSessionState(capsule) as {
+        auth: LakebedAuthContext | null
+        canWrite: boolean
+        data: LakebedDataOf<NonNullable<TDefinition>> | null
+      }
+      const data = state.data
+      const auth = state.auth ?? localAuth
+      useAutoSeedFromProps({
+        capsule,
+        data,
+        definition,
+        enabled: state.canWrite,
+        props,
+      })
       const setData = useMergeSessionData(capsule)
       const replaceData = useReplaceSessionData(capsule)
       const handler = definition?.mutations?.[name as string]
@@ -376,6 +483,7 @@ export function createLakebedClient<
           }
 
           const { context, getPatch } = createLakebedHandlerContext({
+            auth,
             data: (data ?? {}) as LakebedDataOf<NonNullable<TDefinition>>,
             props,
             replaceData,
@@ -395,6 +503,7 @@ export function createLakebedClient<
           return result
         },
         [
+          auth,
           capsule,
           data,
           definition?.schema,

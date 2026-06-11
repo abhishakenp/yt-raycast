@@ -1,11 +1,11 @@
+export { capsule, empty, endpoint, json, redirect, text } from 'lakebed/server'
 export {
-  capsule,
-  empty,
-  endpoint,
-  json,
-  redirect,
-  text,
-} from 'lakebed/server'
+  authFromUrl,
+  createGuestAuth,
+  requestOrigin,
+  shooBaseUrlFromEnv,
+  verifyShooAuth,
+} from 'lakebed/auth'
 export type {
   AuthContext,
   EndpointDefinition,
@@ -28,8 +28,26 @@ import type {
   LogContext,
   TableDefinition,
 } from 'lakebed/server'
+import { createGuestAuthContext, withAuthUser } from './auth-shared.ts'
+import type { LakebedAuthContext } from './auth-shared.ts'
 import { createLakebedObjectRuntime, noopLog } from './db.ts'
 import type { LakebedDbFromData } from './db.ts'
+export {
+  createGoogleAuthFromToken,
+  createGuestAuthContext,
+  decodeIdentityClaims,
+  normalizeShooBaseUrl,
+  toDisplayName,
+  toGuestName,
+  withAuthUser,
+} from './auth-shared.ts'
+export type {
+  IdentityClaims,
+  LakebedAuthContext,
+  LakebedAuthUser,
+  LakebedAuthValue,
+  StoredIdentityResult,
+} from './auth-shared.ts'
 
 export type JsonRecord = Record<string, unknown>
 export type LakebedSessionSchema = Record<string, TableDefinition>
@@ -71,7 +89,7 @@ export type LakebedDataFromSchema<TSchema> =
     : JsonRecord
 
 export type LakebedQueryContext<TProps, TData extends JsonRecord> = {
-  auth: AuthContext
+  auth: LakebedAuthContext
   props: TProps
   data: TData
   db: LakebedDbFromData<TData>
@@ -80,7 +98,7 @@ export type LakebedQueryContext<TProps, TData extends JsonRecord> = {
 }
 
 export type LakebedMutationContext<TProps, TData extends JsonRecord> = {
-  auth: AuthContext
+  auth: LakebedAuthContext
   props: TProps
   data: TData
   db: LakebedDbFromData<TData>
@@ -162,13 +180,8 @@ export type LakebedMutationsOf<TDefinition> =
     ? TMutations
     : LakebedMutationMap<JsonRecord, JsonRecord>
 
-export const guestAuthContext: AuthContext = {
-  displayName: 'Guest',
-  isAuthenticated: false,
-  isGuest: true,
-  provider: 'guest',
-  userId: 'guest',
-}
+export const guestAuthContext: LakebedAuthContext =
+  createGuestAuthContext('local')
 
 export function query<TProps, TData extends JsonRecord, TResult>(
   handler: LakebedQueryHandler<TProps, TData, TResult>,
@@ -187,10 +200,7 @@ export function mutation<
   return handler
 }
 
-export function createLakebedHandlerContext<
-  TProps,
-  TData extends JsonRecord,
->({
+export function createLakebedHandlerContext<TProps, TData extends JsonRecord>({
   auth = guestAuthContext,
   data,
   env = {},
@@ -201,7 +211,7 @@ export function createLakebedHandlerContext<
   setData,
   writable = false,
 }: {
-  auth?: AuthContext
+  auth?: AuthContext | LakebedAuthContext
   data: TData
   env?: Record<string, string | undefined>
   log?: LogContext
@@ -213,7 +223,7 @@ export function createLakebedHandlerContext<
 }) {
   const runtime = createLakebedObjectRuntime({ data, schema, writable })
   const context = {
-    auth,
+    auth: 'user' in auth ? auth : withAuthUser(auth),
     data,
     db: runtime.db,
     env,
