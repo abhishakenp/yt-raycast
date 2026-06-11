@@ -5,11 +5,23 @@ export type BuildCreateSessionPayloadInput = {
   preferredLanguage: string
   isPrivate: boolean
   anonymousOwnerSecret: string
+  anonymousClientId?: string
   workspace: string
 }
 
 const toHex = (bytes: Uint8Array): string =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+
+export const createAnonymousClientId = (
+  storage: Pick<Storage, 'getItem' | 'setItem'>,
+  getRandomValues?: SessionCreateRandomBytes,
+): string => {
+  const existing = storage.getItem('ship-fast-anon-client-id')
+  if (existing) return existing
+  const next = `anon_${createSessionWorkspaceKey(getRandomValues).replace(/^workspace_/, '')}`
+  storage.setItem('ship-fast-anon-client-id', next)
+  return next
+}
 
 export const createSessionWorkspaceKey = (
   getRandomValues: SessionCreateRandomBytes = (bytes) => {
@@ -27,6 +39,7 @@ export const buildCreateSessionPayload = ({
   preferredLanguage,
   isPrivate,
   anonymousOwnerSecret,
+  anonymousClientId,
   workspace,
 }: BuildCreateSessionPayloadInput) => ({
   prompt,
@@ -34,5 +47,6 @@ export const buildCreateSessionPayload = ({
   preferredExportTarget: 'html' as const,
   isPrivate,
   anonymousOwnerSecret,
+  anonymousClientId,
   workspace,
 })
