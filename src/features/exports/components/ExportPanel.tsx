@@ -1,4 +1,11 @@
-import { Download, Lock, PackageCheck, RefreshCw, TriangleAlert } from 'lucide-react'
+import {
+  Download,
+  Lock,
+  PackageCheck,
+  RefreshCw,
+  TriangleAlert,
+} from 'lucide-react'
+import { useAuth } from '@clerk/tanstack-react-start'
 import { useEffect, useState } from 'react'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
@@ -25,7 +32,8 @@ const targetLabel = (target: ExportTarget['target']): string =>
 const statusLabel = (target: ExportTarget): string => {
   if (target.requiresPayment) return 'Payment required'
   if (target.status === 'stale') {
-    return target.currentPreviewVersion === null || target.currentPreviewVersion === undefined
+    return target.currentPreviewVersion === null ||
+      target.currentPreviewVersion === undefined
       ? 'Regenerate for latest preview'
       : `Regenerate for preview v${target.currentPreviewVersion}`
   }
@@ -38,11 +46,33 @@ const readOwnerSecret = (sessionId: string): string | undefined =>
     ? undefined
     : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
+const readDownloadFilename = (response: Response, fallback: string): string => {
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const match = disposition.match(/filename="([^"]+)"/i)
+  return match?.[1] ?? fallback
+}
+
 export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
+  const { getToken, isSignedIn } = useAuth()
   const [targets, setTargets] = useState<ExportTarget[]>([])
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTarget, setActiveTarget] = useState<ExportTarget['target']>()
+  const [downloadingTarget, setDownloadingTarget] =
+    useState<ExportTarget['target']>()
+
+  const createAuthHeaders = async (): Promise<Record<string, string>> => {
+    const headers: Record<string, string> = {}
+    const ownerSecret = readOwnerSecret(sessionId)
+    if (ownerSecret) headers['x-ship-fast-owner-secret'] = ownerSecret
+
+    if (isSignedIn) {
+      const token = await getToken()
+      if (token) headers.Authorization = `Bearer ${token}`
+    }
+
+    return headers
+  }
 
   const loadTargets = async () => {
     setError(undefined)
@@ -54,7 +84,11 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
 
   useEffect(() => {
     void loadTargets().catch((loadError) => {
-      setError(loadError instanceof Error ? loadError.message : 'Unable to load exports')
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Unable to load exports',
+      )
     })
   }, [sessionId])
 
@@ -65,7 +99,10 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
     try {
       const response = await fetch(`/api/sessions/${sessionId}/export`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          ...(await createAuthHeaders()),
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           target,
           anonymousOwnerSecret: readOwnerSecret(sessionId),
@@ -75,10 +112,50 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
       if (!response.ok) throw new Error(data?.error ?? 'Export failed')
       await loadTargets()
     } catch (exportError) {
-      setError(exportError instanceof Error ? exportError.message : 'Export failed')
+      setError(
+        exportError instanceof Error ? exportError.message : 'Export failed',
+      )
     } finally {
       setIsLoading(false)
       setActiveTarget(undefined)
+    }
+  }
+
+  const downloadExport = async (item: ExportTarget) => {
+    if (!item.downloadUrl || item.requiresPayment) return
+
+    setError(undefined)
+    setDownloadingTarget(item.target)
+
+    try {
+      const response = await fetch(item.downloadUrl, {
+        headers: await createAuthHeaders(),
+      })
+      if (!response.ok) {
+        const message = await response.text()
+        throw new Error(message || 'Download failed')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = readDownloadFilename(
+        response,
+        `ship-fast-${sessionId}-${item.target}.zip`,
+      )
+      document.body.append(anchor)
+      anchor.click()
+      anchor.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (downloadError) {
+      setError(
+        downloadError instanceof Error
+          ? downloadError.message
+          : 'Download failed',
+      )
+    } finally {
+      setDownloadingTarget(undefined)
     }
   }
 
@@ -101,8 +178,12 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
         <div className="flex items-center gap-2">
           <Download className="size-4 text-cyan-200" />
           <div>
-            <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">Export</h2>
-            <p className="m-0 mt-1 text-xs leading-5 text-white/48">Generate downloadable ZIP bundles from this preview.</p>
+            <h2 className="m-0 text-sm font-semibold uppercase tracking-[0.1em] text-white">
+              Export
+            </h2>
+            <p className="m-0 mt-1 text-xs leading-5 text-white/48">
+              Generate downloadable ZIP bundles from this preview.
+            </p>
           </div>
         </div>
         <button
@@ -123,7 +204,9 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="m-0 text-sm font-semibold text-white">{item.label}</h3>
+                <h3 className="m-0 text-sm font-semibold text-white">
+                  {item.label}
+                </h3>
                 <p className="m-0 mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-white/42">
                   {statusLabel(item)}
                 </p>
@@ -133,12 +216,19 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
               ) : item.status === 'stale' ? (
                 <TriangleAlert className="size-5 text-amber-200" />
               ) : (
-                <PackageCheck className={item.ready ? 'size-5 text-emerald-300' : 'size-5 text-white/28'} />
+                <PackageCheck
+                  className={
+                    item.ready
+                      ? 'size-5 text-emerald-300'
+                      : 'size-5 text-white/28'
+                  }
+                />
               )}
             </div>
             {item.requiresPayment && (
               <p className="m-0 rounded-xl border border-amber-300/18 bg-amber-300/10 px-3 py-2 text-xs leading-5 text-amber-100/82">
-                Subscribe to Pro or use a download credit to unlock a badge-free ZIP.
+                Subscribe to Pro or use a download credit to unlock a badge-free
+                ZIP.
               </p>
             )}
             <div className="grid grid-cols-2 gap-2">
@@ -156,13 +246,20 @@ export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
                       ? 'Regenerate'
                       : 'Generate'}
               </button>
-              <a
-                className="grid min-h-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-white/70 no-underline aria-disabled:pointer-events-none aria-disabled:opacity-40"
-                aria-disabled={!item.downloadUrl || item.requiresPayment}
-                href={item.downloadUrl ?? '#'}
+              <button
+                className="grid min-h-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-white/70 disabled:cursor-not-allowed disabled:opacity-40"
+                disabled={
+                  !item.downloadUrl ||
+                  item.requiresPayment ||
+                  downloadingTarget === item.target
+                }
+                onClick={() => void downloadExport(item)}
+                type="button"
               >
-                Download
-              </a>
+                {downloadingTarget === item.target
+                  ? 'Downloading...'
+                  : 'Download'}
+              </button>
             </div>
           </section>
         ))}

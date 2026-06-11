@@ -15,12 +15,13 @@ const identityFor = (userId: string) => ({
 const createReadySession = async (
   t: ReturnType<typeof convexTest>,
   identity?: ReturnType<typeof identityFor>,
+  options: { isPrivate?: boolean } = {},
 ) => {
   const createArgs = {
     prompt: `Export entitlement verifier ${identity?.subject ?? 'anonymous'}`,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
-    isPrivate: false,
+    isPrivate: options.isPrivate ?? false,
     workspace: `workspace_export_entitlement_${identity?.subject ?? 'anonymous'}`,
     ...(identity === undefined
       ? {
@@ -96,13 +97,12 @@ test('subscribed users create badge-free ready exports', async () => {
     })
   })
 
-  const result = await t.withIdentity(identity).mutation(
-    api.sessions.createExport,
-    {
+  const result = await t
+    .withIdentity(identity)
+    .mutation(api.sessions.createExport, {
       sessionId,
       target: 'html',
-    },
-  )
+    })
 
   expect(result).toMatchObject({
     status: 'ready',
@@ -136,7 +136,9 @@ test('credited users consume one credit only for a new current-preview export', 
   const ledger = await t.run(async (ctx) =>
     ctx.db
       .query('creditLedger')
-      .withIndex('by_userId', (index) => index.eq('userId', identity.tokenIdentifier))
+      .withIndex('by_userId', (index) =>
+        index.eq('userId', identity.tokenIdentifier),
+      )
       .take(10),
   )
 
@@ -158,4 +160,24 @@ test('credited users consume one credit only for a new current-preview export', 
     balanceAfter: 1,
     reason: 'export',
   })
+})
+
+test('private event streams require the session owner', async () => {
+  const t = convexTest(schema, modules)
+  const sessionId = await createReadySession(t, undefined, { isPrivate: true })
+
+  await expect(
+    t.runQuery(api.sessions.getEventStream, {
+      lookup: sessionId,
+    }),
+  ).rejects.toThrow(/own this session/)
+
+  const stream = await t.runQuery(api.sessions.getEventStream, {
+    lookup: sessionId,
+    anonymousOwnerSecret: 'owner-secret',
+  })
+
+  expect(stream.events.map((event) => event.eventType)).toContain(
+    'preview_ready',
+  )
 })

@@ -3,7 +3,8 @@ import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
-type SessionEventStreamConvexClient = Pick<ConvexHttpClient, 'query'>
+type SessionEventStreamConvexClient = Pick<ConvexHttpClient, 'query'> &
+  Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 type GenerationEvent = {
   _id?: string
@@ -27,6 +28,22 @@ const parseSince = (request: Request): number | undefined => {
 
   const parsed = Number(raw)
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
+}
+
+const getOwnerSecret = (request: Request): string | undefined => {
+  const url = new URL(request.url)
+  return (
+    request.headers.get('x-ship-fast-owner-secret') ??
+    url.searchParams.get('anonymousOwnerSecret') ??
+    url.searchParams.get('anonOwnerSecret') ??
+    undefined
+  )
+}
+
+const getBearerToken = (request: Request): string | null => {
+  const auth = request.headers.get('authorization') ?? ''
+  const match = auth.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || null
 }
 
 const sseLine = (field: string, value: string) =>
@@ -73,9 +90,13 @@ export const createSessionEventStreamResponse = async (
 ): Promise<Response> => {
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()
+    const token = getBearerToken(request)
+    if (token !== null) client.setAuth?.(token)
+    const anonymousOwnerSecret = getOwnerSecret(request)
     const data = await client.query(api.sessions.getEventStream, {
       lookup: sessionId,
       since: parseSince(request),
+      ...(anonymousOwnerSecret === undefined ? {} : { anonymousOwnerSecret }),
     })
 
     if (data === null) {

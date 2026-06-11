@@ -5,7 +5,8 @@ import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 import { createExportResponse } from './create-export-response'
 
 type ExportTarget = 'html' | 'react' | 'next'
-type ExportApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
+type ExportApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'> &
+  Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 const EXPORT_TARGETS: ExportTarget[] = ['html', 'react', 'next']
 
@@ -18,7 +19,9 @@ const json = (body: unknown, init?: ResponseInit) =>
     },
   })
 
-const readJsonBody = async (request: Request): Promise<Record<string, unknown>> => {
+const readJsonBody = async (
+  request: Request,
+): Promise<Record<string, unknown>> => {
   const text = await request.text()
   if (!text.trim()) return {}
   const parsed = JSON.parse(text) as unknown
@@ -39,11 +42,22 @@ const getOwnerSecret = (
   const bodySecret = body.anonymousOwnerSecret ?? body.anonOwnerSecret
   return typeof bodySecret === 'string'
     ? bodySecret
-    : request.headers.get('x-ship-fast-owner-secret') ?? undefined
+    : (request.headers.get('x-ship-fast-owner-secret') ?? undefined)
 }
 
 const createClient = (clientOverride?: ExportApiClient): ExportApiClient =>
   clientOverride ?? createRuntimeConvexHttpClient()
+
+const getBearerToken = (request: Request): string | null => {
+  const auth = request.headers.get('authorization') ?? ''
+  const match = auth.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || null
+}
+
+const setClientAuth = (client: ExportApiClient, request: Request) => {
+  const token = getBearerToken(request)
+  if (token !== null) client.setAuth?.(token)
+}
 
 const errorStatus = (error: unknown): number => {
   const message = error instanceof Error ? error.message : String(error)
@@ -101,7 +115,9 @@ export const createExportTargetsResponse = async (
           fileCount: record?.fileCount ?? null,
           previewVersion: record?.previewVersion ?? null,
           currentPreviewVersion: currentPreviewVersion ?? null,
-          downloadUrl: ready ? `/api/sessions/${sessionId}/download/${target}` : null,
+          downloadUrl: ready
+            ? `/api/sessions/${sessionId}/download/${target}`
+            : null,
         }
       }),
     )
@@ -131,14 +147,13 @@ export const createSessionExportResponse = async (
       )
     }
 
-    const result = await createClient(clientOverride).mutation(
-      api.sessions.createExport,
-      {
-        sessionId: sessionId as any,
-        target,
-        anonymousOwnerSecret: getOwnerSecret(request, body),
-      },
-    )
+    const client = createClient(clientOverride)
+    setClientAuth(client, request)
+    const result = await client.mutation(api.sessions.createExport, {
+      sessionId: sessionId as any,
+      target,
+      anonymousOwnerSecret: getOwnerSecret(request, body),
+    })
 
     return json({
       ...result,
@@ -152,7 +167,7 @@ export const createSessionExportResponse = async (
 export const createSessionDownloadResponse = async (
   sessionId: string,
   target: string,
-  clientOverride?: ExportApiClient,
+  requestOrClient?: Request | ExportApiClient,
 ): Promise<Response> => {
   const normalizedTarget = normalizeTarget(target)
   if (normalizedTarget === null) {
@@ -162,5 +177,9 @@ export const createSessionDownloadResponse = async (
     })
   }
 
-  return await createExportResponse(sessionId, normalizedTarget, clientOverride)
+  return await createExportResponse(
+    sessionId,
+    normalizedTarget,
+    requestOrClient,
+  )
 }

@@ -2,12 +2,17 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
-import { buildOpenUIExport, type ExportTarget } from '../services/openui-export-builder'
+import {
+  buildOpenUIExport,
+  type ExportTarget,
+} from '../services/openui-export-builder'
 
-type ExportConvexClient = Pick<ConvexHttpClient, 'query'>
+type ExportConvexClient = Pick<ConvexHttpClient, 'query'> &
+  Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 const normalizeTarget = (target: string): ExportTarget | null => {
-  if (target === 'html' || target === 'react' || target === 'next') return target
+  if (target === 'html' || target === 'react' || target === 'next')
+    return target
   if (target === 'nextjs') return 'next'
   return null
 }
@@ -19,13 +24,15 @@ const createDownloadHeaders = (contentType: string, filename: string) => ({
 
 const toResponseBody = (body: string | Uint8Array): BodyInit => {
   if (typeof body === 'string') return body
-  return body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer
+  return body.buffer.slice(
+    body.byteOffset,
+    body.byteOffset + body.byteLength,
+  ) as ArrayBuffer
 }
 
 const isExportConvexClient = (
   value: Request | ExportConvexClient | undefined,
-): value is ExportConvexClient =>
-  value !== undefined && 'query' in value
+): value is ExportConvexClient => value !== undefined && 'query' in value
 
 const readExportThemeOptions = (request?: Request) => {
   if (!request) return {}
@@ -39,10 +46,53 @@ const readExportThemeOptions = (request?: Request) => {
   }
 }
 
+const getBearerToken = (request: Request): string | null => {
+  const auth = request.headers.get('authorization') ?? ''
+  const match = auth.match(/^Bearer\s+(.+)$/i)
+  return match?.[1]?.trim() || null
+}
+
+const getOwnerSecret = (request?: Request): string | undefined => {
+  if (!request) return undefined
+  const url = new URL(request.url)
+  return (
+    request.headers.get('x-ship-fast-owner-secret') ??
+    url.searchParams.get('anonymousOwnerSecret') ??
+    url.searchParams.get('anonOwnerSecret') ??
+    undefined
+  )
+}
+
+const setClientAuth = (client: ExportConvexClient, request?: Request) => {
+  if (!request) return
+  const token = getBearerToken(request)
+  if (token !== null) client.setAuth?.(token)
+}
+
+const errorStatus = (error: unknown): number => {
+  const message = error instanceof Error ? error.message : String(error)
+  if (/FORBIDDEN|own/i.test(message)) return 403
+  if (/AUTH_REQUIRED|Sign in/i.test(message)) return 401
+  if (/NOT_FOUND|Validator: v\.id\("sessions"\)/i.test(message)) return 404
+  if (/EXPORT_STALE|stale/i.test(message)) return 409
+  if (/PAYMENT_REQUIRED|Subscribe|purchase/i.test(message)) return 402
+  return 500
+}
+
+const textErrorResponse = (error: unknown) =>
+  new Response(
+    error instanceof Error ? error.message : 'Export failed. Please try again.',
+    {
+      status: errorStatus(error),
+      headers: { 'content-type': 'text/plain' },
+    },
+  )
+
 export const createExportResponse = async (
   sessionId: string,
   target: string,
   requestOrClient?: Request | ExportConvexClient,
+  clientOverride?: ExportConvexClient,
 ): Promise<Response> => {
   const normalizedTarget = normalizeTarget(target)
   if (normalizedTarget === null) {
@@ -55,20 +105,25 @@ export const createExportResponse = async (
   try {
     const client = isExportConvexClient(requestOrClient)
       ? requestOrClient
-      : createRuntimeConvexHttpClient()
-    const request = isExportConvexClient(requestOrClient) ? undefined : requestOrClient
-    const exportRecord = await client.query(api.sessions.getExport, {
+      : (clientOverride ?? createRuntimeConvexHttpClient())
+    const request = isExportConvexClient(requestOrClient)
+      ? undefined
+      : requestOrClient
+    setClientAuth(client, request)
+    const download = await client.query(api.sessions.getOwnedExportDownload, {
       sessionId: sessionId as any,
       target: normalizedTarget,
+      anonymousOwnerSecret: getOwnerSecret(request),
     })
 
-    if (exportRecord === null) {
+    if (download === null) {
       return new Response('Export not found. Generate the export first.', {
         status: 404,
         headers: { 'content-type': 'text/plain' },
       })
     }
 
+    const exportRecord = download.export
     if (
       exportRecord.status === 'payment_required' ||
       exportRecord.requiresPayment === true
@@ -90,12 +145,8 @@ export const createExportResponse = async (
       })
     }
 
-    const generationView = await client.query(api.sessions.getGenerationView, {
-      lookup: sessionId,
-    })
-
-    const source = generationView?.homeModule?.source
-    if (generationView === null || typeof source !== 'string' || source.trim().length === 0) {
+    const source = download.source
+    if (typeof source !== 'string' || source.trim().length === 0) {
       return new Response('OpenUI source not found', {
         status: 404,
         headers: { 'content-type': 'text/plain' },
@@ -104,8 +155,8 @@ export const createExportResponse = async (
 
     if (
       exportRecord.previewVersion !== undefined &&
-      generationView.latestPreview?.version !== undefined &&
-      exportRecord.previewVersion !== generationView.latestPreview.version
+      download.latestPreviewVersion !== undefined &&
+      exportRecord.previewVersion !== download.latestPreviewVersion
     ) {
       return new Response('Export is stale. Regenerate the export first.', {
         status: 409,
@@ -115,8 +166,8 @@ export const createExportResponse = async (
 
     const exportResult = buildOpenUIExport({
       source,
-      siteSpecJson: generationView.siteSpec?.specJson,
-      previewHtml: generationView.latestPreview?.html,
+      siteSpecJson: download.siteSpecJson,
+      previewHtml: download.previewHtml,
       sessionId,
       target: normalizedTarget,
       includeBadge: exportRecord.requiresPayment !== false,
@@ -124,13 +175,13 @@ export const createExportResponse = async (
     })
 
     return new Response(toResponseBody(exportResult.body), {
-      headers: createDownloadHeaders(exportResult.contentType, exportResult.filename),
+      headers: createDownloadHeaders(
+        exportResult.contentType,
+        exportResult.filename,
+      ),
     })
   } catch (error) {
     console.error('[export]', error)
-    return new Response('Export failed. Please try again.', {
-      status: 500,
-      headers: { 'content-type': 'text/plain' },
-    })
+    return textErrorResponse(error)
   }
 }
