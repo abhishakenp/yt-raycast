@@ -15,7 +15,9 @@
   },
   "scripts": {
     "dev": "vite dev --port 3000",
+    "generate:react-export-sources": "node packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs",
     "generate-routes": "tsr generate",
+    "prebuild": "bun run generate:react-export-sources",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run --config vitest.config.ts",
