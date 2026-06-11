@@ -1,7 +1,7 @@
-import { useQuery } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Code2, Crown, Download, FileArchive, Github, Globe2, List, Package, Palette, PanelsTopLeft } from 'lucide-react'
+import { Box, Code2, Crown, Download, FileArchive, Github, Globe2, List, LoaderCircle, Package, Palette, PanelsTopLeft } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -10,12 +10,14 @@ import { GeneratedModulePreview } from '@/features/generation/components/Generat
 import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { cn } from '#/lib/utils'
+import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 interface DashboardProps {
   sessionId: string
 }
 
 type RailMode = 'tools' | 'cms' | 'commerce'
+type ExportTarget = 'html' | 'react' | 'next'
 
 const crownIcon = (
   <Crown className="size-3" strokeWidth={2.2} aria-hidden="true" />
@@ -94,19 +96,27 @@ const exportOptions = [
   {
     label: 'HTML',
     meta: 'Static site bundle',
+    target: 'html',
     icon: FileArchive,
   },
   {
     label: 'React',
     meta: 'React app scaffold',
+    target: 'react',
     icon: Code2,
   },
   {
     label: 'Next.js',
     meta: 'App Router project',
+    target: 'next',
     icon: PanelsTopLeft,
   },
-]
+] satisfies Array<{
+  label: string
+  meta: string
+  target: ExportTarget
+  icon: typeof FileArchive
+}>
 
 export function Dashboard({ sessionId }: DashboardProps) {
   const [isDashboardActive, setIsDashboardActive] = useState(false)
@@ -115,6 +125,8 @@ export function Dashboard({ sessionId }: DashboardProps) {
   const [railMode, setRailMode] = useState<RailMode>('tools')
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(true)
+  const [pendingExportTarget, setPendingExportTarget] = useState<ExportTarget | null>(null)
+  const createExport = useMutation(api.sessions.createExport)
   const generationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
@@ -181,6 +193,28 @@ export function Dashboard({ sessionId }: DashboardProps) {
   const navigateHome = (e: React.MouseEvent) => {
     e.preventDefault()
     window.location.href = '/'
+  }
+
+  const downloadExport = async (target: ExportTarget) => {
+    if (!resolvedSessionId || pendingExportTarget !== null) return
+    setPendingExportTarget(target)
+    try {
+      const anonymousOwnerSecret =
+        typeof window === 'undefined'
+          ? undefined
+          : readAnonymousOwnerSecret(window.localStorage, resolvedSessionId)
+      await createExport({
+        sessionId: resolvedSessionId as any,
+        anonymousOwnerSecret,
+        target,
+      })
+      const params = new URLSearchParams()
+      if (effectiveTheme) params.set('theme', effectiveTheme)
+      params.set('mode', isDark ? 'dark' : 'light')
+      window.location.href = `/export/${resolvedSessionId}/${target}?${params.toString()}`
+    } finally {
+      setPendingExportTarget(null)
+    }
   }
 
   return (
@@ -469,27 +503,48 @@ export function Dashboard({ sessionId }: DashboardProps) {
                         <div className="grid gap-3">
                           <div className="grid gap-1 px-1">
                             <div className="text-sm font-semibold text-white">Project export</div>
-                            <p className="m-0 text-xs leading-5 text-white/52">Choose an export format. Download actions are coming next.</p>
+                            <p className="m-0 text-xs leading-5 text-white/52">Choose an export format to download.</p>
                           </div>
                           <div className="grid gap-1.5">
                             {exportOptions.map((option) => {
                               const Icon = option.icon
+                              const isPending = pendingExportTarget === option.target
+                              const StatusIcon = isPending ? LoaderCircle : Download
 
                               return (
                                 <button
                                   key={option.label}
                                   type="button"
                                   className="group/export flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075]"
-                                  disabled
+                                  disabled={!isPreviewReady || pendingExportTarget !== null}
+                                  onClick={() => void downloadExport(option.target)}
                                 >
                                   <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-white/10 bg-black/24 text-white/70 transition-colors group-hover/export:border-white/16 group-hover/export:bg-white/[0.06] group-hover/export:text-white" aria-hidden="true">
-                                    <Icon className="size-4" strokeWidth={1.8} />
+                                    {isPending ? (
+                                      <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
+                                    ) : (
+                                      <Icon className="size-4" strokeWidth={1.8} />
+                                    )}
                                   </span>
                                   <span className="grid min-w-0 flex-1 gap-0.5">
                                     <span className="truncate text-sm font-semibold text-white">{option.label}</span>
                                     <span className="truncate text-xs text-white/46">{option.meta}</span>
                                   </span>
-                                  <span className={cn(stateBadgeClass, 'border-white/10 bg-white/[0.06] text-white/46')}>Soon</span>
+                                  <span
+                                    className={cn(
+                                      stateBadgeClass,
+                                      'inline-flex items-center gap-1 border-white/10 bg-white/[0.06] text-white/46',
+                                      isPending && 'border-cyan-300/18 bg-cyan-300/10 text-cyan-100',
+                                    )}
+                                    aria-live="polite"
+                                  >
+                                    <StatusIcon
+                                      className={cn('size-3', isPending && 'animate-spin')}
+                                      strokeWidth={2}
+                                      aria-hidden="true"
+                                    />
+                                    {isPending ? 'Preparing' : 'Download'}
+                                  </span>
                                 </button>
                               )
                             })}

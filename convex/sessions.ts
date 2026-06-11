@@ -1035,6 +1035,20 @@ export const createExport = mutation({
         throw new ConvexError({ code: 'PREVIEW_NOT_READY', message: 'Preview is not ready to export' })
       })()
 
+    const homeModule = await ctx.db
+      .query('generatedModules')
+      .withIndex('by_sessionId_moduleKey', (index) =>
+        index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+      )
+      .first()
+
+    homeModule?.source?.trim().length ||
+      (() => {
+        throw new ConvexError({ code: 'ARTIFACT_NOT_READY', message: 'Generated source is not ready to export' })
+      })()
+
+    const fileCount = args.target === 'html' ? 1 : args.target === 'react' ? 5 : 6
+
     const existingExport = await ctx.db
       .query('exports')
       .withIndex('by_sessionId_target', (index) =>
@@ -1058,8 +1072,7 @@ export const createExport = mutation({
           sessionId: args.sessionId,
           target: args.target,
           status: 'ready',
-          artifactPath: `preview-${preview.version}.html`,
-          fileCount: 1,
+          fileCount,
           requiresPayment: false,
           createdAt: now,
           updatedAt: now,
@@ -1068,8 +1081,8 @@ export const createExport = mutation({
     if (existingExport !== null) {
       await ctx.db.patch(exportId, {
         status: 'ready',
-        artifactPath: `preview-${preview.version}.html`,
-        fileCount: 1,
+        artifactPath: undefined,
+        fileCount,
         errorMessage: undefined,
         updatedAt: now,
       })
@@ -1087,7 +1100,7 @@ export const createExport = mutation({
       exportId,
       target: args.target,
       status: 'ready' as const,
-      fileCount: 1,
+      fileCount,
     }
   },
 })
