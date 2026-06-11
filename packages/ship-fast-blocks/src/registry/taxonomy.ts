@@ -43,8 +43,8 @@ export interface BlockMeta {
   allowHero: boolean
 }
 
-// Keyed by the `defineComponent` name of each page block in registry/pages.
-// These names are the contract between the orchestrator and the page blocks.
+// Keyed by the capsule export name of each page block.
+// These names are the contract between the orchestrator and the page capsules.
 export const BLOCK_TAXONOMY: Record<string, BlockMeta> = {
   SaasKimiPage: {
     category: "saas",

@@ -1,21 +1,23 @@
-import { createLibrary, type DefinedComponent } from "@openuidev/react-lang"
-import * as all from "./registry/all.ts"
+import {
+  createLibrary,
+  isCapsule,
+  isDefinedComponent,
+  type ShipFastCapsule,
+} from "./capsules/openui.ts"
+import * as capsules from "./capsules/index.ts"
+import * as registry from "./registry/all.ts"
 
-// The complete OpenUI component library: layout primitives + wrapped shadcn
-// primitives + shadcn blocks. `Stack` is the required root.
+// The OpenUI component library is assembled from Ship Fast capsules. Each
+// capsule exposes the client component that OpenUI needs under the hood.
 
-function isDefinedComponent(v: unknown): v is DefinedComponent {
-  return (
-    !!v &&
-    typeof v === "object" &&
-    "name" in v &&
-    "props" in v &&
-    "component" in v
-  )
-}
+const registryCapsules = Object.values(registry)
+  .filter(isDefinedComponent)
+  .map((client) => ({ client })) satisfies ShipFastCapsule[]
+
+const pageCapsules = Object.values(capsules).filter(isCapsule) as ShipFastCapsule[]
 
 export const library = createLibrary({
-  components: Object.values(all).filter(isDefinedComponent),
+  capsules: [...registryCapsules, ...pageCapsules],
   root: "Stack",
 })
 

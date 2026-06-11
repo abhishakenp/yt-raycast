@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = join(fileURLToPath(new URL('..', import.meta.url)))
 const registryRoot = join(root, 'src', 'registry')
+const capsulesRoot = join(root, 'src', 'capsules')
 const outFile = join(root, 'src', 'generated', 'react-export-sources.json')
 
 const walk = (dir, files = []) => {
@@ -18,17 +19,19 @@ const walk = (dir, files = []) => {
   return files
 }
 
-const componentRe = /export\s+const\s+([A-Za-z_$][\w$]*)\s*=\s*defineComponent\s*\(/g
+const componentRe = /export\s+const\s+([A-Za-z_$][\w$]*)\s*=\s*define(?:Component|Capsule)\s*\(/g
 const manifest = {}
 
-for (const file of walk(registryRoot)) {
-  const source = readFileSync(file, 'utf8')
-  componentRe.lastIndex = 0
-  for (const match of source.matchAll(componentRe)) {
-    const name = match[1]
-    manifest[name] = {
-      file: relative(root, file).replaceAll('\\', '/'),
-      source,
+for (const sourceRoot of [registryRoot, capsulesRoot]) {
+  for (const file of walk(sourceRoot)) {
+    const source = readFileSync(file, 'utf8')
+    componentRe.lastIndex = 0
+    for (const match of source.matchAll(componentRe)) {
+      const name = match[1]
+      manifest[name] = {
+        file: relative(root, file).replaceAll('\\', '/'),
+        source,
+      }
     }
   }
 }
