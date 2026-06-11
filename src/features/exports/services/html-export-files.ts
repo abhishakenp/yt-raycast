@@ -24,7 +24,7 @@ const decodeBasicEntities = (value: string): string =>
 const matchContent = (html: string, pattern: RegExp): string =>
   decodeBasicEntities(stripTags(html.match(pattern)?.[1] ?? ''))
 
-const extractExportMetadata = (html: string) => {
+export const extractExportMetadata = (html: string) => {
   const title =
     matchContent(html, /<title\b[^>]*>([\s\S]*?)<\/title>/i) ||
     matchContent(html, /<h1\b[^>]*>([\s\S]*?)<\/h1>/i) ||
@@ -48,17 +48,22 @@ const extractExportMetadata = (html: string) => {
   }
 }
 
-const normalizeSiteUrl = (value: string | undefined): string => {
-  if (!value) return 'https://example.com'
+export const normalizeSiteUrl = (
+  value: string | undefined,
+): string | undefined => {
+  if (!value) return undefined
   try {
     const url = new URL(value)
     url.hash = ''
     url.search = ''
     return url.toString().replace(/\/+$/, '')
   } catch {
-    return 'https://example.com'
+    return undefined
   }
 }
+
+const createCanonicalUrl = (siteUrl: string | undefined): string | undefined =>
+  siteUrl === undefined ? undefined : `${siteUrl}/`
 
 const ensureLlmsDiscoveryLink = (html: string): string => {
   if (/href=["']\/?llms\.txt["']/i.test(html)) return html
@@ -68,13 +73,13 @@ const ensureLlmsDiscoveryLink = (html: string): string => {
   return `${link}\n${html}`
 }
 
-const createRobotsTxt = (siteUrl: string): string =>
+export const createRobotsTxt = (siteUrl: string): string =>
   `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
 
-const createSitemapXml = (siteUrl: string): string =>
+export const createSitemapXml = (siteUrl: string): string =>
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${siteUrl}/</loc>\n  </url>\n</urlset>\n`
 
-const createLlmsTxt = (
+export const createLlmsTxt = (
   siteUrl: string,
   metadata: { title: string; description: string },
 ): string =>
@@ -158,20 +163,22 @@ export function createHtmlExportFiles(
   previewHtml: string,
   options: HtmlExportFilesOptions = {},
 ): Record<string, string> {
+  const siteUrl = normalizeSiteUrl(options.siteUrl)
   const exportHtml = ensureLlmsDiscoveryLink(
     buildHtmlExport(previewHtml, {
       includeBadge: options.includeBadge,
+      canonicalUrl: createCanonicalUrl(siteUrl),
     }),
   )
-  const siteUrl = normalizeSiteUrl(options.siteUrl)
+  const metadataSiteUrl = siteUrl ?? 'https://example.com'
   const metadata = extractExportMetadata(exportHtml)
 
   return {
     'index.html': exportHtml,
     'README.md': `# Ship Fast export\n\nSession: ${sessionId}\nTarget: ${target}\n`,
-    'robots.txt': createRobotsTxt(siteUrl),
-    'sitemap.xml': createSitemapXml(siteUrl),
-    'llms.txt': createLlmsTxt(siteUrl, metadata),
+    'robots.txt': createRobotsTxt(metadataSiteUrl),
+    'sitemap.xml': createSitemapXml(metadataSiteUrl),
+    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata),
   }
 }
 
@@ -181,12 +188,14 @@ export function createReactExportFiles(
   previewHtml: string,
   options: HtmlExportFilesOptions = {},
 ): Record<string, string> {
+  const siteUrl = normalizeSiteUrl(options.siteUrl)
   const exportHtml = ensureLlmsDiscoveryLink(
     buildHtmlExport(previewHtml, {
       includeBadge: options.includeBadge,
+      canonicalUrl: createCanonicalUrl(siteUrl),
     }),
   )
-  const siteUrl = normalizeSiteUrl(options.siteUrl)
+  const metadataSiteUrl = siteUrl ?? 'https://example.com'
   const metadata = extractExportMetadata(exportHtml)
 
   return {
@@ -194,9 +203,9 @@ export function createReactExportFiles(
     'vite.config.js': createViteConfig(),
     'index.html': exportHtml,
     'README.md': `# Ship Fast React export\n\nSession: ${sessionId}\nTarget: ${target}\n\n## Development\n\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n\n## Build\n\n\`\`\`bash\nnpm run build\n\`\`\`\n`,
-    'robots.txt': createRobotsTxt(siteUrl),
-    'sitemap.xml': createSitemapXml(siteUrl),
-    'llms.txt': createLlmsTxt(siteUrl, metadata),
+    'robots.txt': createRobotsTxt(metadataSiteUrl),
+    'sitemap.xml': createSitemapXml(metadataSiteUrl),
+    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata),
   }
 }
 
@@ -206,12 +215,14 @@ export function createNextExportFiles(
   previewHtml: string,
   options: HtmlExportFilesOptions = {},
 ): Record<string, string> {
+  const siteUrl = normalizeSiteUrl(options.siteUrl)
   const exportHtml = ensureLlmsDiscoveryLink(
     buildHtmlExport(previewHtml, {
       includeBadge: options.includeBadge,
+      canonicalUrl: createCanonicalUrl(siteUrl),
     }),
   )
-  const siteUrl = normalizeSiteUrl(options.siteUrl)
+  const metadataSiteUrl = siteUrl ?? 'https://example.com'
   const metadata = extractExportMetadata(exportHtml)
 
   return {
@@ -237,8 +248,8 @@ export function createNextExportFiles(
   )
 }`,
     'README.md': `# Ship Fast Next.js export\n\nSession: ${sessionId}\nTarget: ${target}\n\n## Development\n\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n\n## Build\n\n\`\`\`bash\nnpm run build\n\`\`\`\n\n## Start\n\n\`\`\`bash\nnpm start\n\`\`\`\n`,
-    'robots.txt': createRobotsTxt(siteUrl),
-    'sitemap.xml': createSitemapXml(siteUrl),
-    'llms.txt': createLlmsTxt(siteUrl, metadata),
+    'robots.txt': createRobotsTxt(metadataSiteUrl),
+    'sitemap.xml': createSitemapXml(metadataSiteUrl),
+    'llms.txt': createLlmsTxt(metadataSiteUrl, metadata),
   }
 }

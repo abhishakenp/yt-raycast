@@ -7,6 +7,9 @@ export type BuildCreateSessionPayloadInput = {
   anonymousOwnerSecret: string
   anonymousClientId?: string
   workspace: string
+  designReferenceUrls?: string[]
+  designReferenceNotes?: string
+  cloneUrl?: string
 }
 
 const toHex = (bytes: Uint8Array): string =>
@@ -41,12 +44,27 @@ export const buildCreateSessionPayload = ({
   anonymousOwnerSecret,
   anonymousClientId,
   workspace,
-}: BuildCreateSessionPayloadInput) => ({
-  prompt,
-  preferredLanguage,
-  preferredExportTarget: 'html' as const,
-  isPrivate,
-  anonymousOwnerSecret,
-  anonymousClientId,
-  workspace,
-})
+  designReferenceUrls = [],
+  designReferenceNotes = '',
+  cloneUrl = '',
+}: BuildCreateSessionPayloadInput) => {
+  const refs = designReferenceUrls
+    .map((url) => url.trim())
+    .filter(Boolean)
+    .slice(0, 4)
+  const notes = designReferenceNotes.trim()
+  const clone = cloneUrl.trim()
+
+  return {
+    prompt,
+    preferredLanguage,
+    preferredExportTarget: 'html' as const,
+    isPrivate,
+    anonymousOwnerSecret,
+    anonymousClientId,
+    workspace,
+    ...(refs.length > 0 ? { designReferenceUrls: refs } : {}),
+    ...(notes ? { designReferenceNotes: notes } : {}),
+    ...(clone ? { cloneUrl: clone } : {}),
+  }
+}

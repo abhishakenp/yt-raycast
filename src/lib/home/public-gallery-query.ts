@@ -21,12 +21,22 @@ export type PublicGalleryFetchResult = {
 
 export type PublicGallerySessionSummary = {
   id: string
+  sessionId?: string
   prompt?: string
   generationTime?: number
   elapsed?: number | null
   cost?: number | null
   createdAt?: string
+  updatedAt?: string | number
   homepageReady?: boolean
+  siteSpecReady?: boolean | null
+  openuiReady?: boolean | null
+  readiness?: {
+    homepageReady?: boolean | null
+    siteSpecReady?: boolean | null
+    openuiReady?: boolean | null
+    previewReady?: boolean | null
+  }
   html?: string | null
 }
 

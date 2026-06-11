@@ -34,6 +34,9 @@ export const usePromptHomeController = () => {
     preferredLanguage?: string
     isPrivate?: boolean
     prompt?: string
+    designReferenceUrls?: string[]
+    designReferenceNotes?: string
+    cloneUrl?: string
   }) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
@@ -62,6 +65,9 @@ export const usePromptHomeController = () => {
           anonymousOwnerSecret,
           anonymousClientId,
           workspace: createSessionWorkspaceKey(),
+          designReferenceUrls: opts?.designReferenceUrls,
+          designReferenceNotes: opts?.designReferenceNotes,
+          cloneUrl: opts?.cloneUrl,
         }),
       )
       const sessionId = result.sessionId

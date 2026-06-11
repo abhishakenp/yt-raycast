@@ -1,5 +1,5 @@
 import { ShoppingCart, Save } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useCommerceController } from '../hooks/useCommerceController'
 
@@ -12,6 +12,12 @@ export const CommercePanel = ({ sessionId }: CommercePanelProps) => {
   const [backendUrl, setBackendUrl] = useState(config?.backendUrl ?? '')
   const [adminUrl, setAdminUrl] = useState(config?.adminUrl ?? '')
   const [storefrontUrl, setStorefrontUrl] = useState(config?.storefrontUrl ?? '')
+
+  useEffect(() => {
+    setBackendUrl(config?.backendUrl ?? '')
+    setAdminUrl(config?.adminUrl ?? '')
+    setStorefrontUrl(config?.storefrontUrl ?? '')
+  }, [config?.adminUrl, config?.backendUrl, config?.storefrontUrl])
 
   const handleSave = async () => {
     await saveConfig(

@@ -10,38 +10,68 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as StudioRouteImport } from './routes/studio'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PreviewSlugRouteImport } from './routes/preview.$slug'
 import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessionId'
+import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription-status'
-import { Route as ApiStudioEmbedReadyRouteImport } from './routes/api/studio-embed-ready'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
 import { Route as ApiOpenuiPreviewRouteImport } from './routes/api/openui-preview'
+import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-checkout'
 import { Route as ApiGalleryRouteImport } from './routes/api/gallery'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
+import { Route as ApiBrandProfileRouteImport } from './routes/api/brand-profile'
 import { Route as ApiBillingOverviewRouteImport } from './routes/api/billing-overview'
+import { Route as PreviewSlugSitemapDotxmlRouteImport } from './routes/preview.$slug.sitemap[.]xml'
+import { Route as PreviewSlugRobotsDottxtRouteImport } from './routes/preview.$slug.robots[.]txt'
+import { Route as PreviewSlugLlmsDottxtRouteImport } from './routes/preview.$slug.llms[.]txt'
 import { Route as ExportSessionIdTargetRouteImport } from './routes/export.$sessionId.$target'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe.webhook'
 import { Route as ApiSessionsRecentRouteImport } from './routes/api/sessions.recent'
 import { Route as ApiSessionsSessionIdRouteImport } from './routes/api/sessions.$sessionId'
 import { Route as ApiRazorpayWebhookRouteImport } from './routes/api/razorpay.webhook'
+import { Route as ApiMedusaStoreConfigRouteImport } from './routes/api/medusa-store.config'
+import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-store.cart'
+import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
+import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
+import { Route as ApiSessionsSessionIdPreviewInlineTextRouteImport } from './routes/api/sessions.$sessionId.preview-inline-text'
+import { Route as ApiSessionsSessionIdPreviewInlineStyleRouteImport } from './routes/api/sessions.$sessionId.preview-inline-style'
+import { Route as ApiSessionsSessionIdPreviewHomepageHtmlRouteImport } from './routes/api/sessions.$sessionId.preview-homepage-html'
+import { Route as ApiSessionsSessionIdMedusaConfigRouteImport } from './routes/api/sessions.$sessionId.medusa-config'
+import { Route as ApiSessionsSessionIdHistoryRouteImport } from './routes/api/sessions.$sessionId.history'
 import { Route as ApiSessionsSessionIdGalleryThumbRouteImport } from './routes/api/sessions.$sessionId.gallery-thumb'
+import { Route as ApiSessionsSessionIdExportTargetsRouteImport } from './routes/api/sessions.$sessionId.export-targets'
+import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/sessions.$sessionId.export'
+import { Route as ApiSessionsSessionIdChatRouteImport } from './routes/api/sessions.$sessionId.chat'
+import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
+import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
+import { Route as ApiSessionsSessionIdProvisionMedusaRouteImport } from './routes/api/sessions.$sessionId.provision.medusa'
 import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api/sessions.$sessionId.github.push'
+import { Route as ApiSessionsSessionIdDownloadTargetRouteImport } from './routes/api/sessions.$sessionId.download.$target'
+import { Route as ApiSessionsSessionIdHistoryVersionRestoreRouteImport } from './routes/api/sessions.$sessionId.history.$version.restore'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StudioRoute = StudioRouteImport.update({
-  id: '/studio',
-  path: '/studio',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -54,6 +84,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
@@ -64,19 +99,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PreviewSlugRoute = PreviewSlugRouteImport.update({
+  id: '/preview/$slug',
+  path: '/preview/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GenerateSessionIdRoute = GenerateSessionIdRouteImport.update({
   id: '/generate/$sessionId',
   path: '/generate/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTranslateRoute = ApiTranslateRouteImport.update({
+  id: '/api/translate',
+  path: '/api/translate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSubscriptionStatusRoute = ApiSubscriptionStatusRouteImport.update({
   id: '/api/subscription-status',
   path: '/api/subscription-status',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiStudioEmbedReadyRoute = ApiStudioEmbedReadyRouteImport.update({
-  id: '/api/studio-embed-ready',
-  path: '/api/studio-embed-ready',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRewriteRoute = ApiRewriteRouteImport.update({
@@ -99,6 +139,11 @@ const ApiOpenuiPreviewRoute = ApiOpenuiPreviewRouteImport.update({
   path: '/api/openui-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMedusaCheckoutRoute = ApiMedusaCheckoutRouteImport.update({
+  id: '/api/medusa-checkout',
+  path: '/api/medusa-checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGalleryRoute = ApiGalleryRouteImport.update({
   id: '/api/gallery',
   path: '/api/gallery',
@@ -109,10 +154,31 @@ const ApiCreditsRoute = ApiCreditsRouteImport.update({
   path: '/api/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBrandProfileRoute = ApiBrandProfileRouteImport.update({
+  id: '/api/brand-profile',
+  path: '/api/brand-profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBillingOverviewRoute = ApiBillingOverviewRouteImport.update({
   id: '/api/billing-overview',
   path: '/api/billing-overview',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewSlugSitemapDotxmlRoute =
+  PreviewSlugSitemapDotxmlRouteImport.update({
+    id: '/sitemap.xml',
+    path: '/sitemap.xml',
+    getParentRoute: () => PreviewSlugRoute,
+  } as any)
+const PreviewSlugRobotsDottxtRoute = PreviewSlugRobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => PreviewSlugRoute,
+} as any)
+const PreviewSlugLlmsDottxtRoute = PreviewSlugLlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
+  getParentRoute: () => PreviewSlugRoute,
 } as any)
 const ExportSessionIdTargetRoute = ExportSessionIdTargetRouteImport.update({
   id: '/export/$sessionId/$target',
@@ -139,15 +205,101 @@ const ApiRazorpayWebhookRoute = ApiRazorpayWebhookRouteImport.update({
   path: '/api/razorpay/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMedusaStoreConfigRoute = ApiMedusaStoreConfigRouteImport.update({
+  id: '/api/medusa-store/config',
+  path: '/api/medusa-store/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMedusaStoreCartRoute = ApiMedusaStoreCartRouteImport.update({
+  id: '/api/medusa-store/cart',
+  path: '/api/medusa-store/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMedusaAdminConfigRoute = ApiMedusaAdminConfigRouteImport.update({
+  id: '/api/medusa-admin/config',
+  path: '/api/medusa-admin/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutStartRoute = ApiCheckoutStartRouteImport.update({
   id: '/api/checkout/start',
   path: '/api/checkout/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSessionsSessionIdStreamRoute =
+  ApiSessionsSessionIdStreamRouteImport.update({
+    id: '/stream',
+    path: '/stream',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdPreviewInlineTextRoute =
+  ApiSessionsSessionIdPreviewInlineTextRouteImport.update({
+    id: '/preview-inline-text',
+    path: '/preview-inline-text',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdPreviewInlineStyleRoute =
+  ApiSessionsSessionIdPreviewInlineStyleRouteImport.update({
+    id: '/preview-inline-style',
+    path: '/preview-inline-style',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdPreviewHomepageHtmlRoute =
+  ApiSessionsSessionIdPreviewHomepageHtmlRouteImport.update({
+    id: '/preview-homepage-html',
+    path: '/preview-homepage-html',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdMedusaConfigRoute =
+  ApiSessionsSessionIdMedusaConfigRouteImport.update({
+    id: '/medusa-config',
+    path: '/medusa-config',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdHistoryRoute =
+  ApiSessionsSessionIdHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
 const ApiSessionsSessionIdGalleryThumbRoute =
   ApiSessionsSessionIdGalleryThumbRouteImport.update({
     id: '/gallery-thumb',
     path: '/gallery-thumb',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdExportTargetsRoute =
+  ApiSessionsSessionIdExportTargetsRouteImport.update({
+    id: '/export-targets',
+    path: '/export-targets',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdExportRoute =
+  ApiSessionsSessionIdExportRouteImport.update({
+    id: '/export',
+    path: '/export',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdChatRoute =
+  ApiSessionsSessionIdChatRouteImport.update({
+    id: '/chat',
+    path: '/chat',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiMedusaStoreCartLineItemsRoute =
+  ApiMedusaStoreCartLineItemsRouteImport.update({
+    id: '/line-items',
+    path: '/line-items',
+    getParentRoute: () => ApiMedusaStoreCartRoute,
+  } as any)
+const ApiMedusaStoreCartIdRoute = ApiMedusaStoreCartIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiMedusaStoreCartRoute,
+} as any)
+const ApiSessionsSessionIdProvisionMedusaRoute =
+  ApiSessionsSessionIdProvisionMedusaRouteImport.update({
+    id: '/provision/medusa',
+    path: '/provision/medusa',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
 const ApiSessionsSessionIdGithubPushRoute =
@@ -156,185 +308,355 @@ const ApiSessionsSessionIdGithubPushRoute =
     path: '/github/push',
     getParentRoute: () => ApiSessionsSessionIdRoute,
   } as any)
+const ApiSessionsSessionIdDownloadTargetRoute =
+  ApiSessionsSessionIdDownloadTargetRouteImport.update({
+    id: '/download/$target',
+    path: '/download/$target',
+    getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiSessionsSessionIdHistoryVersionRestoreRoute =
+  ApiSessionsSessionIdHistoryVersionRestoreRouteImport.update({
+    id: '/$version/restore',
+    path: '/$version/restore',
+    getParentRoute: () => ApiSessionsSessionIdHistoryRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/studio': typeof StudioRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
+  '/api/brand-profile': typeof ApiBrandProfileRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
+  '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
-  '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
+  '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
+  '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
+  '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
+  '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
+  '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
+  '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
+  '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
+  '/api/sessions/$sessionId/export-targets': typeof ApiSessionsSessionIdExportTargetsRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
+  '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
+  '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
+  '/api/sessions/$sessionId/preview-homepage-html': typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
+  '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
+  '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
+  '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
+  '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/studio': typeof StudioRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
+  '/api/brand-profile': typeof ApiBrandProfileRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
+  '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
-  '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
+  '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
+  '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
+  '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
+  '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
+  '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
+  '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
+  '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
+  '/api/sessions/$sessionId/export-targets': typeof ApiSessionsSessionIdExportTargetsRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
+  '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
+  '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
+  '/api/sessions/$sessionId/preview-homepage-html': typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
+  '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
+  '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
+  '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
+  '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/gallery': typeof GalleryRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/studio': typeof StudioRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/api/billing-overview': typeof ApiBillingOverviewRoute
+  '/api/brand-profile': typeof ApiBrandProfileRoute
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
+  '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
   '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
-  '/api/studio-embed-ready': typeof ApiStudioEmbedReadyRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
+  '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRoute
+  '/preview/$slug': typeof PreviewSlugRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
+  '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
+  '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
+  '/api/medusa-store/config': typeof ApiMedusaStoreConfigRoute
   '/api/razorpay/webhook': typeof ApiRazorpayWebhookRoute
   '/api/sessions/$sessionId': typeof ApiSessionsSessionIdRouteWithChildren
   '/api/sessions/recent': typeof ApiSessionsRecentRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/export/$sessionId/$target': typeof ExportSessionIdTargetRoute
+  '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
+  '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
+  '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
+  '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
+  '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
+  '/api/sessions/$sessionId/export': typeof ApiSessionsSessionIdExportRoute
+  '/api/sessions/$sessionId/export-targets': typeof ApiSessionsSessionIdExportTargetsRoute
   '/api/sessions/$sessionId/gallery-thumb': typeof ApiSessionsSessionIdGalleryThumbRoute
+  '/api/sessions/$sessionId/history': typeof ApiSessionsSessionIdHistoryRouteWithChildren
+  '/api/sessions/$sessionId/medusa-config': typeof ApiSessionsSessionIdMedusaConfigRoute
+  '/api/sessions/$sessionId/preview-homepage-html': typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
+  '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
+  '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
+  '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
+  '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
+  '/api/sessions/$sessionId/history/$version/restore': typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/gallery'
+    | '/llms.txt'
     | '/pricing'
     | '/privacy'
-    | '/studio'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/terms'
     | '/api/billing-overview'
+    | '/api/brand-profile'
     | '/api/credits'
     | '/api/gallery'
+    | '/api/medusa-checkout'
     | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
-    | '/api/studio-embed-ready'
     | '/api/subscription-status'
+    | '/api/translate'
     | '/generate/$sessionId'
+    | '/preview/$slug'
     | '/api/checkout/start'
+    | '/api/medusa-admin/config'
+    | '/api/medusa-store/cart'
+    | '/api/medusa-store/config'
     | '/api/razorpay/webhook'
     | '/api/sessions/$sessionId'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/preview/$slug/llms.txt'
+    | '/preview/$slug/robots.txt'
+    | '/preview/$slug/sitemap.xml'
+    | '/api/medusa-store/cart/$id'
+    | '/api/medusa-store/cart/line-items'
+    | '/api/sessions/$sessionId/chat'
+    | '/api/sessions/$sessionId/export'
+    | '/api/sessions/$sessionId/export-targets'
     | '/api/sessions/$sessionId/gallery-thumb'
+    | '/api/sessions/$sessionId/history'
+    | '/api/sessions/$sessionId/medusa-config'
+    | '/api/sessions/$sessionId/preview-homepage-html'
+    | '/api/sessions/$sessionId/preview-inline-style'
+    | '/api/sessions/$sessionId/preview-inline-text'
+    | '/api/sessions/$sessionId/stream'
+    | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
+    | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/sessions/$sessionId/history/$version/restore'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/gallery'
+    | '/llms.txt'
     | '/pricing'
     | '/privacy'
-    | '/studio'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/terms'
     | '/api/billing-overview'
+    | '/api/brand-profile'
     | '/api/credits'
     | '/api/gallery'
+    | '/api/medusa-checkout'
     | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
-    | '/api/studio-embed-ready'
     | '/api/subscription-status'
+    | '/api/translate'
     | '/generate/$sessionId'
+    | '/preview/$slug'
     | '/api/checkout/start'
+    | '/api/medusa-admin/config'
+    | '/api/medusa-store/cart'
+    | '/api/medusa-store/config'
     | '/api/razorpay/webhook'
     | '/api/sessions/$sessionId'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/preview/$slug/llms.txt'
+    | '/preview/$slug/robots.txt'
+    | '/preview/$slug/sitemap.xml'
+    | '/api/medusa-store/cart/$id'
+    | '/api/medusa-store/cart/line-items'
+    | '/api/sessions/$sessionId/chat'
+    | '/api/sessions/$sessionId/export'
+    | '/api/sessions/$sessionId/export-targets'
     | '/api/sessions/$sessionId/gallery-thumb'
+    | '/api/sessions/$sessionId/history'
+    | '/api/sessions/$sessionId/medusa-config'
+    | '/api/sessions/$sessionId/preview-homepage-html'
+    | '/api/sessions/$sessionId/preview-inline-style'
+    | '/api/sessions/$sessionId/preview-inline-text'
+    | '/api/sessions/$sessionId/stream'
+    | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
+    | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/sessions/$sessionId/history/$version/restore'
   id:
     | '__root__'
     | '/'
     | '/gallery'
+    | '/llms.txt'
     | '/pricing'
     | '/privacy'
-    | '/studio'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/terms'
     | '/api/billing-overview'
+    | '/api/brand-profile'
     | '/api/credits'
     | '/api/gallery'
+    | '/api/medusa-checkout'
     | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
-    | '/api/studio-embed-ready'
     | '/api/subscription-status'
+    | '/api/translate'
     | '/generate/$sessionId'
+    | '/preview/$slug'
     | '/api/checkout/start'
+    | '/api/medusa-admin/config'
+    | '/api/medusa-store/cart'
+    | '/api/medusa-store/config'
     | '/api/razorpay/webhook'
     | '/api/sessions/$sessionId'
     | '/api/sessions/recent'
     | '/api/stripe/webhook'
     | '/export/$sessionId/$target'
+    | '/preview/$slug/llms.txt'
+    | '/preview/$slug/robots.txt'
+    | '/preview/$slug/sitemap.xml'
+    | '/api/medusa-store/cart/$id'
+    | '/api/medusa-store/cart/line-items'
+    | '/api/sessions/$sessionId/chat'
+    | '/api/sessions/$sessionId/export'
+    | '/api/sessions/$sessionId/export-targets'
     | '/api/sessions/$sessionId/gallery-thumb'
+    | '/api/sessions/$sessionId/history'
+    | '/api/sessions/$sessionId/medusa-config'
+    | '/api/sessions/$sessionId/preview-homepage-html'
+    | '/api/sessions/$sessionId/preview-inline-style'
+    | '/api/sessions/$sessionId/preview-inline-text'
+    | '/api/sessions/$sessionId/stream'
+    | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
+    | '/api/sessions/$sessionId/provision/medusa'
+    | '/api/sessions/$sessionId/history/$version/restore'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GalleryRoute: typeof GalleryRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  StudioRoute: typeof StudioRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ApiBillingOverviewRoute: typeof ApiBillingOverviewRoute
+  ApiBrandProfileRoute: typeof ApiBrandProfileRoute
   ApiCreditsRoute: typeof ApiCreditsRoute
   ApiGalleryRoute: typeof ApiGalleryRoute
+  ApiMedusaCheckoutRoute: typeof ApiMedusaCheckoutRoute
   ApiOpenuiPreviewRoute: typeof ApiOpenuiPreviewRoute
   ApiPexelsRoute: typeof ApiPexelsRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
-  ApiStudioEmbedReadyRoute: typeof ApiStudioEmbedReadyRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
+  ApiTranslateRoute: typeof ApiTranslateRoute
   GenerateSessionIdRoute: typeof GenerateSessionIdRoute
+  PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
+  ApiMedusaAdminConfigRoute: typeof ApiMedusaAdminConfigRoute
+  ApiMedusaStoreCartRoute: typeof ApiMedusaStoreCartRouteWithChildren
+  ApiMedusaStoreConfigRoute: typeof ApiMedusaStoreConfigRoute
   ApiRazorpayWebhookRoute: typeof ApiRazorpayWebhookRoute
   ApiSessionsSessionIdRoute: typeof ApiSessionsSessionIdRouteWithChildren
   ApiSessionsRecentRoute: typeof ApiSessionsRecentRoute
@@ -351,11 +673,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/studio': {
-      id: '/studio'
-      path: '/studio'
-      fullPath: '/studio'
-      preLoaderRoute: typeof StudioRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -372,6 +701,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gallery': {
       id: '/gallery'
       path: '/gallery'
@@ -386,6 +722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/preview/$slug': {
+      id: '/preview/$slug'
+      path: '/preview/$slug'
+      fullPath: '/preview/$slug'
+      preLoaderRoute: typeof PreviewSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/generate/$sessionId': {
       id: '/generate/$sessionId'
       path: '/generate/$sessionId'
@@ -393,18 +736,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GenerateSessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/translate': {
+      id: '/api/translate'
+      path: '/api/translate'
+      fullPath: '/api/translate'
+      preLoaderRoute: typeof ApiTranslateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/subscription-status': {
       id: '/api/subscription-status'
       path: '/api/subscription-status'
       fullPath: '/api/subscription-status'
       preLoaderRoute: typeof ApiSubscriptionStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/studio-embed-ready': {
-      id: '/api/studio-embed-ready'
-      path: '/api/studio-embed-ready'
-      fullPath: '/api/studio-embed-ready'
-      preLoaderRoute: typeof ApiStudioEmbedReadyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rewrite': {
@@ -435,6 +778,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOpenuiPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/medusa-checkout': {
+      id: '/api/medusa-checkout'
+      path: '/api/medusa-checkout'
+      fullPath: '/api/medusa-checkout'
+      preLoaderRoute: typeof ApiMedusaCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/gallery': {
       id: '/api/gallery'
       path: '/api/gallery'
@@ -449,12 +799,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/brand-profile': {
+      id: '/api/brand-profile'
+      path: '/api/brand-profile'
+      fullPath: '/api/brand-profile'
+      preLoaderRoute: typeof ApiBrandProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/billing-overview': {
       id: '/api/billing-overview'
       path: '/api/billing-overview'
       fullPath: '/api/billing-overview'
       preLoaderRoute: typeof ApiBillingOverviewRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/preview/$slug/sitemap.xml': {
+      id: '/preview/$slug/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/preview/$slug/sitemap.xml'
+      preLoaderRoute: typeof PreviewSlugSitemapDotxmlRouteImport
+      parentRoute: typeof PreviewSlugRoute
+    }
+    '/preview/$slug/robots.txt': {
+      id: '/preview/$slug/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/preview/$slug/robots.txt'
+      preLoaderRoute: typeof PreviewSlugRobotsDottxtRouteImport
+      parentRoute: typeof PreviewSlugRoute
+    }
+    '/preview/$slug/llms.txt': {
+      id: '/preview/$slug/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/preview/$slug/llms.txt'
+      preLoaderRoute: typeof PreviewSlugLlmsDottxtRouteImport
+      parentRoute: typeof PreviewSlugRoute
     }
     '/export/$sessionId/$target': {
       id: '/export/$sessionId/$target'
@@ -491,6 +869,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRazorpayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/medusa-store/config': {
+      id: '/api/medusa-store/config'
+      path: '/api/medusa-store/config'
+      fullPath: '/api/medusa-store/config'
+      preLoaderRoute: typeof ApiMedusaStoreConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/medusa-store/cart': {
+      id: '/api/medusa-store/cart'
+      path: '/api/medusa-store/cart'
+      fullPath: '/api/medusa-store/cart'
+      preLoaderRoute: typeof ApiMedusaStoreCartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/medusa-admin/config': {
+      id: '/api/medusa-admin/config'
+      path: '/api/medusa-admin/config'
+      fullPath: '/api/medusa-admin/config'
+      preLoaderRoute: typeof ApiMedusaAdminConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/checkout/start': {
       id: '/api/checkout/start'
       path: '/api/checkout/start'
@@ -498,11 +897,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/sessions/$sessionId/stream': {
+      id: '/api/sessions/$sessionId/stream'
+      path: '/stream'
+      fullPath: '/api/sessions/$sessionId/stream'
+      preLoaderRoute: typeof ApiSessionsSessionIdStreamRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/preview-inline-text': {
+      id: '/api/sessions/$sessionId/preview-inline-text'
+      path: '/preview-inline-text'
+      fullPath: '/api/sessions/$sessionId/preview-inline-text'
+      preLoaderRoute: typeof ApiSessionsSessionIdPreviewInlineTextRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/preview-inline-style': {
+      id: '/api/sessions/$sessionId/preview-inline-style'
+      path: '/preview-inline-style'
+      fullPath: '/api/sessions/$sessionId/preview-inline-style'
+      preLoaderRoute: typeof ApiSessionsSessionIdPreviewInlineStyleRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/preview-homepage-html': {
+      id: '/api/sessions/$sessionId/preview-homepage-html'
+      path: '/preview-homepage-html'
+      fullPath: '/api/sessions/$sessionId/preview-homepage-html'
+      preLoaderRoute: typeof ApiSessionsSessionIdPreviewHomepageHtmlRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/medusa-config': {
+      id: '/api/sessions/$sessionId/medusa-config'
+      path: '/medusa-config'
+      fullPath: '/api/sessions/$sessionId/medusa-config'
+      preLoaderRoute: typeof ApiSessionsSessionIdMedusaConfigRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/history': {
+      id: '/api/sessions/$sessionId/history'
+      path: '/history'
+      fullPath: '/api/sessions/$sessionId/history'
+      preLoaderRoute: typeof ApiSessionsSessionIdHistoryRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
     '/api/sessions/$sessionId/gallery-thumb': {
       id: '/api/sessions/$sessionId/gallery-thumb'
       path: '/gallery-thumb'
       fullPath: '/api/sessions/$sessionId/gallery-thumb'
       preLoaderRoute: typeof ApiSessionsSessionIdGalleryThumbRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/export-targets': {
+      id: '/api/sessions/$sessionId/export-targets'
+      path: '/export-targets'
+      fullPath: '/api/sessions/$sessionId/export-targets'
+      preLoaderRoute: typeof ApiSessionsSessionIdExportTargetsRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/export': {
+      id: '/api/sessions/$sessionId/export'
+      path: '/export'
+      fullPath: '/api/sessions/$sessionId/export'
+      preLoaderRoute: typeof ApiSessionsSessionIdExportRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/chat': {
+      id: '/api/sessions/$sessionId/chat'
+      path: '/chat'
+      fullPath: '/api/sessions/$sessionId/chat'
+      preLoaderRoute: typeof ApiSessionsSessionIdChatRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/medusa-store/cart/line-items': {
+      id: '/api/medusa-store/cart/line-items'
+      path: '/line-items'
+      fullPath: '/api/medusa-store/cart/line-items'
+      preLoaderRoute: typeof ApiMedusaStoreCartLineItemsRouteImport
+      parentRoute: typeof ApiMedusaStoreCartRoute
+    }
+    '/api/medusa-store/cart/$id': {
+      id: '/api/medusa-store/cart/$id'
+      path: '/$id'
+      fullPath: '/api/medusa-store/cart/$id'
+      preLoaderRoute: typeof ApiMedusaStoreCartIdRouteImport
+      parentRoute: typeof ApiMedusaStoreCartRoute
+    }
+    '/api/sessions/$sessionId/provision/medusa': {
+      id: '/api/sessions/$sessionId/provision/medusa'
+      path: '/provision/medusa'
+      fullPath: '/api/sessions/$sessionId/provision/medusa'
+      preLoaderRoute: typeof ApiSessionsSessionIdProvisionMedusaRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
     '/api/sessions/$sessionId/github/push': {
@@ -512,17 +995,104 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSessionsSessionIdGithubPushRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
     }
+    '/api/sessions/$sessionId/download/$target': {
+      id: '/api/sessions/$sessionId/download/$target'
+      path: '/download/$target'
+      fullPath: '/api/sessions/$sessionId/download/$target'
+      preLoaderRoute: typeof ApiSessionsSessionIdDownloadTargetRouteImport
+      parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/sessions/$sessionId/history/$version/restore': {
+      id: '/api/sessions/$sessionId/history/$version/restore'
+      path: '/$version/restore'
+      fullPath: '/api/sessions/$sessionId/history/$version/restore'
+      preLoaderRoute: typeof ApiSessionsSessionIdHistoryVersionRestoreRouteImport
+      parentRoute: typeof ApiSessionsSessionIdHistoryRoute
+    }
   }
 }
 
+interface PreviewSlugRouteChildren {
+  PreviewSlugLlmsDottxtRoute: typeof PreviewSlugLlmsDottxtRoute
+  PreviewSlugRobotsDottxtRoute: typeof PreviewSlugRobotsDottxtRoute
+  PreviewSlugSitemapDotxmlRoute: typeof PreviewSlugSitemapDotxmlRoute
+}
+
+const PreviewSlugRouteChildren: PreviewSlugRouteChildren = {
+  PreviewSlugLlmsDottxtRoute: PreviewSlugLlmsDottxtRoute,
+  PreviewSlugRobotsDottxtRoute: PreviewSlugRobotsDottxtRoute,
+  PreviewSlugSitemapDotxmlRoute: PreviewSlugSitemapDotxmlRoute,
+}
+
+const PreviewSlugRouteWithChildren = PreviewSlugRoute._addFileChildren(
+  PreviewSlugRouteChildren,
+)
+
+interface ApiMedusaStoreCartRouteChildren {
+  ApiMedusaStoreCartIdRoute: typeof ApiMedusaStoreCartIdRoute
+  ApiMedusaStoreCartLineItemsRoute: typeof ApiMedusaStoreCartLineItemsRoute
+}
+
+const ApiMedusaStoreCartRouteChildren: ApiMedusaStoreCartRouteChildren = {
+  ApiMedusaStoreCartIdRoute: ApiMedusaStoreCartIdRoute,
+  ApiMedusaStoreCartLineItemsRoute: ApiMedusaStoreCartLineItemsRoute,
+}
+
+const ApiMedusaStoreCartRouteWithChildren =
+  ApiMedusaStoreCartRoute._addFileChildren(ApiMedusaStoreCartRouteChildren)
+
+interface ApiSessionsSessionIdHistoryRouteChildren {
+  ApiSessionsSessionIdHistoryVersionRestoreRoute: typeof ApiSessionsSessionIdHistoryVersionRestoreRoute
+}
+
+const ApiSessionsSessionIdHistoryRouteChildren: ApiSessionsSessionIdHistoryRouteChildren =
+  {
+    ApiSessionsSessionIdHistoryVersionRestoreRoute:
+      ApiSessionsSessionIdHistoryVersionRestoreRoute,
+  }
+
+const ApiSessionsSessionIdHistoryRouteWithChildren =
+  ApiSessionsSessionIdHistoryRoute._addFileChildren(
+    ApiSessionsSessionIdHistoryRouteChildren,
+  )
+
 interface ApiSessionsSessionIdRouteChildren {
+  ApiSessionsSessionIdChatRoute: typeof ApiSessionsSessionIdChatRoute
+  ApiSessionsSessionIdExportRoute: typeof ApiSessionsSessionIdExportRoute
+  ApiSessionsSessionIdExportTargetsRoute: typeof ApiSessionsSessionIdExportTargetsRoute
   ApiSessionsSessionIdGalleryThumbRoute: typeof ApiSessionsSessionIdGalleryThumbRoute
+  ApiSessionsSessionIdHistoryRoute: typeof ApiSessionsSessionIdHistoryRouteWithChildren
+  ApiSessionsSessionIdMedusaConfigRoute: typeof ApiSessionsSessionIdMedusaConfigRoute
+  ApiSessionsSessionIdPreviewHomepageHtmlRoute: typeof ApiSessionsSessionIdPreviewHomepageHtmlRoute
+  ApiSessionsSessionIdPreviewInlineStyleRoute: typeof ApiSessionsSessionIdPreviewInlineStyleRoute
+  ApiSessionsSessionIdPreviewInlineTextRoute: typeof ApiSessionsSessionIdPreviewInlineTextRoute
+  ApiSessionsSessionIdStreamRoute: typeof ApiSessionsSessionIdStreamRoute
+  ApiSessionsSessionIdDownloadTargetRoute: typeof ApiSessionsSessionIdDownloadTargetRoute
   ApiSessionsSessionIdGithubPushRoute: typeof ApiSessionsSessionIdGithubPushRoute
+  ApiSessionsSessionIdProvisionMedusaRoute: typeof ApiSessionsSessionIdProvisionMedusaRoute
 }
 
 const ApiSessionsSessionIdRouteChildren: ApiSessionsSessionIdRouteChildren = {
+  ApiSessionsSessionIdChatRoute: ApiSessionsSessionIdChatRoute,
+  ApiSessionsSessionIdExportRoute: ApiSessionsSessionIdExportRoute,
+  ApiSessionsSessionIdExportTargetsRoute:
+    ApiSessionsSessionIdExportTargetsRoute,
   ApiSessionsSessionIdGalleryThumbRoute: ApiSessionsSessionIdGalleryThumbRoute,
+  ApiSessionsSessionIdHistoryRoute:
+    ApiSessionsSessionIdHistoryRouteWithChildren,
+  ApiSessionsSessionIdMedusaConfigRoute: ApiSessionsSessionIdMedusaConfigRoute,
+  ApiSessionsSessionIdPreviewHomepageHtmlRoute:
+    ApiSessionsSessionIdPreviewHomepageHtmlRoute,
+  ApiSessionsSessionIdPreviewInlineStyleRoute:
+    ApiSessionsSessionIdPreviewInlineStyleRoute,
+  ApiSessionsSessionIdPreviewInlineTextRoute:
+    ApiSessionsSessionIdPreviewInlineTextRoute,
+  ApiSessionsSessionIdStreamRoute: ApiSessionsSessionIdStreamRoute,
+  ApiSessionsSessionIdDownloadTargetRoute:
+    ApiSessionsSessionIdDownloadTargetRoute,
   ApiSessionsSessionIdGithubPushRoute: ApiSessionsSessionIdGithubPushRoute,
+  ApiSessionsSessionIdProvisionMedusaRoute:
+    ApiSessionsSessionIdProvisionMedusaRoute,
 }
 
 const ApiSessionsSessionIdRouteWithChildren =
@@ -531,21 +1101,29 @@ const ApiSessionsSessionIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GalleryRoute: GalleryRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  StudioRoute: StudioRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ApiBillingOverviewRoute: ApiBillingOverviewRoute,
+  ApiBrandProfileRoute: ApiBrandProfileRoute,
   ApiCreditsRoute: ApiCreditsRoute,
   ApiGalleryRoute: ApiGalleryRoute,
+  ApiMedusaCheckoutRoute: ApiMedusaCheckoutRoute,
   ApiOpenuiPreviewRoute: ApiOpenuiPreviewRoute,
   ApiPexelsRoute: ApiPexelsRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
-  ApiStudioEmbedReadyRoute: ApiStudioEmbedReadyRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
+  ApiTranslateRoute: ApiTranslateRoute,
   GenerateSessionIdRoute: GenerateSessionIdRoute,
+  PreviewSlugRoute: PreviewSlugRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
+  ApiMedusaAdminConfigRoute: ApiMedusaAdminConfigRoute,
+  ApiMedusaStoreCartRoute: ApiMedusaStoreCartRouteWithChildren,
+  ApiMedusaStoreConfigRoute: ApiMedusaStoreConfigRoute,
   ApiRazorpayWebhookRoute: ApiRazorpayWebhookRoute,
   ApiSessionsSessionIdRoute: ApiSessionsSessionIdRouteWithChildren,
   ApiSessionsRecentRoute: ApiSessionsRecentRoute,

@@ -45,11 +45,12 @@ export const ChatPanel = ({ sessionId }: ChatPanelProps) => {
           <p className="py-8 text-center text-sm italic text-[var(--text-muted)]">No messages yet. Start a conversation!</p>
         )}
       </div>
-      <form onSubmit={handleSubmit}>
+      <form id="chat-form" onSubmit={handleSubmit}>
         <div className="flex gap-2">
           <input
             className="flex-1 rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-input)] px-3.5 py-2.5 font-sans text-sm text-[var(--text-primary)] outline-none transition-all duration-300 ease-[var(--ease-out)] placeholder:text-[var(--text-muted)] focus:border-[var(--border-accent)] focus:shadow-[0_0_0_3px_rgba(138,180,255,0.08),0_0_20px_rgba(138,180,255,0.06)]"
             disabled={isSending}
+            id="chat-input"
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
             value={input}
@@ -57,6 +58,7 @@ export const ChatPanel = ({ sessionId }: ChatPanelProps) => {
           <button
             className="grid size-10 cursor-pointer place-items-center rounded-[var(--radius-sm)] border border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-none transition-all duration-300 ease-[var(--ease-out)] hover:not-disabled:-translate-y-px hover:not-disabled:border-[var(--border-hover)] hover:not-disabled:bg-[var(--bg-tertiary)] hover:not-disabled:shadow-[0_4px_12px_rgba(0,0,0,0.2)] active:not-disabled:translate-y-0 active:not-disabled:duration-120 disabled:cursor-not-allowed disabled:opacity-30"
             disabled={!input.trim() || isSending}
+            id="chat-send"
             type="submit"
           >
             <Send className="size-4" />

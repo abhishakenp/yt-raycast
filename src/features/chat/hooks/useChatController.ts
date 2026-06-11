@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'convex/react'
+import { useQuery } from 'convex/react'
 import { useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -6,7 +6,6 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 export const useChatController = (sessionId: string) => {
-  const sendMessage = useMutation(api.sessions.sendChatMessage)
   const messages = useQuery(api.sessions.listChatMessages, { sessionId: sessionId as Id<'sessions'> })
   const [chatError, setChatError] = useState<string>()
   const [isSending, setIsSending] = useState(false)
@@ -19,11 +18,18 @@ export const useChatController = (sessionId: string) => {
       const anonymousOwnerSecret =
         typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
-      await sendMessage({
-        sessionId: sessionId as Id<'sessions'>,
-        anonymousOwnerSecret,
-        content,
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anonymousOwnerSecret,
+          content,
+        }),
       })
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: string } | null
+        throw new Error(data?.error ?? `Chat request failed with ${response.status}`)
+      }
     } catch (error) {
       setChatError(error instanceof Error ? error.message : 'Send failed')
     } finally {

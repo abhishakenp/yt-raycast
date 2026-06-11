@@ -288,13 +288,6 @@ export const resolveBrandfetchBrandProfile = async ({
   const name = toStringValue(best?.name || best?.brand?.name || best?.company?.name || '')
   const domain = toStringValue(best?.domain || best?.brand?.domain || best?.company?.domain || '')
   if (!domain) return { ok: false, error: 'Brandfetch search returned no domain', status: 404, match: { name } }
-
-  const brand = await brandfetchBrandByDomain({ domain, timeoutMs })
-  if (!brand.ok) return { ok: false, error: brand.error || 'Brandfetch brand API failed', status: brand.status }
-
-  const logo = pickLargestLogo(brand.data?.logos || [])
-  const paletteNorm = normalizePalette(brand.data)
-
   const officialUrl = (() => {
     try {
       return new URL(`https://${domain}`).toString().replace(/\/$/, '')
@@ -302,6 +295,46 @@ export const resolveBrandfetchBrandProfile = async ({
       return ''
     }
   })()
+
+  const brand = await brandfetchBrandByDomain({ domain, timeoutMs })
+  if (!brand.ok) {
+    const icon = toStringValue(best?.icon || best?.logo || best?.image || '')
+    if (!icon) return { ok: false, error: brand.error || 'Brandfetch brand API failed', status: brand.status }
+
+    const quality = Number(best?.qualityScore || best?._score || 0)
+    const confidence = Number(Math.max(0.45, Math.min(0.75, quality || 0.6)).toFixed(2))
+
+    return {
+      ok: true,
+      match: {
+        name,
+        domain,
+        officialUrl,
+        brandId: toStringValue(best?.brandId || ''),
+        verified: Boolean(best?.verified),
+        source: 'brandfetch-search',
+      },
+      logo: {
+        kind: 'remote',
+        src: icon,
+        type: icon.includes('.webp') ? 'webp' : '',
+        width: 128,
+        height: 128,
+        provider: 'brandfetch-search',
+        confidence,
+        alt: name || 'Brand',
+      },
+      palette: null,
+      confidence,
+      providerWarning: {
+        status: brand.status || null,
+        error: brand.error || 'Brandfetch brand API failed',
+      },
+    }
+  }
+
+  const logo = pickLargestLogo(brand.data?.logos || [])
+  const paletteNorm = normalizePalette(brand.data)
 
   const logoPayload = logo?.src
     ? {
@@ -331,4 +364,3 @@ export const resolveBrandfetchBrandProfile = async ({
     confidence: Number(Math.min(1, confidence).toFixed(2)),
   }
 }
-

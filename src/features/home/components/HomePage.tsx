@@ -9,6 +9,9 @@ import { cn } from '@/lib/utils'
 
 const LANGUAGE_OPTIONS = [
   ['en', 'English'],
+  ['hinglish', 'Hinglish'],
+  ['hi-latn', 'Hindi (Roman)'],
+  ['ta-en', 'Tamil + English'],
   ['hi', 'हिंदी'],
   ['bn', 'বাংলা'],
   ['mr', 'मराठी'],
@@ -23,7 +26,7 @@ const LANGUAGE_OPTIONS = [
 const EXAMPLE_CHIPS = [
   [
     'Image studio',
-    'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a mocked version (no backend). It should be dark mode. Focus on making it beautiful.',
+    'This app is going to be an image generation studio using various AI models to turn a prompt into images. Design a polished interactive product experience. It should be dark mode. Focus on making it beautiful.',
   ],
   [
     'Pet wellness',
@@ -341,6 +344,28 @@ const LanguageOptions = () => (
   </>
 )
 
+const collectDesignReferenceUrls = (formData: FormData): string[] => {
+  const candidates = [
+    formData.get('design-ref-url-1'),
+    formData.get('design-ref-url-2'),
+    formData.get('design-ref-search'),
+  ]
+
+  return Array.from(
+    new Set(
+      candidates
+        .map((value) => String(value ?? '').trim())
+        .filter((value) => {
+          try {
+            return new URL(value).protocol === 'https:'
+          } catch {
+            return false
+          }
+        }),
+    ),
+  ).slice(0, 4)
+}
+
 export const HomePage = () => {
   const {
     canSubmit,
@@ -403,10 +428,15 @@ export const HomePage = () => {
 
     const form = event.currentTarget
     const formData = new FormData(form)
+    const designReferenceUrls = collectDesignReferenceUrls(formData)
+    const designReferenceNotes = String(formData.get('design-ref-notes') ?? '').trim()
     void submitPrompt({
       prompt: String(formData.get('prompt') ?? prompt),
       preferredLanguage: String(formData.get('prompt-language') ?? 'en'),
       isPrivate: formData.get('private-generation') === 'on',
+      designReferenceUrls,
+      designReferenceNotes,
+      cloneUrl: designReferenceUrls[0],
     })
   }
 
@@ -517,7 +547,10 @@ export const HomePage = () => {
                       </div>
 
                       <div
-                        className={cn('hidden rounded-2xl border border-white/10 bg-white/[0.03] p-3', designRefOpen && 'grid gap-3')}
+                        className={cn(
+                          'rounded-2xl border border-white/10 bg-white/[0.03] p-3',
+                          designRefOpen ? 'grid gap-3' : 'hidden',
+                        )}
                         id="design-ref-panel"
                       >
                         <div className="relative flex items-center gap-2 rounded-xl border border-white/10 bg-black/25 px-3 py-2">

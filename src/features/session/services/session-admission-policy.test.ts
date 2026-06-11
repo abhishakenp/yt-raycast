@@ -6,6 +6,7 @@ import {
 } from '@/billing/constants'
 import {
   isLikelyGibberishPrompt,
+  normalizePromptCacheKey,
   parseSessionAdmission,
 } from './session-admission-policy'
 
@@ -116,5 +117,19 @@ describe('session admission policy', () => {
         designReferenceUrls: ['http://example.com/not-secure'],
       }),
     ).toMatchObject({ ok: false, code: 'INVALID_DESIGN_REFERENCE' })
+  })
+
+  it('keeps duplicate-prompt cache keys language scoped', () => {
+    const prompt = 'Build a bakery homepage'
+
+    expect(normalizePromptCacheKey(prompt, 'en')).toBe(
+      'en:build a bakery homepage',
+    )
+    expect(normalizePromptCacheKey(prompt, 'hi')).toBe(
+      'hi:build a bakery homepage',
+    )
+    expect(normalizePromptCacheKey(prompt, 'en')).not.toBe(
+      normalizePromptCacheKey(prompt, 'hi'),
+    )
   })
 })

@@ -1,23 +1,47 @@
 import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Code2, Crown, Download, FileArchive, Github, Globe2, List, LoaderCircle, Package, Palette, PanelsTopLeft } from 'lucide-react'
+import { Activity, Bot, Box, Building2, CreditCard, Crown, Download, Edit3, Github, Globe2, Languages, List, MessageSquare, Package, Palette } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
+import { ActivityPanel } from '@/features/dashboard/components/ActivityPanel'
+import { AgentationPanel } from '@/features/agentation/components/AgentationPanel'
+import { BillingPanel } from '@/features/billing/components/BillingPanel'
+import { BrandMediaPanel } from '@/features/brand/components/BrandMediaPanel'
+import { ChatPanel } from '@/features/chat/components/ChatPanel'
+import { CmsPanel } from '@/features/cms/components/CmsPanel'
+import { CommercePanel } from '@/features/commerce/components/CommercePanel'
+import { DeploymentPanel } from '@/features/deployments/components/DeploymentPanel'
+import { EditPanel } from '@/features/editing/components/EditPanel'
+import { ExportPanel } from '@/features/exports/components/ExportPanel'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
+import { GitHubPanel } from '@/features/github/components/GitHubPanel'
+import { LocalizationPanel } from '@/features/localization/components/LocalizationPanel'
+import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { cn } from '#/lib/utils'
-import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 interface DashboardProps {
   sessionId: string
 }
 
-type RailMode = 'tools' | 'cms' | 'commerce'
-type ExportTarget = 'html' | 'react' | 'next'
+type RailMode =
+  | 'tools'
+  | 'cms'
+  | 'chat'
+  | 'edits'
+  | 'annotations'
+  | 'activity'
+  | 'brand'
+  | 'localization'
+  | 'commerce'
+  | 'deployment'
+  | 'export'
+  | 'billing'
+  | 'github'
 
 const crownIcon = (
   <Crown className="size-3" strokeWidth={2.2} aria-hidden="true" />
@@ -92,32 +116,6 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
-const exportOptions = [
-  {
-    label: 'HTML',
-    meta: 'Static site bundle',
-    target: 'html',
-    icon: FileArchive,
-  },
-  {
-    label: 'React',
-    meta: 'React app scaffold',
-    target: 'react',
-    icon: Code2,
-  },
-  {
-    label: 'Next.js',
-    meta: 'App Router project',
-    target: 'next',
-    icon: PanelsTopLeft,
-  },
-] satisfies Array<{
-  label: string
-  meta: string
-  target: ExportTarget
-  icon: typeof FileArchive
-}>
-
 export function Dashboard({ sessionId }: DashboardProps) {
   const [isDashboardActive, setIsDashboardActive] = useState(false)
   const [currentDevice, setCurrentDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
@@ -125,16 +123,25 @@ export function Dashboard({ sessionId }: DashboardProps) {
   const [railMode, setRailMode] = useState<RailMode>('tools')
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(true)
-  const [pendingExportTarget, setPendingExportTarget] = useState<ExportTarget | null>(null)
-  const createExport = useMutation(api.sessions.createExport)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [publishError, setPublishError] = useState<string>()
   const generationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
   const resolvedSessionId = generationView?.session.sessionId
   const commerceConfig = useQuery(
     api.sessions.getCommerceConfig,
-    resolvedSessionId === undefined ? 'skip' : { sessionId: resolvedSessionId },
+    resolvedSessionId === undefined
+      ? 'skip'
+      : { sessionId: resolvedSessionId as Id<'sessions'> },
   )
+  const deploymentStatus = useQuery(
+    api.sessions.getDeploymentStatus,
+    resolvedSessionId === undefined
+      ? 'skip'
+      : { sessionId: resolvedSessionId as Id<'sessions'> },
+  )
+  const publishPreview = useMutation(api.sessions.publishPreview)
 
   useEffect(() => {
     const reduce =
@@ -195,25 +202,54 @@ export function Dashboard({ sessionId }: DashboardProps) {
     window.location.href = '/'
   }
 
-  const downloadExport = async (target: ExportTarget) => {
-    if (!resolvedSessionId || pendingExportTarget !== null) return
-    setPendingExportTarget(target)
+  const publishedUrl =
+    deploymentStatus?.status === 'ready' ? deploymentStatus.url : undefined
+  const currentUrl = publishedUrl ?? `/generate/${sessionId}`
+  const railModeTitle =
+    railMode === 'cms'
+      ? 'Content'
+      : railMode === 'chat'
+        ? 'Chat refine'
+        : railMode === 'edits'
+          ? 'Edit history'
+          : railMode === 'annotations'
+            ? 'Annotations'
+            : railMode === 'activity'
+              ? 'Activity'
+              : railMode === 'brand'
+                ? 'Brand and media'
+                : railMode === 'localization'
+                  ? 'Localization'
+                  : railMode === 'commerce'
+                  ? 'Medusa commerce'
+                    : railMode === 'deployment'
+                      ? 'Deployment'
+                      : railMode === 'billing'
+                        ? 'Billing'
+                        : railMode === 'github'
+                          ? 'GitHub'
+                          : 'Export'
+
+  const handlePublish = async () => {
+    if (resolvedSessionId === undefined) return
+
+    setPublishError(undefined)
+    setIsPublishing(true)
+
     try {
       const anonymousOwnerSecret =
         typeof window === 'undefined'
           ? undefined
           : readAnonymousOwnerSecret(window.localStorage, resolvedSessionId)
-      await createExport({
-        sessionId: resolvedSessionId as any,
+
+      await publishPreview({
+        sessionId: resolvedSessionId as Id<'sessions'>,
         anonymousOwnerSecret,
-        target,
       })
-      const params = new URLSearchParams()
-      if (effectiveTheme) params.set('theme', effectiveTheme)
-      params.set('mode', isDark ? 'dark' : 'light')
-      window.location.href = `/export/${resolvedSessionId}/${target}?${params.toString()}`
+    } catch (error) {
+      setPublishError(error instanceof Error ? error.message : 'Publish failed')
     } finally {
-      setPendingExportTarget(null)
+      setIsPublishing(false)
     }
   }
 
@@ -265,11 +301,22 @@ export function Dashboard({ sessionId }: DashboardProps) {
               </button>
               <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/8 bg-black/25 px-3 py-2 text-sm text-white/48">
                 <span className="size-2 shrink-0 rounded-full bg-emerald-300/80" />
-                <a className="min-w-0 truncate font-mono text-xs text-white/56 no-underline" id="url-text" href={generationView?.session.deploymentSlug ? `https://${generationView.session.deploymentSlug}.ship-fast.io` : `/generate/${sessionId}`} aria-label="Current generation">
-                  {generationView?.session.deploymentSlug ? `https://${generationView.session.deploymentSlug}.ship-fast.io` : `/generate/${sessionId}`}
+                <a className="min-w-0 truncate font-mono text-xs text-white/56 no-underline" id="url-text" href={currentUrl} aria-label="Current generation">
+                  {currentUrl}
                 </a>
               </div>
               <div className="flex shrink-0 items-center gap-2" id="preview-frame-tools" aria-label="Preview controls">
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
+                  disabled={!isPreviewReady || isPublishing}
+                  onClick={() => void handlePublish()}
+                  data-tip={publishedUrl ? 'Republish latest preview' : 'Publish preview'}
+                  aria-label={publishedUrl ? 'Republish latest preview' : 'Publish preview'}
+                >
+                  <Globe2 className="size-3.5" strokeWidth={2} />
+                  {isPublishing ? 'Publishing' : publishedUrl ? 'Republish' : 'Publish'}
+                </button>
                 <button
                   type="button"
                   className="grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
@@ -369,7 +416,12 @@ export function Dashboard({ sessionId }: DashboardProps) {
                 </div>
               </div>
             </div>
-            <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_280px] max-[1100px]:grid-cols-1">
+            <div className="relative grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_280px] max-[1100px]:grid-cols-1">
+              {publishError && (
+                <div className="absolute right-6 top-6 z-20 max-w-sm rounded-xl border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-100 shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+                  {publishError}
+                </div>
+              )}
               <div className="relative min-h-0 overflow-hidden bg-[#05070c]">
                 <div className={cn(
                   'flex h-full min-h-0 items-center justify-center overflow-auto',
@@ -397,8 +449,8 @@ export function Dashboard({ sessionId }: DashboardProps) {
                           <p>{hasFailures ? 'Generation failed' : 'Waiting for generated module...'}</p>
                         </div>
                       )}
+                      </div>
                     </div>
-                  </div>
                 </div>
                 <div className={cn(
                   'absolute inset-x-10 bottom-8 rounded-full border border-white/10 bg-black/35 p-1 backdrop-blur',
@@ -429,6 +481,31 @@ export function Dashboard({ sessionId }: DashboardProps) {
                       </span>
                       <span className="min-w-0 flex-1 truncate">Edit content</span>
                       <span className={newBadgeClass}>NEW</span>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="chat" onClick={() => setRailMode('chat')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <MessageSquare className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">Chat refine</span>
+                      <span className={newBadgeClass}>AI</span>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="edits" onClick={() => setRailMode('edits')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Edit3 className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">Edit history</span>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="annotations" onClick={() => setRailMode('annotations')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Bot className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">Annotations</span>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="activity" onClick={() => setRailMode('activity')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Activity className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">Activity</span>
                     </button>
                     <button type="button" className={railRowClass} data-rail-action="ecommerce" onClick={() => setRailMode('commerce')}>
                       <span className={railIconClass} aria-hidden="true">
@@ -473,91 +550,58 @@ export function Dashboard({ sessionId }: DashboardProps) {
                         </button>
                       }
                     />
-                    <button type="button" className={railRowClass} data-rail-action="github">
+                    <button type="button" className={railRowClass} data-rail-action="brand-media" onClick={() => setRailMode('brand')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Building2 className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="grid min-w-0 flex-1 gap-0.5">
+                        <span className="truncate">Brand and media</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">Brandfetch / Pexels</span>
+                      </span>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="localization" onClick={() => setRailMode('localization')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Languages className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="grid min-w-0 flex-1 gap-0.5">
+                        <span className="truncate">Localization</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">{generationView?.session.preferredLanguage ?? 'default locale'}</span>
+                      </span>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="github" onClick={() => setRailMode('github')}>
                       <span className={railIconClass} aria-hidden="true">
                         <Github className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">GitHub</span>
                       <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
                     </button>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button type="button" className={railRowClass} data-rail-action="export" aria-haspopup="dialog">
-                          <span className={railIconClass} aria-hidden="true">
-                            <Download className="size-3.5" strokeWidth={1.9} />
-                          </span>
-                          <span className="grid min-w-0 flex-1 gap-0.5">
-                            <span className="truncate">Export</span>
-                            <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">HTML / React / Next.js</span>
-                          </span>
-                          <div className={cn(stateBadgeClass, 'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]')} data-state="premium">
-                            <span className="text-[#0a0a0b]">Pro only</span>
-                          </div>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        side="left"
-                        align="start"
-                        className="w-[min(300px,calc(100vw-24px))] rounded-2xl border border-white/12 bg-[#0b0f18]/96 p-3 text-white shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl"
-                      >
-                        <div className="grid gap-3">
-                          <div className="grid gap-1 px-1">
-                            <div className="text-sm font-semibold text-white">Project export</div>
-                            <p className="m-0 text-xs leading-5 text-white/52">Choose an export format to download.</p>
-                          </div>
-                          <div className="grid gap-1.5">
-                            {exportOptions.map((option) => {
-                              const Icon = option.icon
-                              const isPending = pendingExportTarget === option.target
-                              const StatusIcon = isPending ? LoaderCircle : Download
-
-                              return (
-                                <button
-                                  key={option.label}
-                                  type="button"
-                                  className="group/export flex w-full items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] p-2.5 text-left transition-colors hover:border-white/14 hover:bg-white/[0.075]"
-                                  disabled={!isPreviewReady || pendingExportTarget !== null}
-                                  onClick={() => void downloadExport(option.target)}
-                                >
-                                  <span className="grid size-8 shrink-0 place-items-center rounded-[10px] border border-white/10 bg-black/24 text-white/70 transition-colors group-hover/export:border-white/16 group-hover/export:bg-white/[0.06] group-hover/export:text-white" aria-hidden="true">
-                                    {isPending ? (
-                                      <LoaderCircle className="size-4 animate-spin" strokeWidth={1.8} />
-                                    ) : (
-                                      <Icon className="size-4" strokeWidth={1.8} />
-                                    )}
-                                  </span>
-                                  <span className="grid min-w-0 flex-1 gap-0.5">
-                                    <span className="truncate text-sm font-semibold text-white">{option.label}</span>
-                                    <span className="truncate text-xs text-white/46">{option.meta}</span>
-                                  </span>
-                                  <span
-                                    className={cn(
-                                      stateBadgeClass,
-                                      'inline-flex items-center gap-1 border-white/10 bg-white/[0.06] text-white/46',
-                                      isPending && 'border-cyan-300/18 bg-cyan-300/10 text-cyan-100',
-                                    )}
-                                    aria-live="polite"
-                                  >
-                                    <StatusIcon
-                                      className={cn('size-3', isPending && 'animate-spin')}
-                                      strokeWidth={2}
-                                      aria-hidden="true"
-                                    />
-                                    {isPending ? 'Preparing' : 'Download'}
-                                  </span>
-                                </button>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                    <button type="button" className={railRowClass} data-rail-action="domain">
+                    <button type="button" className={railRowClass} data-rail-action="billing" onClick={() => setRailMode('billing')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <CreditCard className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">Billing</span>
+                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="export" aria-haspopup="dialog" onClick={() => setRailMode('export')}>
+                      <span className={railIconClass} aria-hidden="true">
+                        <Download className="size-3.5" strokeWidth={1.9} />
+                      </span>
+                      <span className="grid min-w-0 flex-1 gap-0.5">
+                        <span className="truncate">Export</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">HTML / React / Next.js</span>
+                      </span>
+                      <div className={cn(stateBadgeClass, 'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]')} data-state="premium">
+                        <span className="text-[#0a0a0b]">Pro only</span>
+                      </div>
+                    </button>
+                    <button type="button" className={railRowClass} data-rail-action="domain" onClick={() => setRailMode('deployment')}>
                       <span className={railIconClass} aria-hidden="true">
                         <Globe2 className="size-3.5" strokeWidth={1.9} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate">Assign custom domain</span>
-                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
+                      <span className="grid min-w-0 flex-1 gap-0.5">
+                        <span className="truncate">Deployment URL</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">{deploymentStatus?.slug ?? 'publish slug'}</span>
+                      </span>
                     </button>
                   </div>
                   <div className="grid gap-2">
@@ -576,7 +620,7 @@ export function Dashboard({ sessionId }: DashboardProps) {
                     <div className="size-10 rounded-2xl bg-cyan-300/14" id="rail-editor-thumb"></div>
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold text-white" id="rail-editor-label-title">
-                        {railMode === 'cms' ? 'Content' : 'Medusa commerce'}
+                        {railModeTitle}
                       </div>
                       <div className="truncate text-xs text-white/42" id="rail-editor-label-sub">
                         {generationView?.session.status.replaceAll('_', ' ') ?? 'loading'}
@@ -596,18 +640,43 @@ export function Dashboard({ sessionId }: DashboardProps) {
                     </div>
                     <div className="max-h-[calc(100vh-260px)] overflow-y-auto p-4" id="rail-editor-body">
                       {railMode === 'cms' ? (
-                        <div className="grid gap-4 [&_input]:mt-2 [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-white/10 [&_input]:bg-white/[0.04] [&_input]:px-3 [&_input]:py-2 [&_input]:text-sm [&_input]:text-white [&_input]:outline-none [&_label]:grid [&_label]:gap-1 [&_label]:text-xs [&_label]:font-semibold [&_label]:uppercase [&_label]:tracking-[0.08em] [&_label]:text-white/45 [&_textarea]:mt-2 [&_textarea]:w-full [&_textarea]:resize-none [&_textarea]:rounded-xl [&_textarea]:border [&_textarea]:border-white/10 [&_textarea]:bg-white/[0.04] [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-sm [&_textarea]:text-white [&_textarea]:outline-none">
-                          <p className="m-0 text-sm leading-6 text-white/55">Content controls are bound to this Convex session and render against the live generated module.</p>
-                          <label>Homepage title override<input type="text" defaultValue="" /></label>
-                          <label>Generation prompt<textarea rows={5} defaultValue={generationView?.session.prompt ?? ''} /></label>
-                        </div>
+                        <CmsPanel sessionId={sessionId} prompt={generationView?.session.prompt} />
+                      ) : railMode === 'chat' ? (
+                        <ChatPanel sessionId={sessionId} />
+                      ) : railMode === 'edits' ? (
+                        <EditPanel sessionId={sessionId} />
+                      ) : railMode === 'annotations' ? (
+                        <AgentationPanel sessionId={sessionId} />
+                      ) : railMode === 'activity' ? (
+                        <ActivityPanel
+                          status={generationView?.session.status}
+                          elapsed={generationView?.session.elapsed}
+                          cost={generationView?.session.cost}
+                          tasks={generationView?.tasks}
+                          events={generationView?.events}
+                        />
+                      ) : railMode === 'brand' ? (
+                        <BrandMediaPanel
+                          prompt={generationView?.session.prompt}
+                          cloneUrl={generationView?.session.cloneUrl}
+                          designReferenceNotes={generationView?.session.designReferenceNotes}
+                          designReferenceUrls={generationView?.session.designReferenceUrls}
+                        />
+                      ) : railMode === 'localization' ? (
+                        <LocalizationPanel
+                          preferredLanguage={generationView?.session.preferredLanguage}
+                          prompt={generationView?.session.prompt}
+                        />
+                      ) : railMode === 'commerce' ? (
+                        <CommercePanel sessionId={sessionId} />
+                      ) : railMode === 'deployment' ? (
+                        <DeploymentPanel sessionId={sessionId} />
+                      ) : railMode === 'github' ? (
+                        <GitHubPanel sessionId={sessionId} />
+                      ) : railMode === 'billing' ? (
+                        <BillingPanel sessionId={sessionId} />
                       ) : (
-                        <div className="grid gap-4 [&_input]:mt-2 [&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-white/10 [&_input]:bg-white/[0.04] [&_input]:px-3 [&_input]:py-2 [&_input]:text-sm [&_input]:text-white [&_input]:outline-none [&_label]:grid [&_label]:gap-1 [&_label]:text-xs [&_label]:font-semibold [&_label]:uppercase [&_label]:tracking-[0.08em] [&_label]:text-white/45">
-                          <p className="m-0 text-sm leading-6 text-white/55">Medusa config is read from Convex for this session.</p>
-                          <label>Status<input type="text" readOnly value={commerceConfig?.status ?? 'not configured'} /></label>
-                          <label>Backend URL<input type="url" readOnly value={commerceConfig?.backendUrl ?? ''} /></label>
-                          <label>Admin URL<input type="url" readOnly value={commerceConfig?.adminUrl ?? ''} /></label>
-                        </div>
+                        <ExportPanel sessionId={sessionId} />
                       )}
                     </div>
                   </div>

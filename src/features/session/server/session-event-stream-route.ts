@@ -1,0 +1,128 @@
+import { ConvexHttpClient } from 'convex/browser'
+
+import { api } from '../../../../convex/_generated/api'
+import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
+
+type SessionEventStreamConvexClient = Pick<ConvexHttpClient, 'query'>
+
+type GenerationEvent = {
+  _id?: string
+  eventType: string
+  message?: string
+  previewVersion?: number
+  createdAt: number
+  elapsedMs?: number
+  cost?: number
+  provider?: string
+  error?: string
+  quotaHit?: boolean
+  cacheHit?: boolean
+}
+
+const parseSince = (request: Request): number | undefined => {
+  const url = new URL(request.url)
+  const raw =
+    url.searchParams.get('since') ?? request.headers.get('Last-Event-ID')
+  if (raw === null) return undefined
+
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
+}
+
+const sseLine = (field: string, value: string) =>
+  `${field}: ${value.replace(/\r?\n/g, '\n')}\n`
+
+const serializeSseEvent = (event: GenerationEvent): string => {
+  const payload = {
+    type: event.eventType,
+    eventType: event.eventType,
+    message: event.message,
+    previewVersion: event.previewVersion,
+    createdAt: event.createdAt,
+    elapsedMs: event.elapsedMs,
+    cost: event.cost,
+    provider: event.provider,
+    error: event.error,
+    quotaHit: event.quotaHit,
+    cacheHit: event.cacheHit,
+  }
+
+  return [
+    sseLine('id', String(event.createdAt)),
+    sseLine('event', event.eventType),
+    sseLine('data', JSON.stringify(payload)),
+    '\n',
+  ].join('')
+}
+
+const createSseResponse = (body: string, init?: ResponseInit) =>
+  new Response(body, {
+    ...init,
+    headers: {
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      ...init?.headers,
+    },
+  })
+
+export const createSessionEventStreamResponse = async (
+  sessionId: string,
+  request: Request,
+  clientOverride?: SessionEventStreamConvexClient,
+): Promise<Response> => {
+  try {
+    const client = clientOverride ?? createRuntimeConvexHttpClient()
+    const data = await client.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+      since: parseSince(request),
+    })
+
+    if (data === null) {
+      return createSseResponse(
+        [
+          sseLine('event', 'error'),
+          sseLine('data', JSON.stringify({ error: 'Session not found' })),
+          '\n',
+        ].join(''),
+        { status: 404 },
+      )
+    }
+
+    const events = data.events as GenerationEvent[]
+    const replay = events.map(serializeSseEvent).join('')
+    const cursor = data.cursor ?? parseSince(request) ?? Date.now()
+    const heartbeat = [
+      sseLine('id', String(cursor)),
+      sseLine('event', 'replay_complete'),
+      sseLine(
+        'data',
+        JSON.stringify({
+          sessionId: data.session.id,
+          cursor,
+          count: events.length,
+        }),
+      ),
+      '\n',
+    ].join('')
+
+    return createSseResponse(`${replay}${heartbeat}`)
+  } catch (error) {
+    return createSseResponse(
+      [
+        sseLine('event', 'error'),
+        sseLine(
+          'data',
+          JSON.stringify({
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Unable to load session events.',
+          }),
+        ),
+        '\n',
+      ].join(''),
+      { status: 500 },
+    )
+  }
+}

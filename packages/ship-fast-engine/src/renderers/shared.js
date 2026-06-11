@@ -149,11 +149,6 @@ function readmeTargetDetails(target, siteSpec = {}) {
         notes.push(
           'Sanity: copy `.env.example` to `.env.local`; when a session has Sanity credentials, the generated env files are pre-filled for that session, otherwise use `NEXT_PUBLIC_SANITY_*`, optional `SANITY_READ_TOKEN`, and for Studio also `SANITY_STUDIO_PROJECT_ID` / `SANITY_STUDIO_DATASET` (or reuse the same project id). Blog routes: `app/blog/`.',
         )
-        if (siteSpec.exportOptions?.embedSanityStudio !== false) {
-          notes.push(
-            'Embedded Sanity Studio is served at `/studio` after `bun install`. Use `bun run studio` to run the copied `studio/` package standalone.',
-          )
-        }
       }
       if (siteSpec.siteType === 'ecommerce') {
         notes.push(

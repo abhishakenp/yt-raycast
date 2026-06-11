@@ -8,19 +8,26 @@ import type { Doc, Id } from './_generated/dataModel'
 import type { ActionCtx } from './_generated/server'
 import { runHomepageOrchestrator } from '../packages/ship-fast-engine/src/genui/run.ts'
 import { renderOpenUIToHTMLWithTheme } from '../packages/ship-fast-engine/src/openui-ssr.js'
+import { buildPreviewSeoHead } from '../packages/ship-fast-aeo/src/metadata/build-preview-head.ts'
 import type { GenUIEvent } from '../packages/ship-fast-engine/src/genui/orchestrator.ts'
 import type { EngineWorkspaceTask } from '../src/features/generation/server/engine-workspace'
 
 const internalFunctions = internal as any
 
-const renderStaticPreviewHtml = (source: string, locale: string): string => {
+const renderStaticPreviewHtml = (
+  source: string,
+  locale: string,
+  siteSpec: Record<string, unknown>,
+  brand: string,
+  prompt: string,
+): string => {
   const { html, cssVars } = renderOpenUIToHTMLWithTheme(source, null, locale, null)
+  const seoHead = buildPreviewSeoHead(siteSpec, brand || 'Generated Site', prompt)
 
   return `<!doctype html>
 <html lang="${locale}">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  ${seoHead}
   <script src="/scripts/tailwind-browser.js"></script>
   <style>
     #openui-root {
@@ -60,6 +67,52 @@ const eventMessage = (event: GenUIEvent): string | undefined => {
   }
 }
 
+const buildGenerationPrompt = (session: Doc<'sessions'>): string => {
+  const contextLines: string[] = []
+  const designReferenceUrls = session.designReferenceUrls ?? []
+  const designReferenceNotes = session.designReferenceNotes?.trim()
+
+  if (designReferenceUrls.length > 0) {
+    contextLines.push(
+      `Design reference URLs: ${designReferenceUrls.join(', ')}`,
+    )
+  }
+
+  if (session.cloneUrl !== undefined) {
+    contextLines.push(`Clone/reference URL: ${session.cloneUrl}`)
+  }
+
+  if (designReferenceNotes !== undefined && designReferenceNotes.length > 0) {
+    contextLines.push(`Design reference notes: ${designReferenceNotes}`)
+  }
+
+  if (contextLines.length === 0) return session.prompt
+
+  return [
+    session.prompt,
+    '',
+    'Generation context:',
+    ...contextLines,
+    'Use these references as aesthetic, content, and layout guidance. Preserve the user brief as the source of truth and do not copy protected text verbatim.',
+  ].join('\n')
+}
+
+const buildGenerationSiteSpecMetadata = (
+  session: Doc<'sessions'>,
+  result: { brand: string; theme: string | null; locale: string; source: string },
+) => ({
+  brand: result.brand,
+  theme: result.theme ?? 'modern-minimal',
+  locale: result.locale,
+  designReferenceUrls: session.designReferenceUrls ?? [],
+  designReferenceNotes: session.designReferenceNotes ?? '',
+  cloneUrl: session.cloneUrl,
+  designReferenceFingerprint: session.designReferenceFingerprint,
+  modules: {
+    home: result.source,
+  },
+})
+
 const persistTask = async (
   ctx: ActionCtx,
   sessionId: Id<'sessions'>,
@@ -88,10 +141,24 @@ export const startGeneration = internalAction({
       return null
     }
 
+    if ((session.previewVersion ?? 0) > 0) {
+      return {
+        status: 'skipped',
+        reason: 'preview_already_exists',
+      }
+    }
+
     try {
-      await ctx.runMutation(internalFunctions.sessions.markGenerationStarted, {
+      const startResult = await ctx.runMutation(internalFunctions.sessions.markGenerationStarted, {
         sessionId: args.sessionId,
       })
+
+      if (startResult?.started === false) {
+        return {
+          status: 'skipped',
+          reason: startResult.reason ?? 'generation_not_started',
+        }
+      }
 
       await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
         sessionId: args.sessionId,
@@ -115,7 +182,7 @@ export const startGeneration = internalAction({
       await persistTask(ctx, args.sessionId, runningTask, 0)
 
       const result = await runHomepageOrchestrator({
-        prompt: session.prompt,
+        prompt: buildGenerationPrompt(session),
         preferredLanguage: session.preferredLanguage,
         signal: new AbortController().signal,
         onSource: (source) => {
@@ -152,15 +219,14 @@ export const startGeneration = internalAction({
         label: 'Generate homepage',
         status: 'DONE',
       }
-      const siteSpec = {
-        brand: result.brand,
-        theme: result.theme ?? 'modern-minimal',
-        locale: result.locale,
-        modules: {
-          home: result.source,
-        },
-      }
-      const staticPreviewHtml = renderStaticPreviewHtml(result.source, result.locale ?? session.preferredLanguage ?? 'en')
+      const siteSpec = buildGenerationSiteSpecMetadata(session, result)
+      const staticPreviewHtml = renderStaticPreviewHtml(
+        result.source,
+        result.locale ?? session.preferredLanguage ?? 'en',
+        siteSpec,
+        result.brand,
+        session.prompt,
+      )
       const elapsed = Date.now() - startedAt
       await ctx.runMutation(internalFunctions.sessions.completeGeneration, {
         sessionId: args.sessionId,
@@ -170,6 +236,7 @@ export const startGeneration = internalAction({
         openUiSource: result.source,
         tasks: [completedTask],
         elapsed,
+        provider: 'genui-orchestrator',
       })
 
       await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {

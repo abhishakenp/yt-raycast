@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as billing from "../billing.js";
 import type * as generation from "../generation.js";
 import type * as sessions from "../sessions.js";
 
@@ -18,6 +19,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  billing: typeof billing;
   generation: typeof generation;
   sessions: typeof sessions;
 }>;

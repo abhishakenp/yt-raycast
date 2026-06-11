@@ -102,11 +102,14 @@ const simpleHash = (value: string): string => {
   return (hash >>> 0).toString(16).padStart(8, '0')
 }
 
-export const normalizePromptCacheKey = (prompt: string): string =>
-  normalizeSpaces(prompt)
+export const normalizePromptCacheKey = (
+  prompt: string,
+  preferredLanguage = 'en',
+): string =>
+  `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(prompt)
     .toLowerCase()
     .replace(/[^a-z0-9\p{L}\p{N}]+/gu, ' ')
-    .trim()
+    .trim()}`
 
 export const isLikelyGibberishPrompt = (prompt: string): boolean => {
   const text = normalizeSpaces(prompt)
@@ -295,7 +298,7 @@ export const parseSessionAdmission = (
   ]
     .filter(Boolean)
     .join('\n')
-  const promptCacheKey = normalizePromptCacheKey(prompt)
+  const promptCacheKey = normalizePromptCacheKey(prompt, preferredLanguage)
 
   return {
     ok: true,

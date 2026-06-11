@@ -1,6 +1,8 @@
 import { mergeStatements } from '@openuidev/lang-core'
 import { generateUI, type GenUIEvent } from './orchestrator.ts'
 import { DEFAULT_MODEL } from './model-list.ts'
+import { detectLanguage } from '../pipeline/detect-language.js'
+import { withLanguageEnforcementBlock } from '../pipeline/prompt-language.js'
 
 export interface OrchestratorResult {
   /** Final assembled openui-lang program (PageSwitch over AI-selected page blocks). */
@@ -26,6 +28,7 @@ const STUB_PROGRAM_MAX_CHARS = 900
  */
 export async function runHomepageOrchestrator(p: {
   prompt: string
+  preferredLanguage?: string
   modelId?: string
   signal?: AbortSignal
   onEvent?: (event: GenUIEvent) => void
@@ -37,8 +40,11 @@ export async function runHomepageOrchestrator(p: {
    */
   onSource?: (source: string) => void
 }): Promise<OrchestratorResult> {
+  const languageMode = await detectLanguage(p.prompt, p.preferredLanguage)
+  const generationPrompt = withLanguageEnforcementBlock(p.prompt, languageMode)
+  const forcedLocale = languageMode.code === 'en' ? null : languageMode.code
   let theme: string | null = null
-  let locale = 'en'
+  let locale = forcedLocale ?? 'en'
   let source = ''
   let brand = ''
   let firstError = ''
@@ -68,10 +74,10 @@ export async function runHomepageOrchestrator(p: {
     p.onSource?.(source)
   }
 
-  for await (const event of generateUI(p.prompt, p.modelId || DEFAULT_MODEL, p.signal)) {
+  for await (const event of generateUI(generationPrompt, p.modelId || DEFAULT_MODEL, p.signal)) {
     p.onEvent?.(event)
     if (event.type === 'theme') theme = event.name
-    else if (event.type === 'locale') locale = event.code
+    else if (event.type === 'locale' && forcedLocale === null) locale = event.code
     else if (event.type === 'skeleton') mergeIn(event.text)
     else if (event.type === 'module') mergeIn(event.text)
     else if (event.type === 'error') firstError ||= event.message

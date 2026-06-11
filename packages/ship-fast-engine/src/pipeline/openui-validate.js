@@ -47,6 +47,13 @@ export function validateOpenUISource(source) {
       hasRoot: true,
     }
   }
+  if (/\b[A-Z][A-Za-z0-9_]*\s*\(\s*\{/.test(codeText)) {
+    return {
+      ok: false,
+      errors: [{ message: 'Component calls must not start with an object literal argument' }],
+      hasRoot: true,
+    }
+  }
   const componentCalls = [...text.matchAll(/\b([A-Z][A-Za-z0-9_]*)\s*\(/g)]
     .map((match) => match[1])
     .filter((name) => name !== 'Stack')

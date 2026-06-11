@@ -80,6 +80,19 @@ export function resolveLanguageModeFromPreference(preferredLanguage) {
   return ENGLISH_MODE
 }
 
+function detectKnownLanguageKeyword(prompt) {
+  const value = String(prompt || '').toLowerCase()
+  if (!value) return null
+
+  return (
+    KNOWN_LANGUAGES.find((language) =>
+      (language.keywords || []).some((keyword) =>
+        value.includes(String(keyword).toLowerCase()),
+      ),
+    ) || null
+  )
+}
+
 export async function detectLanguage(prompt, preferredLanguage) {
   const fromPref = resolveLanguageModeFromPreference(preferredLanguage)
   if (fromPref.code !== 'en') return fromPref
@@ -107,6 +120,17 @@ export async function detectLanguage(prompt, preferredLanguage) {
     if (r) {
       return buildLanguageMode(r.code, r.name, r.nativeName, guessScript(r.fontFamily), r)
     }
+  }
+
+  const keywordLanguage = detectKnownLanguageKeyword(prompt)
+  if (keywordLanguage) {
+    return buildLanguageMode(
+      keywordLanguage.code,
+      keywordLanguage.name,
+      keywordLanguage.nativeName,
+      isRomanizedIndicCode(keywordLanguage.code) ? 'Latin' : guessScript(keywordLanguage.fontFamily),
+      keywordLanguage,
+    )
   }
 
   if (!GROQ_API_KEY) return ENGLISH_MODE
