@@ -5,7 +5,11 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./capsules": "./src/capsules/index.ts"
+    "./capsules": "./src/capsules/index.ts",
+    "./portal": "./src/components/ui/portal-container.tsx"
+  },
+  "dependencies": {
+    "@ship-fast/lakebed": "workspace:*"
   },
   "imports": {
     "#/*": "./src/*"

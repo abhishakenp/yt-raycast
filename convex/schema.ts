@@ -309,6 +309,16 @@ export default defineSchema({
     timestamp: v.number(),
   }).index('by_sessionId', ['sessionId']),
 
+  sessionData: defineTable({
+    sessionId: v.id('sessions'),
+    capsule: v.string(),
+    data: v.record(v.string(), v.any()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_sessionId', ['sessionId'])
+    .index('by_sessionId_capsule', ['sessionId', 'capsule']),
+
   themeOverrides: defineTable({
     sessionId: v.id('sessions'),
     themeName: v.string(),

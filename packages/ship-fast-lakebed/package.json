@@ -1,0 +1,18 @@
+{
+  "name": "@ship-fast/lakebed",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/server.ts",
+    "./react": "./src/react.tsx",
+    "./server": "./src/server.ts"
+  },
+  "dependencies": {
+    "lakebed": "0.0.25"
+  },
+  "peerDependencies": {
+    "convex": "^1.41.0",
+    "react": "^19.2.0"
+  }
+}

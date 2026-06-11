@@ -1,10 +1,11 @@
-import { useEffect, useRef, forwardRef } from "react"
+import { useCallback, useEffect, useRef, useState, forwardRef } from 'react'
+import { PortalContainerProvider } from '@ship-fast/blocks/portal'
 import {
   applyThemeVars,
   injectThemeFonts,
   clearThemeVars,
-} from "../../genui/theme-apply"
-import type { ThemeStyles } from "../../genui/theme-presets"
+} from '../../genui/theme-apply'
+import type { ThemeStyles } from '../../genui/theme-presets'
 import { observeGeneratedMobileNavs } from './generated-mobile-nav'
 
 // Renders children in a scoped div container with theme CSS custom properties applied.
@@ -19,15 +20,25 @@ const DirectPreview = forwardRef<
   }
 >(({ children, themeStyles, isDark, deviceMode = 'desktop' }, ref) => {
   const internalRef = useRef<HTMLDivElement | null>(null)
-  const setRootRef = (node: HTMLDivElement | null) => {
-    internalRef.current = node
+  const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(
+    null,
+  )
 
-    if (typeof ref === 'function') {
-      ref(node)
-    } else if (ref) {
-      ref.current = node
-    }
-  }
+  const setRootRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (internalRef.current === node) return
+
+      internalRef.current = node
+      setPortalContainer(node)
+
+      if (typeof ref === 'function') {
+        ref(node)
+      } else if (ref) {
+        ref.current = node
+      }
+    },
+    [ref],
+  )
 
   useEffect(() => {
     const currentRoot = internalRef.current
@@ -38,8 +49,8 @@ const DirectPreview = forwardRef<
       injectThemeFonts(document, themeStyles)
     } else {
       clearThemeVars(currentRoot)
-      currentRoot.classList.toggle("dark", isDark)
-      currentRoot.style.colorScheme = isDark ? "dark" : "light"
+      currentRoot.classList.toggle('dark', isDark)
+      currentRoot.style.colorScheme = isDark ? 'dark' : 'light'
     }
   }, [themeStyles, isDark])
 
@@ -51,13 +62,15 @@ const DirectPreview = forwardRef<
   }, [children, deviceMode])
 
   return (
-    <div
-      ref={setRootRef}
-      className="genui-preview size-full bg-background overflow-auto"
-      data-preview-device={deviceMode}
-    >
-      {children}
-    </div>
+    <PortalContainerProvider container={portalContainer}>
+      <div
+        ref={setRootRef}
+        className="genui-preview relative size-full transform-gpu overflow-auto bg-background"
+        data-preview-device={deviceMode}
+      >
+        {children}
+      </div>
+    </PortalContainerProvider>
   )
 })
 
