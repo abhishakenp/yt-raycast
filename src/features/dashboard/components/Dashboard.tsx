@@ -144,6 +144,19 @@ export function Dashboard({ sessionId }: DashboardProps) {
     () => themeButtonStyle(themeStyles, isDark),
     [themeStyles, isDark],
   )
+  const previewDeviceWidth =
+    currentDevice === 'desktop'
+      ? '100%'
+      : currentDevice === 'tablet'
+        ? '820px'
+        : '390px'
+  const previewDeviceStyle: CSSProperties = {
+    width: previewDeviceWidth,
+    minWidth: 0,
+    maxWidth: '100%',
+    height: '100%',
+    overflow: 'hidden',
+  }
 
   const navigateHome = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -307,27 +320,30 @@ export function Dashboard({ sessionId }: DashboardProps) {
                 <div className={cn(
                   'flex h-full min-h-0 items-center justify-center overflow-auto',
                 )} id="preview-stage">
-                  <div className={cn(
-                    'h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300',
-                    currentDevice === 'desktop' && 'w-full max-w-none',
-                    currentDevice === 'tablet' && 'w-[820px] max-w-full',
-                    currentDevice === 'mobile' && 'w-[390px] max-w-full',
-                  )} id="preview-device-shell">
-                    {homeModule?.source ? (
-                      <GeneratedModulePreview
-                        source={homeModule.source}
-                        sessionId={sessionId}
-                        siteSpecJson={generationView?.siteSpec?.specJson}
-                        locale={generationView?.session.preferredLanguage}
-                        isDark={isDark}
-                        themeStyles={themeStyles}
-                      />
-                    ) : (
-                      <div className="grid h-full min-h-[480px] place-items-center gap-4 bg-[#090c14] text-center text-white/62" role="status" aria-live="polite">
-                        <div className="size-12 animate-ping rounded-full border border-cyan-300/40"></div>
-                        <p>{hasFailures ? 'Generation failed' : 'Waiting for generated module...'}</p>
-                      </div>
-                    )}
+                  <div id="preview-device-frame" data-preview-device={currentDevice} style={previewDeviceStyle}>
+                    <div
+                      className="h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300"
+                      id="preview-device-shell"
+                      data-preview-device={currentDevice}
+                      style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: '100%' }}
+                    >
+                      {homeModule?.source ? (
+                        <GeneratedModulePreview
+                          source={homeModule.source}
+                          sessionId={sessionId}
+                          siteSpecJson={generationView?.siteSpec?.specJson}
+                          locale={generationView?.session.preferredLanguage}
+                          isDark={isDark}
+                          themeStyles={themeStyles}
+                          deviceMode={currentDevice}
+                        />
+                      ) : (
+                        <div className="grid h-full min-h-[480px] place-items-center gap-4 bg-[#090c14] text-center text-white/62" role="status" aria-live="polite">
+                          <div className="size-12 animate-ping rounded-full border border-cyan-300/40"></div>
+                          <p>{hasFailures ? 'Generation failed' : 'Waiting for generated module...'}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className={cn(

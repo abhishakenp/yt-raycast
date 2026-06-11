@@ -9,6 +9,7 @@ type GeneratedModulePreviewProps = {
   locale?: string
   isDark?: boolean
   themeStyles?: ThemeStyles | null
+  deviceMode?: 'desktop' | 'tablet' | 'mobile'
 }
 
 const parseSiteSpecTheme = (siteSpecJson: string | undefined): Record<string, string> | null => {
@@ -60,9 +61,10 @@ export function GeneratedModulePreview({
   locale,
   isDark = true,
   themeStyles = null,
+  deviceMode = 'desktop',
 }: GeneratedModulePreviewProps) {
   return (
-    <DirectPreview themeStyles={themeStyles} isDark={isDark}>
+    <DirectPreview themeStyles={themeStyles} isDark={isDark} deviceMode={deviceMode}>
       <OpenUIModuleRenderer
         source={source}
         sessionId={sessionId}

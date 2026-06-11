@@ -14,8 +14,9 @@ const DirectPreview = forwardRef<
     children: React.ReactNode
     themeStyles: ThemeStyles | null
     isDark: boolean
+    deviceMode?: 'desktop' | 'tablet' | 'mobile'
   }
->(({ children, themeStyles, isDark }, ref) => {
+>(({ children, themeStyles, isDark, deviceMode = 'desktop' }, ref) => {
   const internalRef = useRef<HTMLDivElement | null>(null)
   const root = (ref as React.RefObject<HTMLDivElement>) || internalRef
 
@@ -34,7 +35,11 @@ const DirectPreview = forwardRef<
   }, [themeStyles, isDark, root])
 
   return (
-    <div ref={root} className="genui-preview size-full bg-background overflow-auto">
+    <div
+      ref={root}
+      className="genui-preview size-full bg-background overflow-auto"
+      data-preview-device={deviceMode}
+    >
       {children}
     </div>
   )
