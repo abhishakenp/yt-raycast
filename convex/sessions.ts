@@ -503,35 +503,49 @@ export const addGenerationEvent = internalMutation({
 
 export const getGenerationView = query({
   args: {
-    sessionId: v.id('sessions'),
+    lookup: v.string(),
   },
   handler: async (ctx, args) => {
-    const session = await ctx.db.get(args.sessionId)
+    const directSessionId = ctx.db.normalizeId('sessions', args.lookup)
+    const exportId = directSessionId === null ? ctx.db.normalizeId('exports', args.lookup) : null
+    const exportRecord = exportId === null ? null : await ctx.db.get(exportId)
+    const deployment =
+      directSessionId === null && exportRecord === null
+        ? await ctx.db
+          .query('deployments')
+          .withIndex('by_slug', (index) => index.eq('slug', args.lookup))
+          .first()
+        : null
+    const sessionId = directSessionId ?? exportRecord?.sessionId ?? deployment?.sessionId ?? null
+
+    if (sessionId === null) return null
+
+    const session = await ctx.db.get(sessionId)
 
     if (session === null) return null
 
     const tasks = await ctx.db
       .query('tasks')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .collect()
     const events = await ctx.db
       .query('generationEvents')
-      .withIndex('by_sessionId_createdAt', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId_createdAt', (index) => index.eq('sessionId', sessionId))
       .order('desc')
       .take(80)
     const homeModule = await ctx.db
       .query('generatedModules')
       .withIndex('by_sessionId_moduleKey', (index) =>
-        index.eq('sessionId', args.sessionId).eq('moduleKey', 'home'),
+        index.eq('sessionId', sessionId).eq('moduleKey', 'home'),
       )
       .first()
     const siteSpec = await ctx.db
       .query('siteSpecs')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .first()
     const latestPreview = await ctx.db
       .query('previews')
-      .withIndex('by_sessionId_version', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId_version', (index) => index.eq('sessionId', sessionId))
       .order('desc')
       .first()
 

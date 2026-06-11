@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Box, Crown, Download, Github, Globe2, List, Package, Palette } from 'lucide-react'
 
 import { api } from '../../../../convex/_generated/api'
-import type { Id } from '../../../../convex/_generated/dataModel'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import ThemePicker from '@/genui/components/ThemePicker'
@@ -98,11 +97,13 @@ export function Dashboard({ sessionId }: DashboardProps) {
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(true)
   const generationView = useQuery(api.sessions.getGenerationView, {
-    sessionId: sessionId as Id<'sessions'>,
+    lookup: sessionId,
   })
-  const commerceConfig = useQuery(api.sessions.getCommerceConfig, {
-    sessionId: sessionId as Id<'sessions'>,
-  })
+  const resolvedSessionId = generationView?.session.sessionId
+  const commerceConfig = useQuery(
+    api.sessions.getCommerceConfig,
+    resolvedSessionId === undefined ? 'skip' : { sessionId: resolvedSessionId },
+  )
 
   useEffect(() => {
     const reduce =

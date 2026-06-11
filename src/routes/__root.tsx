@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
 import { AppProviders } from '@/app/providers/AppProviders'
+import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
 
@@ -12,6 +13,8 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
     document.documentElement.classList.toggle('dark', isDark)
   }, [])
+
+  useEffect(() => installDynamicImportRecovery(window), [])
 
   return (
     <html lang="en">
