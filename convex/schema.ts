@@ -163,7 +163,7 @@ export default defineSchema({
 
   exports: defineTable({
     sessionId: v.id('sessions'),
-    target: v.string(),
+    target: exportTarget,
     status: v.string(),
     artifactPath: v.optional(v.string()),
     url: v.optional(v.string()),

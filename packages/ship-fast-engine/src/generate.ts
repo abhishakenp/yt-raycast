@@ -72,6 +72,9 @@ async function once(
     if (runError && !text.trim()) throw new Error(runError)
 
     return text
+  } catch (e) {
+    console.error(e)
+    throw e
   } finally {
     signal.removeEventListener("abort", onAbort)
   }
