@@ -5,6 +5,7 @@ import {
   clearThemeVars,
 } from "../../genui/theme-apply"
 import type { ThemeStyles } from "../../genui/theme-presets"
+import { observeGeneratedMobileNavs } from './generated-mobile-nav'
 
 // Renders children in a scoped div container with theme CSS custom properties applied.
 // Theme changes only affect this container, not the app chrome (TopBar).
@@ -18,10 +19,18 @@ const DirectPreview = forwardRef<
   }
 >(({ children, themeStyles, isDark, deviceMode = 'desktop' }, ref) => {
   const internalRef = useRef<HTMLDivElement | null>(null)
-  const root = (ref as React.RefObject<HTMLDivElement>) || internalRef
+  const setRootRef = (node: HTMLDivElement | null) => {
+    internalRef.current = node
+
+    if (typeof ref === 'function') {
+      ref(node)
+    } else if (ref) {
+      ref.current = node
+    }
+  }
 
   useEffect(() => {
-    const currentRoot = root.current || internalRef.current
+    const currentRoot = internalRef.current
     if (!currentRoot) return
 
     if (themeStyles) {
@@ -32,11 +41,18 @@ const DirectPreview = forwardRef<
       currentRoot.classList.toggle("dark", isDark)
       currentRoot.style.colorScheme = isDark ? "dark" : "light"
     }
-  }, [themeStyles, isDark, root])
+  }, [themeStyles, isDark])
+
+  useEffect(() => {
+    const currentRoot = internalRef.current
+    if (!currentRoot) return
+
+    return observeGeneratedMobileNavs(currentRoot, deviceMode)
+  }, [children, deviceMode])
 
   return (
     <div
-      ref={root}
+      ref={setRootRef}
       className="genui-preview size-full bg-background overflow-auto"
       data-preview-device={deviceMode}
     >
