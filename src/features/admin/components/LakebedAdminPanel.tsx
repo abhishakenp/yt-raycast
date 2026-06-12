@@ -28,7 +28,6 @@ import {
 } from 'react-resizable-panels'
 import type { Column, Row } from 'react-table'
 import { useBlockLayout, useResizeColumns, useTable } from 'react-table'
-import { useClickAway } from 'react-use'
 import { useLakebedSession } from '@ship-fast/lakebed/react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -67,6 +66,21 @@ const lakebedApi = (api as unknown as {
 }).lakebed
 
 const rowHeight = 38
+
+const useClickAway = (
+  ref: React.RefObject<HTMLElement | null>,
+  callback: () => void,
+) => {
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback()
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [ref, callback])
+}
 
 const isJsonRecord = (value: unknown): value is JsonRecord =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -947,22 +961,26 @@ function DataTable({
             <div {...getTableBodyProps()}>
               {rows.map((row) => {
                 prepareRow(row)
+                const { key: rowKey, ...rowProps } = row.getRowProps()
                 return (
                   <div
-                    key={row.getRowProps().key}
-                    {...row.getRowProps()}
+                    key={rowKey}
+                    {...rowProps}
                     className="group flex"
                     style={{ height: rowHeight }}
                   >
-                    {row.cells.map((cell) => (
-                      <div
-                        key={cell.getCellProps().key}
-                        {...cell.getCellProps()}
-                        className="h-full border-r border-b border-[#4b4945] transition-colors group-hover:bg-[#312f2b]"
-                      >
-                        {cell.render('Cell')}
-                      </div>
-                    ))}
+                    {row.cells.map((cell) => {
+                      const { key: cellKey, ...cellProps } = cell.getCellProps()
+                      return (
+                        <div
+                          key={cellKey}
+                          {...cellProps}
+                          className="h-full border-r border-b border-[#4b4945] transition-colors group-hover:bg-[#312f2b]"
+                        >
+                          {cell.render('Cell')}
+                        </div>
+                      )
+                    })}
                   </div>
                 )
               })}
@@ -991,21 +1009,25 @@ function TableHeader({
 }) {
   return (
     <div className="sticky top-0 z-20 bg-[#302e2a]">
-      {headerGroups.map((headerGroup) => (
-        <div
-          key={headerGroup.getHeaderGroupProps().key}
-          {...headerGroup.getHeaderGroupProps()}
-          className="border-x border-x-transparent"
-        >
-          {headerGroup.headers.map((column, columnIndex) => (
-            <div
-              key={column.getHeaderProps().key}
-              {...column.getHeaderProps()}
-              className={classNames(
-                'group relative flex h-[38px] items-center border-b border-r border-[#57544f] bg-[#302e2a] px-3 text-left font-mono text-xs font-semibold text-[#d4d4d8]',
-                columnIndex === 0 && 'justify-center px-0',
-              )}
-            >
+      {headerGroups.map((headerGroup) => {
+        const { key: groupKey, ...groupProps } = headerGroup.getHeaderGroupProps()
+        return (
+          <div
+            key={groupKey}
+            {...groupProps}
+            className="border-x border-x-transparent"
+          >
+          {headerGroup.headers.map((column, columnIndex) => {
+            const { key: columnKey, ...columnProps } = column.getHeaderProps()
+            return (
+              <div
+                key={columnKey}
+                {...columnProps}
+                className={classNames(
+                  'group relative flex h-[38px] items-center border-b border-r border-[#57544f] bg-[#302e2a] px-3 text-left font-mono text-xs font-semibold text-[#d4d4d8]',
+                  columnIndex === 0 && 'justify-center px-0',
+                )}
+              >
               {column.Header === '*select' ? (
                 <TableCheckbox
                   checked={allRowsSelected}
@@ -1022,9 +1044,11 @@ function TableHeader({
                 />
               )}
             </div>
-          ))}
+            )
+          })}
         </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

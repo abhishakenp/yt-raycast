@@ -1,9 +1,23 @@
 import { GenericId, Value } from "convex/values";
 import { GenericDocument } from "convex/server";
 import classNames from "classnames";
-import React, { memo, useRef, useState } from "react";
-import { useClickAway } from "react-use";
+import React, { memo, useRef, useState, useEffect } from "react";
 import { areEqual } from "react-window";
+
+const useClickAway = (
+  ref: React.RefObject<HTMLElement | null>,
+  callback: () => void,
+) => {
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback()
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [ref, callback])
+}
 import { usePopper } from "react-popper";
 import { ColumnInstance } from "react-table";
 import { DotsVerticalIcon, Link2Icon } from "@radix-ui/react-icons";
