@@ -10,6 +10,7 @@ import {
 } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
+import { SHARE_BONUS_EXTRA } from '../src/billing/constants'
 
 const internalFunctions = internal as any
 
@@ -1909,6 +1910,7 @@ export const create = mutation({
     cloneUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const disableLimits = process.env.DISABLE_LIMIT === 'true'
     const prompt = args.prompt.trim()
     const userId = await getUserId(ctx)
     const anonOwnerSecretHash =
@@ -1961,7 +1963,7 @@ export const create = mutation({
     const recentCount = sameOwnerSessions.filter(
       (session) => session.createdAt >= recentCutoff,
     ).length
-    recentCount < SHORT_WINDOW_LIMIT ||
+    recentCount < SHORT_WINDOW_LIMIT || disableLimits ||
       (() => {
         throw new ConvexError({
           code: 'RATE_LIMITED',
@@ -1985,20 +1987,20 @@ export const create = mutation({
             .first()
     const quotaLimit =
       userId === undefined
-        ? MAX_ANON_PER_DAY
+        ? MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
         : activeSubscription === null
           ? MAX_FREE_PER_MONTH
           : MAX_PAID_PER_MONTH
     const quotaCount = sameOwnerSessions.filter(
       (session) => session.createdAt >= quotaCutoff,
     ).length
-    quotaCount < quotaLimit ||
+    quotaCount < quotaLimit || disableLimits ||
       (() => {
         throw new ConvexError({
           code: 'QUOTA_EXCEEDED',
           message:
             userId === undefined
-              ? 'Anonymous daily quota exhausted'
+              ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
               : 'Monthly quota exhausted',
         })
       })()
@@ -2675,13 +2677,22 @@ export const publishPreview = mutation({
         })
       })()
 
-    const preview = await ctx.db
-      .query('previews')
-      .withIndex('by_sessionId_version', (index) =>
-        index.eq('sessionId', args.sessionId),
-      )
-      .order('desc')
-      .first()
+    // Parallelize independent queries for better performance
+    const [preview, existingDeployment] = await Promise.all([
+      ctx.db
+        .query('previews')
+        .withIndex('by_sessionId_version', (index) =>
+          index.eq('sessionId', args.sessionId),
+        )
+        .order('desc')
+        .first(),
+      ctx.db
+        .query('deployments')
+        .withIndex('by_sessionId', (index) =>
+          index.eq('sessionId', args.sessionId),
+        )
+        .first(),
+    ])
 
     preview !== null ||
       (() => {
@@ -2690,13 +2701,6 @@ export const publishPreview = mutation({
           message: 'Preview is not ready to publish',
         })
       })()
-
-    const existingDeployment = await ctx.db
-      .query('deployments')
-      .withIndex('by_sessionId', (index) =>
-        index.eq('sessionId', args.sessionId),
-      )
-      .first()
 
     const slug =
       existingDeployment !== null && args.requestedSlug === undefined

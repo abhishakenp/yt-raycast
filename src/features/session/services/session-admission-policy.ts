@@ -139,6 +139,9 @@ export const parseSessionAdmission = (
   usage: SessionAdmissionUsage = {},
 ): SessionAdmissionAccepted | SessionAdmissionRejected => {
   const now = usage.now ?? Date.now()
+  const disableLimits =
+    typeof process !== 'undefined' &&
+    process.env?.DISABLE_LIMIT === 'true'
   const prompt = normalizeSpaces(
     typeof input.prompt === 'string' ? input.prompt : '',
   )
@@ -238,7 +241,7 @@ export const parseSessionAdmission = (
   const recentUsed = (usage.recentTimestamps ?? []).filter(
     (timestamp) => now - timestamp < RATE_WINDOW_MS,
   ).length
-  if (!usage.bypassLimits && recentUsed >= SHORT_WINDOW_LIMIT) {
+  if (!usage.bypassLimits && !disableLimits && recentUsed >= SHORT_WINDOW_LIMIT) {
     return {
       ok: false,
       code: 'RATE_LIMITED',
@@ -264,13 +267,13 @@ export const parseSessionAdmission = (
       : MAX_FREE_PER_MONTH
     : MAX_ANON_PER_DAY
 
-  if (!usage.bypassLimits && used >= limit) {
+  if (!usage.bypassLimits && !disableLimits && used >= limit) {
     return {
       ok: false,
       code: 'QUOTA_EXCEEDED',
       message: isAuthenticated
         ? 'Your monthly generation quota is exhausted.'
-        : 'Your anonymous daily generation quota is exhausted. Sign in to continue.',
+        : 'Your anonymous daily generation quota is exhausted. Share on social media for +1 free generation, or sign in to continue.',
       status: 429,
     }
   }

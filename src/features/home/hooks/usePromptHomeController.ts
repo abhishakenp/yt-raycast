@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -27,6 +27,33 @@ export const usePromptHomeController = () => {
   const [prompt, setPrompt] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [shareBonusClaimed, setShareBonusClaimed] = useState(false)
+
+  // Hydrate share bonus state from server
+  useEffect(() => {
+    const checkShareBonus = async () => {
+      try {
+        const resp = await fetch('/api/share-bonus')
+        if (resp.ok) {
+          const data = await resp.json()
+          if (data.claimed) setShareBonusClaimed(true)
+        }
+      } catch {
+        // Ignore network errors
+      }
+    }
+    checkShareBonus()
+  }, [])
+
+  const claimShareBonus = async () => {
+    if (shareBonusClaimed) return
+    try {
+      const resp = await fetch('/api/share-bonus', { method: 'POST' })
+      if (resp.ok) setShareBonusClaimed(true)
+    } catch {
+      // Ignore network errors
+    }
+  }
 
   const normalizedPrompt = useMemo(() => normalizePromptDraft(prompt), [prompt])
   const canSubmit = normalizedPrompt.length > 0 && !isSubmitting
@@ -102,12 +129,14 @@ export const usePromptHomeController = () => {
 
   return {
     canSubmit,
+    claimShareBonus,
     errorMessage,
     examplePrompts,
     isSubmitting,
     prompt,
     selectExamplePrompt,
     setPrompt,
+    shareBonusClaimed,
     submitButtonLabel,
     submitPrompt: runSubmit,
   }
