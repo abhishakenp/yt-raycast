@@ -302,7 +302,7 @@ export const startGeneration = internalAction({
         session.prompt,
       )
 
-      await ctx.runMutation(internalFunctions.sessions.completeGeneration, {
+      await ctx.runAction(internalFunctions.sessions.completeGeneration, {
         sessionId: args.sessionId,
         anonymousOwnerSecret: args.anonymousOwnerSecret,
         html: staticPreviewHtml,

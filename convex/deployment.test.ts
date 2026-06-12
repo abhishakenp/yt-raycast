@@ -22,7 +22,7 @@ const persistGeneratedPreview = (
   sessionId: Id<'sessions'>,
   prompt = 'Test site',
 ) =>
-  t.runMutation(internal.sessions.completeGeneration, {
+  t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: `<html><body><main><h1 data-cms="field:hero.headline type:text">${prompt}</h1></main></body></html>`,
     openUiSource: `$page = "Home"\nroot = Text("${prompt}")`,
