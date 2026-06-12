@@ -419,7 +419,6 @@ export async function* generateUI(
   prompt: string,
   modelId: string = DEFAULT_MODEL,
   parentSignal?: AbortSignal,
-  options: { completeWhen?: 'home' | 'site' } = {},
 ): AsyncGenerator<GenUIEvent> {
   const startedAt = Date.now()
   const abort = new AbortController()
@@ -519,11 +518,7 @@ export async function* generateUI(
       }
 
       // 2. Pages + their AI-selected (random-picked) blocks are ready.
-      const navLabels = plan.pages.map((p) => p.label)
-      const pages =
-        options.completeWhen === 'home'
-          ? plan.pages.slice(0, 1).map((p) => ({ ...p }))
-          : plan.pages.map((p) => ({ ...p }))
+      const pages = plan.pages.map((p) => ({ ...p }))
       const labels = pages.map((p) => p.label)
       const ids = pages.map((p) => p.id)
 
@@ -557,7 +552,7 @@ export async function* generateUI(
         const p = generateText(
           modelId,
           pageSystemPrompt(page.block),
-          pageUser(plan.brand, navLabels, page, plan.tagline),
+          pageUser(plan.brand, labels, page, plan.tagline),
           signal,
           SUBTREE_RETRIES,
           (attempt) => ch.push({ type: 'module_retry', id: page.id, attempt }),
@@ -567,7 +562,7 @@ export async function* generateUI(
               page,
               text,
               plan.brand,
-              navLabels,
+              labels,
             )
             if (failed) moduleFailureCount += 1
             ch.push({ type: 'module', id: page.id, text: safe, failed })
@@ -579,7 +574,7 @@ export async function* generateUI(
                 type: 'module',
                 id: page.id,
                 text: isKnownBlock(page.block)
-                  ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(navLabels)})`
+                  ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
                   : placeholderNode(page.id),
                 failed: true,
               })
@@ -593,7 +588,7 @@ export async function* generateUI(
               type: 'module',
               id: page.id,
               text: isKnownBlock(page.block)
-                ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(navLabels)})`
+                ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
                 : placeholderNode(page.id),
               failed: true,
             })

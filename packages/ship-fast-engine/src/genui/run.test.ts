@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   generateText: vi.fn(),
@@ -24,8 +24,13 @@ const homeModule = `home = SaasKimiPage("FastCo", ["Home", "Features"], { hero: 
 
 const secondaryModule = `p1 = SaasKimiPage2("FastCo", ["Home", "Features"], { hero: { title: "${longCopy}", subtitle: "${longCopy}" } })`
 
-describe('runHomepageOrchestrator fast preview mode', () => {
-  it('returns after the home module without waiting for secondary pages', async () => {
+describe('runHomepageOrchestrator multi-page generation', () => {
+  beforeEach(() => {
+    vi.resetModules()
+    mocks.generateText.mockReset()
+  })
+
+  it('waits for secondary page modules so the final source is a complete site', async () => {
     const { runHomepageOrchestrator } = await import('./run.ts')
     const events: string[] = []
 
@@ -62,14 +67,21 @@ describe('runHomepageOrchestrator fast preview mode', () => {
     const startedAt = Date.now()
     const result = await runHomepageOrchestrator({
       prompt: 'Build a SaaS landing page for FastCo',
-      completeWhen: 'home' as never,
       onEvent: (event) => events.push(event.type),
     })
     const elapsed = Date.now() - startedAt
 
-    expect(elapsed).toBeLessThan(70)
+    expect(elapsed).toBeGreaterThanOrEqual(70)
     expect(result.source).toContain('home = SaasKimiPage')
-    expect(result.source).not.toContain('p1 = SaasKimiPage2')
+    expect(result.source).toContain('p1 = SaasKimiPage2')
     expect(events).toContain('done')
+  })
+
+  it('does not expose a home-only completion option', async () => {
+    const source = await import('node:fs').then(({ readFileSync }) =>
+      readFileSync(new URL('./run.ts', import.meta.url), 'utf8'),
+    )
+
+    expect(source).not.toContain('completeWhen')
   })
 })

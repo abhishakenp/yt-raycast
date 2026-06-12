@@ -31,7 +31,6 @@ export async function runHomepageOrchestrator(p: {
   preferredLanguage?: string
   modelId?: string
   signal?: AbortSignal
-  completeWhen?: 'home' | 'site'
   onEvent?: (event: GenUIEvent) => void
   /**
    * Live program callback. Fires with the FULL accumulated program every time a
@@ -79,7 +78,6 @@ export async function runHomepageOrchestrator(p: {
     generationPrompt,
     p.modelId || DEFAULT_MODEL,
     p.signal,
-    { completeWhen: p.completeWhen ?? 'site' },
   )) {
     p.onEvent?.(event)
     if (event.type === 'theme') theme = event.name
