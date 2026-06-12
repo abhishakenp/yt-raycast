@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { strFromU8, unzipSync } from 'fflate'
 
-import { buildOpenUIExport, decodeExportBody, parseOpenUIForExport } from './openui-export-builder'
+import {
+  buildOpenUIExport,
+  decodeExportBody,
+  parseOpenUIForExport,
+} from './openui-export-builder'
 
 const source = `root = SaasKimiPage("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
 
@@ -9,7 +13,10 @@ const siteSpecJson = JSON.stringify({ projectName: 'Export Demo' })
 
 const unzipTextFiles = (body: Uint8Array): Record<string, string> =>
   Object.fromEntries(
-    Object.entries(unzipSync(body)).map(([name, value]) => [name, strFromU8(value)]),
+    Object.entries(unzipSync(body)).map(([name, value]) => [
+      name,
+      strFromU8(value),
+    ]),
   )
 
 describe('openui-export-builder', () => {

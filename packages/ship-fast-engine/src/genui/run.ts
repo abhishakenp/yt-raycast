@@ -31,6 +31,7 @@ export async function runHomepageOrchestrator(p: {
   preferredLanguage?: string
   modelId?: string
   signal?: AbortSignal
+  completeWhen?: 'home' | 'site'
   onEvent?: (event: GenUIEvent) => void
   /**
    * Live program callback. Fires with the FULL accumulated program every time a
@@ -74,10 +75,16 @@ export async function runHomepageOrchestrator(p: {
     p.onSource?.(source)
   }
 
-  for await (const event of generateUI(generationPrompt, p.modelId || DEFAULT_MODEL, p.signal)) {
+  for await (const event of generateUI(
+    generationPrompt,
+    p.modelId || DEFAULT_MODEL,
+    p.signal,
+    { completeWhen: p.completeWhen ?? 'site' },
+  )) {
     p.onEvent?.(event)
     if (event.type === 'theme') theme = event.name
-    else if (event.type === 'locale' && forcedLocale === null) locale = event.code
+    else if (event.type === 'locale' && forcedLocale === null)
+      locale = event.code
     else if (event.type === 'skeleton') mergeIn(event.text)
     else if (event.type === 'module') mergeIn(event.text)
     else if (event.type === 'error') firstError ||= event.message

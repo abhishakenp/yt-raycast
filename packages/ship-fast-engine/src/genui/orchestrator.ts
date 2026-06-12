@@ -1,14 +1,29 @@
-import { mergeStatements } from "@openuidev/lang-core"
-import { formatLlmFailureMessage, generateText, isHardLlmFailure } from "../generate.ts"
-import { pageSystemPrompt, componentCatalog } from "./prompt.ts"
-import { stripFences } from "./parser.ts"
-import { DEFAULT_MODEL } from "./model-list.ts"
-import { BLOCK_TAXONOMY, pickBlock } from "../../../ship-fast-blocks/src/registry/taxonomy.ts"
-import { THEME_CATALOG, isKnownTheme, pickRandomTheme } from "../../../ship-fast-blocks/src/theme-apply.ts"
-import type { ClonedPage, ClonedSection, ExtractedTokens } from "../clone/types.ts"
-import { generateFallbackSection } from "../clone/fallback.ts"
-import { validateOpenUISource } from "../pipeline/openui-validate.js"
-import { normalizeUrl } from "../clone/crawler.ts"
+import { mergeStatements } from '@openuidev/lang-core'
+import {
+  formatLlmFailureMessage,
+  generateText,
+  isHardLlmFailure,
+} from '../generate.ts'
+import { pageSystemPrompt, componentCatalog } from './prompt.ts'
+import { stripFences } from './parser.ts'
+import { DEFAULT_MODEL } from './model-list.ts'
+import {
+  BLOCK_TAXONOMY,
+  pickBlock,
+} from '../../../ship-fast-blocks/src/registry/taxonomy.ts'
+import {
+  THEME_CATALOG,
+  isKnownTheme,
+  pickRandomTheme,
+} from '../../../ship-fast-blocks/src/theme-apply.ts'
+import type {
+  ClonedPage,
+  ClonedSection,
+  ExtractedTokens,
+} from '../clone/types.ts'
+import { generateFallbackSection } from '../clone/fallback.ts'
+import { validateOpenUISource } from '../pipeline/openui-validate.js'
+import { normalizeUrl } from '../clone/crawler.ts'
 
 // Server-side, SYSTEM-controlled site assembly.
 //
@@ -26,17 +41,17 @@ import { normalizeUrl } from "../clone/crawler.ts"
 //      sign-in page whose chosen block is an auth block.
 
 export type GenUIEvent =
-  | { type: "status"; message: string }
-  | { type: "skeleton"; text: string }
-  | { type: "plan"; ids: string[] }
-  | { type: "theme"; name: string }
-  | { type: "locale"; code: string }
-  | { type: "module_start"; id: string }
-  | { type: "module_retry"; id: string; attempt: number }
-  | { type: "module"; id: string; text: string; failed?: boolean }
-  | { type: "source"; text: string }
-  | { type: "done"; modules: number; ms: number; source?: string }
-  | { type: "error"; message: string }
+  | { type: 'status'; message: string }
+  | { type: 'skeleton'; text: string }
+  | { type: 'plan'; ids: string[] }
+  | { type: 'theme'; name: string }
+  | { type: 'locale'; code: string }
+  | { type: 'module_start'; id: string }
+  | { type: 'module_retry'; id: string; attempt: number }
+  | { type: 'module'; id: string; text: string; failed?: boolean }
+  | { type: 'source'; text: string }
+  | { type: 'done'; modules: number; ms: number; source?: string }
+  | { type: 'error'; message: string }
 
 const MAX_PARALLEL = 8
 const SUBTREE_TIMEOUT_MS = 60_000
@@ -75,20 +90,28 @@ function oneLine(d: string): string {
 
 function pageBlockCatalog(): Array<{ name: string; description: string }> {
   const catalog = componentCatalog()
-    .filter((c) => c.name in BLOCK_TAXONOMY && typeof c.description === "string" && c.description)
-    .map((c) => ({ name: c.name, description: oneLine(c.description as string) }))
+    .filter(
+      (c) =>
+        c.name in BLOCK_TAXONOMY &&
+        typeof c.description === 'string' &&
+        c.description,
+    )
+    .map((c) => ({
+      name: c.name,
+      description: oneLine(c.description as string),
+    }))
   return catalog
 }
 
 // Derive a passable brand from the raw prompt when the model gives us none.
 function brandFromPrompt(prompt: string): string {
   const words = prompt
-    .replace(/[^A-Za-z0-9 ]+/g, " ")
+    .replace(/[^A-Za-z0-9 ]+/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-  if (words.length === 0) return "Studio"
-  return words.map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")
+  if (words.length === 0) return 'Studio'
+  return words.map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')
 }
 
 function planSystem(): string {
@@ -100,8 +123,10 @@ function planUser(
   catalog: Array<{ name: string; description: string }>,
   themes: Array<{ name: string; description: string }>,
 ): string {
-  const list = catalog.map((c) => `- ${c.name}: ${c.description}`).join("\n")
-  const themeList = themes.map((t) => `- ${t.name}: ${t.description}`).join("\n")
+  const list = catalog.map((c) => `- ${c.name}: ${c.description}`).join('\n')
+  const themeList = themes
+    .map((t) => `- ${t.name}: ${t.description}`)
+    .join('\n')
   return `Build request: ${prompt}
 
 AVAILABLE PAGE BLOCKS (name: description) — choose ONLY from these:
@@ -124,23 +149,29 @@ Rules:
 }
 
 const isKnownBlock = (name: unknown): boolean =>
-  typeof name === "string" && name in BLOCK_TAXONOMY
+  typeof name === 'string' && name in BLOCK_TAXONOMY
 
 const BLOCK_NAME_INDEX = Object.keys(BLOCK_TAXONOMY)
 const BLOCK_NAME_KEY_INDEX = Object.fromEntries(
   BLOCK_NAME_INDEX.map((name) => [name.toLowerCase(), name]),
 )
 const BLOCK_NAME_COMPACT_INDEX = Object.fromEntries(
-  BLOCK_NAME_INDEX.map((name) => [name.toLowerCase().replace(/[^a-z0-9]/g, ""), name]),
+  BLOCK_NAME_INDEX.map((name) => [
+    name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+    name,
+  ]),
 )
 
 // Normalize model-returned block IDs so small format drift does not silently
 // collapse every page to placeholders.
 function normalizeBlockName(raw: string): string | undefined {
-  const cleaned = raw.trim().replace(/^[-*\s]*|[*`'"]$/g, "").trim()
+  const cleaned = raw
+    .trim()
+    .replace(/^[-*\s]*|[*`'"]$/g, '')
+    .trim()
   if (!cleaned) return
 
-  const compact = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "")
+  const compact = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, '')
 
   if (isKnownBlock(cleaned)) return cleaned
 
@@ -168,9 +199,11 @@ function normalizeBlockName(raw: string): string | undefined {
 // Random pick from an AI-returned shortlist (variety); fall back if none are valid.
 function pickFrom(rng: () => number, names: unknown, fallback: string): string {
   const normalized = Array.isArray(names)
-    ? names.map((name) => (typeof name === "string" ? normalizeBlockName(name) : undefined)).filter(
-      (name): name is string => Boolean(name),
-    )
+    ? names
+        .map((name) =>
+          typeof name === 'string' ? normalizeBlockName(name) : undefined,
+        )
+        .filter((name): name is string => Boolean(name))
     : []
 
   const valid = normalized.filter(isKnownBlock)
@@ -179,11 +212,13 @@ function pickFrom(rng: () => number, names: unknown, fallback: string): string {
 }
 
 // Sentinel fallback when the model cannot propose a valid block.
-const PLACEHOLDER_BLOCK = "__coming_soon__"
+const PLACEHOLDER_BLOCK = '__coming_soon__'
 const placeholderNode = (id: string) => `${id} = Box([Text("Coming soon")])`
 
 function fallbackBlock(rng: () => number, isHome: boolean): string {
-  const navTypeFallback = isHome ? ["home", "landing"] : ["list", "index", "detail", "about", "contact"]
+  const navTypeFallback = isHome
+    ? ['home', 'landing']
+    : ['list', 'index', 'detail', 'about', 'contact']
   return (
     pickBlock(
       rng,
@@ -210,26 +245,32 @@ function parsePlan(raw: string, rng: () => number, prompt: string): Plan {
   }
   const rawPages = Array.isArray(parsed.pages) ? parsed.pages : []
   const pages: PlannedPage[] = rawPages
-    .filter((p) => !!p && typeof p.label === "string" && p.label.trim().length > 0)
+    .filter(
+      (p) => !!p && typeof p.label === 'string' && p.label.trim().length > 0,
+    )
     .slice(0, 5)
     .map((p, i) => {
       const label = (p.label as string).trim()
-      const brief = (typeof p.brief === "string" && p.brief.trim()) || label
+      const brief = (typeof p.brief === 'string' && p.brief.trim()) || label
       const block = pickFrom(rng, p.blocks, fallbackBlock(rng, i === 0))
-      return { id: i === 0 ? "home" : `p${i}`, label, brief, block }
+      return { id: i === 0 ? 'home' : `p${i}`, label, brief, block }
     })
-  if (pages.length === 0) throw new Error("no pages in plan")
+  if (pages.length === 0) throw new Error('no pages in plan')
   const brand =
-    typeof parsed.brand === "string" && parsed.brand.trim()
+    typeof parsed.brand === 'string' && parsed.brand.trim()
       ? parsed.brand.trim()
       : brandFromPrompt(prompt)
   const tagline =
-    typeof parsed.tagline === "string" && parsed.tagline.trim()
+    typeof parsed.tagline === 'string' && parsed.tagline.trim()
       ? parsed.tagline.trim()
       : `${brand} — built for what's next.`
   const theme = isKnownTheme(parsed.theme) ? parsed.theme : pickRandomTheme(rng)
-  const rawLocale = typeof parsed.locale === "string" ? parsed.locale.trim().toLowerCase() : ""
-  const locale = (/^[a-z]{2}$/.test(rawLocale) || /^[a-z]{2,8}-latn$/.test(rawLocale)) ? rawLocale : "en"
+  const rawLocale =
+    typeof parsed.locale === 'string' ? parsed.locale.trim().toLowerCase() : ''
+  const locale =
+    /^[a-z]{2}$/.test(rawLocale) || /^[a-z]{2,8}-latn$/.test(rawLocale)
+      ? rawLocale
+      : 'en'
   return { brand, tagline, theme, locale, pages }
 }
 
@@ -237,14 +278,20 @@ function parsePlan(raw: string, rng: () => number, prompt: string): Plan {
 // keyword-free — a rare safety net, not the primary path.
 function fallbackPlan(prompt: string, rng: () => number): Plan {
   const brand = brandFromPrompt(prompt)
-  const labels = ["Home", "Features", "Pricing", "About", "Contact"]
+  const labels = ['Home', 'Features', 'Pricing', 'About', 'Contact']
   const pages: PlannedPage[] = labels.map((label, i) => ({
-    id: i === 0 ? "home" : `p${i}`,
+    id: i === 0 ? 'home' : `p${i}`,
     label,
     brief: label,
     block: fallbackBlock(rng, i === 0),
   }))
-  return { brand, tagline: `${brand} — built for what's next.`, theme: pickRandomTheme(rng), locale: "en", pages }
+  return {
+    brand,
+    tagline: `${brand} — built for what's next.`,
+    theme: pickRandomTheme(rng),
+    locale: 'en',
+    pages,
+  }
 }
 
 function pageUser(
@@ -289,12 +336,12 @@ function validateModule(
   // (PageSwitch) and wipes every other page. Strip any such illegal top-level
   // statement before validating/merging — openui-lang is line-oriented.
   const text = stripFences(raw)
-    .split("\n")
+    .split('\n')
     .filter((line) => {
       const t = line.trim()
       return !/^root\s*=/.test(t) && !/^\$\w+\s*=/.test(t)
     })
-    .join("\n")
+    .join('\n')
     .trim()
   const definesId = new RegExp(`(^|\\n)\\s*${page.id}\\s*=`).test(text)
   if (definesId) {
@@ -326,13 +373,13 @@ You may add { ...content... } as the third argument with on-brand sign-in copy (
 function withParentAbort(parent: AbortController, ms: number) {
   const sub = new AbortController()
   const onAbort = () => sub.abort()
-  parent.signal.addEventListener("abort", onAbort, { once: true })
+  parent.signal.addEventListener('abort', onAbort, { once: true })
   const timer = setTimeout(() => sub.abort(), ms)
   return {
     signal: sub.signal,
     cleanup: () => {
       clearTimeout(timer)
-      parent.signal.removeEventListener("abort", onAbort)
+      parent.signal.removeEventListener('abort', onAbort)
     },
   }
 }
@@ -372,16 +419,17 @@ export async function* generateUI(
   prompt: string,
   modelId: string = DEFAULT_MODEL,
   parentSignal?: AbortSignal,
+  options: { completeWhen?: 'home' | 'site' } = {},
 ): AsyncGenerator<GenUIEvent> {
   const startedAt = Date.now()
   const abort = new AbortController()
-  parentSignal?.addEventListener("abort", () => abort.abort(), { once: true })
+  parentSignal?.addEventListener('abort', () => abort.abort(), { once: true })
   const ch = channel<GenUIEvent>()
   const rng = makeRng()
 
   const run = (async () => {
     try {
-      ch.push({ type: "status", message: "Designing…" })
+      ch.push({ type: 'status', message: 'Designing…' })
 
       // Guard: an empty catalog means the component registry failed to load (no kimi
       // page blocks registered in the library / BLOCK_TAXONOMY). Without this, the AI
@@ -390,9 +438,9 @@ export async function* generateUI(
       const catalog = pageBlockCatalog()
       if (catalog.length === 0) {
         ch.push({
-          type: "error",
+          type: 'error',
           message:
-            "Block catalog is empty — the component registry failed to load (no kimi page blocks registered). Aborting instead of rendering an all-placeholder page.",
+            'Block catalog is empty — the component registry failed to load (no kimi page blocks registered). Aborting instead of rendering an all-placeholder page.',
         })
         return
       }
@@ -413,28 +461,31 @@ export async function* generateUI(
         )
         plan = parsePlan(raw, rng, prompt)
       } catch (planErr) {
-        console.warn("[genui] plan call failed", planErr)
+        console.warn('[genui] plan call failed', planErr)
         if (isHardLlmFailure(planErr)) {
-          ch.push({ type: "error", message: formatLlmFailureMessage(planErr) })
+          ch.push({ type: 'error', message: formatLlmFailureMessage(planErr) })
           return
         }
-        console.warn("[genui] plan call failed, using fallback:", planErr)
+        console.warn('[genui] plan call failed, using fallback:', planErr)
         plan = fallbackPlan(prompt, rng)
         usedFallbackPlan = true
       }
 
       // Emit the chosen theme ASAP so the preview can apply it before content lands.
-      ch.push({ type: "theme", name: plan.theme })
-      ch.push({ type: "locale", code: plan.locale })
+      ch.push({ type: 'theme', name: plan.theme })
+      ch.push({ type: 'locale', code: plan.locale })
 
       // AUTH single-page special case — the model returned one sign-in page whose
       // chosen block is an auth block: render just that screen, no fan-out.
       const homeBlock = plan.pages[0].block
-      if (plan.pages.length === 1 && BLOCK_TAXONOMY[homeBlock]?.category === "auth") {
-        ch.push({ type: "status", message: "Building sign-in…" })
-        ch.push({ type: "skeleton", text: "" })
-        ch.push({ type: "plan", ids: ["root"] })
-        ch.push({ type: "module_start", id: "root" })
+      if (
+        plan.pages.length === 1 &&
+        BLOCK_TAXONOMY[homeBlock]?.category === 'auth'
+      ) {
+        ch.push({ type: 'status', message: 'Building sign-in…' })
+        ch.push({ type: 'skeleton', text: '' })
+        ch.push({ type: 'plan', ids: ['root'] })
+        ch.push({ type: 'module_start', id: 'root' })
         const { signal, cleanup } = withParentAbort(abort, SUBTREE_TIMEOUT_MS)
         try {
           const text = await generateText(
@@ -443,73 +494,92 @@ export async function* generateUI(
             authUser(plan.brand, homeBlock),
             signal,
             SUBTREE_RETRIES,
-            (attempt) => ch.push({ type: "module_retry", id: "root", attempt }),
+            (attempt) => ch.push({ type: 'module_retry', id: 'root', attempt }),
           )
           const safe = stripFences(text)
           const ok = /(^|\n)\s*root\s*=\s*\w+\(/.test(safe)
           ch.push({
-            type: "module",
-            id: "root",
-            text: ok ? safe : `root = ${homeBlock}(${JSON.stringify(plan.brand)})`,
+            type: 'module',
+            id: 'root',
+            text: ok
+              ? safe
+              : `root = ${homeBlock}(${JSON.stringify(plan.brand)})`,
           })
         } catch {
           ch.push({
-            type: "module",
-            id: "root",
+            type: 'module',
+            id: 'root',
             text: `root = ${homeBlock}(${JSON.stringify(plan.brand)})`,
           })
         } finally {
           cleanup()
         }
-        ch.push({ type: "done", modules: 1, ms: Date.now() - startedAt })
+        ch.push({ type: 'done', modules: 1, ms: Date.now() - startedAt })
         return
       }
 
       // 2. Pages + their AI-selected (random-picked) blocks are ready.
-      const pages = plan.pages.map((p) => ({ ...p }))
+      const navLabels = plan.pages.map((p) => p.label)
+      const pages =
+        options.completeWhen === 'home'
+          ? plan.pages.slice(0, 1).map((p) => ({ ...p }))
+          : plan.pages.map((p) => ({ ...p }))
       const labels = pages.map((p) => p.label)
       const ids = pages.map((p) => p.id)
 
       // 3. Emit the skeleton immediately so the shell paints first.
       const skeleton = buildSkeleton(labels[0], labels, ids)
-      ch.push({ type: "skeleton", text: skeleton })
+      ch.push({ type: 'skeleton', text: skeleton })
 
       // 4. Fan out ALL pages in parallel.
-      ch.push({ type: "plan", ids })
-      ch.push({ type: "status", message: `Building ${pages.length} pages in parallel…` })
+      ch.push({ type: 'plan', ids })
+      ch.push({
+        type: 'status',
+        message: `Building ${pages.length} pages in parallel…`,
+      })
 
       const running = new Set<Promise<void>>()
       let next = 0
       const startOne = (page: PlannedPage) => {
-        ch.push({ type: "module_start", id: page.id })
+        ch.push({ type: 'module_start', id: page.id })
         // No valid kimi block for this page -> emit the server-authored unstyled
         // "Coming soon" placeholder node directly. No model call, no ComingSoon block.
         if (!isKnownBlock(page.block)) {
-          ch.push({ type: "module", id: page.id, text: placeholderNode(page.id), failed: true })
+          ch.push({
+            type: 'module',
+            id: page.id,
+            text: placeholderNode(page.id),
+            failed: true,
+          })
           return
         }
         const { signal, cleanup } = withParentAbort(abort, SUBTREE_TIMEOUT_MS)
         const p = generateText(
           modelId,
           pageSystemPrompt(page.block),
-          pageUser(plan.brand, labels, page, plan.tagline),
+          pageUser(plan.brand, navLabels, page, plan.tagline),
           signal,
           SUBTREE_RETRIES,
-          (attempt) => ch.push({ type: "module_retry", id: page.id, attempt }),
+          (attempt) => ch.push({ type: 'module_retry', id: page.id, attempt }),
         )
           .then((text) => {
-            const { text: safe, failed } = validateModule(page, text, plan.brand, labels)
+            const { text: safe, failed } = validateModule(
+              page,
+              text,
+              plan.brand,
+              navLabels,
+            )
             if (failed) moduleFailureCount += 1
-            ch.push({ type: "module", id: page.id, text: safe, failed })
+            ch.push({ type: 'module', id: page.id, text: safe, failed })
           })
           .catch((moduleErr) => {
             if (isHardLlmFailure(moduleErr)) {
               moduleFailureCount += 1
               ch.push({
-                type: "module",
+                type: 'module',
                 id: page.id,
                 text: isKnownBlock(page.block)
-                  ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
+                  ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(navLabels)})`
                   : placeholderNode(page.id),
                 failed: true,
               })
@@ -520,10 +590,10 @@ export async function* generateUI(
             // chosen block, emit the server-authored unstyled placeholder node.
             moduleFailureCount += 1
             ch.push({
-              type: "module",
+              type: 'module',
               id: page.id,
               text: isKnownBlock(page.block)
-                ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
+                ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(navLabels)})`
                 : placeholderNode(page.id),
               failed: true,
             })
@@ -533,10 +603,12 @@ export async function* generateUI(
         void p.finally(() => running.delete(p))
       }
 
-      while (next < pages.length && running.size < MAX_PARALLEL) startOne(pages[next++])
+      while (next < pages.length && running.size < MAX_PARALLEL)
+        startOne(pages[next++])
       while (running.size > 0) {
         await Promise.race(running)
-        while (next < pages.length && running.size < MAX_PARALLEL) startOne(pages[next++])
+        while (next < pages.length && running.size < MAX_PARALLEL)
+          startOne(pages[next++])
       }
 
       if (
@@ -545,19 +617,19 @@ export async function* generateUI(
         (usedFallbackPlan || Date.now() - startedAt < 2_000)
       ) {
         ch.push({
-          type: "error",
+          type: 'error',
           message:
-            "Site generation fell back to placeholder blocks because the AI model could not produce page content. Check GROQ_API_KEY and restart the dev server after updating .env.",
+            'Site generation fell back to placeholder blocks because the AI model could not produce page content. Check GROQ_API_KEY and restart the dev server after updating .env.',
         })
         return
       }
 
       const elapsed = Date.now() - startedAt
-      ch.push({ type: "done", modules: pages.length, ms: elapsed })
+      ch.push({ type: 'done', modules: pages.length, ms: elapsed })
     } catch (e) {
       const err = e as { name?: string; message?: string }
-      if (err?.name !== "AbortError") {
-        ch.push({ type: "error", message: err?.message ?? "generation failed" })
+      if (err?.name !== 'AbortError') {
+        ch.push({ type: 'error', message: err?.message ?? 'generation failed' })
       }
     } finally {
       ch.close()
@@ -568,10 +640,14 @@ export async function* generateUI(
   await run
 }
 
-function buildSkeleton(firstLabel: string, labels: string[], ids: string[]): string {
+function buildSkeleton(
+  firstLabel: string,
+  labels: string[],
+  ids: string[],
+): string {
   const labelsJson = JSON.stringify(labels)
   return `$page = ${JSON.stringify(firstLabel)}
-root = PageSwitch(${labelsJson}, [${ids.join(", ")}])`
+root = PageSwitch(${labelsJson}, [${ids.join(', ')}])`
 }
 
 // SINGLE-PAGE skeleton (Tier 1): a flat site with no real multi-page nav roots
@@ -581,15 +657,15 @@ root = PageSwitch(${labelsJson}, [${ids.join(", ")}])`
 // the section var names that the home module later defines, exactly as the
 // multi-page skeleton references page ids before they're defined.
 function buildSinglePageSkeleton(sections: ClonedSection[]): string {
-  const refs = sections.map(sectionVarName).join(", ")
+  const refs = sections.map(sectionVarName).join(', ')
   return `root = Stack([${refs}])`
 }
 
 // Assemble a SINGLE-PAGE program: the home section programs, then a Stack root of
 // their refs. Mirrors assembleClone but with no PageSwitch wrapper.
 function assembleSinglePage(sections: ClonedSection[]): string {
-  const refs = sections.map(sectionVarName).join(", ")
-  const programs = sections.map((s) => s.program).join("\n")
+  const refs = sections.map(sectionVarName).join(', ')
+  const programs = sections.map((s) => s.program).join('\n')
   return `${programs}\nroot = Stack([${refs}])`
 }
 
@@ -599,9 +675,14 @@ export async function selectPlan(
   prompt: string,
   modelId: string = DEFAULT_MODEL,
   parentSignal?: AbortSignal,
-): Promise<{ brand: string; tagline: string; theme: string; pages: { label: string; block: string }[] }> {
+): Promise<{
+  brand: string
+  tagline: string
+  theme: string
+  pages: { label: string; block: string }[]
+}> {
   const abort = new AbortController()
-  parentSignal?.addEventListener("abort", () => abort.abort(), { once: true })
+  parentSignal?.addEventListener('abort', () => abort.abort(), { once: true })
   const rng = makeRng()
   let plan: Plan
   try {
@@ -632,8 +713,19 @@ export async function selectPlan(
 // that was renamed/removed upstream is caught here rather than passing validation
 // against a name the contract library no longer defines.
 const PRIMITIVE_SPINE = [
-  "Stack", "Grid", "Box", "Section", "Spacer", "Heading", "Text",
-  "Button", "Card", "Badge", "Tabs", "Separator", "Image",
+  'Stack',
+  'Grid',
+  'Box',
+  'Section',
+  'Spacer',
+  'Heading',
+  'Text',
+  'Button',
+  'Card',
+  'Badge',
+  'Tabs',
+  'Separator',
+  'Image',
 ] as const
 const ALLOWED_COMPONENT_NAMES = new Set<string>(PRIMITIVE_SPINE)
 
@@ -648,7 +740,7 @@ function sectionVarName(section: { kind: string; index: number }): string {
 
 function sectionProgramValid(section: ClonedSection): boolean {
   const varName = sectionVarName(section)
-  const program = String(section.program || "")
+  const program = String(section.program || '')
   const definesVar = new RegExp(`(^|\\n)\\s*${varName}\\s*=`).test(program)
   if (!definesVar) return false
   // No stray root/PageSwitch seed inside a section program.
@@ -664,8 +756,8 @@ function sectionProgramValid(section: ClonedSection): boolean {
 
 // Assemble ONE page: concat section programs, then `${pageId} = Stack([refs])`.
 function assemblePage(pageId: string, sections: ClonedSection[]): string {
-  const refs = sections.map(sectionVarName).join(", ")
-  const programs = sections.map((s) => s.program).join("\n")
+  const refs = sections.map(sectionVarName).join(', ')
+  const programs = sections.map((s) => s.program).join('\n')
   return `${pageId} = Stack([${refs}])\n${programs}`
 }
 
@@ -684,8 +776,8 @@ function pageProgramValid(_pageId: string, sections: ClonedSection[]): boolean {
   }
   // Probe the page as a Stack-rooted program — the shape validateOpenUISource
   // accepts — by rooting the page's section refs directly in `root = Stack([...])`.
-  const refs = sections.map(sectionVarName).join(", ")
-  const programs = sections.map((s) => s.program).join("\n")
+  const refs = sections.map(sectionVarName).join(', ')
+  const programs = sections.map((s) => s.program).join('\n')
   const probe = validateOpenUISource(`root = Stack([${refs}])\n${programs}`)
   return probe.ok
 }
@@ -696,9 +788,9 @@ function assembleClone(
   pages: { id: string; sections: ClonedSection[] }[],
   labels: string[],
 ): string {
-  const pageBlocks = pages.map((p) => assemblePage(p.id, p.sections)).join("\n")
-  const labelsJson = labels.map((l) => JSON.stringify(l)).join(", ")
-  const pageRefs = pages.map((p) => p.id).join(", ")
+  const pageBlocks = pages.map((p) => assemblePage(p.id, p.sections)).join('\n')
+  const labelsJson = labels.map((l) => JSON.stringify(l)).join(', ')
+  const pageRefs = pages.map((p) => p.id).join(', ')
   return `${pageBlocks}\nroot = PageSwitch([${labelsJson}], [${pageRefs}])`
 }
 
@@ -710,21 +802,25 @@ function assembleClone(
 const PLACEHOLDER_TITLE_RE = /^\s*Cloned(?:\s*\(fallback\))?\s*:/i
 
 function isPlaceholderTitle(title: unknown): boolean {
-  return typeof title !== "string" || !title.trim() || PLACEHOLDER_TITLE_RE.test(title)
+  return (
+    typeof title !== 'string' ||
+    !title.trim() ||
+    PLACEHOLDER_TITLE_RE.test(title)
+  )
 }
 
 // Title-case a slug/host fragment: "our-team" -> "Our Team", "api_docs" -> "Api Docs".
 function humanize(raw: string): string {
   const words = raw
-    .replace(/[-_]+/g, " ")
-    .replace(/[^A-Za-z0-9 ]+/g, " ")
+    .replace(/[-_]+/g, ' ')
+    .replace(/[^A-Za-z0-9 ]+/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
-  if (words.length === 0) return ""
+  if (words.length === 0) return ''
   return words
     .slice(0, 4)
     .map((w) => w[0].toUpperCase() + w.slice(1))
-    .join(" ")
+    .join(' ')
 }
 
 // A readable nav label for a non-home page derived from its URL: the last
@@ -733,12 +829,14 @@ function humanize(raw: string): string {
 function labelFromUrl(url: string, index: number): string {
   try {
     const u = new URL(url)
-    const segs = u.pathname.split("/").filter(Boolean)
-    const last = segs[segs.length - 1] || ""
-    const slug = last.replace(/\.[a-z0-9]+$/i, "") // drop trailing extension
+    const segs = u.pathname.split('/').filter(Boolean)
+    const last = segs[segs.length - 1] || ''
+    const slug = last.replace(/\.[a-z0-9]+$/i, '') // drop trailing extension
     const fromSlug = humanize(slug)
     if (fromSlug) return fromSlug
-    const fromHost = humanize(u.hostname.replace(/^www\./, "").split(".")[0] || "")
+    const fromHost = humanize(
+      u.hostname.replace(/^www\./, '').split('.')[0] || '',
+    )
     if (fromHost) return fromHost
   } catch {
     /* not a parseable URL */
@@ -748,7 +846,7 @@ function labelFromUrl(url: string, index: number): string {
 
 // The nav label for a cloned page: real <title> if present, else URL-derived.
 function cloneLabel(page: ClonedPage, index: number): string {
-  if (index === 0) return "Home"
+  if (index === 0) return 'Home'
   if (!isPlaceholderTitle(page.title)) return page.title.trim()
   return labelFromUrl(page.url, index)
 }
@@ -765,15 +863,15 @@ export async function* generateFromClone(
 ): AsyncGenerator<GenUIEvent> {
   const startedAt = Date.now()
   const abort = new AbortController()
-  parentSignal?.addEventListener("abort", () => abort.abort(), { once: true })
+  parentSignal?.addEventListener('abort', () => abort.abort(), { once: true })
   const ch = channel<GenUIEvent>()
 
   const run = (async () => {
     try {
-      ch.push({ type: "status", message: `Assembling ${brand}…` })
+      ch.push({ type: 'status', message: `Assembling ${brand}…` })
 
       if (clonedPages.length === 0) {
-        ch.push({ type: "error", message: "No pages were cloned" })
+        ch.push({ type: 'error', message: 'No pages were cloned' })
         return
       }
 
@@ -790,11 +888,11 @@ export async function* generateFromClone(
         p.sections
           .map((s) =>
             (s.program.match(/"((?:\\.|[^"\\])*)"/g) || [])
-              .join("|")
+              .join('|')
               .toLowerCase()
-              .replace(/[^a-z0-9|]+/g, ""),
+              .replace(/[^a-z0-9|]+/g, ''),
           )
-          .join("§")
+          .join('§')
       const tokenize = (sig: string): Set<string> =>
         new Set(sig.split(/[|§]/).filter((t) => t.length >= 4))
       const jaccard = (a: Set<string>, b: Set<string>): number => {
@@ -813,7 +911,8 @@ export async function* generateFromClone(
       // never URL/slug based. The first page (home) is always kept regardless so
       // a genuinely minimal single-page site still renders.
       // Normalize a literal for case/whitespace-insensitive comparison.
-      const normLit = (v: string): string => v.toLowerCase().replace(/\s+/g, " ").trim()
+      const normLit = (v: string): string =>
+        v.toLowerCase().replace(/\s+/g, ' ').trim()
       // The home page's "identity" literals: the brand and its FIRST heading literal.
       // A non-home page whose ONLY content echoes one of these is a bare link-target
       // (e.g. a one-heading page that just repeats the site name) — not a real page.
@@ -824,10 +923,10 @@ export async function* generateFromClone(
           const m = s.program.match(/"((?:\\.|[^"\\])*)"/)
           if (m) return normLit(m[1])
         }
-        return ""
+        return ''
       })()
       const homeEchoes = new Set<string>(
-        [normLit(brand || ""), homeFirstLiteral].filter((v) => v.length > 0),
+        [normLit(brand || ''), homeFirstLiteral].filter((v) => v.length > 0),
       )
       const substantive = (p: ClonedPage): boolean => {
         const lits = new Set<string>()
@@ -874,7 +973,8 @@ export async function* generateFromClone(
       // becomes a TAB only if its normalized URL is one of those nav destinations;
       // non-nav crawled pages are dropped from the rendered program (background only),
       // never fabricated as tabs. Read the contract field structurally (no `as any`).
-      const navLinks = (clonedPages[0] as { navLinks?: string[] }).navLinks ?? []
+      const navLinks =
+        (clonedPages[0] as { navLinks?: string[] }).navLinks ?? []
       const navSet = new Set<string>(navLinks.map((u) => normalizeUrl(u)))
       // When the home page exposes NO real nav landmark (navSet empty), the extra
       // crawled pages can only have come from in-content links — a flat link-hub
@@ -884,7 +984,12 @@ export async function* generateFromClone(
       // fabricated as top nav). With real nav present, tabs = home + nav-backed pages.
       const renderedPages =
         navSet.size > 0
-          ? [uniquePages[0], ...uniquePages.slice(1).filter((p) => navSet.has(normalizeUrl(p.url)))]
+          ? [
+              uniquePages[0],
+              ...uniquePages
+                .slice(1)
+                .filter((p) => navSet.has(normalizeUrl(p.url))),
+            ]
           : [uniquePages[0]]
       const droppedToBackground = uniquePages.length - renderedPages.length
       if (droppedToBackground > 0) {
@@ -894,8 +999,8 @@ export async function* generateFromClone(
       }
 
       // theme name keys the preview palette; tokens drive the actual CSS vars at render.
-      ch.push({ type: "theme", name: "cloned" })
-      ch.push({ type: "locale", code: "en" })
+      ch.push({ type: 'theme', name: 'cloned' })
+      ch.push({ type: 'locale', code: 'en' })
 
       // Use the cloned brand (param) as the home/site label so the nav reflects the
       // brand; non-home labels come from the real <title> when present, else a
@@ -903,7 +1008,7 @@ export async function* generateFromClone(
       const labels = renderedPages.map((p, i) =>
         i === 0 ? brand || cloneLabel(p, i) : cloneLabel(p, i),
       )
-      const ids = renderedPages.map((_, i) => (i === 0 ? "home" : `p${i}`))
+      const ids = renderedPages.map((_, i) => (i === 0 ? 'home' : `p${i}`))
 
       // Repair pass (per CONTRACT): a page is a `Stack([sectionRefs])` program — the
       // shape validateOpenUISource accepts. For each page we (1) swap any invalid
@@ -918,7 +1023,7 @@ export async function* generateFromClone(
       // REAL content instead of canned per-kind filler. No `as any`, no type edit.
       const sourceHtmlOf = (section: ClonedSection): string | undefined => {
         const h = (section as { sourceHtml?: unknown }).sourceHtml
-        return typeof h === "string" && h.trim() ? h : undefined
+        return typeof h === 'string' && h.trim() ? h : undefined
       }
       // Rebuild an invalid section. CRITICAL: pass the original section HTML so the
       // fallback DOM-reconstructs the real headings/paragraphs/list-items/links in
@@ -926,28 +1031,39 @@ export async function* generateFromClone(
       // to generic "Overview / Read more about this." canned copy — the degenerate
       // single-fallback render the dogfood audit flagged. Generic: the html is the
       // ground truth, never per-site.
-      const repairSection = (section: ClonedSection, pageUrl: string): ClonedSection => {
+      const repairSection = (
+        section: ClonedSection,
+        pageUrl: string,
+      ): ClonedSection => {
         if (sectionProgramValid(section)) return section
         const html = sourceHtmlOf(section)
-        const fallback = generateFallbackSection(section.kind, pageUrl, section.index, theme, html)
+        const fallback = generateFallbackSection(
+          section.kind,
+          pageUrl,
+          section.index,
+          theme,
+          html,
+        )
         return sectionProgramValid(fallback) ? fallback : section
       }
 
       const pagePlan = renderedPages.map((page, i) => {
         const id = ids[i]
-        let sections = page.sections.map((section) => repairSection(section, page.url))
+        let sections = page.sections.map((section) =>
+          repairSection(section, page.url),
+        )
         if (!pageProgramValid(id, sections)) {
           // Force-fallback every section that still doesn't validate, then re-check.
           sections = sections.map((section) =>
             sectionProgramValid(section)
               ? section
               : generateFallbackSection(
-                section.kind,
-                page.url,
-                section.index,
-                theme,
-                sourceHtmlOf(section),
-              ),
+                  section.kind,
+                  page.url,
+                  section.index,
+                  theme,
+                  sourceHtmlOf(section),
+                ),
           )
           if (!pageProgramValid(id, sections)) {
             console.warn(`[clone] page "${id}" invalid after fallback`)
@@ -966,24 +1082,24 @@ export async function* generateFromClone(
       if (single) {
         const { id, sections } = pagePlan[0]
         const skeleton = buildSinglePageSkeleton(sections)
-        ch.push({ type: "skeleton", text: skeleton })
-        ch.push({ type: "plan", ids })
-        ch.push({ type: "module_start", id })
-        ch.push({ type: "module", id, text: assemblePage(id, sections) })
+        ch.push({ type: 'skeleton', text: skeleton })
+        ch.push({ type: 'plan', ids })
+        ch.push({ type: 'module_start', id })
+        ch.push({ type: 'module', id, text: assemblePage(id, sections) })
         // Assemble the FULL program: the home sections rooted in a literal Stack —
         // the exact shape validateOpenUISource accepts (it rejects a non-Stack root).
         fullSource = assembleSinglePage(sections)
       } else {
         // Skeleton first so the shell paints before page content lands.
         const skeleton = buildSkeleton(labels[0], labels, ids)
-        ch.push({ type: "skeleton", text: skeleton })
-        ch.push({ type: "plan", ids })
+        ch.push({ type: 'skeleton', text: skeleton })
+        ch.push({ type: 'plan', ids })
 
         // Progressive page modules (home first, then the rest in order).
         for (let i = 0; i < pagePlan.length; i++) {
           const { id, sections } = pagePlan[i]
-          ch.push({ type: "module_start", id })
-          ch.push({ type: "module", id, text: assemblePage(id, sections) })
+          ch.push({ type: 'module_start', id })
+          ch.push({ type: 'module', id, text: assemblePage(id, sections) })
         }
 
         // Assemble the FULL program: validated per-page Stacks + the PageSwitch root.
@@ -994,12 +1110,20 @@ export async function* generateFromClone(
       }
 
       // Hand the final source to the caller (for persistence + streaming).
-      ch.push({ type: "source", text: fullSource })
-      ch.push({ type: "done", modules: pagePlan.length, ms: Date.now() - startedAt, source: fullSource })
+      ch.push({ type: 'source', text: fullSource })
+      ch.push({
+        type: 'done',
+        modules: pagePlan.length,
+        ms: Date.now() - startedAt,
+        source: fullSource,
+      })
     } catch (e) {
       const err = e as { name?: string; message?: string }
-      if (err?.name !== "AbortError") {
-        ch.push({ type: "error", message: err?.message ?? "clone generation failed" })
+      if (err?.name !== 'AbortError') {
+        ch.push({
+          type: 'error',
+          message: err?.message ?? 'clone generation failed',
+        })
       }
     } finally {
       ch.close()
