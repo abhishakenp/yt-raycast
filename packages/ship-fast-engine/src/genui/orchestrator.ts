@@ -407,7 +407,7 @@ export async function* generateUI(
         const raw = await generateText(
           modelId,
           planSystem(),
-          planUser(prompt, catalog, THEME_CATALOG) + "<|end|><|start|>assistant<|channel|>analysis<|message|><|end|><|start|>assistant<|channel|>",
+          planUser(prompt, catalog, THEME_CATALOG),
           abort.signal,
           2,
         )

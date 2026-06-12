@@ -1,0 +1,7 @@
+[INFO] 2026-06-12T06:52:09.906Z handleHookRunStop started
+[INFO] 2026-06-12T06:52:09.916Z Hook input received
+[INFO] 2026-06-12T06:52:09.917Z [session=186255d8-b9e1-469f-822c-3d7d64a199fb] Session ID: 186255d8-b9e1-469f-822c-3d7d64a199fb
+[INFO] 2026-06-12T06:52:09.918Z [session=186255d8-b9e1-469f-822c-3d7d64a199fb] Resolved pluginRoot: /Users/abhi/.claude/plugins/cache/a5c-ai/babysitter/4.0.157
+[INFO] 2026-06-12T06:52:09.918Z [session=186255d8-b9e1-469f-822c-3d7d64a199fb] Resolved stateDir: /Users/abhi/.a5c/state
+[INFO] 2026-06-12T06:52:09.919Z [session=186255d8-b9e1-469f-822c-3d7d64a199fb] Checking session file at: /Users/abhi/.a5c/state/186255d8-b9e1-469f-822c-3d7d64a199fb.md
+[INFO] 2026-06-12T06:52:09.927Z [session=186255d8-b9e1-469f-822c-3d7d64a199fb] No run associated with session — allowing exit
