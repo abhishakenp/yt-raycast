@@ -1,10 +1,10 @@
-import { ClerkProvider, useAuth } from '@clerk/tanstack-react-start'
+import { useAuth } from '@clerk/tanstack-react-start'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import { ConvexProviderWithClerk } from 'convex/react-clerk'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 
-import { clerkFrostedGlassAppearance, resolveProviderMode } from '@/app/providers/provider-config'
+import { resolveProviderMode } from '@/app/providers/provider-config'
 
 type ClerkConvexProviderProps = {
   children: ReactNode
@@ -25,21 +25,13 @@ export const ClerkConvexProvider = ({ children }: ClerkConvexProviderProps) => {
     [mode],
   )
 
-  return (
-    <ClerkProvider
-      publishableKey={clerkPublishableKey}
-      afterSignOutUrl="/"
-      appearance={clerkFrostedGlassAppearance}
-    >
-      {mode === 'clerk_convex' && convex ? (
-        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          {children}
-        </ConvexProviderWithClerk>
-      ) : mode === 'convex_anonymous' && convex ? (
-        <ConvexProvider client={convex}>{children}</ConvexProvider>
-      ) : (
-        children
-      )}
-    </ClerkProvider>
+  return mode === 'clerk_convex' && convex ? (
+    <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+      {children}
+    </ConvexProviderWithClerk>
+  ) : mode === 'convex_anonymous' && convex ? (
+    <ConvexProvider client={convex}>{children}</ConvexProvider>
+  ) : (
+    children
   )
 }
