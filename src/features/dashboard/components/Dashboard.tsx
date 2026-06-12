@@ -122,7 +122,7 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
 export function Dashboard({ sessionId, initialAdminView = false }: DashboardProps) {
   const [isDashboardActive, setIsDashboardActive] = useState(false)
   const [currentDevice, setCurrentDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
-  const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>('select')
+  const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>(null)
   const [railMode, setRailMode] = useState<RailMode>('tools')
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
   const [isDark, setIsDark] = useState(true)
@@ -432,7 +432,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     data-tip="Select"
                     aria-label="Select element"
                     aria-pressed={inspectMode === 'select'}
-                    onClick={() => setInspectMode('select')}
+                    onClick={() => setInspectMode((mode) => (mode === 'select' ? null : 'select'))}
                   >
                     <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                       <path d="M4 3l7 17 2-7 7-2L4 3z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
@@ -447,7 +447,10 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     data-tip="Annotate"
                     aria-label="Annotate preview"
                     aria-pressed={inspectMode === 'annotate'}
-                    onClick={() => setInspectMode('annotate')}
+                    onClick={() => {
+                      setInspectMode((mode) => (mode === 'annotate' ? null : 'annotate'))
+                      setRailMode('annotations')
+                    }}
                   >
                     <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
                       <path d="M12 20h9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -512,6 +515,8 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                           isDark={isDark}
                           themeStyles={themeStyles}
                           deviceMode={currentDevice}
+                          previewToolMode={inspectMode}
+                          agentationEnabled={inspectMode === 'annotate' || railMode === 'annotations'}
                         />
                       ) : (
                         <div className="grid h-full min-h-[480px] place-items-center gap-4 bg-[#090c14] text-center text-white/62" role="status" aria-live="polite">
@@ -687,7 +692,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     </button>
                   </div>
                 </div>
-                <div className={cn('hidden min-h-0 flex-1 flex-col p-4', railMode !== 'tools' && 'flex')} id="preview-site-rail-editor">
+                <div className={cn('min-h-0 flex-1 flex-col p-4', railMode === 'tools' ? 'hidden' : 'flex')} id="preview-site-rail-editor">
                   <div className="mb-4 flex items-center gap-3">
                     <div className="size-10 rounded-2xl bg-cyan-300/14" id="rail-editor-thumb"></div>
                     <div className="min-w-0">

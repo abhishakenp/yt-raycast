@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { PEXELS_API_KEY } from '@ship-fast/engine/config.js'
+import { searchQueryFromAlt } from '@/lib/image-query'
 
 type PexelsPhoto = {
   src?: {
@@ -64,20 +65,31 @@ const choosePhotoUrl = (photo: PexelsPhoto | undefined, w: number, h: number) =>
   return photo.src.medium ?? photo.src.large ?? photo.src.large2x ?? photo.src.original ?? null
 }
 
+export const resolvePexelsSearchQuery = (
+  query: string,
+  seed: string | null,
+): string => {
+  const trimmed = query.trim() || 'nature'
+  if (seed?.trim()) return trimmed.slice(0, 96)
+  return searchQueryFromAlt(trimmed)
+}
+
 export const Route = createFileRoute('/api/pexels')({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const url = new URL(request.url)
         const query = (url.searchParams.get('query') ?? url.searchParams.get('q') ?? '').trim() || 'nature'
+        const seed = url.searchParams.get('seed')
+        const searchQuery = resolvePexelsSearchQuery(query, seed)
         const w = clampInt(url.searchParams.get('w'), 800, 100, 2400)
         const h = clampInt(url.searchParams.get('h'), 600, 100, 2400)
-        const fallback = picsumUrl(query, w, h)
+        const fallback = picsumUrl(seed || searchQuery, w, h)
 
         if (!PEXELS_API_KEY) return redirect(fallback)
 
         const pexelsUrl = new URL('https://api.pexels.com/v1/search')
-        pexelsUrl.searchParams.set('query', query.slice(0, 96))
+        pexelsUrl.searchParams.set('query', searchQuery)
         pexelsUrl.searchParams.set('per_page', '15')
         pexelsUrl.searchParams.set('orientation', orientationFromSize(w, h))
 
@@ -89,7 +101,7 @@ export const Route = createFileRoute('/api/pexels')({
 
           const data = (await response.json()) as PexelsResponse
           const photos = data.photos ?? []
-          const photo = photos[seedIndex(url.searchParams.get('seed') ?? query, photos.length)]
+          const photo = photos[seedIndex(seed ?? searchQuery, photos.length)]
           const photoUrl = choosePhotoUrl(photo, w, h)
 
           return redirect(photoUrl ?? fallback)

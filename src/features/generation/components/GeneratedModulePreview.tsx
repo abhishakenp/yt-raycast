@@ -1,4 +1,6 @@
 import DirectPreview from '@/components/GenUI/DirectPreview'
+import type { PreviewToolMode } from '@/components/GenUI/DirectPreview'
+import AgentationSessionBridge from '@/components/GenUI/AgentationSessionBridge'
 import OpenUIViewer from '@/island/openui/OpenUIViewer'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
@@ -12,6 +14,8 @@ type GeneratedModulePreviewProps = {
   isDark?: boolean
   themeStyles?: ThemeStyles | null
   deviceMode?: 'desktop' | 'tablet' | 'mobile'
+  previewToolMode?: PreviewToolMode
+  agentationEnabled?: boolean
 }
 
 const parseSiteSpecTheme = (siteSpecJson: string | undefined): Record<string, string> | null => {
@@ -64,6 +68,8 @@ export function GeneratedModulePreview({
   isDark = true,
   themeStyles = null,
   deviceMode = 'desktop',
+  previewToolMode = null,
+  agentationEnabled = false,
 }: GeneratedModulePreviewProps) {
   const anonymousOwnerSecret =
     typeof window === 'undefined'
@@ -75,12 +81,21 @@ export function GeneratedModulePreview({
       anonymousOwnerSecret={anonymousOwnerSecret}
       sessionId={sessionId}
     >
-      <DirectPreview themeStyles={themeStyles} isDark={isDark} deviceMode={deviceMode}>
+      <DirectPreview
+        themeStyles={themeStyles}
+        isDark={isDark}
+        deviceMode={deviceMode}
+        previewToolMode={previewToolMode}
+      >
         <OpenUIModuleRenderer
           source={source}
           sessionId={sessionId}
           siteSpecJson={siteSpecJson}
           locale={locale}
+        />
+        <AgentationSessionBridge
+          enabled={agentationEnabled}
+          sessionId={sessionId}
         />
       </DirectPreview>
     </LakebedSessionProvider>
