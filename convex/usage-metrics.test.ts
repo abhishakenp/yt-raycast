@@ -133,7 +133,7 @@ test('completeGeneration records runtime usage metrics and a replayable completi
 
   const { sessionId } = await createTestSession(t)
 
-  await t.runMutation(internal.sessions.completeGeneration, {
+  await t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: '<html><body><h1>Done</h1></body></html>',
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
@@ -184,7 +184,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
     workspace: 'workspace_cache_first',
   })
 
-  await t.runMutation(internal.sessions.completeGeneration, {
+  await t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: '<html><body><h1>Cached</h1></body></html>',
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],

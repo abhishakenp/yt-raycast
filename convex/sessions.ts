@@ -12,6 +12,12 @@ import type { Doc, Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import { SHARE_BONUS_EXTRA } from '../src/billing/constants'
 
+const loadOpenUISSR = async () => {
+  const { renderOpenUIToHTMLWithTheme } =
+    await import('@ship-fast/engine/openui-ssr.js')
+  return { renderOpenUIToHTMLWithTheme }
+}
+
 const internalFunctions = internal as any
 
 const exportTarget = v.union(
@@ -2841,7 +2847,78 @@ export const publishPreview = mutation({
   },
 })
 
-export const completeGeneration = internalMutation({
+export const completeGeneration = internalAction({
+  args: {
+    sessionId: v.id('sessions'),
+    anonymousOwnerSecret: v.optional(v.string()),
+    html: v.string(),
+    siteSpecJson: v.optional(v.string()),
+    openUiSource: v.optional(v.string()),
+    tasks: v.array(engineTask),
+    elapsed: v.optional(v.number()),
+    cost: v.optional(v.number()),
+    provider: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.runQuery(internalFunctions.sessions.getGenerationSession, {
+      sessionId: args.sessionId,
+    })
+
+    if (session === null) {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    }
+
+    if ((session.previewVersion ?? 0) > 0) {
+      return {
+        sessionId: args.sessionId,
+        previewVersion: session.previewVersion ?? 0,
+        skipped: true,
+        reason: 'preview_already_exists',
+      }
+    }
+
+    // Pre-render OpenUI source to HTML for gallery previews
+    let renderedHtml = args.html
+    if (args.openUiSource && args.openUiSource.trim().length > 0) {
+      try {
+        const { renderOpenUIToHTMLWithTheme } = await loadOpenUISSR()
+        const { html } = renderOpenUIToHTMLWithTheme(
+          args.openUiSource,
+          undefined,
+          session.preferredLanguage ?? 'en',
+          undefined,
+        ) as { html: string; cssVars?: string }
+        renderedHtml = html
+      } catch (error) {
+        console.error('[completeGeneration] Failed to render OpenUI to HTML', {
+          sessionId: args.sessionId,
+          error: error instanceof Error ? error.message : String(error),
+        })
+        // Fall back to the provided handoff HTML
+      }
+    }
+
+    await ctx.runMutation(internalFunctions.sessions.completeGenerationInternal, {
+      sessionId: args.sessionId,
+      anonymousOwnerSecret: args.anonymousOwnerSecret,
+      html: renderedHtml,
+      siteSpecJson: args.siteSpecJson,
+      openUiSource: args.openUiSource,
+      tasks: args.tasks,
+      elapsed: args.elapsed,
+      cost: args.cost,
+      provider: args.provider,
+    })
+
+    const previewVersion = (session.previewVersion ?? 0) + 1
+    return { sessionId: args.sessionId, previewVersion }
+  },
+})
+
+export const completeGenerationInternal = internalMutation({
   args: {
     sessionId: v.id('sessions'),
     anonymousOwnerSecret: v.optional(v.string()),
@@ -2866,15 +2943,6 @@ export const completeGeneration = internalMutation({
           message: 'Session not found',
         })
       })()
-
-    if ((session.previewVersion ?? 0) > 0) {
-      return {
-        sessionId: args.sessionId,
-        previewVersion: session.previewVersion ?? 0,
-        skipped: true,
-        reason: 'preview_already_exists',
-      }
-    }
 
     await Promise.all(
       args.tasks.map((task, index) =>

@@ -17,7 +17,7 @@ const createGeneratedSession = async (
     anonymousClientId: string
   },
 ) => {
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -26,7 +26,7 @@ const createGeneratedSession = async (
     anonymousClientId,
   })
 
-  await t.runMutation(internal.sessions.completeGeneration, {
+  await t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     siteSpecJson: JSON.stringify({ brand: prompt, modules: {} }),
@@ -57,7 +57,7 @@ test('listPublicSessions returns only public visible sessions with gallery metad
     anonymousClientId: 'gallery-private',
   })
 
-  const gallery = await t.runQuery(api.sessions.listPublicSessions, {
+  const gallery = await t.query(api.sessions.listPublicSessions, {
     limit: 12,
     page: 1,
   })

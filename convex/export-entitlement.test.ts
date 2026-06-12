@@ -35,7 +35,7 @@ const createReadySession = async (
       ? await t.runMutation(api.sessions.create, createArgs)
       : await t.withIdentity(identity).mutation(api.sessions.create, createArgs)
 
-  await t.runMutation(internal.sessions.completeGeneration, {
+  await t.action(internal.sessions.completeGeneration, {
     sessionId: created.sessionId,
     html: '<html><body><main><h1>Export entitlement</h1></main></body></html>',
     openUiSource: '$page = "Home"\nroot = Text("Export entitlement")',

@@ -114,7 +114,7 @@ test('CMS image and link edits update rendered preview attributes', async () => 
     anonymousOwnerSecret: ownerSecret,
   })
 
-  await t.runMutation(internal.sessions.completeGeneration, {
+  await t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: `
       <main>
@@ -172,7 +172,7 @@ test('CMS seeding extracts generated content collections from site spec without 
     'Build a SaaS blog and portfolio CMS test site',
   )
 
-  await t.runMutation(internal.sessions.completeGeneration, {
+  await t.action(internal.sessions.completeGeneration, {
     sessionId,
     html: '<main><h1>CMS-rich generated site</h1></main>',
     openUiSource: '$page = "Home"\nroot = Text("CMS-rich generated site")',

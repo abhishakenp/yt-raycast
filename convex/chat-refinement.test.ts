@@ -19,7 +19,7 @@ const createReadySession = async (
     anonymousOwnerSecret: 'owner-secret',
   })
 
-  await t.runMutation(internal.sessions.completeGeneration, {
+  await t.action(internal.sessions.completeGeneration, {
     sessionId: created.sessionId,
     html,
     siteSpecJson: JSON.stringify({

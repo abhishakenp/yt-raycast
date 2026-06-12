@@ -24,7 +24,6 @@ import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscrip
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
-import { Route as ApiOpenuiPreviewRouteImport } from './routes/api/openui-preview'
 import { Route as ApiMedusaCheckoutRouteImport } from './routes/api/medusa-checkout'
 import { Route as ApiGalleryRouteImport } from './routes/api/gallery'
 import { Route as ApiCreditsRouteImport } from './routes/api/credits'
@@ -139,11 +138,6 @@ const ApiPromptSuggestionsRoute = ApiPromptSuggestionsRouteImport.update({
 const ApiPexelsRoute = ApiPexelsRouteImport.update({
   id: '/api/pexels',
   path: '/api/pexels',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiOpenuiPreviewRoute = ApiOpenuiPreviewRouteImport.update({
-  id: '/api/openui-preview',
-  path: '/api/openui-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMedusaCheckoutRoute = ApiMedusaCheckoutRouteImport.update({
@@ -382,7 +376,6 @@ export interface FileRoutesByFullPath {
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
-  '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
@@ -440,7 +433,6 @@ export interface FileRoutesByTo {
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
-  '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
@@ -499,7 +491,6 @@ export interface FileRoutesById {
   '/api/credits': typeof ApiCreditsRoute
   '/api/gallery': typeof ApiGalleryRoute
   '/api/medusa-checkout': typeof ApiMedusaCheckoutRoute
-  '/api/openui-preview': typeof ApiOpenuiPreviewRoute
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
@@ -559,7 +550,6 @@ export interface FileRouteTypes {
     | '/api/credits'
     | '/api/gallery'
     | '/api/medusa-checkout'
-    | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
@@ -617,7 +607,6 @@ export interface FileRouteTypes {
     | '/api/credits'
     | '/api/gallery'
     | '/api/medusa-checkout'
-    | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
@@ -675,7 +664,6 @@ export interface FileRouteTypes {
     | '/api/credits'
     | '/api/gallery'
     | '/api/medusa-checkout'
-    | '/api/openui-preview'
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
@@ -734,7 +722,6 @@ export interface RootRouteChildren {
   ApiCreditsRoute: typeof ApiCreditsRoute
   ApiGalleryRoute: typeof ApiGalleryRoute
   ApiMedusaCheckoutRoute: typeof ApiMedusaCheckoutRoute
-  ApiOpenuiPreviewRoute: typeof ApiOpenuiPreviewRoute
   ApiPexelsRoute: typeof ApiPexelsRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
@@ -861,13 +848,6 @@ declare module '@tanstack/react-router' {
       path: '/api/pexels'
       fullPath: '/api/pexels'
       preLoaderRoute: typeof ApiPexelsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/openui-preview': {
-      id: '/api/openui-preview'
-      path: '/api/openui-preview'
-      fullPath: '/api/openui-preview'
-      preLoaderRoute: typeof ApiOpenuiPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/medusa-checkout': {
@@ -1297,7 +1277,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCreditsRoute: ApiCreditsRoute,
   ApiGalleryRoute: ApiGalleryRoute,
   ApiMedusaCheckoutRoute: ApiMedusaCheckoutRoute,
-  ApiOpenuiPreviewRoute: ApiOpenuiPreviewRoute,
   ApiPexelsRoute: ApiPexelsRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,

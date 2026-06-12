@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { ArrowRight, ChevronLeft, ChevronRight, Timer } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -81,39 +80,6 @@ const getPreviewDocument = (html?: string | null) => {
   return html
 }
 
-const galleryPreviewQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: 30 * 60 * 1000,
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: Infinity,
-    },
-  },
-})
-
-const renderOpenUIPreview = async (session: GallerySession) => {
-  const response = await fetch('/api/openui-preview', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      source: session.moduleSource,
-      sessionId: session.sessionId,
-      siteSpecJson: session.siteSpecJson,
-      locale: session.preferredLanguage ?? 'en',
-    }),
-  })
-
-  if (!response.ok) throw new Error('openui-preview-render')
-
-  const data = (await response.json()) as { html?: unknown }
-  if (typeof data.html !== 'string' || data.html.trim().length === 0) {
-    throw new Error('openui-preview-empty')
-  }
-
-  return data.html
-}
-
 export const GalleryCategoryTabs = ({
   category,
   categories,
@@ -164,25 +130,10 @@ export const GalleryCategoryTabs = ({
 
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const previewDocument = getPreviewDocument(session.html)
-  const hasModuleSource = typeof session.moduleSource === 'string' && session.moduleSource.trim().length > 0
-  const { data: renderedOpenUI } = useQuery({
-    enabled: hasModuleSource,
-    queryFn: () => renderOpenUIPreview(session),
-    queryKey: [
-      'gallery-openui-preview',
-      session.sessionId,
-      session.previewVersion ?? 0,
-      session.moduleSource?.length ?? 0,
-    ],
-  })
 
   return (
     <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      {renderedOpenUI !== undefined ? (
-        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
-          <div className="size-full" dangerouslySetInnerHTML={{ __html: renderedOpenUI }} />
-        </div>
-      ) : previewDocument !== undefined && !hasModuleSource ? (
+      {previewDocument !== undefined ? (
         <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
           <div className="size-full" dangerouslySetInnerHTML={{ __html: previewDocument }} />
         </div>
@@ -300,13 +251,11 @@ export const GalleryGrid = ({
   const items = gallery?.items ?? []
 
   return (
-    <QueryClientProvider client={galleryPreviewQueryClient}>
-      <div className={cn('grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3', className)}>
-        {items.length > 0
-          ? items.map((session) => <GalleryCard key={session.sessionId} session={session} />)
-          : Array.from({ length: skeletonCount }, (_, index) => <GallerySkeletonCard key={index} index={index} />)}
-      </div>
-    </QueryClientProvider>
+    <div className={cn('grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3', className)}>
+      {items.length > 0
+        ? items.map((session) => <GalleryCard key={session.sessionId} session={session} />)
+        : Array.from({ length: skeletonCount }, (_, index) => <GallerySkeletonCard key={index} index={index} />)}
+    </div>
   )
 }
 
