@@ -10,6 +10,7 @@ import {
 } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
+import { SHARE_BONUS_EXTRA } from '../src/billing/constants'
 
 const internalFunctions = internal as any
 
@@ -1986,7 +1987,7 @@ export const create = mutation({
             .first()
     const quotaLimit =
       userId === undefined
-        ? MAX_ANON_PER_DAY
+        ? MAX_ANON_PER_DAY + SHARE_BONUS_EXTRA
         : activeSubscription === null
           ? MAX_FREE_PER_MONTH
           : MAX_PAID_PER_MONTH
