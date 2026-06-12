@@ -153,7 +153,7 @@ const LogoMark = () => (
   <img
     src="/assets/logo-transparent.png"
     alt="Ship Fast Logo"
-    className="w-full h-full"
+    className="w-full h-full object-contain"
     aria-hidden="true"
   />
 )
