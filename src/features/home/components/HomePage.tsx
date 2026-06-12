@@ -758,7 +758,7 @@ export const HomePage = () => {
                 </div>
 
                 <div>
-                  <div className="mx-auto mt-3.5 flex max-w-full flex-wrap justify-center gap-2 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:justify-start" aria-label="Example prompts">
+                  <div className="mx-auto mt-2 flex max-w-full flex-wrap justify-center gap-2 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:justify-start" aria-label="Example prompts">
                     {EXAMPLE_CHIPS.map(([label, value], index) => (
                       <button
                         key={label}
