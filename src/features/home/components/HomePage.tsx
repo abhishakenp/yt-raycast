@@ -230,29 +230,30 @@ const ShareIcon = ({
   id,
   label,
   title,
+  onClick,
 }: {
   children: ReactNode
   className?: string
   id: string
   label: string
   title: string
+  onClick?: () => void
 }) => (
-  <a
+  <button
+    type="button"
     className={cn(
       'grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-px hover:bg-white/[0.1] hover:text-white',
       className,
     )}
     id={id}
-    href="#"
-    target="_blank"
-    rel="noopener noreferrer"
     title={title}
     aria-label={label}
+    onClick={onClick}
   >
     <svg className="size-[18px]" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
       {children}
     </svg>
-  </a>
+  </button>
 )
 
 const PrivateGenerationModal = ({
@@ -369,17 +370,20 @@ const collectDesignReferenceUrls = (formData: FormData): string[] => {
 export const HomePage = () => {
   const {
     canSubmit,
+    claimShareBonus,
     errorMessage,
     isSubmitting,
     prompt,
     selectExamplePrompt,
     setPrompt,
+    shareBonusClaimed,
     submitPrompt,
   } = usePromptHomeController()
   const [designRefOpen, setDesignRefOpen] = useState(false)
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)
+  const [showSharePanel, setShowSharePanel] = useState(false)
 
   const placeholderText = SAMPLE_PLACEHOLDERS[placeholderIndex]
   const visiblePlaceholder = useMemo(
@@ -422,6 +426,60 @@ export const HomePage = () => {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [privateModalOpen])
+
+  // Show share panel when quota is exceeded and bonus not claimed
+  useEffect(() => {
+    if (errorMessage?.includes('quota exhausted') && !shareBonusClaimed) {
+      setShowSharePanel(true)
+    } else {
+      setShowSharePanel(false)
+    }
+  }, [errorMessage, shareBonusClaimed])
+
+  const handleShareClick = async (platform: string) => {
+    await claimShareBonus()
+    const siteUrl = 'https://ship-fast.io'
+    const messages: Record<string, string> = {
+      en: `I just built a site in minutes with Ship Fast — try it free: ${siteUrl}`,
+      hi: `मैंने Ship Fast से मिनटों में साइट बनाई — आप भी बनाएं: ${siteUrl}`,
+      ta: `Ship Fast மூலம் நிமிடங்களில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${siteUrl}`,
+      te: `Ship Fast తో నిమిషాల్లో సైట్ చేశాను — మీరూ ట్రై చేయండి: ${siteUrl}`,
+      bn: `Ship Fast দিয়ে মিনিটে সাইট বানিয়েছি — আপনিও চেষ্টা করুন: ${siteUrl}`,
+      mr: `Ship Fast ने मिनिटांत साइट बनवली — तुम्हीही बनवा: ${siteUrl}`,
+      kn: `Ship Fast ನಿಂದ ನಿಮಿಷಗಳಲ್ಲಿ ಸೈಟ್ ಮಾಡಿದೆ — ನೀವೂ ಮಾಡಿ: ${siteUrl}`,
+      ml: `Ship Fast ഉപയോഗിച്ച് മിനിറ്റുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${siteUrl}`,
+      pa: `Ship Fast ਨਾਲ ਮਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${siteUrl}`,
+      gu: `Ship Fast વડે મિનિટોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${siteUrl}`,
+    }
+
+    const langs = navigator.languages?.length ? navigator.languages : [navigator.language]
+    let locale = 'en'
+    for (const L of langs) {
+      const c = String(L || '').toLowerCase().split('-')[0]
+      if (c && c !== 'en' && messages[c]) { locale = c; break }
+    }
+    const message = messages[locale] || messages.en
+    const encodedUrl = encodeURIComponent(siteUrl)
+    const encodedMessage = encodeURIComponent(message)
+
+    const shareUrls: Record<string, string> = {
+      whatsapp: `https://wa.me/?text=${encodedMessage}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      x: `https://twitter.com/intent/tweet?text=${encodedMessage}&url=${encodedUrl}`,
+      telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedMessage}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+    }
+
+    if (platform === 'native' && navigator.share) {
+      try {
+        await navigator.share({ title: 'Ship Fast', text: message, url: siteUrl })
+      } catch {
+        // User cancelled or error
+      }
+    } else if (shareUrls[platform]) {
+      window.open(shareUrls[platform], '_blank', 'noopener,noreferrer')
+    }
+  }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -625,40 +683,40 @@ export const HomePage = () => {
                     </div>
                     <div className="hidden" id="gen-counter" />
 
-                    <div className="hidden items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-white/65" id="share-bonus-panel">
+                    <div className={cn('hidden items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-white/65', showSharePanel && 'flex')} id="share-bonus-panel">
                       <span>Share for +1 free preview</span>
                       <div className="flex flex-wrap items-center gap-2">
-                        <ShareIcon className="text-[#25d366]" id="bonus-share-wa" title="WhatsApp" label="Share on WhatsApp">
+                        <ShareIcon className="text-[#25d366]" id="bonus-share-wa" title="WhatsApp" label="Share on WhatsApp" onClick={() => handleShareClick('whatsapp')}>
                           <path
                             fill="currentColor"
                             d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
                           />
                         </ShareIcon>
-                        <ShareIcon className="text-[#1877f2]" id="bonus-share-fb" title="Facebook" label="Share on Facebook">
+                        <ShareIcon className="text-[#1877f2]" id="bonus-share-fb" title="Facebook" label="Share on Facebook" onClick={() => handleShareClick('facebook')}>
                           <path
                             fill="currentColor"
                             d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
                           />
                         </ShareIcon>
-                        <ShareIcon className="text-white" id="bonus-share-tw" title="X" label="Share on X">
+                        <ShareIcon className="text-white" id="bonus-share-tw" title="X" label="Share on X" onClick={() => handleShareClick('x')}>
                           <path
                             fill="currentColor"
                             d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
                           />
                         </ShareIcon>
-                        <ShareIcon className="text-[#2aabee]" id="bonus-share-tg" title="Telegram" label="Share on Telegram">
+                        <ShareIcon className="text-[#2aabee]" id="bonus-share-tg" title="Telegram" label="Share on Telegram" onClick={() => handleShareClick('telegram')}>
                           <path
                             fill="currentColor"
                             d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
                           />
                         </ShareIcon>
-                        <ShareIcon className="text-[#0a66c2]" id="bonus-share-li" title="LinkedIn" label="Share on LinkedIn">
+                        <ShareIcon className="text-[#0a66c2]" id="bonus-share-li" title="LinkedIn" label="Share on LinkedIn" onClick={() => handleShareClick('linkedin')}>
                           <path
                             fill="currentColor"
                             d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
                           />
                         </ShareIcon>
-                        <GlassPillButton className="size-8 min-h-8 min-w-8 p-0" id="bonus-share-native">
+                        <GlassPillButton className="size-8 min-h-8 min-w-8 p-0" id="bonus-share-native" onClick={() => handleShareClick('native')}>
                           <svg
                             className="size-[18px]"
                             viewBox="0 0 24 24"
