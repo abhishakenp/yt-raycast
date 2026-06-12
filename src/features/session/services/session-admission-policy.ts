@@ -273,7 +273,7 @@ export const parseSessionAdmission = (
       code: 'QUOTA_EXCEEDED',
       message: isAuthenticated
         ? 'Your monthly generation quota is exhausted.'
-        : 'Your anonymous daily generation quota is exhausted. Sign in to continue.',
+        : 'Your anonymous daily generation quota is exhausted. Share on social media for +1 free generation, or sign in to continue.',
       status: 429,
     }
   }

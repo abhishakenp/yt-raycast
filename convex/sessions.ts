@@ -1999,7 +1999,7 @@ export const create = mutation({
           code: 'QUOTA_EXCEEDED',
           message:
             userId === undefined
-              ? 'Anonymous daily quota exhausted'
+              ? 'Anonymous daily quota exhausted. Share on social media for +1 free generation, or sign in to continue.'
               : 'Monthly quota exhausted',
         })
       })()
