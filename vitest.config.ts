@@ -4,7 +4,12 @@ export default defineConfig({
   test: {
     environment: 'node',
     environmentMatchGlobs: [['convex/**/*.test.ts', 'edge-runtime']],
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'convex/**/*.test.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
+      'convex/**/*.test.ts',
+      'packages/ship-fast-engine/src/genui/**/*.test.ts',
+    ],
   },
   resolve: {
     alias: {

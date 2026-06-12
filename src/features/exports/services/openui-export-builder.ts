@@ -1,7 +1,11 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import ts from 'typescript'
-import { createParser, jsonToOpenUI, type ElementNode } from '@openuidev/lang-core'
+import {
+  createParser,
+  jsonToOpenUI,
+  type ElementNode,
+} from '@openuidev/lang-core'
 import { library, reactExportSources } from '@ship-fast/blocks'
 import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
 import { zipSync, strToU8 } from 'fflate'
@@ -59,8 +63,19 @@ type ReactExportSourceEntry = {
 }
 
 const textDecoder = new TextDecoder()
-const cssPath = join(process.cwd(), 'public', 'styles', 'openui-preview-tailwind.css')
-const blocksRegistryPath = join(process.cwd(), 'packages', 'ship-fast-blocks', 'src', 'registry')
+const cssPath = join(
+  process.cwd(),
+  'public',
+  'styles',
+  'openui-preview-tailwind.css',
+)
+const blocksRegistryPath = join(
+  process.cwd(),
+  'packages',
+  'ship-fast-blocks',
+  'src',
+  'registry',
+)
 const forbiddenExportTokens = [
   '@openuidev',
   'defineComponent',
@@ -89,7 +104,9 @@ const toProjectSlug = (value: string): string =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 60) || 'ship-fast-export'
 
-const parseSiteSpec = (siteSpecJson: string | undefined): Record<string, unknown> => {
+const parseSiteSpec = (
+  siteSpecJson: string | undefined,
+): Record<string, unknown> => {
   if (!siteSpecJson) return {}
   try {
     const parsed = JSON.parse(siteSpecJson) as unknown
@@ -101,17 +118,26 @@ const parseSiteSpec = (siteSpecJson: string | undefined): Record<string, unknown
   }
 }
 
-const readProjectName = (siteSpec: Record<string, unknown>, fallback: string): string => {
+const readProjectName = (
+  siteSpec: Record<string, unknown>,
+  fallback: string,
+): string => {
   const candidates = [
     siteSpec.projectName,
     siteSpec.brand,
     (siteSpec.seo as { siteName?: unknown } | undefined)?.siteName,
   ]
-  const match = candidates.find((value): value is string => typeof value === 'string' && value.trim().length > 0)
+  const match = candidates.find(
+    (value): value is string =>
+      typeof value === 'string' && value.trim().length > 0,
+  )
   return match?.trim() || fallback
 }
 
-const readThemeName = (siteSpec: Record<string, unknown>, requestedThemeName?: string): string | undefined => {
+const readThemeName = (
+  siteSpec: Record<string, unknown>,
+  requestedThemeName?: string,
+): string | undefined => {
   if (requestedThemeName) return requestedThemeName
   const theme = siteSpec.themeName ?? siteSpec.genuiTheme ?? siteSpec.theme
   return typeof theme === 'string' ? theme : undefined
@@ -164,7 +190,10 @@ const themeVarKeys = [
   'spacing',
 ] as const
 
-const buildThemeStyle = (styles: ThemeStyles | null, isDark: boolean): string => {
+const buildThemeStyle = (
+  styles: ThemeStyles | null,
+  isDark: boolean,
+): string => {
   if (!styles) return ''
   const merged = { ...styles.light, ...(isDark ? styles.dark : {}) }
   return themeVarKeys
@@ -184,19 +213,28 @@ const buildThemeFontLinks = (styles: ThemeStyles | null): string => {
     for (const key of ['font-sans', 'font-serif', 'font-mono'] as const) {
       const raw = variant[key]
       if (typeof raw !== 'string') continue
-      const first = raw.split(',')[0]?.trim().replace(/^["']|["']$/g, '')
+      const first = raw
+        .split(',')[0]
+        ?.trim()
+        .replace(/^["']|["']$/g, '')
       if (first && !systemFontRe.test(first)) families.add(first)
     }
   }
   if (families.size === 0) return ''
   const params = [...families]
-    .map((family) => `family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@400;500;600;700`)
+    .map(
+      (family) =>
+        `family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@400;500;600;700`,
+    )
     .join('&')
   return `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${params}&display=swap" />`
 }
 
 const stringifyJs = (value: unknown): string =>
-  JSON.stringify(value).replaceAll('<', '\\u003c').replaceAll('\u2028', '\\u2028').replaceAll('\u2029', '\\u2029')
+  JSON.stringify(value)
+    .replaceAll('<', '\\u003c')
+    .replaceAll('\u2028', '\\u2028')
+    .replaceAll('\u2029', '\\u2029')
 
 const assertNoOpenUIInternals = (files: Record<string, string>): void => {
   for (const [name, content] of Object.entries(files)) {
@@ -215,7 +253,11 @@ const slugifyRoute = (value: string): string =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'page'
 
-const uniqueRoutePath = (label: string, index: number, used: Set<string>): string => {
+const uniqueRoutePath = (
+  label: string,
+  index: number,
+  used: Set<string>,
+): string => {
   if (index === 0) {
     used.add('/')
     return '/'
@@ -232,7 +274,12 @@ const uniqueRoutePath = (label: string, index: number, used: Set<string>): strin
 }
 
 const readPublicPackageName = (specifier: string): string | null => {
-  if (specifier.startsWith('.') || specifier.startsWith('@/') || specifier.startsWith('#/')) return null
+  if (
+    specifier.startsWith('.') ||
+    specifier.startsWith('@/') ||
+    specifier.startsWith('#/')
+  )
+    return null
   if (specifier.startsWith('@')) {
     const [scope, name] = specifier.split('/')
     return scope && name ? `${scope}/${name}` : specifier
@@ -240,27 +287,42 @@ const readPublicPackageName = (specifier: string): string | null => {
   return specifier.split('/')[0] ?? null
 }
 
-const normalizeRouteTarget = (value: string): string => value.trim().toLowerCase()
+const normalizeRouteTarget = (value: string): string =>
+  value.trim().toLowerCase()
 
 const resolveRouteTarget = (target: string, routes: ExportRoute[]): string => {
   const normalized = normalizeRouteTarget(target)
-  const exact = routes.find((route) => normalizeRouteTarget(route.label) === normalized)
+  const exact = routes.find(
+    (route) => normalizeRouteTarget(route.label) === normalized,
+  )
   if (exact) return exact.path
 
-  const find = (pattern: RegExp) => routes.find((route) => pattern.test(normalizeRouteTarget(route.label)))
+  const find = (pattern: RegExp) =>
+    routes.find((route) => pattern.test(normalizeRouteTarget(route.label)))
   const byKeyword =
-    (/shop|store|product|buy|cart|order|browse|collection/.test(normalized) && find(/shop|store|product|collection|menu|work|gallery/)) ||
-    (/price|plan|pricing|subscribe|upgrade|tier|membership/.test(normalized) && find(/pric|plan|member/)) ||
-    (/contact|reach|get in touch|book|reserve|demo|quote|sign ?up|start|join|get started|register|tour/.test(normalized) && find(/contact|book|reserve|demo|start|join/)) ||
-    (/about|story|team|who we are|mission/.test(normalized) && find(/about|team|story/)) ||
-    (/blog|news|post|article|read|stories|journal|tips/.test(normalized) && find(/blog|news|post|article|stories|tips/)) ||
-    (/feature|service|how it works|learn|explore|tour|class|schedule|trainer/.test(normalized) && find(/feature|service|how|class|home/)) ||
+    (/shop|store|product|buy|cart|order|browse|collection/.test(normalized) &&
+      find(/shop|store|product|collection|menu|work|gallery/)) ||
+    (/price|plan|pricing|subscribe|upgrade|tier|membership/.test(normalized) &&
+      find(/pric|plan|member/)) ||
+    (/contact|reach|get in touch|book|reserve|demo|quote|sign ?up|start|join|get started|register|tour/.test(
+      normalized,
+    ) &&
+      find(/contact|book|reserve|demo|start|join/)) ||
+    (/about|story|team|who we are|mission/.test(normalized) &&
+      find(/about|team|story/)) ||
+    (/blog|news|post|article|read|stories|journal|tips/.test(normalized) &&
+      find(/blog|news|post|article|stories|tips/)) ||
+    (/feature|service|how it works|learn|explore|tour|class|schedule|trainer/.test(
+      normalized,
+    ) &&
+      find(/feature|service|how|class|home/)) ||
     null
 
   return byKeyword?.path ?? routes[0]?.path ?? '/'
 }
 
-const navigationKeyPattern = /(^|_|\b)(nav|cta|link|links|href|route|routes|action|button|buttons|primary|secondary|submit|phone|email|legal)(\b|_|$)/i
+const navigationKeyPattern =
+  /(^|_|\b)(nav|cta|link|links|href|route|routes|action|button|buttons|primary|secondary|submit|phone|email|legal)(\b|_|$)/i
 
 const collectNavigationStrings = (
   value: unknown,
@@ -268,13 +330,15 @@ const collectNavigationStrings = (
   navigationContext = false,
   key = '',
 ): Set<string> => {
-  const nextNavigationContext = navigationContext || navigationKeyPattern.test(key)
+  const nextNavigationContext =
+    navigationContext || navigationKeyPattern.test(key)
   if (typeof value === 'string') {
     if (nextNavigationContext && value.trim()) values.add(value)
     return values
   }
   if (Array.isArray(value)) {
-    for (const item of value) collectNavigationStrings(item, values, nextNavigationContext, key)
+    for (const item of value)
+      collectNavigationStrings(item, values, nextNavigationContext, key)
     return values
   }
   if (value && typeof value === 'object') {
@@ -310,8 +374,14 @@ const walkRegistryFiles = (dir: string, files: string[] = []): string[] => {
   return files
 }
 
-const manifestSourceIndex = reactExportSources as Record<string, ReactExportSourceEntry | undefined>
+const manifestSourceIndex = reactExportSources as Record<
+  string,
+  ReactExportSourceEntry | undefined
+>
 let componentSourceIndex: Map<string, ReactExportSourceEntry> | null = null
+
+const isExportableComponentFactory = (expression: string): boolean =>
+  expression === 'defineComponent' || expression === 'defineCapsule'
 
 const getComponentSourceIndex = (): Map<string, ReactExportSourceEntry> => {
   if (componentSourceIndex) return componentSourceIndex
@@ -330,15 +400,33 @@ const getComponentSourceIndex = (): Map<string, ReactExportSourceEntry> => {
 
   for (const file of walkRegistryFiles(blocksRegistryPath)) {
     const source = readFileSync(file, 'utf8')
-    const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+    const sourceFile = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TSX,
+    )
     for (const statement of sourceFile.statements) {
       if (!ts.isVariableStatement(statement)) continue
-      const isExported = statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)
+      const isExported = statement.modifiers?.some(
+        (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+      )
       if (!isExported) continue
       for (const declaration of statement.declarationList.declarations) {
-        if (ts.isIdentifier(declaration.name) && declaration.initializer?.getText(sourceFile).startsWith('defineComponent(')) {
+        if (
+          ts.isIdentifier(declaration.name) &&
+          declaration.initializer &&
+          ts.isCallExpression(declaration.initializer) &&
+          isExportableComponentFactory(
+            declaration.initializer.expression.getText(sourceFile),
+          )
+        ) {
           index.set(declaration.name.text, {
-            file: relative(join(process.cwd(), 'packages', 'ship-fast-blocks'), file).replaceAll('\\', '/'),
+            file: relative(
+              join(process.cwd(), 'packages', 'ship-fast-blocks'),
+              file,
+            ).replaceAll('\\', '/'),
             source,
           })
         }
@@ -370,6 +458,7 @@ const transformComponentImports = (
     if (!clause) continue
 
     if (moduleName === '@openuidev/react-lang') continue
+    if (moduleName === './openui.ts') continue
     if (moduleName === '#/lib/utils.ts') {
       imports.push("import { cn } from '../lib/cn'")
       continue
@@ -389,10 +478,14 @@ const transformComponentImports = (
       continue
     }
     if (moduleName.startsWith('#/components/ui/')) {
-      throw new Error(`React export does not yet support UI primitive dependency in ${componentName}: ${moduleName}`)
+      throw new Error(
+        `React export does not yet support UI primitive dependency in ${componentName}: ${moduleName}`,
+      )
     }
     if (moduleName.startsWith('#/')) {
-      throw new Error(`React export does not support private helper import in ${componentName}: ${moduleName}`)
+      throw new Error(
+        `React export does not support private helper import in ${componentName}: ${moduleName}`,
+      )
     }
 
     const packageName = readPublicPackageName(moduleName)
@@ -405,14 +498,34 @@ const transformComponentImports = (
 const findDefineComponentParts = (
   componentName: string,
   entry: ReactExportSourceEntry,
-): { sourceFile: ts.SourceFile; propsSchema: string; body: string; isExpressionBody: boolean } => {
-  const sourceFile = ts.createSourceFile(entry.file, entry.source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+): {
+  sourceFile: ts.SourceFile
+  propsSchema: string
+  body: string
+  isExpressionBody: boolean
+} => {
+  const sourceFile = ts.createSourceFile(
+    entry.file,
+    entry.source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
   for (const statement of sourceFile.statements) {
     if (!ts.isVariableStatement(statement)) continue
     for (const declaration of statement.declarationList.declarations) {
-      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== componentName) continue
+      if (
+        !ts.isIdentifier(declaration.name) ||
+        declaration.name.text !== componentName
+      )
+        continue
       const call = declaration.initializer
-      if (!call || !ts.isCallExpression(call) || call.expression.getText(sourceFile) !== 'defineComponent') continue
+      if (
+        !call ||
+        !ts.isCallExpression(call) ||
+        !isExportableComponentFactory(call.expression.getText(sourceFile))
+      )
+        continue
       const config = call.arguments[0]
       if (!config || !ts.isObjectLiteralExpression(config)) continue
       const propsProperty = config.properties.find(
@@ -431,18 +544,27 @@ const findDefineComponentParts = (
         throw new Error(`Cannot extract props/component from ${componentName}`)
       }
       const component = componentProperty.initializer
-      if (!ts.isArrowFunction(component) && !ts.isFunctionExpression(component)) {
-        throw new Error(`Unsupported component function shape in ${componentName}`)
+      if (
+        !ts.isArrowFunction(component) &&
+        !ts.isFunctionExpression(component)
+      ) {
+        throw new Error(
+          `Unsupported component function shape in ${componentName}`,
+        )
       }
       const componentText = component.getText(sourceFile)
       if (/\brenderNode\b|\buseStateField\b/.test(componentText)) {
-        throw new Error(`React export does not support renderer/state internals in ${componentName}`)
+        throw new Error(
+          `React export does not support renderer/state internals in ${componentName}`,
+        )
       }
       return {
         sourceFile,
         propsSchema: printNode(propsProperty.initializer, sourceFile),
         body: ts.isBlock(component.body)
-          ? component.body.statements.map((statement) => printNode(statement, sourceFile)).join('\n')
+          ? component.body.statements
+              .map((statement) => printNode(statement, sourceFile))
+              .join('\n')
           : printNode(component.body, sourceFile),
         isExpressionBody: !ts.isBlock(component.body),
       }
@@ -451,9 +573,11 @@ const findDefineComponentParts = (
   throw new Error(`Component source not found for ${componentName}`)
 }
 
-const navigationVarPattern = /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*useNavigate\(\)/g
+const navigationVarPattern =
+  /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*useNavigate\(\)/g
 
-const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const escapeRegExp = (value: string): string =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const isStringLiteralSource = (value: string): boolean =>
   /^(['"`])[\s\S]*\1$/.test(value.trim())
@@ -467,7 +591,10 @@ const parseStringLiteralSource = (value: string): string | null => {
   }
 }
 
-const renderNavigationArgument = (argument: string, routeTargets: Record<string, string>): string => {
+const renderNavigationArgument = (
+  argument: string,
+  routeTargets: Record<string, string>,
+): string => {
   const trimmed = argument.trim()
   if (isStringLiteralSource(trimmed)) {
     const literal = parseStringLiteralSource(trimmed)
@@ -481,7 +608,9 @@ const rewriteNavigationCalls = (
   stack: ExportStack,
   routeTargets: Record<string, string>,
 ): { body: string; usesNavigation: boolean } => {
-  const navigationVars = [...body.matchAll(navigationVarPattern)].map((match) => match[1]).filter(Boolean)
+  const navigationVars = [...body.matchAll(navigationVarPattern)]
+    .map((match) => match[1])
+    .filter(Boolean)
   if (navigationVars.length === 0) return { body, usesNavigation: false }
 
   let nextBody = body
@@ -490,10 +619,15 @@ const rewriteNavigationCalls = (
   }
 
   for (const name of new Set(navigationVars)) {
-    const callPattern = new RegExp(`\\b${escapeRegExp(name)}\\(([^()\\n]+)\\)`, 'g')
+    const callPattern = new RegExp(
+      `\\b${escapeRegExp(name)}\\(([^()\\n]+)\\)`,
+      'g',
+    )
     nextBody = nextBody.replace(callPattern, (_match, argument: string) => {
       const destination = renderNavigationArgument(argument, routeTargets)
-      return stack === 'react' ? `${name}(${destination})` : `${name}.push(${destination})`
+      return stack === 'react'
+        ? `${name}(${destination})`
+        : `${name}.push(${destination})`
     })
   }
 
@@ -506,12 +640,24 @@ const extractComponent = (
   routeTargets: Record<string, string>,
 ): ExtractedComponent => {
   const entry = getComponentSourceIndex().get(componentName)
-  if (!entry) throw new Error(`React export does not support unknown component: ${componentName}`)
+  if (!entry)
+    throw new Error(
+      `React export does not support unknown component: ${componentName}`,
+    )
 
-  const { sourceFile, propsSchema, body, isExpressionBody } = findDefineComponentParts(componentName, entry)
-  const { imports, dependencies } = transformComponentImports(sourceFile, componentName, stack)
+  const { sourceFile, propsSchema, body, isExpressionBody } =
+    findDefineComponentParts(componentName, entry)
+  const { imports, dependencies } = transformComponentImports(
+    sourceFile,
+    componentName,
+    stack,
+  )
   const functionBody = isExpressionBody ? `return ${body}` : body
-  const rewrittenNavigation = rewriteNavigationCalls(functionBody, stack, routeTargets)
+  const rewrittenNavigation = rewriteNavigationCalls(
+    functionBody,
+    stack,
+    routeTargets,
+  )
   const routePaths = rewrittenNavigation.usesNavigation
     ? `\nconst routePaths: Record<string, string> = ${JSON.stringify(routeTargets, null, 2)}\n`
     : ''
@@ -541,7 +687,9 @@ const buildRoutes = (parsed: ParsedOpenUIProgram): ExportRoute[] => {
   return parsed.pages.map((page, index) => {
     const label = parsed.routes[index] ?? `Page ${index + 1}`
     if (!page.typeName || page.typeName === 'PageSwitch') {
-      throw new Error(`React export cannot render route "${label}" because it does not resolve to a page component`)
+      throw new Error(
+        `React export cannot render route "${label}" because it does not resolve to a page component`,
+      )
     }
     return {
       label,
@@ -571,14 +719,26 @@ const dependencyVersions: Record<string, string> = {
 }
 
 const toDependencyRecord = (names: Iterable<string>): Record<string, string> =>
-  Object.fromEntries([...names].sort().map((name) => [name, dependencyVersions[name] ?? 'latest']))
+  Object.fromEntries(
+    [...names]
+      .sort()
+      .map((name) => [name, dependencyVersions[name] ?? 'latest']),
+  )
 
 const resolveDependencyVersions = (
   packages: Iterable<string>,
   target: 'react' | 'next',
-): { dependencies: Record<string, string>; devDependencies: Record<string, string> } => {
+): {
+  dependencies: Record<string, string>
+  devDependencies: Record<string, string>
+} => {
   const names = new Set(packages)
-  const devNames = new Set<string>(['@types/react', '@types/react-dom', 'tailwindcss', 'typescript'])
+  const devNames = new Set<string>([
+    '@types/react',
+    '@types/react-dom',
+    'tailwindcss',
+    'typescript',
+  ])
   names.add('react')
   names.add('react-dom')
   names.add('zod')
@@ -635,7 +795,10 @@ export function cn(...inputs: ClassValue[]) {
 `
 
 const renderImageHelper = (target: 'react' | 'next'): string => {
-  const envName = target === 'react' ? 'import.meta.env.VITE_SERVER_URL' : 'process.env.NEXT_PUBLIC_SERVER_URL'
+  const envName =
+    target === 'react'
+      ? 'import.meta.env.VITE_SERVER_URL'
+      : 'process.env.NEXT_PUBLIC_SERVER_URL'
   return `import type { ImgHTMLAttributes } from 'react'
 
 const serverUrl = (${envName} || 'https://ship-fast.io').replace(/\\/$/, '')
@@ -694,7 +857,10 @@ export function Image({
 `
 }
 
-export function parseOpenUIForExport(source: string, siteSpecJson?: string): ParsedOpenUIProgram {
+export function parseOpenUIForExport(
+  source: string,
+  siteSpecJson?: string,
+): ParsedOpenUIProgram {
   const cleaned = preprocessOpenUIResponse(source, { resolveRefs: false })
   const parser = createParser(library.toJSONSchema(), 'root')
   const result = parser.parse(cleaned)
@@ -706,20 +872,36 @@ export function parseOpenUIForExport(source: string, siteSpecJson?: string): Par
     throw new Error('OpenUI source is incomplete')
   }
   if (result.meta.unresolved.length > 0) {
-    throw new Error(`OpenUI source has unresolved references: ${result.meta.unresolved.join(', ')}`)
+    throw new Error(
+      `OpenUI source has unresolved references: ${result.meta.unresolved.join(', ')}`,
+    )
   }
-  const unknown = result.meta.errors.filter((error) => error.code === 'unknown-component')
+  const unknown = result.meta.errors.filter(
+    (error) => error.code === 'unknown-component',
+  )
   if (unknown.length > 0) {
-    throw new Error(`OpenUI source uses unknown components: ${unknown.map((error) => error.component).join(', ')}`)
+    throw new Error(
+      `OpenUI source uses unknown components: ${unknown.map((error) => error.component).join(', ')}`,
+    )
   }
 
-  const rawRoutes = result.root.typeName === 'PageSwitch' ? result.root.props.routes : undefined
-  const rawPages = result.root.typeName === 'PageSwitch' ? result.root.props.pages : undefined
+  const rawRoutes =
+    result.root.typeName === 'PageSwitch' ? result.root.props.routes : undefined
+  const rawPages =
+    result.root.typeName === 'PageSwitch' ? result.root.props.pages : undefined
   const routes = Array.isArray(rawRoutes)
-    ? rawRoutes.filter((route): route is string => typeof route === 'string' && route.trim().length > 0)
+    ? rawRoutes.filter(
+        (route): route is string =>
+          typeof route === 'string' && route.trim().length > 0,
+      )
     : ['Home']
   const pages = Array.isArray(rawPages)
-    ? rawPages.filter((page): page is ElementNode => Boolean(page) && typeof page === 'object' && (page as ElementNode).type === 'element')
+    ? rawPages.filter(
+        (page): page is ElementNode =>
+          Boolean(page) &&
+          typeof page === 'object' &&
+          (page as ElementNode).type === 'element',
+      )
     : [result.root]
   const siteSpec = parseSiteSpec(siteSpecJson)
 
@@ -733,7 +915,12 @@ export function parseOpenUIForExport(source: string, siteSpecJson?: string): Par
 
 const renderPageHtml = (page: ElementNode): string => {
   const pageSource = jsonToOpenUI(page, library)
-  const { html } = renderOpenUIToHTMLWithTheme(pageSource, undefined, 'en', undefined) as {
+  const { html } = renderOpenUIToHTMLWithTheme(
+    pageSource,
+    undefined,
+    'en',
+    undefined,
+  ) as {
     html: string
     cssVars: string
   }
@@ -795,21 +982,30 @@ const buildPagesMarkup = (parsed: ParsedOpenUIProgram): string =>
 const absolutizeHtmlAssetUrls = (html: string): string =>
   html.replaceAll('="/api/pexels?', '="https://ship-fast.io/api/pexels?')
 
-const buildStandaloneHtmlDocument = (input: OpenUIExportInput, parsed: ParsedOpenUIProgram): string => {
+const buildStandaloneHtmlDocument = (
+  input: OpenUIExportInput,
+  parsed: ParsedOpenUIProgram,
+): string => {
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
   const isDark = input.isDark ?? true
   const themeStyles = resolveThemeStyles(themeName)
   const themeStyle = buildThemeStyle(themeStyles, isDark)
   const themeFontLinks = buildThemeFontLinks(themeStyles)
-  const { cssVars } = renderOpenUIToHTMLWithTheme(input.source, undefined, 'en', undefined) as {
+  const { cssVars } = renderOpenUIToHTMLWithTheme(
+    input.source,
+    undefined,
+    'en',
+    undefined,
+  ) as {
     html: string
     cssVars: string
   }
   const css = readPreviewCss()
   const pagesMarkup = absolutizeHtmlAssetUrls(buildPagesMarkup(parsed))
 
-  return buildHtmlExport(`<!doctype html>
+  return buildHtmlExport(
+    `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -830,7 +1026,9 @@ ${css}
     ${buildRouteScript(parsed.routes)}
   </script>
 </body>
-</html>`, { includeBadge: input.includeBadge ?? true })
+</html>`,
+    { includeBadge: input.includeBadge ?? true },
+  )
 }
 
 const escapeHtml = (value: string): string =>
@@ -890,7 +1088,10 @@ const renderNextPackageJson = (
     2,
   )
 
-const renderReadme = (projectName: string, target: 'react' | 'next'): string => {
+const renderReadme = (
+  projectName: string,
+  target: 'react' | 'next',
+): string => {
   const commands =
     target === 'react'
       ? ['bun install', 'bun dev', 'bun run build', 'bun run preview']
@@ -908,10 +1109,19 @@ ${commands.join('\n')}
 `
 }
 
-const renderTsConfig = (jsx: 'react-jsx' | 'preserve' = 'react-jsx'): string => {
+const renderTsConfig = (
+  jsx: 'react-jsx' | 'preserve' = 'react-jsx',
+): string => {
   const include =
     jsx === 'preserve'
-      ? ['next-env.d.ts', 'src/**/*.ts', 'src/**/*.tsx', 'app/**/*.ts', 'app/**/*.tsx', '.next/types/**/*.ts']
+      ? [
+          'next-env.d.ts',
+          'src/**/*.ts',
+          'src/**/*.tsx',
+          'app/**/*.ts',
+          'app/**/*.tsx',
+          '.next/types/**/*.ts',
+        ]
       : ['src']
   return JSON.stringify(
     {
@@ -946,7 +1156,10 @@ const renderNextEnv = (): string => `/// <reference types="next" />
 // This file is generated by Next.js conventions for TypeScript projects.
 `
 
-const renderRouteData = (routes: ExportRoute[], componentNames: string[]): string => {
+const renderRouteData = (
+  routes: ExportRoute[],
+  componentNames: string[],
+): string => {
   const serializedRoutes = routes.map(({ componentName, ...route }) => ({
     ...route,
     component: componentName,
@@ -954,7 +1167,9 @@ const renderRouteData = (routes: ExportRoute[], componentNames: string[]): strin
   const typeImports = componentNames
     .map((name) => `import type { ${name}Props } from '../components/${name}'`)
     .join('\n')
-  const propsUnion = componentNames.map((name) => `${name}Props`).join(' | ') || 'Record<string, never>'
+  const propsUnion =
+    componentNames.map((name) => `${name}Props`).join(' | ') ||
+    'Record<string, never>'
   return `${typeImports}
 
 export type GeneratedPageProps = ${propsUnion}
@@ -971,7 +1186,9 @@ export const routes = ${JSON.stringify(serializedRoutes, null, 2)} satisfies Gen
 }
 
 const renderReactApp = (componentNames: string[]): string => {
-  const imports = componentNames.map((name) => `import { ${name} } from './components/${name}'`).join('\n')
+  const imports = componentNames
+    .map((name) => `import { ${name} } from './components/${name}'`)
+    .join('\n')
   const mapEntries = componentNames.map((name) => `  ${name},`).join('\n')
   return `import type { ComponentType } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
@@ -1037,7 +1254,9 @@ ${source}`
 const zipFiles = (files: Record<string, string>): Uint8Array => {
   assertNoOpenUIInternals(files)
   return zipSync(
-    Object.fromEntries(Object.entries(files).map(([name, content]) => [name, strToU8(content)])),
+    Object.fromEntries(
+      Object.entries(files).map(([name, content]) => [name, strToU8(content)]),
+    ),
     { level: 9 },
   )
 }
@@ -1051,7 +1270,10 @@ const collectExportComponents = (
   return names.map((name) => extractComponent(name, stack, routeTargets))
 }
 
-const buildReactExport = (input: OpenUIExportInput, parsed: ParsedOpenUIProgram): BuiltExport => {
+const buildReactExport = (
+  input: OpenUIExportInput,
+  parsed: ParsedOpenUIProgram,
+): BuiltExport => {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes)
   const components = collectExportComponents(routes, 'react', routeTargets)
@@ -1061,8 +1283,13 @@ const buildReactExport = (input: OpenUIExportInput, parsed: ParsedOpenUIProgram)
   )
   const componentNames = components.map((component) => component.name)
   const files: Record<string, string> = {
-    'package.json': renderReactPackageJson(parsed.projectName, dependencies, devDependencies),
-    'index.html': '<!doctype html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
+    'package.json': renderReactPackageJson(
+      parsed.projectName,
+      dependencies,
+      devDependencies,
+    ),
+    'index.html':
+      '<!doctype html><html><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Ship Fast Export</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
     '.env.local': 'VITE_SERVER_URL=https://ship-fast.io\n',
     'tsconfig.json': renderTsConfig(),
     'src/main.tsx': renderReactMain(),
@@ -1086,7 +1313,10 @@ const buildReactExport = (input: OpenUIExportInput, parsed: ParsedOpenUIProgram)
   }
 }
 
-const buildNextExport = (input: OpenUIExportInput, parsed: ParsedOpenUIProgram): BuiltExport => {
+const buildNextExport = (
+  input: OpenUIExportInput,
+  parsed: ParsedOpenUIProgram,
+): BuiltExport => {
   const routes = buildRoutes(parsed)
   const routeTargets = buildRouteTargetMap(routes)
   const components = collectExportComponents(routes, 'next', routeTargets)
@@ -1096,9 +1326,14 @@ const buildNextExport = (input: OpenUIExportInput, parsed: ParsedOpenUIProgram):
   )
   const componentNames = components.map((component) => component.name)
   const files: Record<string, string> = {
-    'package.json': renderNextPackageJson(parsed.projectName, dependencies, devDependencies),
+    'package.json': renderNextPackageJson(
+      parsed.projectName,
+      dependencies,
+      devDependencies,
+    ),
     '.env.local': 'NEXT_PUBLIC_SERVER_URL=https://ship-fast.io\n',
-    'next.config.mjs': '/** @type {import("next").NextConfig} */\nconst nextConfig = {}\n\nexport default nextConfig\n',
+    'next.config.mjs':
+      '/** @type {import("next").NextConfig} */\nconst nextConfig = {}\n\nexport default nextConfig\n',
     'next-env.d.ts': renderNextEnv(),
     'tsconfig.json': renderTsConfig('preserve'),
     'app/layout.tsx': `import type { ReactNode } from 'react'
@@ -1118,12 +1353,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   }
 
   for (const component of components) {
-    files[`src/components/${component.name}.tsx`] = asClientComponent(component.source)
+    files[`src/components/${component.name}.tsx`] = asClientComponent(
+      component.source,
+    )
   }
 
   for (const route of routes) {
     if (route.path === '/') {
-      files['app/page.tsx'] = renderNextRoutePage(route, route.componentName, '../src/data/pages', '../src/components/' + route.componentName)
+      files['app/page.tsx'] = renderNextRoutePage(
+        route,
+        route.componentName,
+        '../src/data/pages',
+        '../src/components/' + route.componentName,
+      )
     } else {
       const dir = route.path.slice(1)
       files[`app/${dir}/page.tsx`] = renderNextRoutePage(

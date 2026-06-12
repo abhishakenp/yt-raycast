@@ -49,7 +49,10 @@ type OperationalNotificationPayload = {
 }
 
 const shouldNotifyOperationalEvent = (
-  event: Pick<OperationalNotificationPayload, 'cacheHit' | 'cost' | 'error' | 'eventType' | 'quotaHit'>,
+  event: Pick<
+    OperationalNotificationPayload,
+    'cacheHit' | 'cost' | 'error' | 'eventType' | 'quotaHit'
+  >,
 ): boolean =>
   event.error !== undefined ||
   event.eventType === 'generation_failed' ||
@@ -71,7 +74,9 @@ const formatOperationalNotification = (
     event.error === undefined ? undefined : `error=${event.error}`,
   ].filter((item): item is string => item !== undefined)
 
-  return [`Ship Fast operational event`, ...details, event.message].filter(Boolean).join('\n')
+  return [`Ship Fast operational event`, ...details, event.message]
+    .filter(Boolean)
+    .join('\n')
 }
 
 const scheduleOperationalNotification = async (
@@ -220,7 +225,9 @@ const normalizePromptCacheKey = (
   prompt: string,
   preferredLanguage = 'en',
 ): string =>
-  `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(prompt)
+  `${normalizeSpaces(preferredLanguage).toLowerCase() || 'en'}:${normalizeSpaces(
+    prompt,
+  )
     .toLowerCase()
     .replace(/[^a-z0-9\p{L}\p{N}]+/gu, ' ')
     .trim()}`
@@ -381,7 +388,9 @@ const extractTargetText = (instruction: string): string | undefined => {
   return match?.[1]?.replace(/[.!?]\s*$/, '').trim()
 }
 
-const getChatInstructionIntent = (instruction: string): ChatInstructionIntent => {
+const getChatInstructionIntent = (
+  instruction: string,
+): ChatInstructionIntent => {
   const normalized = normalizeSpaces(instruction).toLowerCase()
   const targetText = extractTargetText(instruction)
 
@@ -430,7 +439,10 @@ const replaceFirstElementText = (
     if (!match) continue
 
     return {
-      html: html.replace(pattern, `<${tagName}${match[1]}>${safeText}</${tagName}>`),
+      html: html.replace(
+        pattern,
+        `<${tagName}${match[1]}>${safeText}</${tagName}>`,
+      ),
       replaced: true,
     }
   }
@@ -439,15 +451,14 @@ const replaceFirstElementText = (
 }
 
 const appendHtmlBeforeClose = (html: string, addition: string): string => {
-  if (/<\/main>/i.test(html)) return html.replace(/<\/main>/i, `${addition}</main>`)
-  if (/<\/body>/i.test(html)) return html.replace(/<\/body>/i, `${addition}</body>`)
+  if (/<\/main>/i.test(html))
+    return html.replace(/<\/main>/i, `${addition}</main>`)
+  if (/<\/body>/i.test(html))
+    return html.replace(/<\/body>/i, `${addition}</body>`)
   return `${html}${addition}`
 }
 
-const buildGeneratedRefinementSection = (
-  title: string,
-  body: string,
-): string =>
+const buildGeneratedRefinementSection = (title: string, body: string): string =>
   `<section style="margin:32px auto;padding:24px;max-width:960px;border:1px solid rgba(15,23,42,.12);border-radius:16px;background:rgba(248,250,252,.92);color:#0f172a"><p style="margin:0 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#0891b2;font-weight:700">${escapeHtml(title)}</p><p style="margin:0;font-size:16px;line-height:1.65">${escapeHtml(truncateText(body, 420))}</p></section>`
 
 const applyInstructionDrivenHtmlRefinement = (
@@ -457,7 +468,11 @@ const applyInstructionDrivenHtmlRefinement = (
   const intent = getChatInstructionIntent(instruction)
 
   if (intent.kind === 'headline') {
-    const result = replaceFirstElementText(html, ['h1', 'h2'], intent.targetText)
+    const result = replaceFirstElementText(
+      html,
+      ['h1', 'h2'],
+      intent.targetText,
+    )
     if (result.replaced) {
       return {
         html: result.html,
@@ -468,7 +483,11 @@ const applyInstructionDrivenHtmlRefinement = (
   }
 
   if (intent.kind === 'cta') {
-    const result = replaceFirstElementText(html, ['button', 'a'], intent.targetText)
+    const result = replaceFirstElementText(
+      html,
+      ['button', 'a'],
+      intent.targetText,
+    )
     if (result.replaced) {
       return {
         html: result.html,
@@ -506,8 +525,7 @@ const applyInstructionDrivenHtmlRefinement = (
   )
   return {
     html: appendHtmlBeforeClose(html, addition),
-    summary:
-      'Added the requested update to the preview.',
+    summary: 'Added the requested update to the preview.',
     changed: true,
   }
 }
@@ -522,21 +540,17 @@ const buildChatRefinedPreviewHtml = (
     .replace(CHAT_LEGACY_REFINEMENT_NOTE_RE, '')
 
   if (plan !== undefined) {
-    const planned = applyPlanDrivenHtmlRefinement(
-      cleanHtml,
-      instruction,
-      plan,
-    )
+    const planned = applyPlanDrivenHtmlRefinement(cleanHtml, instruction, plan)
     if (planned.changed) return planned
   }
 
-  return applyInstructionDrivenHtmlRefinement(
-    cleanHtml,
-    instruction,
-  )
+  return applyInstructionDrivenHtmlRefinement(cleanHtml, instruction)
 }
 
-const normalizePlanString = (value: unknown, max: number): string | undefined =>
+const normalizePlanString = (
+  value: unknown,
+  max: number,
+): string | undefined =>
   typeof value === 'string' && value.trim()
     ? truncateText(value.trim(), max)
     : undefined
@@ -556,7 +570,9 @@ const normalizeChatRefinementPlan = (
               }
             : {},
         )
-        .filter((entry) => entry.oldText !== undefined && entry.newText !== undefined)
+        .filter(
+          (entry) => entry.oldText !== undefined && entry.newText !== undefined,
+        )
         .slice(0, 8)
     : undefined
 
@@ -571,7 +587,9 @@ const normalizeChatRefinementPlan = (
               }
             : {},
         )
-        .filter((entry) => entry.title !== undefined || entry.body !== undefined)
+        .filter(
+          (entry) => entry.title !== undefined || entry.body !== undefined,
+        )
         .slice(0, 4)
     : undefined
 
@@ -612,7 +630,8 @@ const applyPlanDrivenHtmlRefinement = (
   const summaries: string[] = []
 
   for (const replacement of plan.replacements ?? []) {
-    if (replacement.oldText === undefined || replacement.newText === undefined) continue
+    if (replacement.oldText === undefined || replacement.newText === undefined)
+      continue
     const result = applyPreviewTextEdit(
       refinedHtml,
       replacement.oldText,
@@ -625,7 +644,11 @@ const applyPlanDrivenHtmlRefinement = (
   }
 
   if (plan.headline !== undefined) {
-    const result = replaceFirstElementText(refinedHtml, ['h1', 'h2'], plan.headline)
+    const result = replaceFirstElementText(
+      refinedHtml,
+      ['h1', 'h2'],
+      plan.headline,
+    )
     if (result.replaced) {
       refinedHtml = result.html
       summaries.push('updated the primary headline')
@@ -633,7 +656,11 @@ const applyPlanDrivenHtmlRefinement = (
   }
 
   if (plan.ctaLabel !== undefined) {
-    const result = replaceFirstElementText(refinedHtml, ['button', 'a'], plan.ctaLabel)
+    const result = replaceFirstElementText(
+      refinedHtml,
+      ['button', 'a'],
+      plan.ctaLabel,
+    )
     if (result.replaced) {
       refinedHtml = result.html
       summaries.push('updated the main call-to-action')
@@ -641,9 +668,7 @@ const applyPlanDrivenHtmlRefinement = (
   }
 
   for (const section of plan.sections ?? []) {
-    const title =
-      section.title ??
-      `${section.kind ?? 'AI'} refinement`
+    const title = section.title ?? `${section.kind ?? 'AI'} refinement`
     const body = section.body ?? instruction
     refinedHtml = appendHtmlBeforeClose(
       refinedHtml,
@@ -719,7 +744,8 @@ const buildChatRefinedOpenUiSource = (
   let refinedSource = cleanSource
 
   for (const replacement of plan?.replacements ?? []) {
-    if (replacement.oldText === undefined || replacement.newText === undefined) continue
+    if (replacement.oldText === undefined || replacement.newText === undefined)
+      continue
     refinedSource = applyPreviewTextEdit(
       refinedSource,
       replacement.oldText,
@@ -897,7 +923,11 @@ const buildChatRefinedSiteSpecJson = (
     let nextSpec: unknown = parsed
 
     for (const replacement of plan?.replacements ?? []) {
-      if (replacement.oldText === undefined || replacement.newText === undefined) continue
+      if (
+        replacement.oldText === undefined ||
+        replacement.newText === undefined
+      )
+        continue
       nextSpec = replaceFirstJsonText(
         nextSpec,
         replacement.oldText,
@@ -932,7 +962,11 @@ const buildChatRefinedSiteSpecJson = (
         intent.targetText,
       ).value
     } else if (intent.kind === 'replace') {
-      nextSpec = replaceFirstJsonText(nextSpec, intent.oldText, intent.newText).value
+      nextSpec = replaceFirstJsonText(
+        nextSpec,
+        intent.oldText,
+        intent.newText,
+      ).value
     }
 
     if (!isJsonObject(nextSpec)) return specJson
@@ -1169,7 +1203,8 @@ const getExportEntitlement = async (
       status: 'payment_required',
       requiresPayment: true,
       entitlement: 'anonymous',
-      message: 'Sign in and subscribe to Pro or purchase download credits to export ZIP files.',
+      message:
+        'Sign in and subscribe to Pro or purchase download credits to export ZIP files.',
     }
   }
 
@@ -1222,7 +1257,8 @@ const getExportEntitlement = async (
     status: 'payment_required',
     requiresPayment: true,
     entitlement: 'payment_required',
-    message: 'Subscribe to Pro or purchase download credits to export ZIP files.',
+    message:
+      'Subscribe to Pro or purchase download credits to export ZIP files.',
   }
 }
 
@@ -1285,9 +1321,17 @@ const readHtmlAttribute = (
 
 const inferCmsBindingType = (field: string | undefined): CmsBindingType => {
   const normalized = field?.toLowerCase() ?? ''
-  if (/\b(image|img|photo|avatar|logo|media|poster|thumbnail)\b/.test(normalized)) return 'image'
+  if (
+    /\b(image|img|photo|avatar|logo|media|poster|thumbnail)\b/.test(normalized)
+  )
+    return 'image'
   if (/\b(url|href|link|cta|button)\b/.test(normalized)) return 'link'
-  if (/\b(body|content|summary|description|paragraph|story|bio|faq|answer|excerpt)\b/.test(normalized)) return 'richtext'
+  if (
+    /\b(body|content|summary|description|paragraph|story|bio|faq|answer|excerpt)\b/.test(
+      normalized,
+    )
+  )
+    return 'richtext'
   return 'text'
 }
 
@@ -1326,14 +1370,17 @@ const isCmsSiteSpecContentPath = (path: string[]): boolean => {
   const leaf = path.at(-1)
   if (leaf === undefined) return false
   if (cmsSiteSpecSkipKeys.has(leaf)) return false
-  if (/^(aria|data|meta|seo|schema|openGraph|twitter)$/i.test(path[0] ?? '')) return false
+  if (/^(aria|data|meta|seo|schema|openGraph|twitter)$/i.test(path[0] ?? ''))
+    return false
   return !/^[_$]/.test(leaf)
 }
 
 const siteSpecContentType = (field: string, type: CmsBindingType): string =>
   type === 'image' || type === 'link'
     ? 'text/uri-list'
-    : /\b(body|content|description|summary|excerpt|bio|answer|paragraph|copy)\b/i.test(field)
+    : /\b(body|content|description|summary|excerpt|bio|answer|paragraph|copy)\b/i.test(
+          field,
+        )
       ? 'text/markdown'
       : 'text/plain'
 
@@ -1393,7 +1440,12 @@ const collectCmsSiteSpecCandidates = (
   Object.entries(value)
     .slice(0, 80)
     .forEach(([key, nested]) => {
-      collectCmsSiteSpecCandidates(nested, [...path, key], candidates, depth + 1)
+      collectCmsSiteSpecCandidates(
+        nested,
+        [...path, key],
+        candidates,
+        depth + 1,
+      )
     })
 }
 
@@ -1404,12 +1456,22 @@ const applyCmsPreviewEdit = (
   newContent: string,
 ): { html: string; replaced: boolean } => {
   if (binding.type === 'image') {
-    const result = replaceCmsBoundAttribute(html, binding.selector, 'src', newContent)
+    const result = replaceCmsBoundAttribute(
+      html,
+      binding.selector,
+      'src',
+      newContent,
+    )
     if (result.replaced) return result
   }
 
   if (binding.type === 'link') {
-    const result = replaceCmsBoundAttribute(html, binding.selector, 'href', newContent)
+    const result = replaceCmsBoundAttribute(
+      html,
+      binding.selector,
+      'href',
+      newContent,
+    )
     if (result.replaced) return result
   }
 
@@ -1422,9 +1484,9 @@ const parseCmsSelector = (
   const normalized = selector.trim()
   if (normalized.length === 0) return null
 
-  const type = normalized.match(/(?:^|\s)type:(text|richtext|image|link)(?:\s|$)/)?.[1] as
-    | CmsBindingType
-    | undefined
+  const type = normalized.match(
+    /(?:^|\s)type:(text|richtext|image|link)(?:\s|$)/,
+  )?.[1] as CmsBindingType | undefined
   const field =
     normalized.match(/(?:^|\s)field:([a-zA-Z0-9_.-]+)(?:\s|$)/)?.[1] ??
     (normalized.includes('type:') ? undefined : normalized)
@@ -1459,7 +1521,10 @@ const extractCmsBindingCandidatesFromHtml = (
     candidates.set(parsed.selector, {
       ...parsed,
       content: attributeContent ?? textContent,
-      contentType: parsed.type === 'image' || parsed.type === 'link' ? 'text/uri-list' : 'text/plain',
+      contentType:
+        parsed.type === 'image' || parsed.type === 'link'
+          ? 'text/uri-list'
+          : 'text/plain',
     })
   }
 
@@ -1482,7 +1547,10 @@ const extractCmsBindingCandidatesFromHtml = (
     candidates.set(parsed.selector, {
       ...parsed,
       content: attributeContent,
-      contentType: parsed.type === 'image' || parsed.type === 'link' ? 'text/uri-list' : 'text/plain',
+      contentType:
+        parsed.type === 'image' || parsed.type === 'link'
+          ? 'text/uri-list'
+          : 'text/plain',
     })
   }
 
@@ -1497,7 +1565,11 @@ const extractCmsBindingCandidatesFromSiteSpec = (
   try {
     const spec = JSON.parse(siteSpecJson) as Record<string, unknown>
     const candidates: CmsBindingCandidate[] = []
-    const add = (field: string, value: unknown, type: CmsBindingType = inferCmsBindingType(field)) => {
+    const add = (
+      field: string,
+      value: unknown,
+      type: CmsBindingType = inferCmsBindingType(field),
+    ) => {
       if (typeof value !== 'string' || value.trim().length === 0) return
       candidates.push({
         selector: `field:${field}`,
@@ -1512,7 +1584,10 @@ const extractCmsBindingCandidatesFromSiteSpec = (
     add('site.title', spec.title ?? spec.projectName ?? spec.brand)
     add('site.tagline', spec.tagline ?? spec.description, 'richtext')
 
-    const hero = typeof spec.hero === 'object' && spec.hero !== null ? spec.hero as Record<string, unknown> : undefined
+    const hero =
+      typeof spec.hero === 'object' && spec.hero !== null
+        ? (spec.hero as Record<string, unknown>)
+        : undefined
     if (hero !== undefined) {
       add('hero.headline', hero.headline ?? hero.title)
       add('hero.subheadline', hero.subheadline ?? hero.description, 'richtext')
@@ -1520,8 +1595,9 @@ const extractCmsBindingCandidatesFromSiteSpec = (
     }
 
     const pages = Array.isArray(spec.pages) ? spec.pages : []
-    const home = pages.find((page): page is Record<string, unknown> =>
-      typeof page === 'object' && page !== null,
+    const home = pages.find(
+      (page): page is Record<string, unknown> =>
+        typeof page === 'object' && page !== null,
     )
     if (home !== undefined) {
       add('home.title', home.title ?? home.name)
@@ -1594,10 +1670,7 @@ const seedCmsBindingsForGeneratedArtifacts = async (
 }
 
 const escapeOpenUiText = (value: string): string =>
-  value
-    .replaceAll('\\', '\\\\')
-    .replaceAll('"', '\\"')
-    .replaceAll('\n', '\\n')
+  value.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n')
 
 const assertCanMutateSession = async (
   ctx: MutationCtx,
@@ -1963,7 +2036,8 @@ export const create = mutation({
     const recentCount = sameOwnerSessions.filter(
       (session) => session.createdAt >= recentCutoff,
     ).length
-    recentCount < SHORT_WINDOW_LIMIT || disableLimits ||
+    recentCount < SHORT_WINDOW_LIMIT ||
+      disableLimits ||
       (() => {
         throw new ConvexError({
           code: 'RATE_LIMITED',
@@ -1994,7 +2068,8 @@ export const create = mutation({
     const quotaCount = sameOwnerSessions.filter(
       (session) => session.createdAt >= quotaCutoff,
     ).length
-    quotaCount < quotaLimit || disableLimits ||
+    quotaCount < quotaLimit ||
+      disableLimits ||
       (() => {
         throw new ConvexError({
           code: 'QUOTA_EXCEEDED',
@@ -2261,13 +2336,19 @@ export const getGenerationView = query({
         : null
     const exportRecord = exportId === null ? null : await ctx.db.get(exportId)
     const deployment =
-      directSessionId === null && exportRecord === null && args.lookup !== undefined
+      directSessionId === null &&
+      exportRecord === null &&
+      args.lookup !== undefined
         ? await ctx.db
-          .query('deployments')
-          .withIndex('by_slug', (index) => index.eq('slug', args.lookup))
-          .first()
+            .query('deployments')
+            .withIndex('by_slug', (index) => index.eq('slug', args.lookup))
+            .first()
         : null
-    const sessionId = directSessionId ?? exportRecord?.sessionId ?? deployment?.sessionId ?? null
+    const sessionId =
+      directSessionId ??
+      exportRecord?.sessionId ??
+      deployment?.sessionId ??
+      null
 
     if (sessionId === null) return null
 
@@ -2277,9 +2358,7 @@ export const getGenerationView = query({
 
     const tasks = await ctx.db
       .query('tasks')
-      .withIndex('by_sessionId', (index) =>
-        index.eq('sessionId', sessionId),
-      )
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .take(100)
     const events = await ctx.db
       .query('generationEvents')
@@ -2296,9 +2375,7 @@ export const getGenerationView = query({
       .first()
     const siteSpec = await ctx.db
       .query('siteSpecs')
-      .withIndex('by_sessionId', (index) =>
-        index.eq('sessionId', sessionId),
-      )
+      .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
       .first()
     const latestPreview = await ctx.db
       .query('previews')
@@ -2340,11 +2417,7 @@ export const getEventStream = query({
 
     const session = await ctx.db.get(sessionId)
     if (session === null) return null
-    await assertCanReadPrivateSession(
-      ctx,
-      session,
-      args.anonymousOwnerSecret,
-    )
+    await assertCanReadPrivateSession(ctx, session, args.anonymousOwnerSecret)
 
     const limit = Math.max(1, Math.min(args.limit ?? 100, 250))
     const events = await ctx.db
@@ -2391,9 +2464,7 @@ export const getSessionApiResponse = query({
         .take(20),
       ctx.db
         .query('deployments')
-        .withIndex('by_sessionId', (index) =>
-          index.eq('sessionId', sessionId),
-        )
+        .withIndex('by_sessionId', (index) => index.eq('sessionId', sessionId))
         .order('desc')
         .first(),
     ])
@@ -2885,6 +2956,76 @@ export const completeGeneration = internalMutation({
   },
 })
 
+export const replaceGeneratedPreview = internalMutation({
+  args: {
+    sessionId: v.id('sessions'),
+    html: v.string(),
+    siteSpecJson: v.string(),
+    openUiSource: v.string(),
+    tasks: v.array(engineTask),
+    elapsed: v.optional(v.number()),
+    provider: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+    const now = Date.now()
+    const provider = args.provider ?? 'ship-fast-engine'
+
+    session !== null ||
+      (() => {
+        throw new ConvexError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        })
+      })()
+
+    await Promise.all(
+      args.tasks.map((task, index) =>
+        upsertTask(ctx, args.sessionId, task, index, now),
+      ),
+    )
+    await upsertSiteSpec(ctx, args.sessionId, args.siteSpecJson, now)
+    await upsertHomeGeneratedModule(ctx, args.sessionId, args.openUiSource, now)
+
+    const previewVersion = (session.previewVersion ?? 0) + 1
+
+    await ctx.db.insert('previews', {
+      sessionId: args.sessionId,
+      version: previewVersion,
+      html: args.html,
+      openUiSource: args.openUiSource,
+      siteSpecJson: args.siteSpecJson,
+      source: 'generation',
+      createdAt: now,
+    })
+
+    await seedCmsBindingsForGeneratedArtifacts(
+      ctx,
+      args.sessionId,
+      { html: args.html, siteSpecJson: args.siteSpecJson },
+      now,
+    )
+
+    await ctx.db.insert('generationEvents', {
+      sessionId: args.sessionId,
+      eventType: 'preview_refined',
+      message: 'Generated preview refined',
+      previewVersion,
+      createdAt: now,
+      elapsedMs: args.elapsed,
+      provider,
+    })
+
+    await ctx.db.patch(args.sessionId, {
+      status: 'preview_ready',
+      previewVersion,
+      updatedAt: now,
+    })
+
+    return { sessionId: args.sessionId, previewVersion }
+  },
+})
+
 export const failGeneration = internalMutation({
   args: {
     sessionId: v.id('sessions'),
@@ -3069,7 +3210,10 @@ export const createExport = mutation({
 
     homeModule?.source?.trim().length ||
       (() => {
-        throw new ConvexError({ code: 'ARTIFACT_NOT_READY', message: 'Generated source is not ready to export' })
+        throw new ConvexError({
+          code: 'ARTIFACT_NOT_READY',
+          message: 'Generated source is not ready to export',
+        })
       })()
 
     const existingExport = await ctx.db
@@ -3096,20 +3240,20 @@ export const createExport = mutation({
       existingExport !== null
         ? existingExport._id
         : await ctx.db.insert('exports', {
-          sessionId: args.sessionId,
-          target: args.target,
-          status: entitlement.status,
-          artifactPath: `preview-${preview.version}.html`,
-          previewVersion: preview.version,
-          fileCount,
-          requiresPayment: entitlement.requiresPayment,
-          errorMessage:
-            entitlement.status === 'payment_required'
-              ? entitlement.message
-              : undefined,
-          createdAt: now,
-          updatedAt: now,
-        })
+            sessionId: args.sessionId,
+            target: args.target,
+            status: entitlement.status,
+            artifactPath: `preview-${preview.version}.html`,
+            previewVersion: preview.version,
+            fileCount,
+            requiresPayment: entitlement.requiresPayment,
+            errorMessage:
+              entitlement.status === 'payment_required'
+                ? entitlement.message
+                : undefined,
+            createdAt: now,
+            updatedAt: now,
+          })
 
     if (existingExport !== null) {
       await ctx.db.patch(exportId, {
@@ -3181,7 +3325,7 @@ export const getExport = query({
           errorMessage: exportRecord.errorMessage,
           createdAt: exportRecord.createdAt,
           updatedAt: exportRecord.updatedAt,
-      }
+        }
   },
 })
 
@@ -3202,11 +3346,7 @@ export const getOwnedExportDownload = query({
         })
       })()
 
-    await assertCanReadOwnedSession(
-      ctx,
-      session,
-      args.anonymousOwnerSecret,
-    )
+    await assertCanReadOwnedSession(ctx, session, args.anonymousOwnerSecret)
 
     const exportRecord = await ctx.db
       .query('exports')
@@ -4280,7 +4420,8 @@ export const listPublicSessions = query({
             homepageReady: session.homepageReady ?? null,
             siteSpecReady: session.siteSpecReady ?? null,
             openuiReady: session.openuiReady ?? null,
-            previewReady: session.status === 'preview_ready' || preview !== null,
+            previewReady:
+              session.status === 'preview_ready' || preview !== null,
           },
         }
       }),
@@ -4411,7 +4552,9 @@ export const getDeploymentStatus = query({
   handler: async (ctx, args) => {
     const deployment = await ctx.db
       .query('deployments')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
       .first()
 
     if (deployment === null) {
@@ -4465,7 +4608,9 @@ export const updateCmsEntry = internalMutation({
 
     const existingEntry = await ctx.db
       .query('cmsEntries')
-      .withIndex('by_bindingId', (index) => index.eq('bindingId', args.bindingId))
+      .withIndex('by_bindingId', (index) =>
+        index.eq('bindingId', args.bindingId),
+      )
       .first()
 
     const now = Date.now()
@@ -4563,7 +4708,9 @@ export const provisionMedusaTenant = internalMutation({
 
     const existingConfig = await ctx.db
       .query('commerceConfigs')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
       .first()
 
     if (existingConfig !== null) {
@@ -4606,7 +4753,9 @@ export const syncMedusaProducts = internalMutation({
   handler: async (ctx, args) => {
     const config = await ctx.db
       .query('commerceConfigs')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
       .first()
 
     if (config === null) {
@@ -4678,21 +4827,29 @@ export const getUsageMetrics = query({
   handler: async (ctx, args) => {
     const metrics = await ctx.db
       .query('usageMetrics')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
       .take(500)
 
     return {
       totalCost: metrics.reduce((sum, m) => sum + m.cost, 0),
       totalElapsedMs: metrics.reduce((sum, m) => sum + m.elapsedMs, 0),
       count: metrics.length,
-      byProvider: metrics.reduce((acc, m) => {
-        acc[m.provider] = (acc[m.provider] || 0) + 1
-        return acc
-      }, {} as Record<string, number>),
-      byEventType: metrics.reduce((acc, m) => {
-        acc[m.eventType] = (acc[m.eventType] || 0) + 1
-        return acc
-      }, {} as Record<string, number>),
+      byProvider: metrics.reduce(
+        (acc, m) => {
+          acc[m.provider] = (acc[m.provider] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+      byEventType: metrics.reduce(
+        (acc, m) => {
+          acc[m.eventType] = (acc[m.eventType] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
     }
   },
 })
@@ -4718,14 +4875,20 @@ export const getUserUsageMetrics = query({
       totalCost: metrics.reduce((sum, m) => sum + m.cost, 0),
       totalElapsedMs: metrics.reduce((sum, m) => sum + m.elapsedMs, 0),
       count: metrics.length,
-      byProvider: metrics.reduce((acc, m) => {
-        acc[m.provider] = (acc[m.provider] || 0) + 1
-        return acc
-      }, {} as Record<string, number>),
-      byEventType: metrics.reduce((acc, m) => {
-        acc[m.eventType] = (acc[m.eventType] || 0) + 1
-        return acc
-      }, {} as Record<string, number>),
+      byProvider: metrics.reduce(
+        (acc, m) => {
+          acc[m.provider] = (acc[m.provider] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
+      byEventType: metrics.reduce(
+        (acc, m) => {
+          acc[m.eventType] = (acc[m.eventType] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>,
+      ),
     }
   },
 })
@@ -4737,7 +4900,9 @@ export const listCmsEntries = query({
   handler: async (ctx, args) => {
     const entries = await ctx.db
       .query('cmsEntries')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
       .take(200)
 
     return entries
@@ -4751,11 +4916,15 @@ export const listCmsContent = query({
   handler: async (ctx, args) => {
     const bindings = await ctx.db
       .query('cmsBindings')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
       .take(200)
     const entries = await ctx.db
       .query('cmsEntries')
-      .withIndex('by_sessionId', (index) => index.eq('sessionId', args.sessionId))
+      .withIndex('by_sessionId', (index) =>
+        index.eq('sessionId', args.sessionId),
+      )
       .take(200)
     const entryByBindingId = new Map(
       entries.map((entry) => [entry.bindingId, entry]),
@@ -4813,7 +4982,14 @@ export const upsertCmsContentEntry = mutation({
     anonymousOwnerSecret: v.optional(v.string()),
     bindingId: v.optional(v.id('cmsBindings')),
     selector: v.optional(v.string()),
-    type: v.optional(v.union(v.literal('text'), v.literal('richtext'), v.literal('image'), v.literal('link'))),
+    type: v.optional(
+      v.union(
+        v.literal('text'),
+        v.literal('richtext'),
+        v.literal('image'),
+        v.literal('link'),
+      ),
+    ),
     field: v.optional(v.string()),
     content: v.string(),
     contentType: v.optional(v.string()),
@@ -5106,7 +5282,12 @@ export const insertCmsBinding = internalMutation({
   args: {
     sessionId: v.id('sessions'),
     selector: v.string(),
-    type: v.union(v.literal('text'), v.literal('richtext'), v.literal('image'), v.literal('link')),
+    type: v.union(
+      v.literal('text'),
+      v.literal('richtext'),
+      v.literal('image'),
+      v.literal('link'),
+    ),
     field: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -5181,11 +5362,17 @@ export const sendOperationalNotification = internalAction({
       telegramChatId === undefined ||
       telegramChatId.trim().length === 0
         ? { sent: false, reason: 'missing_credentials' }
-        : await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: telegramChatId, text: notification }),
-          })
+        : await fetch(
+            `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: telegramChatId,
+                text: notification,
+              }),
+            },
+          )
             .then(() => ({ sent: true }))
             .catch((error: unknown) => ({
               sent: false,

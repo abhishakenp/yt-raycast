@@ -26,6 +26,11 @@ Acceptance evidence to record:
 - Convex subscription or credit ledger state.
 - Dashboard export unlock screenshots or headed-browser verifier output.
 
+Latest implementation:
+
+- `bun run verify:providers` now gates full billing proof on sandbox credentials and writes a provider evidence report.
+- `scripts/verify-billing.mjs` now records checkout-start evidence and signed Stripe/Razorpay webhook state changes when signed auth and provider secrets are configured.
+
 ### 2. GitHub Push Provider Proof
 
 Status: implementation restored; real provider acceptance pending.
@@ -44,6 +49,10 @@ Acceptance evidence to record:
 - Branch name and commit SHA.
 - Export target pushed.
 - File list for generated output.
+
+Latest implementation:
+
+- `bun run verify:github-provider` now pushes a prepared signed-in export session through `/api/sessions/:id/github/push` and records repo, branch, commit SHA, and file list.
 
 ## P1 - Browser And Generated-Site Acceptance
 
@@ -130,6 +139,11 @@ Remaining work:
 - Provider-gated verifiers must skip with clear messages when required credentials or signed-in tokens are absent.
 - One release command should cover session creation, preview edit, export, auth, gallery, CMS, GitHub, billing, and browser-visible generation paths without hanging.
 
+Latest implementation:
+
+- `bun run verify:release` now runs the local QA gate followed by `bun run verify:providers`.
+- Provider-gated checks skip with explicit missing env names when credentials or signed-in tokens are absent.
+
 ## Product Decision
 
 ### 9. Medusa Ecommerce Provisioning
@@ -146,3 +160,7 @@ If kept, remaining work:
 - Provision or reuse tenant config.
 - Sync products without duplication.
 - Verify storefront cart creation/update against a real or sandbox backend.
+
+Latest implementation:
+
+- `bun run verify:medusa` now provisions a commerce session, syncs products twice, and verifies Medusa store config plus cart create/read against the configured sandbox backend.
