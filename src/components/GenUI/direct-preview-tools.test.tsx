@@ -28,7 +28,7 @@ describe('DirectPreview tools', () => {
     const previousActEnvironment = reactActGlobal.IS_REACT_ACT_ENVIRONMENT
 
     reactActGlobal.IS_REACT_ACT_ENVIRONMENT = true
-    globalThis.window = dom.window as unknown as Window & typeof globalThis
+    globalThis.window = dom.window
     globalThis.document = dom.window.document
     globalThis.HTMLElement = dom.window.HTMLElement
     globalThis.MutationObserver = dom.window.MutationObserver
@@ -58,12 +58,25 @@ describe('DirectPreview tools', () => {
       })
 
       const headline = dom.window.document.querySelector('h1') as HTMLElement
+      let selectionDetail: Record<string, unknown> | undefined
+      const previewRoot = dom.window.document.querySelector('.genui-preview')
+      previewRoot?.addEventListener('ship-fast-preview-select', (event) => {
+        selectionDetail = (event as CustomEvent<Record<string, unknown>>).detail
+      })
+
       headline.dispatchEvent(
         new dom.window.MouseEvent('click', { bubbles: true, cancelable: true }),
       )
 
       expect(headline.getAttribute('data-ship-fast-selected')).toBe('true')
       expect(headline.style.outline).toContain('2px')
+      expect(selectionDetail).toMatchObject({
+        label: 'Generated headline',
+        tagName: 'h1',
+        selectedText: 'Generated headline',
+        elementPath: expect.stringContaining('h1'),
+        html: '<h1>Generated headline</h1>',
+      })
     } finally {
       await act(async () => {
         root.unmount()

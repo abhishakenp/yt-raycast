@@ -10,6 +10,81 @@ import { observeGeneratedMobileNavs } from './generated-mobile-nav'
 
 export type PreviewToolMode = 'select' | 'annotate' | null
 
+export type PreviewSelection = {
+  label: string
+  tagName: string
+  selectedText: string
+  elementPath: string
+  html: string
+  imageSrc?: string
+  imageAlt?: string
+  boundingBox?: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+}
+
+const normalizeSelectionText = (value: string | null | undefined) =>
+  value?.trim().replace(/\s+/g, ' ') ?? ''
+
+const getElementIndex = (element: HTMLElement) => {
+  const parent = element.parentElement
+  if (!parent) return 1
+
+  return Array.from(parent.children).filter(
+    (child) => child.tagName === element.tagName,
+  ).indexOf(element) + 1
+}
+
+const getElementPath = (root: HTMLElement, element: HTMLElement) => {
+  const parts: string[] = []
+  let current: HTMLElement | null = element
+
+  while (current && current !== root) {
+    const tagName = current.tagName.toLowerCase()
+    const id = current.id ? `#${current.id}` : ''
+    const index = id ? '' : `:nth-of-type(${getElementIndex(current)})`
+    parts.unshift(`${tagName}${id}${index}`)
+    current = current.parentElement
+  }
+
+  return parts.join(' > ') || element.tagName.toLowerCase()
+}
+
+const createPreviewSelection = (
+  root: HTMLElement,
+  target: HTMLElement,
+): PreviewSelection => {
+  const selectedText = normalizeSelectionText(target.textContent).slice(0, 500)
+  const label =
+    target.getAttribute('aria-label') ||
+    selectedText.slice(0, 96) ||
+    target.tagName.toLowerCase()
+  const image =
+    target.tagName.toLowerCase() === 'img'
+      ? target
+      : target.querySelector('img')
+  const rect = target.getBoundingClientRect()
+
+  return {
+    label,
+    tagName: target.tagName.toLowerCase(),
+    selectedText,
+    elementPath: getElementPath(root, target),
+    html: target.outerHTML.slice(0, 4000),
+    imageSrc: image?.getAttribute('src') ?? undefined,
+    imageAlt: image?.getAttribute('alt') ?? undefined,
+    boundingBox: {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height,
+    },
+  }
+}
+
 // Renders children in a scoped div container with theme CSS custom properties applied.
 // Theme changes only affect this container, not the app chrome (TopBar).
 const DirectPreview = forwardRef<
@@ -20,8 +95,16 @@ const DirectPreview = forwardRef<
     isDark: boolean
     deviceMode?: 'desktop' | 'tablet' | 'mobile'
     previewToolMode?: PreviewToolMode
+    onPreviewSelect?: (selection: PreviewSelection) => void
   }
->(({ children, themeStyles, isDark, deviceMode = 'desktop', previewToolMode = null }, ref) => {
+>(({
+  children,
+  themeStyles,
+  isDark,
+  deviceMode = 'desktop',
+  previewToolMode = null,
+  onPreviewSelect,
+}, ref) => {
   const internalRef = useRef<HTMLDivElement | null>(null)
   const selectedElementRef = useRef<HTMLElement | null>(null)
   const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(
@@ -96,23 +179,19 @@ const DirectPreview = forwardRef<
       event.preventDefault()
       event.stopPropagation()
       clearSelectedElement()
+      const selection = createPreviewSelection(currentRoot, target)
 
       target.setAttribute('data-ship-fast-selected', 'true')
       target.style.outline = '2px solid rgb(34, 211, 238)'
       target.style.outlineOffset = '3px'
       target.style.cursor = 'crosshair'
       selectedElementRef.current = target
+      onPreviewSelect?.(selection)
 
       currentRoot.dispatchEvent(
         new CustomEvent('ship-fast-preview-select', {
           bubbles: true,
-          detail: {
-            label:
-              target.getAttribute('aria-label') ||
-              target.textContent?.trim().replace(/\s+/g, ' ').slice(0, 96) ||
-              target.tagName.toLowerCase(),
-            tagName: target.tagName.toLowerCase(),
-          },
+          detail: selection,
         }),
       )
     }
@@ -123,7 +202,7 @@ const DirectPreview = forwardRef<
       currentRoot.removeEventListener('click', handleClick, true)
       clearSelectedElement()
     }
-  }, [previewToolMode, children])
+  }, [previewToolMode, children, onPreviewSelect])
 
   return (
     <PortalContainerProvider container={portalContainer}>
