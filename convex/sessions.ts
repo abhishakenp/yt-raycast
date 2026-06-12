@@ -2677,13 +2677,22 @@ export const publishPreview = mutation({
         })
       })()
 
-    const preview = await ctx.db
-      .query('previews')
-      .withIndex('by_sessionId_version', (index) =>
-        index.eq('sessionId', args.sessionId),
-      )
-      .order('desc')
-      .first()
+    // Parallelize independent queries for better performance
+    const [preview, existingDeployment] = await Promise.all([
+      ctx.db
+        .query('previews')
+        .withIndex('by_sessionId_version', (index) =>
+          index.eq('sessionId', args.sessionId),
+        )
+        .order('desc')
+        .first(),
+      ctx.db
+        .query('deployments')
+        .withIndex('by_sessionId', (index) =>
+          index.eq('sessionId', args.sessionId),
+        )
+        .first(),
+    ])
 
     preview !== null ||
       (() => {
@@ -2692,13 +2701,6 @@ export const publishPreview = mutation({
           message: 'Preview is not ready to publish',
         })
       })()
-
-    const existingDeployment = await ctx.db
-      .query('deployments')
-      .withIndex('by_sessionId', (index) =>
-        index.eq('sessionId', args.sessionId),
-      )
-      .first()
 
     const slug =
       existingDeployment !== null && args.requestedSlug === undefined
