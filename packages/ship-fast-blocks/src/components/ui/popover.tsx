@@ -2,6 +2,7 @@ import * as React from "react"
 import { Popover as PopoverPrimitive } from "radix-ui"
 
 import { cn } from "#/lib/utils.ts"
+import { usePortalContainer } from "#/components/ui/portal-container.tsx"
 
 function Popover({
   ...props
@@ -15,6 +16,20 @@ function PopoverTrigger({
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
+function PopoverPortal({
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Portal>) {
+  const container = usePortalContainer()
+
+  return (
+    <PopoverPrimitive.Portal
+      data-slot="popover-portal"
+      container={container ?? undefined}
+      {...props}
+    />
+  )
+}
+
 function PopoverContent({
   className,
   align = "center",
@@ -22,7 +37,7 @@ function PopoverContent({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPortal>
       <PopoverPrimitive.Content
         data-slot="popover-content"
         align={align}
@@ -33,7 +48,7 @@ function PopoverContent({
         )}
         {...props}
       />
-    </PopoverPrimitive.Portal>
+    </PopoverPortal>
   )
 }
 
@@ -79,6 +94,7 @@ function PopoverDescription({
 export {
   Popover,
   PopoverTrigger,
+  PopoverPortal,
   PopoverContent,
   PopoverAnchor,
   PopoverHeader,
