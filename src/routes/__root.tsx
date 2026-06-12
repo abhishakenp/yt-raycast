@@ -1,11 +1,16 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { ClerkProvider } from '@clerk/tanstack-react-start'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
 import { AppProviders } from '@/app/providers/AppProviders'
+import { clerkFrostedGlassAppearance } from '@/app/providers/provider-config'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
+
+const clerkPublishableKey =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? import.meta.env.CLERK_PUBLISHABLE_KEY
 
 const RootDocument = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
@@ -31,9 +36,15 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
 
 const RootComponent = () => (
   <RootDocument>
-    <AppProviders>
-      <Outlet />
-    </AppProviders>
+    <ClerkProvider
+      publishableKey={clerkPublishableKey}
+      afterSignOutUrl="/"
+      appearance={clerkFrostedGlassAppearance}
+    >
+      <AppProviders>
+        <Outlet />
+      </AppProviders>
+    </ClerkProvider>
   </RootDocument>
 )
 
@@ -52,6 +63,85 @@ export const Route = createRootRoute({
       },
     ],
     links: [
+      {
+        rel: 'icon',
+        type: 'image/x-icon',
+        href: '/favicon.ico',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/favicon-16x16.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/favicon-32x32.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '48x48',
+        href: '/favicon-48x48.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '64x64',
+        href: '/favicon-64x64.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '128x128',
+        href: '/favicon-128x128.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '180x180',
+        href: '/favicon-180x180.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '192x192',
+        href: '/favicon-192x192.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '256x256',
+        href: '/favicon-256x256.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '512x512',
+        href: '/favicon-512x512.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: '/favicon-180x180.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '192x192',
+        href: '/favicon-192x192.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '256x256',
+        href: '/favicon-256x256.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '512x512',
+        href: '/favicon-512x512.png',
+      },
       {
         rel: 'preconnect',
         href: 'https://fonts.googleapis.com',

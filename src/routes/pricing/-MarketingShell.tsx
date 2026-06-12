@@ -39,22 +39,13 @@ export const MarketingShell = ({
       </nav>
       <div className="pointer-events-auto fixed top-[34px] left-[clamp(28px,4.5vw,72px)] z-[209] mb-0 w-auto items-start max-[720px]:top-10 max-[720px]:left-7">
         <a href="/" className="flex items-center gap-[13px] text-inherit no-underline" aria-label="SHIP FAST home">
-          <div className="size-[39px] text-[#26e7ff] drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] max-[720px]:size-8 [&_svg]:block [&_svg]:size-full">
-            <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" fill="url(#sfMarketingHomeBoltG1)" />
-              <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" stroke="url(#sfMarketingHomeBoltG2)" strokeWidth="2.2" strokeLinejoin="round" />
-              <defs>
-                <linearGradient id="sfMarketingHomeBoltG1" x1="11" y1="5" x2="42" y2="47" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#69f8ff" />
-                  <stop offset="0.54" stopColor="#1ab8ff" />
-                  <stop offset="1" stopColor="#6b3cff" />
-                </linearGradient>
-                <linearGradient id="sfMarketingHomeBoltG2" x1="8" y1="3" x2="44" y2="49" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#dffcff" />
-                  <stop offset="1" stopColor="#31dfff" stopOpacity="0.15" />
-                </linearGradient>
-              </defs>
-            </svg>
+          <div className="size-[39px] text-[#26e7ff] drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] max-[720px]:size-8">
+            <img
+              src="/assets/logo-transparent.png"
+              alt="Ship Fast Logo"
+              className="w-full h-full object-contain"
+              aria-hidden="true"
+            />
           </div>
           <span className="bg-[linear-gradient(135deg,#ffffff_0%,#dffbff_46%,#23e5ff_100%)] bg-[length:180%_180%] bg-clip-text font-sans text-[31px] font-extrabold tracking-[-0.055em] text-transparent max-[720px]:text-2xl [-webkit-text-fill-color:transparent]">SHIP FAST</span>
         </a>
