@@ -23,8 +23,9 @@ export function IntroLoader({
   progress?: number
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [logoClass, setLogoClass] = useState<'hidden' | 'visible' | 'shaking' | 'settled'>('hidden')
-  const [phaseVisible, setPhaseVisible] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+  const [logoClass, setLogoClass] = useState<'hidden' | 'visible' | 'shaking' | 'settled'>('visible')
+  const [phaseVisible, setPhaseVisible] = useState(true)
   const [statusIdx, setStatusIdx] = useState(0)
   const [isExiting, setIsExiting] = useState(false)
   const [autoProgress, setAutoProgress] = useState(0)
@@ -34,15 +35,24 @@ export function IntroLoader({
   useWarpCanvas(canvasRef)
 
   useEffect(() => {
+    setIsMounted(true)
+    // Reset to hidden state to start animation after hydration
+    setLogoClass('hidden')
+    setPhaseVisible(false)
+  }, [])
+
+  useEffect(() => {
     setStatusIdx(0)
     setAutoProgress(0)
   }, [phase])
 
   useEffect(() => {
+    // Only play audio after mount
+    if (!isMounted) return
     const audio = new Audio('/assets/launch.mp3')
     audio.volume = 0.72
     void audio.play().catch(() => undefined)
-  }, [])
+  }, [isMounted])
 
   useEffect(() => {
     if (progress >= 1) {
@@ -61,6 +71,9 @@ export function IntroLoader({
   }, [progress, phase])
 
   useEffect(() => {
+    // Only run logo animation after mount
+    if (!isMounted) return
+
     const reduce =
       typeof window !== 'undefined' &&
       window.matchMedia &&
@@ -86,7 +99,7 @@ export function IntroLoader({
       window.clearTimeout(tShake)
       window.clearTimeout(tSettle)
     }
-  }, [])
+  }, [isMounted])
 
   useEffect(() => {
     if (!phaseVisible) return

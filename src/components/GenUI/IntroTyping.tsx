@@ -10,14 +10,25 @@ const FUN_MESSAGES = [
 ]
 
 export function IntroTyping() {
-  const [text, setText] = useState('')
+  const [isMounted, setIsMounted] = useState(false)
+  const [text, setText] = useState(FUN_MESSAGES[0])
   const [messageIndex, setMessageIndex] = useState(0)
-  const [charIndex, setCharIndex] = useState(0)
+  const [charIndex, setCharIndex] = useState(FUN_MESSAGES[0].length)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    setIsMounted(true)
+    // Reset to empty state to start animation after hydration
+    setText('')
+    setCharIndex(0)
+  }, [])
+
+  useEffect(() => {
+    // Only run typing animation after mount
+    if (!isMounted) return
+
     const currentMessage = FUN_MESSAGES[messageIndex]
     
     const type = () => {
@@ -45,7 +56,7 @@ export function IntroTyping() {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [charIndex, isDeleting, messageIndex])
+  }, [charIndex, isDeleting, messageIndex, isMounted])
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 2600)
