@@ -472,7 +472,7 @@ export const HomePage = () => {
             <p className="m-0 text-center font-mono text-xs uppercase tracking-[0.18em] text-white/45" id="logo-tagline" aria-live="polite" aria-hidden="true" />
           </div>
 
-          <section className="relative grid min-h-[100svh] w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(32px,5vw,62px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:min-h-[760px] max-[760px]:rounded-[22px] max-[760px]:p-[22px]" aria-label="Print your mind in seconds">
+          <section className="relative grid min-h-[70svh] w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(32px,5vw,62px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:min-h-[600px] max-[760px]:rounded-[22px] max-[760px]:p-[22px]" aria-label="Print your mind in seconds">
             <div className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-visible" aria-hidden="true">
               <img
                 className="absolute left-0 top-0 z-[-1] block h-screen max-h-screen w-screen max-w-screen select-none object-contain object-right opacity-100 drop-shadow-[20px_-10px_42px_rgba(223,53,255,0.18)]"
