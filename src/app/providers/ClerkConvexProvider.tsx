@@ -25,19 +25,21 @@ export const ClerkConvexProvider = ({ children }: ClerkConvexProviderProps) => {
     [mode],
   )
 
-  return mode === 'clerk_convex' && convex ? (
+  return (
     <ClerkProvider
       publishableKey={clerkPublishableKey}
       afterSignOutUrl="/"
       appearance={clerkFrostedGlassAppearance}
     >
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        {children}
-      </ConvexProviderWithClerk>
+      {mode === 'clerk_convex' && convex ? (
+        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+          {children}
+        </ConvexProviderWithClerk>
+      ) : mode === 'convex_anonymous' && convex ? (
+        <ConvexProvider client={convex}>{children}</ConvexProvider>
+      ) : (
+        children
+      )}
     </ClerkProvider>
-  ) : mode === 'convex_anonymous' && convex ? (
-    <ConvexProvider client={convex}>{children}</ConvexProvider>
-  ) : (
-    children
   )
 }
