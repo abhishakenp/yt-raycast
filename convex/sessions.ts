@@ -1909,6 +1909,7 @@ export const create = mutation({
     cloneUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const disableLimits = process.env.DISABLE_LIMIT === 'true'
     const prompt = args.prompt.trim()
     const userId = await getUserId(ctx)
     const anonOwnerSecretHash =
@@ -1961,7 +1962,7 @@ export const create = mutation({
     const recentCount = sameOwnerSessions.filter(
       (session) => session.createdAt >= recentCutoff,
     ).length
-    recentCount < SHORT_WINDOW_LIMIT ||
+    recentCount < SHORT_WINDOW_LIMIT || disableLimits ||
       (() => {
         throw new ConvexError({
           code: 'RATE_LIMITED',
@@ -1992,7 +1993,7 @@ export const create = mutation({
     const quotaCount = sameOwnerSessions.filter(
       (session) => session.createdAt >= quotaCutoff,
     ).length
-    quotaCount < quotaLimit ||
+    quotaCount < quotaLimit || disableLimits ||
       (() => {
         throw new ConvexError({
           code: 'QUOTA_EXCEEDED',
