@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
@@ -22,12 +22,20 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
         <HeadContent />
       </head>
       <body>
-        <AppProviders>{children}</AppProviders>
+        {children}
         <Scripts />
       </body>
     </html>
   )
 }
+
+const RootComponent = () => (
+  <RootDocument>
+    <AppProviders>
+      <Outlet />
+    </AppProviders>
+  </RootDocument>
+)
 
 export const Route = createRootRoute({
   head: () => ({
@@ -63,5 +71,5 @@ export const Route = createRootRoute({
       },
     ],
   }),
-  shellComponent: RootDocument,
+  component: RootComponent,
 })
