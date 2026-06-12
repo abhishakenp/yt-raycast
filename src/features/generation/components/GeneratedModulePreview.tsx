@@ -1,5 +1,5 @@
 import DirectPreview from '@/components/GenUI/DirectPreview'
-import type { PreviewToolMode } from '@/components/GenUI/DirectPreview'
+import type { PreviewSelection, PreviewToolMode } from '@/components/GenUI/DirectPreview'
 import AgentationSessionBridge from '@/components/GenUI/AgentationSessionBridge'
 import OpenUIViewer from '@/island/openui/OpenUIViewer'
 import type { ThemeStyles } from '@/genui/theme-presets'
@@ -16,6 +16,7 @@ type GeneratedModulePreviewProps = {
   deviceMode?: 'desktop' | 'tablet' | 'mobile'
   previewToolMode?: PreviewToolMode
   agentationEnabled?: boolean
+  onPreviewSelect?: (selection: PreviewSelection) => void
 }
 
 const parseSiteSpecTheme = (siteSpecJson: string | undefined): Record<string, string> | null => {
@@ -70,6 +71,7 @@ export function GeneratedModulePreview({
   deviceMode = 'desktop',
   previewToolMode = null,
   agentationEnabled = false,
+  onPreviewSelect,
 }: GeneratedModulePreviewProps) {
   const anonymousOwnerSecret =
     typeof window === 'undefined'
@@ -86,6 +88,7 @@ export function GeneratedModulePreview({
         isDark={isDark}
         deviceMode={deviceMode}
         previewToolMode={previewToolMode}
+        onPreviewSelect={onPreviewSelect}
       >
         <OpenUIModuleRenderer
           source={source}

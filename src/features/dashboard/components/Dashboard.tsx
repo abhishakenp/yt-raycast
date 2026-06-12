@@ -5,7 +5,7 @@ import { Activity, Bot, Box, Building2, CreditCard, Crown, Download, Edit3, Gith
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 
 import { api } from '../../../../convex/_generated/api'
-import type { Id } from '../../../../convex/_generated/dataModel'
+import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { ActivityPanel } from '@/features/dashboard/components/ActivityPanel'
 import { AgentationPanel } from '@/features/agentation/components/AgentationPanel'
@@ -125,6 +125,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
   const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>(null)
   const [railMode, setRailMode] = useState<RailMode>('tools')
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
+  const [previewSelection, setPreviewSelection] = useState<PreviewSelection | null>(null)
   const [isDark, setIsDark] = useState(true)
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -137,13 +138,13 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
     api.sessions.getCommerceConfig,
     resolvedSessionId === undefined
       ? 'skip'
-      : { sessionId: resolvedSessionId as Id<'sessions'> },
+      : { sessionId: resolvedSessionId },
   )
   const deploymentStatus = useQuery(
     api.sessions.getDeploymentStatus,
     resolvedSessionId === undefined
       ? 'skip'
-      : { sessionId: resolvedSessionId as Id<'sessions'> },
+      : { sessionId: resolvedSessionId },
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
 
@@ -267,7 +268,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
           : readAnonymousOwnerSecret(window.localStorage, resolvedSessionId)
 
       await publishPreview({
-        sessionId: resolvedSessionId as Id<'sessions'>,
+        sessionId: resolvedSessionId,
         anonymousOwnerSecret,
       })
     } catch (error) {
@@ -275,6 +276,11 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
     } finally {
       setIsPublishing(false)
     }
+  }
+
+  const handlePreviewSelect = (selection: PreviewSelection) => {
+    setPreviewSelection(selection)
+    setRailMode('edits')
   }
 
   const toggleAdminView = () => {
@@ -517,6 +523,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                           deviceMode={currentDevice}
                           previewToolMode={inspectMode}
                           agentationEnabled={inspectMode === 'annotate' || railMode === 'annotations'}
+                          onPreviewSelect={handlePreviewSelect}
                         />
                       ) : (
                         <div className="grid h-full min-h-[480px] place-items-center gap-4 bg-[#090c14] text-center text-white/62" role="status" aria-live="polite">
@@ -721,7 +728,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                       ) : railMode === 'chat' ? (
                         <ChatPanel sessionId={sessionId} />
                       ) : railMode === 'edits' ? (
-                        <EditPanel sessionId={sessionId} />
+                        <EditPanel sessionId={sessionId} selection={previewSelection} />
                       ) : railMode === 'annotations' ? (
                         <AgentationPanel sessionId={sessionId} />
                       ) : railMode === 'activity' ? (

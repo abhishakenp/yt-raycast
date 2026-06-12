@@ -22,6 +22,7 @@ const getOwnerSecret = (sessionId: string) =>
 
 const AgentationSessionBridge = ({ enabled, sessionId }: AgentationSessionBridgeProps) => {
   const [AgentationComponent, setAgentationComponent] = useState<ComponentType<AgentationProps> | null>(null)
+  const saveSession = useMutation(api.sessions.saveAgentationSession)
   const upsertAnnotation = useMutation(api.sessions.upsertAnnotation)
   const deleteAnnotation = useMutation(api.sessions.deleteAnnotationByAgentationId)
   const clearAnnotations = useMutation(api.sessions.clearAnnotations)
@@ -40,6 +41,18 @@ const AgentationSessionBridge = ({ enabled, sessionId }: AgentationSessionBridge
       cancelled = true
     }
   }, [AgentationComponent, enabled])
+
+  useEffect(() => {
+    if (!enabled) return
+
+    void saveSession({
+      sessionId: convexSessionId,
+      anonymousOwnerSecret: getOwnerSecret(sessionId),
+      agentationSessionId: agentationSessionKey,
+    }).catch((error) => {
+      console.error('[Agentation] Failed to save session:', error)
+    })
+  }, [agentationSessionKey, convexSessionId, enabled, saveSession, sessionId])
 
   const handleUpsertAnnotation = useCallback(
     (annotation: Annotation) => {
@@ -82,6 +95,28 @@ const AgentationSessionBridge = ({ enabled, sessionId }: AgentationSessionBridge
     })
   }, [clearAnnotations, convexSessionId, sessionId])
 
+  const handleSubmitAnnotations = useCallback(
+    (output: string, annotations: Annotation[]) => {
+      void fetch(`/api/sessions/${encodeURIComponent(sessionId)}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anonymousOwnerSecret: getOwnerSecret(sessionId),
+          content: [
+            'Apply these annotated preview changes.',
+            '',
+            output,
+            '',
+            `Annotation count: ${annotations.length}`,
+          ].join('\n'),
+        }),
+      }).catch((error) => {
+        console.error('[Agentation] Failed to send annotations to agent:', error)
+      })
+    },
+    [sessionId],
+  )
+
   if (!enabled || !AgentationComponent) return null
 
   return (
@@ -89,10 +124,20 @@ const AgentationSessionBridge = ({ enabled, sessionId }: AgentationSessionBridge
       sessionId={agentationSessionKey}
       endpoint={AGENTATION_MCP_ENDPOINT}
       copyToClipboard={true}
+      onSessionCreated={(createdSessionId) => {
+        void saveSession({
+          sessionId: convexSessionId,
+          anonymousOwnerSecret: getOwnerSecret(sessionId),
+          agentationSessionId: createdSessionId,
+        }).catch((error) => {
+          console.error('[Agentation] Failed to save created session:', error)
+        })
+      }}
       onAnnotationAdd={handleUpsertAnnotation}
       onAnnotationUpdate={handleUpsertAnnotation}
       onAnnotationDelete={handleDeleteAnnotation}
       onAnnotationsClear={handleClearAnnotations}
+      onSubmit={handleSubmitAnnotations}
     />
   )
 }

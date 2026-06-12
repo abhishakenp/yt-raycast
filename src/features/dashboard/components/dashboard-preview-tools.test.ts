@@ -12,6 +12,8 @@ describe('dashboard preview tool wiring', () => {
 
     expect(dashboardSource).toContain("useState<'select' | 'annotate' | null>(null)")
     expect(dashboardSource).toContain('previewToolMode={inspectMode}')
+    expect(dashboardSource).toContain('onPreviewSelect={handlePreviewSelect}')
+    expect(dashboardSource).toContain('selection={previewSelection}')
     expect(dashboardSource).toContain(
       "agentationEnabled={inspectMode === 'annotate' || railMode === 'annotations'}",
     )

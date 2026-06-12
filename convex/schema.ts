@@ -198,7 +198,9 @@ export default defineSchema({
     payloadJson: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index('by_sessionId_annotationId', ['sessionId', 'annotationId']),
+  })
+    .index('by_sessionId_annotationId', ['sessionId', 'annotationId'])
+    .index('by_annotationId', ['annotationId']),
 
   exports: defineTable({
     sessionId: v.id('sessions'),

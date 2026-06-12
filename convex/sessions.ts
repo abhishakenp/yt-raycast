@@ -3138,7 +3138,7 @@ export const createExport = mutation({
       )
       .first()
 
-    homeModule?.source?.trim().length ||
+    homeModule?.source.trim().length ||
       (() => {
         throw new ConvexError({
           code: 'ARTIFACT_NOT_READY',
@@ -3999,6 +3999,198 @@ export const listAnnotations = query({
       createdAt: ann.createdAt,
       updatedAt: ann.updatedAt,
     }))
+  },
+})
+
+export const saveAgentationSession = mutation({
+  args: {
+    sessionId: v.id('sessions'),
+    anonymousOwnerSecret: v.optional(v.string()),
+    agentationSessionId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId)
+    const now = Date.now()
+
+    session !== null ||
+      (() => {
+        throw new ConvexError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        })
+      })()
+
+    await ctx.db.patch(args.sessionId, {
+      agentationEnabled: true,
+      agentationEnabledAt: session.agentationEnabledAt ?? now,
+      agentationSessionId: args.agentationSessionId,
+      updatedAt: now,
+    })
+
+    return {
+      sessionId: args.sessionId,
+      agentationSessionId: args.agentationSessionId,
+    }
+  },
+})
+
+const getSessionIdFromAgentationSessionKey = (
+  ctx: MutationCtx,
+  agentationSessionKey: string,
+): Id<'sessions'> | null => {
+  const prefix = 'ship-fast:generate:'
+  if (!agentationSessionKey.startsWith(prefix)) return null
+  return ctx.db.normalizeId(
+    'sessions',
+    agentationSessionKey.slice(prefix.length),
+  )
+}
+
+const assertAgentationSyncEnabled = async (
+  ctx: MutationCtx,
+  agentationSessionKey: string,
+) => {
+  const sessionId = getSessionIdFromAgentationSessionKey(
+    ctx,
+    agentationSessionKey,
+  )
+
+  sessionId !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'INVALID_SESSION',
+        message: 'Invalid Agentation session key',
+      })
+    })()
+
+  const session = await ctx.db.get(sessionId)
+  session !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'NOT_FOUND',
+        message: 'Session not found',
+      })
+    })()
+
+  const expectedSessionId =
+    session.agentationSessionId ?? agentationSessionKey
+  expectedSessionId === agentationSessionKey ||
+    (() => {
+      throw new ConvexError({
+        code: 'FORBIDDEN',
+        message: 'Agentation session key is not enabled for this session',
+      })
+    })()
+
+  return { session, sessionId }
+}
+
+export const upsertAgentationSyncAnnotation = mutation({
+  args: {
+    agentationSessionKey: v.string(),
+    annotationId: v.string(),
+    comment: v.string(),
+    elementLabel: v.string(),
+    elementPath: v.string(),
+    url: v.optional(v.string()),
+    payloadJson: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { sessionId } = await assertAgentationSyncEnabled(
+      ctx,
+      args.agentationSessionKey,
+    )
+    const now = Date.now()
+    const existing = await ctx.db
+      .query('agentationAnnotations')
+      .withIndex('by_sessionId_annotationId', (index) =>
+        index
+          .eq('sessionId', sessionId)
+          .eq('annotationId', args.annotationId),
+      )
+      .first()
+    const payload = {
+      agentationSessionKey: args.agentationSessionKey,
+      agentationSessionId: args.agentationSessionKey,
+      comment: args.comment,
+      elementLabel: args.elementLabel,
+      elementPath: args.elementPath,
+      url: args.url,
+      payloadJson: args.payloadJson,
+      updatedAt: now,
+    }
+
+    if (existing !== null) {
+      await ctx.db.patch(existing._id, payload)
+      return { sessionId, annotationId: existing._id }
+    }
+
+    const annotationDocId = await ctx.db.insert('agentationAnnotations', {
+      sessionId,
+      annotationId: args.annotationId,
+      ...payload,
+      createdAt: now,
+    })
+
+    return { sessionId, annotationId: annotationDocId }
+  },
+})
+
+export const updateAgentationSyncAnnotation = mutation({
+  args: {
+    annotationId: v.string(),
+    comment: v.string(),
+    elementLabel: v.string(),
+    elementPath: v.string(),
+    url: v.optional(v.string()),
+    payloadJson: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const annotation = await ctx.db
+      .query('agentationAnnotations')
+      .withIndex('by_annotationId', (index) =>
+        index.eq('annotationId', args.annotationId),
+      )
+      .first()
+
+    annotation !== null ||
+      (() => {
+        throw new ConvexError({
+          code: 'NOT_FOUND',
+          message: 'Annotation not found',
+        })
+      })()
+
+    await ctx.db.patch(annotation._id, {
+      comment: args.comment,
+      elementLabel: args.elementLabel,
+      elementPath: args.elementPath,
+      url: args.url,
+      payloadJson: args.payloadJson,
+      updatedAt: Date.now(),
+    })
+
+    return { sessionId: annotation.sessionId, annotationId: annotation._id }
+  },
+})
+
+export const deleteAgentationSyncAnnotation = mutation({
+  args: {
+    annotationId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const annotation = await ctx.db
+      .query('agentationAnnotations')
+      .withIndex('by_annotationId', (index) =>
+        index.eq('annotationId', args.annotationId),
+      )
+      .first()
+
+    if (annotation !== null) {
+      await ctx.db.delete(annotation._id)
+    }
+
+    return { annotationId: args.annotationId }
   },
 })
 

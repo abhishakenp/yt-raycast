@@ -43,6 +43,8 @@ import { Route as ApiMedusaStoreConfigRouteImport } from './routes/api/medusa-st
 import { Route as ApiMedusaStoreCartRouteImport } from './routes/api/medusa-store.cart'
 import { Route as ApiMedusaAdminConfigRouteImport } from './routes/api/medusa-admin.config'
 import { Route as ApiCheckoutStartRouteImport } from './routes/api/checkout.start'
+import { Route as ApiAgentationSyncSessionsRouteImport } from './routes/api/agentation-sync.sessions'
+import { Route as ApiAgentationSyncHealthRouteImport } from './routes/api/agentation-sync.health'
 import { Route as ApiSessionsSessionIdStreamRouteImport } from './routes/api/sessions.$sessionId.stream'
 import { Route as ApiSessionsSessionIdPreviewInlineTextRouteImport } from './routes/api/sessions.$sessionId.preview-inline-text'
 import { Route as ApiSessionsSessionIdPreviewInlineStyleRouteImport } from './routes/api/sessions.$sessionId.preview-inline-style'
@@ -55,9 +57,13 @@ import { Route as ApiSessionsSessionIdExportRouteImport } from './routes/api/ses
 import { Route as ApiSessionsSessionIdChatRouteImport } from './routes/api/sessions.$sessionId.chat'
 import { Route as ApiMedusaStoreCartLineItemsRouteImport } from './routes/api/medusa-store.cart.line-items'
 import { Route as ApiMedusaStoreCartIdRouteImport } from './routes/api/medusa-store.cart.$id'
+import { Route as ApiAgentationSyncSessionsAgentationSessionKeyRouteImport } from './routes/api/agentation-sync.sessions.$agentationSessionKey'
+import { Route as ApiAgentationSyncAnnotationsAnnotationIdRouteImport } from './routes/api/agentation-sync.annotations.$annotationId'
 import { Route as ApiSessionsSessionIdProvisionMedusaRouteImport } from './routes/api/sessions.$sessionId.provision.medusa'
 import { Route as ApiSessionsSessionIdGithubPushRouteImport } from './routes/api/sessions.$sessionId.github.push'
 import { Route as ApiSessionsSessionIdDownloadTargetRouteImport } from './routes/api/sessions.$sessionId.download.$target'
+import { Route as ApiAgentationSyncSessionsAgentationSessionKeyEventsRouteImport } from './routes/api/agentation-sync.sessions.$agentationSessionKey.events'
+import { Route as ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRouteImport } from './routes/api/agentation-sync.sessions.$agentationSessionKey.annotations'
 import { Route as ApiSessionsSessionIdHistoryVersionRestoreRouteImport } from './routes/api/sessions.$sessionId.history.$version.restore'
 
 const TermsRoute = TermsRouteImport.update({
@@ -231,6 +237,17 @@ const ApiCheckoutStartRoute = ApiCheckoutStartRouteImport.update({
   path: '/api/checkout/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentationSyncSessionsRoute =
+  ApiAgentationSyncSessionsRouteImport.update({
+    id: '/api/agentation-sync/sessions',
+    path: '/api/agentation-sync/sessions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiAgentationSyncHealthRoute = ApiAgentationSyncHealthRouteImport.update({
+  id: '/api/agentation-sync/health',
+  path: '/api/agentation-sync/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSessionsSessionIdStreamRoute =
   ApiSessionsSessionIdStreamRouteImport.update({
     id: '/stream',
@@ -302,6 +319,18 @@ const ApiMedusaStoreCartIdRoute = ApiMedusaStoreCartIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiMedusaStoreCartRoute,
 } as any)
+const ApiAgentationSyncSessionsAgentationSessionKeyRoute =
+  ApiAgentationSyncSessionsAgentationSessionKeyRouteImport.update({
+    id: '/$agentationSessionKey',
+    path: '/$agentationSessionKey',
+    getParentRoute: () => ApiAgentationSyncSessionsRoute,
+  } as any)
+const ApiAgentationSyncAnnotationsAnnotationIdRoute =
+  ApiAgentationSyncAnnotationsAnnotationIdRouteImport.update({
+    id: '/api/agentation-sync/annotations/$annotationId',
+    path: '/api/agentation-sync/annotations/$annotationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiSessionsSessionIdProvisionMedusaRoute =
   ApiSessionsSessionIdProvisionMedusaRouteImport.update({
     id: '/provision/medusa',
@@ -319,6 +348,18 @@ const ApiSessionsSessionIdDownloadTargetRoute =
     id: '/download/$target',
     path: '/download/$target',
     getParentRoute: () => ApiSessionsSessionIdRoute,
+  } as any)
+const ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute =
+  ApiAgentationSyncSessionsAgentationSessionKeyEventsRouteImport.update({
+    id: '/events',
+    path: '/events',
+    getParentRoute: () => ApiAgentationSyncSessionsAgentationSessionKeyRoute,
+  } as any)
+const ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute =
+  ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRouteImport.update({
+    id: '/annotations',
+    path: '/annotations',
+    getParentRoute: () => ApiAgentationSyncSessionsAgentationSessionKeyRoute,
   } as any)
 const ApiSessionsSessionIdHistoryVersionRestoreRoute =
   ApiSessionsSessionIdHistoryVersionRestoreRouteImport.update({
@@ -349,6 +390,8 @@ export interface FileRoutesByFullPath {
   '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
+  '/api/agentation-sync/health': typeof ApiAgentationSyncHealthRoute
+  '/api/agentation-sync/sessions': typeof ApiAgentationSyncSessionsRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
@@ -362,6 +405,8 @@ export interface FileRoutesByFullPath {
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/agentation-sync/annotations/$annotationId': typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey': typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
@@ -374,6 +419,8 @@ export interface FileRoutesByFullPath {
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
@@ -401,6 +448,8 @@ export interface FileRoutesByTo {
   '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
+  '/api/agentation-sync/health': typeof ApiAgentationSyncHealthRoute
+  '/api/agentation-sync/sessions': typeof ApiAgentationSyncSessionsRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
@@ -414,6 +463,8 @@ export interface FileRoutesByTo {
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/agentation-sync/annotations/$annotationId': typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey': typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
@@ -426,6 +477,8 @@ export interface FileRoutesByTo {
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
@@ -454,6 +507,8 @@ export interface FileRoutesById {
   '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
   '/preview/$slug': typeof PreviewSlugRouteWithChildren
+  '/api/agentation-sync/health': typeof ApiAgentationSyncHealthRoute
+  '/api/agentation-sync/sessions': typeof ApiAgentationSyncSessionsRouteWithChildren
   '/api/checkout/start': typeof ApiCheckoutStartRoute
   '/api/medusa-admin/config': typeof ApiMedusaAdminConfigRoute
   '/api/medusa-store/cart': typeof ApiMedusaStoreCartRouteWithChildren
@@ -467,6 +522,8 @@ export interface FileRoutesById {
   '/preview/$slug/llms.txt': typeof PreviewSlugLlmsDottxtRoute
   '/preview/$slug/robots.txt': typeof PreviewSlugRobotsDottxtRoute
   '/preview/$slug/sitemap.xml': typeof PreviewSlugSitemapDotxmlRoute
+  '/api/agentation-sync/annotations/$annotationId': typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey': typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren
   '/api/medusa-store/cart/$id': typeof ApiMedusaStoreCartIdRoute
   '/api/medusa-store/cart/line-items': typeof ApiMedusaStoreCartLineItemsRoute
   '/api/sessions/$sessionId/chat': typeof ApiSessionsSessionIdChatRoute
@@ -479,6 +536,8 @@ export interface FileRoutesById {
   '/api/sessions/$sessionId/preview-inline-style': typeof ApiSessionsSessionIdPreviewInlineStyleRoute
   '/api/sessions/$sessionId/preview-inline-text': typeof ApiSessionsSessionIdPreviewInlineTextRoute
   '/api/sessions/$sessionId/stream': typeof ApiSessionsSessionIdStreamRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey/annotations': typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
+  '/api/agentation-sync/sessions/$agentationSessionKey/events': typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
   '/api/sessions/$sessionId/download/$target': typeof ApiSessionsSessionIdDownloadTargetRoute
   '/api/sessions/$sessionId/github/push': typeof ApiSessionsSessionIdGithubPushRoute
   '/api/sessions/$sessionId/provision/medusa': typeof ApiSessionsSessionIdProvisionMedusaRoute
@@ -508,6 +567,8 @@ export interface FileRouteTypes {
     | '/api/translate'
     | '/generate/$sessionId'
     | '/preview/$slug'
+    | '/api/agentation-sync/health'
+    | '/api/agentation-sync/sessions'
     | '/api/checkout/start'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
@@ -521,6 +582,8 @@ export interface FileRouteTypes {
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
+    | '/api/agentation-sync/annotations/$annotationId'
+    | '/api/agentation-sync/sessions/$agentationSessionKey'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
@@ -533,6 +596,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/stream'
+    | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
+    | '/api/agentation-sync/sessions/$agentationSessionKey/events'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
@@ -560,6 +625,8 @@ export interface FileRouteTypes {
     | '/api/translate'
     | '/generate/$sessionId'
     | '/preview/$slug'
+    | '/api/agentation-sync/health'
+    | '/api/agentation-sync/sessions'
     | '/api/checkout/start'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
@@ -573,6 +640,8 @@ export interface FileRouteTypes {
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
+    | '/api/agentation-sync/annotations/$annotationId'
+    | '/api/agentation-sync/sessions/$agentationSessionKey'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
@@ -585,6 +654,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/stream'
+    | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
+    | '/api/agentation-sync/sessions/$agentationSessionKey/events'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
@@ -612,6 +683,8 @@ export interface FileRouteTypes {
     | '/api/translate'
     | '/generate/$sessionId'
     | '/preview/$slug'
+    | '/api/agentation-sync/health'
+    | '/api/agentation-sync/sessions'
     | '/api/checkout/start'
     | '/api/medusa-admin/config'
     | '/api/medusa-store/cart'
@@ -625,6 +698,8 @@ export interface FileRouteTypes {
     | '/preview/$slug/llms.txt'
     | '/preview/$slug/robots.txt'
     | '/preview/$slug/sitemap.xml'
+    | '/api/agentation-sync/annotations/$annotationId'
+    | '/api/agentation-sync/sessions/$agentationSessionKey'
     | '/api/medusa-store/cart/$id'
     | '/api/medusa-store/cart/line-items'
     | '/api/sessions/$sessionId/chat'
@@ -637,6 +712,8 @@ export interface FileRouteTypes {
     | '/api/sessions/$sessionId/preview-inline-style'
     | '/api/sessions/$sessionId/preview-inline-text'
     | '/api/sessions/$sessionId/stream'
+    | '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
+    | '/api/agentation-sync/sessions/$agentationSessionKey/events'
     | '/api/sessions/$sessionId/download/$target'
     | '/api/sessions/$sessionId/github/push'
     | '/api/sessions/$sessionId/provision/medusa'
@@ -665,6 +742,8 @@ export interface RootRouteChildren {
   ApiTranslateRoute: typeof ApiTranslateRoute
   GenerateSessionIdRoute: typeof GenerateSessionIdRouteWithChildren
   PreviewSlugRoute: typeof PreviewSlugRouteWithChildren
+  ApiAgentationSyncHealthRoute: typeof ApiAgentationSyncHealthRoute
+  ApiAgentationSyncSessionsRoute: typeof ApiAgentationSyncSessionsRouteWithChildren
   ApiCheckoutStartRoute: typeof ApiCheckoutStartRoute
   ApiMedusaAdminConfigRoute: typeof ApiMedusaAdminConfigRoute
   ApiMedusaStoreCartRoute: typeof ApiMedusaStoreCartRouteWithChildren
@@ -674,6 +753,7 @@ export interface RootRouteChildren {
   ApiSessionsRecentRoute: typeof ApiSessionsRecentRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ExportSessionIdTargetRoute: typeof ExportSessionIdTargetRoute
+  ApiAgentationSyncAnnotationsAnnotationIdRoute: typeof ApiAgentationSyncAnnotationsAnnotationIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -916,6 +996,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCheckoutStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agentation-sync/sessions': {
+      id: '/api/agentation-sync/sessions'
+      path: '/api/agentation-sync/sessions'
+      fullPath: '/api/agentation-sync/sessions'
+      preLoaderRoute: typeof ApiAgentationSyncSessionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agentation-sync/health': {
+      id: '/api/agentation-sync/health'
+      path: '/api/agentation-sync/health'
+      fullPath: '/api/agentation-sync/health'
+      preLoaderRoute: typeof ApiAgentationSyncHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/stream': {
       id: '/api/sessions/$sessionId/stream'
       path: '/stream'
@@ -1000,6 +1094,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMedusaStoreCartIdRouteImport
       parentRoute: typeof ApiMedusaStoreCartRoute
     }
+    '/api/agentation-sync/sessions/$agentationSessionKey': {
+      id: '/api/agentation-sync/sessions/$agentationSessionKey'
+      path: '/$agentationSessionKey'
+      fullPath: '/api/agentation-sync/sessions/$agentationSessionKey'
+      preLoaderRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteImport
+      parentRoute: typeof ApiAgentationSyncSessionsRoute
+    }
+    '/api/agentation-sync/annotations/$annotationId': {
+      id: '/api/agentation-sync/annotations/$annotationId'
+      path: '/api/agentation-sync/annotations/$annotationId'
+      fullPath: '/api/agentation-sync/annotations/$annotationId'
+      preLoaderRoute: typeof ApiAgentationSyncAnnotationsAnnotationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sessions/$sessionId/provision/medusa': {
       id: '/api/sessions/$sessionId/provision/medusa'
       path: '/provision/medusa'
@@ -1020,6 +1128,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/sessions/$sessionId/download/$target'
       preLoaderRoute: typeof ApiSessionsSessionIdDownloadTargetRouteImport
       parentRoute: typeof ApiSessionsSessionIdRoute
+    }
+    '/api/agentation-sync/sessions/$agentationSessionKey/events': {
+      id: '/api/agentation-sync/sessions/$agentationSessionKey/events'
+      path: '/events'
+      fullPath: '/api/agentation-sync/sessions/$agentationSessionKey/events'
+      preLoaderRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRouteImport
+      parentRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyRoute
+    }
+    '/api/agentation-sync/sessions/$agentationSessionKey/annotations': {
+      id: '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
+      path: '/annotations'
+      fullPath: '/api/agentation-sync/sessions/$agentationSessionKey/annotations'
+      preLoaderRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRouteImport
+      parentRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyRoute
     }
     '/api/sessions/$sessionId/history/$version/restore': {
       id: '/api/sessions/$sessionId/history/$version/restore'
@@ -1057,6 +1179,39 @@ const PreviewSlugRouteChildren: PreviewSlugRouteChildren = {
 const PreviewSlugRouteWithChildren = PreviewSlugRoute._addFileChildren(
   PreviewSlugRouteChildren,
 )
+
+interface ApiAgentationSyncSessionsAgentationSessionKeyRouteChildren {
+  ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute
+  ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute
+}
+
+const ApiAgentationSyncSessionsAgentationSessionKeyRouteChildren: ApiAgentationSyncSessionsAgentationSessionKeyRouteChildren =
+  {
+    ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute:
+      ApiAgentationSyncSessionsAgentationSessionKeyAnnotationsRoute,
+    ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute:
+      ApiAgentationSyncSessionsAgentationSessionKeyEventsRoute,
+  }
+
+const ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren =
+  ApiAgentationSyncSessionsAgentationSessionKeyRoute._addFileChildren(
+    ApiAgentationSyncSessionsAgentationSessionKeyRouteChildren,
+  )
+
+interface ApiAgentationSyncSessionsRouteChildren {
+  ApiAgentationSyncSessionsAgentationSessionKeyRoute: typeof ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren
+}
+
+const ApiAgentationSyncSessionsRouteChildren: ApiAgentationSyncSessionsRouteChildren =
+  {
+    ApiAgentationSyncSessionsAgentationSessionKeyRoute:
+      ApiAgentationSyncSessionsAgentationSessionKeyRouteWithChildren,
+  }
+
+const ApiAgentationSyncSessionsRouteWithChildren =
+  ApiAgentationSyncSessionsRoute._addFileChildren(
+    ApiAgentationSyncSessionsRouteChildren,
+  )
 
 interface ApiMedusaStoreCartRouteChildren {
   ApiMedusaStoreCartIdRoute: typeof ApiMedusaStoreCartIdRoute
@@ -1150,6 +1305,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTranslateRoute: ApiTranslateRoute,
   GenerateSessionIdRoute: GenerateSessionIdRouteWithChildren,
   PreviewSlugRoute: PreviewSlugRouteWithChildren,
+  ApiAgentationSyncHealthRoute: ApiAgentationSyncHealthRoute,
+  ApiAgentationSyncSessionsRoute: ApiAgentationSyncSessionsRouteWithChildren,
   ApiCheckoutStartRoute: ApiCheckoutStartRoute,
   ApiMedusaAdminConfigRoute: ApiMedusaAdminConfigRoute,
   ApiMedusaStoreCartRoute: ApiMedusaStoreCartRouteWithChildren,
@@ -1159,6 +1316,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSessionsRecentRoute: ApiSessionsRecentRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ExportSessionIdTargetRoute: ExportSessionIdTargetRoute,
+  ApiAgentationSyncAnnotationsAnnotationIdRoute:
+    ApiAgentationSyncAnnotationsAnnotationIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

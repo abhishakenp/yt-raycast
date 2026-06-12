@@ -1,18 +1,28 @@
 import { Edit } from 'lucide-react'
 import type { FormEvent } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
 import { useEditController } from '../hooks/useEditController'
 
 type EditPanelProps = {
   sessionId: string
+  selection?: PreviewSelection | null
 }
 
-export const EditPanel = ({ sessionId }: EditPanelProps) => {
+export const EditPanel = ({ sessionId, selection = null }: EditPanelProps) => {
   const { applyEdit, editError, edits, history, isEditing, restoreVersion } = useEditController(sessionId)
   const [targetLabel, setTargetLabel] = useState('Hero text')
   const [beforeText, setBeforeText] = useState('')
   const [afterText, setAfterText] = useState('')
+
+  useEffect(() => {
+    if (!selection) return
+
+    setTargetLabel(selection.label)
+    setBeforeText(selection.selectedText)
+    setAfterText('')
+  }, [selection])
 
   const submitTextEdit = async (event: FormEvent) => {
     event.preventDefault()
@@ -35,6 +45,14 @@ export const EditPanel = ({ sessionId }: EditPanelProps) => {
         <Edit className="size-4 text-cyan-200" />
         <h2 className="m-0 font-sans text-sm font-semibold uppercase tracking-[0.1em] text-[var(--text-primary)]">Edits</h2>
       </div>
+
+      {selection && (
+        <div className="mb-3 rounded-2xl border border-cyan-300/16 bg-cyan-300/10 p-3">
+          <p className="m-0 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-cyan-100">Selected</p>
+          <p className="m-0 mt-1 text-sm font-medium text-white">{selection.label}</p>
+          <p className="m-0 mt-1 truncate font-mono text-[0.68rem] text-white/42">{selection.elementPath}</p>
+        </div>
+      )}
 
       <form className="mb-4 grid gap-2 rounded-2xl border border-white/10 bg-white/[0.035] p-3" onSubmit={submitTextEdit}>
         <label className="grid gap-1 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">

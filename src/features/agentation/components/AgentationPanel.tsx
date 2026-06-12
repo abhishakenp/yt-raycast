@@ -1,4 +1,4 @@
-import { Bot, Trash2 } from 'lucide-react'
+import { Bot, Send, Trash2 } from 'lucide-react'
 
 import { useAgentationController } from '../hooks/useAgentationController'
 
@@ -7,7 +7,7 @@ type AgentationPanelProps = {
 }
 
 export const AgentationPanel = ({ sessionId }: AgentationPanelProps) => {
-  const { annotations, annotationError, isCreating, isDeleting, remove } = useAgentationController(sessionId)
+  const { annotations, annotationError, isCreating, isDeleting, isSending, remove, sendAnnotations } = useAgentationController(sessionId)
 
   const handleDelete = async (annotationId: string) => {
     await remove(annotationId as any)
@@ -42,6 +42,15 @@ export const AgentationPanel = ({ sessionId }: AgentationPanelProps) => {
           <p className="py-8 text-center text-sm italic text-[var(--text-muted)]">No annotations yet. Use AI agent to add annotations.</p>
         )}
       </div>
+      <button
+        className="mb-3 flex min-h-9 w-full items-center justify-center gap-2 rounded-full bg-cyan-300 px-3 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-45"
+        disabled={isSending || !annotations || annotations.length === 0}
+        onClick={() => void sendAnnotations()}
+        type="button"
+      >
+        <Send className="size-4" />
+        {isSending ? 'Sending...' : 'Send annotations to agent'}
+      </button>
       {annotationError && <p className="mt-3 rounded-[var(--radius-sm)] border border-rose-500/30 bg-rose-500/12 p-3 text-sm text-rose-400">{annotationError}</p>}
       {isCreating && <p className="mt-3 text-sm italic text-[var(--text-muted)]">Creating annotation...</p>}
     </div>
