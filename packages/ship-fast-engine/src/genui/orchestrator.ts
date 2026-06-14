@@ -268,7 +268,9 @@ function parsePlan(raw: string, rng: () => number, prompt: string): Plan {
   const rawLocale =
     typeof parsed.locale === 'string' ? parsed.locale.trim().toLowerCase() : ''
   const locale =
-    /^[a-z]{2}$/.test(rawLocale) || /^[a-z]{2,8}-latn$/.test(rawLocale)
+    rawLocale === 'hinglish' ||
+    /^[a-z]{2,8}$/.test(rawLocale) ||
+    /^[a-z]{2,8}-(?:latn|en)$/.test(rawLocale)
       ? rawLocale
       : 'en'
   return { brand, tagline, theme, locale, pages }
@@ -295,13 +297,16 @@ function fallbackPlan(prompt: string, rng: () => number): Plan {
 }
 
 function pageUser(
+  fullPrompt: string,
   brand: string,
   navLabels: string[],
   page: PlannedPage,
   tagline: string,
 ): string {
   const navJson = JSON.stringify(navLabels)
-  return `Brand: ${brand}
+  return `Build request: ${fullPrompt}
+
+Brand: ${brand}
 Tagline: ${tagline}
 Site navigation (reuse VERBATIM): ${navJson}
 This page: "${page.label}" — ${page.brief}
@@ -552,7 +557,7 @@ export async function* generateUI(
         const p = generateText(
           modelId,
           pageSystemPrompt(page.block),
-          pageUser(plan.brand, labels, page, plan.tagline),
+          pageUser(prompt, plan.brand, labels, page, plan.tagline),
           signal,
           SUBTREE_RETRIES,
           (attempt) => ch.push({ type: 'module_retry', id: page.id, attempt }),

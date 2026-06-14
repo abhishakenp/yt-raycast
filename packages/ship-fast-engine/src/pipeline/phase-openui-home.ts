@@ -163,6 +163,7 @@ export async function generateAndWriteOpenUIHome(p: {
 
   const result = await runHomepageOrchestrator({
     prompt: p.prompt,
+    preferredLanguage: forcedLocale || undefined,
     signal: new AbortController().signal,
     onEvent,
     onSource,

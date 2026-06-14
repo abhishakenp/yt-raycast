@@ -6,14 +6,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const savedProjects = []
 const streamDoneEvents = []
 const translationCalls = []
+const orchestratorCalls = []
 
 vi.mock('../genui/run.ts', () => ({
-  runHomepageOrchestrator: vi.fn(async () => ({
-    source: 'root = Page("Generated")',
-    theme: 'modern-minimal',
-    locale: 'en',
-    brand: 'Generated',
-  })),
+  runHomepageOrchestrator: vi.fn(async (args) => {
+    orchestratorCalls.push(args)
+    return {
+      source: 'root = Page("Generated")',
+      theme: 'modern-minimal',
+      locale: 'en',
+      brand: 'Generated',
+    }
+  }),
 }))
 
 vi.mock('../renderers/index.ts', () => ({
@@ -51,6 +55,7 @@ describe('OpenUI homepage language mode', () => {
     savedProjects.length = 0
     streamDoneEvents.length = 0
     translationCalls.length = 0
+    orchestratorCalls.length = 0
   })
 
   it('uses the resolved language mode as the final locale over orchestrator fallback locale', async () => {
@@ -73,6 +78,25 @@ describe('OpenUI homepage language mode', () => {
 
     expect(savedProjects.at(-1).locale).toBe('fr')
     expect(streamDoneEvents.at(-1).locale).toBe('fr')
+  })
+
+  it('passes the resolved language code into the homepage orchestrator', async () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-openui-language-'))
+
+    await generateAndWriteOpenUIHome({
+      workspace,
+      siteSpec: null,
+      prompt: 'Build a site in French',
+      languageMode: { code: 'fr', name: 'French' },
+      sessionCtx: {
+        broadcast: vi.fn(),
+        signalHomepageReady: vi.fn(),
+        signalOpenuiReady: vi.fn(),
+      },
+      log: vi.fn(),
+    })
+
+    expect(orchestratorCalls.at(-1).preferredLanguage).toBe('fr')
   })
 
   it('translates final preview HTML when the resolved language requires translation', async () => {

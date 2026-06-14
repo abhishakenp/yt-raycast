@@ -77,6 +77,73 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     expect(events).toContain('done')
   })
 
+  it('carries the enforced preferred language into page content prompts', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+    const pagePrompts: string[] = []
+
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      const userPrompt = String(user)
+      if (!userPrompt.includes('This page:')) {
+        return JSON.stringify({
+          brand: 'Kaveri Meals',
+          tagline: 'Fresh meals for local families.',
+          theme: 'bold-tech',
+          locale: 'ta-en',
+          pages: [
+            {
+              label: 'Home',
+              brief: 'Primary landing page',
+              blocks: ['SaasKimiPage'],
+            },
+          ],
+        })
+      }
+
+      pagePrompts.push(userPrompt)
+      return homeModule.replaceAll('FastCo', 'Kaveri Meals')
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a food delivery landing page',
+      preferredLanguage: 'ta-en',
+    })
+
+    expect(result.locale).toBe('ta-en')
+    expect(pagePrompts).toHaveLength(1)
+    expect(pagePrompts[0]).toContain('server language code `ta-en`')
+    expect(pagePrompts[0]).toContain('natural Tamil + English mix')
+  })
+
+  it('preserves planner locale variants for code-mixed languages', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'Kaveri Meals',
+          tagline: 'Fresh meals for local families.',
+          theme: 'bold-tech',
+          locale: 'ta-en',
+          pages: [
+            {
+              label: 'Home',
+              brief: 'Primary landing page',
+              blocks: ['SaasKimiPage'],
+            },
+          ],
+        })
+      }
+
+      return homeModule.replaceAll('FastCo', 'Kaveri Meals')
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a landing page for Kaveri Meals',
+    })
+
+    expect(result.locale).toBe('ta-en')
+  })
+
   it('does not expose a home-only completion option', async () => {
     const source = await import('node:fs').then(({ readFileSync }) =>
       readFileSync(new URL('./run.ts', import.meta.url), 'utf8'),
