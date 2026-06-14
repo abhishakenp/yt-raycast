@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, ChevronLeft, ChevronRight, Timer } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -28,6 +29,7 @@ export type GallerySession = {
   moduleSource?: string | null
   preferredLanguage?: string | null
   siteSpecJson?: string | null
+  imageUrl?: string | null
   categories?: string[]
   homepageReady?: boolean | null
   siteSpecReady?: boolean | null
@@ -73,11 +75,12 @@ const formatGenerationTime = (elapsed?: number | null) => {
   return `${minutes}m ${remainingSeconds}s`
 }
 
-const getPreviewDocument = (html?: string | null) => {
-  if (!html?.trim()?.length) return undefined
-  if (html.includes('id="ship-fast-generated-module"') && !html.includes('<main')) return undefined
+const getGalleryImageUrl = (session: GallerySession): string => {
+  const imageUrl = session.imageUrl?.trim()
+  if (imageUrl) return imageUrl
 
-  return html
+  const version = encodeURIComponent(String(session.previewVersion ?? 0))
+  return `/api/sessions/${encodeURIComponent(session.sessionId)}/gallery-thumb?v=${version}`
 }
 
 export const GalleryCategoryTabs = ({
@@ -129,35 +132,53 @@ export const GalleryCategoryTabs = ({
 }
 
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
-  const previewDocument = getPreviewDocument(session.html)
+  const title = getPromptTitle(session.prompt)
+  const imageSrc = getGalleryImageUrl(session)
+  const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
+    imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
+  )
+
+  useEffect(() => {
+    if (!imageSrc.startsWith('/api/sessions/')) {
+      setResolvedImageSrc(imageSrc)
+      return
+    }
+
+    const controller = new AbortController()
+    let objectUrl: string | undefined
+    setResolvedImageSrc('')
+
+    const resolveImage = async () => {
+      try {
+        const response = await fetch(imageSrc, { signal: controller.signal })
+        if (!response.ok) throw new Error(`thumbnail ${response.status}`)
+        const blob = await response.blob()
+        objectUrl = URL.createObjectURL(blob)
+        setResolvedImageSrc(objectUrl)
+      } catch {
+        if (!controller.signal.aborted) setResolvedImageSrc(imageSrc)
+      }
+    }
+
+    void resolveImage()
+
+    return () => {
+      controller.abort()
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [imageSrc])
 
   return (
     <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      {previewDocument !== undefined ? (
-        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
-          <div className="size-full" dangerouslySetInnerHTML={{ __html: previewDocument }} />
-        </div>
+      {resolvedImageSrc ? (
+        <img
+          src={resolvedImageSrc}
+          alt={title}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(34,211,238,0.22),transparent_32%),radial-gradient(circle_at_78%_22%,rgba(168,85,247,0.24),transparent_36%),linear-gradient(135deg,#050816_0%,#0f172a_58%,#111827_100%)]">
-          <div className="absolute inset-x-5 top-4 flex items-center justify-between gap-3">
-            <div className="h-2 w-24 rounded-full bg-white/18" />
-            <div className="flex gap-1.5">
-              <span className="size-2 rounded-full bg-cyan-300/70" />
-              <span className="size-2 rounded-full bg-violet-300/70" />
-              <span className="size-2 rounded-full bg-white/40" />
-            </div>
-          </div>
-          <div className="absolute left-5 top-12 max-w-[72%]">
-            <h2 className="line-clamp-2 text-xl font-bold leading-tight tracking-normal text-white">
-              {getPromptTitle(session.prompt).split(/\s+/).slice(0, 4).join(' ')}
-            </h2>
-          </div>
-          <div className="absolute bottom-4 left-5 right-5 grid grid-cols-3 gap-2">
-            <span className="h-8 rounded-md border border-white/10 bg-white/[0.06]" />
-            <span className="h-8 rounded-md border border-white/10 bg-white/[0.06]" />
-            <span className="h-8 rounded-md border border-white/10 bg-white/[0.06]" />
-          </div>
-        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]" aria-label={title} />
       )}
       <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/8" />
     </div>
@@ -174,7 +195,7 @@ const GalleryCard = ({ session }: { session: GallerySession }) => {
       params={{ sessionId: session.sessionId }}
     >
       <GalleryPreview session={session} />
-      <div className="p-4">
+      <div className="sf-gallery-card-body p-4">
         <p className="mb-3 line-clamp-2 min-h-10 text-sm leading-5 text-slate-100">{getPromptTitle(session.prompt)}</p>
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 flex-wrap gap-1.5">
@@ -251,7 +272,7 @@ export const GalleryGrid = ({
   const items = gallery?.items ?? []
 
   return (
-    <div className={cn('grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3', className)}>
+    <div className={cn('sf-gallery-grid grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3', className)}>
       {items.length > 0
         ? items.map((session) => <GalleryCard key={session.sessionId} session={session} />)
         : Array.from({ length: skeletonCount }, (_, index) => <GallerySkeletonCard key={index} index={index} />)}
@@ -307,7 +328,7 @@ export const HomeGallerySection = () => {
   const { gallery } = useGalleryController({ limit: 12 })
 
   return (
-    <section className="mb-16 mt-12 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-5 shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] md:p-6" aria-live="polite">
+    <section className="sf-home-gallery-section mb-16 mt-12 rounded-[20px] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-5 shadow-[var(--glass-shadow),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] md:p-6" aria-live="polite">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-cyan-200">Gallery</p>

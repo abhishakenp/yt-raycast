@@ -1,5 +1,5 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
 import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
@@ -60,7 +60,7 @@ type PillButtonProps = {
   onClick?: () => void
 }
 
-const GlassDefs = () => (
+export const GlassDefs = () => (
   <svg className="absolute -m-px size-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
       <filter
@@ -103,7 +103,7 @@ const PillDecorations = () => (
   </>
 )
 
-const GlassPillButton = ({
+export const GlassPillButton = ({
   children,
   className = '',
   disabled,
@@ -115,7 +115,7 @@ const GlassPillButton = ({
   <button
     type={type}
     className={cn(
-      'relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
+      'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
       className,
     )}
     id={id}
@@ -124,11 +124,11 @@ const GlassPillButton = ({
     onClick={onClick}
   >
     <PillDecorations />
-    <span className="relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">{children}</span>
+    <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">{children}</span>
   </button>
 )
 
-const GlassPillAnchor = ({
+export const GlassPillAnchor = ({
   children,
   className = '',
   href,
@@ -140,12 +140,12 @@ const GlassPillAnchor = ({
   <a
     href={href}
     className={cn(
-      'relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
+      'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
       className,
     )}
   >
     <PillDecorations />
-    <span className="relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">{children}</span>
+    <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">{children}</span>
   </a>
 )
 
@@ -297,14 +297,14 @@ const PrivateGenerationModal = ({
 const TopActions = () => (
   <nav className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4" aria-label="Primary">
     <div className="pointer-events-auto ml-auto flex items-center gap-2">
-      <GlassPillAnchor className="min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5" href="/pricing">
+      <GlassPillAnchor className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5" href="/pricing">
         Pricing
       </GlassPillAnchor>
       {isClerkConfigured ? (
         <>
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <GlassPillButton className="min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5">Sign in</GlassPillButton>
+              <GlassPillButton className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5">Sign in</GlassPillButton>
             </SignInButton>
           </Show>
           <Show when="signed-in">
@@ -363,6 +363,7 @@ export const HomePage = () => {
     submitPrompt,
   } = usePromptHomeController()
   const [designRefOpen, setDesignRefOpen] = useState(false)
+  const [engineVersion, setEngineVersion] = useState<'v1' | 'v2'>('v1')
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)
@@ -373,6 +374,25 @@ export const HomePage = () => {
     () => placeholderText.slice(0, placeholderLength),
     [placeholderLength, placeholderText],
   )
+  const promptSuggestions = useMemo(() => {
+    const query = prompt.trim().toLowerCase()
+    if (query.length < 2) return []
+
+    const suggestions = [
+      ...EXAMPLE_CHIPS.map(([label, value]) => ({ label, value })),
+      ...SAMPLE_PLACEHOLDERS.map((value) => ({
+        label: value.split(/\s+/).slice(1, 4).join(' '),
+        value,
+      })),
+    ]
+    const matched = suggestions.filter(
+      ({ label, value }) =>
+        label.toLowerCase().includes(query) ||
+        value.toLowerCase().includes(query),
+    )
+
+    return (matched.length > 0 ? matched : suggestions).slice(0, 3)
+  }, [prompt])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -478,12 +498,31 @@ export const HomePage = () => {
       designReferenceUrls,
       designReferenceNotes,
       cloneUrl: designReferenceUrls[0],
+      engineVersion,
     })
   }
 
   const handleExamplePrompt = (value: string) => {
     selectExamplePrompt(value)
-    void submitPrompt({ prompt: value })
+    void submitPrompt({ prompt: value, engineVersion })
+  }
+
+  const handlePromptSuggestion = (value: string) => {
+    setPrompt(value)
+  }
+
+  const handleHeroCardPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const card = event.currentTarget
+    const rect = card.getBoundingClientRect()
+    const x = ((event.clientX - rect.left) / rect.width) * 100
+    const y = ((event.clientY - rect.top) / rect.height) * 100
+    card.style.setProperty('--hero-glow-x', `${Math.max(0, Math.min(100, x)).toFixed(1)}%`)
+    card.style.setProperty('--hero-glow-y', `${Math.max(0, Math.min(100, y)).toFixed(1)}%`)
+  }
+
+  const handleHeroCardPointerLeave = (event: PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.style.setProperty('--hero-glow-x', '30%')
+    event.currentTarget.style.setProperty('--hero-glow-y', '20%')
   }
 
   const footerYear = new Date().getFullYear()
@@ -535,8 +574,13 @@ export const HomePage = () => {
 
             <div className="relative z-[1] flex min-h-[clamp(360px,34vw,420px)] w-full flex-col items-stretch justify-start max-[1100px]:min-h-[720px]">
               <div className="relative z-[8] mx-auto flex w-full max-w-none flex-col gap-0 max-[1100px]:w-[min(100%,680px)]">
-                <div className="relative isolate w-full overflow-hidden rounded-[26px] bg-[linear-gradient(145deg,rgba(7,15,38,0.78),rgba(4,6,18,0.62)),radial-gradient(circle_at_50%_0%,rgba(38,231,255,0.2),transparent_32rem)] p-px shadow-[0_0_0_1px_rgba(38,231,255,0.26),0_0_0_5px_rgba(38,231,255,0.04),0_24px_70px_rgba(0,0,0,0.42),0_0_70px_rgba(32,136,255,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.6] before:pointer-events-none before:absolute before:inset-[-1px] before:z-0 before:rounded-[inherit] before:bg-[radial-gradient(ellipse_82%_70%_at_50%_0%,rgba(38,231,255,0.24),transparent_58%),linear-gradient(120deg,rgba(38,231,255,0.28),transparent_24%,rgba(223,53,255,0.2)_76%,transparent)] before:opacity-70 after:pointer-events-none after:absolute after:bottom-0 after:left-[6%] after:right-[6%] after:z-[1] after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(38,231,255,0.66),rgba(223,53,255,0.55),transparent)]" id="hero-card">
-                  <div className="relative z-[2] min-w-0 overflow-hidden rounded-[25px] bg-transparent p-[clamp(22px,2.1vw,30px)]">
+                <div
+                  className="hero-card launch-prompt-card relative isolate w-full overflow-hidden rounded-[26px] bg-[linear-gradient(145deg,rgba(7,15,38,0.78),rgba(4,6,18,0.62)),radial-gradient(circle_at_50%_0%,rgba(38,231,255,0.2),transparent_32rem)] p-px shadow-[0_0_0_1px_rgba(38,231,255,0.26),0_0_0_5px_rgba(38,231,255,0.04),0_24px_70px_rgba(0,0,0,0.42),0_0_70px_rgba(32,136,255,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.6] before:pointer-events-none before:absolute before:inset-[-1px] before:z-0 before:rounded-[inherit] before:bg-[radial-gradient(ellipse_82%_70%_at_50%_0%,rgba(38,231,255,0.24),transparent_58%),linear-gradient(120deg,rgba(38,231,255,0.28),transparent_24%,rgba(223,53,255,0.2)_76%,transparent)] before:opacity-70 after:pointer-events-none after:absolute after:bottom-0 after:left-[6%] after:right-[6%] after:z-[1] after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(38,231,255,0.66),rgba(223,53,255,0.55),transparent)]"
+                  id="hero-card"
+                  onPointerMove={handleHeroCardPointerMove}
+                  onPointerLeave={handleHeroCardPointerLeave}
+                >
+                  <div className="hero-card-inner relative z-[2] min-w-0 overflow-hidden rounded-[25px] bg-transparent p-[clamp(22px,2.1vw,30px)]">
                     <form id="prompt-form" className="flex w-full min-w-0 flex-col gap-[11px]" onSubmit={handleSubmit}>
                       <label className="sr-only" htmlFor="prompt-input">
                         Describe the website you want to build
@@ -564,13 +608,36 @@ export const HomePage = () => {
                             <span className="ml-0.5 inline-block h-5 w-px animate-pulse bg-cyan-200/60 align-middle" />
                           </span>
                         </div>
-                        <div className="mt-2 hidden rounded-xl border border-white/10 bg-black/50 p-2" id="prompt-suggestions" hidden>
+                        <div
+                          className={cn(
+                            'mt-2 rounded-xl border border-white/10 bg-black/50 p-2',
+                            promptSuggestions.length === 0 && 'hidden',
+                          )}
+                          id="prompt-suggestions"
+                          hidden={promptSuggestions.length === 0}
+                        >
                           <ul
                             className="grid gap-1"
                             id="prompt-suggestions-list"
                             role="listbox"
                             aria-label="Prompt ideas"
-                          />
+                          >
+                            {promptSuggestions.map(({ label, value }) => (
+                              <li key={value} role="option" aria-selected={false}>
+                                <button
+                                  type="button"
+                                  className="flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm text-white/72 transition-colors hover:bg-white/[0.07] hover:text-white"
+                                  onClick={() => handlePromptSuggestion(value)}
+                                >
+                                  <span className="mt-1 size-1.5 shrink-0 rounded-full bg-cyan-200/70" aria-hidden="true" />
+                                  <span className="grid min-w-0 gap-0.5">
+                                    <span className="font-medium text-white/88">{label}</span>
+                                    <span className="line-clamp-2 text-xs leading-5 text-white/48">{value}</span>
+                                  </span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                         <div className="hidden" id="prompt-language-row">
                           <label className="sr-only" htmlFor="prompt-language">
@@ -630,17 +697,32 @@ export const HomePage = () => {
                       <input type="hidden" id="design-ref-notes" name="design-ref-notes" value="" />
 
                       <div className="mt-1.5 flex w-full flex-wrap items-center justify-between gap-3">
-                        <div className="flex shrink-0 items-center gap-2.5">
-                          <input
-                            type="checkbox"
-                            className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
-                            id="design-ref-toggle"
-                            checked={designRefOpen}
-                            onChange={(event) => setDesignRefOpen(event.currentTarget.checked)}
-                          />
-                          <label className="text-sm text-[rgba(219,237,255,0.75)]" htmlFor="design-ref-toggle">
-                            Layout inspiration
-                          </label>
+                        <div className="flex flex-wrap items-center gap-4">
+                          <div className="flex shrink-0 items-center gap-2.5">
+                            <input
+                              type="checkbox"
+                              className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
+                              id="design-ref-toggle"
+                              checked={designRefOpen}
+                              onChange={(event) => setDesignRefOpen(event.currentTarget.checked)}
+                            />
+                            <label className="text-sm text-[rgba(219,237,255,0.75)]" htmlFor="design-ref-toggle">
+                              Layout inspiration
+                            </label>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2.5">
+                            <input
+                              type="checkbox"
+                              className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-violet-300/55 checked:bg-violet-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-violet-200"
+                              id="engine-v2-toggle"
+                              name="engine-version-v2"
+                              checked={engineVersion === 'v2'}
+                              onChange={(event) => setEngineVersion(event.currentTarget.checked ? 'v2' : 'v1')}
+                            />
+                            <label className="text-sm text-[rgba(219,237,255,0.75)]" htmlFor="engine-v2-toggle">
+                              Method 2 engine
+                            </label>
+                          </div>
                         </div>
                         <GlassPillButton
                           type="submit"
@@ -741,12 +823,12 @@ export const HomePage = () => {
                 </div>
 
                 <div>
-                  <div className="mx-auto mt-2 flex max-w-full flex-wrap justify-center gap-2 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:justify-start" aria-label="Example prompts">
+                  <div className="mx-auto mt-2 flex max-w-full flex-wrap justify-center gap-0 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:justify-start max-[760px]:gap-1" aria-label="Example prompts">
                     {EXAMPLE_CHIPS.map(([label, value], index) => (
                       <button
                         key={label}
                         type="button"
-                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.05] px-[11px] py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-2 py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
                         data-prompt={value}
                         data-react-owned="true"
                         title={value}
@@ -766,7 +848,7 @@ export const HomePage = () => {
         </div>
       </div>
 
-      <footer className="relative z-[1] mx-auto mb-8 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-white/6 bg-[rgba(17,17,19,0.72)] px-7 py-[22px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
+      <footer className="relative z-[1] mx-auto mb-8 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-white/6 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.015))] px-7 py-[22px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
         <span className="font-mono text-[13px] tracking-[0.12em] text-[#97a0b0]">SHIP FAST © {footerYear}</span>
         <nav className="flex flex-wrap items-center gap-5 [&_a]:text-[13px] [&_a]:text-[#97a0b0] [&_a]:transition-colors hover:[&_a]:text-[#EDEDEF]" aria-label="Footer links">
           <a href="/">Home</a>
