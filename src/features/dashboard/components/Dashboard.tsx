@@ -14,6 +14,7 @@ import { BrandMediaPanel } from '@/features/brand/components/BrandMediaPanel'
 import { ChatPanel } from '@/features/chat/components/ChatPanel'
 import { CmsPanel } from '@/features/cms/components/CmsPanel'
 import { CommercePanel } from '@/features/commerce/components/CommercePanel'
+import { EcommercifyTransformOverlay } from '@/features/commerce/components/EcommercifyTransformOverlay'
 import { LakebedAdminPanel } from '@/features/admin/components/LakebedAdminPanel'
 import { DeploymentPanel } from '@/features/deployments/components/DeploymentPanel'
 import { EditPanel } from '@/features/editing/components/EditPanel'
@@ -191,6 +192,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
   const [isDark, setIsDark] = useState(true)
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
+  const [isCommerceTransforming, setIsCommerceTransforming] = useState(false)
   const [publishError, setPublishError] = useState<string>()
   const generationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
@@ -571,7 +573,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                   ) : (
                     <div id="preview-device-frame" data-preview-device={currentDevice} style={previewDeviceStyle}>
                       <div
-                        className="h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300"
+                        className="relative h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300"
                         id="preview-device-shell"
                         data-preview-device={currentDevice}
                         style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: '100%' }}
@@ -592,6 +594,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                       ) : (
                         <PreviewLoadingState progress={progress} hasFailures={hasFailures} />
                       )}
+                      {isCommerceTransforming ? <EcommercifyTransformOverlay /> : null}
                       </div>
                     </div>
                   )}
@@ -805,7 +808,10 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                           prompt={generationView?.session.prompt}
                         />
                       ) : railMode === 'commerce' ? (
-                        <CommercePanel sessionId={sessionId} />
+                        <CommercePanel
+                          sessionId={sessionId}
+                          onTransformingChange={setIsCommerceTransforming}
+                        />
                       ) : railMode === 'deployment' ? (
                         <DeploymentPanel sessionId={sessionId} />
                       ) : railMode === 'github' ? (

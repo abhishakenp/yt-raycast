@@ -1,9 +1,22 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import {
+  getMedusaAdminUrl,
+  getMedusaBackendUrl,
+  getMedusaPublishableKey,
+  getMedusaStorefrontUrl,
+  type MedusaEnv,
+} from './medusa-store-env'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type CommerceApiClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
+type FetchLike = typeof fetch
+type MedusaProvisionOptions = {
+  env?: MedusaEnv
+  fetch?: FetchLike
+  metaEnv?: MedusaEnv
+}
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -55,6 +68,46 @@ const errorResponse = (error: unknown) =>
     { status: errorStatus(error) },
   )
 
+const validateMedusaStoreApi = async (
+  backendUrl: string,
+  publishableKey: string,
+  fetchImpl: FetchLike,
+): Promise<Response | null> => {
+  if (!publishableKey.trim()) {
+    return json(
+      { error: 'Medusa Store API not configured.' },
+      { status: 503 },
+    )
+  }
+
+  try {
+    const response = await fetchImpl(`${backendUrl}/store/regions`, {
+      headers: {
+        'x-publishable-api-key': publishableKey.trim(),
+      },
+    })
+
+    if (!response.ok) {
+      return json(
+        { error: 'Medusa Store API is unavailable.', status: response.status },
+        { status: 502 },
+      )
+    }
+
+    return null
+  } catch (error) {
+    return json(
+      {
+        error:
+          error instanceof Error
+            ? `Medusa Store API is unavailable: ${error.message}`
+            : 'Medusa Store API is unavailable.',
+      },
+      { status: 502 },
+    )
+  }
+}
+
 export const createSessionMedusaConfigResponse = async (
   sessionId: string,
   clientOverride?: CommerceApiClient,
@@ -79,19 +132,21 @@ export const createSessionMedusaProvisionResponse = async (
   sessionId: string,
   request: Request,
   clientOverride?: CommerceApiClient,
+  options: MedusaProvisionOptions = {},
 ): Promise<Response> => {
   try {
     const body = await readJsonBody(request)
-    const backendUrl = stringValue(body, 'backendUrl')
-    const adminUrl = stringValue(body, 'adminUrl')
-    const storefrontUrl = stringValue(body, 'storefrontUrl')
+    const backendUrl = getMedusaBackendUrl(options.env, options.metaEnv)
+    const adminUrl = getMedusaAdminUrl(options.env, options.metaEnv)
+    const storefrontUrl = getMedusaStorefrontUrl(options.env, options.metaEnv)
+    const publishableKey = getMedusaPublishableKey(options.env, options.metaEnv)
+    const unavailableResponse = await validateMedusaStoreApi(
+      backendUrl,
+      publishableKey,
+      options.fetch ?? fetch,
+    )
 
-    if (backendUrl === undefined && adminUrl === undefined && storefrontUrl === undefined) {
-      return json(
-        { error: 'backendUrl, adminUrl, or storefrontUrl is required.' },
-        { status: 400 },
-      )
-    }
+    if (unavailableResponse !== null) return unavailableResponse
 
     const result = await createClient(clientOverride).mutation(
       api.sessions.upsertCommerceConfig,
@@ -103,7 +158,13 @@ export const createSessionMedusaProvisionResponse = async (
         storefrontUrl,
         configJson:
           body.config === undefined
-            ? stringValue(body, 'configJson')
+            ? (stringValue(body, 'configJson') ??
+              JSON.stringify({
+                provider: 'medusa',
+                tenantMode: 'session',
+                tenantId: sessionId,
+                publishableKeyConfigured: true,
+              }))
             : JSON.stringify(body.config),
       },
     )

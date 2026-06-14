@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   getMedusaBackendUrl,
   getMedusaPublishableKey,
+  getMedusaStorefrontUrl,
   readMedusaEnv,
 } from './medusa-store-env'
 
@@ -22,6 +23,9 @@ describe('medusa store env', () => {
     expect(
       getMedusaPublishableKey({}, { NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: 'pk_test' }),
     ).toBe('pk_test')
+    expect(
+      getMedusaStorefrontUrl({}, { NEXT_PUBLIC_MEDUSA_STOREFRONT_URL: 'https://store.example.test' }),
+    ).toBe('https://store.example.test')
   })
 
   it('ignores empty values', () => {
