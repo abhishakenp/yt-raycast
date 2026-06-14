@@ -201,6 +201,8 @@ const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
 const MONTHLY_WINDOW_MS = 30 * DAILY_WINDOW_MS
 const RATE_WINDOW_MS = 10 * 60 * 1000
 const SHORT_WINDOW_LIMIT = 5
+const areGenerationLimitsDisabled = (): boolean =>
+  process.env.DISABLE_LIMIT === 'true' || process.env.IS_DEV === 'true'
 const genericPromptWords = new Set([
   'website',
   'site',
@@ -1990,7 +1992,7 @@ export const create = mutation({
     engineVersion: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const disableLimits = process.env.DISABLE_LIMIT === 'true'
+    const disableLimits = areGenerationLimitsDisabled()
     const prompt = args.prompt.trim()
     const userId = await getUserId(ctx)
     const anonOwnerSecretHash =

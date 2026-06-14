@@ -21,6 +21,8 @@ import {
   createSessionWorkspaceKey,
 } from '@/features/session/services/session-create-payload'
 
+const generationLaunchStoragePrefix = 'ship-fast:generation-launch:'
+
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
   const createSession = useMutation(api.sessions.create)
@@ -106,6 +108,10 @@ export const usePromptHomeController = () => {
           window.localStorage,
           sessionId,
           anonymousOwnerSecret,
+        )
+        window.sessionStorage.setItem(
+          `${generationLaunchStoragePrefix}${sessionId}`,
+          '1',
         )
       }
 
