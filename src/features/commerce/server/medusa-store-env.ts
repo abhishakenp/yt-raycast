@@ -1,4 +1,4 @@
-type MedusaEnv = Record<string, string | undefined>
+export type MedusaEnv = Record<string, string | undefined>
 
 const runtimeEnv = (): MedusaEnv =>
   typeof process === 'undefined' ? {} : process.env
@@ -55,6 +55,20 @@ export const getMedusaAdminUrl = (
     env,
     metaEnv,
   ) ?? 'http://localhost:7001'
+
+export const getMedusaStorefrontUrl = (
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+): string =>
+  readMedusaEnv(
+    [
+      'MEDUSA_STOREFRONT_URL',
+      'VITE_MEDUSA_STOREFRONT_URL',
+      'NEXT_PUBLIC_MEDUSA_STOREFRONT_URL',
+    ],
+    env,
+    metaEnv,
+  ) ?? getMedusaBackendUrl(env, metaEnv)
 
 export const getMedusaPublishableKey = (
   env?: MedusaEnv,

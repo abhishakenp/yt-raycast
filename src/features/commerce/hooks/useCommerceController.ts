@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'convex/react'
+import { useQuery } from 'convex/react'
 import { useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -6,17 +6,11 @@ import type { Id } from '../../../../convex/_generated/dataModel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
 export const useCommerceController = (sessionId: string) => {
-  const upsertConfig = useMutation(api.sessions.upsertCommerceConfig)
   const config = useQuery(api.sessions.getCommerceConfig, { sessionId: sessionId as Id<'sessions'> })
   const [commerceError, setCommerceError] = useState<string>()
   const [isSaving, setIsSaving] = useState(false)
 
-  const saveConfig = async (
-    backendUrl: string | undefined,
-    adminUrl: string | undefined,
-    storefrontUrl: string | undefined,
-    configJson: string | undefined,
-  ) => {
+  const provisionCommerce = async () => {
     setCommerceError(undefined)
     setIsSaving(true)
 
@@ -24,14 +18,21 @@ export const useCommerceController = (sessionId: string) => {
       const anonymousOwnerSecret =
         typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
-      await upsertConfig({
-        sessionId: sessionId as Id<'sessions'>,
-        anonymousOwnerSecret,
-        backendUrl,
-        adminUrl,
-        storefrontUrl,
-        configJson,
+      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}/provision/medusa`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(anonymousOwnerSecret === undefined ? {} : { 'x-ship-fast-owner-secret': anonymousOwnerSecret }),
+        },
+        body: JSON.stringify({ anonymousOwnerSecret }),
       })
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string }
+        throw new Error(payload.error ?? 'Commerce provisioning failed')
+      }
+
+      return response.json()
     } catch (error) {
       setCommerceError(error instanceof Error ? error.message : 'Save failed')
     } finally {
@@ -43,6 +44,6 @@ export const useCommerceController = (sessionId: string) => {
     commerceError,
     config,
     isSaving,
-    saveConfig,
+    provisionCommerce,
   }
 }
