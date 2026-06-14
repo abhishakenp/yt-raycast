@@ -18,9 +18,11 @@ export type IntroPhase = 'compose' | 'restore'
 export function IntroLoader({
   phase = 'compose',
   progress = 0,
+  playSound = true,
 }: {
   phase?: IntroPhase
   progress?: number
+  playSound?: boolean
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isMounted, setIsMounted] = useState(false)
@@ -48,11 +50,11 @@ export function IntroLoader({
 
   useEffect(() => {
     // Only play audio after mount
-    if (!isMounted) return
+    if (!isMounted || !playSound) return
     const audio = new Audio('/assets/launch.mp3')
     audio.volume = 0.72
     void audio.play().catch(() => undefined)
-  }, [isMounted])
+  }, [isMounted, playSound])
 
   useEffect(() => {
     if (progress >= 1) {

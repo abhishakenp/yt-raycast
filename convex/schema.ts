@@ -73,6 +73,7 @@ export default defineSchema({
     cloneUrl: v.optional(v.string()),
     designReferenceFingerprint: v.optional(v.string()),
     promptCacheKey: v.optional(v.string()),
+    engineVersion: v.optional(v.string()),
     isPrivate: v.boolean(),
     previewVersion: v.optional(v.number()),
     createdAt: v.number(),

@@ -13,7 +13,7 @@ const mailtoHref = `mailto:${encodeURIComponent(PRIVACY_CONTACT_EMAIL)}`
 export const PrivacyPage = () => {
   return (
     <MarketingShell footer>
-      <main className="relative z-[1] mx-auto w-[min(760px,calc(100%-48px))] px-0 pt-[88px] pb-24 font-sans text-base leading-[1.65] text-[#f0f0f5] [&_a]:text-[#26e7ff] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-[#69f8ff] [&_h2]:mb-3.5 [&_h2]:font-sans [&_h2]:text-[1.15rem] [&_h2]:tracking-[-0.02em] [&_h2]:text-[#f0f0f5] [&_h3]:mt-5 [&_h3]:mb-2.5 [&_h3]:font-sans [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-[#c4c9d4] [&_header_h1]:mb-3.5 [&_header_h1]:font-['Fraunces',Georgia,serif] [&_header_h1]:text-[clamp(1.75rem,4vw,2.25rem)] [&_header_h1]:tracking-[-0.03em] [&_header_h1]:text-white [&_li]:mb-2 [&_p]:mb-3 [&_section]:mb-6 [&_section]:rounded-[16px] [&_section]:border [&_section]:border-white/6 [&_section]:bg-[rgba(17,17,19,0.72)] [&_section]:px-6 [&_section]:py-[22px] [&_section]:shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2)] [&_ul]:my-2.5 [&_ul]:ml-5">
+      <main className="legal-page relative z-[1] mx-auto w-[min(760px,calc(100%-48px))] px-0 pt-[88px] pb-24 font-sans text-base leading-[1.65] text-[#f0f0f5] [&_a]:text-[#26e7ff] [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-[#69f8ff] [&_h2]:mb-3.5 [&_h2]:font-sans [&_h2]:text-[1.15rem] [&_h2]:tracking-[-0.02em] [&_h2]:text-[#f0f0f5] [&_h3]:mt-5 [&_h3]:mb-2.5 [&_h3]:font-sans [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-[#c4c9d4] [&_header_h1]:mb-3.5 [&_header_h1]:font-['Fraunces',Georgia,serif] [&_header_h1]:text-[clamp(1.75rem,4vw,2.25rem)] [&_header_h1]:tracking-[-0.03em] [&_header_h1]:text-white [&_li]:mb-2 [&_p]:mb-3 [&_section]:mb-6 [&_section]:rounded-[16px] [&_section]:border [&_section]:border-white/6 [&_section]:px-6 [&_section]:py-[22px] [&_section]:shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2)] [&_ul]:my-2.5 [&_ul]:ml-5">
       <header className="mb-10 border-b border-white/10 pb-7">
         <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[#c4c9d4]">Legal</p>
         <h1>Privacy policy</h1>
@@ -30,7 +30,7 @@ export const PrivacyPage = () => {
         </p>
         <p><strong>{LEGAL_CONTROLLER_NAME}</strong></p>
         {LEGAL_CONTROLLER_ADDRESS ? (
-          <p className="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[#f0f0f5]">
+          <p className="legal-callout my-3 rounded-[10px] border border-white/10 px-4 py-3.5 text-[#f0f0f5]">
             {(LEGAL_CONTROLLER_ADDRESS as string).split(/\r?\n/).filter(Boolean).map((line, idx) => (
               <span key={idx}>
                 {line}
@@ -39,7 +39,7 @@ export const PrivacyPage = () => {
             ))}
           </p>
         ) : (
-          <p className="my-3 rounded-[10px] border border-white/10 bg-[#111113] px-4 py-3.5 text-[#f0f0f5]">
+          <p className="legal-callout my-3 rounded-[10px] border border-white/10 px-4 py-3.5 text-[#f0f0f5]">
             Postal address: supplied on a verified request to <a href={mailtoHref}>{PRIVACY_CONTACT_EMAIL}</a> (please send your request from the email address associated with your account, if any).
           </p>
         )}

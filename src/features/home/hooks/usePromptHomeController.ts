@@ -21,6 +21,8 @@ import {
   createSessionWorkspaceKey,
 } from '@/features/session/services/session-create-payload'
 
+const generationLaunchStoragePrefix = 'ship-fast:generation-launch:'
+
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
   const createSession = useMutation(api.sessions.create)
@@ -64,6 +66,7 @@ export const usePromptHomeController = () => {
     designReferenceUrls?: string[]
     designReferenceNotes?: string
     cloneUrl?: string
+    engineVersion?: 'v1' | 'v2'
   }) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
@@ -95,6 +98,7 @@ export const usePromptHomeController = () => {
           designReferenceUrls: opts?.designReferenceUrls,
           designReferenceNotes: opts?.designReferenceNotes,
           cloneUrl: opts?.cloneUrl,
+          engineVersion: opts?.engineVersion,
         }),
       )
       const sessionId = result.sessionId
@@ -104,6 +108,10 @@ export const usePromptHomeController = () => {
           window.localStorage,
           sessionId,
           anonymousOwnerSecret,
+        )
+        window.sessionStorage.setItem(
+          `${generationLaunchStoragePrefix}${sessionId}`,
+          '1',
         )
       }
 

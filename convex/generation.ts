@@ -89,6 +89,34 @@ const eventMessage = (event: GenUIEvent): string | undefined => {
   }
 }
 
+const engineAdapterEventMessage = (event: {
+  type: string
+  message?: string
+  phase?: string
+  task?: EngineWorkspaceTask
+  tasks?: EngineWorkspaceTask[]
+}): string | undefined => {
+  switch (event.type) {
+    case 'status':
+    case 'log':
+      return event.message
+    case 'task':
+      return event.task === undefined
+        ? undefined
+        : `${event.task.label}: ${event.task.status}`
+    case 'tasks':
+      return event.tasks === undefined
+        ? undefined
+        : `${event.tasks.length} engine tasks planned`
+    case 'preview_ready':
+      return 'Homepage preview ready'
+    case 'openui_ready':
+      return 'OpenUI source ready'
+    default:
+      return undefined
+  }
+}
+
 const buildGenerationPrompt = (session: Doc<'sessions'>): string => {
   const contextLines: string[] = []
   const designReferenceUrls = session.designReferenceUrls ?? []
@@ -230,6 +258,77 @@ export const startGeneration = internalAction({
         eventType: 'status',
         message: 'Running Ship Fast engine',
       })
+
+      if (session.engineVersion === 'v2') {
+        const [{ getSelectedEngine }, { runEngineGeneration }] =
+          await Promise.all([
+            import('../src/features/generation/server/engine-selector'),
+            import('../src/features/generation/server/generation-runner'),
+          ])
+
+        await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
+          sessionId: args.sessionId,
+          eventType: 'status',
+          message: 'Running Ship Fast engine v2',
+        })
+
+        const result = await runEngineGeneration({
+          sessionId: args.sessionId,
+          prompt: buildGenerationPrompt(session),
+          preferredLanguage: session.preferredLanguage,
+          anonymousOwnerSecret: args.anonymousOwnerSecret,
+          workspaceRoot:
+            process.env.SHIP_FAST_ENGINE_WORKSPACE_ROOT ||
+            '/tmp/ship-fast-engine-workspaces',
+          runAll: getSelectedEngine('v2'),
+          persistence: {
+            completeGeneration: async (input) =>
+              await ctx.runAction(internalFunctions.sessions.completeGeneration, {
+                sessionId: args.sessionId,
+                anonymousOwnerSecret: args.anonymousOwnerSecret,
+                html: input.html,
+                siteSpecJson: input.siteSpecJson,
+                openUiSource: input.openUiSource,
+                tasks: input.tasks,
+                elapsed: Date.now() - startedAt,
+                provider: 'ship-fast-engine-v2',
+              }),
+            failGeneration: async (input) =>
+              await recordGenerationFailure(
+                ctx,
+                args,
+                input.message,
+                Date.now() - startedAt,
+              ),
+          },
+          onEvent: (event) => {
+            const message = engineAdapterEventMessage(event)
+
+            if (message !== undefined) {
+              void ctx.runMutation(
+                internalFunctions.sessions.addGenerationEvent,
+                {
+                  sessionId: args.sessionId,
+                  eventType: event.type,
+                  message,
+                },
+              )
+            }
+          },
+        })
+
+        if (result.status === 'failed') {
+          return result
+        }
+
+        await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
+          sessionId: args.sessionId,
+          eventType: 'completed',
+          message: 'Generation complete',
+        })
+
+        return { status: 'completed' }
+      }
 
       const generationRuntime = await loadGenerationRuntime()
 
