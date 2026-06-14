@@ -1,10 +1,36 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
-import { useEffect, useMemo, useState, type FormEvent, type PointerEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
 import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
 import { GLASS_LENS_FILTER_ID } from '@/lib/glass-pill-html'
+import {
+  PROMPT_LANG_DETECT_DEBOUNCE_MS,
+  PROMPT_LANG_DETECT_MIN_CHARS,
+  PROMPT_LANG_DETECT_SNIPPET_MAX,
+  PROMPT_SUGGEST_DEBOUNCE_MS,
+  PROMPT_SUGGEST_MAX_SHOW,
+  PROMPT_SUGGEST_MIN_CHARS,
+  PREFERRED_LANGUAGE_KEY,
+  SUBMIT_BTN_DEFAULT_LABEL,
+} from '@/lib/home/constants'
+import {
+  detectSnippetLanguageBcp47,
+  getGenerateCtaLabel,
+  getLanguageDisplayName,
+  getLogoTaglineText,
+  normalizeLanguageCode,
+} from '@/lib/home/prompt-language-core'
 import { cn } from '@/lib/utils'
 
 const LANGUAGE_OPTIONS = [
@@ -22,6 +48,9 @@ const LANGUAGE_OPTIONS = [
   ['ml', 'മലയാളം'],
   ['pa', 'ਪੰਜਾਬੀ'],
 ] as const
+
+const DEFAULT_LANGUAGE_OPTION = LANGUAGE_OPTIONS[0]
+const DEFAULT_LANGUAGE_OPTIONS = [DEFAULT_LANGUAGE_OPTION]
 
 const EXAMPLE_CHIPS = [
   [
@@ -318,15 +347,22 @@ const TopActions = () => (
   </nav>
 )
 
-const LanguageOptions = () => (
-  <>
-    {LANGUAGE_OPTIONS.map(([code, name]) => (
-      <option key={code} value={code}>
-        {name}
-      </option>
-    ))}
-  </>
-)
+const getLanguageOptionName = (code: string) =>
+  LANGUAGE_OPTIONS.find(([optionCode]) => optionCode === code)?.[1] ?? getLanguageDisplayName(code)
+
+const buildFocusedLanguageOptions = (selectedLanguage: string) => {
+  const normalized = normalizeLanguageCode(selectedLanguage) || 'en'
+  if (!normalized || normalized === 'en') return DEFAULT_LANGUAGE_OPTIONS
+  const selected = [normalized, getLanguageOptionName(normalized)] as const
+  return [DEFAULT_LANGUAGE_OPTION, selected]
+}
+
+const persistPreferredLanguage = (language: string) => {
+  if (typeof window === 'undefined') return
+  const normalized = normalizeLanguageCode(language)
+  if (!normalized) return
+  window.localStorage.setItem(PREFERRED_LANGUAGE_KEY, normalized)
+}
 
 const collectDesignReferenceUrls = (formData: FormData): string[] => {
   const candidates = [
@@ -367,32 +403,33 @@ export const HomePage = () => {
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)
+  const [languageOptions, setLanguageOptions] = useState<ReadonlyArray<readonly [string, string]>>(
+    DEFAULT_LANGUAGE_OPTIONS,
+  )
+  const [languageRowUnlocked, setLanguageRowUnlocked] = useState(false)
+  const [preferredLanguage, setPreferredLanguage] = useState('en')
+  const [promptFocused, setPromptFocused] = useState(false)
+  const [promptSuggestActive, setPromptSuggestActive] = useState(0)
+  const [promptSuggestions, setPromptSuggestions] = useState<string[]>([])
+  const [submitCtaShaking, setSubmitCtaShaking] = useState(false)
   const [showSharePanel, setShowSharePanel] = useState(false)
+  const promptLanguageDetectTokenRef = useRef(0)
+  const promptSuggestAbortRef = useRef<AbortController | null>(null)
+  const promptSuggestTokenRef = useRef(0)
 
   const placeholderText = SAMPLE_PLACEHOLDERS[placeholderIndex]
   const visiblePlaceholder = useMemo(
     () => placeholderText.slice(0, placeholderLength),
     [placeholderLength, placeholderText],
   )
-  const promptSuggestions = useMemo(() => {
-    const query = prompt.trim().toLowerCase()
-    if (query.length < 2) return []
-
-    const suggestions = [
-      ...EXAMPLE_CHIPS.map(([label, value]) => ({ label, value })),
-      ...SAMPLE_PLACEHOLDERS.map((value) => ({
-        label: value.split(/\s+/).slice(1, 4).join(' '),
-        value,
-      })),
-    ]
-    const matched = suggestions.filter(
-      ({ label, value }) =>
-        label.toLowerCase().includes(query) ||
-        value.toLowerCase().includes(query),
-    )
-
-    return (matched.length > 0 ? matched : suggestions).slice(0, 3)
-  }, [prompt])
+  const trimmedPromptLength = prompt.trim().length
+  const languageRowVisible = trimmedPromptLength >= PROMPT_LANG_DETECT_MIN_CHARS
+  const submitCtaLabel = languageRowVisible
+    ? getGenerateCtaLabel(preferredLanguage)
+    : SUBMIT_BTN_DEFAULT_LABEL
+  const logoTagline = languageRowVisible ? getLogoTaglineText(preferredLanguage) : ''
+  const promptSuggestionsOpen = promptFocused && promptSuggestions.length > 0
+  const promptCaption = prompt.length > 0 ? 'My prompt' : 'Try a prompt like'
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -429,6 +466,104 @@ export const HomePage = () => {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [privateModalOpen])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    if (!languageRowVisible) {
+      promptLanguageDetectTokenRef.current += 1
+      setLanguageOptions(DEFAULT_LANGUAGE_OPTIONS)
+      setPreferredLanguage('en')
+      setLanguageRowUnlocked(false)
+      setSubmitCtaShaking(false)
+      if (languageRowUnlocked) persistPreferredLanguage('en')
+      return
+    }
+
+    if (!languageRowUnlocked) {
+      setLanguageOptions(DEFAULT_LANGUAGE_OPTIONS)
+      setPreferredLanguage('en')
+      setLanguageRowUnlocked(true)
+    }
+
+    const runToken = ++promptLanguageDetectTokenRef.current
+    const timeout = window.setTimeout(() => {
+      void (async () => {
+        const currentPrompt = prompt.trim()
+        if (currentPrompt.length < PROMPT_LANG_DETECT_MIN_CHARS) return
+        const detectedLanguage = await detectSnippetLanguageBcp47(
+          currentPrompt.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
+        )
+        if (!detectedLanguage) return
+        if (runToken !== promptLanguageDetectTokenRef.current) return
+        if (prompt.trim().length < PROMPT_LANG_DETECT_MIN_CHARS) return
+
+        setLanguageOptions(buildFocusedLanguageOptions(detectedLanguage))
+        setPreferredLanguage(detectedLanguage)
+        persistPreferredLanguage(detectedLanguage)
+        setSubmitCtaShaking(false)
+        window.requestAnimationFrame(() => setSubmitCtaShaking(true))
+      })()
+    }, PROMPT_LANG_DETECT_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timeout)
+  }, [languageRowUnlocked, languageRowVisible, prompt])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    promptSuggestAbortRef.current?.abort()
+    promptSuggestAbortRef.current = null
+
+    const partial = prompt.trim()
+    if (!promptFocused || partial.length < PROMPT_SUGGEST_MIN_CHARS) {
+      promptSuggestTokenRef.current += 1
+      setPromptSuggestions([])
+      setPromptSuggestActive(0)
+      return
+    }
+
+    const runToken = ++promptSuggestTokenRef.current
+    const controller = new AbortController()
+    promptSuggestAbortRef.current = controller
+    const timeout = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const response = await fetch('/api/prompt-suggestions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ partial, language: preferredLanguage }),
+            signal: controller.signal,
+          })
+          if (runToken !== promptSuggestTokenRef.current) return
+          if (!response.ok) {
+            setPromptSuggestions([])
+            setPromptSuggestActive(0)
+            return
+          }
+          const data = await response.json()
+          if (runToken !== promptSuggestTokenRef.current) return
+          const suggestions = Array.isArray(data?.suggestions)
+            ? data.suggestions
+                .filter((value: unknown): value is string => typeof value === 'string')
+                .slice(0, PROMPT_SUGGEST_MAX_SHOW)
+            : []
+          setPromptSuggestions(suggestions)
+          setPromptSuggestActive(0)
+        } catch (error) {
+          if ((error as { name?: string })?.name === 'AbortError') return
+          if (runToken !== promptSuggestTokenRef.current) return
+          setPromptSuggestions([])
+          setPromptSuggestActive(0)
+        }
+      })()
+    }, PROMPT_SUGGEST_DEBOUNCE_MS)
+
+    return () => {
+      window.clearTimeout(timeout)
+      controller.abort()
+    }
+  }, [preferredLanguage, prompt, promptFocused])
 
   // Show share panel when quota is exceeded and bonus not claimed
   useEffect(() => {
@@ -507,8 +642,64 @@ export const HomePage = () => {
     void submitPrompt({ prompt: value, engineVersion })
   }
 
-  const handlePromptSuggestion = (value: string) => {
+  const handlePreferredLanguageChange = (value: string) => {
+    const normalized = normalizeLanguageCode(value) || 'en'
+    setLanguageOptions(buildFocusedLanguageOptions(normalized))
+    setPreferredLanguage(normalized)
+    persistPreferredLanguage(normalized)
+    setSubmitCtaShaking(false)
+    window.requestAnimationFrame(() => setSubmitCtaShaking(true))
+  }
+
+  const closePromptSuggestions = () => {
+    promptSuggestAbortRef.current?.abort()
+    promptSuggestAbortRef.current = null
+    promptSuggestTokenRef.current += 1
+    setPromptSuggestions([])
+    setPromptSuggestActive(0)
+  }
+
+  const applyPromptSuggestion = (value: string | undefined) => {
+    if (!value) return
+    closePromptSuggestions()
     setPrompt(value)
+  }
+
+  const handlePromptKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (promptSuggestionsOpen) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        setPromptSuggestActive((index) => (index + 1) % promptSuggestions.length)
+        return
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        setPromptSuggestActive((index) =>
+          (index - 1 + promptSuggestions.length) % promptSuggestions.length,
+        )
+        return
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closePromptSuggestions()
+        return
+      }
+      if (event.key === 'Tab' && !event.shiftKey) {
+        event.preventDefault()
+        applyPromptSuggestion(promptSuggestions[promptSuggestActive])
+        return
+      }
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault()
+        applyPromptSuggestion(promptSuggestions[promptSuggestActive])
+        return
+      }
+    }
+
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      event.currentTarget.form?.requestSubmit()
+    }
   }
 
   const handleHeroCardPointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -549,7 +740,17 @@ export const HomePage = () => {
               </div>
               <span className="bg-[linear-gradient(135deg,#ffffff_0%,#dffbff_46%,#23e5ff_100%)] bg-[length:180%_180%] bg-clip-text font-sans text-[clamp(42px,4.2vw,56px)] font-extrabold tracking-[-0.055em] text-transparent [-webkit-text-fill-color:transparent] max-[760px]:text-[clamp(32px,9vw,40px)] max-[760px]:tracking-[-0.035em]">SHIP FAST</span>
             </div>
-            <p className="m-0 text-center font-mono text-xs uppercase tracking-[0.18em] text-white/45" id="logo-tagline" aria-live="polite" aria-hidden="true" />
+            <p
+              className={cn(
+                'logo-tagline m-0 text-center font-mono text-xs uppercase tracking-[0.18em] text-white/45',
+                logoTagline && 'logo-tagline--in',
+              )}
+              id="logo-tagline"
+              aria-live="polite"
+              aria-hidden={!logoTagline}
+            >
+              {logoTagline}
+            </p>
           </div>
 
           <section className="relative grid min-h-[70svh] w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(32px,5vw,62px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:min-h-[600px] max-[760px]:rounded-[22px] max-[760px]:p-[22px]" aria-label="Print your mind in seconds">
@@ -597,59 +798,87 @@ export const HomePage = () => {
                           rows={3}
                           maxLength={5000}
                           value={prompt}
+                          aria-activedescendant={
+                            promptSuggestionsOpen ? `prompt-suggest-${promptSuggestActive}` : undefined
+                          }
+                          aria-autocomplete="list"
+                          aria-controls="prompt-suggestions-list"
+                          onBlur={() => {
+                            window.setTimeout(() => {
+                              setPromptFocused(false)
+                              closePromptSuggestions()
+                            }, 120)
+                          }}
                           onChange={(event) => setPrompt(event.currentTarget.value)}
+                          onFocus={() => setPromptFocused(true)}
+                          onKeyDown={handlePromptKeyDown}
                         />
-                        <div className={cn('pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200', prompt && 'opacity-0')} id="prompt-placeholder" aria-hidden="true">
-                          <span className="block font-sans text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-[rgba(38,231,255,0.88)]">Try a prompt like</span>
-                          <span className="block max-h-[calc(1.6em*3)] max-w-full overflow-hidden text-[15px] leading-[1.6] text-[rgba(219,237,255,0.48)] [mask-image:linear-gradient(180deg,#000_70%,transparent)]">
-                            <span id="prompt-placeholder-text">
-                              {prompt ? '' : visiblePlaceholder}
+                        <div className="pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200" id="prompt-placeholder" aria-hidden="true">
+                          <span className="block font-sans text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-[rgba(38,231,255,0.88)]">{promptCaption}</span>
+                          {!prompt ? (
+                            <span className="block max-h-[calc(1.6em*3)] max-w-full overflow-hidden text-[15px] leading-[1.6] text-[rgba(219,237,255,0.48)] [mask-image:linear-gradient(180deg,#000_70%,transparent)]">
+                              <span id="prompt-placeholder-text">
+                                {visiblePlaceholder}
+                              </span>
+                              <span className="ml-0.5 inline-block h-5 w-px animate-pulse bg-cyan-200/60 align-middle" />
                             </span>
-                            <span className="ml-0.5 inline-block h-5 w-px animate-pulse bg-cyan-200/60 align-middle" />
-                          </span>
+                          ) : null}
                         </div>
                         <div
-                          className={cn(
-                            'mt-2 rounded-xl border border-white/10 bg-black/50 p-2',
-                            promptSuggestions.length === 0 && 'hidden',
-                          )}
+                          className={cn('prompt-suggestions', promptSuggestionsOpen && 'is-open')}
                           id="prompt-suggestions"
-                          hidden={promptSuggestions.length === 0}
+                          hidden={!promptSuggestionsOpen}
                         >
                           <ul
-                            className="grid gap-1"
+                            className="prompt-suggestions-list"
                             id="prompt-suggestions-list"
                             role="listbox"
                             aria-label="Prompt ideas"
                           >
-                            {promptSuggestions.map(({ label, value }) => (
-                              <li key={value} role="option" aria-selected={false}>
-                                <button
-                                  type="button"
-                                  className="flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm text-white/72 transition-colors hover:bg-white/[0.07] hover:text-white"
-                                  onClick={() => handlePromptSuggestion(value)}
-                                >
-                                  <span className="mt-1 size-1.5 shrink-0 rounded-full bg-cyan-200/70" aria-hidden="true" />
-                                  <span className="grid min-w-0 gap-0.5">
-                                    <span className="font-medium text-white/88">{label}</span>
-                                    <span className="line-clamp-2 text-xs leading-5 text-white/48">{value}</span>
-                                  </span>
-                                </button>
+                            {promptSuggestions.map((suggestion, index) => (
+                              <li
+                                className={cn(
+                                  'prompt-suggestions-item',
+                                  index === promptSuggestActive && 'is-active',
+                                )}
+                                id={`prompt-suggest-${index}`}
+                                key={suggestion}
+                                role="option"
+                                aria-selected={index === promptSuggestActive}
+                                onMouseDown={(event) => {
+                                  event.preventDefault()
+                                  applyPromptSuggestion(suggestion)
+                                }}
+                              >
+                                <span>{suggestion.slice(0, prompt.trim().length)}</span>
+                                <mark>{suggestion.slice(prompt.trim().length)}</mark>
                               </li>
                             ))}
                           </ul>
                         </div>
-                        <div className="hidden" id="prompt-language-row">
+                        <div
+                          className={cn(
+                            'prompt-language-row',
+                            !languageRowVisible && 'is-hidden',
+                          )}
+                          id="prompt-language-row"
+                        >
                           <label className="sr-only" htmlFor="prompt-language">
                             Preferred generation language
                           </label>
                           <select
-                            className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white"
+                            className="prompt-language-select"
                             id="prompt-language"
                             name="prompt-language"
                             aria-label="Preferred generation language"
+                            value={preferredLanguage}
+                            onChange={(event) => handlePreferredLanguageChange(event.currentTarget.value)}
                           >
-                            <LanguageOptions />
+                            {languageOptions.map(([code, name]) => (
+                              <option key={code} value={code}>
+                                {name}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
@@ -726,12 +955,13 @@ export const HomePage = () => {
                         </div>
                         <GlassPillButton
                           type="submit"
-                          className={cn('min-h-11 px-[22px] py-2.5 text-sm font-extrabold text-[#00121a] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset,0_0_34px_rgba(38,231,255,0.22),0_16px_34px_rgba(0,0,0,0.34)] disabled:text-[rgba(230,248,255,0.46)] max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:px-0', canSubmit && 'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)]', isSubmitting && 'opacity-70')}
+                          className={cn('submit-btn min-h-11 px-[22px] py-2.5 text-sm font-extrabold text-[#00121a] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset,0_0_34px_rgba(38,231,255,0.22),0_16px_34px_rgba(0,0,0,0.34)] disabled:text-[rgba(230,248,255,0.46)] max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:px-0', canSubmit && 'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)]', isSubmitting && 'opacity-70', submitCtaShaking && 'submit-btn--cta-shake')}
                           id="submit-btn"
                           disabled={!canSubmit}
+                          onAnimationEnd={() => setSubmitCtaShaking(false)}
                         >
                           <ZapIcon />
-                          <span className="max-[760px]:hidden">Generate</span>
+                          <span className="btn-label max-[760px]:hidden">{submitCtaLabel}</span>
                           <div className={cn('hidden size-4 animate-spin rounded-full border-2 border-white/20 border-t-white', isSubmitting && 'block')} />
                         </GlassPillButton>
                       </div>

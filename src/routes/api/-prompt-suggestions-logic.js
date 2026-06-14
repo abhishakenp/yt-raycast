@@ -1,4 +1,4 @@
-import { GROQ_API_KEY } from '../config.js'
+import { GROQ_API_KEY } from '@ship-fast/engine/config.js'
 import { groq } from '@ship-fast/engine/llm/groq.js'
 import { trimInlineAiText } from '@ship-fast/engine/llm/utils.js'
 
@@ -176,6 +176,21 @@ const HINGLISH_MARKERS = new Set(
   ),
 )
 
+const FRENCH_MARKERS = new Set(
+  'un une des du de la le les et ou pour avec dans sur sous ce cette ces cet votre vos notre nos leur leurs au aux par est sont etre être été avoir avez nous vous ils elles qui que quoi dont quand comment pourquoi parce plus moins tres très site page accueil boutique produit produits service services client clients formulaire contact prix offre offres blog article articles galerie reservation réservation equipe équipe créer cree crée creez créez generer générer français francaise française moderne responsive mobile entreprise association école ecole hôtel hotel immobilier portfolio evenement événement familles astuces pratiques incluant guides alimentation tests histoires inspirantes rédigés rédigées ton informatif convivial'.split(
+    ' ',
+  ),
+)
+
+function inferFrenchFromPartial(partial) {
+  const lower = String(partial || '').toLowerCase()
+  const words = lower.match(/\b[a-zàâçéèêëîïôûùüÿœæ]{2,}\b/g) || []
+  if (words.length < 4) return false
+  const accented = /[àâçéèêëîïôûùüÿœæ]/i.test(lower)
+  const hits = words.filter((word) => FRENCH_MARKERS.has(word)).length + (accented ? 2 : 0)
+  return hits >= 3 && hits / words.length >= 0.16
+}
+
 function extractJsonObject(text) {
   const s = String(text || '').trim()
   if (s.length > 50000) return null // Size limit
@@ -216,6 +231,7 @@ function inferLanguageFromPartial(partial, language) {
   const hinglishHits = words.filter((word) => HINGLISH_MARKERS.has(word)).length
   if (hinglishHits >= 1 && words.length <= 6) return 'hinglish'
   if (hinglishHits >= 2) return 'hinglish'
+  if (inferFrenchFromPartial(text)) return 'fr'
   return normalized || 'en'
 }
 
