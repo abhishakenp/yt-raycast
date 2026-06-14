@@ -201,6 +201,8 @@ const DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
 const MONTHLY_WINDOW_MS = 30 * DAILY_WINDOW_MS
 const RATE_WINDOW_MS = 10 * 60 * 1000
 const SHORT_WINDOW_LIMIT = 5
+const areGenerationLimitsDisabled = (): boolean =>
+  process.env.DISABLE_LIMIT === 'true' || process.env.IS_DEV === 'true'
 const genericPromptWords = new Set([
   'website',
   'site',
@@ -1987,9 +1989,10 @@ export const create = mutation({
     designReferenceUrls: v.optional(v.array(v.string())),
     designReferenceNotes: v.optional(v.string()),
     cloneUrl: v.optional(v.string()),
+    engineVersion: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const disableLimits = process.env.DISABLE_LIMIT === 'true'
+    const disableLimits = areGenerationLimitsDisabled()
     const prompt = args.prompt.trim()
     const userId = await getUserId(ctx)
     const anonOwnerSecretHash =
@@ -2132,6 +2135,7 @@ export const create = mutation({
       cloneUrl,
       designReferenceFingerprint,
       promptCacheKey,
+      engineVersion: args.engineVersion,
       isPrivate: args.isPrivate,
       previewVersion: 0,
       createdAt: now,

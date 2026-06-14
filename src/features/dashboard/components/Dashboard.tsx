@@ -119,7 +119,69 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   }
 }
 
+const generationLaunchStoragePrefix = 'ship-fast:generation-launch:'
+
+const takeGenerationLaunchHandoff = (sessionId: string): boolean => {
+  if (typeof window === 'undefined') return false
+
+  const key = `${generationLaunchStoragePrefix}${sessionId}`
+  const shouldShowIntro = window.sessionStorage.getItem(key) === '1'
+  if (shouldShowIntro) window.sessionStorage.removeItem(key)
+  return shouldShowIntro
+}
+
+const PreviewLoadingState = ({
+  progress,
+  hasFailures,
+}: {
+  progress: number
+  hasFailures: boolean
+}) => {
+  const clampedProgress = Math.max(5, Math.min(100, progress))
+  const steps = [
+    ['Brief', progress > 0],
+    ['Layout', progress >= 34],
+    ['Theme', progress >= 67],
+    ['Preview', progress >= 100],
+  ] as const
+
+  return (
+    <div className="preview-loading-state" role="status" aria-live="polite" aria-busy={!hasFailures}>
+      <div className="preview-loading-state__orb" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="preview-loading-state__content">
+        <p className="preview-loading-state__eyebrow">
+          {hasFailures ? 'Generation interrupted' : 'Building your site'}
+        </p>
+        <h2>{hasFailures ? 'We could not complete this preview.' : 'Composing the first screen'}</h2>
+        <p>
+          {hasFailures
+            ? 'Check the activity panel for the failed step, then retry generation.'
+            : 'Ship Fast is planning the structure, choosing visual tokens, and streaming components into the preview.'}
+        </p>
+        <div className="preview-loading-state__track" aria-hidden="true">
+          <span style={{ width: `${clampedProgress}%` }} />
+        </div>
+        <ol className="preview-loading-state__steps" aria-label="Generation progress">
+          {steps.map(([label, active]) => (
+            <li key={label} className={active ? 'is-active' : undefined}>
+              <span />
+              {label}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  )
+}
+
 export function Dashboard({ sessionId, initialAdminView = false }: DashboardProps) {
+  const [startedFromGenerationFlow] = useState(() =>
+    takeGenerationLaunchHandoff(sessionId),
+  )
   const [isDashboardActive, setIsDashboardActive] = useState(false)
   const [currentDevice, setCurrentDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
   const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>(null)
@@ -172,12 +234,12 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
 
     const tDashboard = window.setTimeout(() => {
       setIsDashboardActive(true)
-    }, 2200)
+    }, startedFromGenerationFlow ? 2200 : 120)
 
     return () => {
       window.clearTimeout(tDashboard)
     }
-  }, [])
+  }, [startedFromGenerationFlow])
 
   const progress = useMemo(() => {
     if (!generationView || generationView.tasks.length === 0) return 0
@@ -305,28 +367,30 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
 
       <audio id="launch-sfx" preload="auto" src="/assets/launch.mp3"></audio>
 
-      {!isPreviewReady && !isAdminActive ? (
+      {startedFromGenerationFlow && !isPreviewReady && !isAdminActive ? (
         <IntroLoader
           progress={Math.min(0.94, progress / 100)}
+          playSound={startedFromGenerationFlow}
         />
       ) : null}
 
       <div className={cn(
-        'relative z-[1] min-h-screen w-full overflow-hidden p-4 opacity-0 transition-opacity duration-700 ease-out',
+        'dashboard-shell relative z-[1] min-h-screen w-full overflow-hidden p-4 opacity-0 transition-opacity duration-700 ease-out',
         isDashboardActive && 'opacity-100',
       )} id="dashboard-wrap">
         <div className={cn(
           'mx-auto flex min-h-[calc(100vh-32px)] w-full max-w-[1680px] items-center justify-center',
           (isPreviewReady || isAdminActive) && 'items-stretch',
         )} id="right-panel">
-          <div className={cn(
+          <div id="dashboard-cockpit" className={cn(
             'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14]/88 shadow-[0_24px_90px_rgba(0,0,0,0.48)] backdrop-blur-[22px]',
             (isPreviewReady || isAdminActive) && 'bg-[#080a10]/92',
+            isDashboardActive && 'cockpit-fade-up',
           )}>
-            <div className="flex h-14 shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.035] px-3">
+            <div className="dashboard-topbar flex h-14 shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.035] px-3">
               <button
                 type="button"
-                className="grid size-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/70 transition-colors hover:bg-white/[0.09] hover:text-white"
+                className="dashboard-topbar-circle-button grid size-9 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/70 transition-colors hover:bg-white/[0.09] hover:text-white"
                 onClick={navigateHome}
                 data-tip="Back to home"
                 aria-label="Back to home"
@@ -342,17 +406,17 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                   />
                 </svg>
               </button>
-              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/8 bg-black/25 px-3 py-2 text-sm text-white/48">
+              <div className="dashboard-url-pill flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/8 bg-black/25 px-3 py-2 text-sm text-white/48">
                 <span className="size-2 shrink-0 rounded-full bg-emerald-300/80" />
                 <a className="min-w-0 truncate font-mono text-xs text-white/56 no-underline" id="url-text" href={currentUrl} aria-label="Current generation">
                   {currentUrl}
                 </a>
               </div>
-              <div className="flex shrink-0 items-center gap-2" id="preview-frame-tools" aria-label="Preview controls">
+              <div className="dashboard-preview-tools flex shrink-0 items-center gap-2" id="preview-frame-tools" aria-label="Preview controls">
                 <button
                   type="button"
                   className={cn(
-                    'grid size-9 place-items-center rounded-full border text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white disabled:cursor-not-allowed disabled:opacity-45',
+                    'dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white disabled:cursor-not-allowed disabled:opacity-45',
                     isAdminActive
                       ? 'border-cyan-300/30 bg-cyan-300/14 text-cyan-100'
                       : 'border-white/10 bg-white/[0.055]',
@@ -366,7 +430,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                 </button>
                 <button
                   type="button"
-                  className="inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="dashboard-publish-button inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
                   disabled={!isPreviewReady || isPublishing}
                   onClick={() => void handlePublish()}
                   data-tip={publishedUrl ? 'Republish latest preview' : 'Publish preview'}
@@ -377,7 +441,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                 </button>
                 <button
                   type="button"
-                  className="grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
+                  className="dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
                   id="preview-refresh-btn"
                   data-tip="Refresh generation view"
                   aria-label="Reload page"
@@ -394,13 +458,13 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     />
                   </svg>
                 </button>
-                <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1" role="group" aria-label="Viewport size">
+                <div className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1" role="group" aria-label="Viewport size">
                   {(['desktop', 'tablet', 'mobile'] as const).map((device) => (
                     <button
                       key={device}
                       type="button"
                       className={cn(
-                        'grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
+                        'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
                         currentDevice === device && 'bg-cyan-300/16 text-cyan-100',
                       )}
                       data-preview-device={device}
@@ -428,11 +492,11 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     </button>
                   ))}
                 </div>
-                <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden" role="group" aria-label="Inspect controls">
+                <div className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden" role="group" aria-label="Inspect controls">
                   <button
                     type="button"
                     className={cn(
-                      'grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
+                      'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
                       inspectMode === 'select' && 'bg-cyan-300/16 text-cyan-100',
                     )}
                     data-tip="Select"
@@ -447,7 +511,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                   <button
                     type="button"
                     className={cn(
-                      'grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
+                      'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
                       inspectMode === 'annotate' && 'bg-cyan-300/16 text-cyan-100',
                     )}
                     data-tip="Annotate"
@@ -465,7 +529,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                   </button>
                   <button
                     type="button"
-                    className="grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white"
+                    className="dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white"
                     data-tip="Clear selection"
                     aria-label="Clear selection"
                     onClick={() => setInspectMode(null)}
@@ -526,22 +590,11 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                           onPreviewSelect={handlePreviewSelect}
                         />
                       ) : (
-                        <div className="grid h-full min-h-[480px] place-items-center gap-4 bg-[#090c14] text-center text-white/62" role="status" aria-live="polite">
-                          <div className="size-12 animate-ping rounded-full border border-cyan-300/40"></div>
-                          <p>{hasFailures ? 'Generation failed' : 'Waiting for generated module...'}</p>
-                        </div>
+                        <PreviewLoadingState progress={progress} hasFailures={hasFailures} />
                       )}
                       </div>
                     </div>
                   )}
-                </div>
-                <div className={cn(
-                  'absolute inset-x-10 bottom-8 rounded-full border border-white/10 bg-black/35 p-1 backdrop-blur',
-                  (isPreviewReady || isAdminActive) && 'hidden',
-                )} id="preview-loading">
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full rounded-full bg-cyan-300 transition-[width] duration-300" id="preview-progress-fill" style={{ width: `${progress}%` }}></div>
-                  </div>
                 </div>
               </div>
               <aside

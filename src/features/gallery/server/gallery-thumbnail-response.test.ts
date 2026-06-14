@@ -152,7 +152,7 @@ describe('Gallery Thumbnail Response', () => {
       const mockClient = {
         query: async () => null,
       }
-      const response = await createGalleryThumbnailResponse('fake-session-id', mockClient)
+      const response = await createGalleryThumbnailResponse('fake-session-id', undefined, mockClient)
 
       expect(response.status).toBe(404)
       expect(await response.text()).toBe('Session not found or not public')
@@ -171,11 +171,11 @@ describe('Gallery Thumbnail Response', () => {
           openuiReady: false,
         }),
       }
-      const response = await createGalleryThumbnailResponse('valid-session-id', mockClient)
+      const response = await createGalleryThumbnailResponse('valid-session-id', undefined, mockClient)
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toBe('image/svg+xml; charset=utf-8')
-      expect(response.headers.get('cache-control')).toBe('public, max-age=300, stale-while-revalidate=3600')
+      expect(response.headers.get('cache-control')).toBe('public, max-age=10')
 
       const svg = await response.text()
       expect(svg).toContain('<?xml version="1.0"')
@@ -191,7 +191,7 @@ describe('Gallery Thumbnail Response', () => {
           categories: [],
         }),
       }
-      const response = await createGalleryThumbnailResponse('valid-session-id', mockClient)
+      const response = await createGalleryThumbnailResponse('valid-session-id', undefined, mockClient)
       const svg = await response.text()
 
       expect(svg).toContain('&lt;script&gt;')
@@ -211,11 +211,32 @@ describe('Gallery Thumbnail Response', () => {
           openuiReady: false,
         }),
       }
-      const response = await createGalleryThumbnailResponse('valid-session-id', mockClient)
+      const response = await createGalleryThumbnailResponse('valid-session-id', undefined, mockClient)
       const svg = await response.text()
 
       expect(svg).toContain('15s')
       expect(svg).toContain('$0.05')
+    })
+
+    it('should keep the SVG placeholder for explicit fallback thumbnail requests', async () => {
+      const mockClient = {
+        query: async () => ({
+          prompt: 'Fallback prompt',
+          status: 'done',
+          categories: ['saas'],
+          previewVersion: 2,
+        }),
+      }
+
+      const response = await createGalleryThumbnailResponse(
+        'valid-session-id',
+        new Request('http://localhost/api/sessions/valid-session-id/gallery-thumb?fallback=1'),
+        mockClient,
+      )
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toBe('image/svg+xml; charset=utf-8')
+      expect(await response.text()).toContain('Fallback prompt')
     })
 
     it('should return 500 on error', async () => {
@@ -224,7 +245,7 @@ describe('Gallery Thumbnail Response', () => {
           throw new Error('Convex error')
         },
       }
-      const response = await createGalleryThumbnailResponse('error-session-id', mockClient)
+      const response = await createGalleryThumbnailResponse('error-session-id', undefined, mockClient)
 
       expect(response.status).toBe(500)
       expect(await response.text()).toBe('Convex error')
@@ -242,7 +263,7 @@ describe('Gallery Thumbnail Response', () => {
           }
         },
       }
-      const response = await createGalleryThumbnailResponse('test-session-id', mockClient)
+      const response = await createGalleryThumbnailResponse('test-session-id', undefined, mockClient)
 
       expect(response.status).toBe(200)
     })

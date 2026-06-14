@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import { captureGalleryThumb, readCachedGalleryThumb } from './gallery-thumbnail-capture'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
@@ -173,8 +174,18 @@ export const generateDeterministicThumbnailSvg = (
 </svg>`
 }
 
+const pngResponse = (buffer: Buffer): Response =>
+  new Response(new Uint8Array(buffer), {
+    status: 200,
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=86400, immutable',
+    },
+  })
+
 export const createGalleryThumbnailResponse = async (
   sessionId: string,
+  request?: Request,
   clientOverride?: GalleryConvexClient,
 ): Promise<Response> => {
   try {
@@ -183,6 +194,24 @@ export const createGalleryThumbnailResponse = async (
 
     if (session === null) {
       return new Response('Session not found or not public', { status: 404 })
+    }
+
+    // Prefer a real screenshot of the generated site (captured once and saved).
+    // Only fall back to the deterministic SVG when capture is unavailable or
+    // fails; that SVG is the explicit error/placeholder state.
+    const version = (session as { previewVersion?: number }).previewVersion ?? 0
+    const cached = readCachedGalleryThumb(sessionId, version)
+    if (cached) return pngResponse(cached)
+
+    const shouldCapture =
+      request !== undefined &&
+      new URL(request.url).searchParams.get('fallback') !== '1'
+
+    if (shouldCapture) {
+      const origin = new URL(request.url).origin
+      const previewUrl = `${origin}/api/sessions/${encodeURIComponent(sessionId)}/preview-raw`
+      const captured = await captureGalleryThumb(sessionId, version, previewUrl)
+      if (captured) return pngResponse(captured)
     }
 
     const categories = session.categories?.length
@@ -199,7 +228,8 @@ export const createGalleryThumbnailResponse = async (
       status: 200,
       headers: {
         'Content-Type': 'image/svg+xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
+        // Short-lived so transient capture failures can recover on reload.
+        'Cache-Control': 'public, max-age=10',
       },
     })
   } catch (error) {

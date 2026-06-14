@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { MarketingShell } from './-MarketingShell'
 import { PRICING_PAGE_MAIN_HTML } from './-pricing-main-html'
+import '@/styles/pricing-page.css'
 
 export const PricingPage = () => {
   useEffect(() => {
