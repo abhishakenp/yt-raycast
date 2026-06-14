@@ -141,7 +141,7 @@ export const parseSessionAdmission = (
   const now = usage.now ?? Date.now()
   const disableLimits =
     typeof process !== 'undefined' &&
-    process.env?.DISABLE_LIMIT === 'true'
+    (process.env?.DISABLE_LIMIT === 'true' || process.env?.IS_DEV === 'true')
   const prompt = normalizeSpaces(
     typeof input.prompt === 'string' ? input.prompt : '',
   )

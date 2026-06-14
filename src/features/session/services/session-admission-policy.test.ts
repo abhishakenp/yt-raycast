@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
   MAX_ANON_PER_DAY,
   MAX_FREE_PER_MONTH,
@@ -11,6 +11,11 @@ import {
 } from './session-admission-policy'
 
 describe('session admission policy', () => {
+  afterEach(() => {
+    delete process.env.IS_DEV
+    delete process.env.DISABLE_LIMIT
+  })
+
   it('accepts substantive anonymous prompts and reports remaining quota', () => {
     const result = parseSessionAdmission(
       {
@@ -105,6 +110,20 @@ describe('session admission policy', () => {
         { recentTimestamps: [1, 2, 3, 4, 5], now: 6 },
       ),
     ).toMatchObject({ ok: false, code: 'RATE_LIMITED' })
+  })
+
+  it('bypasses rate and quota limits when Convex dev mode is enabled', () => {
+    process.env.IS_DEV = 'true'
+
+    expect(
+      parseSessionAdmission(
+        {
+          prompt:
+            'A website for a regional bakery with catering menus and wedding cake galleries',
+        },
+        { anonymousDailyTimestamps: [1, 2], recentTimestamps: [1, 2, 3, 4, 5], now: 6 },
+      ),
+    ).toMatchObject({ ok: true })
   })
 
   it('validates design references and detects obvious gibberish without blocking concise real briefs', () => {

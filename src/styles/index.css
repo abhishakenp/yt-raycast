@@ -59,6 +59,77 @@
   padding: 1rem;
 }
 
+#right-panel:has(.cockpit-fade-up) {
+  perspective: 2000px;
+}
+
+.cockpit-fade-up {
+  transform-origin: center bottom;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: opacity, transform;
+  animation: cockpitMacbookReveal 1550ms linear both;
+}
+
+@keyframes cockpitMacbookReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(150px) scale(0.7) rotateX(80deg);
+  }
+  5.2% {
+    opacity: 1;
+    transform: translateY(123.5px) scale(0.753) rotateX(65.9deg);
+  }
+  10.3% {
+    opacity: 1;
+    transform: translateY(70.2px) scale(0.86) rotateX(37.4deg);
+  }
+  15.5% {
+    opacity: 1;
+    transform: translateY(19.7px) scale(0.961) rotateX(10.5deg);
+  }
+  20.6% {
+    opacity: 1;
+    transform: translateY(-13.2px) scale(1.026) rotateX(-7.1deg);
+  }
+  27.7% {
+    opacity: 1;
+    transform: translateY(-27.1px) scale(1.054) rotateX(-14.5deg);
+  }
+  37.4% {
+    opacity: 1;
+    transform: translateY(-13.6px) scale(1.027) rotateX(-7.3deg);
+  }
+  49% {
+    opacity: 1;
+    transform: translateY(3px) scale(0.994) rotateX(1.6deg);
+  }
+  60.6% {
+    opacity: 1;
+    transform: translateY(3.9px) scale(0.992) rotateX(2.1deg);
+  }
+  74.8% {
+    opacity: 1;
+    transform: translateY(-0.3px) scale(1.001) rotateX(-0.2deg);
+  }
+  87.7% {
+    opacity: 1;
+    transform: translateY(-0.7px) scale(1.001) rotateX(-0.4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cockpit-fade-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .dashboard-topbar {
   gap: 0.75rem;
   padding-inline: 0.75rem;

@@ -823,12 +823,12 @@ export const HomePage = () => {
                 </div>
 
                 <div>
-                  <div className="mx-auto mt-2 flex max-w-full flex-wrap justify-center gap-0 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:justify-start max-[760px]:gap-1" aria-label="Example prompts">
+                  <div className="mx-auto mt-2 flex max-w-full flex-nowrap justify-center gap-0 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:flex-wrap max-[760px]:justify-start max-[760px]:gap-1" aria-label="Example prompts">
                     {EXAMPLE_CHIPS.map(([label, value], index) => (
                       <button
                         key={label}
                         type="button"
-                        className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-2 py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-[7px] py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
                         data-prompt={value}
                         data-react-owned="true"
                         title={value}

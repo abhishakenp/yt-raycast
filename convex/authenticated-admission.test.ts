@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test'
-import { expect, test } from 'vitest'
+import { afterEach, expect, test } from 'vitest'
 import { api } from './_generated/api'
 import schema from './schema'
 import {
@@ -23,6 +23,11 @@ const createPayload = (stamp: string) => ({
   preferredExportTarget: 'html' as const,
   isPrivate: false,
   workspace: `workspace_authenticated_quota_${stamp}`,
+})
+
+afterEach(() => {
+  delete process.env.IS_DEV
+  delete process.env.DISABLE_LIMIT
 })
 
 test('authenticated free users are capped by monthly quota at the live mutation boundary', async () => {
@@ -94,4 +99,41 @@ test('authenticated paid users use the paid monthly quota and store auth ownersh
   expect(stored?.userId).toBe(identity.tokenIdentifier)
   expect(stored?.anonymousClientIdHash).toBeUndefined()
   expect(stored?.anonOwnerSecretHash).toBeUndefined()
+})
+
+test('Convex dev mode bypasses anonymous daily quota at the live mutation boundary', async () => {
+  process.env.IS_DEV = 'true'
+
+  const t = convexTest(schema, modules)
+  const now = Date.now()
+  const anonymousClientId = 'dev-mode-anonymous-client'
+
+  await t.run(async (ctx) => {
+    for (let index = 0; index < 3; index += 1) {
+      await ctx.db.insert('sessions', {
+        anonymousClientIdHash: await crypto.subtle
+          .digest('SHA-256', new TextEncoder().encode(anonymousClientId))
+          .then((buffer) =>
+            Array.from(new Uint8Array(buffer), (byte) =>
+              byte.toString(16).padStart(2, '0'),
+            ).join(''),
+          ),
+        prompt: `Seeded anonymous quota session ${index}`,
+        preferredLanguage: 'en',
+        preferredExportTarget: 'html',
+        isPrivate: false,
+        createdAt: now - RATE_WINDOW_MS - 1000 - index,
+      })
+    }
+  })
+
+  await expect(
+    t.runMutation(api.sessions.create, {
+      ...createPayload('anonymous-dev-mode-allowed'),
+      anonymousClientId,
+      anonymousOwnerSecret: 'owner-secret',
+    }),
+  ).resolves.toMatchObject({
+    remaining: expect.any(Number),
+  })
 })
