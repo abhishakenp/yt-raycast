@@ -37,7 +37,6 @@ const sessionId = createReadySession({
   ownerSecret,
   timeoutMs,
   html: `<html><body><main><h1>${escapeHtml(prompt)}</h1><article data-product-id="prod_verify_1">Verifier Hoodie</article></main></body></html>`,
-  openUiSource: `$page = "Home"\nroot = Text(${JSON.stringify(prompt)})`,
   siteSpecJson: JSON.stringify({
     projectName: prompt,
     ecommerce: true,
@@ -149,6 +148,24 @@ assert(
   'Medusa cart read returned a different cart',
 )
 
+const cartUpdate = await requestJson('/api/medusa-store/cart/line-items', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({
+    cart_id: cartId,
+    variant_id: 'variant_verify_1',
+    quantity: 2,
+  }),
+})
+assert(
+  cartUpdate.status === 200,
+  `Medusa cart update returned ${cartUpdate.status}`,
+)
+assert(
+  cartUpdate.json.cart?.id === cartId,
+  'Medusa cart update returned a different cart',
+)
+
 console.log(
   JSON.stringify(
     {
@@ -161,6 +178,7 @@ console.log(
         second: secondSync.synced,
       },
       cartId,
+      cartUpdated: true,
     },
     null,
     2,

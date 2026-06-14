@@ -18,6 +18,14 @@ const appEnvSchema = z.object({
   RAZORPAY_KEY_SECRET: z.string().optional(),
   SANITY_PROJECT_ID: z.string().optional(),
   MEDUSA_BACKEND_URL: z.string().url().optional(),
+  MEDUSA_ADMIN_URL: z.string().url().optional(),
+  MEDUSA_STOREFRONT_URL: z.string().url().optional(),
+  MEDUSA_PUBLISHABLE_KEY: z.string().optional(),
+  MEDUSA_PUBLISHABLE_API_KEY: z.string().optional(),
+  NEXT_PUBLIC_MEDUSA_BACKEND_URL: z.string().url().optional(),
+  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: z.string().optional(),
+  VITE_MEDUSA_BACKEND_URL: z.string().url().optional(),
+  VITE_MEDUSA_PUBLISHABLE_KEY: z.string().optional(),
 })
 
 export type AppEnv = z.infer<typeof appEnvSchema>
@@ -42,6 +50,14 @@ export const parseAppEnv = (rawEnv: RawAppEnv): AppEnv =>
     RAZORPAY_KEY_SECRET: rawEnv.RAZORPAY_KEY_SECRET,
     SANITY_PROJECT_ID: rawEnv.SANITY_PROJECT_ID,
     MEDUSA_BACKEND_URL: rawEnv.MEDUSA_BACKEND_URL,
+    MEDUSA_ADMIN_URL: rawEnv.MEDUSA_ADMIN_URL,
+    MEDUSA_STOREFRONT_URL: rawEnv.MEDUSA_STOREFRONT_URL,
+    MEDUSA_PUBLISHABLE_KEY: rawEnv.MEDUSA_PUBLISHABLE_KEY,
+    MEDUSA_PUBLISHABLE_API_KEY: rawEnv.MEDUSA_PUBLISHABLE_API_KEY,
+    NEXT_PUBLIC_MEDUSA_BACKEND_URL: rawEnv.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
+    NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: rawEnv.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+    VITE_MEDUSA_BACKEND_URL: rawEnv.VITE_MEDUSA_BACKEND_URL,
+    VITE_MEDUSA_PUBLISHABLE_KEY: rawEnv.VITE_MEDUSA_PUBLISHABLE_KEY,
   })
 
 export const hasConfiguredValue = (value: string | undefined): boolean =>

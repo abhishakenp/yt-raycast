@@ -111,6 +111,14 @@ const pexelsDevApi = (): Plugin => ({
 })
 
 const config = defineConfig({
+  envPrefix: [
+    'VITE_',
+    'NEXT_PUBLIC_',
+    'MEDUSA_BACKEND_',
+    'MEDUSA_ADMIN_URL',
+    'MEDUSA_STOREFRONT_',
+    'MEDUSA_PUBLISHABLE_',
+  ],
   resolve: { tsconfigPaths: true },
   server: {
     allowedHosts: ['.ship-fast.io'],

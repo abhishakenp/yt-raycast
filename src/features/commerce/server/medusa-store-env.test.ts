@@ -1,0 +1,30 @@
+import { describe, expect, it } from 'vitest'
+
+import {
+  getMedusaBackendUrl,
+  getMedusaPublishableKey,
+  readMedusaEnv,
+} from './medusa-store-env'
+
+describe('medusa store env', () => {
+  it('reads runtime env with bracket access', () => {
+    expect(
+      getMedusaBackendUrl({
+        MEDUSA_BACKEND_URL: 'https://commerce.example.test',
+      }),
+    ).toBe('https://commerce.example.test')
+  })
+
+  it('falls back through public and vite-compatible names', () => {
+    expect(
+      getMedusaBackendUrl({}, { VITE_MEDUSA_BACKEND_URL: 'https://vite.example.test' }),
+    ).toBe('https://vite.example.test')
+    expect(
+      getMedusaPublishableKey({}, { NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: 'pk_test' }),
+    ).toBe('pk_test')
+  })
+
+  it('ignores empty values', () => {
+    expect(readMedusaEnv(['A', 'B'], { A: '   ', B: 'ready' }, {})).toBe('ready')
+  })
+})

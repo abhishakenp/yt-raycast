@@ -1,11 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { getMedusaAdminUrl, getMedusaBackendUrl } from '@/features/commerce/server/medusa-store-env'
+
 export const Route = createFileRoute('/api/medusa-admin/config')({
   server: {
     handlers: {
       GET: async () => {
-        const adminUrl = process.env.MEDUSA_ADMIN_URL || 'http://localhost:7001'
-        const backendUrl = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+        const adminUrl = getMedusaAdminUrl()
+        const backendUrl = getMedusaBackendUrl()
 
         return Response.json({
           enabled: Boolean(adminUrl),

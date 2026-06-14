@@ -1,13 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { getMedusaBackendUrl, getMedusaPublishableKey } from '@/features/commerce/server/medusa-store-env'
+
 export const Route = createFileRoute('/api/medusa-store/cart')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const publishableKey =
-          process.env.MEDUSA_PUBLISHABLE_API_KEY ||
-          process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
-          ''
+        const publishableKey = getMedusaPublishableKey()
 
         if (!publishableKey.trim()) {
           return Response.json(
@@ -16,7 +15,7 @@ export const Route = createFileRoute('/api/medusa-store/cart')({
           )
         }
 
-        const baseUrl = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+        const baseUrl = getMedusaBackendUrl()
 
         try {
           const regionsResponse = await fetch(`${baseUrl}/store/regions`, {
