@@ -5,8 +5,14 @@ import { createGalleryThumbnailResponse } from '@/features/gallery/server/galler
 export const Route = createFileRoute('/api/sessions/$sessionId/gallery-thumb')({
   server: {
     handlers: {
-      GET: async ({ params }: { params: { sessionId: string } }) => {
-        return await createGalleryThumbnailResponse(params.sessionId)
+      GET: async ({
+        params,
+        request,
+      }: {
+        params: { sessionId: string }
+        request: Request
+      }) => {
+        return await createGalleryThumbnailResponse(params.sessionId, request)
       },
     },
   },

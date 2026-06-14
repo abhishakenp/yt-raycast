@@ -90,4 +90,32 @@ describe('session create payload', () => {
       cloneUrl: 'https://example.com/editorial',
     })
   })
+
+  it('includes the selected engine version when provided', () => {
+    expect(
+      buildCreateSessionPayload({
+        prompt: 'build a portfolio',
+        preferredLanguage: 'en',
+        isPrivate: false,
+        anonymousOwnerSecret: 'owner-secret',
+        workspace: 'workspace_abc123',
+        engineVersion: 'v2',
+      }),
+    ).toMatchObject({
+      engineVersion: 'v2',
+    })
+  })
+
+  it('omits the default engine version for v1 compatibility', () => {
+    expect(
+      buildCreateSessionPayload({
+        prompt: 'build a portfolio',
+        preferredLanguage: 'en',
+        isPrivate: false,
+        anonymousOwnerSecret: 'owner-secret',
+        workspace: 'workspace_abc123',
+        engineVersion: 'v1',
+      }),
+    ).not.toHaveProperty('engineVersion')
+  })
 })

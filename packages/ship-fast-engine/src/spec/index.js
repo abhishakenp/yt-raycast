@@ -25,3 +25,9 @@ export function saveSiteSpec(workspace, project) {
 export function ensureCompatibleSiteSpec(workspace) {
   return loadSiteSpec(workspace)
 }
+
+export { supplementSiteSpecPages } from './supplement-pages.js'
+export { buildFallbackSiteSpec, SITE_SPEC_VERSION } from './defaults.js'
+export { normalizeSiteSpec } from './normalize.js'
+export { validateSiteSpec } from './validate.js'
+export { enrichSiteSpecWithWorkspaceBlueprints, extractRenderBlueprintFromHtml, stripSiteSpecBlueprints } from './blueprints.js'

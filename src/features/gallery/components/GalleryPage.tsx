@@ -46,10 +46,10 @@ export const GalleryPage = () => {
   }, [])
 
   return (
-    <main className="min-h-screen bg-[#030511] text-slate-100">
+    <main className="sf-gallery-page min-h-screen w-full bg-[#030511] text-slate-100">
       <div className="flex min-h-screen flex-col">
-        <header className="sticky top-0 z-20 border-b border-white/10 bg-[#030511]/88 px-4 py-3 backdrop-blur-xl md:px-5">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <header className="sf-gallery-header sticky top-0 z-20 border-b border-white/10 bg-[#030511]/88 px-4 py-3 backdrop-blur-xl md:px-5">
+          <div className="sf-gallery-header-inner mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 className="grid size-9 shrink-0 place-items-center rounded-[8px] border border-white/10 bg-white/[0.06] text-slate-200"
@@ -85,8 +85,8 @@ export const GalleryPage = () => {
           </div>
         </header>
 
-        <section className="px-4 py-6 md:px-6">
-          <div className="mx-auto flex max-w-7xl flex-col gap-5">
+        <section className="sf-gallery-section px-4 py-6 md:px-6">
+          <div className="sf-gallery-container mx-auto flex max-w-7xl flex-col gap-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <GalleryCategoryTabs
                 category={category}

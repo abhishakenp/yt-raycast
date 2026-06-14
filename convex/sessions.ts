@@ -1987,6 +1987,7 @@ export const create = mutation({
     designReferenceUrls: v.optional(v.array(v.string())),
     designReferenceNotes: v.optional(v.string()),
     cloneUrl: v.optional(v.string()),
+    engineVersion: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const disableLimits = process.env.DISABLE_LIMIT === 'true'
@@ -2132,6 +2133,7 @@ export const create = mutation({
       cloneUrl,
       designReferenceFingerprint,
       promptCacheKey,
+      engineVersion: args.engineVersion,
       isPrivate: args.isPrivate,
       previewVersion: 0,
       createdAt: now,

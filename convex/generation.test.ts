@@ -54,14 +54,11 @@ describe('convex generation action', () => {
     const source = readFileSync(join(here, 'generation.ts'), 'utf8')
     const handlerIndex = source.indexOf('handler: async (ctx, args) => {')
     const runtimeIndex = source.indexOf('runHomepageOrchestrator', handlerIndex)
-    const completeIndex = source.indexOf(
-      'internalFunctions.sessions.completeGeneration',
-      handlerIndex,
-    )
+    const v1ProviderIndex = source.indexOf("provider: 'genui-orchestrator'", runtimeIndex)
 
     expect(handlerIndex).toBeGreaterThan(-1)
     expect(runtimeIndex).toBeGreaterThan(-1)
-    expect(completeIndex).toBeGreaterThan(runtimeIndex)
+    expect(v1ProviderIndex).toBeGreaterThan(runtimeIndex)
     expect(source).not.toContain('buildFastPreviewArtifacts')
     expect(source).not.toContain("provider: 'fast-preview'")
     expect(source).toContain("provider: 'genui-orchestrator'")

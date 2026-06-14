@@ -8,6 +8,7 @@ export { loadSiteSpec, saveSiteSpec, SUPPORTED_EXPORT_TARGETS, enrichSiteSpecWit
 export { renderProject, renderPreviewToWorkspace, writeRenderedFiles } from './renderers/index.ts'
 export { preprocessOpenUIResponse } from './lib/openui-preprocess.ts'
 export { runAll, runEdit } from './pipeline/runner.js'
+export { runAllV2 } from './pipeline/runner-v2.ts'
 
 export const IntegrationIntentSchema = z.object({
   type: z.enum(['stripe', 'form', 'auth', 'search', 'database', 'custom']),

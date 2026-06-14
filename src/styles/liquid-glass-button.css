@@ -1,0 +1,190 @@
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: inherit;
+  isolation: isolate;
+  min-height: 48px;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+.pill:active {
+  transform: scale(0.97);
+}
+
+.pill:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.95);
+  outline-offset: 4px;
+}
+
+.pill__lens {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(32px) saturate(210%) brightness(1.03) contrast(1.04);
+  backdrop-filter: blur(32px) saturate(210%) brightness(1.03) contrast(1.04);
+  filter: url(#sf-glass-lens);
+}
+
+.pill__fringe {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(28px) saturate(220%) contrast(1.04);
+  backdrop-filter: blur(28px) saturate(220%) contrast(1.04);
+}
+
+.pill__fringe--r {
+  z-index: 1;
+  transform: translate3d(1px, -0.4px, 0);
+  background: rgba(255, 210, 198, 0.07);
+  mix-blend-mode: screen;
+  opacity: 0.28;
+}
+
+.pill__fringe--b {
+  z-index: 2;
+  transform: translate3d(-1px, 0.4px, 0);
+  background: rgba(175, 205, 228, 0.07);
+  mix-blend-mode: screen;
+  opacity: 0.28;
+}
+
+.pill__mist {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(8, 10, 18, 0.22) 0%, rgba(255, 255, 255, 0.04) 48%, rgba(218, 224, 232, 0.1) 100%),
+    radial-gradient(ellipse 100% 70% at 88% 12%, rgba(255, 255, 255, 0.06) 0%, transparent 45%);
+  opacity: 0.55;
+}
+
+.pill__iris {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from 200deg at 35% 25%,
+    rgba(235, 238, 242, 0.07),
+    rgba(210, 216, 224, 0.08),
+    rgba(225, 228, 234, 0.07),
+    rgba(205, 212, 222, 0.08),
+    rgba(235, 238, 242, 0.07)
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0.26;
+}
+
+.pill__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(172deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 42%),
+    linear-gradient(358deg, rgba(255, 255, 255, 0) 54%, rgba(255, 255, 255, 0.05) 100%);
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
+}
+
+.pill__rim {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    inset 0 -12px 28px rgba(0, 6, 30, 0.28);
+}
+
+.pill__txt {
+  position: relative;
+  z-index: 7;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.pill__body {
+  position: relative;
+  z-index: 7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.pill--top-actions {
+  min-height: 36px;
+  padding: 0 16px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.pill--session {
+  min-height: 36px;
+  padding: 0 20px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary, #f0f0f5);
+}
+
+.pill--icon-ghost {
+  min-height: 28px;
+  width: 28px;
+  min-width: 28px;
+  padding: 0;
+}
+
+.pill--share-32 {
+  min-height: 32px;
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+}
+
+.pill--modal-close {
+  min-height: 36px;
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+}
+
+sf-glass-pill {
+  display: contents;
+}
+
+.sf-glass-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

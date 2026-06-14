@@ -64,6 +64,7 @@ export const usePromptHomeController = () => {
     designReferenceUrls?: string[]
     designReferenceNotes?: string
     cloneUrl?: string
+    engineVersion?: 'v1' | 'v2'
   }) => {
     const runtimePrompt = normalizePromptDraft(opts?.prompt ?? prompt)
     const preferredLanguage = opts?.preferredLanguage?.trim() || 'en'
@@ -95,6 +96,7 @@ export const usePromptHomeController = () => {
           designReferenceUrls: opts?.designReferenceUrls,
           designReferenceNotes: opts?.designReferenceNotes,
           cloneUrl: opts?.cloneUrl,
+          engineVersion: opts?.engineVersion,
         }),
       )
       const sessionId = result.sessionId
