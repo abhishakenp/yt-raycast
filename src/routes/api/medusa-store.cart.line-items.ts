@@ -1,13 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+import { getMedusaBackendUrl, getMedusaPublishableKey } from '@/features/commerce/server/medusa-store-env'
+
 export const Route = createFileRoute('/api/medusa-store/cart/line-items')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const publishableKey =
-          process.env.MEDUSA_PUBLISHABLE_API_KEY ||
-          process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
-          ''
+        const publishableKey = getMedusaPublishableKey()
 
         if (!publishableKey.trim()) {
           return Response.json({ error: 'Medusa Store API not configured' }, { status: 503 })
@@ -22,7 +21,7 @@ export const Route = createFileRoute('/api/medusa-store/cart/line-items')({
           return Response.json({ error: 'cart_id and variant_id required' }, { status: 400 })
         }
 
-        const baseUrl = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+        const baseUrl = getMedusaBackendUrl()
 
         try {
           const response = await fetch(`${baseUrl}/store/carts/${cartId}/line-items`, {

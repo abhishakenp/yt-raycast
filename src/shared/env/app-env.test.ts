@@ -16,6 +16,13 @@ describe('app env', () => {
       VITE_CLERK_PUBLISHABLE_KEY: 'pk_test_123',
       VITE_CONVEX_SELF_HOSTED_URL: 'https://convex.ship-fast.io',
       MEDUSA_BACKEND_URL: 'https://commerce.ship-fast.io',
+      MEDUSA_ADMIN_URL: 'https://commerce.ship-fast.io/app',
+      MEDUSA_STOREFRONT_URL: 'https://store.ship-fast.io',
+      MEDUSA_PUBLISHABLE_KEY: 'pk_medusa',
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: 'https://public-commerce.ship-fast.io',
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: 'pk_public_medusa',
+      VITE_MEDUSA_BACKEND_URL: 'https://vite-commerce.ship-fast.io',
+      VITE_MEDUSA_PUBLISHABLE_KEY: 'pk_vite_medusa',
     })
 
     expect(env.CONVEX_URL).toBe('https://convex.ship-fast.io')
@@ -23,6 +30,13 @@ describe('app env', () => {
     expect(env.CONVEX_SELF_HOSTED_ADMIN_KEY).toBe('admin-key')
     expect(env.VITE_CONVEX_SELF_HOSTED_URL).toBe('https://convex.ship-fast.io')
     expect(env.MEDUSA_BACKEND_URL).toBe('https://commerce.ship-fast.io')
+    expect(env.MEDUSA_ADMIN_URL).toBe('https://commerce.ship-fast.io/app')
+    expect(env.MEDUSA_STOREFRONT_URL).toBe('https://store.ship-fast.io')
+    expect(env.MEDUSA_PUBLISHABLE_KEY).toBe('pk_medusa')
+    expect(env.NEXT_PUBLIC_MEDUSA_BACKEND_URL).toBe('https://public-commerce.ship-fast.io')
+    expect(env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY).toBe('pk_public_medusa')
+    expect(env.VITE_MEDUSA_BACKEND_URL).toBe('https://vite-commerce.ship-fast.io')
+    expect(env.VITE_MEDUSA_PUBLISHABLE_KEY).toBe('pk_vite_medusa')
   })
 
   it('rejects invalid URLs', () => {
