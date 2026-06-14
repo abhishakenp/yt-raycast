@@ -36,9 +36,13 @@ export const parseJson = (value, label) => {
 }
 
 export const convexRun = (functionName, payload, timeoutMs) => {
+  const envFileArgs =
+    process.env.SHIP_FAST_CONVEX_ENV_FILE === undefined
+      ? []
+      : ['--env-file', process.env.SHIP_FAST_CONVEX_ENV_FILE]
   const output = execFileSync(
     'bunx',
-    ['convex', 'run', functionName, JSON.stringify(payload)],
+    ['convex', 'run', ...envFileArgs, functionName, JSON.stringify(payload)],
     {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],

@@ -1328,7 +1328,8 @@ const readHtmlAttribute = (
 }
 
 const inferCmsBindingType = (field: string | undefined): CmsBindingType => {
-  const normalized = field?.toLowerCase() ?? ''
+  const normalized =
+    field?.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase() ?? ''
   if (
     /\b(image|img|photo|avatar|logo|media|poster|thumbnail)\b/.test(normalized)
   )
@@ -1631,10 +1632,16 @@ const seedCmsBindingsForGeneratedArtifacts = async (
     ...extractCmsBindingCandidatesFromSiteSpec(input.siteSpecJson),
   ]
   const seen = new Set<string>()
+  const seenFields = new Set<string>()
   let created = 0
 
   for (const candidate of candidates) {
     if (seen.has(candidate.selector)) continue
+    const fieldKey = candidate.field?.trim()
+    if (fieldKey !== undefined && fieldKey.length > 0) {
+      if (seenFields.has(fieldKey)) continue
+      seenFields.add(fieldKey)
+    }
     seen.add(candidate.selector)
 
     const existingBinding = await ctx.db
@@ -2886,7 +2893,12 @@ export const completeGeneration = internalAction({
 
     // Pre-render OpenUI source to HTML for gallery previews
     let renderedHtml = args.html
-    if (args.openUiSource && args.openUiSource.trim().length > 0) {
+    const hasCmsAnnotatedHtml = /\sdata-cms\s*=/.test(args.html)
+    if (
+      !hasCmsAnnotatedHtml &&
+      args.openUiSource &&
+      args.openUiSource.trim().length > 0
+    ) {
       try {
         const { renderOpenUIToHTMLWithTheme } = await loadOpenUISSR()
         const { html } = renderOpenUIToHTMLWithTheme(
