@@ -137,6 +137,8 @@ test('CMS image and link edits update rendered preview attributes', async () => 
   const image = content.find((item) => item.field === 'hero.image')
   const link = content.find((item) => item.field === 'hero.ctaUrl')
 
+  expect(content.filter((item) => item.field === 'hero.image')).toHaveLength(1)
+  expect(content.filter((item) => item.field === 'hero.ctaUrl')).toHaveLength(1)
   expect(image?.type).toBe('image')
   expect(link?.type).toBe('link')
 

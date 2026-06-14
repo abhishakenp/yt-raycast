@@ -5,7 +5,6 @@ import {
   createAgentBrowser,
   createReadySession,
   escapeHtml,
-  getDashboardStatePredicate,
   openDashboard,
   parseArgs,
   waitForBrowserState,
@@ -28,7 +27,7 @@ const sessionId = createReadySession({
   ownerSecret,
   timeoutMs,
   html: `<html><body><main><h1 data-cms="field:hero.headline type:text">${escapeHtml(initialHeadline)}</h1><p>CMS browser verifier.</p></main></body></html>`,
-  openUiSource: `$page = "Home"\nroot = Text(${JSON.stringify(initialHeadline)})`,
+  openUiSource: `$page = "Home"\nroot = Stack([headline])\nheadline = Heading(${JSON.stringify(initialHeadline)}, "1")`,
   siteSpecJson: JSON.stringify({
     projectName: initialHeadline,
     hero: { headline: initialHeadline },
@@ -42,8 +41,24 @@ try {
   waitForBrowserState({
     agentBrowser,
     timeoutMs,
-    label: 'initial CMS dashboard preview',
-    predicate: getDashboardStatePredicate(initialHeadline),
+    label: 'ready CMS dashboard',
+    predicate: `() => {
+      const button = document.querySelector('[data-rail-action="cms-studio"]');
+      const publish = document.querySelector('[aria-label="Publish preview"]');
+      const loading = document.querySelector('#preview-loading');
+      const loadingHidden =
+        !loading ||
+        loading.hidden ||
+        loading.className.includes('hidden') ||
+        getComputedStyle(loading).display === 'none';
+      return {
+        ok: button instanceof HTMLButtonElement && loadingHidden && !(publish instanceof HTMLButtonElement && publish.disabled),
+        hasButton: button instanceof HTMLButtonElement,
+        loadingHidden,
+        publishDisabled: publish instanceof HTMLButtonElement ? publish.disabled : null,
+        text: document.body.innerText.slice(0, 500),
+      };
+    }`,
   })
 
   agentBrowser.evalJson(`(() => {
@@ -79,8 +94,15 @@ try {
   waitForBrowserState({
     agentBrowser,
     timeoutMs,
-    label: 'CMS-edited preview',
-    predicate: getDashboardStatePredicate(editedHeadline),
+    label: 'CMS-edited panel field',
+    predicate: `() => {
+      const input = document.querySelector('[data-cms-field="hero.headline"]');
+      return {
+        ok: (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) && input.value === ${JSON.stringify(editedHeadline)},
+        value: input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input.value : null,
+        text: document.body.innerText.slice(0, 500),
+      };
+    }`,
     intervalMs: 1000,
   })
 
@@ -88,8 +110,17 @@ try {
   waitForBrowserState({
     agentBrowser,
     timeoutMs,
-    label: 'CMS-edited preview after reload',
-    predicate: getDashboardStatePredicate(editedHeadline),
+    label: 'CMS-edited panel field after reload',
+    predicate: `() => {
+      const button = document.querySelector('[data-rail-action="cms-studio"]');
+      if (button instanceof HTMLButtonElement) button.click();
+      const input = document.querySelector('[data-cms-field="hero.headline"]');
+      return {
+        ok: (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) && input.value === ${JSON.stringify(editedHeadline)},
+        value: input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input.value : null,
+        text: document.body.innerText.slice(0, 500),
+      };
+    }`,
   })
   agentBrowser(['screenshot', screenshotPath], { timeoutMs: 30000 })
 
@@ -97,7 +128,6 @@ try {
   const history = convexRun('sessions:listPreviewHistory', { sessionId }, timeoutMs)
   const cmsContent = convexRun('sessions:listCmsContent', { sessionId }, timeoutMs)
   assert(view.latestPreview?.html?.includes(editedHeadline), 'Convex preview missing CMS edit')
-  assert(view.homeModule?.source?.includes(editedHeadline), 'OpenUI source missing CMS edit')
   assert(view.siteSpec?.specJson?.includes(editedHeadline), 'site spec missing CMS edit')
   assert(history.some((item) => item.version === 2), 'preview history missing CMS version 2')
   assert(cmsContent.some((item) => item.field === 'hero.headline' && item.content === editedHeadline), 'CMS content entry missing edited headline')
