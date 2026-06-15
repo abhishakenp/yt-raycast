@@ -5,9 +5,101 @@
  */
 
 import { createElement } from 'react'
-import { renderToString } from 'react-dom/server'
 import { Renderer, library, ImageContextProvider } from '@ship-fast/blocks'
+import { ConvexProvider } from 'convex/react'
+import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { preprocessOpenUIResponse } from './lib/openui-preprocess.js'
+
+/**
+ * Inert Convex client for server-side rendering. Data-backed capsules (e.g. the
+ * ecommerce page) call lakebed hooks that require a ConvexProvider +
+ * LakebedSessionProvider; without them the hooks throw and blank the WHOLE page
+ * during SSR (the `openui-error` panel). The real providers only exist in the
+ * live client preview, so for SSR we supply this stub: every query resolves to
+ * "no data yet" (undefined), which capsules treat as "use built-in defaults",
+ * and mutations are harmless no-ops (they're only invoked from effects/handlers
+ * that never run during renderToString). The client then hydrates with the real
+ * providers and live data. Subscriptions/effects do not run during
+ * renderToString, so `watchQuery` is the only method touched here.
+ */
+const emptyWatch = {
+  localQueryResult: () => undefined,
+  onUpdate: () => () => {},
+  journal: () => undefined,
+}
+const ssrConvexStub = {
+  watchQuery: () => emptyWatch,
+  watchPaginatedQuery: () => emptyWatch,
+  mutation: () => Promise.resolve(null),
+  action: () => Promise.resolve(null),
+  connectionState: () => ({
+    hasInflightRequests: false,
+    isWebSocketConnected: false,
+    timeOfOldestInflightRequest: null,
+  }),
+  setAuth: () => {},
+  clearAuth: () => {},
+}
+
+/**
+ * Wrap a render tree with the SSR-safe providers (image context + inert
+ * lakebed/convex stubs) so any capsule renders without throwing on the server.
+ */
+function withSSRProviders(tree, imageContext) {
+  return createElement(
+    ConvexProvider,
+    { client: ssrConvexStub },
+    createElement(
+      LakebedSessionProvider,
+      { sessionId: 'ssr-preview' },
+      createElement(ImageContextProvider, { value: imageContext }, tree),
+    ),
+  )
+}
+
+const ensureMessageChannel = () => {
+  if (typeof globalThis.MessageChannel !== 'undefined') return
+
+  class ScheduledMessagePort {
+    onmessage = null
+    #target = null
+
+    setTarget(target) {
+      this.#target = target
+    }
+
+    postMessage(data) {
+      const target = this.#target
+      setTimeout(() => target?.onmessage?.({ data }), 0)
+    }
+
+    start() {}
+
+    close() {
+      this.onmessage = null
+      this.#target = null
+    }
+  }
+
+  class ScheduledMessageChannel {
+    constructor() {
+      this.port1 = new ScheduledMessagePort()
+      this.port2 = new ScheduledMessagePort()
+      this.port1.setTarget(this.port2)
+      this.port2.setTarget(this.port1)
+    }
+  }
+
+  Object.defineProperty(globalThis, 'MessageChannel', {
+    configurable: true,
+    value: ScheduledMessageChannel,
+    writable: true,
+  })
+}
+
+ensureMessageChannel()
+
+const { renderToString } = await import('react-dom/server')
 
 /**
  * Render OpenUI source to HTML string.
@@ -18,20 +110,27 @@ import { preprocessOpenUIResponse } from './lib/openui-preprocess.js'
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @returns {string} Rendered HTML
  */
-export function renderOpenUIToHTML(source, theme = null, locale = 'en', integrations = null, imageContext = null) {
+export function renderOpenUIToHTML(
+  source,
+  theme = null,
+  locale = 'en',
+  integrations = null,
+  imageContext = null,
+) {
   try {
-    const preprocessed = preprocessOpenUIResponse(source, { resolveRefs: false })
+    const preprocessed = preprocessOpenUIResponse(source, {
+      resolveRefs: false,
+    })
 
     const html = renderToString(
-      createElement(
-        ImageContextProvider,
-        { value: imageContext },
+      withSSRProviders(
         createElement(Renderer, {
           response: preprocessed,
           library,
           isStreaming: false,
         }),
-      )
+        imageContext,
+      ),
     )
 
     return html
@@ -50,12 +149,24 @@ export function renderOpenUIToHTML(source, theme = null, locale = 'en', integrat
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @returns {object} { html: string, cssVars: string }
  */
-export function renderOpenUIToHTMLWithTheme(source, theme = null, locale = 'en', integrations = null, imageContext = null) {
-  const html = renderOpenUIToHTML(source, theme, locale, integrations, imageContext)
-  
+export function renderOpenUIToHTMLWithTheme(
+  source,
+  theme = null,
+  locale = 'en',
+  integrations = null,
+  imageContext = null,
+) {
+  const html = renderOpenUIToHTML(
+    source,
+    theme,
+    locale,
+    integrations,
+    imageContext,
+  )
+
   // Convert theme tokens to CSS variables
   const cssVars = theme ? generateThemeCSSVars(theme) : ''
-  
+
   return { html, cssVars }
 }
 
@@ -66,7 +177,7 @@ export function renderOpenUIToHTMLWithTheme(source, theme = null, locale = 'en',
  */
 function generateThemeCSSVars(theme) {
   const vars = []
-  
+
   const tokenMap = {
     primary: '--primary',
     secondary: '--secondary',
@@ -79,12 +190,12 @@ function generateThemeCSSVars(theme) {
     input: '--input',
     ring: '--ring',
   }
-  
+
   for (const [key, cssVar] of Object.entries(tokenMap)) {
     if (theme[key]) {
       vars.push(`${cssVar}: ${theme[key]};`)
     }
   }
-  
+
   return vars.join('\n  ')
 }

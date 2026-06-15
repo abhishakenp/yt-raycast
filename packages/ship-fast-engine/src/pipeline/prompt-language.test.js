@@ -96,4 +96,15 @@ describe('pipeline prompt language enforcement', () => {
     expect(prompt).toContain('server language code `en`')
     expect(prompt).toContain('English only')
   })
+
+  it('adds generic quality constraints for localized visible copy', () => {
+    const prompt = withLanguageEnforcementBlock('Build a utility homepage', {
+      code: 'ml',
+      name: 'Malayalam',
+    })
+
+    expect(prompt).toContain('native-speaker quality')
+    expect(prompt).toContain('Do not use placeholder filenames')
+    expect(prompt).toContain('logo1.png')
+  })
 })

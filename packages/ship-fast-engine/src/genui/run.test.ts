@@ -178,6 +178,46 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     expect(result.source).toContain('"Popular Kerala experiences"')
   })
 
+  it('filters subpage blocks out of the home candidate shortlist', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0)
+    const { runHomepageOrchestrator } = await import('./run.ts')
+    const pagePrompts: string[] = []
+
+    try {
+      mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+        const userPrompt = String(user)
+        if (!userPrompt.includes('This page:')) {
+          return JSON.stringify({
+            brand: 'WaterWorks',
+            tagline: 'WaterWorks helps residents manage water services.',
+            theme: 'clean-slate',
+            locale: 'en',
+            pages: [
+              {
+                label: 'Home',
+                brief: 'Primary utility landing page',
+                blocks: ['TestimonialsKimiPage', 'CorporateKimiPage'],
+              },
+            ],
+          })
+        }
+
+        pagePrompts.push(userPrompt)
+        return `home = CorporateKimiPage("WaterWorks", ["Home"], {heading: "${longCopy}", subheading: "${longCopy}", primaryCta: "Pay bill", secondaryCta: "Report outage"})`
+      })
+
+      const result = await runHomepageOrchestrator({
+        prompt: 'Build a water utility homepage for WaterWorks',
+      })
+
+      expect(pagePrompts[0]).toContain('home = CorporateKimiPage')
+      expect(pagePrompts[0]).not.toContain('home = TestimonialsKimiPage')
+      expect(result.source).toContain('home = CorporateKimiPage')
+    } finally {
+      randomSpy.mockRestore()
+    }
+  })
+
   it('does not expose a home-only completion option', async () => {
     const source = await import('node:fs').then(({ readFileSync }) =>
       readFileSync(new URL('./run.ts', import.meta.url), 'utf8'),

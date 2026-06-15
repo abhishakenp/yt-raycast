@@ -168,6 +168,56 @@ const buildGenerationSiteSpecMetadata = (
   },
 })
 
+const completeGenerationFromNode = async (
+  ctx: ActionCtx,
+  input: {
+    sessionId: Id<'sessions'>
+    anonymousOwnerSecret?: string
+    html: string
+    siteSpecJson?: string
+    openUiSource?: string
+    tasks: EngineWorkspaceTask[]
+    elapsed?: number
+    cost?: number
+    provider?: string
+  },
+) => {
+  const session: Doc<'sessions'> | null = await ctx.runQuery(
+    internalFunctions.sessions.getGenerationSession,
+    {
+      sessionId: input.sessionId,
+    },
+  )
+
+  if (session === null) {
+    throw new Error('Session not found')
+  }
+
+  if ((session.previewVersion ?? 0) > 0) {
+    return {
+      sessionId: input.sessionId,
+      previewVersion: session.previewVersion ?? 0,
+      skipped: true,
+      reason: 'preview_already_exists',
+    }
+  }
+
+  await ctx.runMutation(internalFunctions.sessions.completeGenerationInternal, {
+    sessionId: input.sessionId,
+    anonymousOwnerSecret: input.anonymousOwnerSecret,
+    html: input.html,
+    siteSpecJson: input.siteSpecJson,
+    openUiSource: input.openUiSource,
+    tasks: input.tasks,
+    elapsed: input.elapsed,
+    cost: input.cost,
+    provider: input.provider,
+  })
+
+  const previewVersion = (session.previewVersion ?? 0) + 1
+  return { sessionId: input.sessionId, previewVersion }
+}
+
 const recordGenerationFailure = async (
   ctx: ActionCtx,
   args: { sessionId: Id<'sessions'>; anonymousOwnerSecret?: string },
@@ -283,7 +333,7 @@ export const startGeneration = internalAction({
           runAll: getSelectedEngine('v2'),
           persistence: {
             completeGeneration: async (input) =>
-              await ctx.runAction(internalFunctions.sessions.completeGeneration, {
+              await completeGenerationFromNode(ctx, {
                 sessionId: args.sessionId,
                 anonymousOwnerSecret: args.anonymousOwnerSecret,
                 html: input.html,
@@ -401,7 +451,7 @@ export const startGeneration = internalAction({
         session.prompt,
       )
 
-      await ctx.runAction(internalFunctions.sessions.completeGeneration, {
+      await completeGenerationFromNode(ctx, {
         sessionId: args.sessionId,
         anonymousOwnerSecret: args.anonymousOwnerSecret,
         html: staticPreviewHtml,

@@ -15,6 +15,7 @@ import type {
 import type * as OpenUI from '@openuidev/react-lang'
 import type { z } from 'zod/v4'
 import type { $ZodObject } from 'zod/v4/core'
+import { sanitizeProps } from './sanitize-props.ts'
 
 export type LakebedCapsuleDefinition<
   TProps = JsonRecord,
@@ -167,15 +168,22 @@ export const defineCapsule = <
   return {
     client: defineOpenUIComponent({
       ...openUIInput,
-      component: (componentInput) =>
-        component({
+      component: (componentInput) => {
+        // Best-effort repair of LLM-generated props against the declared schema
+        // (drop unrepairable nested items / null arrays, coerce scalars) so a
+        // single malformed value can't throw inside React and blank the whole
+        // page during SSR. Generic across every capsule — never name-specific.
+        const safeProps = sanitizeProps(componentInput.props, input.props)
+        return component({
           ...componentInput,
+          props: safeProps,
           lakebed: createLakebedClient({
             capsule: input.name,
             definition: lakebed,
-            props: componentInput.props,
+            props: safeProps,
           }),
-        }),
+        })
+      },
     }),
     ...(lakebed ? { lakebed } : {}),
   }

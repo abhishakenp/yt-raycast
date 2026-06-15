@@ -166,6 +166,9 @@ const BLOCK_NAME_COMPACT_INDEX = Object.fromEntries(
     name,
   ]),
 )
+const HOME_NAV_PAGE_TYPES = new Set(['home', 'landing'])
+const DEDICATED_SUBPAGE_BLOCK_RE =
+  /(Testimonials|Faq|FAQ|Dashboard|Directory|Pricing|Contact|Checkout|Cart|Login|Auth|Docs|Careers)/
 
 // Normalize model-returned block IDs so small format drift does not silently
 // collapse every page to placeholders.
@@ -201,8 +204,21 @@ function normalizeBlockName(raw: string): string | undefined {
   return
 }
 
+const isHomePageBlock = (name: string): boolean => {
+  const meta = BLOCK_TAXONOMY[name]
+  return meta !== undefined && HOME_NAV_PAGE_TYPES.has(meta.navPageType)
+}
+
+const isDedicatedSubpageBlock = (name: string): boolean =>
+  DEDICATED_SUBPAGE_BLOCK_RE.test(name)
+
 // Random pick from an AI-returned shortlist (variety); fall back if none are valid.
-function pickFrom(rng: () => number, names: unknown, fallback: string): string {
+function pickFrom(
+  rng: () => number,
+  names: unknown,
+  fallback: string,
+  options: { homeOnly?: boolean } = {},
+): string {
   const normalized = Array.isArray(names)
     ? names
         .map((name) =>
@@ -212,8 +228,16 @@ function pickFrom(rng: () => number, names: unknown, fallback: string): string {
     : []
 
   const valid = normalized.filter(isKnownBlock)
-  if (!valid.length) return fallback
-  return valid[Math.min(valid.length - 1, Math.floor(rng() * valid.length))]
+  const homeCandidates = options.homeOnly ? valid.filter(isHomePageBlock) : valid
+  const preferredHomeCandidates =
+    options.homeOnly && homeCandidates.length > 1
+      ? homeCandidates.filter((name) => !isDedicatedSubpageBlock(name))
+      : homeCandidates
+  const scoped = preferredHomeCandidates.length
+    ? preferredHomeCandidates
+    : homeCandidates
+  if (!scoped.length) return fallback
+  return scoped[Math.min(scoped.length - 1, Math.floor(rng() * scoped.length))]
 }
 
 // Sentinel fallback when the model cannot propose a valid block.
@@ -318,7 +342,9 @@ function parsePlan(raw: string, rng: () => number, prompt: string): Plan {
     .map((p, i) => {
       const label = (p.label as string).trim()
       const brief = (typeof p.brief === 'string' && p.brief.trim()) || label
-      const block = pickFrom(rng, p.blocks, fallbackBlock(rng, i === 0))
+      const block = pickFrom(rng, p.blocks, fallbackBlock(rng, i === 0), {
+        homeOnly: i === 0,
+      })
       return { id: i === 0 ? 'home' : `p${i}`, label, brief, block }
     })
   if (pages.length === 0) throw new Error('no pages in plan')

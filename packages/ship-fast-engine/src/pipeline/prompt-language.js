@@ -35,11 +35,19 @@ export const withLanguageEnforcementBlock = (prompt, languageMode) => {
           : isMixedEnglishIndicCode(code)
             ? `All user-visible copy must follow server language code \`${code}\`: natural ${name} + English mix for Indian audiences, not purely one language unless a short fragment requires it. Overrides any conflicting language in the project description above.`
             : `All user-visible copy must follow server language code \`${code}\` as the single primary language; do not switch. Overrides any conflicting language in the project description above.`
+  const quality =
+    code === DEFAULT_LANG
+      ? 'Use polished, native-speaker quality English for every visible label, heading, CTA, testimonial, and navigation item.'
+      : `Use polished, native-speaker quality ${name} for every visible label, heading, CTA, testimonial, and navigation item. Avoid literal word-by-word translation artifacts; write natural local phrasing.`
+  const placeholders =
+    'Do not use placeholder filenames or asset labels as visible copy, including logo1.png, image1.jpg, placeholder.png, avatar.png, or similar; use real organization, partner, person, or section names instead.'
 
   return `${raw}
 
 ---
-${tail}`
+${tail}
+${quality}
+${placeholders}`
 }
 
 export const resolvePipelineLanguage = async ({

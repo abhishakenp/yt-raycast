@@ -65,6 +65,20 @@ describe('convex generation action', () => {
     expect(source).toContain('buildOpenUiHandoffHtml')
   })
 
+  it('completes generated previews inside the node action runtime', () => {
+    const source = readFileSync(join(here, 'generation.ts'), 'utf8')
+
+    expect(source).toContain('completeGenerationFromNode')
+    expect(source).toContain('internalFunctions.sessions.completeGenerationInternal')
+    expect(source).not.toContain(
+      "await import('../packages/ship-fast-engine/src/openui-ssr.js')",
+    )
+    expect(source).not.toContain('renderOpenUIToHTMLWithTheme')
+    expect(source).not.toMatch(
+      /internalFunctions\.sessions\.completeGeneration(?!Internal)/,
+    )
+  })
+
   it('does not use a separate refinement mutation for initial generation', () => {
     const generationSource = readFileSync(join(here, 'generation.ts'), 'utf8')
     const sessionsSource = readFileSync(join(here, 'sessions.ts'), 'utf8')
