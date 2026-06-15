@@ -1,6 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import type { ReactNode } from 'react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children }: { children: ReactNode }) => (
+    <a href="/generate/test">{children}</a>
+  ),
+}))
 
 import { GalleryGrid, type GalleryPayload } from './PublicGallery'
 
@@ -36,5 +43,30 @@ describe('GalleryGrid', () => {
     expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
       0,
     )
+  })
+
+  it('renders stored generated HTML as the gallery card preview', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        {
+          sessionId: 'preview-session',
+          prompt: 'AI image studio',
+          html: '<main><h1>Rendered product preview</h1></main>',
+          previewVersion: 1,
+        },
+      ],
+      total: 1,
+    }
+
+    const { container } = render(<GalleryGrid gallery={gallery} />)
+
+    expect(container.querySelector('.sf-gallery-grid')?.children).toHaveLength(
+      1,
+    )
+    expect(container.querySelector('h1')?.textContent).toBe(
+      'Rendered product preview',
+    )
+    expect(container.querySelector('img')).toBeNull()
   })
 })

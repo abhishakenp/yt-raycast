@@ -84,6 +84,18 @@ const getGalleryImageUrl = (session: GallerySession): string => {
   return `/api/sessions/${encodeURIComponent(session.sessionId)}/gallery-thumb?v=${version}`
 }
 
+const getPreviewDocument = (html?: string | null) => {
+  if (!html?.trim()?.length) return undefined
+  if (
+    html.includes('id="ship-fast-generated-module"') &&
+    !html.includes('<main')
+  ) {
+    return undefined
+  }
+
+  return html
+}
+
 export const GalleryCategoryTabs = ({
   category,
   categories,
@@ -140,7 +152,9 @@ export const GalleryCategoryTabs = ({
 
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
-  const imageSrc = getGalleryImageUrl(session)
+  const previewDocument = getPreviewDocument(session.html)
+  const imageSrc =
+    previewDocument === undefined ? getGalleryImageUrl(session) : ''
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
     imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
   )
@@ -177,7 +191,14 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
 
   return (
     <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      {resolvedImageSrc ? (
+      {previewDocument !== undefined ? (
+        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
+          <div
+            className="size-full"
+            dangerouslySetInnerHTML={{ __html: previewDocument }}
+          />
+        </div>
+      ) : resolvedImageSrc ? (
         <img
           src={resolvedImageSrc}
           alt={title}
