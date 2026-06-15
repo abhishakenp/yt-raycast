@@ -291,6 +291,75 @@ function normalizePage(page, idx = 0) {
   }
 }
 
+function readSectionBrandLogo(section) {
+  const logo = section?.styling?.brandLogo
+  if (!logo || typeof logo !== 'object') return null
+  if (logo.kind === 'remote' && typeof logo.src === 'string' && logo.src.trim()) return logo
+  if (logo.kind === 'svg' && typeof logo.svg === 'string' && logo.svg.trim()) return logo
+  return null
+}
+
+// Within a single generated site, the brand mark (logo + name) shown in the
+// navbar/footer must be identical on every page. The LLM emits each page's
+// header independently, so it can drift (different logo, different casing,
+// missing logo). This picks one canonical logo + name (home page wins) and
+// applies it to every navbar/footer section so the brand stays consistent
+// across all pages of the session.
+function enforceBrandConsistency(pages, projectName) {
+  if (!Array.isArray(pages) || !pages.length) return pages
+
+  const isBrandSection = (section) =>
+    section?.type === 'navbar' || section?.type === 'footer'
+
+  let brandName = ''
+  for (const page of pages) {
+    for (const section of page?.sections || []) {
+      if (
+        section?.type === 'navbar' &&
+        typeof section.headline === 'string' &&
+        section.headline.trim()
+      ) {
+        brandName = section.headline.trim()
+        break
+      }
+    }
+    if (brandName) break
+  }
+  if (!brandName && typeof projectName === 'string' && projectName.trim()) {
+    brandName = projectName.trim()
+  }
+
+  let brandLogo = null
+  for (const preferredType of ['navbar', 'footer']) {
+    for (const page of pages) {
+      for (const section of page?.sections || []) {
+        if (section?.type !== preferredType) continue
+        const logo = readSectionBrandLogo(section)
+        if (logo) {
+          brandLogo = logo
+          break
+        }
+      }
+      if (brandLogo) break
+    }
+    if (brandLogo) break
+  }
+
+  for (const page of pages) {
+    for (const section of page?.sections || []) {
+      if (!isBrandSection(section)) continue
+      if (brandName) section.headline = brandName
+      if (brandLogo) {
+        section.styling =
+          section.styling && typeof section.styling === 'object' ? section.styling : {}
+        section.styling.brandLogo = { ...brandLogo }
+      }
+    }
+  }
+
+  return pages
+}
+
 export function normalizeSiteSpec(input, context = {}) {
   const fallback = buildFallbackSiteSpec(context)
   const raw = input && typeof input === 'object' ? input : {}
@@ -300,10 +369,12 @@ export function normalizeSiteSpec(input, context = {}) {
 
   const pages = ensureArray(raw.pages).map(normalizePage)
   const normalizedPages = pages.length ? pages : fallback.pages.map(normalizePage)
+  const projectName = ensureString(raw.projectName, fallback.projectName)
+  enforceBrandConsistency(normalizedPages, projectName)
   const ecommerceNormalized = normalizeEcommerce(raw, fallback)
 
   return {
-    projectName: ensureString(raw.projectName, fallback.projectName),
+    projectName,
     slug: ensureString(raw.slug, fallback.slug),
     siteType: ensureString(raw.siteType, fallback.siteType),
     userPrompt: ensureString(raw.userPrompt, fallback.userPrompt),

@@ -103,7 +103,15 @@ function pageBlockCatalog(): Array<{ name: string; description: string }> {
     )
     .map((c) => ({
       name: c.name,
-      description: oneLine(c.description as string),
+      description: [
+        oneLine(c.description as string),
+        (() => {
+          const tags = BLOCK_TAXONOMY[c.name]?.tags
+          return tags?.length ? `Tags: ${tags.join(', ')}` : ''
+        })(),
+      ]
+        .filter(Boolean)
+        .join(' '),
     }))
   return catalog
 }
@@ -228,7 +236,9 @@ function pickFrom(
     : []
 
   const valid = normalized.filter(isKnownBlock)
-  const homeCandidates = options.homeOnly ? valid.filter(isHomePageBlock) : valid
+  const homeCandidates = options.homeOnly
+    ? valid.filter(isHomePageBlock)
+    : valid
   const preferredHomeCandidates =
     options.homeOnly && homeCandidates.length > 1
       ? homeCandidates.filter((name) => !isDedicatedSubpageBlock(name))
@@ -243,6 +253,36 @@ function pickFrom(
 // Sentinel fallback when the model cannot propose a valid block.
 const PLACEHOLDER_BLOCK = '__coming_soon__'
 const placeholderNode = (id: string) => `${id} = Box([Text("Coming soon")])`
+
+const compactText = (value: string, max = 180): string => {
+  const text = value.replace(/\s+/g, ' ').trim()
+  return text.length <= max ? text : `${text.slice(0, max - 1).trim()}...`
+}
+
+function promptAwareFallbackModule(input: {
+  page: PlannedPage
+  prompt: string
+  brand: string
+  tagline: string
+}): string {
+  const { page, prompt, brand, tagline } = input
+  const prefix = page.id.replace(/[^A-Za-z0-9_]/g, '_') || 'page'
+  const title =
+    page.id === 'home' ? `${brand}: ${page.brief}` : `${brand} ${page.label}`
+  const summary = `Requested site: ${compactText(prompt)}`
+  const detail = compactText(page.brief || tagline || prompt)
+  const cta = page.id === 'home' ? 'Start booking' : `View ${page.label}`
+
+  return [
+    `${prefix}_fallback_title = Heading(${JSON.stringify(title)}, "1")`,
+    `${prefix}_fallback_summary = Text(${JSON.stringify(summary)}, "muted")`,
+    `${prefix}_fallback_detail = Text(${JSON.stringify(detail)}, "muted")`,
+    `${prefix}_fallback_cta = Button(${JSON.stringify(cta)})`,
+    `${prefix}_fallback_card = Card([${prefix}_fallback_detail, ${prefix}_fallback_cta], ${JSON.stringify(page.label)}, ${JSON.stringify(tagline)})`,
+    `${prefix}_fallback_section = Section([${prefix}_fallback_title, ${prefix}_fallback_summary, ${prefix}_fallback_card])`,
+    `${page.id} = Stack([${prefix}_fallback_section])`,
+  ].join('\n')
+}
 
 function stripTopLevelSectionArgLabels(text: string, block: string): string {
   const sectionKeys = new Set(componentSectionKeys(block))
@@ -427,14 +467,16 @@ Rules:
 // Validate a generated page module. The model occasionally emits openui-lang that
 // doesn't parse (or doesn't define this page id); merging such text wipes the whole
 // program (mergeStatements returns "" on a bad fragment). So we probe it against a
-// stub root, and on failure substitute the chosen block instantiated with just
-// brand+nav — its rich defaults render a complete, on-theme page (never blank).
-// If there is no valid chosen block, emit the server-authored unstyled placeholder node.
+// stub root, and on failure substitute a primitive prompt-aware page instead of
+// the selected block's rich demo defaults, which may belong to another business.
 function validateModule(
   page: PlannedPage,
   raw: string,
-  brand: string,
-  labels: string[],
+  fallback: {
+    prompt: string
+    brand: string
+    tagline: string
+  },
 ): { text: string; failed: boolean } {
   // A page module must define ONLY its own subtree. Models sometimes emit a stray
   // `root = …` or `$page = …` line; merging that clobbers the system-owned root
@@ -461,9 +503,12 @@ function validateModule(
     }
   }
   return {
-    text: isKnownBlock(page.block)
-      ? `${page.id} = ${page.block}(${JSON.stringify(brand)}, ${JSON.stringify(labels)})`
-      : placeholderNode(page.block),
+    text: promptAwareFallbackModule({
+      page,
+      prompt: fallback.prompt,
+      brand: fallback.brand,
+      tagline: fallback.tagline,
+    }),
     failed: true,
   }
 }
@@ -664,12 +709,11 @@ export async function* generateUI(
           (attempt) => ch.push({ type: 'module_retry', id: page.id, attempt }),
         )
           .then((text) => {
-            const { text: safe, failed } = validateModule(
-              page,
-              text,
-              plan.brand,
-              labels,
-            )
+            const { text: safe, failed } = validateModule(page, text, {
+              prompt,
+              brand: plan.brand,
+              tagline: plan.tagline,
+            })
             if (failed) moduleFailureCount += 1
             ch.push({ type: 'module', id: page.id, text: safe, failed })
           })
@@ -679,9 +723,12 @@ export async function* generateUI(
               ch.push({
                 type: 'module',
                 id: page.id,
-                text: isKnownBlock(page.block)
-                  ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
-                  : placeholderNode(page.id),
+                text: promptAwareFallbackModule({
+                  page,
+                  prompt,
+                  brand: plan.brand,
+                  tagline: plan.tagline,
+                }),
                 failed: true,
               })
               return
@@ -693,9 +740,12 @@ export async function* generateUI(
             ch.push({
               type: 'module',
               id: page.id,
-              text: isKnownBlock(page.block)
-                ? `${page.id} = ${page.block}(${JSON.stringify(plan.brand)}, ${JSON.stringify(labels)})`
-                : placeholderNode(page.id),
+              text: promptAwareFallbackModule({
+                page,
+                prompt,
+                brand: plan.brand,
+                tagline: plan.tagline,
+              }),
               failed: true,
             })
           })

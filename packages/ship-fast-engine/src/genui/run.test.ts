@@ -218,6 +218,50 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     }
   })
 
+  it('keeps service-rental intent when selected block content fails validation', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'DriveNow',
+          tagline: 'Flexible rentals for city drivers.',
+          theme: 'clean-slate',
+          locale: 'en',
+          pages: [
+            {
+              label: 'Home',
+              brief: 'Car rental booking homepage for travelers and commuters',
+              blocks: ['AutoDealershipKimiPage'],
+            },
+            {
+              label: 'Pricing',
+              brief: 'Rental plans and daily vehicle rates',
+              blocks: ['PricingKimiPage'],
+            },
+          ],
+        })
+      }
+
+      if (String(user).includes('This page: "Pricing"')) {
+        return `p1 = PricingKimiPage("DriveNow", ["Home", "Pricing"], { hero: { title: "Rental plans for every trip", subtitle: "${longCopy}" } })`
+      }
+
+      return 'root = Text("invalid page module")'
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Create a UI for a car rental service app website',
+    })
+
+    expect(result.source).toContain('car rental service app website')
+    expect(result.source).toContain('Car rental booking homepage')
+    expect(result.source).not.toContain('AutoDealershipKimiPage')
+    expect(result.source.toLowerCase()).not.toContain('pre-owned')
+    expect(result.source.toLowerCase()).not.toContain('financing')
+    expect(result.source.toLowerCase()).not.toContain('test drive')
+  })
+
   it('does not expose a home-only completion option', async () => {
     const source = await import('node:fs').then(({ readFileSync }) =>
       readFileSync(new URL('./run.ts', import.meta.url), 'utf8'),

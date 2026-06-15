@@ -67,4 +67,81 @@ describe('normalizeSiteSpec', () => {
     const result = normalizeSiteSpec(input)
     expect(result.projectName).toBe('My Awesome App')
   })
+
+  describe('brand consistency across pages', () => {
+    const multiPage = () => ({
+      projectName: 'Acme Co',
+      slug: 'acme',
+      siteType: 'saas',
+      exportableFrameworks: ['html'],
+      pages: [
+        {
+          id: 'home',
+          name: 'Home',
+          route: '/',
+          sections: [
+            {
+              id: 'nav-home',
+              type: 'navbar',
+              headline: 'Acme',
+              styling: { brandLogo: { kind: 'remote', src: 'https://cdn/acme.png', alt: 'Acme' } },
+            },
+            { id: 'foot-home', type: 'footer', headline: 'Acme', styling: {} },
+          ],
+        },
+        {
+          id: 'about',
+          name: 'About',
+          route: '/about',
+          sections: [
+            {
+              id: 'nav-about',
+              type: 'navbar',
+              headline: 'Acme Corporation',
+              styling: { brandLogo: { kind: 'remote', src: 'https://cdn/other.png', alt: 'Other' } },
+            },
+            { id: 'foot-about', type: 'footer', headline: '', styling: {} },
+          ],
+        },
+      ],
+    })
+
+    it('uses the same brand name in every navbar and footer', () => {
+      const result = normalizeSiteSpec(multiPage())
+      const headlines = result.pages
+        .flatMap((page) => page.sections)
+        .filter((section) => section.type === 'navbar' || section.type === 'footer')
+        .map((section) => section.headline)
+      expect(new Set(headlines)).toEqual(new Set(['Acme']))
+    })
+
+    it('uses the same brand logo in every navbar and footer', () => {
+      const result = normalizeSiteSpec(multiPage())
+      const logos = result.pages
+        .flatMap((page) => page.sections)
+        .filter((section) => section.type === 'navbar' || section.type === 'footer')
+        .map((section) => section.styling?.brandLogo?.src)
+      expect(new Set(logos)).toEqual(new Set(['https://cdn/acme.png']))
+    })
+
+    it('falls back to projectName when no navbar headline is set', () => {
+      const input = multiPage()
+      input.pages[0].sections[0].headline = ''
+      input.pages[1].sections[0].headline = ''
+      const result = normalizeSiteSpec(input)
+      const navHeadlines = result.pages
+        .flatMap((page) => page.sections)
+        .filter((section) => section.type === 'navbar')
+        .map((section) => section.headline)
+      expect(new Set(navHeadlines)).toEqual(new Set(['Acme Co']))
+    })
+
+    it('does not touch headlines of non-brand sections', () => {
+      const input = multiPage()
+      input.pages[0].sections.push({ id: 'hero', type: 'hero', headline: 'Welcome' })
+      const result = normalizeSiteSpec(input)
+      const hero = result.pages[0].sections.find((section) => section.type === 'hero')
+      expect(hero.headline).toBe('Welcome')
+    })
+  })
 })
