@@ -93,5 +93,7 @@ describe('Dashboard missing session state', () => {
       screen.getByText('This generated website is no longer available.'),
     ).toBeTruthy()
     expect(screen.queryByText('Composing the first screen')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Publish preview' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Open auto admin' })).toBeNull()
   })
 })

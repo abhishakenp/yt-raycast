@@ -518,287 +518,291 @@ export function Dashboard({
                   {currentUrl}
                 </a>
               </div>
-              <div
-                className="dashboard-preview-tools flex shrink-0 items-center gap-2"
-                id="preview-frame-tools"
-                aria-label="Preview controls"
-              >
-                <button
-                  type="button"
-                  className={cn(
-                    'dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white disabled:cursor-not-allowed disabled:opacity-45',
-                    isAdminActive
-                      ? 'border-cyan-300/30 bg-cyan-300/14 text-cyan-100'
-                      : 'border-white/10 bg-white/[0.055]',
-                  )}
-                  onClick={toggleAdminView}
-                  data-tip={
-                    isAdminActive ? 'View generated site' : 'Open auto admin'
-                  }
-                  aria-label={
-                    isAdminActive ? 'View generated site' : 'Open auto admin'
-                  }
-                  aria-pressed={isAdminActive}
-                >
-                  <Shield className="size-4" strokeWidth={2} />
-                </button>
-                <button
-                  type="button"
-                  className="dashboard-publish-button inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
-                  disabled={!isPreviewReady || isPublishing}
-                  onClick={() => void handlePublish()}
-                  data-tip={
-                    publishedUrl
-                      ? 'Republish latest preview'
-                      : 'Publish preview'
-                  }
-                  aria-label={
-                    publishedUrl
-                      ? 'Republish latest preview'
-                      : 'Publish preview'
-                  }
-                >
-                  <Globe2 className="size-3.5" strokeWidth={2} />
-                  {isPublishing
-                    ? 'Publishing'
-                    : publishedUrl
-                      ? 'Republish'
-                      : 'Publish'}
-                </button>
-                <button
-                  type="button"
-                  className="dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
-                  id="preview-refresh-btn"
-                  data-tip="Refresh generation view"
-                  aria-label="Reload page"
-                  onClick={() => window.location.reload()}
-                >
-                  <svg
-                    className="size-4"
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16M21 21v-5h-5"
-                    />
-                  </svg>
-                </button>
+              {!isMissingSession ? (
                 <div
-                  className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1"
-                  role="group"
-                  aria-label="Viewport size"
+                  className="dashboard-preview-tools flex shrink-0 items-center gap-2"
+                  id="preview-frame-tools"
+                  aria-label="Preview controls"
                 >
-                  {(['desktop', 'tablet', 'mobile'] as const).map((device) => (
+                  <button
+                    type="button"
+                    className={cn(
+                      'dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white disabled:cursor-not-allowed disabled:opacity-45',
+                      isAdminActive
+                        ? 'border-cyan-300/30 bg-cyan-300/14 text-cyan-100'
+                        : 'border-white/10 bg-white/[0.055]',
+                    )}
+                    onClick={toggleAdminView}
+                    data-tip={
+                      isAdminActive ? 'View generated site' : 'Open auto admin'
+                    }
+                    aria-label={
+                      isAdminActive ? 'View generated site' : 'Open auto admin'
+                    }
+                    aria-pressed={isAdminActive}
+                  >
+                    <Shield className="size-4" strokeWidth={2} />
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard-publish-button inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={!isPreviewReady || isPublishing}
+                    onClick={() => void handlePublish()}
+                    data-tip={
+                      publishedUrl
+                        ? 'Republish latest preview'
+                        : 'Publish preview'
+                    }
+                    aria-label={
+                      publishedUrl
+                        ? 'Republish latest preview'
+                        : 'Publish preview'
+                    }
+                  >
+                    <Globe2 className="size-3.5" strokeWidth={2} />
+                    {isPublishing
+                      ? 'Publishing'
+                      : publishedUrl
+                        ? 'Republish'
+                        : 'Publish'}
+                  </button>
+                  <button
+                    type="button"
+                    className="dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
+                    id="preview-refresh-btn"
+                    data-tip="Refresh generation view"
+                    aria-label="Reload page"
+                    onClick={() => window.location.reload()}
+                  >
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16M21 21v-5h-5"
+                      />
+                    </svg>
+                  </button>
+                  <div
+                    className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1"
+                    role="group"
+                    aria-label="Viewport size"
+                  >
+                    {(['desktop', 'tablet', 'mobile'] as const).map(
+                      (device) => (
+                        <button
+                          key={device}
+                          type="button"
+                          className={cn(
+                            'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
+                            currentDevice === device &&
+                              'bg-cyan-300/16 text-cyan-100',
+                          )}
+                          data-preview-device={device}
+                          data-tip={device}
+                          aria-label={`${device} width`}
+                          aria-pressed={currentDevice === device}
+                          onClick={() => setCurrentDevice(device)}
+                        >
+                          {device === 'desktop' ? (
+                            <svg
+                              className="size-4"
+                              viewBox="0 0 24 24"
+                              width="16"
+                              height="16"
+                              aria-hidden="true"
+                            >
+                              <rect
+                                x="3"
+                                y="4"
+                                width="18"
+                                height="12"
+                                rx="2"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              />
+                              <path
+                                d="M8 20h8M12 16v4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          ) : device === 'tablet' ? (
+                            <svg
+                              className="size-4"
+                              viewBox="0 0 24 24"
+                              width="16"
+                              height="16"
+                              aria-hidden="true"
+                            >
+                              <rect
+                                x="6"
+                                y="3"
+                                width="12"
+                                height="18"
+                                rx="2"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              />
+                              <path
+                                d="M11 18h2"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="size-4"
+                              viewBox="0 0 24 24"
+                              width="16"
+                              height="16"
+                              aria-hidden="true"
+                            >
+                              <rect
+                                x="8"
+                                y="2.5"
+                                width="8"
+                                height="19"
+                                rx="2"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              />
+                              <path
+                                d="M11 18h2"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                  <div
+                    className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden"
+                    role="group"
+                    aria-label="Inspect controls"
+                  >
                     <button
-                      key={device}
                       type="button"
                       className={cn(
                         'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                        currentDevice === device &&
+                        inspectMode === 'select' &&
                           'bg-cyan-300/16 text-cyan-100',
                       )}
-                      data-preview-device={device}
-                      data-tip={device}
-                      aria-label={`${device} width`}
-                      aria-pressed={currentDevice === device}
-                      onClick={() => setCurrentDevice(device)}
+                      data-tip="Select"
+                      aria-label="Select element"
+                      aria-pressed={inspectMode === 'select'}
+                      onClick={() =>
+                        setInspectMode((mode) =>
+                          mode === 'select' ? null : 'select',
+                        )
+                      }
                     >
-                      {device === 'desktop' ? (
-                        <svg
-                          className="size-4"
-                          viewBox="0 0 24 24"
-                          width="16"
-                          height="16"
-                          aria-hidden="true"
-                        >
-                          <rect
-                            x="3"
-                            y="4"
-                            width="18"
-                            height="12"
-                            rx="2"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          />
-                          <path
-                            d="M8 20h8M12 16v4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      ) : device === 'tablet' ? (
-                        <svg
-                          className="size-4"
-                          viewBox="0 0 24 24"
-                          width="16"
-                          height="16"
-                          aria-hidden="true"
-                        >
-                          <rect
-                            x="6"
-                            y="3"
-                            width="12"
-                            height="18"
-                            rx="2"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          />
-                          <path
-                            d="M11 18h2"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="size-4"
-                          viewBox="0 0 24 24"
-                          width="16"
-                          height="16"
-                          aria-hidden="true"
-                        >
-                          <rect
-                            x="8"
-                            y="2.5"
-                            width="8"
-                            height="19"
-                            rx="2"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          />
-                          <path
-                            d="M11 18h2"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      )}
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M4 3l7 17 2-7 7-2L4 3z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      className={cn(
+                        'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
+                        inspectMode === 'annotate' &&
+                          'bg-cyan-300/16 text-cyan-100',
+                      )}
+                      data-tip="Annotate"
+                      aria-label="Annotate preview"
+                      aria-pressed={inspectMode === 'annotate'}
+                      onClick={() => {
+                        setInspectMode((mode) =>
+                          mode === 'annotate' ? null : 'annotate',
+                        )
+                        setRailMode('annotations')
+                      }}
+                    >
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M12 20h9"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      className="dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white"
+                      data-tip="Clear selection"
+                      aria-label="Clear selection"
+                      onClick={() => setInspectMode(null)}
+                    >
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M18 6 6 18M6 6l12 12"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-                <div
-                  className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden"
-                  role="group"
-                  aria-label="Inspect controls"
-                >
-                  <button
-                    type="button"
-                    className={cn(
-                      'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                      inspectMode === 'select' &&
-                        'bg-cyan-300/16 text-cyan-100',
-                    )}
-                    data-tip="Select"
-                    aria-label="Select element"
-                    aria-pressed={inspectMode === 'select'}
-                    onClick={() =>
-                      setInspectMode((mode) =>
-                        mode === 'select' ? null : 'select',
-                      )
-                    }
-                  >
-                    <svg
-                      className="size-4"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M4 3l7 17 2-7 7-2L4 3z"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className={cn(
-                      'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                      inspectMode === 'annotate' &&
-                        'bg-cyan-300/16 text-cyan-100',
-                    )}
-                    data-tip="Annotate"
-                    aria-label="Annotate preview"
-                    aria-pressed={inspectMode === 'annotate'}
-                    onClick={() => {
-                      setInspectMode((mode) =>
-                        mode === 'annotate' ? null : 'annotate',
-                      )
-                      setRailMode('annotations')
-                    }}
-                  >
-                    <svg
-                      className="size-4"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M12 20h9"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white"
-                    data-tip="Clear selection"
-                    aria-label="Clear selection"
-                    onClick={() => setInspectMode(null)}
-                  >
-                    <svg
-                      className="size-4"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M18 6 6 18M6 6l12 12"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+              ) : null}
             </div>
             <div
               className={cn(
                 'relative grid min-h-0 flex-1',
-                isAdminActive
+                isAdminActive || isMissingSession
                   ? 'grid-cols-1'
                   : 'grid-cols-[minmax(0,1fr)_280px] max-[1100px]:grid-cols-1',
               )}
