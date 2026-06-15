@@ -3,6 +3,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Timer } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { cn } from '@/lib/utils'
 
 import { useGalleryController } from '../hooks/useGalleryController'
@@ -96,6 +97,11 @@ const getPreviewDocument = (html?: string | null) => {
   return html
 }
 
+const getModuleSource = (source?: string | null) => {
+  const cleaned = source?.trim()
+  return cleaned && cleaned.length > 0 ? cleaned : undefined
+}
+
 export const GalleryCategoryTabs = ({
   category,
   categories,
@@ -152,9 +158,12 @@ export const GalleryCategoryTabs = ({
 
 const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
+  const moduleSource = getModuleSource(session.moduleSource)
   const previewDocument = getPreviewDocument(session.html)
   const imageSrc =
-    previewDocument === undefined ? getGalleryImageUrl(session) : ''
+    moduleSource === undefined && previewDocument === undefined
+      ? getGalleryImageUrl(session)
+      : ''
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
     imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
   )
@@ -191,7 +200,18 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
 
   return (
     <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      {previewDocument !== undefined ? (
+      {moduleSource !== undefined ? (
+        <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
+          <GeneratedModulePreview
+            source={moduleSource}
+            sessionId={session.sessionId}
+            siteSpecJson={session.siteSpecJson ?? undefined}
+            locale={session.preferredLanguage ?? undefined}
+            prompt={session.prompt}
+            isDark
+          />
+        </div>
+      ) : previewDocument !== undefined ? (
         <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
           <div
             className="size-full"
