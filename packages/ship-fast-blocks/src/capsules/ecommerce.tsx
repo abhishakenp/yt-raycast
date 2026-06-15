@@ -298,32 +298,32 @@ export const EcommerceKimiPage = defineCapsule({
     const [mobileOpen, setMobileOpen] = useState(false)
     const [searchOpen, setSearchOpen] = useState(false)
     const [cartOpen, setCartOpen] = useState(false)
-    const brand = props.brand ?? 'KICKS'
+    const brand = props.brand ?? 'Our Store'
 
     const nav = props.nav?.length
       ? props.nav
-      : ['New Arrivals', 'Men', 'Women', 'Kids', 'Sale']
+      : ['New Arrivals', 'Shop', 'Collections', 'Featured', 'Sale']
 
     const heroChip = props.hero?.chip ?? 'New Collection 2024'
-    const heroHeading = props.hero?.heading ?? 'Step Into\nTomorrow'
+    const heroHeading = props.hero?.heading ?? 'Discover\nSomething New'
     const heroSub =
       props.hero?.subheading ??
-      'Discover the latest drops from Nike, Adidas, New Balance, and more. Premium sneakers curated for the modern lifestyle.'
+      'Discover our latest arrivals and curated collections. Quality products handpicked for the modern lifestyle.'
     const heroPrimary = props.hero?.primaryCta ?? 'Shop Now'
-    const heroSecondary = props.hero?.secondaryCta ?? 'View Lookbook'
+    const heroSecondary = props.hero?.secondaryCta ?? 'View Collection'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      'Premium white Nike Air Jordan sneaker with subtle peach accents displayed on clean studio background'
+      'Featured product on a clean studio background'
     const heroFeatured = props.hero?.featured ?? {
       label: 'Featured',
-      name: 'Air Jordan 1 High OG',
+      name: 'Signature Series',
       price: '$180',
     }
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
         { value: '50K+', label: 'Happy Customers' },
-        { value: '200+', label: 'Brands Available' },
+        { value: '200+', label: 'Products Available' },
         { value: 'Free', label: 'Shipping $150+' },
       ]
 
@@ -333,90 +333,90 @@ export const EcommerceKimiPage = defineCapsule({
     const categoriesHeading = props.categories?.heading ?? 'Shop by Category'
     const categoriesSub =
       props.categories?.subheading ??
-      'Find your perfect pair across our curated collections. From performance runners to street-ready classics.'
+      'Find what you are looking for across our curated collections. From everyday essentials to limited releases.'
     const categoryItems = props.categories?.items?.length
       ? props.categories.items
       : [
         {
-          label: "Men's Running",
-          count: '248 styles',
-          alt: "Men's running sneaker in vibrant red displayed on clean white background",
+          label: 'New Arrivals',
+          count: '248 items',
+          alt: 'Featured product on a clean studio background',
         },
         {
-          label: "Women's Lifestyle",
-          count: '186 styles',
-          alt: "Women's lifestyle sneaker in soft pink displayed on minimal studio background",
+          label: 'Featured',
+          count: '186 items',
+          alt: 'Lifestyle product photography on a minimal background',
         },
         {
-          label: 'Basketball',
-          count: '94 styles',
-          alt: 'High-top basketball sneaker in black and neon green on white background',
+          label: 'Bestsellers',
+          count: '94 items',
+          alt: 'Popular product displayed on a neutral background',
         },
         {
           label: 'Limited Edition',
-          count: '24 drops',
-          alt: 'Limited edition collaboration sneaker with premium leather details on neutral background',
+          count: '24 releases',
+          alt: 'Limited edition product with premium details on a neutral background',
         },
       ]
 
     const productsHeading = props.products?.heading ?? 'New Arrivals'
     const productsSub =
-      props.products?.subheading ?? 'Fresh drops for this week — January 2024'
+      props.products?.subheading ?? 'Fresh additions for this week — January 2024'
     const productsLink = props.products?.link ?? 'View All'
     const productItems = props.products?.items?.length
       ? props.products.items
       : [
         {
-          brand: 'Nike',
-          name: 'Air Max 97 Off-White',
-          alt: 'Nike Air Max 97 Off-White sneaker in black and metallic silver colorway',
+          brand: 'Featured',
+          name: 'Signature Series',
+          alt: 'Featured product on a clean studio background',
           price: '$195',
           oldPrice: '$230',
           badge: 'New',
         },
         {
-          brand: 'Adidas',
-          name: 'Yeezy Boost 350 V2',
-          alt: 'Adidas Yeezy Boost 350 V2 sneaker in cream white colorway',
+          brand: 'Featured',
+          name: 'Everyday Essential',
+          alt: 'Lifestyle product photography on a neutral background',
           price: '$250',
         },
         {
-          brand: 'New Balance',
-          name: '990v6 Made in USA',
-          alt: 'New Balance 990v6 running shoe in grey and navy colorway',
+          brand: 'Featured',
+          name: 'Classic Edition',
+          alt: 'Close-up product detail on a neutral background',
           price: '$175',
           oldPrice: '$210',
           badge: 'Sale',
         },
         {
-          brand: 'ASICS',
-          name: 'Gel-Kayano 30',
-          alt: 'ASICS Gel-Kayano 30 running shoe in black and yellow colorway',
+          brand: 'Featured',
+          name: 'Studio Collection',
+          alt: 'Featured product on a clean studio background',
           price: '$160',
         },
         {
-          brand: 'Puma',
-          name: 'RS-X Reinvention',
-          alt: 'Puma RS-X sneaker in bold multi-color design on white background',
+          brand: 'Featured',
+          name: 'Premium Pick',
+          alt: 'Premium product displayed on a white background',
           price: '$120',
         },
         {
-          brand: 'Converse',
-          name: 'Chuck 70 High',
-          alt: 'Converse Chuck 70 high-top sneaker in classic black canvas',
+          brand: 'Featured',
+          name: 'Everyday Classic',
+          alt: 'Classic product on a neutral studio background',
           price: '$85',
           badge: 'Bestseller',
         },
         {
-          brand: 'Jordan',
-          name: 'Jordan 4 Retro',
-          alt: 'Jordan 4 Retro sneaker in white and cement grey colorway',
+          brand: 'Featured',
+          name: 'Limited Release',
+          alt: 'Limited release product on a clean background',
           price: '$210',
         },
         {
-          brand: 'Nike',
-          name: 'Dunk Low Panda',
-          alt: 'Nike Dunk Low sneaker in classic Panda black and white colorway',
+          brand: 'Featured',
+          name: 'Modern Staple',
+          alt: 'Lifestyle product photography on a clean background',
           price: '$95',
           oldPrice: '$110',
           badge: '-15%',
@@ -480,20 +480,20 @@ export const EcommerceKimiPage = defineCapsule({
     const shipping = cartSubtotal > 0 && cartSubtotal < 150 ? 12 : 0
     const cartTotal = cartSubtotal + shipping
 
-    const featuresHeading = props.features?.heading ?? 'Why Choose KICKS'
+    const featuresHeading = props.features?.heading ?? 'Why Choose Us'
     const featuresSub =
       props.features?.subheading ??
-      "We're committed to providing the most authentic sneaker shopping experience online. Every pair is verified, every purchase is protected."
+      "We're committed to providing the best shopping experience online. Every order is checked for quality, every purchase is protected."
     const featuresImageAlt =
       props.features?.imageAlt ??
-      'Close-up detail shot of Nike sneaker sole showing textured rubber tread and air cushioning unit'
+      'Close-up product detail on a neutral background'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
         {
           title: '100% Authentic',
           description:
-            'Every sneaker is verified by our expert team before shipping.',
+            'Every order is checked for quality by our team before shipping.',
         },
         {
           title: 'Free Shipping',
@@ -501,39 +501,39 @@ export const EcommerceKimiPage = defineCapsule({
         },
         {
           title: '30-Day Returns',
-          description: 'Not perfect? Return unworn sneakers within 30 days.',
+          description: 'Not satisfied? Return unused items within 30 days.',
         },
         {
-          title: 'Size Guarantee',
-          description: 'Free size exchanges to ensure the perfect fit.',
+          title: 'Satisfaction Guarantee',
+          description: 'Quality you can count on, backed by our guarantee.',
         },
       ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? 'What Sneakerheads Say'
+      props.testimonials?.heading ?? 'What Our Customers Say'
     const testimonialsSub =
       props.testimonials?.subheading ??
-      'Join thousands of satisfied customers who trust KICKS for their sneaker needs.'
+      'Join thousands of satisfied customers who trust us for their everyday needs.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
         {
           quote:
-            "I've ordered from KICKS five times now and every pair has been flawless. The authentication process gives me total confidence. Fast shipping too — my Dunks arrived in 2 days!",
+            "I've ordered five times now and every item has been flawless. The quality gives me total confidence. Fast shipping too — my order arrived in 2 days!",
           name: 'Marcus Chen',
           role: 'Verified Buyer · Los Angeles, CA',
           alt: 'Professional headshot of a smiling young man with short curly hair and warm expression',
         },
         {
           quote:
-            'As a reseller and collector, authenticity is everything. KICKS understands the culture. Their packaging is pristine, their selection is fire, and customer service actually responds within hours.',
-          name: 'Jordan Williams',
+            'Quality is everything to me, and this store delivers. Their packaging is pristine, their selection is excellent, and customer service actually responds within hours.',
+          name: 'Taylor Williams',
           role: 'Verified Buyer · Brooklyn, NY',
           alt: 'Professional headshot of a young woman with dark hair and confident smile',
         },
         {
           quote:
-            'First time buying limited edition sneakers online and KICKS made it stress-free. The Jordan 4s I got were deadstock perfect. Already planning my next purchase!',
+            'First time ordering a limited edition item online and it was stress-free. What I received was exactly as described. Already planning my next purchase!',
           name: 'David Park',
           role: 'Verified Buyer · Chicago, IL',
           alt: 'Professional headshot of a bearded man in his thirties with friendly expression',
@@ -547,9 +547,9 @@ export const EcommerceKimiPage = defineCapsule({
       ? props.faq.items
       : [
         {
-          question: 'How do you verify sneaker authenticity?',
+          question: 'How do you ensure product quality?',
           answer:
-            'Every pair of sneakers goes through our multi-point authentication process conducted by trained experts. We inspect stitching, materials, tags, box labels, and all unique identifiers specific to each model. Only sneakers that pass our rigorous inspection are shipped to you.',
+            'Every order goes through our multi-point quality process conducted by trained team members. We inspect materials, finish, labels, and all details specific to each item. Only products that pass our rigorous inspection are shipped to you.',
         },
         {
           question: 'What is your shipping and delivery timeline?',
@@ -557,9 +557,9 @@ export const EcommerceKimiPage = defineCapsule({
             "Standard shipping takes 3-5 business days. Express shipping (1-2 business days) is available for $15. All orders over $150 qualify for free standard shipping. Once your order ships, you'll receive tracking information via email and SMS.",
         },
         {
-          question: 'Can I return or exchange my sneakers?',
+          question: 'Can I return or exchange my order?',
           answer:
-            'Yes! We offer free returns within 30 days for unworn sneakers in original condition with all tags and packaging intact. Size exchanges are also free. Limited edition releases marked as "Final Sale" are non-returnable. Contact our support team to initiate a return.',
+            'Yes! We offer free returns within 30 days for unused items in original condition with all tags and packaging intact. Exchanges are also free. Limited edition releases marked as "Final Sale" are non-returnable. Contact our support team to initiate a return.',
         },
         {
           question: 'Do you offer international shipping?',
@@ -567,17 +567,17 @@ export const EcommerceKimiPage = defineCapsule({
             'We currently ship to the United States, Canada, UK, EU, Australia, and Japan. International shipping rates vary by destination and are calculated at checkout. Delivery times range from 7-14 business days depending on your location.',
         },
         {
-          question: 'How do I find my correct sneaker size?',
+          question: 'How do I choose the right option for me?',
           answer:
-            "Each product page includes a detailed size guide with measurements in US, UK, and EU sizing. We recommend measuring your foot and comparing to our size chart. If you're between sizes, we suggest sizing up for most sneaker styles. Our free size exchange policy ensures you'll get the perfect fit.",
+            "Each product page includes detailed specifications and a helpful buying guide. We recommend reviewing the details and comparing options before ordering. If you're unsure, our support team is happy to help, and our free exchange policy ensures you'll be satisfied.",
         },
       ]
 
     const newsletterHeading =
-      props.newsletter?.heading ?? 'Join the KICKS Community'
+      props.newsletter?.heading ?? 'Join Our Community'
     const newsletterSub =
       props.newsletter?.subheading ??
-      'Get early access to limited drops, exclusive discounts, and insider sneaker news. No spam, just heat.'
+      'Get early access to new releases, exclusive discounts, and insider news. No spam, just the good stuff.'
     const newsletterCta = props.newsletter?.cta ?? 'Subscribe'
     const newsletterPrivacy =
       props.newsletter?.privacy ??
@@ -585,20 +585,20 @@ export const EcommerceKimiPage = defineCapsule({
 
     const footerTagline =
       props.footer?.tagline ??
-      'Premium sneakers for the modern lifestyle. Authenticity guaranteed since 2019.'
+      'Quality products for the modern lifestyle. Satisfaction guaranteed since 2019.'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
       : [
         'New Arrivals',
         'Best Sellers',
-        "Men's Sneakers",
-        "Women's Sneakers",
-        'Kids',
+        'Featured',
+        'Collections',
+        'Bestsellers',
         'Sale',
         'Help Center',
         'Order Status',
         'Returns & Exchanges',
-        'Size Guide',
+        'Buying Guide',
         'Contact Us',
         'About Us',
         'Careers',
@@ -969,7 +969,7 @@ export const EcommerceKimiPage = defineCapsule({
                           No products in cart
                         </p>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Add a pair from New Arrivals to start a cart for this
+                          Add an item from New Arrivals to start a cart for this
                           session.
                         </p>
                       </div>
@@ -1253,12 +1253,12 @@ export const EcommerceKimiPage = defineCapsule({
               </p>
               <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
                 {[
-                  'NIKE',
-                  'adidas',
-                  'New Balance',
-                  'ASICS',
-                  'PUMA',
-                  'Converse',
+                  'BRAND ONE',
+                  'Brand Two',
+                  'Brand Three',
+                  'BRAND FOUR',
+                  'Brand Five',
+                  'Brand Six',
                 ].map((name) => (
                   <span
                     key={name}
@@ -1466,7 +1466,7 @@ export const EcommerceKimiPage = defineCapsule({
                                 <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
                               </>
                             )}
-                            {f.title === 'Size Guarantee' && (
+                            {f.title === 'Satisfaction Guarantee' && (
                               <>
                                 <circle cx="12" cy="12" r="10" />
                                 <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72" />
@@ -1703,7 +1703,7 @@ export const EcommerceKimiPage = defineCapsule({
                     'Help Center',
                     'Order Status',
                     'Returns & Exchanges',
-                    'Size Guide',
+                    'Buying Guide',
                     'Contact Us',
                   ].map((link) => (
                     <li key={link}>

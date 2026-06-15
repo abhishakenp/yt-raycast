@@ -5,6 +5,7 @@ export { library, componentNames, openUIComponentOpenPatternSource } from "./lib
 // <Renderer />" error when the engine renders home.openui to HTML).
 export { Renderer } from "@openuidev/react-lang"
 export { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
+export { ImageContextProvider, type ImageContext } from "./lib/img.tsx"
 export { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
 import componentSpec from "./generated/component-spec.json"
 export { componentSpec }

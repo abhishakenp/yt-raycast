@@ -46,12 +46,12 @@ export const EcommerceKimiPage3 = defineCapsule({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "Aether Kicks Premium Sneaker Storefront"
-    const nav = props.nav?.length ? props.nav : ["New Arrivals", "Men", "Women", "Kids", "Sale", "Aether Kicks"]
+    const brand = props.brand ?? "Aether Premium Storefront"
+    const nav = props.nav?.length ? props.nav : ["New Arrivals", "Shop", "Collections", "Featured", "Sale", "About"]
     const hero = {
       eyebrow: "Ecommerce / Variant 3",
-      title: "Step Into the Future of Sneakers",
-      description: "Aether Kicks Premium Sneaker Storefront Aether Kicks New Arrivals Men Women Kids Sale 3 New Arrivals Men Women Kids Sale Spring '26 Drop is Live Step Into the Future of Sneakers...",
+      title: "Step Into the Future of Shopping",
+      description: "Discover a curated storefront of premium products, fresh arrivals, and member-only releases — all in one beautifully designed shopping experience.",
       primaryCta: "Add to Cart",
       secondaryCta: "Subscribe",
       imageAlt: "professional headshot of a man wearing glasses and a black t-shirt",
@@ -78,12 +78,12 @@ export const EcommerceKimiPage3 = defineCapsule({
     const sections = props.sections?.length ? props.sections : [
   {
     "eyebrow": "Overview",
-    "title": "Why Aether Kicks",
-    "body": "Aether Kicks Premium Sneaker Storefront Aether Kicks New Arrivals Men Women Kids Sale 3 New Arrivals Men Women Kids Sale Spring '26 Drop is Live Step Into the Future of Sneakers...",
+    "title": "Why Aether",
+    "body": "A curated storefront of premium products, fresh arrivals, and member-only releases — all in one beautifully designed shopping experience.",
     "items": [
       "Shop by Category",
       "Featured Drops",
-      "What Sneakerheads Say"
+      "What Customers Say"
     ]
   },
   {

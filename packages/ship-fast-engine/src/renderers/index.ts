@@ -415,13 +415,19 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
 
   // Server-side render the OpenUI to HTML for instant loading in gallery
   const themeHead = buildThemeHead(`${brand}\n${source}`, readSiteThemeName(workspace))
+  const siteSpec = readSiteSpecJson(workspace)
+  // Bias generated stock images toward this business (brand + tagline).
+  const brandContext = [brand, siteSpec?.tagline]
+    .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
+    .join(' ')
+    .trim()
   const { html, cssVars } = renderOpenUIToHTMLWithTheme(
     source,
     undefined,
     'en',
     undefined,
+    brandContext ? { brandContext } : undefined,
   ) as OpenUIRenderResult
-  const siteSpec = readSiteSpecJson(workspace)
   const previewSeoHead = buildPreviewSeoHead(siteSpec, brand, String(siteSpec?.tagline || ''))
   return `<!DOCTYPE html>
 <html lang="en">

@@ -55,10 +55,10 @@ export const FashionStoreCollections = defineComponent({
             imageAlt: "Collection of tailored trousers and bottoms",
           },
           {
-            name: "Footwear",
+            name: "Accessories",
             count: "18 pieces",
             imageAlt:
-              "Collection of minimalist footwear including sneakers and boots",
+              "Collection of minimalist accessories including belts and bags",
           },
         ]
 

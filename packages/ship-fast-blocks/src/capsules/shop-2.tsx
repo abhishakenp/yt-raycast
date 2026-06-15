@@ -164,26 +164,26 @@ export const ShopKimiPage2 = defineCapsule({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "KicksLab"
+    const brand = props.brand ?? "Storefront"
     const nav = props.nav?.length
       ? props.nav
-      : ["New Arrivals", "Categories", "Brands", "Sale"]
+      : ["New Arrivals", "Categories", "Featured", "Sale"]
 
     const heroChip = props.hero?.chip ?? "New Drop Alert"
-    const heroTop = props.hero?.headingTop ?? "STEP INTO"
+    const heroTop = props.hero?.headingTop ?? "DISCOVER"
     const heroAccent = props.hero?.headingAccent ?? "GREATNESS"
     const heroSub =
       props.hero?.subheading ??
-      "Authentic limited editions, exclusive collabs, and classic heat. Your grail sneakers are waiting at KicksLab."
+      `Authentic limited editions, exclusive collections, and timeless classics. Your next favorite is waiting at ${brand}.`
     const heroPrimary = props.hero?.primaryCta ?? "Shop Now"
     const heroSecondary = props.hero?.secondaryCta ?? "Browse Categories"
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Premium high-top sneaker floating against a dark gradient background"
+      "Featured product floating against a dark gradient background"
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "50K+", label: "Happy Sneakerheads" },
+          { value: "50K+", label: "Happy Customers" },
           { value: "100%", label: "Authentic Guarantee" },
           { value: "24H", label: "Fast Shipping" },
         ]
@@ -191,34 +191,34 @@ export const ShopKimiPage2 = defineCapsule({
     const logosHeading = props.logos?.heading ?? "Trusted by Leading Brands"
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Nike", "Adidas", "New Balance", "Puma", "Converse", "Reebok"]
+      : ["Aurora", "Vertex", "Meridian", "Lumen", "Atlas", "Nova"]
 
     const categoriesHeading = props.categories?.heading ?? "Shop by Category"
     const categoriesSub =
       props.categories?.subheading ??
-      "From performance running to street-style icons, find your perfect pair across every category."
+      "From everyday essentials to standout statement pieces, find your perfect match across every category."
     const categoryItems = props.categories?.items?.length
       ? props.categories.items
       : [
           {
-            label: "Basketball",
-            caption: "Court-ready performance",
-            alt: "Basketball player wearing performance sneakers on an indoor court",
+            label: "New Arrivals",
+            caption: "Just landed",
+            alt: "Featured product on a clean studio background",
           },
           {
-            label: "Running",
-            caption: "Speed and comfort",
-            alt: "Red running sneaker on a white background",
+            label: "Featured",
+            caption: "Editor's picks",
+            alt: "Featured product on a clean studio background",
           },
           {
-            label: "Lifestyle",
-            caption: "Everyday street style",
-            alt: "Stylish lifestyle sneaker in an urban setting",
+            label: "Bestsellers",
+            caption: "Customer favorites",
+            alt: "Featured product on a clean studio background",
           },
           {
             label: "Limited Edition",
             caption: "Exclusive drops",
-            alt: "Rare limited edition collectible sneaker",
+            alt: "Limited edition product on a clean studio background",
           },
         ]
 
@@ -227,14 +227,14 @@ export const ShopKimiPage2 = defineCapsule({
     const productsLink = props.products?.link ?? "View All Products"
     const productFilters = props.products?.filters?.length
       ? props.products.filters
-      : ["All", "Nike", "Adidas", "Jordan", "New Balance", "Sale"]
+      : ["All", "New Arrivals", "Featured", "Bestsellers", "Essentials", "Sale"]
     const productItems = props.products?.items?.length
       ? props.products.items
       : [
           {
-            name: "Air Jordan 1 Retro High OG",
-            brand: "Nike",
-            alt: "Nike Air Jordan 1 Retro High sneakers in black, red and white colorway",
+            name: "Signature Series",
+            brand: "Featured",
+            alt: "Featured product on a clean studio background",
             price: "$180",
             oldPrice: "$220",
             badge: "New",
@@ -242,27 +242,27 @@ export const ShopKimiPage2 = defineCapsule({
             reviews: 128,
           },
           {
-            name: "Air Max 270",
-            brand: "Nike",
-            alt: "Nike Air Max 270 red running sneakers with white sole",
+            name: "Everyday Essential",
+            brand: "Essentials",
+            alt: "Featured product on a clean studio background",
             price: "$150",
             badge: "Bestseller",
             rating: 4,
             reviews: 89,
           },
           {
-            name: "Yeezy Boost 350 V2",
-            brand: "Adidas",
-            alt: "Adidas Yeezy Boost 350 V2 sneakers in white colorway",
+            name: "Limited Release",
+            brand: "Featured",
+            alt: "Limited edition product on a clean studio background",
             price: "$220",
             badge: "Limited",
             rating: 5,
             reviews: 245,
           },
           {
-            name: "574 Classic",
-            brand: "New Balance",
-            alt: "New Balance 574 classic sneakers in grey suede",
+            name: "Classic Edition",
+            brand: "Bestsellers",
+            alt: "Featured product on a clean studio background",
             price: "$67.50",
             oldPrice: "$90",
             badge: "-25%",
@@ -270,35 +270,35 @@ export const ShopKimiPage2 = defineCapsule({
             reviews: 67,
           },
           {
-            name: "RS-X Bold",
-            brand: "Puma",
-            alt: "Puma RS-X bold sneakers in a multicolor design",
+            name: "Studio Collection",
+            brand: "Featured",
+            alt: "Featured product on a clean studio background",
             price: "$110",
             rating: 4,
             reviews: 43,
           },
           {
-            name: "Dunk Low Retro",
-            brand: "Nike",
-            alt: "Nike Dunk Low sneakers in white and black panda colorway",
+            name: "Premium Pick",
+            brand: "Featured",
+            alt: "Featured product on a clean studio background",
             price: "$115",
             badge: "New",
             rating: 5,
             reviews: 312,
           },
           {
-            name: "Chuck 70 High",
-            brand: "Converse",
-            alt: "Converse Chuck 70 high top sneakers in classic black canvas",
+            name: "Heritage Line",
+            brand: "Bestsellers",
+            alt: "Featured product on a clean studio background",
             price: "$85",
             badge: "Trending",
             rating: 4,
             reviews: 156,
           },
           {
-            name: "Club C 85 Vintage",
-            brand: "Reebok",
-            alt: "Reebok Club C 85 vintage sneakers in white leather",
+            name: "Modern Staple",
+            brand: "Essentials",
+            alt: "Featured product on a clean studio background",
             price: "$75",
             badge: "Hot",
             rating: 5,
@@ -309,38 +309,38 @@ export const ShopKimiPage2 = defineCapsule({
     const featuresHeading = props.features?.heading ?? `Why ${brand}?`
     const featuresSub =
       props.features?.subheading ??
-      "The most trusted destination for authentic sneakers since 2018."
+      "The most trusted destination for authentic products since 2018."
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
             title: "100% Authentic",
             description:
-              "Every sneaker is verified by our expert team. We partner directly with brands and authorized retailers to guarantee authenticity.",
+              "Every product is verified by our expert team. We partner directly with brands and authorized retailers to guarantee authenticity.",
           },
           {
             title: "Lightning Fast Shipping",
             description:
-              "Free 2-day shipping on orders over $150. Express delivery available to get your grails on your feet even faster.",
+              "Free 2-day shipping on orders over $150. Express delivery available to get your order to you even faster.",
           },
           {
             title: "Easy Returns",
             description:
-              "30-day hassle-free returns. Not the perfect fit? No problem. Exchange or return with no questions asked.",
+              "30-day hassle-free returns. Not quite right? No problem. Exchange or return with no questions asked.",
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by Sneakerheads"
+      props.testimonials?.heading ?? "Loved by Customers"
     const testimonialsSub =
       props.testimonials?.subheading ??
-      `Join thousands of satisfied customers who trust ${brand} for their sneaker needs.`
+      `Join thousands of satisfied customers who trust ${brand} for their everyday needs.`
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
-              "Finally found my grail Jordans here after months of searching. Authenticity card included and the packaging was pristine. KicksLab is my go-to now!",
+              "Finally found exactly what I was looking for here after months of searching. Authenticity card included and the packaging was pristine. This is my go-to now!",
             name: "Marcus Chen",
             meta: "Verified Buyer • Los Angeles, CA",
             avatarAlt:
@@ -349,7 +349,7 @@ export const ShopKimiPage2 = defineCapsule({
           },
           {
             quote:
-              "The customer service is incredible. Had a sizing question at midnight and got a response within 10 minutes. Plus the shoes arrived two days early!",
+              "The customer service is incredible. Had a question at midnight and got a response within 10 minutes. Plus my order arrived two days early!",
             name: "Sarah Mitchell",
             meta: "Verified Buyer • New York, NY",
             avatarAlt:
@@ -358,7 +358,7 @@ export const ShopKimiPage2 = defineCapsule({
           },
           {
             quote:
-              "As a reseller, authenticity is everything. KicksLab's verification process gives me confidence. Copped 5 pairs of Dunks for my collection. All legit.",
+              "As a regular customer, authenticity is everything. The verification process gives me confidence. Ordered 5 items for my collection. All legit.",
             name: "Jordan Williams",
             meta: "Verified Buyer • Chicago, IL",
             avatarAlt:
@@ -375,11 +375,11 @@ export const ShopKimiPage2 = defineCapsule({
     const nlCta = props.newsletter?.cta ?? "Subscribe"
     const nlNote =
       props.newsletter?.note ??
-      "Join 50,000+ sneakerheads. No spam, just heat. Unsubscribe anytime."
+      "Join 50,000+ subscribers. No spam, just the good stuff. Unsubscribe anytime."
 
     const footerTagline =
       props.footer?.tagline ??
-      "Your trusted destination for authentic sneakers since 2018. Step into greatness."
+      "Your trusted destination for authentic products since 2018. Discover greatness."
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
       : ["Instagram", "Twitter", "TikTok"]
@@ -392,9 +392,9 @@ export const ShopKimiPage2 = defineCapsule({
               "New Arrivals",
               "Best Sellers",
               "Sale",
-              "Nike",
-              "Adidas",
-              "Jordan",
+              "Featured",
+              "Collections",
+              "Essentials",
             ],
           },
           {
@@ -404,7 +404,7 @@ export const ShopKimiPage2 = defineCapsule({
               "Order Status",
               "Shipping Info",
               "Returns",
-              "Size Guide",
+              "Buying Guide",
               "Contact Us",
             ],
           },
@@ -422,9 +422,9 @@ export const ShopKimiPage2 = defineCapsule({
     const footerContact = {
       address:
         props.footer?.contact?.address ??
-        "123 Sneaker Street, Los Angeles, CA 90012",
-      email: props.footer?.contact?.email ?? "hello@kickslab.com",
-      phone: props.footer?.contact?.phone ?? "1-800-KICKLAB",
+        "123 Market Street, Los Angeles, CA 90012",
+      email: props.footer?.contact?.email ?? "hello@storefront.com",
+      phone: props.footer?.contact?.phone ?? "1-800-SHOPNOW",
     }
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal

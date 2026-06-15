@@ -6,7 +6,7 @@
 
 import { createElement } from 'react'
 import { renderToString } from 'react-dom/server'
-import { Renderer, library } from '@ship-fast/blocks'
+import { Renderer, library, ImageContextProvider } from '@ship-fast/blocks'
 import { preprocessOpenUIResponse } from './lib/openui-preprocess.js'
 
 /**
@@ -15,20 +15,25 @@ import { preprocessOpenUIResponse } from './lib/openui-preprocess.js'
  * @param {object} theme - Theme tokens (primary, accent, background, etc.)
  * @param {string} locale - Locale code for translations
  * @param {object} integrations - Integration configs (sanity, medusa)
+ * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @returns {string} Rendered HTML
  */
-export function renderOpenUIToHTML(source, theme = null, locale = 'en', integrations = null) {
+export function renderOpenUIToHTML(source, theme = null, locale = 'en', integrations = null, imageContext = null) {
   try {
     const preprocessed = preprocessOpenUIResponse(source, { resolveRefs: false })
-    
+
     const html = renderToString(
-      createElement(Renderer, {
-        response: preprocessed,
-        library,
-        isStreaming: false,
-      })
+      createElement(
+        ImageContextProvider,
+        { value: imageContext },
+        createElement(Renderer, {
+          response: preprocessed,
+          library,
+          isStreaming: false,
+        }),
+      )
     )
-    
+
     return html
   } catch (error) {
     console.error('[OpenUI SSR] Rendering error:', error)
@@ -42,10 +47,11 @@ export function renderOpenUIToHTML(source, theme = null, locale = 'en', integrat
  * @param {object} theme - Theme tokens
  * @param {string} locale - Locale code
  * @param {object} integrations - Integration configs
+ * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @returns {object} { html: string, cssVars: string }
  */
-export function renderOpenUIToHTMLWithTheme(source, theme = null, locale = 'en', integrations = null) {
-  const html = renderOpenUIToHTML(source, theme, locale, integrations)
+export function renderOpenUIToHTMLWithTheme(source, theme = null, locale = 'en', integrations = null, imageContext = null) {
+  const html = renderOpenUIToHTML(source, theme, locale, integrations, imageContext)
   
   // Convert theme tokens to CSS variables
   const cssVars = theme ? generateThemeCSSVars(theme) : ''

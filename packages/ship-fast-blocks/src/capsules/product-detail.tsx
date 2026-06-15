@@ -143,34 +143,34 @@ export const ProductDetailKimiPage = defineCapsule({
     const brand = props.brand ?? "MINIMAL"
     const nav = props.nav?.length
       ? props.nav
-      : ["New Arrivals", "Footwear", "Apparel", "Accessories"]
+      : ["New Arrivals", "Shop", "Collections", "Accessories"]
     const breadcrumb = props.breadcrumb?.length
       ? props.breadcrumb
-      : ["Home", "Footwear", "Sneakers", "Achilles Low"]
+      : ["Home", "Shop", "Featured", "Signature Series"]
 
     const p = props.product ?? {}
-    const productBrand = p.brandLabel ?? "Common Projects"
-    const productTitle = p.title ?? "Achilles Low"
+    const productBrand = p.brandLabel ?? "Signature Collection"
+    const productTitle = p.title ?? "Signature Series"
     const productPrice = p.price ?? "$425.00"
     const rating = p.rating ?? 4.8
     const reviewCount = p.reviewCount ?? 247
     const images = p.images?.length
       ? p.images
       : [
-          "Common Projects Achilles Low white leather sneaker side profile view minimalist design",
-          "Common Projects Achilles Low white sneaker top down view showing laces",
-          "Common Projects Achilles Low white sneaker back heel view",
-          "Common Projects Achilles Low white sneaker sole detail view",
+          "Featured product on a clean studio background, minimalist design",
+          "Top-down view of the product on a neutral background",
+          "Close-up product detail on a neutral background",
+          "Underside detail of the product on a neutral background",
         ]
-    const colorLabel = p.colorLabel ?? "White"
+    const colorLabel = p.colorLabel ?? "Natural"
     const colors = p.colors?.length
       ? p.colors
-      : ["White", "Black", "Off-white", "Grey"]
+      : ["Natural", "Black", "Off-white", "Grey"]
     const sizes = p.sizes?.length
       ? p.sizes
-      : ["39", "40", "41", "42", "43", "44", "45", "46"]
-    const soldOutSizes = p.soldOutSizes?.length ? p.soldOutSizes : ["39", "45"]
-    const selectedSize = p.selectedSize ?? "42"
+      : ["XS", "S", "M", "L", "XL", "XXL"]
+    const soldOutSizes = p.soldOutSizes?.length ? p.soldOutSizes : ["XS", "XXL"]
+    const selectedSize = p.selectedSize ?? "M"
     const addToCart = p.addToCart ?? "Add to Cart"
     const perks = p.perks?.length
       ? p.perks
@@ -185,30 +185,30 @@ export const ProductDetailKimiPage = defineCapsule({
     const descBody = d.body?.length
       ? d.body
       : [
-          "The Achilles Low is the definitive minimalist sneaker. Crafted in Italy from premium full-grain leather, this iconic silhouette has remained virtually unchanged since its debut in 2004. The clean, stitchless design features a signature gold foil stamp at the heel with style code 1528, representing the brand's commitment to understated luxury.",
-          "Each pair is meticulously constructed with a Margom outsole for superior durability and comfort. The leather lining and insole mold to your foot over time, creating a personalized fit that improves with every wear. A true wardrobe staple that transcends seasons and trends.",
+          "The Signature Series is the definitive minimalist piece. Crafted from premium materials, this iconic design has remained virtually unchanged since its debut. The clean, considered construction features a signature finish, representing our commitment to understated luxury.",
+          "Each one is meticulously made for superior durability and comfort. The materials mold and improve with time, creating a personalized feel that gets better with every use. A true staple that transcends seasons and trends.",
         ]
     const specsHeading = d.specsHeading ?? "Specifications"
     const specs = d.specs?.length
       ? d.specs
       : [
-          { label: "Material", value: "Full-grain Nappa leather" },
-          { label: "Lining", value: "Leather" },
-          { label: "Sole", value: "Margom rubber" },
-          { label: "Laces", value: "Waxed cotton" },
-          { label: "Made in", value: "Italy" },
-          { label: "Style Code", value: "1528 0506" },
+          { label: "Material", value: "Premium grade" },
+          { label: "Lining", value: "Soft-touch" },
+          { label: "Base", value: "Durable composite" },
+          { label: "Finish", value: "Hand-applied" },
+          { label: "Made in", value: "Ethically sourced" },
+          { label: "Product Code", value: "PR-0001" },
         ]
     const highlightsHeading = d.highlightsHeading ?? "Highlights"
     const highlights = d.highlights?.length
       ? d.highlights
       : [
-          "Handcrafted in Italy by skilled artisans",
-          "Premium full-grain Nappa leather upper",
-          "Leather lining for breathability",
-          "Signature gold foil style code stamp",
-          "Margom rubber cupsole for durability",
-          "Waxed cotton laces",
+          "Handcrafted by skilled artisans",
+          "Premium-grade materials throughout",
+          "Soft-touch lining for everyday comfort",
+          "Signature finishing detail",
+          "Durable construction built to last",
+          "Considered, quality components",
           "Timeless minimalist design",
         ]
 
@@ -235,7 +235,7 @@ export const ProductDetailKimiPage = defineCapsule({
             time: "2 days ago",
             rating: 5,
             title: "Worth every penny",
-            body: "These are my third pair of Common Projects. The quality is unmatched and they age beautifully. I went with my usual size 42 and they fit perfectly after a short break-in period. The leather is buttery soft and the construction is flawless.",
+            body: "This is my third purchase from this brand. The quality is unmatched and it ages beautifully. I went with my usual option and it fits perfectly. The materials are buttery soft and the construction is flawless.",
             avatarAlt:
               "Professional headshot of Marcus Chen, a smiling man with short dark hair wearing a navy sweater",
           },
@@ -245,7 +245,7 @@ export const ProductDetailKimiPage = defineCapsule({
             time: "1 week ago",
             rating: 5,
             title: "Classic minimalist perfection",
-            body: "Bought these for my husband and he absolutely loves them. The minimalist design goes with everything from jeans to chinos. The quality is immediately apparent when you hold them. Shipping was fast and the packaging was beautiful.",
+            body: "Bought this for my husband and he absolutely loves it. The minimalist design goes with everything. The quality is immediately apparent when you hold it. Shipping was fast and the packaging was beautiful.",
             avatarAlt:
               "Professional headshot of Sarah Mitchell, a smiling woman with blonde hair wearing a white blouse",
           },
@@ -254,8 +254,8 @@ export const ProductDetailKimiPage = defineCapsule({
             tag: "Verified Buyer",
             time: "2 weeks ago",
             rating: 4,
-            title: "Excellent quality, size up recommended",
-            body: "Beautiful craftsmanship and materials. However, I found them to run slightly small. I typically wear a 44 but had to exchange for a 45. Customer service was excellent and the exchange process was seamless. Will definitely buy again.",
+            title: "Excellent quality, great experience",
+            body: "Beautiful craftsmanship and materials. I needed to swap for a different option, and customer service was excellent — the exchange process was seamless. Will definitely buy again.",
             avatarAlt:
               "Professional headshot of James Wilson, a middle-aged man with glasses and a beard wearing a grey shirt",
           },
@@ -264,8 +264,8 @@ export const ProductDetailKimiPage = defineCapsule({
             tag: "Verified Buyer",
             time: "3 weeks ago",
             rating: 5,
-            title: "Best minimalist sneaker on the market",
-            body: "I've tried many minimalist white sneakers (Acne, Axel Arigato, Greats) and these are by far the best. The leather quality is superior and they maintain their shape better over time. Two years in and they still look great with regular care.",
+            title: "Best minimalist piece on the market",
+            body: "I've tried many similar products and this is by far the best. The material quality is superior and it holds up better over time. Two years in and it still looks great with regular care.",
             avatarAlt:
               "Professional headshot of David Park, a young Asian man with styled hair wearing a black turtleneck",
           },
@@ -278,31 +278,31 @@ export const ProductDetailKimiPage = defineCapsule({
       ? rel.items
       : [
           {
-            brandLabel: "Common Projects",
-            title: "Chelsea Boot",
+            brandLabel: "Signature Collection",
+            title: "Everyday Essential",
             price: "$585.00",
             imageAlt:
-              "Common Projects Chelsea Boot in black leather side profile view",
+              "Everyday Essential product on a clean studio background",
           },
           {
-            brandLabel: "Common Projects",
-            title: "Bball High",
+            brandLabel: "Signature Collection",
+            title: "Classic Edition",
             price: "$480.00",
-            imageAlt: "Common Projects Bball High top sneaker in white leather",
+            imageAlt: "Classic Edition product on a neutral background",
           },
           {
-            brandLabel: "Common Projects",
-            title: "Achilles Mid",
+            brandLabel: "Signature Collection",
+            title: "Premium Pick",
             price: "$445.00",
             imageAlt:
-              "Common Projects Achilles Mid sneaker in white leather with higher ankle cut",
+              "Premium Pick product detail on a neutral background",
           },
           {
-            brandLabel: "Common Projects",
-            title: "Tournament High",
+            brandLabel: "Signature Collection",
+            title: "Studio Collection",
             price: "$520.00",
             imageAlt:
-              "Common Projects Tournament High top sneaker in navy leather with white sole",
+              "Studio Collection product on a clean studio background",
           },
         ]
 
@@ -312,14 +312,14 @@ export const ProductDetailKimiPage = defineCapsule({
       ? f.items
       : [
           {
-            question: "How do Common Projects fit?",
+            question: "How does it fit?",
             answer:
-              "Common Projects typically run true to size, but many customers prefer to size up if between sizes. The leather will stretch slightly with wear, molding to your foot for a custom fit over time. If you have wide feet, we recommend sizing up half a size.",
+              "Our pieces are designed to be true to your usual selection, but many customers prefer to size up if between options. The materials relax slightly with use, conforming to a custom feel over time. If in doubt, our team is happy to advise.",
           },
           {
-            question: "How should I care for my leather sneakers?",
+            question: "How should I care for my purchase?",
             answer:
-              "We recommend using a soft brush or cloth to remove surface dirt after each wear. Apply a leather conditioner every 2-3 months to keep the leather supple. For the white sole, a magic eraser works wonders. Store with shoe trees to maintain shape.",
+              "We recommend using a soft brush or cloth to remove surface dirt after each use. Apply the appropriate care product every 2-3 months to keep materials in top condition. Store properly to maintain shape and finish.",
           },
           {
             question: "What is your return policy?",
@@ -342,11 +342,11 @@ export const ProductDetailKimiPage = defineCapsule({
       : [
           {
             title: "Shop",
-            links: ["New Arrivals", "Footwear", "Apparel", "Accessories", "Sale"],
+            links: ["New Arrivals", "Collections", "Featured", "Accessories", "Sale"],
           },
           {
             title: "Help",
-            links: ["FAQ", "Shipping", "Returns", "Size Guide", "Contact Us"],
+            links: ["FAQ", "Shipping", "Returns", "Order Guide", "Contact Us"],
           },
           {
             title: "Company",

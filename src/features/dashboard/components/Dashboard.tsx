@@ -584,6 +584,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                           sessionId={sessionId}
                           siteSpecJson={generationView?.siteSpec?.specJson}
                           locale={generationView?.session.preferredLanguage}
+                          prompt={generationView?.session.prompt}
                           isDark={isDark}
                           themeStyles={themeStyles}
                           deviceMode={currentDevice}

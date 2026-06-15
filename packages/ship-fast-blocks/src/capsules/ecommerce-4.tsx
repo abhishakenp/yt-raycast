@@ -47,11 +47,11 @@ export const EcommerceKimiPage4 = defineCapsule({
   component: ({ props }) => {
     const go = useNavigate()
     const brand = props.brand ?? "E"
-    const nav = props.nav?.length ? props.nav : ["Men", "Women", "Kids", "Sale"]
+    const nav = props.nav?.length ? props.nav : ["Shop", "Collections", "Featured", "Sale"]
     const hero = {
       eyebrow: "Ecommerce / Variant 4",
       title: "New Season Collection",
-      description: "E-commerce Storefront SneakerHub Men Women Kids Sale 3 New Season Collection Discover the latest trends in footwear Shop Now Shop by Category Running Basketball Lifestyle Traini...",
+      description: "Discover the latest arrivals across our storefront — premium products, curated collections, and seasonal favorites, all in one place. Shop now and explore by category.",
       primaryCta: "Shop Now",
       secondaryCta: "Add",
       imageAlt: "ecommerce hero scene",
@@ -79,11 +79,11 @@ export const EcommerceKimiPage4 = defineCapsule({
   {
     "eyebrow": "Overview",
     "title": "Shop by Category",
-    "body": "E-commerce Storefront SneakerHub Men Women Kids Sale 3 New Season Collection Discover the latest trends in footwear Shop Now Shop by Category Running Basketball Lifestyle Traini...",
+    "body": "Discover the latest arrivals across our storefront — premium products, curated collections, and seasonal favorites, all in one place.",
     "items": [
       "Lifestyle",
-      "Training",
-      "Air Max Pro"
+      "Essentials",
+      "Premium Pick"
     ]
   },
   {
@@ -91,14 +91,14 @@ export const EcommerceKimiPage4 = defineCapsule({
     "title": "Featured Products",
     "body": "Ecommerce page variant 2 highlights the generated design's core message, section pacing, and conversion-focused content.",
     "items": [
-      "Ultra Boost",
-      "Jordan Retro",
-      "Classic Canvas"
+      "Signature Series",
+      "Classic Edition",
+      "Studio Collection"
     ]
   },
   {
     "eyebrow": "Proof",
-    "title": "Basketball",
+    "title": "Best Sellers",
     "body": "Ecommerce page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
     "items": []
   },
@@ -116,12 +116,12 @@ export const EcommerceKimiPage4 = defineCapsule({
     "caption": "Ecommerce generated page detail"
   },
   {
-    "title": "Running",
+    "title": "New Arrivals",
     "alt": "ecommerce customer experience",
     "caption": "Ecommerce generated page detail"
   },
   {
-    "title": "Basketball",
+    "title": "Best Sellers",
     "alt": "ecommerce service detail",
     "caption": "Ecommerce generated page detail"
   }

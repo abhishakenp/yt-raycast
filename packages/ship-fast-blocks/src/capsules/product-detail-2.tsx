@@ -142,40 +142,40 @@ export const ProductDetailKimiPage2 = defineCapsule({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "KICKS"
+    const brand = props.brand ?? "Storefront"
     const nav = props.nav?.length
       ? props.nav
-      : ["New Arrivals", "Men", "Women", "Kids", "Sale"]
+      : ["New Arrivals", "Shop", "Collections", "About", "Sale"]
 
     const p = props.product ?? {}
     const badge = p.badge ?? "NEW RELEASE"
-    const sku = p.sku ?? "SKU: DH6927-017"
-    const productTitle = p.title ?? "Jordan 4 Retro Thunder"
+    const sku = p.sku ?? "SKU: PR-0001"
+    const productTitle = p.title ?? "Signature Series"
     const rating = p.rating ?? 4.9
     const ratingLabel = p.ratingLabel ?? "4.9 (2,847 reviews)"
     const price = p.price ?? "$225.00"
     const comparePrice = p.comparePrice ?? "$280.00"
     const summary =
       p.summary ??
-      "The Jordan 4 Retro Thunder returns in its iconic black and Tour Yellow colorway. Premium nubuck upper with mesh paneling, visible Air cushioning, and the legendary silhouette that changed basketball forever."
+      "Our Signature Series brings together premium materials and refined craftsmanship in a design built to last. Thoughtfully made, endlessly versatile, and finished to the highest standard."
     const images = p.images?.length
       ? p.images
       : [
-          "Jordan 4 Retro Thunder sneaker side profile showing black nubuck upper with yellow accent details",
-          "Jordan 4 Retro Thunder front angle showing toe box detail",
-          "Jordan 4 Retro Thunder back heel showing pull tab",
-          "Jordan 4 Retro Thunder bottom sole showing traction pattern",
+          "Featured product on a clean studio background",
+          "Front angle of the product on a neutral background",
+          "Close-up product detail on a neutral background",
+          "Underside detail of the product on a neutral background",
         ]
-    const colorLabel = p.colorLabel ?? "Black/Tour Yellow"
+    const colorLabel = p.colorLabel ?? "Classic"
     const colors = p.colors?.length
       ? p.colors
-      : ["Black/Tour Yellow", "White/Cement Grey", "Military Blue", "Fire Red"]
-    const sizeLabel = p.sizeLabel ?? "Select Size (US Men's)"
+      : ["Classic", "Neutral", "Slate", "Signature"]
+    const sizeLabel = p.sizeLabel ?? "Select Option"
     const sizes = p.sizes?.length
       ? p.sizes
-      : ["7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "13"]
-    const soldOutSizes = p.soldOutSizes?.length ? p.soldOutSizes : ["13"]
-    const selectedSize = p.selectedSize ?? "9.5"
+      : ["XS", "S", "M", "L", "XL", "XXL"]
+    const soldOutSizes = p.soldOutSizes?.length ? p.soldOutSizes : ["XXL"]
+    const selectedSize = p.selectedSize ?? "M"
     const addToCart = p.addToCart ?? `Add to Cart — ${price}`
     const shipping =
       p.shipping ??
@@ -187,41 +187,41 @@ export const ProductDetailKimiPage2 = defineCapsule({
       ? det.features
       : [
           {
-            title: "Visible Air Cushioning",
-            body: "Nike Air unit in the heel provides lightweight, responsive cushioning for all-day comfort.",
+            title: "Built for Comfort",
+            body: "Thoughtful construction provides lightweight, responsive comfort for all-day wear.",
           },
           {
             title: "Premium Materials",
-            body: "Black nubuck leather upper with mesh paneling for durability and breathability.",
+            body: "Crafted from premium materials chosen for durability and a refined feel.",
           },
           {
             title: "Signature Details",
-            body: "Iconic 'Flight' script on the tongue, mesh netting on sides, and classic wing eyelets.",
+            body: "Considered finishing touches and signature detailing set this piece apart.",
           },
           {
-            title: "Heritage Design",
-            body: "Originally released in 2006, this 2023 retro brings back the legendary Thunder colorway.",
+            title: "Timeless Design",
+            body: "A versatile, enduring design that stays relevant season after season.",
           },
         ]
     const specsHeading = det.specsHeading ?? "Specifications"
     const specs = det.specs?.length
       ? det.specs
       : [
-          { label: "Release Date", value: "May 13, 2023" },
-          { label: "Style Code", value: "DH6927-017" },
-          { label: "Colorway", value: "Black/Tour Yellow" },
-          { label: "Designer", value: "Tinker Hatfield" },
-          { label: "Original Release", value: "2006" },
-          { label: "Fit", value: "True to Size" },
+          { label: "Release Date", value: "Latest Release" },
+          { label: "Product Code", value: "PR-0001" },
+          { label: "Finish", value: "Classic" },
+          { label: "Collection", value: "Signature Series" },
+          { label: "Warranty", value: "1 Year" },
+          { label: "Origin", value: "Ethically Made" },
         ]
     const summaryTitle = det.summaryTitle ?? productTitle
-    const summaryMeta = det.summaryMeta ?? "Black/Tour Yellow • Size 9.5"
+    const summaryMeta = det.summaryMeta ?? "Classic • Option M"
     const summaryTotalLabel = det.summaryTotalLabel ?? "Total"
     const summaryTotal = det.summaryTotal ?? price
     const summaryCta = det.summaryCta ?? "Add to Cart"
     const summaryNote = det.summaryNote ?? "Free shipping on orders over $150"
     const summaryImageAlt =
-      det.summaryImageAlt ?? "Jordan 4 Retro Thunder product thumbnail"
+      det.summaryImageAlt ?? "Featured product thumbnail on a neutral background"
 
     const r = props.reviews ?? {}
     const reviewsHeading = r.heading ?? "Customer Reviews"
@@ -242,45 +242,45 @@ export const ProductDetailKimiPage2 = defineCapsule({
       : [
           {
             name: "Marcus Chen",
-            meta: "Verified Buyer • May 28, 2023",
+            meta: "Verified Buyer • Recently",
             rating: 5,
             title: "Worth every penny!",
-            body: "These are hands down the best Jordan 4s I've owned. The nubuck quality is premium, and the yellow accents pop perfectly against the black. TTS fit, super comfortable for all-day wear. Already got compliments on day one!",
-            size: "Size: 10.5",
-            fit: "Fit: True to Size",
+            body: "Hands down one of the best purchases I've made. The quality is premium and the finish is flawless. Comfortable for everyday use and I've already gotten compliments. Highly recommend!",
+            size: "Option: L",
+            fit: "Quality: Excellent",
             avatarAlt:
               "Professional headshot of Marcus Chen, a young man with short dark hair wearing a casual blue shirt",
           },
           {
             name: "Sarah Williams",
-            meta: "Verified Buyer • May 22, 2023",
+            meta: "Verified Buyer • Recently",
             rating: 5,
-            title: "Better than the 2006 release",
-            body: "I owned the original 2006 Thunder 4s and these are somehow even better. The materials feel more premium, the construction is solid, and that yellow is just electric. KICKS shipped them fast and the packaging was perfect. Will definitely buy again!",
-            size: "Size: 8",
-            fit: "Fit: True to Size",
+            title: "Even better than expected",
+            body: "The materials feel premium, the construction is solid, and the details are spot on. Shipping was fast and the packaging was perfect. Will definitely buy again!",
+            size: "Option: S",
+            fit: "Quality: Excellent",
             avatarAlt:
               "Professional headshot of Sarah Williams, a smiling woman with shoulder-length brown hair wearing a cream blouse",
           },
           {
             name: "James Rodriguez",
-            meta: "Verified Buyer • May 18, 2023",
+            meta: "Verified Buyer • Recently",
             rating: 4,
-            title: "Classic silhouette, modern quality",
-            body: "The Jordan 4 Thunder is a must-have for any collection. The colorway is bold without being loud. Only giving 4 stars because I had to go half size up from my usual Jordan size. Otherwise perfect!",
-            size: "Size: 11",
-            fit: "Fit: Runs Small",
+            title: "Great value, modern quality",
+            body: "A must-have for anyone who appreciates good design. Refined without being loud. Only giving 4 stars because I'd have liked one more option, but otherwise perfect!",
+            size: "Option: XL",
+            fit: "Quality: Very Good",
             avatarAlt:
               "Professional headshot of James Rodriguez, a bearded man in his 30s wearing a black t-shirt",
           },
           {
             name: "Emily Zhang",
-            meta: "Verified Buyer • May 15, 2023",
+            meta: "Verified Buyer • Recently",
             rating: 5,
-            title: "My favorite Jordan 4 colorway",
-            body: "I've been collecting Jordans for 10 years and the Thunder 4s have always been my grail. Finally got them and I'm not disappointed. The yellow is vibrant, the materials are top notch. Thank you KICKS for the fast shipping and great customer service!",
-            size: "Size: 7",
-            fit: "Fit: True to Size",
+            title: "My new favorite",
+            body: "I've bought from a lot of brands and this is by far one of the best. The finish is beautiful and the materials are top notch. Thank you for the fast shipping and great customer service!",
+            size: "Option: XS",
+            fit: "Quality: Excellent",
             avatarAlt:
               "Professional headshot of Emily Zhang, an Asian woman with glasses and a warm smile wearing a navy blazer",
           },
@@ -293,52 +293,52 @@ export const ProductDetailKimiPage2 = defineCapsule({
       ? rel.items
       : [
           {
-            title: "Jordan 1 High Mocha",
+            title: "Everyday Essential",
             price: "$180.00",
             imageAlt:
-              "Jordan 1 High Mocha sneaker showing brown and white colorway side profile",
+              "Everyday Essential product on a clean studio background",
           },
           {
-            title: "Jordan 4 Military Blue",
+            title: "Classic Edition",
             price: "$210.00",
             imageAlt:
-              "Jordan 4 Military Blue sneaker showing blue grey and white colorway",
+              "Classic Edition product on a neutral background",
           },
           {
-            title: "Jordan 11 Concord",
+            title: "Limited Release",
             price: "$225.00",
             imageAlt:
-              "Jordan 11 Concord sneaker showing black and white patent leather design",
+              "Limited Release product on a clean studio background",
           },
           {
-            title: "Jordan 3 White Cement",
+            title: "Premium Pick",
             price: "$200.00",
-            imageAlt: "Jordan 3 White Cement sneaker showing elephant print details",
+            imageAlt: "Premium Pick product detail on a neutral background",
           },
         ]
 
     const nl = props.newsletter ?? {}
-    const newsletterHeading = nl.heading ?? "Join the KICKS Fam"
+    const newsletterHeading = nl.heading ?? "Join Our Community"
     const newsletterBody =
       nl.body ??
-      "Get exclusive drops, early access to releases, and member-only discounts. No spam, just heat."
+      "Get exclusive launches, early access to new releases, and member-only discounts. No spam, just the good stuff."
     const newsletterPlaceholder = nl.placeholder ?? "Enter your email"
     const newsletterCta = nl.cta ?? "Subscribe"
 
     const foot = props.footer ?? {}
     const footerTagline =
       foot.tagline ??
-      "The premier destination for authentic sneakers. New releases, classics, and everything in between."
+      "Your destination for quality products. New releases, classics, and everything in between."
     const footerColumns = foot.columns?.length
       ? foot.columns
       : [
           {
             title: "Shop",
-            links: ["New Arrivals", "Best Sellers", "Jordan", "Nike", "Sale"],
+            links: ["New Arrivals", "Best Sellers", "Collections", "Featured", "Sale"],
           },
           {
             title: "Support",
-            links: ["FAQ", "Shipping", "Returns", "Size Guide", "Contact Us"],
+            links: ["FAQ", "Shipping", "Returns", "Order Guide", "Contact Us"],
           },
         ]
     const socials = foot.socials?.length

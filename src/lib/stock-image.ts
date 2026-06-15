@@ -5,12 +5,14 @@ import {
   seedFromAlt,
   slugifyAlt,
 } from "./image-query"
+import { generateContextAwareQuery, type ImageContext } from "./image-context"
 
 type ResolveInput = {
   alt?: string
   query?: string
   w?: number
   h?: number
+  context?: ImageContext
 }
 
 type ResolveResult = {
@@ -111,9 +113,18 @@ export const resolveStockImage = async ({
   query,
   w = 800,
   h = 600,
+  context,
 }: ResolveInput): Promise<ResolveResult> => {
   const seed = (alt ?? query ?? "image").trim() || "image"
-  const resolvedQuery = (query?.trim() || searchQueryFromAlt(seed)).trim() || "nature"
+  
+  // Use context-aware query generation if context is provided, otherwise fall back to simple query
+  let resolvedQuery: string
+  if (context && (context.section || context.siteType || context.prompt || context.brandContext)) {
+    resolvedQuery = generateContextAwareQuery(alt || query || "image", context)
+  } else {
+    resolvedQuery = (query?.trim() || searchQueryFromAlt(seed)).trim() || "nature"
+  }
+  
   const key = cacheKey(resolvedQuery, w, h)
 
   const cached = cache.get(key)

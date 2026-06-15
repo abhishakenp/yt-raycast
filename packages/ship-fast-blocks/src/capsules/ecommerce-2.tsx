@@ -136,27 +136,27 @@ export const EcommerceKimiPage2 = defineCapsule({
   component: ({ props }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "KicksLab"
+    const brand = props.brand ?? "Marketplace"
 
     const nav = props.nav?.length
       ? props.nav
-      : ["New Arrivals", "Categories", "Brands", "Sale"]
+      : ["New Arrivals", "Categories", "Featured", "Sale"]
 
-    const heroChip = props.hero?.chip ?? "New Drop Alert"
+    const heroChip = props.hero?.chip ?? "New Arrivals"
     const heroHeading =
-      props.hero?.heading ?? "STEP INTO\nGREATNESS"
+      props.hero?.heading ?? "DISCOVER\nSOMETHING NEW"
     const heroSub =
       props.hero?.subheading ??
-      "Authentic limited editions, exclusive collabs, and classic heat. Your grail sneakers are waiting at KicksLab."
+      "Authentic limited editions, exclusive collaborations, and timeless classics. Your favorites are waiting."
     const heroPrimary = props.hero?.primaryCta ?? "Shop Now"
     const heroSecondary = props.hero?.secondaryCta ?? "Browse Categories"
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Premium high-top sneaker floating against dark gradient background"
+      "Featured product floating against a dark gradient background"
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-          { value: "50K+", label: "Happy Sneakerheads" },
+          { value: "50K+", label: "Happy Customers" },
           { value: "100%", label: "Authentic Guarantee" },
           { value: "24H", label: "Fast Shipping" },
         ]
@@ -168,29 +168,29 @@ export const EcommerceKimiPage2 = defineCapsule({
       props.categories?.heading ?? "Shop by Category"
     const categoriesSub =
       props.categories?.subheading ??
-      "From performance running to street-style icons, find your perfect pair across every category."
+      "From everyday essentials to standout favorites, find exactly what you're looking for across every category."
     const categoryItems = props.categories?.items?.length
       ? props.categories.items
       : [
           {
-            label: "Basketball",
-            sublabel: "Court-ready performance",
-            alt: "basketball player wearing performance sneakers on indoor court",
+            label: "New Arrivals",
+            sublabel: "Just landed",
+            alt: "New arrival product on a clean studio background",
           },
           {
-            label: "Running",
-            sublabel: "Speed and comfort",
-            alt: "red running sneaker on white background",
+            label: "Featured",
+            sublabel: "Curated picks",
+            alt: "Featured product on a neutral background",
           },
           {
-            label: "Lifestyle",
-            sublabel: "Everyday street style",
-            alt: "stylish lifestyle sneaker in urban setting",
+            label: "Bestsellers",
+            sublabel: "Customer favorites",
+            alt: "Popular bestselling product on a white background",
           },
           {
             label: "Limited Edition",
-            sublabel: "Exclusive drops",
-            alt: "rare limited edition collectible sneaker",
+            sublabel: "Exclusive releases",
+            alt: "Limited edition collectible product on a studio background",
           },
         ]
 
@@ -202,9 +202,9 @@ export const EcommerceKimiPage2 = defineCapsule({
       ? props.products.items
       : [
           {
-            brand: "Nike",
-            name: "Air Jordan 1 Retro High OG",
-            alt: "Nike Air Jordan 1 Retro High sneakers in black red and white colorway",
+            brand: "Featured",
+            name: "Signature Series",
+            alt: "Featured product on a clean studio background",
             price: "$180",
             oldPrice: "$220",
             badge: "New",
@@ -212,27 +212,27 @@ export const EcommerceKimiPage2 = defineCapsule({
             reviews: "128",
           },
           {
-            brand: "Nike",
-            name: "Air Max 270",
-            alt: "Nike Air Max 270 red running sneakers with white sole",
+            brand: "Featured",
+            name: "Everyday Essential",
+            alt: "Everyday essential product on a white background",
             price: "$150",
             badge: "Bestseller",
             rating: 4,
             reviews: "89",
           },
           {
-            brand: "Adidas",
-            name: "Yeezy Boost 350 V2",
-            alt: "Adidas Yeezy Boost 350 V2 sneakers in white colorway",
+            brand: "Featured",
+            name: "Limited Release",
+            alt: "Limited release product on a neutral background",
             price: "$220",
             badge: "Limited",
             rating: 5,
             reviews: "245",
           },
           {
-            brand: "New Balance",
-            name: "574 Classic",
-            alt: "New Balance 574 classic sneakers in grey suede",
+            brand: "Featured",
+            name: "Classic Edition",
+            alt: "Classic edition product on a clean studio background",
             price: "$67.50",
             oldPrice: "$90",
             badge: "-25%",
@@ -240,35 +240,35 @@ export const EcommerceKimiPage2 = defineCapsule({
             reviews: "67",
           },
           {
-            brand: "Puma",
-            name: "RS-X Bold",
-            alt: "Puma RS-X bold sneakers in multicolor design",
+            brand: "Featured",
+            name: "Premium Pick",
+            alt: "Premium product on a neutral background",
             price: "$110",
             rating: 4,
             reviews: "43",
           },
           {
-            brand: "Nike",
-            name: "Dunk Low Retro",
-            alt: "Nike Dunk Low sneakers in white and black panda colorway",
+            brand: "Featured",
+            name: "Studio Collection",
+            alt: "Studio collection product on a white background",
             price: "$115",
             badge: "New",
             rating: 5,
             reviews: "312",
           },
           {
-            brand: "Converse",
-            name: "Chuck 70 High",
-            alt: "Converse Chuck 70 high top sneakers in classic black canvas",
+            brand: "Featured",
+            name: "Trending Favorite",
+            alt: "Trending product on a clean studio background",
             price: "$85",
             badge: "Trending",
             rating: 4,
             reviews: "156",
           },
           {
-            brand: "Reebok",
-            name: "Club C 85 Vintage",
-            alt: "Reebok Club C 85 vintage sneakers in white leather",
+            brand: "Featured",
+            name: "Vintage Staple",
+            alt: "Vintage staple product on a neutral background",
             price: "$75",
             badge: "Hot",
             rating: 5,
@@ -276,52 +276,52 @@ export const EcommerceKimiPage2 = defineCapsule({
           },
         ]
 
-    const featuresHeading = props.features?.heading ?? "Why KicksLab?"
+    const featuresHeading = props.features?.heading ?? "Why Shop With Us?"
     const featuresSub =
       props.features?.subheading ??
-      "The most trusted destination for authentic sneakers since 2018."
+      "The most trusted destination for authentic products since 2018."
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
             title: "100% Authentic",
-            description: "Every sneaker is verified by our expert team. We partner directly with brands and authorized retailers to guarantee authenticity.",
+            description: "Every item is verified by our expert team. We partner directly with brands and authorized retailers to guarantee authenticity.",
           },
           {
             title: "Lightning Fast Shipping",
-            description: "Free 2-day shipping on orders over $150. Express delivery available to get your grails on your feet even faster.",
+            description: "Free 2-day shipping on orders over $150. Express delivery available to get your order to you even faster.",
           },
           {
             title: "Easy Returns",
-            description: "30-day hassle-free returns. Not the perfect fit? No problem. Exchange or return with no questions asked.",
+            description: "30-day hassle-free returns. Not quite right? No problem. Exchange or return with no questions asked.",
           },
         ]
 
     const testimonialsHeading =
-      props.testimonials?.heading ?? "Loved by Sneakerheads"
+      props.testimonials?.heading ?? "Loved by Customers"
     const testimonialsSub =
       props.testimonials?.subheading ??
-      "Join thousands of satisfied customers who trust KicksLab for their sneaker needs."
+      "Join thousands of satisfied customers who trust us for their everyday needs."
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
-            quote: "Finally found my grail Jordans here after months of searching. Authenticity card included and the packaging was pristine. KicksLab is my go-to now!",
+            quote: "Finally found exactly what I was looking for after months of searching. The packaging was pristine and everything arrived perfectly. This is my go-to now!",
             name: "Marcus Chen",
             role: "Verified Buyer - Los Angeles, CA",
             alt: "professional headshot of a smiling man with short dark hair wearing casual shirt",
             rating: 5,
           },
           {
-            quote: "The customer service is incredible. Had a sizing question at midnight and got a response within 10 minutes. Plus the shoes arrived two days early!",
+            quote: "The customer service is incredible. Had a question at midnight and got a response within 10 minutes. Plus my order arrived two days early!",
             name: "Sarah Mitchell",
             role: "Verified Buyer - New York, NY",
             alt: "professional headshot of a smiling young woman with blonde hair",
             rating: 5,
           },
           {
-            quote: "As a reseller, authenticity is everything. KicksLab's verification process gives me confidence. Copped 5 pairs of Dunks for my collection. All legit.",
-            name: "Jordan Williams",
+            quote: "Quality and authenticity are everything to me. Their verification process gives me complete confidence. Ordered several items and every single one was perfect.",
+            name: "Daniel Williams",
             role: "Verified Buyer - Chicago, IL",
             alt: "professional headshot of a bearded man with warm smile wearing tshirt",
             rating: 4,
@@ -332,15 +332,15 @@ export const EcommerceKimiPage2 = defineCapsule({
       props.newsletter?.heading ?? "Never Miss a Drop"
     const newsletterSub =
       props.newsletter?.subheading ??
-      "Join the KicksLab newsletter for exclusive early access to limited releases, restock alerts, and member-only discounts."
+      "Join our newsletter for exclusive early access to new releases, restock alerts, and member-only discounts."
     const newsletterCta = props.newsletter?.cta ?? "Subscribe"
     const newsletterPrivacy =
       props.newsletter?.privacy ??
-      "Join 50,000+ sneakerheads. No spam, just heat. Unsubscribe anytime."
+      "Join 50,000+ subscribers. No spam, just the good stuff. Unsubscribe anytime."
 
     const footerTagline =
       props.footer?.tagline ??
-      "Your trusted destination for authentic sneakers since 2018. Step into greatness."
+      "Your trusted destination for authentic products since 2018. Discover something new."
     // --- shared icons ---
 
     const Star = ({ filled }: { filled: boolean }) => (
@@ -488,7 +488,7 @@ export const EcommerceKimiPage2 = defineCapsule({
           {/* --- Hero --- */}
           <section className="relative overflow-hidden bg-gradient-to-br from-background via-muted to-background">
             <div className="absolute inset-0 opacity-20">
-              <Image alt="dark moody sneaker hero background texture" w={1920} h={800} loading="eager" className="h-full w-full object-cover" />
+              <Image alt="dark moody studio hero background texture" w={1920} h={800} loading="eager" className="h-full w-full object-cover" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-muted/70 to-transparent" />
             <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
@@ -554,7 +554,7 @@ export const EcommerceKimiPage2 = defineCapsule({
                 {logosHeading}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-8 opacity-60 lg:gap-16">
-                {["Nike", "Adidas", "New Balance", "Puma", "Converse", "Reebok"].map(
+                {["Aurora", "Northwind", "Vertex", "Lumen", "Cascade", "Meridian"].map(
                   (name) => (
                     <span
                       key={name}
@@ -630,7 +630,7 @@ export const EcommerceKimiPage2 = defineCapsule({
 
               {/* Filter Pills */}
               <div className="mb-8 flex flex-wrap gap-2">
-                {["All", "Nike", "Adidas", "Jordan", "New Balance", "Sale"].map((pill) => (
+                {["All", "New Arrivals", "Featured", "Bestsellers", "Limited", "Sale"].map((pill) => (
                   <button
                     key={pill}
                     type="button"
@@ -798,7 +798,7 @@ export const EcommerceKimiPage2 = defineCapsule({
           {/* --- Newsletter CTA --- */}
           <section className="relative overflow-hidden bg-foreground py-16 sm:py-24">
             <div className="absolute inset-0 opacity-10">
-              <Image alt="newsletter dark sneaker background texture" w={1920} h={400} loading="lazy" className="h-full w-full object-cover" />
+              <Image alt="newsletter dark studio background texture" w={1920} h={400} loading="lazy" className="h-full w-full object-cover" />
             </div>
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-primary/20" />
             <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6">
@@ -898,7 +898,7 @@ export const EcommerceKimiPage2 = defineCapsule({
               <div>
                 <h4 className="mb-4 font-bold text-foreground">Shop</h4>
                 <ul className="space-y-3 text-sm">
-                  {["New Arrivals", "Best Sellers", "Sale", "Nike", "Adidas", "Jordan"].map((link) => (
+                  {["New Arrivals", "Best Sellers", "Sale", "Featured", "Bestsellers", "Limited Edition"].map((link) => (
                     <li key={link}>
                       <button type="button" onClick={() => go(link)} className="text-muted-foreground transition-colors hover:text-primary">
                         {link}
@@ -917,7 +917,7 @@ export const EcommerceKimiPage2 = defineCapsule({
                     "Order Status",
                     "Shipping Info",
                     "Returns",
-                    "Size Guide",
+                    "FAQ",
                     "Contact Us",
                   ].map((link) => (
                     <li key={link}>
@@ -958,19 +958,19 @@ export const EcommerceKimiPage2 = defineCapsule({
                       <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                       <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                    <span className="text-muted-foreground">123 Sneaker Street<br/>Los Angeles, CA 90012</span>
+                    <span className="text-muted-foreground">123 Market Street<br/>Los Angeles, CA 90012</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <svg className="size-5 flex-shrink-0 text-primary" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
-                    <span className="text-muted-foreground">hello@kickslab.com</span>
+                    <span className="text-muted-foreground">hello@marketplace.com</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <svg className="size-5 flex-shrink-0 text-primary" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
                       <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                     </svg>
-                    <span className="text-muted-foreground">1-800-KICKLAB</span>
+                    <span className="text-muted-foreground">1-800-SHOPNOW</span>
                   </li>
                 </ul>
               </div>

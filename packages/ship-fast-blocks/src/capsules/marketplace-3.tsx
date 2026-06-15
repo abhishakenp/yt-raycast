@@ -50,7 +50,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
     const hero = {
       eyebrow: "Marketplace / Variant 3",
       title: "Shop the world's best independent creators",
-      description: "Ember Premium Multi-Vendor Marketplace Ember Categories Sellers Trending Pricing FAQ Search products Cart 3 Sign In Now live: 12,400+ new arrivals this week Shop the world's bes...",
+      description: "Discover the world's best independent creators in one premium multi-vendor marketplace. Now live: 12,400+ new arrivals this week across every category.",
       primaryCta: "Add to cart",
       secondaryCta: "Ember",
       imageAlt: "professional headshot of a smiling creative director",
@@ -78,7 +78,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
   {
     "eyebrow": "Overview",
     "title": "Shop by category",
-    "body": "Ember Premium Multi-Vendor Marketplace Ember Categories Sellers Trending Pricing FAQ Search products Cart 3 Sign In Now live: 12,400+ new arrivals this week Shop the world's bes...",
+    "body": "Discover the world's best independent creators in one premium multi-vendor marketplace. Now live: 12,400+ new arrivals this week across every category.",
     "items": [
       "Start selling in minutes",
       "What buyers and sellers say",
@@ -100,7 +100,7 @@ export const MarketplaceKimiPage3 = defineCapsule({
     "title": "Why buyers choose Ember",
     "body": "Marketplace page variant 3 highlights the generated design's core message, section pacing, and conversion-focused content.",
     "items": [
-      "Footwear & Sneakers",
+      "Apparel & Accessories",
       "Watches & Accessories",
       "Audio & Electronics"
     ]

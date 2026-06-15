@@ -1,9 +1,11 @@
 import {
+  ImageContextProvider,
   OpenUIIntegrationProviders,
   QueryClient,
   QueryClientProvider,
   library as shipFastOpenUILibrary,
   Renderer,
+  type ImageContext,
 } from '@ship-fast/blocks'
 import { preprocessOpenUIResponse } from '../../../packages/ship-fast-engine/src/lib/openui-preprocess'
 import { Component, useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
@@ -54,6 +56,7 @@ export default function OpenUIViewer({
   embed,
   sessionId,
   integrations,
+  imageContext,
   onFirstPaint,
 }: {
   response: string
@@ -62,6 +65,8 @@ export default function OpenUIViewer({
   theme?: Record<string, string> | null
   /** AI-detected locale (ISO 639-1 code) — drives translation provider. */
   locale?: string
+  /** Page-level prompt/brand context so generated <Image>s pick relevant stock photos. */
+  imageContext?: ImageContext | null
   /** Full-bleed session iframe: no rounded corners, no streaming border/dot overlay */
   embed?: boolean
   /** Session id used by integration providers (for storefront and CMS scope). */
@@ -179,11 +184,13 @@ export default function OpenUIViewer({
             >
               <I18nProvider locale={locale || "en"}>
                 <T>
-                  <Renderer
-                    response={preprocessOpenUIResponse(response, { resolveRefs: false })}
-                    library={shipFastOpenUILibrary}
-                    isStreaming={isStreaming}
-                  />
+                  <ImageContextProvider value={imageContext}>
+                    <Renderer
+                      response={preprocessOpenUIResponse(response, { resolveRefs: false })}
+                      library={shipFastOpenUILibrary}
+                      isStreaming={isStreaming}
+                    />
+                  </ImageContextProvider>
                 </T>
               </I18nProvider>
             </OpenUIIntegrationProviders>

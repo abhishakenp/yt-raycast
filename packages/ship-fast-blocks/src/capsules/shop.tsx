@@ -97,31 +97,31 @@ export const ShopKimiPage = defineCapsule({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const brand = props.brand ?? "KICKS"
+    const brand = props.brand ?? "Storefront"
     const nav = props.nav?.length
       ? props.nav
-      : ["New Drops", "Categories", "Men", "Women", "Sale"]
+      : ["New Arrivals", "Categories", "Featured", "Bestsellers", "Sale"]
 
     const heroChip = props.hero?.chip ?? "New Season"
-    const heroHeading = props.hero?.heading ?? "Step into what's next."
+    const heroHeading = props.hero?.heading ?? "Discover what's next."
     const heroSub =
       props.hero?.subheading ??
-      "Curated drops, rare collabs, and everyday staples — built for movement and made to last."
-    const heroPrimary = props.hero?.primaryCta ?? "Shop New Drops"
+      "Curated drops, exclusive collections, and everyday essentials — chosen for quality and made to last."
+    const heroPrimary = props.hero?.primaryCta ?? "Shop New Arrivals"
     const heroSecondary = props.hero?.secondaryCta ?? "Explore Categories"
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "Vibrant red running sneaker on a bold yellow background"
+      "Featured product on a bold studio background"
 
     const categoriesHeading = props.categories?.heading ?? "Shop by Category"
     const categoriesLink = props.categories?.link ?? "View all"
     const categoryItems = props.categories?.items?.length
       ? props.categories.items
       : [
-          { label: "Running", alt: "Sleek running sneakers" },
-          { label: "Basketball", alt: "High-top basketball sneakers" },
-          { label: "Lifestyle", alt: "Casual lifestyle sneakers" },
-          { label: "Training", alt: "Gym training shoes" },
+          { label: "New Arrivals", alt: "Featured product on a clean studio background" },
+          { label: "Featured", alt: "Featured product on a clean studio background" },
+          { label: "Bestsellers", alt: "Featured product on a clean studio background" },
+          { label: "Essentials", alt: "Featured product on a clean studio background" },
         ]
 
     const productsHeading = props.products?.heading ?? "New Arrivals"
@@ -130,56 +130,56 @@ export const ShopKimiPage = defineCapsule({
       ? props.products.items
       : [
           {
-            name: "Nike Air Max Pulse",
-            alt: "Nike Air Max Pulse sneaker",
-            category: "Men's Shoes",
+            name: "Signature Series",
+            alt: "Featured product on a clean studio background",
+            category: "Featured",
             price: "$150",
             oldPrice: "$170",
             badge: "New",
           },
           {
-            name: "Adidas Ultraboost Light",
-            alt: "Adidas Ultraboost Light running shoe",
-            category: "Running",
+            name: "Everyday Essential",
+            alt: "Featured product on a clean studio background",
+            category: "Essentials",
             price: "$190",
           },
           {
-            name: "New Balance 550",
-            alt: "New Balance 550 retro sneaker",
-            category: "Unisex",
+            name: "Classic Edition",
+            alt: "Featured product on a clean studio background",
+            category: "Bestsellers",
             price: "$120",
             badge: "Best Seller",
           },
           {
-            name: "Puma RS-X Reinvention",
-            alt: "Puma RS-X chunky lifestyle sneaker",
-            category: "Lifestyle",
+            name: "Studio Collection",
+            alt: "Featured product on a clean studio background",
+            category: "Featured",
             price: "$130",
           },
           {
-            name: "Jordan 1 Retro High",
-            alt: "Air Jordan 1 Retro High top sneaker",
-            category: "Men's Shoes",
+            name: "Limited Release",
+            alt: "Featured product on a clean studio background",
+            category: "Featured",
             price: "$180",
             oldPrice: "$210",
             badge: "Limited",
           },
           {
-            name: "Asics Gel-Kayano 30",
-            alt: "Asics Gel-Kayano 30 running shoe",
-            category: "Running",
+            name: "Premium Pick",
+            alt: "Featured product on a clean studio background",
+            category: "Essentials",
             price: "$160",
           },
           {
-            name: "Converse Chuck 70",
-            alt: "Converse Chuck 70 canvas sneaker",
-            category: "Lifestyle",
+            name: "Heritage Line",
+            alt: "Featured product on a clean studio background",
+            category: "Bestsellers",
             price: "$95",
           },
           {
-            name: "Salomon XT-6",
-            alt: "Salomon XT-6 trail sneaker",
-            category: "Trail / Lifestyle",
+            name: "Modern Staple",
+            alt: "Featured product on a clean studio background",
+            category: "Featured",
             price: "$190",
             badge: "New",
           },
@@ -188,22 +188,22 @@ export const ShopKimiPage = defineCapsule({
     const promoHeading = props.promo?.heading ?? "Members get more."
     const promoDesc =
       props.promo?.description ??
-      `Join ${brand}+ for early access to drops, free shipping on every order, and exclusive member-only colorways.`
+      `Join ${brand}+ for early access to drops, free shipping on every order, and exclusive member-only releases.`
     const promoPrimary = props.promo?.primaryCta ?? `Join ${brand}+`
     const promoSecondary = props.promo?.secondaryCta ?? "Learn more"
     const promoImageAlt =
-      props.promo?.imageAlt ?? "Pair of premium sneakers styled on concrete"
+      props.promo?.imageAlt ?? "Featured product styled on a neutral background"
 
     const footerTagline =
       props.footer?.tagline ??
-      "Premium sneakers, curated drops, and the stories behind every step."
+      "Premium products, curated drops, and the stories behind every release."
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
       : [
-          "New Drops",
-          "Men",
-          "Women",
-          "Kids",
+          "New Arrivals",
+          "Featured",
+          "Bestsellers",
+          "Collections",
           "Sale",
           "Support",
           "Shipping",

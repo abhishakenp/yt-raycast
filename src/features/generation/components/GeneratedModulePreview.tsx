@@ -11,12 +11,31 @@ type GeneratedModulePreviewProps = {
   sessionId: string
   siteSpecJson?: string
   locale?: string
+  /** User's original build prompt — biases generated stock images toward the business. */
+  prompt?: string
   isDark?: boolean
   themeStyles?: ThemeStyles | null
   deviceMode?: 'desktop' | 'tablet' | 'mobile'
   previewToolMode?: PreviewToolMode
   agentationEnabled?: boolean
   onPreviewSelect?: (selection: PreviewSelection) => void
+}
+
+/** Best-effort brand/tagline descriptor from the persisted site spec, used as
+ *  extra image-search context alongside the prompt. */
+const parseSiteSpecBrand = (siteSpecJson: string | undefined): string | undefined => {
+  if (!siteSpecJson) return undefined
+  try {
+    const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
+    if (!parsed || typeof parsed !== 'object') return undefined
+    const parts = [parsed.brand, parsed.brandName, parsed.name, parsed.tagline]
+      .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
+      .map((v) => v.trim())
+    const descriptor = [...new Set(parts)].join(' ').trim()
+    return descriptor.length > 0 ? descriptor : undefined
+  } catch {
+    return undefined
+  }
 }
 
 const parseSiteSpecTheme = (siteSpecJson: string | undefined): Record<string, string> | null => {
@@ -49,7 +68,11 @@ export function OpenUIModuleRenderer({
   sessionId,
   siteSpecJson,
   locale,
+  prompt,
 }: GeneratedModulePreviewProps) {
+  const brandContext = parseSiteSpecBrand(siteSpecJson)
+  const imageContext =
+    prompt || brandContext ? { prompt, brandContext } : null
   return (
     <OpenUIViewer
       response={source}
@@ -57,6 +80,7 @@ export function OpenUIModuleRenderer({
       locale={locale}
       embed
       sessionId={sessionId}
+      imageContext={imageContext}
     />
   )
 }
@@ -66,6 +90,7 @@ export function GeneratedModulePreview({
   sessionId,
   siteSpecJson,
   locale,
+  prompt,
   isDark = true,
   themeStyles = null,
   deviceMode = 'desktop',
@@ -95,6 +120,7 @@ export function GeneratedModulePreview({
           sessionId={sessionId}
           siteSpecJson={siteSpecJson}
           locale={locale}
+          prompt={prompt}
         />
         <AgentationSessionBridge
           enabled={agentationEnabled}

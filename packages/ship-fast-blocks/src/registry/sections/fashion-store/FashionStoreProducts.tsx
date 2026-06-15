@@ -94,12 +94,12 @@ export const FashionStoreProducts = defineComponent({
               "High-waisted denim jeans in vintage wash, women's classic blue jeans",
           },
           {
-            name: "Minimal Leather Sneakers",
+            name: "Minimal Leather Belt",
             price: "$425",
-            variant: "Off-White · 36–46",
+            variant: "Off-White · One Size",
             badge: "Limited",
             imageAlt:
-              "Minimalist leather sneakers in off-white, unisex low-top footwear",
+              "Minimalist leather belt in off-white on a neutral background, unisex accessory",
           },
           {
             name: "Silk Midi Slip Dress",

@@ -91,3 +91,39 @@ export function componentCatalog(): Array<{ name: string; description?: string }
     description: s.description,
   }))
 }
+
+/** Full call signature (all sections/props) for a block, so the content model can
+ *  fill EVERY section instead of guessing — preventing a block's themed defaults
+ *  (e.g. a sneaker-template's "features"/"testimonials") leaking into an unrelated
+ *  business when a section is omitted. */
+export function componentSignature(name: string): string | undefined {
+  return SPEC.components[name]?.signature
+}
+
+/** Top-level section/prop names of a block (excludes brand + nav). */
+export function componentSectionKeys(name: string): string[] {
+  const sig = componentSignature(name)
+  if (!sig) return []
+  const open = sig.indexOf('(')
+  const close = sig.lastIndexOf(')')
+  if (open < 0 || close <= open) return []
+  const inner = sig.slice(open + 1, close)
+  // Split top-level args on commas that are NOT inside nested {…} or […].
+  const keys: string[] = []
+  let depth = 0
+  let token = ''
+  for (const ch of inner) {
+    if (ch === '{' || ch === '[') depth++
+    else if (ch === '}' || ch === ']') depth--
+    if (ch === ',' && depth === 0) {
+      keys.push(token)
+      token = ''
+    } else {
+      token += ch
+    }
+  }
+  if (token.trim()) keys.push(token)
+  return keys
+    .map((t) => t.trim().split('?')[0].split(':')[0].trim())
+    .filter((k) => k && !['brand', 'nav', 'className', 'class', 'style'].includes(k))
+}

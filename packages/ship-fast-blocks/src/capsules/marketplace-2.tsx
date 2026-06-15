@@ -244,7 +244,7 @@ export const MarketplaceKimiPage2 = defineCapsule({
       : [
           { name: "Modern Timepiece", price: "$89.00", alt: "Minimalist white smartwatch on wrist" },
           { name: "Audio Elite X3", price: "$249.00", alt: "Premium over-ear headphones on warm background" },
-          { name: "Air Runner Pro", price: "$129.00", alt: "Red athletic sneaker product shot" },
+          { name: "Everyday Tote", price: "$129.00", alt: "Canvas tote bag product shot on a neutral background" },
           { name: "Vintage Shades", price: "$65.00", alt: "Stylish round sunglasses with gold frame" },
         ]
 

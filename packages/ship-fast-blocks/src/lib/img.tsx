@@ -1,4 +1,26 @@
-import type { ImgHTMLAttributes } from "react"
+import { createContext, useContext, type ImgHTMLAttributes, type ReactNode } from "react"
+import { buildImageSearchQuery, type ImageContext } from "./image-search-query"
+
+export type { ImageContext }
+
+/** Ambient page-level context (user prompt / brand) so every generated <Image>
+ *  can bias its stock-photo query toward the actual business — without threading
+ *  a prop through every capsule. Set once around the rendered page. */
+const ImageContextContext = createContext<ImageContext | null>(null)
+
+export function ImageContextProvider({
+  value,
+  children,
+}: {
+  value: ImageContext | null | undefined
+  children: ReactNode
+}) {
+  return (
+    <ImageContextContext.Provider value={value ?? null}>
+      {children}
+    </ImageContextContext.Provider>
+  )
+}
 
 const STOP_WORDS = new Set([
   "a",
@@ -162,10 +184,23 @@ export function picsum(alt: unknown, w = 800, h = 600): string {
 }
 
 /** Generate proxy URL for Pexels image. */
-function getPexelsProxyUrl(alt: unknown, w: number, h: number): string {
+function getPexelsProxyUrl(alt: unknown, w: number, h: number, context?: ImageContext): string {
   const normalizedAlt = normalizeAlt(alt)
-  const query = searchQueryFromAlt(normalizedAlt)
-  return `/api/pexels?query=${encodeURIComponent(query)}&w=${w}&h=${h}&seed=${encodeURIComponent(normalizedAlt)}`
+  const baseQuery = searchQueryFromAlt(normalizedAlt)
+  // Blend the page domain (prompt/brand) into the query so the photo matches the
+  // actual business, not just the capsule's generic alt. No context → unchanged.
+  const query = buildImageSearchQuery(normalizedAlt, baseQuery, context)
+
+  // URLSearchParams already percent-encodes values; pass them raw to avoid
+  // double-encoding (which would send literal "%20" to Pexels and break relevance).
+  const params = new URLSearchParams({
+    query,
+    w: w.toString(),
+    h: h.toString(),
+    seed: normalizedAlt,
+  })
+
+  return `/api/pexels?${params.toString()}`
 }
 
 /** Drop-in replacement for `<img>` that resolves a relevant Pexels image from `alt` text.
@@ -178,15 +213,23 @@ export function Image({
   h = 600,
   className,
   loading,
+  context,
   ...rest
 }: {
   alt?: unknown
   src?: string
   w?: number
   h?: number
+  context?: ImageContext
 } & Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "alt" | "width" | "height">) {
   const normalizedAlt = normalizeAlt(alt)
-  const imageSrc = typeof src === "string" && src.trim() ? src : getPexelsProxyUrl(normalizedAlt, w, h)
+  // Explicit prop wins; otherwise inherit the ambient page-level context.
+  const ambientContext = useContext(ImageContextContext)
+  const effectiveContext = context ?? ambientContext ?? undefined
+  const imageSrc =
+    typeof src === "string" && src.trim()
+      ? src
+      : getPexelsProxyUrl(normalizedAlt, w, h, effectiveContext)
 
   return (
     <img

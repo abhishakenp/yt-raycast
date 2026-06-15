@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { PEXELS_API_KEY } from '@ship-fast/engine/config.js'
+import { PEXELS_API_KEY, UNSPLASH_ACCESS_KEY } from '@ship-fast/engine/config.js'
 import { searchQueryFromAlt } from '@/lib/image-query'
+import { generateContextAwareQuery, type ImageContext } from '@/lib/image-context'
 
 type PexelsPhoto = {
   src?: {
@@ -15,6 +16,9 @@ type PexelsPhoto = {
 type PexelsResponse = {
   photos?: PexelsPhoto[]
 }
+
+type UnsplashPhoto = { urls?: { raw?: string; full?: string; regular?: string; small?: string } }
+type UnsplashResponse = { results?: UnsplashPhoto[] }
 
 const clampInt = (value: string | null, fallback: number, min: number, max: number) => {
   const parsed = Number.parseInt(value ?? '', 10)
@@ -74,6 +78,59 @@ export const resolvePexelsSearchQuery = (
   return searchQueryFromAlt(trimmed)
 }
 
+const searchPexels = async (
+  searchQuery: string,
+  w: number,
+  h: number,
+  seed: string,
+): Promise<string | null> => {
+  if (!PEXELS_API_KEY) return null
+  const pexelsUrl = new URL('https://api.pexels.com/v1/search')
+  pexelsUrl.searchParams.set('query', searchQuery.slice(0, 96))
+  pexelsUrl.searchParams.set('per_page', '15')
+  pexelsUrl.searchParams.set('orientation', orientationFromSize(w, h))
+  try {
+    const response = await fetch(pexelsUrl, { headers: { Authorization: PEXELS_API_KEY } })
+    if (!response.ok) return null
+    const data = (await response.json()) as PexelsResponse
+    const photos = data.photos ?? []
+    if (!photos.length) return null
+    return choosePhotoUrl(photos[seedIndex(seed, photos.length)], w, h)
+  } catch {
+    return null
+  }
+}
+
+const searchUnsplash = async (
+  searchQuery: string,
+  w: number,
+  h: number,
+  seed: string,
+): Promise<string | null> => {
+  if (!UNSPLASH_ACCESS_KEY) return null
+  const unsplashUrl = new URL('https://api.unsplash.com/search/photos')
+  unsplashUrl.searchParams.set('query', searchQuery.slice(0, 96))
+  unsplashUrl.searchParams.set('per_page', '15')
+  unsplashUrl.searchParams.set('orientation', orientationFromSize(w, h))
+  try {
+    const response = await fetch(unsplashUrl, {
+      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
+    })
+    if (!response.ok) return null
+    const data = (await response.json()) as UnsplashResponse
+    const results = data.results ?? []
+    if (!results.length) return null
+    const photo = results[seedIndex(seed, results.length)]
+    const base = photo?.urls?.regular ?? photo?.urls?.small ?? photo?.urls?.full ?? photo?.urls?.raw
+    if (!base) return null
+    const targetW = Math.min(Math.max(w, 400), 2400)
+    const targetH = Math.min(Math.max(h, 300), 1600)
+    return `${base}&w=${targetW}&h=${targetH}&fit=crop`
+  } catch {
+    return null
+  }
+}
+
 export const Route = createFileRoute('/api/pexels')({
   server: {
     handlers: {
@@ -81,33 +138,33 @@ export const Route = createFileRoute('/api/pexels')({
         const url = new URL(request.url)
         const query = (url.searchParams.get('query') ?? url.searchParams.get('q') ?? '').trim() || 'nature'
         const seed = url.searchParams.get('seed')
-        const searchQuery = resolvePexelsSearchQuery(query, seed)
         const w = clampInt(url.searchParams.get('w'), 800, 100, 2400)
         const h = clampInt(url.searchParams.get('h'), 600, 100, 2400)
-        const fallback = picsumUrl(seed || searchQuery, w, h)
-
-        if (!PEXELS_API_KEY) return redirect(fallback)
-
-        const pexelsUrl = new URL('https://api.pexels.com/v1/search')
-        pexelsUrl.searchParams.set('query', searchQuery)
-        pexelsUrl.searchParams.set('per_page', '15')
-        pexelsUrl.searchParams.set('orientation', orientationFromSize(w, h))
-
-        try {
-          const response = await fetch(pexelsUrl, {
-            headers: { Authorization: PEXELS_API_KEY },
-          })
-          if (!response.ok) return redirect(fallback)
-
-          const data = (await response.json()) as PexelsResponse
-          const photos = data.photos ?? []
-          const photo = photos[seedIndex(seed ?? searchQuery, photos.length)]
-          const photoUrl = choosePhotoUrl(photo, w, h)
-
-          return redirect(photoUrl ?? fallback)
-        } catch {
-          return redirect(fallback)
+        
+        // Extract context parameters
+        const context: ImageContext = {
+          section: url.searchParams.get('section') || undefined,
+          siteType: (url.searchParams.get('siteType') as ImageContext['siteType']) || undefined,
+          prompt: url.searchParams.get('prompt') || undefined,
+          brandContext: url.searchParams.get('brandContext') || undefined,
         }
+        
+        // Use context-aware query generation if context is provided
+        let searchQuery: string
+        if (context.section || context.siteType || context.prompt || context.brandContext) {
+          searchQuery = generateContextAwareQuery(query, context)
+        } else {
+          searchQuery = resolvePexelsSearchQuery(query, seed)
+        }
+        
+        const fallback = picsumUrl(seed || searchQuery, w, h)
+        const seedKey = seed ?? searchQuery
+
+        const photoUrl =
+          (await searchPexels(searchQuery, w, h, seedKey)) ??
+          (await searchUnsplash(searchQuery, w, h, seedKey))
+
+        return redirect(photoUrl ?? fallback)
       },
     },
   },

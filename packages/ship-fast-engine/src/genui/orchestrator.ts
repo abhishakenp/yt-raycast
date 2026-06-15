@@ -4,7 +4,12 @@ import {
   generateText,
   isHardLlmFailure,
 } from '../generate.ts'
-import { pageSystemPrompt, componentCatalog } from './prompt.ts'
+import {
+  pageSystemPrompt,
+  componentCatalog,
+  componentSignature,
+  componentSectionKeys,
+} from './prompt.ts'
 import { stripFences } from './parser.ts'
 import { DEFAULT_MODEL } from './model-list.ts'
 import {
@@ -304,18 +309,26 @@ function pageUser(
   tagline: string,
 ): string {
   const navJson = JSON.stringify(navLabels)
+  const signature = componentSignature(page.block)
+  const sectionKeys = componentSectionKeys(page.block)
+  const signatureBlock = signature
+    ? `\nBlock signature (fill ALL of these — every top-level section, not just the obvious ones):\n${signature}\n`
+    : ''
+  const sectionsLine = sectionKeys.length
+    ? `\n- REQUIRED: include EVERY top-level section of this block so none falls back to the block's built-in demo defaults (which belong to a different business). You MUST provide all of: ${sectionKeys.join(', ')}. Omitting any of these makes the page show unrelated placeholder content.`
+    : ''
   return `Build request: ${fullPrompt}
 
 Brand: ${brand}
 Tagline: ${tagline}
 Site navigation (reuse VERBATIM): ${navJson}
 This page: "${page.label}" — ${page.brief}
-
+${signatureBlock}
 Output ONLY ONE statement, nothing else:
 ${page.id} = ${page.block}({...props})
 
 Rules:
-- Fill EVERY content field of ${page.block}'s signature with rich, specific, on-prompt copy and data — no placeholders, no lorem ipsum, no "Item 1".
+- Fill EVERY content field of ${page.block}'s signature with rich, specific, on-prompt copy and data — no placeholders, no lorem ipsum, no "Item 1".${sectionsLine}
 - The first two arguments MUST be exactly ${JSON.stringify(brand)} then ${navJson} (verbatim).
 - Use semantic, intent-shaped copy: one clear value proposition, a concise direct-answer style overview near the top when the page is home/landing, realistic FAQ items when the block includes them, and specific benefits/use cases instead of generic "Welcome" headings.
 - Mention brand name, what the product does, who it is for, and key benefits naturally in the visible copy.
