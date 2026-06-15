@@ -1,7 +1,24 @@
 import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties } from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, Bot, Box, Building2, CreditCard, Crown, Download, Edit3, Github, Globe2, Languages, List, MessageSquare, Package, Palette, Shield } from 'lucide-react'
+import {
+  Activity,
+  Bot,
+  Box,
+  Building2,
+  CreditCard,
+  Crown,
+  Download,
+  Edit3,
+  Github,
+  Globe2,
+  Languages,
+  List,
+  MessageSquare,
+  Package,
+  Palette,
+  Shield,
+} from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 
 import { api } from '../../../../convex/_generated/api'
@@ -112,7 +129,11 @@ const themeButtonStyle = (
 const readSiteThemeName = (specJson: string | undefined): string | null => {
   if (!specJson) return null
   try {
-    const parsed = JSON.parse(specJson) as { theme?: unknown; themeName?: unknown; genuiTheme?: unknown }
+    const parsed = JSON.parse(specJson) as {
+      theme?: unknown
+      themeName?: unknown
+      genuiTheme?: unknown
+    }
     const theme = parsed.themeName ?? parsed.genuiTheme ?? parsed.theme
     return typeof theme === 'string' ? theme : null
   } catch {
@@ -147,7 +168,12 @@ const PreviewLoadingState = ({
   ] as const
 
   return (
-    <div className="preview-loading-state" role="status" aria-live="polite" aria-busy={!hasFailures}>
+    <div
+      className="preview-loading-state"
+      role="status"
+      aria-live="polite"
+      aria-busy={!hasFailures}
+    >
       <div className="preview-loading-state__orb" aria-hidden="true">
         <span />
         <span />
@@ -157,7 +183,11 @@ const PreviewLoadingState = ({
         <p className="preview-loading-state__eyebrow">
           {hasFailures ? 'Generation interrupted' : 'Building your site'}
         </p>
-        <h2>{hasFailures ? 'We could not complete this preview.' : 'Composing the first screen'}</h2>
+        <h2>
+          {hasFailures
+            ? 'We could not complete this preview.'
+            : 'Composing the first screen'}
+        </h2>
         <p>
           {hasFailures
             ? 'Check the activity panel for the failed step, then retry generation.'
@@ -166,7 +196,10 @@ const PreviewLoadingState = ({
         <div className="preview-loading-state__track" aria-hidden="true">
           <span style={{ width: `${clampedProgress}%` }} />
         </div>
-        <ol className="preview-loading-state__steps" aria-label="Generation progress">
+        <ol
+          className="preview-loading-state__steps"
+          aria-label="Generation progress"
+        >
           {steps.map(([label, active]) => (
             <li key={label} className={active ? 'is-active' : undefined}>
               <span />
@@ -179,16 +212,52 @@ const PreviewLoadingState = ({
   )
 }
 
-export function Dashboard({ sessionId, initialAdminView = false }: DashboardProps) {
+const MissingProjectState = ({ onBackHome }: { onBackHome: () => void }) => (
+  <div
+    className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
+    role="status"
+    aria-live="polite"
+  >
+    <div className="max-w-md rounded-3xl border border-white/10 bg-white/[0.045] p-8 shadow-[0_22px_80px_rgba(0,0,0,0.35)]">
+      <p className="mb-3 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-200/70">
+        Project missing
+      </p>
+      <h1 className="text-2xl font-bold tracking-tight text-white">
+        This generated website is no longer available.
+      </h1>
+      <p className="mt-3 text-sm leading-6 text-white/56">
+        It may have been deleted while resetting the public gallery. Create a
+        new website from the home page to start fresh.
+      </p>
+      <button
+        type="button"
+        onClick={onBackHome}
+        className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
+      >
+        Back to home
+      </button>
+    </div>
+  </div>
+)
+
+export function Dashboard({
+  sessionId,
+  initialAdminView = false,
+}: DashboardProps) {
   const [startedFromGenerationFlow] = useState(() =>
     takeGenerationLaunchHandoff(sessionId),
   )
   const [isDashboardActive, setIsDashboardActive] = useState(false)
-  const [currentDevice, setCurrentDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
-  const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>(null)
+  const [currentDevice, setCurrentDevice] = useState<
+    'desktop' | 'tablet' | 'mobile'
+  >('desktop')
+  const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>(
+    null,
+  )
   const [railMode, setRailMode] = useState<RailMode>('tools')
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
-  const [previewSelection, setPreviewSelection] = useState<PreviewSelection | null>(null)
+  const [previewSelection, setPreviewSelection] =
+    useState<PreviewSelection | null>(null)
   const [isDark, setIsDark] = useState(true)
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -200,23 +269,22 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
   const resolvedSessionId = generationView?.session.sessionId
   const commerceConfig = useQuery(
     api.sessions.getCommerceConfig,
-    resolvedSessionId === undefined
-      ? 'skip'
-      : { sessionId: resolvedSessionId },
+    resolvedSessionId === undefined ? 'skip' : { sessionId: resolvedSessionId },
   )
   const deploymentStatus = useQuery(
     api.sessions.getDeploymentStatus,
-    resolvedSessionId === undefined
-      ? 'skip'
-      : { sessionId: resolvedSessionId },
+    resolvedSessionId === undefined ? 'skip' : { sessionId: resolvedSessionId },
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
+  const isMissingSession = generationView === null
 
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     const syncAdminState = () => {
-      setIsAdminActive(window.location.pathname.replace(/\/+$/, '').endsWith('/admin'))
+      setIsAdminActive(
+        window.location.pathname.replace(/\/+$/, '').endsWith('/admin'),
+      )
     }
 
     syncAdminState()
@@ -234,9 +302,12 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
       return
     }
 
-    const tDashboard = window.setTimeout(() => {
-      setIsDashboardActive(true)
-    }, startedFromGenerationFlow ? 2200 : 120)
+    const tDashboard = window.setTimeout(
+      () => {
+        setIsDashboardActive(true)
+      },
+      startedFromGenerationFlow ? 2200 : 120,
+    )
 
     return () => {
       window.clearTimeout(tDashboard)
@@ -247,7 +318,9 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
     if (!generationView || generationView.tasks.length === 0) return 0
     if (generationView.session.status === 'preview_ready') return 100
 
-    const done = generationView.tasks.filter((task) => task.status === 'succeeded').length
+    const done = generationView.tasks.filter(
+      (task) => task.status === 'succeeded',
+    ).length
     return Math.max(5, Math.round((done / generationView.tasks.length) * 100))
   }, [generationView])
 
@@ -255,11 +328,17 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
     generationView?.session.status === 'failed' ||
     generationView?.tasks.some((task) => task.status === 'failed') === true
   const homeModule = generationView?.homeModule
-  const isPreviewReady = Boolean(homeModule?.source)
-  const aiTheme = useMemo(() => readSiteThemeName(generationView?.siteSpec?.specJson), [generationView?.siteSpec?.specJson])
+  const isPreviewReady = !isMissingSession && Boolean(homeModule?.source)
+  const aiTheme = useMemo(
+    () => readSiteThemeName(generationView?.siteSpec?.specJson),
+    [generationView?.siteSpec?.specJson],
+  )
   const effectiveTheme = selectedTheme ?? aiTheme
   const themeStyles = resolveThemeStyles(effectiveTheme)
-  const activeThemeLabel = useMemo(() => formatThemeName(effectiveTheme), [effectiveTheme])
+  const activeThemeLabel = useMemo(
+    () => formatThemeName(effectiveTheme),
+    [effectiveTheme],
+  )
   const activeThemeButtonStyle = useMemo(
     () => themeButtonStyle(themeStyles, isDark),
     [themeStyles, isDark],
@@ -310,7 +389,7 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                 : railMode === 'localization'
                   ? 'Localization'
                   : railMode === 'commerce'
-                  ? 'Medusa commerce'
+                    ? 'Medusa commerce'
                     : railMode === 'deployment'
                       ? 'Deployment'
                       : railMode === 'billing'
@@ -362,7 +441,10 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_50%_-10%,rgba(35,229,255,0.18),transparent_34%),linear-gradient(180deg,#070913_0%,#0a0d16_100%)] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]" aria-hidden="true">
+      <div
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[radial-gradient(circle_at_50%_-10%,rgba(35,229,255,0.18),transparent_34%),linear-gradient(180deg,#070913_0%,#0a0d16_100%)] [mask-image:linear-gradient(to_bottom,black,transparent_92%)]"
+        aria-hidden="true"
+      >
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(103,232,249,0.14),transparent_36%)]"></div>
       </div>
@@ -376,19 +458,30 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
         />
       ) : null}
 
-      <div className={cn(
-        'dashboard-shell relative z-[1] min-h-screen w-full overflow-hidden p-4 opacity-0 transition-opacity duration-700 ease-out',
-        isDashboardActive && 'opacity-100',
-      )} id="dashboard-wrap">
-        <div className={cn(
-          'mx-auto flex min-h-[calc(100vh-32px)] w-full max-w-[1680px] items-center justify-center',
-          (isPreviewReady || isAdminActive) && 'items-stretch',
-        )} id="right-panel">
-          <div id="dashboard-cockpit" className={cn(
-            'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14]/88 shadow-[0_24px_90px_rgba(0,0,0,0.48)] backdrop-blur-[22px]',
-            (isPreviewReady || isAdminActive) && 'bg-[#080a10]/92',
-            isDashboardActive && 'cockpit-fade-up',
-          )}>
+      <div
+        className={cn(
+          'dashboard-shell relative z-[1] min-h-screen w-full overflow-hidden p-4 opacity-0 transition-opacity duration-700 ease-out',
+          isDashboardActive && 'opacity-100',
+        )}
+        id="dashboard-wrap"
+      >
+        <div
+          className={cn(
+            'mx-auto flex min-h-[calc(100vh-32px)] w-full max-w-[1680px] items-center justify-center',
+            (isPreviewReady || isAdminActive || isMissingSession) &&
+              'items-stretch',
+          )}
+          id="right-panel"
+        >
+          <div
+            id="dashboard-cockpit"
+            className={cn(
+              'flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden rounded-3xl rounded-bl-none border border-white/10 bg-[#0b0d14]/88 shadow-[0_24px_90px_rgba(0,0,0,0.48)] backdrop-blur-[22px]',
+              (isPreviewReady || isAdminActive || isMissingSession) &&
+                'bg-[#080a10]/92',
+              isDashboardActive && 'cockpit-fade-up',
+            )}
+          >
             <div className="dashboard-topbar flex h-14 shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.035] px-3">
               <button
                 type="button"
@@ -397,7 +490,13 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                 data-tip="Back to home"
                 aria-label="Back to home"
               >
-                <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                >
                   <path
                     fill="none"
                     stroke="currentColor"
@@ -410,11 +509,20 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
               </button>
               <div className="dashboard-url-pill flex min-w-0 flex-1 items-center gap-2 rounded-full border border-white/8 bg-black/25 px-3 py-2 text-sm text-white/48">
                 <span className="size-2 shrink-0 rounded-full bg-emerald-300/80" />
-                <a className="min-w-0 truncate font-mono text-xs text-white/56 no-underline" id="url-text" href={currentUrl} aria-label="Current generation">
+                <a
+                  className="min-w-0 truncate font-mono text-xs text-white/56 no-underline"
+                  id="url-text"
+                  href={currentUrl}
+                  aria-label="Current generation"
+                >
                   {currentUrl}
                 </a>
               </div>
-              <div className="dashboard-preview-tools flex shrink-0 items-center gap-2" id="preview-frame-tools" aria-label="Preview controls">
+              <div
+                className="dashboard-preview-tools flex shrink-0 items-center gap-2"
+                id="preview-frame-tools"
+                aria-label="Preview controls"
+              >
                 <button
                   type="button"
                   className={cn(
@@ -424,8 +532,12 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                       : 'border-white/10 bg-white/[0.055]',
                   )}
                   onClick={toggleAdminView}
-                  data-tip={isAdminActive ? 'View generated site' : 'Open auto admin'}
-                  aria-label={isAdminActive ? 'View generated site' : 'Open auto admin'}
+                  data-tip={
+                    isAdminActive ? 'View generated site' : 'Open auto admin'
+                  }
+                  aria-label={
+                    isAdminActive ? 'View generated site' : 'Open auto admin'
+                  }
                   aria-pressed={isAdminActive}
                 >
                   <Shield className="size-4" strokeWidth={2} />
@@ -435,11 +547,23 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                   className="dashboard-publish-button inline-flex h-9 items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/12 px-3 text-xs font-bold text-cyan-100 transition-colors hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-45"
                   disabled={!isPreviewReady || isPublishing}
                   onClick={() => void handlePublish()}
-                  data-tip={publishedUrl ? 'Republish latest preview' : 'Publish preview'}
-                  aria-label={publishedUrl ? 'Republish latest preview' : 'Publish preview'}
+                  data-tip={
+                    publishedUrl
+                      ? 'Republish latest preview'
+                      : 'Publish preview'
+                  }
+                  aria-label={
+                    publishedUrl
+                      ? 'Republish latest preview'
+                      : 'Publish preview'
+                  }
                 >
                   <Globe2 className="size-3.5" strokeWidth={2} />
-                  {isPublishing ? 'Publishing' : publishedUrl ? 'Republish' : 'Publish'}
+                  {isPublishing
+                    ? 'Publishing'
+                    : publishedUrl
+                      ? 'Republish'
+                      : 'Publish'}
                 </button>
                 <button
                   type="button"
@@ -449,7 +573,13 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                   aria-label="Reload page"
                   onClick={() => window.location.reload()}
                 >
-                  <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
                     <path
                       fill="none"
                       stroke="currentColor"
@@ -460,14 +590,19 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     />
                   </svg>
                 </button>
-                <div className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1" role="group" aria-label="Viewport size">
+                <div
+                  className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1"
+                  role="group"
+                  aria-label="Viewport size"
+                >
                   {(['desktop', 'tablet', 'mobile'] as const).map((device) => (
                     <button
                       key={device}
                       type="button"
                       className={cn(
                         'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                        currentDevice === device && 'bg-cyan-300/16 text-cyan-100',
+                        currentDevice === device &&
+                          'bg-cyan-300/16 text-cyan-100',
                       )}
                       data-preview-device={device}
                       data-tip={device}
@@ -476,57 +611,162 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                       onClick={() => setCurrentDevice(device)}
                     >
                       {device === 'desktop' ? (
-                        <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                          <rect x="3" y="4" width="18" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                          <path d="M8 20h8M12 16v4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        <svg
+                          className="size-4"
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="12"
+                            rx="2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M8 20h8M12 16v4"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
                         </svg>
                       ) : device === 'tablet' ? (
-                        <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                          <rect x="6" y="3" width="12" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                          <path d="M11 18h2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        <svg
+                          className="size-4"
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            x="6"
+                            y="3"
+                            width="12"
+                            height="18"
+                            rx="2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M11 18h2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
                         </svg>
                       ) : (
-                        <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                          <rect x="8" y="2.5" width="8" height="19" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
-                          <path d="M11 18h2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        <svg
+                          className="size-4"
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            x="8"
+                            y="2.5"
+                            width="8"
+                            height="19"
+                            rx="2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M11 18h2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
                         </svg>
                       )}
                     </button>
                   ))}
                 </div>
-                <div className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden" role="group" aria-label="Inspect controls">
+                <div
+                  className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden"
+                  role="group"
+                  aria-label="Inspect controls"
+                >
                   <button
                     type="button"
                     className={cn(
                       'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                      inspectMode === 'select' && 'bg-cyan-300/16 text-cyan-100',
+                      inspectMode === 'select' &&
+                        'bg-cyan-300/16 text-cyan-100',
                     )}
                     data-tip="Select"
                     aria-label="Select element"
                     aria-pressed={inspectMode === 'select'}
-                    onClick={() => setInspectMode((mode) => (mode === 'select' ? null : 'select'))}
+                    onClick={() =>
+                      setInspectMode((mode) =>
+                        mode === 'select' ? null : 'select',
+                      )
+                    }
                   >
-                    <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path d="M4 3l7 17 2-7 7-2L4 3z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M4 3l7 17 2-7 7-2L4 3z"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </button>
                   <button
                     type="button"
                     className={cn(
                       'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                      inspectMode === 'annotate' && 'bg-cyan-300/16 text-cyan-100',
+                      inspectMode === 'annotate' &&
+                        'bg-cyan-300/16 text-cyan-100',
                     )}
                     data-tip="Annotate"
                     aria-label="Annotate preview"
                     aria-pressed={inspectMode === 'annotate'}
                     onClick={() => {
-                      setInspectMode((mode) => (mode === 'annotate' ? null : 'annotate'))
+                      setInspectMode((mode) =>
+                        mode === 'annotate' ? null : 'annotate',
+                      )
                       setRailMode('annotations')
                     }}
                   >
-                    <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path d="M12 20h9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M12 20h9"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </button>
                   <button
@@ -536,8 +776,20 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     aria-label="Clear selection"
                     onClick={() => setInspectMode(null)}
                   >
-                    <svg className="size-4" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                      <path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <svg
+                      className="size-4"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M18 6 6 18M6 6l12 12"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -557,13 +809,22 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                 </div>
               )}
               <div className="relative min-h-0 overflow-hidden bg-[#05070c]">
-                <div className={cn(
-                  'h-full min-h-0',
-                  isAdminActive
-                    ? 'overflow-hidden'
-                    : 'flex items-center justify-center overflow-auto',
-                )} id="preview-stage">
-                  {isAdminActive ? (
+                <div
+                  className={cn(
+                    'h-full min-h-0',
+                    isAdminActive
+                      ? 'overflow-hidden'
+                      : 'flex items-center justify-center overflow-auto',
+                  )}
+                  id="preview-stage"
+                >
+                  {isMissingSession ? (
+                    <MissingProjectState
+                      onBackHome={() => {
+                        window.location.href = '/'
+                      }}
+                    />
+                  ) : isAdminActive ? (
                     <LakebedSessionProvider
                       anonymousOwnerSecret={activeAnonymousOwnerSecret}
                       sessionId={activeSessionId}
@@ -571,31 +832,48 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                       <LakebedAdminPanel />
                     </LakebedSessionProvider>
                   ) : (
-                    <div id="preview-device-frame" data-preview-device={currentDevice} style={previewDeviceStyle}>
+                    <div
+                      id="preview-device-frame"
+                      data-preview-device={currentDevice}
+                      style={previewDeviceStyle}
+                    >
                       <div
                         className="relative h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300"
                         id="preview-device-shell"
                         data-preview-device={currentDevice}
-                        style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: '100%' }}
+                        style={{
+                          width: '100%',
+                          minWidth: 0,
+                          maxWidth: '100%',
+                          height: '100%',
+                        }}
                       >
-                      {homeModule?.source ? (
-                        <GeneratedModulePreview
-                          source={homeModule.source}
-                          sessionId={sessionId}
-                          siteSpecJson={generationView?.siteSpec?.specJson}
-                          locale={generationView?.session.preferredLanguage}
-                          prompt={generationView?.session.prompt}
-                          isDark={isDark}
-                          themeStyles={themeStyles}
-                          deviceMode={currentDevice}
-                          previewToolMode={inspectMode}
-                          agentationEnabled={inspectMode === 'annotate' || railMode === 'annotations'}
-                          onPreviewSelect={handlePreviewSelect}
-                        />
-                      ) : (
-                        <PreviewLoadingState progress={progress} hasFailures={hasFailures} />
-                      )}
-                      {isCommerceTransforming ? <EcommercifyTransformOverlay /> : null}
+                        {homeModule?.source ? (
+                          <GeneratedModulePreview
+                            source={homeModule.source}
+                            sessionId={sessionId}
+                            siteSpecJson={generationView?.siteSpec?.specJson}
+                            locale={generationView?.session.preferredLanguage}
+                            prompt={generationView?.session.prompt}
+                            isDark={isDark}
+                            themeStyles={themeStyles}
+                            deviceMode={currentDevice}
+                            previewToolMode={inspectMode}
+                            agentationEnabled={
+                              inspectMode === 'annotate' ||
+                              railMode === 'annotations'
+                            }
+                            onPreviewSelect={handlePreviewSelect}
+                          />
+                        ) : (
+                          <PreviewLoadingState
+                            progress={progress}
+                            hasFailures={hasFailures}
+                          />
+                        )}
+                        {isCommerceTransforming ? (
+                          <EcommercifyTransformOverlay />
+                        ) : null}
                       </div>
                     </div>
                   )}
@@ -605,64 +883,139 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                 className={cn(
                   'relative flex min-h-0 flex-col border-l border-white/10 bg-[#0c1018]/92 max-[1100px]:hidden',
                   railMode !== 'tools' && 'bg-[#0d111b]/96',
-                  isAdminActive && 'hidden',
+                  (isAdminActive || isMissingSession) && 'hidden',
                 )}
                 id="preview-site-rail"
                 aria-label="Site tools"
               >
-                <div className={cn('flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4', railMode !== 'tools' && 'hidden')}>
+                <div
+                  className={cn(
+                    'flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4',
+                    railMode !== 'tools' && 'hidden',
+                  )}
+                >
                   <div className="grid gap-2">
-                    <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">Manage content</div>
-                    <button type="button" className={cn(railRowClass, 'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]')} data-rail-action="cms-studio" onClick={() => setRailMode('cms')}>
-                      <span className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px" aria-hidden="true">
-                        <svg viewBox="0 -10 28 32" width="30" height="32" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
-                          <path d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z" fill="#ffffff" />
+                    <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
+                      Manage content
+                    </div>
+                    <button
+                      type="button"
+                      className={cn(
+                        railRowClass,
+                        'border-white/20 bg-[linear-gradient(135deg,#ff7a68_0%,#ef3e2d_55%,#b9251a_100%)] text-white shadow-[0_8px_20px_-10px_rgba(239,62,45,0.55)] hover:border-white/30 hover:bg-[linear-gradient(135deg,#ff8876_0%,#f04d3c_55%,#c62b20_100%)]',
+                      )}
+                      data-rail-action="cms-studio"
+                      onClick={() => setRailMode('cms')}
+                    >
+                      <span
+                        className="grid size-7 shrink-0 place-items-center text-white transition-transform duration-150 group-hover:-translate-y-px"
+                        aria-hidden="true"
+                      >
+                        <svg
+                          viewBox="0 -10 28 32"
+                          width="30"
+                          height="32"
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ overflow: 'visible' }}
+                        >
+                          <path
+                            d="M21.5 6.5c0-1.9-1.55-2.95-3.65-2.95h-4.2c-2.55 0-4.25 1.45-4.25 3.65 0 1.9 1.35 2.95 3.65 3.4l4.2 0.9c2.3 0.45 3.6 1.5 3.6 3.4 0 2.15-1.7 3.5-4.25 3.5H11.9"
+                            fill="none"
+                            stroke="#ffffff"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M20.4 5.2 C 20.9 -0.6 21.6 -3 23.3 -6 C 23.7 -2 23.2 1 22.3 5.2 Z"
+                            fill="#ffffff"
+                          />
                         </svg>
                       </span>
-                      <span className="min-w-0 flex-1 truncate">Edit content</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        Edit content
+                      </span>
                       <span className={newBadgeClass}>NEW</span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="chat" onClick={() => setRailMode('chat')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="chat"
+                      onClick={() => setRailMode('chat')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <MessageSquare className="size-3.5" strokeWidth={1.9} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate">Chat refine</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        Chat refine
+                      </span>
                       <span className={newBadgeClass}>AI</span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="edits" onClick={() => setRailMode('edits')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="edits"
+                      onClick={() => setRailMode('edits')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Edit3 className="size-3.5" strokeWidth={1.9} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate">Edit history</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        Edit history
+                      </span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="annotations" onClick={() => setRailMode('annotations')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="annotations"
+                      onClick={() => setRailMode('annotations')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Bot className="size-3.5" strokeWidth={1.9} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate">Annotations</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        Annotations
+                      </span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="activity" onClick={() => setRailMode('activity')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="activity"
+                      onClick={() => setRailMode('activity')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Activity className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">Activity</span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="ecommerce" onClick={() => setRailMode('commerce')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="ecommerce"
+                      onClick={() => setRailMode('commerce')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Package className="size-3.5" strokeWidth={1.9} />
                       </span>
-                      <span className="min-w-0 flex-1 truncate">E-commerce</span>
+                      <span className="min-w-0 flex-1 truncate">
+                        E-commerce
+                      </span>
                       <span className={newBadgeClass}>
                         {commerceConfig?.status === 'ready' ? 'READY' : 'NEW'}
                       </span>
-                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>
+                      <span
+                        className={premiumBadgeClass}
+                        aria-label="Pro only - upgrade to unlock"
+                        tabIndex={0}
+                      >
                         {crownIcon}
                       </span>
                     </button>
                   </div>
                   <div className="grid gap-2">
-                    <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">Design</div>
+                    <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
+                      Design
+                    </div>
                     <ThemePicker
                       value={effectiveTheme}
                       isDark={isDark}
@@ -678,114 +1031,254 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                           style={activeThemeButtonStyle}
                           data-rail-action="palette"
                         >
-                          <span className={cn(railIconClass, 'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28')} aria-hidden="true">
+                          <span
+                            className={cn(
+                              railIconClass,
+                              'bg-black/22 text-white/88 backdrop-blur-md group-hover:bg-black/28',
+                            )}
+                            aria-hidden="true"
+                          >
                             <Palette className="size-3.5" strokeWidth={1.9} />
                           </span>
                           <span className="grid min-w-0 flex-1 gap-0.5">
                             <span className="truncate">Theme</span>
-                            <span className="truncate font-mono text-[10px] leading-tight tracking-[0.04em] text-white/64">{activeThemeLabel}</span>
+                            <span className="truncate font-mono text-[10px] leading-tight tracking-[0.04em] text-white/64">
+                              {activeThemeLabel}
+                            </span>
                           </span>
-                          <span className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md" aria-hidden="true">
+                          <span
+                            className="grid size-8 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/18 text-white/72 backdrop-blur-md"
+                            aria-hidden="true"
+                          >
                             <Palette className="size-4" strokeWidth={1.8} />
                           </span>
                         </button>
                       }
                     />
-                    <button type="button" className={railRowClass} data-rail-action="brand-media" onClick={() => setRailMode('brand')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="brand-media"
+                      onClick={() => setRailMode('brand')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Building2 className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="grid min-w-0 flex-1 gap-0.5">
                         <span className="truncate">Brand and media</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">Brandfetch / Pexels</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                          Brandfetch / Pexels
+                        </span>
                       </span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="localization" onClick={() => setRailMode('localization')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="localization"
+                      onClick={() => setRailMode('localization')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Languages className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="grid min-w-0 flex-1 gap-0.5">
                         <span className="truncate">Localization</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">{generationView?.session.preferredLanguage ?? 'default locale'}</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                          {generationView?.session.preferredLanguage ??
+                            'default locale'}
+                        </span>
                       </span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="github" onClick={() => setRailMode('github')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="github"
+                      onClick={() => setRailMode('github')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Github className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">GitHub</span>
-                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
+                      <span
+                        className={premiumBadgeClass}
+                        aria-label="Pro only - upgrade to unlock"
+                        tabIndex={0}
+                      >
+                        {crownIcon}
+                      </span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="billing" onClick={() => setRailMode('billing')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="billing"
+                      onClick={() => setRailMode('billing')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <CreditCard className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">Billing</span>
-                      <span className={premiumBadgeClass} aria-label="Pro only - upgrade to unlock" tabIndex={0}>{crownIcon}</span>
+                      <span
+                        className={premiumBadgeClass}
+                        aria-label="Pro only - upgrade to unlock"
+                        tabIndex={0}
+                      >
+                        {crownIcon}
+                      </span>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="export" aria-haspopup="dialog" onClick={() => setRailMode('export')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="export"
+                      aria-haspopup="dialog"
+                      onClick={() => setRailMode('export')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Download className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="grid min-w-0 flex-1 gap-0.5">
                         <span className="truncate">Export</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">HTML / React / Next.js</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                          HTML / React / Next.js
+                        </span>
                       </span>
-                      <div className={cn(stateBadgeClass, 'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]')} data-state="premium">
+                      <div
+                        className={cn(
+                          stateBadgeClass,
+                          'bg-[linear-gradient(135deg,#f5d0a8_0%,#e8b86d_100%)]',
+                        )}
+                        data-state="premium"
+                      >
                         <span className="text-[#0a0a0b]">Pro only</span>
                       </div>
                     </button>
-                    <button type="button" className={railRowClass} data-rail-action="domain" onClick={() => setRailMode('deployment')}>
+                    <button
+                      type="button"
+                      className={railRowClass}
+                      data-rail-action="domain"
+                      onClick={() => setRailMode('deployment')}
+                    >
                       <span className={railIconClass} aria-hidden="true">
                         <Globe2 className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="grid min-w-0 flex-1 gap-0.5">
                         <span className="truncate">Deployment URL</span>
-                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">{deploymentStatus?.slug ?? 'publish slug'}</span>
+                        <span className="truncate font-mono text-[9.5px] uppercase leading-tight tracking-[0.06em] text-white/42">
+                          {deploymentStatus?.slug ?? 'publish slug'}
+                        </span>
                       </span>
                     </button>
                   </div>
                   <div className="grid gap-2">
-                    <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">Three JS</div>
-                    <button type="button" className={cn(railRowClass, 'cursor-not-allowed bg-white/[0.025] text-white/34 opacity-55 hover:translate-y-0 hover:border-white/8 hover:bg-white/[0.025] hover:text-white/34')} disabled data-rail-action="3d">
-                      <span className={cn(railIconClass, 'text-white/38 group-hover:translate-y-0 group-hover:border-white/8 group-hover:bg-white/[0.05] group-hover:text-white/38')} aria-hidden="true">
+                    <div className="px-2 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-white/32">
+                      Three JS
+                    </div>
+                    <button
+                      type="button"
+                      className={cn(
+                        railRowClass,
+                        'cursor-not-allowed bg-white/[0.025] text-white/34 opacity-55 hover:translate-y-0 hover:border-white/8 hover:bg-white/[0.025] hover:text-white/34',
+                      )}
+                      disabled
+                      data-rail-action="3d"
+                    >
+                      <span
+                        className={cn(
+                          railIconClass,
+                          'text-white/38 group-hover:translate-y-0 group-hover:border-white/8 group-hover:bg-white/[0.05] group-hover:text-white/38',
+                        )}
+                        aria-hidden="true"
+                      >
                         <Box className="size-3.5" strokeWidth={1.9} />
                       </span>
                       <span className="min-w-0 flex-1 truncate">3D</span>
-                      <span className={cn(stateBadgeClass, 'bg-white/[0.06] text-white/38')}>SOON</span>
+                      <span
+                        className={cn(
+                          stateBadgeClass,
+                          'bg-white/[0.06] text-white/38',
+                        )}
+                      >
+                        SOON
+                      </span>
                     </button>
                   </div>
                 </div>
-                <div className={cn('min-h-0 flex-1 flex-col p-4', railMode === 'tools' ? 'hidden' : 'flex')} id="preview-site-rail-editor">
+                <div
+                  className={cn(
+                    'min-h-0 flex-1 flex-col p-4',
+                    railMode === 'tools' ? 'hidden' : 'flex',
+                  )}
+                  id="preview-site-rail-editor"
+                >
                   <div className="mb-4 flex items-center gap-3">
-                    <div className="size-10 rounded-2xl bg-cyan-300/14" id="rail-editor-thumb"></div>
+                    <div
+                      className="size-10 rounded-2xl bg-cyan-300/14"
+                      id="rail-editor-thumb"
+                    ></div>
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold text-white" id="rail-editor-label-title">
+                      <div
+                        className="truncate text-sm font-semibold text-white"
+                        id="rail-editor-label-title"
+                      >
                         {railModeTitle}
                       </div>
-                      <div className="truncate text-xs text-white/42" id="rail-editor-label-sub">
-                        {generationView?.session.status.replaceAll('_', ' ') ?? 'loading'}
+                      <div
+                        className="truncate text-xs text-white/42"
+                        id="rail-editor-label-sub"
+                      >
+                        {generationView?.session.status.replaceAll('_', ' ') ??
+                          'loading'}
                       </div>
                     </div>
                   </div>
-                  <div className="mb-4 flex items-center gap-2 text-xs text-white/42" id="rail-editor-breadcrumb">
-                    <button type="button" className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-white/70" data-active="true" onClick={() => setRailMode('tools')}>tools</button>
+                  <div
+                    className="mb-4 flex items-center gap-2 text-xs text-white/42"
+                    id="rail-editor-breadcrumb"
+                  >
+                    <button
+                      type="button"
+                      className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-white/70"
+                      data-active="true"
+                      onClick={() => setRailMode('tools')}
+                    >
+                      tools
+                    </button>
                     <span>/</span>
-                    <span className="rounded-full border border-cyan-300/16 bg-cyan-300/10 px-3 py-1 text-cyan-100" data-active="true">{railMode}</span>
+                    <span
+                      className="rounded-full border border-cyan-300/16 bg-cyan-300/10 px-3 py-1 text-cyan-100"
+                      data-active="true"
+                    >
+                      {railMode}
+                    </span>
                   </div>
                   <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black/18">
-                    <div className="border-b border-white/10 p-2" id="rail-editor-tabs">
-                      <button type="button" className="grid size-9 place-items-center rounded-xl bg-cyan-300/12 text-cyan-100" data-active="true" aria-label={railMode}>
+                    <div
+                      className="border-b border-white/10 p-2"
+                      id="rail-editor-tabs"
+                    >
+                      <button
+                        type="button"
+                        className="grid size-9 place-items-center rounded-xl bg-cyan-300/12 text-cyan-100"
+                        data-active="true"
+                        aria-label={railMode}
+                      >
                         <List className="size-[18px]" strokeWidth={1.8} />
                       </button>
                     </div>
-                    <div className="max-h-[calc(100vh-260px)] overflow-y-auto p-4" id="rail-editor-body">
+                    <div
+                      className="max-h-[calc(100vh-260px)] overflow-y-auto p-4"
+                      id="rail-editor-body"
+                    >
                       {railMode === 'cms' ? (
-                        <CmsPanel sessionId={sessionId} prompt={generationView?.session.prompt} />
+                        <CmsPanel
+                          sessionId={sessionId}
+                          prompt={generationView?.session.prompt}
+                        />
                       ) : railMode === 'chat' ? (
                         <ChatPanel sessionId={sessionId} />
                       ) : railMode === 'edits' ? (
-                        <EditPanel sessionId={sessionId} selection={previewSelection} />
+                        <EditPanel
+                          sessionId={sessionId}
+                          selection={previewSelection}
+                        />
                       ) : railMode === 'annotations' ? (
                         <AgentationPanel sessionId={sessionId} />
                       ) : railMode === 'activity' ? (
@@ -800,12 +1293,18 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                         <BrandMediaPanel
                           prompt={generationView?.session.prompt}
                           cloneUrl={generationView?.session.cloneUrl}
-                          designReferenceNotes={generationView?.session.designReferenceNotes}
-                          designReferenceUrls={generationView?.session.designReferenceUrls}
+                          designReferenceNotes={
+                            generationView?.session.designReferenceNotes
+                          }
+                          designReferenceUrls={
+                            generationView?.session.designReferenceUrls
+                          }
                         />
                       ) : railMode === 'localization' ? (
                         <LocalizationPanel
-                          preferredLanguage={generationView?.session.preferredLanguage}
+                          preferredLanguage={
+                            generationView?.session.preferredLanguage
+                          }
                           prompt={generationView?.session.prompt}
                         />
                       ) : railMode === 'commerce' ? (
@@ -825,16 +1324,48 @@ export function Dashboard({ sessionId, initialAdminView = false }: DashboardProp
                     </div>
                   </div>
                   <div className="mt-4 flex items-center justify-end gap-2">
-                    <button type="button" className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/62 transition-colors hover:bg-white/[0.08] hover:text-white" id="rail-editor-cancel" onClick={() => setRailMode('tools')}>Cancel</button>
-                    <button type="button" className="rounded-full bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px" id="rail-editor-done" onClick={() => setRailMode('tools')}>Done</button>
+                    <button
+                      type="button"
+                      className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/62 transition-colors hover:bg-white/[0.08] hover:text-white"
+                      id="rail-editor-cancel"
+                      onClick={() => setRailMode('tools')}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded-full bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px"
+                      id="rail-editor-done"
+                      onClick={() => setRailMode('tools')}
+                    >
+                      Done
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 border-t border-white/10 px-4 py-3 text-xs text-white/48" id="preview-site-rail-status">
-                  <span className="grid size-5 place-items-center rounded-full bg-white/[0.04]" aria-hidden="true">
-                    <span className={cn('size-2 rounded-full', isPreviewReady ? 'bg-emerald-300' : 'bg-cyan-300 animate-pulse')} id="status-dot"></span>
+                <div
+                  className="flex items-center gap-2 border-t border-white/10 px-4 py-3 text-xs text-white/48"
+                  id="preview-site-rail-status"
+                >
+                  <span
+                    className="grid size-5 place-items-center rounded-full bg-white/[0.04]"
+                    aria-hidden="true"
+                  >
+                    <span
+                      className={cn(
+                        'size-2 rounded-full',
+                        isPreviewReady
+                          ? 'bg-emerald-300'
+                          : 'bg-cyan-300 animate-pulse',
+                      )}
+                      id="status-dot"
+                    ></span>
                   </span>
                   <span id="status-text">
-                    {isPreviewReady ? 'Preview ready' : 'Generating'}
+                    {isMissingSession
+                      ? 'Project missing'
+                      : isPreviewReady
+                        ? 'Preview ready'
+                        : 'Generating'}
                   </span>
                 </div>
               </aside>
