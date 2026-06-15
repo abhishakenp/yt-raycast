@@ -2,6 +2,119 @@
  * Shared OpenUI Lang normalization for pipeline + preview parity.
  * Mirrors client OpenUIViewer preprocessing (fences, variables, streaming fixes).
  */
+import componentSpec from '../genui/generated/component-spec.json'
+
+type ComponentSpec = {
+  components?: Record<string, { signature?: string }>
+}
+
+const SPEC = componentSpec as ComponentSpec
+
+function componentSectionKeys(name: string): string[] {
+  const sig = SPEC.components?.[name]?.signature
+  if (!sig) return []
+  const open = sig.indexOf('(')
+  const close = sig.lastIndexOf(')')
+  if (open < 0 || close <= open) return []
+  const inner = sig.slice(open + 1, close)
+  const keys: string[] = []
+  let depth = 0
+  let token = ''
+  for (const ch of inner) {
+    if (ch === '{' || ch === '[') depth++
+    else if (ch === '}' || ch === ']') depth--
+    if (ch === ',' && depth === 0) {
+      keys.push(token)
+      token = ''
+    } else {
+      token += ch
+    }
+  }
+  if (token.trim()) keys.push(token)
+  return keys
+    .map((t) => t.trim().split('?')[0].split(':')[0].trim())
+    .filter(
+      (k) => k && !['brand', 'nav', 'className', 'class', 'style'].includes(k),
+    )
+}
+
+function stripTopLevelSectionArgLabelsForBlock(
+  statement: string,
+  block: string,
+): string {
+  const sectionKeys = new Set(componentSectionKeys(block))
+  if (sectionKeys.size === 0) return statement
+
+  let out = ''
+  let parenDepth = 0
+  let braceDepth = 0
+  let bracketDepth = 0
+  let inString = false
+  let quote = ''
+  let escaped = false
+
+  for (let i = 0; i < statement.length; i++) {
+    const ch = statement[i]
+    out += ch
+
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (ch === '\\') {
+        escaped = true
+      } else if (ch === quote) {
+        inString = false
+        quote = ''
+      }
+      continue
+    }
+
+    if (ch === '"' || ch === "'") {
+      inString = true
+      quote = ch
+      continue
+    }
+
+    if (ch === '(') parenDepth++
+    else if (ch === ')') parenDepth = Math.max(0, parenDepth - 1)
+    else if (ch === '{') braceDepth++
+    else if (ch === '}') braceDepth = Math.max(0, braceDepth - 1)
+    else if (ch === '[') bracketDepth++
+    else if (ch === ']') bracketDepth = Math.max(0, bracketDepth - 1)
+
+    if (
+      ch !== ',' ||
+      parenDepth !== 1 ||
+      braceDepth !== 0 ||
+      bracketDepth !== 0
+    ) {
+      continue
+    }
+
+    const rest = statement.slice(i + 1)
+    const match = rest.match(/^(\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:/)
+    if (match && sectionKeys.has(match[2])) {
+      out += match[1]
+      i += match[0].length
+    }
+  }
+
+  return out
+}
+
+function stripTopLevelSectionArgLabels(code: string): string {
+  return code
+    .split('\n')
+    .map((line) => {
+      const match = line.match(
+        /^\s*[$A-Za-z_][\w]*\s*=\s*([A-Z][A-Za-z0-9_]*)\(/,
+      )
+      return match
+        ? stripTopLevelSectionArgLabelsForBlock(line, match[1])
+        : line
+    })
+    .join('\n')
+}
 
 function extractExpr(str: string, start: number): string {
   let i = start
@@ -49,7 +162,9 @@ function extractExpr(str: string, start: number): string {
 
 function resolveVariables(code: string): string {
   const varPattern = /^([a-zA-Z][a-zA-Z0-9_]*)\s*=/gm
-  const varNames = [...code.matchAll(varPattern)].map((m) => m[1]).filter((n) => n !== 'root')
+  const varNames = [...code.matchAll(varPattern)]
+    .map((m) => m[1])
+    .filter((n) => n !== 'root')
   if (varNames.length === 0) return code
 
   const vars: Record<string, string> = {}
@@ -120,7 +235,7 @@ function stripNullsFromArrays(code: string): string {
  * text in the rendered output).
  */
 function balanceSegment(seg: string): string {
-  const trail = (seg.match(/\s*$/)?.[0]) || ''
+  const trail = seg.match(/\s*$/)?.[0] || ''
   let s = seg.slice(0, seg.length - trail.length)
 
   // Strip trailing incomplete tokens (order matters; loop until stable).
@@ -228,7 +343,10 @@ function balancePartial(code: string): string {
   if (parens > 0) {
     const tail = result.slice(result.length - 1).match(/[A-Za-z0-9_]/)
     if (tail) {
-      const trimmed = result.replace(/[,(]\s*[A-Za-z_][A-Za-z0-9_]*\s*$/, (match) => match[0])
+      const trimmed = result.replace(
+        /[,(]\s*[A-Za-z_][A-Za-z0-9_]*\s*$/,
+        (match) => match[0],
+      )
       result = trimmed
     }
     result = result.replace(/,\s*$/, '')
@@ -258,6 +376,7 @@ export function preprocessOpenUIResponse(
   // Repair truncated mid-program statements before any ref resolution so a
   // broken statement can't swallow the ones after it (which leak as raw text).
   result = balanceStatements(result)
+  result = stripTopLevelSectionArgLabels(result)
 
   if (resolveRefs) result = resolveVariables(result)
   result = sanitizePartialImages(result)
