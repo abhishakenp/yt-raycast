@@ -28,21 +28,11 @@ export const MarketingShell = ({
       <div className={styles.logoBlock}>
         <a href="/" className={styles.logo} aria-label="SHIP FAST home">
           <div className={styles.logoIcon}>
-            <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" fill="url(#sfMarketingHomeBoltG1)" />
-              <path d="M30.9 3.5 9.8 28.6h14.3l-4.2 19.9 22.3-27H27.7L30.9 3.5Z" stroke="url(#sfMarketingHomeBoltG2)" strokeWidth="2.2" strokeLinejoin="round" />
-              <defs>
-                <linearGradient id="sfMarketingHomeBoltG1" x1="11" y1="5" x2="42" y2="47" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#69f8ff" />
-                  <stop offset="0.54" stopColor="#1ab8ff" />
-                  <stop offset="1" stopColor="#6b3cff" />
-                </linearGradient>
-                <linearGradient id="sfMarketingHomeBoltG2" x1="8" y1="3" x2="44" y2="49" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#dffcff" />
-                  <stop offset="1" stopColor="#31dfff" stopOpacity="0.15" />
-                </linearGradient>
-              </defs>
-            </svg>
+            <img
+              src="/assets/logo-transparent.png"
+              alt="Ship Fast Logo"
+              aria-hidden="true"
+            />
           </div>
           <span className={styles.logoText}>SHIP FAST</span>
         </a>

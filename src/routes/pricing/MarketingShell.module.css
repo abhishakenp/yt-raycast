@@ -18,15 +18,16 @@
 }
 
 .logoIcon {
-  width: 39px;
-  height: 39px;
+  width: 72px;
+  height: 29px;
   filter: drop-shadow(0 0 18px rgba(38, 231, 255, 0.58));
   color: #26e7ff;
 }
 
-.logoIcon svg {
+.logoIcon img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   display: block;
 }
 
@@ -41,4 +42,20 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+@media (max-width: 720px) {
+  .logo {
+    gap: 8px;
+  }
+
+  .logoIcon {
+    width: 44px;
+    height: 18px;
+  }
+
+  .logoText {
+    font-size: 20px;
+    letter-spacing: -0.04em;
+  }
 }
