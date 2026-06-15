@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { Image } from '#/lib/img.tsx'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * MarketingKimiPage — a complete, self-contained product-marketing LANDING page.
@@ -25,7 +26,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * no props at all.
  */
 export const MarketingKimiPage = defineCapsule({
-  name: "MarketingKimiPage",
+  name: 'MarketingKimiPage',
   description:
     "Complete product-marketing / SaaS LANDING page with a clean, premium indigo aesthetic: glassy navbar, a split hero pairing bold copy with a 3D-tilted browser mockup of a live product dashboard (app rail, animated bar chart, task checklist), a grayscale 'trusted by' logo bar, a 6-up feature grid with hover lift, one large centered testimonial card with a quote glyph, a 3-tier pricing table (with a highlighted 'most popular' plan), a dark rounded CTA banner with email capture, and a slim footer. Use as the ROOT/home page for B2B SaaS, team/project-management and productivity tools, developer platforms, workspaces, or any modern software product when a conversion-focused page with a product-UI visual, social proof and pricing is wanted. Supply content only — brand, nav, hero, logos, features, testimonial, pricing, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -50,6 +51,8 @@ export const MarketingKimiPage = defineCapsule({
         chartTitle: z.string().optional(),
         /** Title of the task widget in the mockup. */
         tasksTitle: z.string().optional(),
+        /** Image search phrase used for the hero product preview. */
+        previewAlt: z.string().optional(),
       })
       .optional(),
     /** Grayscale "trusted by" logo strip. */
@@ -119,142 +122,144 @@ export const MarketingKimiPage = defineCapsule({
   component: ({ props }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Flowstate"
+    const brand = props.brand ?? 'Flowstate'
     const nav = props.nav?.length
       ? props.nav
-      : ["Features", "Pricing", "Customers"]
+      : ['Features', 'Pricing', 'Customers']
 
-    const heroBadge = props.hero?.badge ?? "Now with AI-powered insights"
+    const heroBadge = props.hero?.badge ?? 'Now with AI-powered insights'
     const heroHeading =
       props.hero?.heading ??
       `Focus on what matters. Let ${brand} handle the rest.`
     const heroSub =
       props.hero?.subheading ??
-      "The all-in-one workspace that helps teams plan, track, and ship work 2x faster — without the chaos of endless tabs and status meetings."
-    const heroPrimary = props.hero?.primaryCta ?? "Start free trial"
-    const heroSecondary = props.hero?.secondaryCta ?? "Watch demo"
+      'The all-in-one workspace that helps teams plan, track, and ship work 2x faster — without the chaos of endless tabs and status meetings.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Start free trial'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Watch demo'
     const heroNote =
-      props.hero?.note ?? "No credit card required. 14-day free trial."
-    const appUrl = props.hero?.appUrl ?? "app.flowstate.io/dashboard"
-    const appTitle = props.hero?.appTitle ?? "Product Roadmap"
-    const chartTitle = props.hero?.chartTitle ?? "Sprint Velocity"
+      props.hero?.note ?? 'No credit card required. 14-day free trial.'
+    const appUrl = props.hero?.appUrl ?? 'app.flowstate.io/dashboard'
+    const appTitle = props.hero?.appTitle ?? 'Product Roadmap'
+    const chartTitle = props.hero?.chartTitle ?? 'Sprint Velocity'
     const tasksTitle = props.hero?.tasksTitle ?? "Today's Tasks"
+    const previewAlt =
+      props.hero?.previewAlt ?? `${brand} ${appTitle} product dashboard preview`
 
-    const logosLabel = props.logos?.label ?? "Trusted by teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by teams at'
     const logoNames = props.logos?.names?.length
       ? props.logos.names
-      : ["Acme Corp", "Globex", "Initech", "Massive Dynamic", "Stark Ind"]
+      : ['Acme Corp', 'Globex', 'Initech', 'Massive Dynamic', 'Stark Ind']
 
     const featuresHeading =
-      props.features?.heading ?? "Everything your team needs to ship faster"
+      props.features?.heading ?? 'Everything your team needs to ship faster'
     const featuresDesc =
       props.features?.description ??
-      "Powerful, flexible tools that adapt to how you work — not the other way around."
+      'Powerful, flexible tools that adapt to how you work — not the other way around.'
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
           {
-            title: "Intuitive Task Boards",
+            title: 'Intuitive Task Boards',
             description:
-              "Drag-and-drop Kanban boards that make it easy to visualize work, limit WIP, and spot bottlenecks before they derail your sprint.",
+              'Drag-and-drop Kanban boards that make it easy to visualize work, limit WIP, and spot bottlenecks before they derail your sprint.',
           },
           {
-            title: "Real-time Collaboration",
+            title: 'Real-time Collaboration',
             description:
-              "Work together in the same document, comment inline, and mention teammates so everyone stays aligned without endless threads.",
+              'Work together in the same document, comment inline, and mention teammates so everyone stays aligned without endless threads.',
           },
           {
-            title: "Advanced Analytics",
+            title: 'Advanced Analytics',
             description:
-              "Track velocity, burndown, and cycle time with beautiful dashboards. Turn raw data into actionable insights in one click.",
+              'Track velocity, burndown, and cycle time with beautiful dashboards. Turn raw data into actionable insights in one click.',
           },
           {
-            title: "Automated Workflows",
+            title: 'Automated Workflows',
             description:
-              "Automate repetitive tasks with customizable rules. Move cards, send updates, and trigger alerts so nothing slips through.",
+              'Automate repetitive tasks with customizable rules. Move cards, send updates, and trigger alerts so nothing slips through.',
           },
           {
-            title: "Enterprise Security",
+            title: 'Enterprise Security',
             description:
-              "SOC 2 Type II certified with end-to-end encryption, SSO, and granular permissions. Your data stays yours — always.",
+              'SOC 2 Type II certified with end-to-end encryption, SSO, and granular permissions. Your data stays yours — always.',
           },
           {
-            title: "Seamless Integrations",
+            title: 'Seamless Integrations',
             description:
-              "Connect with GitHub, Slack, Figma, and 50+ tools you already use. Keep your workflow in one place, not fifty.",
+              'Connect with GitHub, Slack, Figma, and 50+ tools you already use. Keep your workflow in one place, not fifty.',
           },
         ]
 
     const testimonialQuote =
       props.testimonial?.quote ??
       `${brand} transformed how our product team operates. We've cut meeting time by 40% and shipped three major releases ahead of schedule. It's the operating system for our company.`
-    const testimonialName = props.testimonial?.name ?? "Sarah Chen"
+    const testimonialName = props.testimonial?.name ?? 'Sarah Chen'
     const testimonialRole =
-      props.testimonial?.role ?? "VP of Engineering, Acme Corp"
+      props.testimonial?.role ?? 'VP of Engineering, Acme Corp'
 
     const pricingHeading =
-      props.pricing?.heading ?? "Simple, transparent pricing"
+      props.pricing?.heading ?? 'Simple, transparent pricing'
     const pricingDesc =
       props.pricing?.description ??
-      "Start free, scale as you grow. No hidden fees, no surprises."
+      'Start free, scale as you grow. No hidden fees, no surprises.'
     const pricingPlans = props.pricing?.plans?.length
       ? props.pricing.plans
       : [
           {
-            name: "Starter",
-            description: "Perfect for personal projects and small experiments.",
-            price: "$0",
-            period: "/mo",
+            name: 'Starter',
+            description: 'Perfect for personal projects and small experiments.',
+            price: '$0',
+            period: '/mo',
             features: [
-              "Up to 3 projects",
-              "Basic task boards",
-              "Community support",
+              'Up to 3 projects',
+              'Basic task boards',
+              'Community support',
             ],
-            cta: "Get started free",
+            cta: 'Get started free',
             popular: false,
           },
           {
-            name: "Pro",
-            description: "For growing teams that need power and flexibility.",
-            price: "$12",
-            period: "/user/mo",
+            name: 'Pro',
+            description: 'For growing teams that need power and flexibility.',
+            price: '$12',
+            period: '/user/mo',
             features: [
-              "Unlimited projects",
-              "Advanced analytics",
-              "Automated workflows",
-              "Priority support",
+              'Unlimited projects',
+              'Advanced analytics',
+              'Automated workflows',
+              'Priority support',
             ],
-            cta: "Start free trial",
+            cta: 'Start free trial',
             popular: true,
           },
           {
-            name: "Enterprise",
+            name: 'Enterprise',
             description:
-              "For organizations with advanced security and scale needs.",
-            price: "Custom",
-            period: "",
+              'For organizations with advanced security and scale needs.',
+            price: 'Custom',
+            period: '',
             features: [
-              "SSO & SCIM provisioning",
-              "Dedicated success manager",
-              "Custom contracts & SLA",
+              'SSO & SCIM provisioning',
+              'Dedicated success manager',
+              'Custom contracts & SLA',
             ],
-            cta: "Contact sales",
+            cta: 'Contact sales',
             popular: false,
           },
         ]
 
-    const ctaHeading = props.cta?.heading ?? "Ready to get more done?"
+    const ctaHeading = props.cta?.heading ?? 'Ready to get more done?'
     const ctaSub =
       props.cta?.subheading ??
       `Join 10,000+ teams already using ${brand} to ship faster and stress less.`
-    const ctaPlaceholder = props.cta?.placeholder ?? "Enter your work email"
-    const ctaAction = props.cta?.action ?? "Start free trial"
+    const ctaPlaceholder = props.cta?.placeholder ?? 'Enter your work email'
+    const ctaAction = props.cta?.action ?? 'Start free trial'
     const ctaNote =
-      props.cta?.note ?? "No credit card required. 14-day free trial."
+      props.cta?.note ?? 'No credit card required. 14-day free trial.'
 
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy", "Terms", "Security", "Contact"]
+      : ['Privacy', 'Terms', 'Security', 'Contact']
     const footerCopyright =
       props.footer?.copyright ??
       `© ${new Date().getFullYear()} ${brand}, Inc. All rights reserved.`
@@ -263,7 +268,7 @@ export const MarketingKimiPage = defineCapsule({
     const LogoMark = ({ className }: { className?: string }) => (
       <span
         className={cn(
-          "grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground",
+          'grid size-8 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground',
           className,
         )}
       >
@@ -384,12 +389,12 @@ export const MarketingKimiPage = defineCapsule({
     ]
 
     // Chart bar heights — preserved from Kimi's nth-child rules.
-    const barHeights = ["40%", "70%", "55%", "85%", "65%"]
+    const barHeights = ['40%', '70%', '55%', '85%', '65%']
 
     return (
       <div
         className={cn(
-          "flex min-h-svh flex-col bg-background text-foreground antialiased",
+          'flex min-h-svh flex-col bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -419,7 +424,7 @@ export const MarketingKimiPage = defineCapsule({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => go("Log in")}
+                onClick={() => go('Log in')}
                 className="hidden rounded-xl border border-border bg-muted/60 px-5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted sm:inline-flex"
               >
                 Log in
@@ -593,6 +598,14 @@ export const MarketingKimiPage = defineCapsule({
                           </div>
                         </div>
                       </div>
+                      <div className="mb-4 overflow-hidden rounded-xl border border-border bg-muted/40">
+                        <Image
+                          alt={previewAlt}
+                          w={1000}
+                          h={520}
+                          className="aspect-[16/7] w-full object-cover opacity-85"
+                        />
+                      </div>
                       <div className="grid gap-4 sm:grid-cols-2">
                         {/* Chart widget */}
                         <div className="rounded-xl border border-border bg-muted/40 p-4">
@@ -619,16 +632,16 @@ export const MarketingKimiPage = defineCapsule({
                               <div key={i} className="flex items-center gap-2">
                                 <span
                                   className={cn(
-                                    "size-3.5 shrink-0 rounded border-2",
+                                    'size-3.5 shrink-0 rounded border-2',
                                     checked
-                                      ? "border-primary bg-primary"
-                                      : "border-muted-foreground/30",
+                                      ? 'border-primary bg-primary'
+                                      : 'border-muted-foreground/30',
                                   )}
                                 />
                                 <span
                                   className={cn(
-                                    "h-2 rounded-full bg-muted-foreground/20",
-                                    checked ? "w-3/5" : "w-full",
+                                    'h-2 rounded-full bg-muted-foreground/20',
+                                    checked ? 'w-3/5' : 'w-full',
                                   )}
                                 />
                               </div>
@@ -716,9 +729,9 @@ export const MarketingKimiPage = defineCapsule({
                 <figcaption className="mt-7 flex items-center justify-center gap-3.5">
                   <span className="grid size-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-base font-bold text-primary-foreground">
                     {testimonialName
-                      .split(" ")
+                      .split(' ')
                       .map((w) => w.charAt(0))
-                      .join("")
+                      .join('')
                       .slice(0, 2)}
                   </span>
                   <div className="text-left">
@@ -750,10 +763,10 @@ export const MarketingKimiPage = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative flex flex-col rounded-2xl border bg-card p-8 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]",
+                      'relative flex flex-col rounded-2xl border bg-card p-8 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]',
                       plan.popular
-                        ? "border-primary ring-1 ring-primary shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]"
-                        : "border-border",
+                        ? 'border-primary ring-1 ring-primary shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]'
+                        : 'border-border',
                     )}
                   >
                     {plan.popular ? (
@@ -792,10 +805,10 @@ export const MarketingKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "w-full rounded-xl px-5 py-2.5 text-sm font-semibold transition-all",
+                        'w-full rounded-xl px-5 py-2.5 text-sm font-semibold transition-all',
                         plan.popular
-                          ? "bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(79,70,229,0.35)] hover:-translate-y-px hover:bg-primary/90"
-                          : "border border-border bg-muted/50 text-foreground hover:bg-muted",
+                          ? 'bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(79,70,229,0.35)] hover:-translate-y-px hover:bg-primary/90'
+                          : 'border border-border bg-muted/50 text-foreground hover:bg-muted',
                       )}
                     >
                       {plan.cta}
