@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import type { Plugin } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
 
@@ -8,7 +8,13 @@ import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
-const PEXELS_API_KEY = process.env.PEXELS_API_KEY
+// `bun run dev` spawns vite under node, which does NOT inherit bun's auto-loaded
+// .env vars. Read the env files directly so the dev image proxy actually has the
+// keys (otherwise every image silently falls back to a random picsum photo).
+const devEnv = loadEnv(process.env.NODE_ENV ?? 'development', process.cwd(), '')
+const PEXELS_API_KEY = devEnv.PEXELS_API_KEY || process.env.PEXELS_API_KEY || ''
+const UNSPLASH_ACCESS_KEY =
+  devEnv.UNSPLASH_ACCESS_KEY || process.env.UNSPLASH_ACCESS_KEY || ''
 
 type PexelsPhoto = {
   src?: {
@@ -63,33 +69,66 @@ const choosePhotoUrl = (photo: PexelsPhoto | undefined, w: number, h: number) =>
   return photo.src.medium ?? photo.src.large ?? photo.src.large2x ?? photo.src.original ?? null
 }
 
+type UnsplashPhoto = { urls?: { raw?: string; full?: string; regular?: string; small?: string } }
+type UnsplashResponse = { results?: UnsplashPhoto[] }
+
+const searchPexels = async (query: string, w: number, h: number, seed: string) => {
+  if (!PEXELS_API_KEY) return null
+  const pexelsUrl = new URL('https://api.pexels.com/v1/search')
+  pexelsUrl.searchParams.set('query', query.slice(0, 96))
+  pexelsUrl.searchParams.set('per_page', '15')
+  pexelsUrl.searchParams.set('orientation', orientationFromSize(w, h))
+  try {
+    const response = await fetch(pexelsUrl, { headers: { Authorization: PEXELS_API_KEY } })
+    if (!response.ok) return null
+    const data = (await response.json()) as PexelsResponse
+    const photos = data.photos ?? []
+    if (!photos.length) return null
+    const photo = photos[seedIndex(seed, photos.length)]
+    return choosePhotoUrl(photo, w, h)
+  } catch {
+    return null
+  }
+}
+
+const searchUnsplash = async (query: string, w: number, h: number, seed: string) => {
+  if (!UNSPLASH_ACCESS_KEY) return null
+  const unsplashUrl = new URL('https://api.unsplash.com/search/photos')
+  unsplashUrl.searchParams.set('query', query.slice(0, 96))
+  unsplashUrl.searchParams.set('per_page', '15')
+  unsplashUrl.searchParams.set('orientation', orientationFromSize(w, h))
+  try {
+    const response = await fetch(unsplashUrl, {
+      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
+    })
+    if (!response.ok) return null
+    const data = (await response.json()) as UnsplashResponse
+    const results = data.results ?? []
+    if (!results.length) return null
+    const photo = results[seedIndex(seed, results.length)]
+    const base = photo?.urls?.regular ?? photo?.urls?.small ?? photo?.urls?.full ?? photo?.urls?.raw
+    if (!base) return null
+    const targetW = Math.min(Math.max(w, 400), 2400)
+    const targetH = Math.min(Math.max(h, 300), 1600)
+    return `${base}&w=${targetW}&h=${targetH}&fit=crop`
+  } catch {
+    return null
+  }
+}
+
 const resolvePexelsUrl = async (requestUrl: string) => {
   const url = new URL(requestUrl, 'http://localhost/api/pexels')
   const query = (url.searchParams.get('query') ?? url.searchParams.get('q') ?? '').trim() || 'nature'
   const w = clampInt(url.searchParams.get('w'), 800, 100, 2400)
   const h = clampInt(url.searchParams.get('h'), 600, 100, 2400)
+  const seed = url.searchParams.get('seed') ?? query
   const fallback = picsumUrl(query, w, h)
 
-  if (!PEXELS_API_KEY) return fallback
-
-  const pexelsUrl = new URL('https://api.pexels.com/v1/search')
-  pexelsUrl.searchParams.set('query', query.slice(0, 96))
-  pexelsUrl.searchParams.set('per_page', '15')
-  pexelsUrl.searchParams.set('orientation', orientationFromSize(w, h))
-
-  try {
-    const response = await fetch(pexelsUrl, {
-      headers: { Authorization: PEXELS_API_KEY },
-    })
-    if (!response.ok) return fallback
-
-    const data = (await response.json()) as PexelsResponse
-    const photos = data.photos ?? []
-    const photo = photos[seedIndex(url.searchParams.get('seed') ?? query, photos.length)]
-    return choosePhotoUrl(photo, w, h) ?? fallback
-  } catch {
-    return fallback
-  }
+  return (
+    (await searchPexels(query, w, h, seed)) ??
+    (await searchUnsplash(query, w, h, seed)) ??
+    fallback
+  )
 }
 
 const pexelsDevApi = (): Plugin => ({
