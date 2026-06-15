@@ -735,7 +735,7 @@ export const HomePage = () => {
           <h1 className="sr-only">Ship Fast - AI website generator</h1>
           <div className="absolute left-0 top-[34px] z-[14] mb-0 flex w-auto flex-col items-start gap-2">
             <div className="flex items-center gap-[13px] max-[760px]:gap-2">
-              <div className="size-[clamp(44px,4vw,52px)] text-cyan-300 drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] max-[760px]:size-8 [&_svg]:size-full">
+              <div className="h-[clamp(31px,2.7vw,39px)] w-[clamp(76px,6.6vw,96px)] text-cyan-300 drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] max-[760px]:h-[23px] max-[760px]:w-[57px]">
                 <LogoMark />
               </div>
               <span className="bg-[linear-gradient(135deg,#ffffff_0%,#dffbff_46%,#23e5ff_100%)] bg-[length:180%_180%] bg-clip-text font-sans text-[clamp(42px,4.2vw,56px)] font-extrabold tracking-[-0.055em] text-transparent [-webkit-text-fill-color:transparent] max-[760px]:text-[clamp(32px,9vw,40px)] max-[760px]:tracking-[-0.035em]">SHIP FAST</span>

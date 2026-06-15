@@ -1,4 +1,4 @@
-import { ShoppingCart, Zap } from 'lucide-react'
+import { ShoppingCart } from 'lucide-react'
 
 const cartCells = Array.from({ length: 30 }, (_, index) => index)
 
@@ -28,7 +28,7 @@ export const EcommercifyTransformOverlay = ({ fixed = false }: EcommercifyTransf
 
       <div className="ecommercify-transform__brand">
         <span className="ecommercify-transform__mark" aria-hidden="true">
-          <Zap fill="currentColor" strokeWidth={2.2} />
+          <img src="/assets/logo-transparent.png" alt="" />
         </span>
         <div>
           <h2>Ship Fast</h2>
