@@ -78,6 +78,8 @@ export async function runHomepageOrchestrator(p: {
     generationPrompt,
     p.modelId || DEFAULT_MODEL,
     p.signal,
+    forcedLocale,
+    p.prompt,
   )) {
     p.onEvent?.(event)
     if (event.type === 'theme') theme = event.name

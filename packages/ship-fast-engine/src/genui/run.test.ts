@@ -262,6 +262,92 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     expect(result.source.toLowerCase()).not.toContain('test drive')
   })
 
+  it('keeps localized ecommerce modules instead of replacing them with primitive fallback copy', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'Kerala Health Foods',
+          tagline: 'നാടൻ ആരോഗ്യ ഭക്ഷണ ഉൽപ്പന്നങ്ങൾ വീട്ടിലെത്തിക്കുന്നു.',
+          theme: 'clean-slate',
+          locale: 'en',
+          pages: [
+            {
+              label: 'ഹോം',
+              brief: 'മലയാളത്തിലുള്ള കേരള ആരോഗ്യ ഭക്ഷണ ഇ-കൊമേഴ്‌സ് ഹോംപേജ്',
+              blocks: ['EcommerceKimiPage'],
+            },
+            {
+              label: 'വില',
+              brief: 'ആരോഗ്യ ഭക്ഷണ പാക്കുകളും സബ്സ്ക്രിപ്ഷൻ വിലകളും',
+              blocks: ['PricingKimiPage'],
+            },
+          ],
+        })
+      }
+
+      if (String(user).includes('This page: "വില"')) {
+        return `p1 = PricingKimiPage("Kerala Health Foods", ["ഹോം","വില"], { hero: { title: "ആരോഗ്യ ഭക്ഷണ പാക്കുകൾ", subtitle: "${longCopy}" }, plans: [{ name: "മാസ പാക്ക്", price: "₹999", description: "${longCopy}", features: ["നാടൻ ധാന്യങ്ങൾ", "ആരോഗ്യ സ്നാക്കുകൾ"] }] })`
+      }
+
+      return `home = EcommerceKimiPage("Kerala Health Foods", ["ഹോം"], { heading: "കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ", subheading: "നാടൻ അരി, കഞ്ഞിപ്പൊടി, മസാലകൾ, ആരോഗ്യ സ്നാക്കുകൾ എന്നിവ വീട്ടിലെത്തിക്കുന്ന മലയാളം ഇ-കൊമേഴ്‌സ് പ്ലാറ്റ്ഫോം.", primaryCta: "ഇപ്പോൾ വാങ്ങുക" }, "വിശ്വസിക്കുന്ന നാട്ടു ബ്രാൻഡുകൾ", { heading: "വിഭാഗങ്ങൾ", items: [{ label: "കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി" }] }, { heading: "ജനപ്രിയ ഉൽപ്പന്നങ്ങൾ", items: [{ name: "നാടൻ കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി", price: "₹180" }] })`
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt:
+        'e commerce platform for healthy kerala food products in malayalam',
+      preferredLanguage: 'ml',
+    })
+
+    expect(result.source).toContain('home = EcommerceKimiPage')
+    expect(result.source).toContain('കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ')
+    expect(result.source).not.toContain('server language code')
+  })
+
+  it('uses only the original user prompt when localized generation falls back', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'KeralaSarees',
+          tagline: 'Kerala saree collections.',
+          theme: 'solar-dusk',
+          locale: 'en',
+          pages: [
+            {
+              label: 'Home',
+              brief: 'Kerala saree collections showcase',
+              blocks: ['EcommerceKimiPage'],
+            },
+            {
+              label: 'About',
+              brief: 'Brand story',
+              blocks: ['CorporateKimiPage'],
+            },
+          ],
+        })
+      }
+
+      if (String(user).includes('This page: "About"')) {
+        return `p1 = CorporateKimiPage("KeralaSarees", ["Home","About"], { heading: "Kerala saree craft", subheading: "${longCopy}", primaryCta: "Explore" })`
+      }
+
+      return 'root = Text("invalid page module")'
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'build an ecommerce site for kerala sarees in manglish',
+    })
+
+    expect(result.source).toContain(
+      'build an ecommerce site for kerala sarees in manglish',
+    )
+    expect(result.source).not.toContain('server language code')
+    expect(result.source).not.toContain('All user-visible copy')
+  })
+
   it('does not expose a home-only completion option', async () => {
     const source = await import('node:fs').then(({ readFileSync }) =>
       readFileSync(new URL('./run.ts', import.meta.url), 'utf8'),

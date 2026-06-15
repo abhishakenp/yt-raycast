@@ -29,11 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '#/components/ui/popover.tsx'
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '#/components/ui/avatar.tsx'
+import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar.tsx'
 
 const priceAmount = (price: string) => {
   const amount = Number.parseFloat(price.replace(/[^0-9.]+/g, ''))
@@ -312,8 +308,7 @@ export const EcommerceKimiPage = defineCapsule({
     const heroPrimary = props.hero?.primaryCta ?? 'Shop Now'
     const heroSecondary = props.hero?.secondaryCta ?? 'View Collection'
     const heroImageAlt =
-      props.hero?.imageAlt ??
-      'Featured product on a clean studio background'
+      props.hero?.imageAlt ?? 'Featured product on a clean studio background'
     const heroFeatured = props.hero?.featured ?? {
       label: 'Featured',
       name: 'Signature Series',
@@ -322,13 +317,24 @@ export const EcommerceKimiPage = defineCapsule({
     const heroStats = props.hero?.stats?.length
       ? props.hero.stats
       : [
-        { value: '50K+', label: 'Happy Customers' },
-        { value: '200+', label: 'Products Available' },
-        { value: 'Free', label: 'Shipping $150+' },
-      ]
+          { value: '50K+', label: 'Happy Customers' },
+          { value: '200+', label: 'Products Available' },
+          { value: 'Free', label: 'Shipping $150+' },
+        ]
 
     const logosHeading =
       props.logosHeading ?? "Trusted by the world's leading brands"
+    const logoNames = [
+      ...(props.products?.items ?? [])
+        .map((product) => product.brand)
+        .filter((name): name is string => Boolean(name?.trim())),
+      ...(props.categories?.items ?? []).map((category) => category.label),
+    ]
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .filter((name, index, list) => list.indexOf(name) === index)
+      .slice(0, 6)
+    const showLogos = Boolean(props.logosHeading && logoNames.length > 0)
 
     const categoriesHeading = props.categories?.heading ?? 'Shop by Category'
     const categoriesSub =
@@ -337,91 +343,92 @@ export const EcommerceKimiPage = defineCapsule({
     const categoryItems = props.categories?.items?.length
       ? props.categories.items
       : [
-        {
-          label: 'New Arrivals',
-          count: '248 items',
-          alt: 'Featured product on a clean studio background',
-        },
-        {
-          label: 'Featured',
-          count: '186 items',
-          alt: 'Lifestyle product photography on a minimal background',
-        },
-        {
-          label: 'Bestsellers',
-          count: '94 items',
-          alt: 'Popular product displayed on a neutral background',
-        },
-        {
-          label: 'Limited Edition',
-          count: '24 releases',
-          alt: 'Limited edition product with premium details on a neutral background',
-        },
-      ]
+          {
+            label: 'New Arrivals',
+            count: '248 items',
+            alt: 'Featured product on a clean studio background',
+          },
+          {
+            label: 'Featured',
+            count: '186 items',
+            alt: 'Lifestyle product photography on a minimal background',
+          },
+          {
+            label: 'Bestsellers',
+            count: '94 items',
+            alt: 'Popular product displayed on a neutral background',
+          },
+          {
+            label: 'Limited Edition',
+            count: '24 releases',
+            alt: 'Limited edition product with premium details on a neutral background',
+          },
+        ]
 
     const productsHeading = props.products?.heading ?? 'New Arrivals'
     const productsSub =
-      props.products?.subheading ?? 'Fresh additions for this week — January 2024'
+      props.products?.subheading ??
+      'Fresh additions for this week — January 2024'
     const productsLink = props.products?.link ?? 'View All'
     const productItems = props.products?.items?.length
       ? props.products.items
       : [
-        {
-          brand: 'Featured',
-          name: 'Signature Series',
-          alt: 'Featured product on a clean studio background',
-          price: '$195',
-          oldPrice: '$230',
-          badge: 'New',
-        },
-        {
-          brand: 'Featured',
-          name: 'Everyday Essential',
-          alt: 'Lifestyle product photography on a neutral background',
-          price: '$250',
-        },
-        {
-          brand: 'Featured',
-          name: 'Classic Edition',
-          alt: 'Close-up product detail on a neutral background',
-          price: '$175',
-          oldPrice: '$210',
-          badge: 'Sale',
-        },
-        {
-          brand: 'Featured',
-          name: 'Studio Collection',
-          alt: 'Featured product on a clean studio background',
-          price: '$160',
-        },
-        {
-          brand: 'Featured',
-          name: 'Premium Pick',
-          alt: 'Premium product displayed on a white background',
-          price: '$120',
-        },
-        {
-          brand: 'Featured',
-          name: 'Everyday Classic',
-          alt: 'Classic product on a neutral studio background',
-          price: '$85',
-          badge: 'Bestseller',
-        },
-        {
-          brand: 'Featured',
-          name: 'Limited Release',
-          alt: 'Limited release product on a clean background',
-          price: '$210',
-        },
-        {
-          brand: 'Featured',
-          name: 'Modern Staple',
-          alt: 'Lifestyle product photography on a clean background',
-          price: '$95',
-          oldPrice: '$110',
-          badge: '-15%',
-        },
-      ]
+          {
+            brand: 'Featured',
+            name: 'Signature Series',
+            alt: 'Featured product on a clean studio background',
+            price: '$195',
+            oldPrice: '$230',
+            badge: 'New',
+          },
+          {
+            brand: 'Featured',
+            name: 'Everyday Essential',
+            alt: 'Lifestyle product photography on a neutral background',
+            price: '$250',
+          },
+          {
+            brand: 'Featured',
+            name: 'Classic Edition',
+            alt: 'Close-up product detail on a neutral background',
+            price: '$175',
+            oldPrice: '$210',
+            badge: 'Sale',
+          },
+          {
+            brand: 'Featured',
+            name: 'Studio Collection',
+            alt: 'Featured product on a clean studio background',
+            price: '$160',
+          },
+          {
+            brand: 'Featured',
+            name: 'Premium Pick',
+            alt: 'Premium product displayed on a white background',
+            price: '$120',
+          },
+          {
+            brand: 'Featured',
+            name: 'Everyday Classic',
+            alt: 'Classic product on a neutral studio background',
+            price: '$85',
+            badge: 'Bestseller',
+          },
+          {
+            brand: 'Featured',
+            name: 'Limited Release',
+            alt: 'Limited release product on a clean background',
+            price: '$210',
+          },
+          {
+            brand: 'Featured',
+            name: 'Modern Staple',
+            alt: 'Lifestyle product photography on a clean background',
+            price: '$95',
+            oldPrice: '$110',
+            badge: '-15%',
+          },
+        ]
     const normalizedProductItems = productItems.map((product) => ({
       alt: product.alt,
       badge: product.badge ?? '',
@@ -445,12 +452,13 @@ export const EcommerceKimiPage = defineCapsule({
     const authPicture = auth.picture || auth.user?.picture
     const authDisplayName =
       auth.displayName || auth.user?.displayName || authEmail || 'Account'
-    const authInitials = authDisplayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('') || 'ME'
+    const authInitials =
+      authDisplayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'ME'
     const authLabel = auth.isLoading
       ? 'Checking...'
       : isSignedIn
@@ -490,24 +498,24 @@ export const EcommerceKimiPage = defineCapsule({
     const featureItems = props.features?.items?.length
       ? props.features.items
       : [
-        {
-          title: '100% Authentic',
-          description:
-            'Every order is checked for quality by our team before shipping.',
-        },
-        {
-          title: 'Free Shipping',
-          description: 'Complimentary delivery on all orders over $150.',
-        },
-        {
-          title: '30-Day Returns',
-          description: 'Not satisfied? Return unused items within 30 days.',
-        },
-        {
-          title: 'Satisfaction Guarantee',
-          description: 'Quality you can count on, backed by our guarantee.',
-        },
-      ]
+          {
+            title: '100% Authentic',
+            description:
+              'Every order is checked for quality by our team before shipping.',
+          },
+          {
+            title: 'Free Shipping',
+            description: 'Complimentary delivery on all orders over $150.',
+          },
+          {
+            title: '30-Day Returns',
+            description: 'Not satisfied? Return unused items within 30 days.',
+          },
+          {
+            title: 'Satisfaction Guarantee',
+            description: 'Quality you can count on, backed by our guarantee.',
+          },
+        ]
 
     const testimonialsHeading =
       props.testimonials?.heading ?? 'What Our Customers Say'
@@ -517,28 +525,28 @@ export const EcommerceKimiPage = defineCapsule({
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
-        {
-          quote:
-            "I've ordered five times now and every item has been flawless. The quality gives me total confidence. Fast shipping too — my order arrived in 2 days!",
-          name: 'Marcus Chen',
-          role: 'Verified Buyer · Los Angeles, CA',
-          alt: 'Professional headshot of a smiling young man with short curly hair and warm expression',
-        },
-        {
-          quote:
-            'Quality is everything to me, and this store delivers. Their packaging is pristine, their selection is excellent, and customer service actually responds within hours.',
-          name: 'Taylor Williams',
-          role: 'Verified Buyer · Brooklyn, NY',
-          alt: 'Professional headshot of a young woman with dark hair and confident smile',
-        },
-        {
-          quote:
-            'First time ordering a limited edition item online and it was stress-free. What I received was exactly as described. Already planning my next purchase!',
-          name: 'David Park',
-          role: 'Verified Buyer · Chicago, IL',
-          alt: 'Professional headshot of a bearded man in his thirties with friendly expression',
-        },
-      ]
+          {
+            quote:
+              "I've ordered five times now and every item has been flawless. The quality gives me total confidence. Fast shipping too — my order arrived in 2 days!",
+            name: 'Marcus Chen',
+            role: 'Verified Buyer · Los Angeles, CA',
+            alt: 'Professional headshot of a smiling young man with short curly hair and warm expression',
+          },
+          {
+            quote:
+              'Quality is everything to me, and this store delivers. Their packaging is pristine, their selection is excellent, and customer service actually responds within hours.',
+            name: 'Taylor Williams',
+            role: 'Verified Buyer · Brooklyn, NY',
+            alt: 'Professional headshot of a young woman with dark hair and confident smile',
+          },
+          {
+            quote:
+              'First time ordering a limited edition item online and it was stress-free. What I received was exactly as described. Already planning my next purchase!',
+            name: 'David Park',
+            role: 'Verified Buyer · Chicago, IL',
+            alt: 'Professional headshot of a bearded man in his thirties with friendly expression',
+          },
+        ]
 
     const faqHeading = props.faq?.heading ?? 'Frequently Asked Questions'
     const faqSub =
@@ -546,35 +554,34 @@ export const EcommerceKimiPage = defineCapsule({
     const faqItems = props.faq?.items?.length
       ? props.faq.items
       : [
-        {
-          question: 'How do you ensure product quality?',
-          answer:
-            'Every order goes through our multi-point quality process conducted by trained team members. We inspect materials, finish, labels, and all details specific to each item. Only products that pass our rigorous inspection are shipped to you.',
-        },
-        {
-          question: 'What is your shipping and delivery timeline?',
-          answer:
-            "Standard shipping takes 3-5 business days. Express shipping (1-2 business days) is available for $15. All orders over $150 qualify for free standard shipping. Once your order ships, you'll receive tracking information via email and SMS.",
-        },
-        {
-          question: 'Can I return or exchange my order?',
-          answer:
-            'Yes! We offer free returns within 30 days for unused items in original condition with all tags and packaging intact. Exchanges are also free. Limited edition releases marked as "Final Sale" are non-returnable. Contact our support team to initiate a return.',
-        },
-        {
-          question: 'Do you offer international shipping?',
-          answer:
-            'We currently ship to the United States, Canada, UK, EU, Australia, and Japan. International shipping rates vary by destination and are calculated at checkout. Delivery times range from 7-14 business days depending on your location.',
-        },
-        {
-          question: 'How do I choose the right option for me?',
-          answer:
-            "Each product page includes detailed specifications and a helpful buying guide. We recommend reviewing the details and comparing options before ordering. If you're unsure, our support team is happy to help, and our free exchange policy ensures you'll be satisfied.",
-        },
-      ]
+          {
+            question: 'How do you ensure product quality?',
+            answer:
+              'Every order goes through our multi-point quality process conducted by trained team members. We inspect materials, finish, labels, and all details specific to each item. Only products that pass our rigorous inspection are shipped to you.',
+          },
+          {
+            question: 'What is your shipping and delivery timeline?',
+            answer:
+              "Standard shipping takes 3-5 business days. Express shipping (1-2 business days) is available for $15. All orders over $150 qualify for free standard shipping. Once your order ships, you'll receive tracking information via email and SMS.",
+          },
+          {
+            question: 'Can I return or exchange my order?',
+            answer:
+              'Yes! We offer free returns within 30 days for unused items in original condition with all tags and packaging intact. Exchanges are also free. Limited edition releases marked as "Final Sale" are non-returnable. Contact our support team to initiate a return.',
+          },
+          {
+            question: 'Do you offer international shipping?',
+            answer:
+              'We currently ship to the United States, Canada, UK, EU, Australia, and Japan. International shipping rates vary by destination and are calculated at checkout. Delivery times range from 7-14 business days depending on your location.',
+          },
+          {
+            question: 'How do I choose the right option for me?',
+            answer:
+              "Each product page includes detailed specifications and a helpful buying guide. We recommend reviewing the details and comparing options before ordering. If you're unsure, our support team is happy to help, and our free exchange policy ensures you'll be satisfied.",
+          },
+        ]
 
-    const newsletterHeading =
-      props.newsletter?.heading ?? 'Join Our Community'
+    const newsletterHeading = props.newsletter?.heading ?? 'Join Our Community'
     const newsletterSub =
       props.newsletter?.subheading ??
       'Get early access to new releases, exclusive discounts, and insider news. No spam, just the good stuff.'
@@ -589,24 +596,24 @@ export const EcommerceKimiPage = defineCapsule({
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
       : [
-        'New Arrivals',
-        'Best Sellers',
-        'Featured',
-        'Collections',
-        'Bestsellers',
-        'Sale',
-        'Help Center',
-        'Order Status',
-        'Returns & Exchanges',
-        'Buying Guide',
-        'Contact Us',
-        'About Us',
-        'Careers',
-        'Press',
-        'Sustainability',
-        'Privacy Policy',
-        'Terms of Service',
-      ]
+          'New Arrivals',
+          'Best Sellers',
+          'Featured',
+          'Collections',
+          'Bestsellers',
+          'Sale',
+          'Help Center',
+          'Order Status',
+          'Returns & Exchanges',
+          'Buying Guide',
+          'Contact Us',
+          'About Us',
+          'Careers',
+          'Press',
+          'Sustainability',
+          'Privacy Policy',
+          'Terms of Service',
+        ]
 
     // --- shared sub-components ---
 
@@ -913,7 +920,7 @@ export const EcommerceKimiPage = defineCapsule({
                                 <p className="text-sm font-bold text-foreground">
                                   {formatCurrency(
                                     priceAmount(item.product.price) *
-                                    item.quantity,
+                                      item.quantity,
                                   )}
                                 </p>
                               </div>
@@ -1246,31 +1253,26 @@ export const EcommerceKimiPage = defineCapsule({
           </section>
 
           {/* --- Logos --- */}
-          <section className="border-b border-border bg-background py-12 lg:py-16">
-            <div className="mx-auto max-w-6xl px-6">
-              <p className="mb-8 text-center text-sm text-muted-foreground">
-                {logosHeading}
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
-                {[
-                  'BRAND ONE',
-                  'Brand Two',
-                  'Brand Three',
-                  'BRAND FOUR',
-                  'Brand Five',
-                  'Brand Six',
-                ].map((name) => (
-                  <span
-                    key={name}
-                    className="text-lg font-bold tracking-tight text-muted-foreground/50"
-                    aria-hidden="true"
-                  >
-                    {name}
-                  </span>
-                ))}
+          {showLogos ? (
+            <section className="border-b border-border bg-background py-12 lg:py-16">
+              <div className="mx-auto max-w-6xl px-6">
+                <p className="mb-8 text-center text-sm text-muted-foreground">
+                  {logosHeading}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
+                  {logoNames.map((name) => (
+                    <span
+                      key={name}
+                      className="text-lg font-bold tracking-tight text-muted-foreground/50"
+                      aria-hidden="true"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          ) : null}
 
           {/* --- Categories --- */}
           <section className="bg-background py-16 lg:py-24" id="shop">

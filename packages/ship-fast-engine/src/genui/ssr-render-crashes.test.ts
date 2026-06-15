@@ -37,6 +37,27 @@ describe('SSR render crash safety', () => {
     expect(html.length).toBeGreaterThan(1000)
   })
 
+  it('does not render ecommerce demo partner placeholders without supplied partner content', () => {
+    const html = expectRenders(
+      'root = EcommerceKimiPage("Kerala Health Foods", ["ഹോം"], {heading: "കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ", subheading: "നാടൻ ആരോഗ്യ ഉൽപ്പന്നങ്ങൾ"})',
+      'ml',
+    )
+
+    expect(html).not.toContain('BRAND ONE')
+    expect(html).not.toContain('Brand Two')
+  })
+
+  it('renders localized ecommerce content from positional section arguments', () => {
+    const html = expectRenders(
+      'root = EcommerceKimiPage("Kerala Health Foods", ["ഹോം"], {heading: "കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ", subheading: "നാടൻ ആരോഗ്യ ഉൽപ്പന്നങ്ങൾ"}, "വിശ്വസിക്കുന്ന നാട്ടു ബ്രാൻഡുകൾ", {heading: "വിഭാഗങ്ങൾ", items: [{label: "കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി"}]}, {heading: "ജനപ്രിയ ഉൽപ്പന്നങ്ങൾ", items: [{name: "നാടൻ കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി", price: "₹180"}]})',
+      'ml',
+    )
+
+    expect(html).toContain('കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ')
+    expect(html).toContain('ജനപ്രിയ ഉൽപ്പന്നങ്ങൾ')
+    expect(html).not.toContain('Discover\\nSomething New')
+  })
+
   it('renders pages with non-Latin / RTL copy', () => {
     expectRenders(
       'root = BlogKimiPage("المتجر", ["الرئيسية"], {title: "أحدث القصص"})',

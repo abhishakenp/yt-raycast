@@ -269,9 +269,9 @@ function promptAwareFallbackModule(input: {
   const prefix = page.id.replace(/[^A-Za-z0-9_]/g, '_') || 'page'
   const title =
     page.id === 'home' ? `${brand}: ${page.brief}` : `${brand} ${page.label}`
-  const summary = `Requested site: ${compactText(prompt)}`
+  const summary = compactText(prompt)
   const detail = compactText(page.brief || tagline || prompt)
-  const cta = page.id === 'home' ? 'Start booking' : `View ${page.label}`
+  const cta = page.label || brand
 
   return [
     `${prefix}_fallback_title = Heading(${JSON.stringify(title)}, "1")`,
@@ -343,6 +343,29 @@ function stripTopLevelSectionArgLabels(text: string, block: string): string {
   }
 
   return out
+}
+
+const localizedLocale = (locale: string | undefined): boolean => {
+  const normalized = locale?.trim().toLowerCase()
+  return Boolean(normalized && normalized !== 'en')
+}
+
+const DEFAULT_CONTENT_MARKERS = [
+  'BRAND ONE',
+  'Brand Two',
+  'Brand Three',
+  'BRAND FOUR',
+  'Brand Five',
+  'Brand Six',
+  'Shop by Category',
+  'Join Our Community',
+  'Trusted by the world',
+  'New Collection 2024',
+  'Discover\\nSomething New',
+]
+
+function leaksDefaultContent(text: string): boolean {
+  return DEFAULT_CONTENT_MARKERS.some((marker) => text.includes(marker))
 }
 
 function fallbackBlock(rng: () => number, isHome: boolean): string {
@@ -476,6 +499,7 @@ function validateModule(
     prompt: string
     brand: string
     tagline: string
+    locale: string
   },
 ): { text: string; failed: boolean } {
   // A page module must define ONLY its own subtree. Models sometimes emit a stray
@@ -491,6 +515,17 @@ function validateModule(
     .join('\n')
     .trim()
   const safe = stripTopLevelSectionArgLabels(text, page.block)
+  if (localizedLocale(fallback.locale) && leaksDefaultContent(safe)) {
+    return {
+      text: promptAwareFallbackModule({
+        page,
+        prompt: fallback.prompt,
+        brand: fallback.brand,
+        tagline: fallback.tagline,
+      }),
+      failed: true,
+    }
+  }
   const definesId = new RegExp(`(^|\\n)\\s*${page.id}\\s*=`).test(safe)
   if (definesId) {
     try {
@@ -570,12 +605,15 @@ export async function* generateUI(
   prompt: string,
   modelId: string = DEFAULT_MODEL,
   parentSignal?: AbortSignal,
+  forcedLocale?: string | null,
+  fallbackPrompt?: string,
 ): AsyncGenerator<GenUIEvent> {
   const startedAt = Date.now()
   const abort = new AbortController()
   parentSignal?.addEventListener('abort', () => abort.abort(), { once: true })
   const ch = channel<GenUIEvent>()
   const rng = makeRng()
+  const userPrompt = fallbackPrompt || prompt
 
   const run = (async () => {
     try {
@@ -621,9 +659,11 @@ export async function* generateUI(
         usedFallbackPlan = true
       }
 
+      const contentLocale = forcedLocale || plan.locale
+
       // Emit the chosen theme ASAP so the preview can apply it before content lands.
       ch.push({ type: 'theme', name: plan.theme })
-      ch.push({ type: 'locale', code: plan.locale })
+      ch.push({ type: 'locale', code: contentLocale })
 
       // AUTH single-page special case — the model returned one sign-in page whose
       // chosen block is an auth block: render just that screen, no fan-out.
@@ -710,9 +750,10 @@ export async function* generateUI(
         )
           .then((text) => {
             const { text: safe, failed } = validateModule(page, text, {
-              prompt,
+              prompt: userPrompt,
               brand: plan.brand,
               tagline: plan.tagline,
+              locale: contentLocale,
             })
             if (failed) moduleFailureCount += 1
             ch.push({ type: 'module', id: page.id, text: safe, failed })
@@ -725,7 +766,7 @@ export async function* generateUI(
                 id: page.id,
                 text: promptAwareFallbackModule({
                   page,
-                  prompt,
+                  prompt: userPrompt,
                   brand: plan.brand,
                   tagline: plan.tagline,
                 }),
@@ -742,7 +783,7 @@ export async function* generateUI(
               id: page.id,
               text: promptAwareFallbackModule({
                 page,
-                prompt,
+                prompt: userPrompt,
                 brand: plan.brand,
                 tagline: plan.tagline,
               }),
