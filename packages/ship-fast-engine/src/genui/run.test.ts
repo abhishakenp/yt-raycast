@@ -144,6 +144,40 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     expect(result.locale).toBe('ta-en')
   })
 
+  it('repairs top-level named section args before merging page modules', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+    const malformedHome = `home = TourExperiencesKimiPage("Kerala Tourism", ["Home", "Destinations"], {badge: "1500+ experiences", heading: "Kerala journeys", subheading: "${longCopy}", searchPlaceholder: "Search Kerala", searchCta: "Search", destinations: [{name: "Alappuzha", count: "120 experiences", imageAlt: "Alappuzha backwater houseboat"}]},press: {label: "Featured In", logos: ["The Hindu", "Lonely Planet"]},features: {heading: "Why Kerala", description: "${longCopy}", items: [{title: "Backwaters", description: "${longCopy}"}]},experiences: {heading: "Popular Kerala experiences", description: "${longCopy}", viewAll: "View all", loadMore: "More", items: [{title: "Alappuzha backwater cruise", category: "Backwaters", location: "Alappuzha", rating: "4.9", reviews: "120 reviews", price: "₹2500", duration: "2 hours", imageAlt: "Kerala backwater cruise"}]},steps: {heading: "Book easily", description: "${longCopy}", items: [{title: "Discover", description: "${longCopy}"}]},stats: {items: [{value: "1500+", label: "Experiences"}]},reviews: {heading: "Traveler stories", description: "${longCopy}", items: [{quote: "Beautiful trip", name: "Anjali", meta: "Kochi", avatarAlt: "Anjali portrait"}]},faq: {heading: "Questions", description: "${longCopy}", items: [{question: "Can I cancel?", answer: "Yes"}]},cta: {heading: "Ready for Kerala?", description: "${longCopy}", primaryCta: "Book", secondaryCta: "Explore", note: "Local support"},footer: {description: "${longCopy}", columns: [{title: "Company", links: ["About"]}], copyright: "© 2026 Kerala Tourism", legal: ["Privacy"], socials: ["Instagram"]}})`
+
+    mocks.generateText.mockImplementation(async (_modelId, _system, user) => {
+      if (!String(user).includes('This page:')) {
+        return JSON.stringify({
+          brand: 'Kerala Tourism',
+          tagline: 'Kerala journeys for domestic travelers.',
+          theme: 'sunset-horizon',
+          locale: 'en',
+          pages: [
+            {
+              label: 'Home',
+              brief: 'Malayalam travel landing page',
+              blocks: ['TourExperiencesKimiPage'],
+            },
+          ],
+        })
+      }
+
+      return malformedHome
+    })
+
+    const result = await runHomepageOrchestrator({
+      prompt: 'Build a Kerala tourism site',
+    })
+
+    expect(result.source).toContain('home = TourExperiencesKimiPage')
+    expect(result.source).not.toContain(',press:')
+    expect(result.source).not.toContain(',features:')
+    expect(result.source).toContain('"Popular Kerala experiences"')
+  })
+
   it('does not expose a home-only completion option', async () => {
     const source = await import('node:fs').then(({ readFileSync }) =>
       readFileSync(new URL('./run.ts', import.meta.url), 'utf8'),

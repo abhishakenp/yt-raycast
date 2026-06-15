@@ -220,6 +220,67 @@ function pickFrom(rng: () => number, names: unknown, fallback: string): string {
 const PLACEHOLDER_BLOCK = '__coming_soon__'
 const placeholderNode = (id: string) => `${id} = Box([Text("Coming soon")])`
 
+function stripTopLevelSectionArgLabels(text: string, block: string): string {
+  const sectionKeys = new Set(componentSectionKeys(block))
+  if (sectionKeys.size === 0) return text
+
+  let out = ''
+  let parenDepth = 0
+  let braceDepth = 0
+  let bracketDepth = 0
+  let inString = false
+  let quote = ''
+  let escaped = false
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    out += ch
+
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (ch === '\\') {
+        escaped = true
+      } else if (ch === quote) {
+        inString = false
+        quote = ''
+      }
+      continue
+    }
+
+    if (ch === '"' || ch === "'") {
+      inString = true
+      quote = ch
+      continue
+    }
+
+    if (ch === '(') parenDepth++
+    else if (ch === ')') parenDepth = Math.max(0, parenDepth - 1)
+    else if (ch === '{') braceDepth++
+    else if (ch === '}') braceDepth = Math.max(0, braceDepth - 1)
+    else if (ch === '[') bracketDepth++
+    else if (ch === ']') bracketDepth = Math.max(0, bracketDepth - 1)
+
+    if (
+      ch !== ',' ||
+      parenDepth !== 1 ||
+      braceDepth !== 0 ||
+      bracketDepth !== 0
+    ) {
+      continue
+    }
+
+    const rest = text.slice(i + 1)
+    const match = rest.match(/^(\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:/)
+    if (match && sectionKeys.has(match[2])) {
+      out += match[1]
+      i += match[0].length
+    }
+  }
+
+  return out
+}
+
 function fallbackBlock(rng: () => number, isHome: boolean): string {
   const navTypeFallback = isHome
     ? ['home', 'landing']
@@ -361,12 +422,13 @@ function validateModule(
     })
     .join('\n')
     .trim()
-  const definesId = new RegExp(`(^|\\n)\\s*${page.id}\\s*=`).test(text)
+  const safe = stripTopLevelSectionArgLabels(text, page.block)
+  const definesId = new RegExp(`(^|\\n)\\s*${page.id}\\s*=`).test(safe)
   if (definesId) {
     try {
-      const probe = mergeStatements(`root = Box([${page.id}])`, text)
+      const probe = mergeStatements(`root = Box([${page.id}])`, safe)
       if (probe && probe.trim() && probe.includes(`${page.id} =`)) {
-        return { text, failed: false }
+        return { text: safe, failed: false }
       }
     } catch {
       // fall through to fallback
