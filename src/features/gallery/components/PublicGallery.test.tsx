@@ -9,6 +9,12 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }))
 
+vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
+  GeneratedModulePreview: ({ source }: { source: string }) => (
+    <div data-testid="generated-module-preview">{source}</div>
+  ),
+}))
+
 import { GalleryGrid, type GalleryPayload } from './PublicGallery'
 
 const emptyGallery: GalleryPayload = {
@@ -66,6 +72,32 @@ describe('GalleryGrid', () => {
     )
     expect(container.querySelector('h1')?.textContent).toBe(
       'Rendered product preview',
+    )
+    expect(container.querySelector('img')).toBeNull()
+  })
+
+  it('prefers generated module source over stored placeholder HTML', () => {
+    const gallery: GalleryPayload = {
+      ...emptyGallery,
+      items: [
+        {
+          sessionId: 'module-session',
+          prompt: 'AI image studio',
+          html: '<main><h1>Generated OpenUI source is ready.</h1></main>',
+          moduleSource: '$page = "Home"\nroot = Hero("LumenAI Studio")',
+          previewVersion: 1,
+        },
+      ],
+      total: 1,
+    }
+
+    const { container, getByTestId } = render(<GalleryGrid gallery={gallery} />)
+
+    expect(getByTestId('generated-module-preview').textContent).toContain(
+      'LumenAI Studio',
+    )
+    expect(container.querySelector('h1')?.textContent).not.toBe(
+      'Generated OpenUI source is ready.',
     )
     expect(container.querySelector('img')).toBeNull()
   })
