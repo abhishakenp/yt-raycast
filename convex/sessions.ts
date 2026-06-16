@@ -370,6 +370,15 @@ const createFingerprint = (values: string[]): string | undefined => {
 const SCRIPT_STYLE_BLOCK_RE =
   /<(script|style|noscript|template)\b[\s\S]*?<\/\1>/gi
 
+const createWhitespaceTolerantTextPattern = (
+  value: string,
+): RegExp | null => {
+  const tokens = value.trim().split(/\s+/).filter(Boolean)
+  if (tokens.length === 0) return null
+
+  return new RegExp(tokens.map(escapeRegExp).join('\\s+'))
+}
+
 const applyPreviewTextEdit = (
   html: string,
   oldText: string | undefined,
@@ -385,8 +394,29 @@ const applyPreviewTextEdit = (
     return token
   })
   const index = protectedHtml.indexOf(from)
-  if (index < 0) return { html, replaced: false }
-  const edited = `${protectedHtml.slice(0, index)}${to}${protectedHtml.slice(index + from.length)}`
+  if (index >= 0) {
+    const edited = `${protectedHtml.slice(0, index)}${to}${protectedHtml.slice(index + from.length)}`
+    return {
+      html: blocks.reduce(
+        (current, block) => current.replace(block.token, block.value),
+        edited,
+      ),
+      replaced: true,
+    }
+  }
+
+  const tolerantPattern = createWhitespaceTolerantTextPattern(from)
+  const tolerantMatch =
+    tolerantPattern === null ? null : protectedHtml.match(tolerantPattern)
+  if (
+    tolerantMatch === null ||
+    tolerantMatch.index === undefined ||
+    tolerantMatch[0].length === 0
+  ) {
+    return { html, replaced: false }
+  }
+
+  const edited = `${protectedHtml.slice(0, tolerantMatch.index)}${to}${protectedHtml.slice(tolerantMatch.index + tolerantMatch[0].length)}`
   return {
     html: blocks.reduce(
       (current, block) => current.replace(block.token, block.value),
@@ -2007,6 +2037,8 @@ const applyTextEditToCurrentArtifacts = async (
 ): Promise<{
   openUiSource?: string
   siteSpecJson?: string
+  openUiReplaced: boolean
+  siteSpecReplaced: boolean
 }> => {
   const [homeModule, siteSpec] = await getCurrentHomeModuleAndSiteSpec(
     ctx,
@@ -2014,6 +2046,8 @@ const applyTextEditToCurrentArtifacts = async (
   )
   let openUiSource = homeModule?.source
   let siteSpecJson = siteSpec?.specJson ?? siteSpec?.spec
+  let openUiReplaced = false
+  let siteSpecReplaced = false
 
   if (homeModule !== null) {
     const sourceEdit = applyPreviewTextEdit(
@@ -2021,15 +2055,18 @@ const applyTextEditToCurrentArtifacts = async (
       beforeText,
       afterText,
     )
-    if (sourceEdit.replaced) {
-      openUiSource = sourceEdit.html
-      await ctx.db.patch(homeModule._id, {
-        source: sourceEdit.html,
-        status: 'succeeded',
-        errorMessage: undefined,
-        updatedAt: now,
-      })
+    if (!sourceEdit.replaced) {
+      return { openUiSource, siteSpecJson, openUiReplaced, siteSpecReplaced }
     }
+
+    openUiReplaced = true
+    openUiSource = sourceEdit.html
+    await ctx.db.patch(homeModule._id, {
+      source: sourceEdit.html,
+      status: 'succeeded',
+      errorMessage: undefined,
+      updatedAt: now,
+    })
   }
 
   if (siteSpec !== null && siteSpecJson !== undefined) {
@@ -2041,6 +2078,7 @@ const applyTextEditToCurrentArtifacts = async (
         String(afterText ?? ''),
       )
       if (specEdit.replaced) {
+        siteSpecReplaced = true
         siteSpecJson = JSON.stringify(specEdit.value)
         await ctx.db.patch(siteSpec._id, {
           specJson: siteSpecJson,
@@ -2050,6 +2088,7 @@ const applyTextEditToCurrentArtifacts = async (
     } catch {
       const specEdit = applyPreviewTextEdit(siteSpecJson, beforeText, afterText)
       if (specEdit.replaced) {
+        siteSpecReplaced = true
         siteSpecJson = specEdit.html
         await ctx.db.patch(siteSpec._id, {
           specJson: siteSpecJson,
@@ -2059,7 +2098,7 @@ const applyTextEditToCurrentArtifacts = async (
     }
   }
 
-  return { openUiSource, siteSpecJson }
+  return { openUiSource, siteSpecJson, openUiReplaced, siteSpecReplaced }
 }
 
 const snapshotCurrentArtifacts = async (
@@ -3906,43 +3945,55 @@ export const createEdit = mutation({
       args.afterHtml !== undefined
         ? { html: args.afterHtml, replaced: true }
         : applyPreviewTextEdit(preview.html, args.beforeText, args.afterText)
-    const nextPreviewVersion = editedPreview.replaced
-      ? preview.version + 1
-      : preview.version
 
-    if (editedPreview.replaced) {
-      const artifactSnapshot =
-        args.afterHtml === undefined
-          ? await applyTextEditToCurrentArtifacts(
-              ctx,
-              args.sessionId,
-              args.beforeText,
-              args.afterText,
-              now,
-            )
-          : await snapshotCurrentArtifacts(ctx, args.sessionId)
-
-      await ctx.db.insert('previews', {
-        sessionId: args.sessionId,
-        version: nextPreviewVersion,
-        html: editedPreview.html,
-        openUiSource: artifactSnapshot.openUiSource,
-        siteSpecJson: artifactSnapshot.siteSpecJson,
-        source: args.editType === 'ai_rewrite' ? 'rewrite' : 'edit',
-        createdAt: now,
-      })
-      await ctx.db.patch(args.sessionId, {
-        previewVersion: nextPreviewVersion,
-        updatedAt: now,
-      })
-      await ctx.db.insert('generationEvents', {
-        sessionId: args.sessionId,
-        eventType: 'preview_reload',
-        message: 'Preview updated',
-        previewVersion: nextPreviewVersion,
-        createdAt: now,
+    if (!editedPreview.replaced) {
+      throw new ConvexError({
+        code: 'TEXT_NOT_FOUND',
+        message:
+          'Selected text was not found in the current preview. Select a smaller text block and try again.',
       })
     }
+
+    const nextPreviewVersion = preview.version + 1
+    const artifactSnapshot =
+      args.afterHtml === undefined
+        ? await applyTextEditToCurrentArtifacts(
+            ctx,
+            args.sessionId,
+            args.beforeText,
+            args.afterText,
+            now,
+          )
+        : await snapshotCurrentArtifacts(ctx, args.sessionId)
+
+    if (args.afterHtml === undefined && !artifactSnapshot.openUiReplaced) {
+      throw new ConvexError({
+        code: 'TEXT_NOT_FOUND',
+        message:
+          'Selected text was found in preview history but not in the editable dashboard source. Select a smaller text block and try again.',
+      })
+    }
+
+    await ctx.db.insert('previews', {
+      sessionId: args.sessionId,
+      version: nextPreviewVersion,
+      html: editedPreview.html,
+      openUiSource: artifactSnapshot.openUiSource,
+      siteSpecJson: artifactSnapshot.siteSpecJson,
+      source: args.editType === 'ai_rewrite' ? 'rewrite' : 'edit',
+      createdAt: now,
+    })
+    await ctx.db.patch(args.sessionId, {
+      previewVersion: nextPreviewVersion,
+      updatedAt: now,
+    })
+    await ctx.db.insert('generationEvents', {
+      sessionId: args.sessionId,
+      eventType: 'preview_reload',
+      message: 'Preview updated',
+      previewVersion: nextPreviewVersion,
+      createdAt: now,
+    })
 
     await ctx.db.insert('edits', {
       sessionId: args.sessionId,

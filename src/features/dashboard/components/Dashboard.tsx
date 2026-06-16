@@ -964,11 +964,12 @@ export function Dashboard({
                       >
                         {isPreviewReady && homeModule?.source ? (
                           <GeneratedModulePreview
+                            key={`${generationView.session.previewVersion}:${homeModule.updatedAt}`}
                             source={homeModule.source}
                             sessionId={sessionId}
-                            siteSpecJson={generationView?.siteSpec?.specJson}
-                            locale={generationView?.session.preferredLanguage}
-                            prompt={generationView?.session.prompt}
+                            siteSpecJson={generationView.siteSpec?.specJson}
+                            locale={generationView.session.preferredLanguage}
+                            prompt={generationView.session.prompt}
                             isDark={isDark}
                             themeStyles={themeStyles}
                             deviceMode={currentDevice}

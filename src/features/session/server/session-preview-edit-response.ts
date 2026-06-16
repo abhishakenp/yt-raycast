@@ -1,4 +1,4 @@
-import { ConvexHttpClient } from 'convex/browser'
+import type { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
@@ -50,14 +50,61 @@ const isInvalidSessionIdError = (error: unknown): boolean => {
   )
 }
 
-const errorResponse = (error: unknown) =>
-  json(
-    {
-      error:
-        error instanceof Error ? error.message : 'Preview edit request failed',
-    },
-    { status: isInvalidSessionIdError(error) ? 404 : 500 },
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : 'Preview edit request failed'
+
+const getConvexErrorPayload = (
+  message: string,
+): { code?: string; message?: string } | null => {
+  const match = message.match(/\{.*\}/)
+  if (!match) return null
+
+  try {
+    const parsed = JSON.parse(match[0]) as unknown
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return null
+    }
+
+    const payload = parsed as Record<string, unknown>
+    return {
+      code: typeof payload.code === 'string' ? payload.code : undefined,
+      message:
+        typeof payload.message === 'string' ? payload.message : undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
+const isTextNotFoundError = (error: unknown): boolean => {
+  const message = getErrorMessage(error)
+  return (
+    message.includes('TEXT_NOT_FOUND') ||
+    getConvexErrorPayload(message)?.code === 'TEXT_NOT_FOUND'
   )
+}
+
+const errorResponse = (error: unknown) => {
+  const message = getErrorMessage(error)
+  const convexPayload = getConvexErrorPayload(message)
+  const responseMessage =
+    typeof convexPayload?.message === 'string' && convexPayload.message.trim()
+      ? convexPayload.message
+      : message
+
+  return json(
+    {
+      error: responseMessage,
+    },
+    {
+      status: isInvalidSessionIdError(error)
+        ? 404
+        : isTextNotFoundError(error)
+          ? 409
+          : 500,
+    },
+  )
+}
 
 export const createPreviewHistoryResponse = async (
   sessionId: string,

@@ -140,6 +140,26 @@ describe('session preview edit responses', () => {
     ])
   })
 
+  it('returns a conflict when an inline text edit cannot find the selected text', async () => {
+    const response = await createInlineTextEditResponse(
+      'session_123',
+      jsonRequest({ oldText: 'Missing', newText: 'Replacement' }),
+      {
+        query: async () => null,
+        mutation: async () => {
+          throw new Error(
+            'Uncaught ConvexError: {"code":"TEXT_NOT_FOUND","message":"Selected text was not found"}',
+          )
+        },
+      },
+    )
+
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining('Selected text was not found'),
+    })
+  })
+
   it('maps inline style payloads to an HTML replacement edit', async () => {
     const calls: unknown[] = []
     const response = await createInlineStyleEditResponse(
