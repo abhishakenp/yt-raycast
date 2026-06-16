@@ -1,6 +1,7 @@
 import { CreditCard, RefreshCw, Wallet } from 'lucide-react'
-import { useAuth } from '@clerk/tanstack-react-start'
 import { useEffect, useState } from 'react'
+
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 type BillingPanelProps = {
   sessionId: string
@@ -27,7 +28,7 @@ type BillingOverview = {
 type CheckoutMode = 'subscription' | 'credit_pack'
 
 export const BillingPanel = ({ sessionId }: BillingPanelProps) => {
-  const { getToken, isSignedIn } = useAuth()
+  const { getToken, isSignedIn } = useOptionalAuth()
   const [overview, setOverview] = useState<BillingOverview | null>(null)
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)

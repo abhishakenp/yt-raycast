@@ -5,8 +5,9 @@ import {
   RefreshCw,
   TriangleAlert,
 } from 'lucide-react'
-import { useAuth } from '@clerk/tanstack-react-start'
 import { useEffect, useState } from 'react'
+
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 
@@ -53,7 +54,7 @@ const readDownloadFilename = (response: Response, fallback: string): string => {
 }
 
 export const ExportPanel = ({ sessionId }: ExportPanelProps) => {
-  const { getToken, isSignedIn } = useAuth()
+  const { getToken, isSignedIn } = useOptionalAuth()
   const [targets, setTargets] = useState<ExportTarget[]>([])
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
