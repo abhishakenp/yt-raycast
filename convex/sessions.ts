@@ -2236,6 +2236,41 @@ const cloneCachedGeneratedArtifacts = async (
   return true
 }
 
+// Easter egg (press D 5x on the home page): delete the caller's own
+// generations. Scoped to the owner — authenticated users by userId, anonymous
+// users by their stable per-browser anonymousClientId — so it can never touch
+// another user's sessions.
+export const deleteMine = mutation({
+  args: {
+    anonymousClientId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx)
+
+    let sessions: Doc<'sessions'>[] = []
+    if (userId !== undefined) {
+      sessions = await ctx.db
+        .query('sessions')
+        .withIndex('by_userId', (index) => index.eq('userId', userId))
+        .collect()
+    } else if (args.anonymousClientId !== undefined) {
+      const anonymousClientIdHash = await hashOwnerSecret(args.anonymousClientId)
+      sessions = await ctx.db
+        .query('sessions')
+        .withIndex('by_anonymousClientIdHash', (index) =>
+          index.eq('anonymousClientIdHash', anonymousClientIdHash),
+        )
+        .collect()
+    }
+
+    for (const session of sessions) {
+      await ctx.db.delete(session._id)
+    }
+
+    return { deleted: sessions.length }
+  },
+})
+
 export const create = mutation({
   args: {
     prompt: v.string(),

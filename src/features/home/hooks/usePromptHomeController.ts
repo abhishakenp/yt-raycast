@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -79,12 +79,43 @@ const createSessionWithRetry = async <Payload, Result>(
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
   const createSession = useMutation(api.sessions.create)
+  const deleteMine = useMutation(api.sessions.deleteMine)
   const [prompt, setPrompt] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [shareBonusClaimed, setShareBonusClaimed] = useState(false)
   const submitInFlightRef = useRef(false)
   const shareBonusHydratedRef = useRef(false)
+
+  // Easter egg: press D 5 times fast (when not typing) to delete your own
+  // generations. Faithful port of the original home-page shortcut.
+  useEffect(() => {
+    let dPresses: number[] = []
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== 'd') return
+      const active = document.activeElement
+      if (
+        active instanceof HTMLTextAreaElement ||
+        active instanceof HTMLInputElement ||
+        (active as HTMLElement | null)?.isContentEditable
+      )
+        return
+      const now = Date.now()
+      dPresses = [...dPresses, now].filter((t) => now - t < 1500)
+      if (dPresses.length < 5) return
+      dPresses = []
+      void (async () => {
+        try {
+          const anonymousClientId = createAnonymousClientId(window.localStorage)
+          await deleteMine({ anonymousClientId })
+        } finally {
+          window.location.reload()
+        }
+      })()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [deleteMine])
 
   const refreshShareBonusStatus = useCallback(async () => {
     if (shareBonusHydratedRef.current) return
