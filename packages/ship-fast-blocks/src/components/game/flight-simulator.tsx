@@ -773,7 +773,21 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
             return `vec3(${f(0).toFixed(3)}, ${f(2).toFixed(3)}, ${f(4).toFixed(3)})`;
           };
 
-          if (cfg.planeColorHex) {
+          // Generated props are LLM-authored and frequently NOT valid hex
+          // (e.g. "Skyline Pilot", "1"). Feeding those into the GLSL recolor
+          // produced `vec3(NaN, NaN, NaN)`, which fails shader compilation and
+          // makes the whole aircraft invisible. Only recolor on a real 3/6-digit
+          // hex; otherwise keep the model's natural materials.
+          const normalizeHex = (v: unknown): string | null => {
+            if (typeof v !== "string") return null;
+            const c = v.trim().replace(/^#/, "");
+            if (/^[0-9a-fA-F]{6}$/.test(c)) return `#${c}`;
+            if (/^[0-9a-fA-F]{3}$/.test(c)) return `#${c[0]}${c[0]}${c[1]}${c[1]}${c[2]}${c[2]}`;
+            return null;
+          };
+          const planeHex = normalizeHex(cfg.planeColorHex);
+
+          if (planeHex) {
             playerAircraft.traverse((child) => {
               if (child instanceof THREE.Mesh && child.material) {
                 const mat = Array.isArray(child.material)
@@ -806,8 +820,8 @@ export default function FlightSimulator(cfg: FlightSimulatorProps) {
             // Preserve shading variation by mapping brightness to blue
             float t = brightness / 0.32;
 
-            vec3 darkBlue  = ${glslVec3FromHex(cfg.planeColorHex!, .4)};
-            vec3 lightBlue = ${glslVec3FromHex(cfg.planeColorHex!, 1.3)};
+            vec3 darkBlue  = ${glslVec3FromHex(planeHex, .4)};
+            vec3 lightBlue = ${glslVec3FromHex(planeHex, 1.3)};
             gl_FragColor.rgb = mix(darkBlue, lightBlue, t);
           }
           `
