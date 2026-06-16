@@ -4,7 +4,7 @@ import {
   KNOWN_LANGUAGES,
   preferIndicBcp47FromRomanizedPrompt,
   preferRomanizedBcp47FromSnippet,
-} from '../../config/languages.js'
+} from '../../config/languages'
 
 export const FRANC_ISO639_3_TO_BCP47: Record<string, string> = {
   eng: 'en',

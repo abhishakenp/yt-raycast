@@ -8,7 +8,6 @@ import {
   type FormEvent,
   type KeyboardEvent,
   type PointerEvent,
-  type ReactNode,
 } from 'react'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
@@ -18,7 +17,6 @@ import {
   getPromptSuggestionCacheKey,
   sanitizePromptSuggestions,
 } from '@/features/home/services/prompt-suggestions'
-import { GLASS_LENS_FILTER_ID } from '@/lib/glass-pill-html'
 import {
   PROMPT_LANG_DETECT_DEBOUNCE_MS,
   PROMPT_LANG_DETECT_MIN_CHARS,
@@ -36,6 +34,10 @@ import {
   normalizeLanguageCode,
 } from '@/lib/home/prompt-language-labels'
 import { cn } from '@/lib/utils'
+import { GlassDefs, GlassPillAnchor, GlassPillButton } from './GlassPill'
+import { CloseIcon, LogoMark, SearchIcon, ZapIcon } from './HomeIcons'
+import { PrivateGenerationModal } from './PrivateGenerationModal'
+import { handleShareClick, ShareBonusPanel } from './ShareBonusPanel'
 
 const LANGUAGE_OPTIONS = [
   ['en', 'English'],
@@ -104,249 +106,7 @@ const LazyHomepageAuthControls = lazy(() =>
   })),
 )
 
-type PillButtonProps = {
-  children: ReactNode
-  className?: string
-  disabled?: boolean
-  id?: string
-  type?: 'button' | 'submit'
-  ariaLabel?: string
-  onClick?: () => void
-}
-
-export const GlassDefs = () => (
-  <svg className="absolute -m-px size-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <filter
-        id={GLASS_LENS_FILTER_ID}
-        x="-50%"
-        y="-50%"
-        width="200%"
-        height="200%"
-        colorInterpolationFilters="sRGB"
-      >
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.0082 0.0058"
-          numOctaves="3"
-          seed="41"
-          result="noise"
-        />
-        <feGaussianBlur in="noise" stdDeviation="2" result="smooth" />
-        <feDisplacementMap
-          in="SourceGraphic"
-          in2="smooth"
-          scale="24"
-          xChannelSelector="R"
-          yChannelSelector="G"
-        />
-      </filter>
-    </defs>
-  </svg>
-)
-
-const PillDecorations = () => (
-  <>
-    <span className={`pointer-events-none absolute inset-0 z-0 rounded-[inherit] backdrop-blur-[32px] backdrop-saturate-[2.1] backdrop-brightness-[1.03] backdrop-contrast-[1.04] [filter:url(#${GLASS_LENS_FILTER_ID})]`} aria-hidden="true" />
-    <span className="pointer-events-none absolute inset-0 z-[1] translate-x-px -translate-y-[0.4px] rounded-[inherit] bg-[rgba(255,210,198,0.07)] opacity-30 mix-blend-screen backdrop-blur-[28px] backdrop-saturate-[2.2] backdrop-contrast-[1.04]" aria-hidden="true" />
-    <span className="pointer-events-none absolute inset-0 z-[2] -translate-x-px translate-y-[0.4px] rounded-[inherit] bg-[rgba(175,205,228,0.07)] opacity-30 mix-blend-screen backdrop-blur-[28px] backdrop-saturate-[2.2] backdrop-contrast-[1.04]" aria-hidden="true" />
-    <span className="pointer-events-none absolute inset-0 z-[3] rounded-[inherit] bg-[linear-gradient(180deg,rgba(8,10,18,0.22)_0%,rgba(255,255,255,0.04)_48%,rgba(218,224,232,0.1)_100%),radial-gradient(ellipse_100%_70%_at_88%_12%,rgba(255,255,255,0.06)_0%,transparent_45%)] opacity-55" aria-hidden="true" />
-    <span className="pointer-events-none absolute inset-0 z-[4] rounded-[inherit] bg-[conic-gradient(from_200deg_at_35%_25%,rgba(235,238,242,0.07),rgba(210,216,224,0.08),rgba(225,228,234,0.07),rgba(205,212,222,0.08),rgba(235,238,242,0.07))] opacity-25 mix-blend-soft-light" aria-hidden="true" />
-    <span className="pointer-events-none absolute inset-0 z-[5] rounded-[inherit] bg-[linear-gradient(172deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0)_42%),linear-gradient(358deg,rgba(255,255,255,0)_54%,rgba(255,255,255,0.05)_100%)] opacity-55 mix-blend-soft-light" aria-hidden="true" />
-    <span className="pointer-events-none absolute inset-0 z-[6] rounded-[inherit] shadow-[inset_0_1px_0_rgba(255,255,255,0.75),inset_0_0_0_1px_rgba(255,255,255,0.16),inset_0_-12px_28px_rgba(0,6,30,0.28)]" aria-hidden="true" />
-  </>
-)
-
-export const GlassPillButton = ({
-  children,
-  className = '',
-  disabled,
-  id,
-  type = 'button',
-  ariaLabel,
-  onClick,
-}: PillButtonProps) => (
-  <button
-    type={type}
-    className={cn(
-      'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
-      className,
-    )}
-    id={id}
-    disabled={disabled}
-    aria-label={ariaLabel}
-    onClick={onClick}
-  >
-    <PillDecorations />
-    <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">{children}</span>
-  </button>
-)
-
-export const GlassPillAnchor = ({
-  children,
-  className = '',
-  href,
-}: {
-  children: ReactNode
-  className?: string
-  href: string
-}) => (
-  <a
-    href={href}
-    className={cn(
-      'pill relative isolate inline-flex min-h-12 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 bg-transparent px-5 py-3 font-[inherit] font-semibold tracking-[-0.015em] text-inherit shadow-[0_14px_32px_rgba(0,0,0,0.38)] transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.25)] [-webkit-tap-highlight-color:transparent] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white',
-      className,
-    )}
-  >
-    <PillDecorations />
-    <span className="pill__body relative z-[7] inline-flex items-center justify-center gap-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]">{children}</span>
-  </a>
-)
-
-const LogoMark = () => (
-  <img
-    src="/assets/logo-transparent.png"
-    alt="Ship Fast Logo"
-    className="w-full h-full object-contain"
-    aria-hidden="true"
-  />
-)
-
-const SearchIcon = () => (
-  <svg
-    className="size-4 shrink-0 text-white/35"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-)
-
-const CloseIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-)
-
-const ZapIcon = () => (
-  <svg
-    className="size-4"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  </svg>
-)
-
-const ShareIcon = ({
-  children,
-  className,
-  id,
-  label,
-  title,
-  onClick,
-}: {
-  children: ReactNode
-  className?: string
-  id: string
-  label: string
-  title: string
-  onClick?: () => void
-}) => (
-  <button
-    type="button"
-    className={cn(
-      'grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-px hover:bg-white/[0.1] hover:text-white',
-      className,
-    )}
-    id={id}
-    title={title}
-    aria-label={label}
-    onClick={onClick}
-  >
-    <svg className="size-[18px]" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      {children}
-    </svg>
-  </button>
-)
-
-const PrivateGenerationModal = ({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean
-  onClose: () => void
-}) => (
-  <div
-    className={cn('fixed inset-0 z-[260] hidden items-center justify-center px-4', isOpen && 'flex')}
-    id="private-gen-modal"
-    aria-hidden={!isOpen}
-  >
-    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" id="private-gen-modal-backdrop" onClick={onClose} />
-    <div
-      className="relative z-[1] grid w-[min(420px,100%)] gap-4 rounded-[28px] border border-white/12 bg-[#10131c]/95 p-6 text-center text-white shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-[24px]"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="private-gen-modal-title"
-    >
-      <button
-        className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/[0.1] hover:text-white"
-        id="private-gen-modal-close"
-        aria-label="Close"
-        onClick={onClose}
-      >
-        <span>Close</span>
-      </button>
-      <div className="mx-auto grid size-16 place-items-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-cyan-200">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-      </div>
-      <h2 className="m-0 font-sans text-2xl font-bold tracking-[-0.03em]" id="private-gen-modal-title">Private Generation</h2>
-      <p className="m-0 text-sm leading-relaxed text-white/65">Your generated site won't be publicly listed - only you can access it.</p>
-      <p className="m-0 text-sm leading-relaxed text-white/65">
-        This is a <strong>Pro plan</strong> feature.
-      </p>
-      <a href="/pricing" className="mx-auto inline-flex min-h-11 items-center justify-center rounded-full bg-cyan-300 px-5 text-sm font-bold text-slate-950 transition-transform hover:-translate-y-px">
-        Upgrade to Pro
-      </a>
-    </div>
-  </div>
-)
+export { GlassDefs, GlassPillAnchor, GlassPillButton } from './GlassPill'
 
 const TopActions = () => {
   const [authRequested, setAuthRequested] = useState(false)
@@ -711,10 +471,6 @@ export const HomePage = () => {
     setPromptSuggestions(immediateSuggestions)
     setPromptSuggestActive(0)
 
-    if (import.meta.env.VITE_ENABLE_AI_PROMPT_SUGGESTIONS !== '1') {
-      return
-    }
-
     const controller = new AbortController()
     promptSuggestAbortRef.current = controller
     const timeout = window.setTimeout(() => {
@@ -773,49 +529,8 @@ export const HomePage = () => {
     }
   }, [errorMessage, refreshShareBonusStatus, shareBonusClaimed])
 
-  const handleShareClick = async (platform: string) => {
-    await claimShareBonus()
-    const siteUrl = 'https://ship-fast.io'
-    const messages: Record<string, string> = {
-      en: `I just built a site in minutes with Ship Fast — try it free: ${siteUrl}`,
-      hi: `मैंने Ship Fast से मिनटों में साइट बनाई — आप भी बनाएं: ${siteUrl}`,
-      ta: `Ship Fast மூலம் நிமிடங்களில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${siteUrl}`,
-      te: `Ship Fast తో నిమిషాల్లో సైట్ చేశాను — మీరూ ట్రై చేయండి: ${siteUrl}`,
-      bn: `Ship Fast দিয়ে মিনিটে সাইট বানিয়েছি — আপনিও চেষ্টা করুন: ${siteUrl}`,
-      mr: `Ship Fast ने मिनिटांत साइट बनवली — तुम्हीही बनवा: ${siteUrl}`,
-      kn: `Ship Fast ನಿಂದ ನಿಮಿಷಗಳಲ್ಲಿ ಸೈಟ್ ಮಾಡಿದೆ — ನೀವೂ ಮಾಡಿ: ${siteUrl}`,
-      ml: `Ship Fast ഉപയോഗിച്ച് മിനിറ്റുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${siteUrl}`,
-      pa: `Ship Fast ਨਾਲ ਮਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${siteUrl}`,
-      gu: `Ship Fast વડે મિનિટોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${siteUrl}`,
-    }
-
-    const langs = navigator.languages?.length ? navigator.languages : [navigator.language]
-    let locale = 'en'
-    for (const L of langs) {
-      const c = String(L || '').toLowerCase().split('-')[0]
-      if (c && c !== 'en' && messages[c]) { locale = c; break }
-    }
-    const message = messages[locale] || messages.en
-    const encodedUrl = encodeURIComponent(siteUrl)
-    const encodedMessage = encodeURIComponent(message)
-
-    const shareUrls: Record<string, string> = {
-      whatsapp: `https://wa.me/?text=${encodedMessage}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-      x: `https://twitter.com/intent/tweet?text=${encodedMessage}&url=${encodedUrl}`,
-      telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedMessage}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-    }
-
-    if (platform === 'native' && navigator.share) {
-      try {
-        await navigator.share({ title: 'Ship Fast', text: message, url: siteUrl })
-      } catch {
-        // User cancelled or error
-      }
-    } else if (shareUrls[platform]) {
-      window.open(shareUrls[platform], '_blank', 'noopener,noreferrer')
-    }
+  const onShareClick = (platform: string) => {
+    void handleShareClick(platform, claimShareBonus)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -1183,59 +898,7 @@ export const HomePage = () => {
                     </div>
                     <div className="hidden" id="gen-counter" />
 
-                    <div className={cn('hidden items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm text-white/65', showSharePanel && 'flex')} id="share-bonus-panel">
-                      <span>Share for +1 free preview</span>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <ShareIcon className="text-[#25d366]" id="bonus-share-wa" title="WhatsApp" label="Share on WhatsApp" onClick={() => handleShareClick('whatsapp')}>
-                          <path
-                            fill="currentColor"
-                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
-                          />
-                        </ShareIcon>
-                        <ShareIcon className="text-[#1877f2]" id="bonus-share-fb" title="Facebook" label="Share on Facebook" onClick={() => handleShareClick('facebook')}>
-                          <path
-                            fill="currentColor"
-                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                          />
-                        </ShareIcon>
-                        <ShareIcon className="text-white" id="bonus-share-tw" title="X" label="Share on X" onClick={() => handleShareClick('x')}>
-                          <path
-                            fill="currentColor"
-                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                          />
-                        </ShareIcon>
-                        <ShareIcon className="text-[#2aabee]" id="bonus-share-tg" title="Telegram" label="Share on Telegram" onClick={() => handleShareClick('telegram')}>
-                          <path
-                            fill="currentColor"
-                            d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
-                          />
-                        </ShareIcon>
-                        <ShareIcon className="text-[#0a66c2]" id="bonus-share-li" title="LinkedIn" label="Share on LinkedIn" onClick={() => handleShareClick('linkedin')}>
-                          <path
-                            fill="currentColor"
-                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
-                          />
-                        </ShareIcon>
-                        <GlassPillButton className="size-8 min-h-8 min-w-8 p-0" id="bonus-share-native" onClick={() => handleShareClick('native')}>
-                          <svg
-                            className="size-[18px]"
-                            viewBox="0 0 24 24"
-                            width="18"
-                            height="18"
-                            aria-hidden="true"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                            <polyline points="16 6 12 2 8 6" />
-                            <line x1="12" x2="12" y1="2" y2="15" />
-                          </svg>
-                        </GlassPillButton>
-                      </div>
-                    </div>
+                    <ShareBonusPanel visible={showSharePanel} onShareClick={onShareClick} />
 
                     <div className="hidden" id="private-gen-row">
                       <label className="flex items-center gap-2 text-sm text-white/60" htmlFor="private-gen-checkbox">
