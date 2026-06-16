@@ -2,10 +2,13 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import {
+  getMedusaAdminEmail,
+  getMedusaAdminPassword,
   getMedusaAdminUrl,
   getMedusaBackendUrl,
   getMedusaPublishableKey,
   getMedusaStorefrontUrl,
+  hasConfiguredMedusaBackendUrl,
   type MedusaEnv,
 } from './medusa-store-env'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
@@ -17,6 +20,19 @@ type MedusaProvisionOptions = {
   fetch?: FetchLike
   metaEnv?: MedusaEnv
 }
+type MedusaStoreApiAvailability = {
+  liveStoreApiReady: boolean
+  warning?: string
+  status?: number
+}
+type MedusaHandoff = {
+  adminEmail?: string
+  adminPassword?: string
+  adminUrl: string
+  backendUrl: string
+  storefrontUrl: string
+  tenantId: string
+}
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -27,7 +43,9 @@ const json = (body: unknown, init?: ResponseInit) =>
     },
   })
 
-const readJsonBody = async (request: Request): Promise<Record<string, unknown>> => {
+const readJsonBody = async (
+  request: Request,
+): Promise<Record<string, unknown>> => {
   const text = await request.text()
   if (!text.trim()) return {}
   const parsed = JSON.parse(text) as unknown
@@ -36,7 +54,10 @@ const readJsonBody = async (request: Request): Promise<Record<string, unknown>> 
     : {}
 }
 
-const stringValue = (body: Record<string, unknown>, key: string): string | undefined => {
+const stringValue = (
+  body: Record<string, unknown>,
+  key: string,
+): string | undefined => {
   const value = body[key]
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
 }
@@ -72,12 +93,12 @@ const validateMedusaStoreApi = async (
   backendUrl: string,
   publishableKey: string,
   fetchImpl: FetchLike,
-): Promise<Response | null> => {
+): Promise<MedusaStoreApiAvailability> => {
   if (!publishableKey.trim()) {
-    return json(
-      { error: 'Medusa Store API not configured.' },
-      { status: 503 },
-    )
+    return {
+      liveStoreApiReady: false,
+      warning: 'Medusa Store API not configured.',
+    }
   }
 
   try {
@@ -88,23 +109,63 @@ const validateMedusaStoreApi = async (
     })
 
     if (!response.ok) {
-      return json(
-        { error: 'Medusa Store API is unavailable.', status: response.status },
-        { status: 502 },
-      )
+      return {
+        liveStoreApiReady: false,
+        status: response.status,
+        warning: 'Medusa Store API is unavailable.',
+      }
     }
 
-    return null
+    return { liveStoreApiReady: true }
   } catch (error) {
-    return json(
-      {
-        error:
-          error instanceof Error
-            ? `Medusa Store API is unavailable: ${error.message}`
-            : 'Medusa Store API is unavailable.',
-      },
-      { status: 502 },
-    )
+    return {
+      liveStoreApiReady: false,
+      warning:
+        error instanceof Error
+          ? `Medusa Store API is unavailable: ${error.message}`
+          : 'Medusa Store API is unavailable.',
+    }
+  }
+}
+
+const createDefaultMedusaConfigJson = (
+  sessionId: string,
+  availability: MedusaStoreApiAvailability,
+): string =>
+  JSON.stringify({
+    provider: 'medusa',
+    tenantMode: 'session',
+    tenantId: sessionId,
+    publishableKeyConfigured: availability.liveStoreApiReady,
+    liveStoreApiReady: availability.liveStoreApiReady,
+    ...(availability.warning === undefined
+      ? {}
+      : { warning: availability.warning }),
+    ...(availability.status === undefined
+      ? {}
+      : { storeApiStatus: availability.status }),
+  })
+
+const createMedusaHandoff = (
+  sessionId: string,
+  backendUrl: string,
+  adminUrl: string,
+  storefrontUrl: string,
+  env?: MedusaEnv,
+  metaEnv?: MedusaEnv,
+): MedusaHandoff | undefined => {
+  if (!hasConfiguredMedusaBackendUrl(env, metaEnv)) return undefined
+
+  const adminEmail = getMedusaAdminEmail(env, metaEnv)
+  const adminPassword = getMedusaAdminPassword(env, metaEnv)
+
+  return {
+    ...(adminEmail === undefined ? {} : { adminEmail }),
+    ...(adminPassword === undefined ? {} : { adminPassword }),
+    adminUrl,
+    backendUrl,
+    storefrontUrl,
+    tenantId: sessionId,
   }
 }
 
@@ -140,13 +201,19 @@ export const createSessionMedusaProvisionResponse = async (
     const adminUrl = getMedusaAdminUrl(options.env, options.metaEnv)
     const storefrontUrl = getMedusaStorefrontUrl(options.env, options.metaEnv)
     const publishableKey = getMedusaPublishableKey(options.env, options.metaEnv)
-    const unavailableResponse = await validateMedusaStoreApi(
+    const handoff = createMedusaHandoff(
+      sessionId,
+      backendUrl,
+      adminUrl,
+      storefrontUrl,
+      options.env,
+      options.metaEnv,
+    )
+    const availability = await validateMedusaStoreApi(
       backendUrl,
       publishableKey,
       options.fetch ?? fetch,
     )
-
-    if (unavailableResponse !== null) return unavailableResponse
 
     const result = await createClient(clientOverride).mutation(
       api.sessions.upsertCommerceConfig,
@@ -156,22 +223,23 @@ export const createSessionMedusaProvisionResponse = async (
         backendUrl,
         adminUrl,
         storefrontUrl,
+        errorMessage: availability.warning,
         configJson:
           body.config === undefined
             ? (stringValue(body, 'configJson') ??
-              JSON.stringify({
-                provider: 'medusa',
-                tenantMode: 'session',
-                tenantId: sessionId,
-                publishableKeyConfigured: true,
-              }))
+              createDefaultMedusaConfigJson(sessionId, availability))
             : JSON.stringify(body.config),
       },
     )
 
     return json({
       ...result,
+      handoff,
+      liveStoreApiReady: availability.liveStoreApiReady,
       status: 'ready',
+      ...(availability.warning === undefined
+        ? {}
+        : { warning: availability.warning }),
     })
   } catch (error) {
     return errorResponse(error)
