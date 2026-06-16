@@ -4757,6 +4757,7 @@ export const upsertCommerceConfig = mutation({
     adminUrl: v.optional(v.string()),
     storefrontUrl: v.optional(v.string()),
     configJson: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId)
@@ -4785,6 +4786,7 @@ export const upsertCommerceConfig = mutation({
         adminUrl: args.adminUrl,
         storefrontUrl: args.storefrontUrl,
         configJson: args.configJson,
+        errorMessage: args.errorMessage,
         status: 'ready',
         updatedAt: now,
       })
@@ -4796,6 +4798,7 @@ export const upsertCommerceConfig = mutation({
         adminUrl: args.adminUrl,
         storefrontUrl: args.storefrontUrl,
         configJson: args.configJson,
+        errorMessage: args.errorMessage,
         createdAt: now,
         updatedAt: now,
       })
