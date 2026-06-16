@@ -5,10 +5,36 @@ interface TextEditState {
   originalText: string
 }
 
+/** 0-based index of the element's text among identical occurrences in document
+ *  order, so the server edits the clicked element rather than the first textual
+ *  match (e.g. the same word in the nav vs. a heading). */
+function computeOccurrenceIndex(
+  container: HTMLElement,
+  element: HTMLElement,
+  target: string,
+): number {
+  if (!target) return 0
+  try {
+    const range = document.createRange()
+    range.setStart(container, 0)
+    range.setEndBefore(element)
+    const before = range.toString()
+    let count = 0
+    let at = before.indexOf(target)
+    while (at !== -1) {
+      count += 1
+      at = before.indexOf(target, at + target.length)
+    }
+    return count
+  } catch {
+    return 0
+  }
+}
+
 export function useTextEdit(
   containerRef: React.RefObject<HTMLElement | null>,
   editMode: boolean,
-  onTextChange: (change: { oldText: string; newText: string; element: HTMLElement }) => void,
+  onTextChange: (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => void,
   onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void,
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void,
 ) {
@@ -30,7 +56,8 @@ export function useTextEdit(
 
       const newText = active.element.textContent || ''
       if (newText !== active.originalText && newText.trim()) {
-        callbackRef.current({ oldText: active.originalText, newText, element: active.element })
+        const occurrenceIndex = computeOccurrenceIndex(container, active.element, active.originalText)
+        callbackRef.current({ oldText: active.originalText, newText, element: active.element, occurrenceIndex })
       }
 
       cleanupElement(active.element)
@@ -130,6 +157,11 @@ export function useTextEdit(
   }, [containerRef, editMode])
 }
 
+// Block-level descendants that mark an element as a multi-block container
+// rather than an editable leaf text block.
+const BLOCK_CHILD_SELECTOR =
+  'div,p,ul,ol,section,article,header,footer,nav,main,aside,table,form,h1,h2,h3,h4,h5,h6,li,blockquote,figure'
+
 function findTextElement(el: HTMLElement): HTMLElement | null {
   let current: HTMLElement | null = el
   while (current) {
@@ -164,7 +196,12 @@ function findTextElement(el: HTMLElement): HTMLElement | null {
           'em',
           'small',
           'blockquote',
-        ].includes(tag)
+        ].includes(tag) &&
+        // Only edit leaf text blocks. Containers whose text spans multiple
+        // block-level children (e.g. a card wrapping <h3>+<p>) flatten to a
+        // run that can't be located in the stored HTML (block tags between the
+        // words) and would be destructive to replace, so skip them.
+        !current.querySelector(BLOCK_CHILD_SELECTOR)
       ) {
         return current
       }

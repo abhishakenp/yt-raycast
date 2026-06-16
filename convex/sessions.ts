@@ -371,13 +371,70 @@ const createFingerprint = (values: string[]): string | undefined => {
 const SCRIPT_STYLE_BLOCK_RE =
   /<(script|style|noscript|template)\b[\s\S]*?<\/\1>/gi
 
-const createWhitespaceTolerantTextPattern = (
+// Text-level (inline) tags only. The needle is a block's flattened textContent,
+// so inline formatting (<strong>, <a>, <br>, …) may be interspersed with the
+// text and must be tolerated. Structural/block wrappers (<p>, <li>, <h1>, <div>)
+// are deliberately excluded so the match never swallows — and the replacement
+// never destroys — the element that contains the edited text.
+const INLINE_TAG =
+  '<\\/?(?:a|abbr|b|bdi|bdo|big|br|cite|code|data|del|dfn|em|font|i|ins|kbd|label|mark|q|rp|rt|ruby|s|samp|small|span|strong|sub|sup|time|tt|u|var|wbr)\\b[^>]*>'
+
+// Markup that may sit between the characters of a flattened text run without
+// being part of it: inline tags AND HTML comments. React renders `<!-- -->`
+// separators between adjacent text nodes, so the stored HTML routinely contains
+// e.g. `\u201C<!-- -->One paw<!-- -->\u201D` while the DOM textContent is `\u201COne paw\u201D`.
+// Block wrappers are deliberately NOT bridged (would let a match swallow the
+// element and the replacement destroy it).
+const BRIDGE_MARKUP = `(?:${INLINE_TAG}|<!--[\\s\\S]*?-->)`
+
+const createMarkupTolerantTextPattern = (
   value: string,
 ): RegExp | null => {
-  const tokens = value.trim().split(/\s+/).filter(Boolean)
-  if (tokens.length === 0) return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
 
-  return new RegExp(tokens.map(escapeRegExp).join('\\s+'))
+  // Guard against pathological backtracking
+  if (trimmed.length > 500) return null
+
+  const entityAlternations: Record<string, string> = {
+    '&': '(?:&amp;|&)',
+    '<': '(?:&lt;|<)',
+    '>': '(?:&gt;|>)',
+    '"': '(?:&quot;|&#34;|")',
+    "'": '(?:&#39;|&apos;|\\u0027)',
+    '\u2018': '(?:&#8216;|&lsquo;|\u2018)',
+    '\u2019': '(?:&#8217;|&rsquo;|\u2019)',
+    '\u201C': '(?:&#8220;|&ldquo;|\u201C)',
+    '\u201D': '(?:&#8221;|&rdquo;|\u201D)',
+    '\u2014': '(?:&mdash;|&#8212;|\u2014)',
+    '\u2013': '(?:&ndash;|&#8211;|\u2013)',
+    '\u2026': '(?:&hellip;|&#8230;|\u2026)',
+  }
+
+  let pattern = ''
+  for (let i = 0; i < trimmed.length; i++) {
+    const char = trimmed[i]
+
+    // Any whitespace in the needle should tolerate runs of whitespace,
+    // nbsp entities, and interspersed inline tags / comments (e.g. <br>).
+    if (/\s/.test(char)) {
+      pattern += `(?:${INLINE_TAG}|<!--[\\s\\S]*?-->|\\s|&nbsp;|&#160;)+`
+      continue
+    }
+
+    const entityAlt = entityAlternations[char]
+    pattern += entityAlt ?? escapeRegExp(char)
+
+    // Allow optional inline tags / comments between characters
+    if (i < trimmed.length - 1) {
+      pattern += `(?:${BRIDGE_MARKUP})*`
+    }
+  }
+
+  // Allow optional inline tags / comments wrapping the start and end of the text
+  pattern = `(?:${BRIDGE_MARKUP})*${pattern}(?:${BRIDGE_MARKUP})*`
+
+  return new RegExp(pattern)
 }
 
 const applyImageSwap = (
@@ -399,10 +456,97 @@ const applyImageSwap = (
   return { html: replaced, replaced: replaced !== html }
 }
 
+// Surgically update only the inline `style` attribute of the element identified
+// by its exact `class` attribute (the only stable anchor present in BOTH the
+// live editor DOM and the server-rendered stored preview HTML — note the stored
+// HTML has no data-tsd-source), leaving the rest of the document intact. Style
+// edits must NEVER replace the whole document. `occurrenceIndex` disambiguates
+// repeated class strings in document order. Returns replaced:false (never
+// throws, never corrupts) when the anchor is missing or not found, so a failed
+// style edit leaves the page untouched.
+const applyStyleEdit = (
+  html: string,
+  classAnchor: string | undefined,
+  styleValue: string | undefined,
+  occurrenceIndex?: number,
+): { html: string; replaced: boolean } => {
+  const cls = String(classAnchor ?? '').trim()
+  if (!html.trim() || !cls) return { html, replaced: false }
+  const tagRe = new RegExp(
+    `<[a-zA-Z][\\w-]*\\b[^>]*\\bclass="${escapeRegExp(cls)}"[^>]*?>`,
+    'g',
+  )
+  const matches: Array<{ index: number; tag: string }> = []
+  let m: RegExpExecArray | null
+  while ((m = tagRe.exec(html)) !== null) {
+    matches.push({ index: m.index, tag: m[0] })
+    if (m[0].length === 0) tagRe.lastIndex += 1
+  }
+  if (matches.length === 0) return { html, replaced: false }
+  const wanted =
+    occurrenceIndex !== undefined && occurrenceIndex >= 0
+      ? Math.min(occurrenceIndex, matches.length - 1)
+      : 0
+  const target = matches[wanted]
+  const escaped = String(styleValue ?? '').replace(/"/g, '&quot;')
+  const styleAttrRe = /\sstyle\s*=\s*"[^"]*"/i
+  const selfClose = /\/>$/.test(target.tag)
+  let updatedTag: string
+  if (styleAttrRe.test(target.tag)) {
+    updatedTag = target.tag.replace(styleAttrRe, ` style="${escaped}"`)
+  } else if (selfClose) {
+    updatedTag = target.tag.replace(/\/>$/, ` style="${escaped}" />`)
+  } else {
+    updatedTag = target.tag.replace(/>$/, ` style="${escaped}">`)
+  }
+  const edited =
+    html.slice(0, target.index) +
+    updatedTag +
+    html.slice(target.index + target.tag.length)
+  return { html: edited, replaced: true }
+}
+
+// Collect every non-overlapping occurrence of `from` in `text`, by exact
+// substring first; if there are none, fall back to the markup-tolerant pattern
+// (inline tags/entities split the text). Returns matches in document order.
+const collectTextMatches = (
+  text: string,
+  from: string,
+): Array<{ index: number; length: number }> => {
+  const exact: Array<{ index: number; length: number }> = []
+  let cursor = text.indexOf(from)
+  while (cursor >= 0) {
+    exact.push({ index: cursor, length: from.length })
+    cursor = text.indexOf(from, cursor + Math.max(1, from.length))
+  }
+  if (exact.length > 0) return exact
+
+  const pattern = createMarkupTolerantTextPattern(from)
+  if (pattern === null) return []
+  const globalPattern = new RegExp(pattern.source, 'g')
+  const tolerant: Array<{ index: number; length: number }> = []
+  let match: RegExpExecArray | null
+  while ((match = globalPattern.exec(text)) !== null) {
+    if (match[0].length === 0) {
+      globalPattern.lastIndex += 1
+      continue
+    }
+    tolerant.push({ index: match.index, length: match[0].length })
+    globalPattern.lastIndex = match.index + match[0].length
+  }
+  return tolerant
+}
+
+// Replace the `occurrenceIndex`-th occurrence of `oldText` with `newText`.
+// occurrenceIndex (document order, 0-based) disambiguates repeated text — e.g.
+// the same word in the nav vs. a heading — so the edit lands on the element the
+// user actually clicked rather than the first textual match. Defaults to the
+// first occurrence when omitted (legacy behaviour).
 const applyPreviewTextEdit = (
   html: string,
   oldText: string | undefined,
   newText: string | undefined,
+  occurrenceIndex?: number,
 ): { html: string; replaced: boolean } => {
   const from = String(oldText ?? '')
   const to = String(newText ?? '')
@@ -413,30 +557,20 @@ const applyPreviewTextEdit = (
     blocks.push({ token, value })
     return token
   })
-  const index = protectedHtml.indexOf(from)
-  if (index >= 0) {
-    const edited = `${protectedHtml.slice(0, index)}${to}${protectedHtml.slice(index + from.length)}`
-    return {
-      html: blocks.reduce(
-        (current, block) => current.replace(block.token, block.value),
-        edited,
-      ),
-      replaced: true,
-    }
-  }
 
-  const tolerantPattern = createWhitespaceTolerantTextPattern(from)
-  const tolerantMatch =
-    tolerantPattern === null ? null : protectedHtml.match(tolerantPattern)
-  if (
-    tolerantMatch === null ||
-    tolerantMatch.index === undefined ||
-    tolerantMatch[0].length === 0
-  ) {
-    return { html, replaced: false }
-  }
+  const matches = collectTextMatches(protectedHtml, from)
+  if (matches.length === 0) return { html, replaced: false }
 
-  const edited = `${protectedHtml.slice(0, tolerantMatch.index)}${to}${protectedHtml.slice(tolerantMatch.index + tolerantMatch[0].length)}`
+  const wanted =
+    occurrenceIndex !== undefined && occurrenceIndex >= 0
+      ? Math.min(occurrenceIndex, matches.length - 1)
+      : 0
+  const target = matches[wanted]
+  // Exact matches are byte-for-byte; tolerant matches may span inline markup, so
+  // escape the replacement to keep it inert as HTML.
+  const isExact = target.length === from.length && protectedHtml.startsWith(from, target.index)
+  const replacement = isExact ? to : escapeHtml(to)
+  const edited = `${protectedHtml.slice(0, target.index)}${replacement}${protectedHtml.slice(target.index + target.length)}`
   return {
     html: blocks.reduce(
       (current, block) => current.replace(block.token, block.value),
@@ -2054,6 +2188,7 @@ const applyTextEditToCurrentArtifacts = async (
   beforeText: string | undefined,
   afterText: string | undefined,
   now: number,
+  occurrenceIndex?: number,
 ): Promise<{
   openUiSource?: string
   siteSpecJson?: string
@@ -2074,6 +2209,7 @@ const applyTextEditToCurrentArtifacts = async (
       homeModule.source,
       beforeText,
       afterText,
+      occurrenceIndex,
     )
     if (!sourceEdit.replaced) {
       return { openUiSource, siteSpecJson, openUiReplaced, siteSpecReplaced }
@@ -3947,6 +4083,146 @@ export const getOwnedExportForGitHubPush = query({
   },
 })
 
+type SessionEditInput = {
+  editType: 'text' | 'ai_rewrite' | 'chat' | 'style' | 'image'
+  targetLabel?: string
+  beforeText?: string
+  afterText?: string
+  afterHtml?: string
+  instruction?: string
+  /** 0-based document-order index disambiguating repeated text (nav vs heading). */
+  occurrenceIndex?: number
+}
+
+// Apply a single edit to a session's latest preview: write a new preview
+// version, update the editable artifacts (OpenUI source + site spec), and
+// record the edit. The caller is responsible for ownership checks — this is
+// shared by createEdit (after asserting ownership) and forkSession (which
+// re-applies the pending edit onto the freshly forked, owned copy).
+const applySessionEdit = async (
+  ctx: MutationCtx,
+  session: Doc<'sessions'>,
+  args: SessionEditInput,
+  now: number,
+) => {
+  const sessionId = session._id
+
+  const preview = await ctx.db
+    .query('previews')
+    .withIndex('by_sessionId_version', (index) =>
+      index.eq('sessionId', sessionId),
+    )
+    .order('desc')
+    .first()
+
+  preview !== null ||
+    (() => {
+      throw new ConvexError({
+        code: 'PREVIEW_NOT_READY',
+        message: 'Preview is not ready',
+      })
+    })()
+
+  const editedPreview =
+    args.afterHtml !== undefined
+      ? { html: args.afterHtml, replaced: true }
+      : args.editType === 'image'
+        ? applyImageSwap(preview.html, args.beforeText, args.afterText)
+        : args.editType === 'style'
+          ? applyStyleEdit(
+              preview.html,
+              args.beforeText,
+              args.afterText,
+              args.occurrenceIndex,
+            )
+          : applyPreviewTextEdit(
+              preview.html,
+              args.beforeText,
+              args.afterText,
+              args.occurrenceIndex,
+            )
+
+  if (!editedPreview.replaced) {
+    throw new ConvexError({
+      code: 'TEXT_NOT_FOUND',
+      message:
+        args.editType === 'image'
+          ? 'Image source was not found in the current preview.'
+          : 'Selected text was not found in the current preview. Select a smaller text block and try again.',
+    })
+  }
+
+  const nextPreviewVersion = preview.version + 1
+
+  let openUiSource: string | undefined
+  let siteSpecJson: string | undefined
+  if (args.afterHtml === undefined && args.editType !== 'style') {
+    // The rendered preview HTML already matched (checked above), so the edit is
+    // valid and gets saved regardless. Updating the editable OpenUI/site-spec
+    // source is best-effort: inline markup (<br>, <span>, …) can split the text
+    // across nodes in the source even though it reads contiguously in the HTML,
+    // so a miss here must NOT discard the user's edit.
+    const artifactSnapshot = await applyTextEditToCurrentArtifacts(
+      ctx,
+      sessionId,
+      args.beforeText,
+      args.afterText,
+      now,
+      args.occurrenceIndex,
+    )
+    openUiSource = artifactSnapshot.openUiSource
+    siteSpecJson = artifactSnapshot.siteSpecJson
+  } else {
+    const artifactSnapshot = await snapshotCurrentArtifacts(ctx, sessionId)
+    openUiSource = artifactSnapshot.openUiSource
+    siteSpecJson = artifactSnapshot.siteSpecJson
+  }
+
+  await ctx.db.insert('previews', {
+    sessionId,
+    version: nextPreviewVersion,
+    html: editedPreview.html,
+    openUiSource,
+    siteSpecJson,
+    source: args.editType === 'ai_rewrite' ? 'rewrite' : 'edit',
+    createdAt: now,
+  })
+  await ctx.db.patch(sessionId, {
+    previewVersion: nextPreviewVersion,
+    updatedAt: now,
+  })
+  await ctx.db.insert('generationEvents', {
+    sessionId,
+    eventType: 'preview_reload',
+    message: 'Preview updated',
+    previewVersion: nextPreviewVersion,
+    createdAt: now,
+  })
+
+  // The edits table only models text-style edits (not image swaps), so record
+  // history for those; the preview/artifact updates above apply regardless.
+  if (args.editType !== 'image') {
+    await ctx.db.insert('edits', {
+      sessionId,
+      previewVersion: nextPreviewVersion,
+      editType: args.editType,
+      targetLabel: args.targetLabel,
+      beforeText: args.beforeText,
+      afterText: args.afterText,
+      afterHtml: args.afterHtml,
+      instruction: args.instruction,
+      createdAt: now,
+      userId: session.userId,
+    })
+  }
+
+  return {
+    sessionId,
+    previewVersion: nextPreviewVersion,
+    saved: editedPreview.replaced,
+  }
+}
+
 export const createEdit = mutation({
   args: {
     sessionId: v.id('sessions'),
@@ -3963,6 +4239,7 @@ export const createEdit = mutation({
     afterText: v.optional(v.string()),
     afterHtml: v.optional(v.string()),
     instruction: v.optional(v.string()),
+    occurrenceIndex: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId)
@@ -3978,98 +4255,143 @@ export const createEdit = mutation({
 
     await assertCanMutateSession(ctx, session, args.anonymousOwnerSecret)
 
-    const preview = await ctx.db
-      .query('previews')
-      .withIndex('by_sessionId_version', (index) =>
-        index.eq('sessionId', args.sessionId),
-      )
-      .order('desc')
-      .first()
+    return await applySessionEdit(ctx, session, args, now)
+  },
+})
 
-    preview !== null ||
+// Fork a session the caller does not own into a fresh copy they DO own, then
+// optionally re-apply the edit that triggered the fork. Used by the inline
+// editor: when createEdit throws FORBIDDEN, the client forks here and lands the
+// user on their own editable copy with the change already applied.
+export const forkSession = mutation({
+  args: {
+    sourceSessionId: v.id('sessions'),
+    anonymousOwnerSecret: v.optional(v.string()),
+    edit: v.optional(
+      v.object({
+        editType: v.union(
+          v.literal('text'),
+          v.literal('ai_rewrite'),
+          v.literal('chat'),
+          v.literal('style'),
+          v.literal('image'),
+        ),
+        targetLabel: v.optional(v.string()),
+        beforeText: v.optional(v.string()),
+        afterText: v.optional(v.string()),
+        afterHtml: v.optional(v.string()),
+        instruction: v.optional(v.string()),
+        occurrenceIndex: v.optional(v.number()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const source = await ctx.db.get(args.sourceSessionId)
+    const now = Date.now()
+
+    source !== null ||
       (() => {
         throw new ConvexError({
-          code: 'PREVIEW_NOT_READY',
-          message: 'Preview is not ready',
+          code: 'NOT_FOUND',
+          message: 'Session not found',
         })
       })()
 
-    const editedPreview =
-      args.afterHtml !== undefined
-        ? { html: args.afterHtml, replaced: true }
-        : args.editType === 'image'
-          ? applyImageSwap(preview.html, args.beforeText, args.afterText)
-          : applyPreviewTextEdit(preview.html, args.beforeText, args.afterText)
+    const userId = await getUserId(ctx)
+    const anonOwnerSecretHash =
+      userId === undefined && args.anonymousOwnerSecret !== undefined
+        ? await hashOwnerSecret(args.anonymousOwnerSecret)
+        : undefined
 
-    if (!editedPreview.replaced) {
-      throw new ConvexError({
-        code: 'TEXT_NOT_FOUND',
-        message:
-          args.editType === 'image'
-            ? 'Image source was not found in the current preview.'
-            : 'Selected text was not found in the current preview. Select a smaller text block and try again.',
-      })
-    }
+    userId !== undefined ||
+      anonOwnerSecretHash !== undefined ||
+      (() => {
+        throw new ConvexError({
+          code: 'FORBIDDEN',
+          message: 'Sign in to save your changes',
+        })
+      })()
 
-    const nextPreviewVersion = preview.version + 1
-    const artifactSnapshot =
-      args.afterHtml === undefined
-        ? await applyTextEditToCurrentArtifacts(
-            ctx,
-            args.sessionId,
-            args.beforeText,
-            args.afterText,
-            now,
-          )
-        : await snapshotCurrentArtifacts(ctx, args.sessionId)
-
-    if (args.afterHtml === undefined && !artifactSnapshot.openUiReplaced) {
-      throw new ConvexError({
-        code: 'TEXT_NOT_FOUND',
-        message:
-          'Selected text was found in preview history but not in the editable dashboard source. Select a smaller text block and try again.',
-      })
-    }
-
-    await ctx.db.insert('previews', {
-      sessionId: args.sessionId,
-      version: nextPreviewVersion,
-      html: editedPreview.html,
-      openUiSource: artifactSnapshot.openUiSource,
-      siteSpecJson: artifactSnapshot.siteSpecJson,
-      source: args.editType === 'ai_rewrite' ? 'rewrite' : 'edit',
+    const targetSessionId = await ctx.db.insert('sessions', {
+      userId,
+      anonOwnerSecretHash,
+      workspace: source.workspace,
+      prompt: source.prompt,
+      status: 'queued',
+      preferredLanguage: source.preferredLanguage,
+      preferredExportTarget: source.preferredExportTarget,
+      designReferenceUrls: source.designReferenceUrls,
+      designReferenceNotes: source.designReferenceNotes,
+      cloneUrl: source.cloneUrl,
+      engineVersion: source.engineVersion,
+      isPrivate: source.isPrivate,
+      previewVersion: 0,
       createdAt: now,
-    })
-    await ctx.db.patch(args.sessionId, {
-      previewVersion: nextPreviewVersion,
       updatedAt: now,
     })
-    await ctx.db.insert('generationEvents', {
-      sessionId: args.sessionId,
-      eventType: 'preview_reload',
-      message: 'Preview updated',
-      previewVersion: nextPreviewVersion,
-      createdAt: now,
+
+    const cloned = await cloneCachedGeneratedArtifacts(ctx, {
+      cachedSession: source,
+      targetSessionId,
+      userId,
+      anonymousClientIdHash: undefined,
+      now,
     })
 
-    await ctx.db.insert('edits', {
-      sessionId: args.sessionId,
-      previewVersion: nextPreviewVersion,
-      editType: args.editType,
-      targetLabel: args.targetLabel,
-      beforeText: args.beforeText,
-      afterText: args.afterText,
-      afterHtml: args.afterHtml,
-      instruction: args.instruction,
-      createdAt: now,
-      userId: session.userId,
-    })
+    if (!cloned) {
+      // Fallback: the source has no editable home module to clone, so copy at
+      // least its latest preview so the fork still renders.
+      const latestPreview = await ctx.db
+        .query('previews')
+        .withIndex('by_sessionId_version', (index) =>
+          index.eq('sessionId', source._id),
+        )
+        .order('desc')
+        .first()
 
-    return {
-      sessionId: args.sessionId,
-      previewVersion: nextPreviewVersion,
-      saved: editedPreview.replaced,
+      latestPreview !== null ||
+        (() => {
+          throw new ConvexError({
+            code: 'PREVIEW_NOT_READY',
+            message: 'Preview is not ready',
+          })
+        })()
+
+      await ctx.db.insert('previews', {
+        sessionId: targetSessionId,
+        version: 1,
+        html: latestPreview.html,
+        openUiSource: latestPreview.openUiSource,
+        siteSpecJson: latestPreview.siteSpecJson,
+        source: 'generation',
+        createdAt: now,
+      })
+      await ctx.db.patch(targetSessionId, {
+        status: 'preview_ready',
+        homepageReady: true,
+        openuiReady: true,
+        previewVersion: 1,
+        updatedAt: now,
+      })
     }
+
+    let editApplied = false
+    if (args.edit !== undefined) {
+      const target = await ctx.db.get(targetSessionId)
+      if (target !== null) {
+        try {
+          await applySessionEdit(ctx, target, args.edit, now)
+          editApplied = true
+        } catch (error) {
+          // Never fail the fork because the edit couldn't be re-applied — the
+          // user still lands on their own editable copy. Surface non-edit
+          // (unexpected) errors.
+          if (!(error instanceof ConvexError)) throw error
+        }
+      }
+    }
+
+    return { sessionId: targetSessionId, editApplied }
   },
 })
 
