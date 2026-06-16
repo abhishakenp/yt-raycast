@@ -1,6 +1,9 @@
 const isGroqModel = (model: string): boolean =>
   !/^gemini[-/]/i.test(model.trim())
 
+const modelConfigurationHelp =
+  'Configure it in Convex/Doppler environment variables, redeploy if needed, and generate again.'
+
 export const getModelConfigurationFailure = (): string | null => {
   const homepageModel = (
     process.env.OPENUI_HOME_MODEL ||
@@ -10,7 +13,7 @@ export const getModelConfigurationFailure = (): string | null => {
   ).trim()
 
   if (isGroqModel(homepageModel) && !process.env.GROQ_API_KEY?.trim()) {
-    return 'Model API unavailable: GROQ_API_KEY is missing. Add it to Doppler or .env, restart the dev server, and generate again.'
+    return `Model API unavailable: GROQ_API_KEY is missing. ${modelConfigurationHelp}`
   }
 
   if (
@@ -18,7 +21,7 @@ export const getModelConfigurationFailure = (): string | null => {
     !process.env.GEMINI_API_KEY?.trim() &&
     !process.env.GOOGLE_API_KEY?.trim()
   ) {
-    return 'Model API unavailable: GEMINI_API_KEY or GOOGLE_API_KEY is missing. Add it to Doppler or .env, restart the dev server, and generate again.'
+    return `Model API unavailable: GEMINI_API_KEY or GOOGLE_API_KEY is missing. ${modelConfigurationHelp}`
   }
 
   return null
