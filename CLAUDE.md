@@ -23,6 +23,28 @@ This rule exists because 95% of requests are for features that were already work
 
 This rule exists because claiming unverified fixes wastes time and breaks trust.
 
+## CRITICAL RULE - UNIT TEST EVERY FIX TO PREVENT REGRESSION
+
+**This project has suffered from repeated feature breakage and back-and-forth restoring the same features. Every fix or feature arrangement MUST be covered by unit tests.**
+
+**BEFORE implementing:**
+1. Check git history for past solutions (`git log --oneline -20`, `git show <commit>`)
+2. If the feature existed before, restore it from history — do not reimplement
+
+**AFTER implementing:**
+1. Write a unit test that covers the fix or restored behavior
+2. Prefer source-level structural assertions (read the file and assert invariants) when testing that a feature gate or code path is present/absent
+3. Run `bun test` and fix any failures BEFORE claiming the work is done
+4. NEVER push without all tests passing
+
+**Test patterns for this project:**
+- Use `vitest` with `describe`/`it`/`expect`
+- Source-level invariant tests: `readFileSync` the source file and assert structural properties (e.g. "file must not contain env var gate X", "file must contain API call Y")
+- Behavioral tests: import the function and test inputs/outputs directly
+- Tests live next to the code they cover (`*.test.ts` sibling files)
+
+This rule exists because features keep getting broken by refactors and reimplementations. Unit tests are the permanent guard against regression.
+
 # RTK (Rust Token Killer) - Token-Optimized Commands
 
 ## Golden Rule

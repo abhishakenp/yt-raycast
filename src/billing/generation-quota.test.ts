@@ -7,7 +7,7 @@ import {
   SHARE_BONUS_EXTRA,
 } from './constants'
 import { anonIpDailyHits, shareBonusIps, userMonthlyHits } from '../lib/rate-limit'
-import { getUserGenerationQuota, setActiveSubscriptionLookupForTest } from './payments.js'
+import { getUserGenerationQuota, setActiveSubscriptionLookupForTest } from './payments'
 
 let subscribedUids = new Set<string>()
 

@@ -1,4 +1,4 @@
-import { isTranslatableLocale, lookupKnownLanguage } from '@/config/languages.js'
+import { isTranslatableLocale, lookupKnownLanguage } from '@/config/languages'
 
 type TranslateModel = (
   system: string,

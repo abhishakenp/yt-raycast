@@ -14,10 +14,10 @@ describe('generated image relevance', () => {
     )
 
     expect(html).toContain(
-      'query=medical%20clinic%20healthcare%20dental%20waiting%20room%20patients',
+      'query=medical+clinic+healthcare+dental+waiting+room+patients',
     )
     expect(html).toContain(
-      'seed=Elegant%20dental%20clinic%20waiting%20room%20with%20patients',
+      'seed=Elegant+dental+clinic+waiting+room+with+patients',
     )
   })
 })

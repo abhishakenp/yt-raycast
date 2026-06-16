@@ -7,6 +7,7 @@ import {
   RATE_WINDOW_MS,
 } from '@/billing/constants'
 import { checkPromptContentPolicy } from '@/lib/content-policy'
+import { devFlags } from '@/lib/dev-flags'
 
 const MAX_PROMPT_LENGTH = 5000
 const MAX_DESIGN_REFERENCE_URLS = 4
@@ -139,9 +140,7 @@ export const parseSessionAdmission = (
   usage: SessionAdmissionUsage = {},
 ): SessionAdmissionAccepted | SessionAdmissionRejected => {
   const now = usage.now ?? Date.now()
-  const disableLimits =
-    typeof process !== 'undefined' &&
-    (process.env?.DISABLE_LIMIT === 'true' || process.env?.IS_DEV === 'true')
+  const disableLimits = devFlags.disableGenerationLimits
   const prompt = normalizeSpaces(
     typeof input.prompt === 'string' ? input.prompt : '',
   )

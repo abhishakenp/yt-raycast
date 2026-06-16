@@ -1,4 +1,13 @@
-export const HINGLISH_LANGUAGE = {
+export type LanguageEntry = {
+  code: string
+  name: string
+  nativeName: string
+  fontFamily: string
+  skipFullTranslation?: boolean
+  keywords: string[]
+}
+
+export const HINGLISH_LANGUAGE: LanguageEntry = {
   code: 'hinglish',
   name: 'Hinglish',
   nativeName: 'Hinglish (Hindi–English)',
@@ -7,7 +16,7 @@ export const HINGLISH_LANGUAGE = {
   keywords: ['hinglish', 'hinglish website', 'hindi english mix', 'hindi-english'],
 }
 
-export const INDIC_PURE_LANGUAGES = [
+export const INDIC_PURE_LANGUAGES: LanguageEntry[] = [
   {
     code: 'hi',
     name: 'Hindi',
@@ -171,9 +180,9 @@ export const INDIC_PURE_LANGUAGES = [
   },
 ]
 
-const MIXED_ENGLISH_SUFFIX_LANGUAGES = INDIC_PURE_LANGUAGES.filter((l) => l.code !== 'hi')
+const MIXED_ENGLISH_SUFFIX_LANGUAGES: LanguageEntry[] = INDIC_PURE_LANGUAGES.filter((l) => l.code !== 'hi')
 
-const MIXED_ENGLISH_SLANG_KEYWORDS = {
+const MIXED_ENGLISH_SLANG_KEYWORDS: Record<string, string[]> = {
   ta: ['tanglish', 'tanglish website', 'in tanglish'],
   te: ['tenglish', 'teluglish', 'telugu english mix'],
   kn: ['kanglish', 'kanglish website'],
@@ -197,7 +206,7 @@ const MIXED_ENGLISH_SLANG_KEYWORDS = {
   ne: ['nepali english mix'],
 }
 
-const ROMANIZED_PROMPT_LANGUAGE_HINTS = {
+const ROMANIZED_PROMPT_LANGUAGE_HINTS: Record<string, string[]> = {
   hi: ['aur', 'hai', 'hain', 'ke', 'ki', 'ka', 'mein', 'liye', 'banao', 'karo', 'chahiye'],
   ta: ['oru', 'irukku', 'venum', 'seyyunga', 'panna', 'oda', 'la', 'ku', 'inga'],
   te: ['oka', 'undali', 'undi', 'cheyyandi', 'kosam', 'lo', 'ki', 'tho', 'meeru'],
@@ -257,7 +266,7 @@ export const KNOWN_LANGUAGES = [
 
 export const INDIAN_LANGUAGE_CODES = new Set(KNOWN_LANGUAGES.map((l) => l.code))
 
-export const preferMixedEnglishBcp47FromPrompt = (prompt, pureBcp47Code) => {
+export const preferMixedEnglishBcp47FromPrompt = (prompt: unknown, pureBcp47Code: string): string | null => {
   const pl = String(prompt || '').toLowerCase()
   const words = MIXED_ENGLISH_SLANG_KEYWORDS[pureBcp47Code]
   if (!words) return null
@@ -267,7 +276,7 @@ export const preferMixedEnglishBcp47FromPrompt = (prompt, pureBcp47Code) => {
   return null
 }
 
-export const preferMixedEnglishBcp47FromSnippet = (snippet) => {
+export const preferMixedEnglishBcp47FromSnippet = (snippet: unknown): string | null => {
   const pl = String(snippet || '').toLowerCase()
   if (/\bhinglish\b/.test(pl)) return 'hinglish'
   if (/\bmanglish\b/.test(pl)) return 'ml-en'
@@ -285,19 +294,19 @@ export const preferMixedEnglishBcp47FromSnippet = (snippet) => {
   return null
 }
 
-export const isMixedEnglishIndicCode = (code) => {
+export const isMixedEnglishIndicCode = (code: unknown): boolean => {
   const c = String(code || '')
     .trim()
     .toLowerCase()
   return c === 'hinglish' || /^[a-z]{2,8}-en$/.test(c)
 }
 
-export const isRomanizedIndicCode = (code) => /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
+export const isRomanizedIndicCode = (code: unknown): boolean => /^[a-z]{2,8}-latn$/i.test(String(code || '').trim())
 
 // Any non-English locale we render via /api/translate: plain 2-char ISO, xx-latn
 // (romanized), or the code-mixed variants (hinglish / xx-en). English is the only
 // non-translatable value.
-export const isTranslatableLocale = (code) => {
+export const isTranslatableLocale = (code: unknown): boolean => {
   const c = String(code || '')
     .trim()
     .toLowerCase()
@@ -310,7 +319,7 @@ export const isTranslatableLocale = (code) => {
   )
 }
 
-export const preferRomanizedBcp47FromSnippet = (snippet) => {
+export const preferRomanizedBcp47FromSnippet = (snippet: unknown): string | null => {
   const pl = String(snippet || '').toLowerCase()
   for (const l of INDIC_PURE_LANGUAGES) {
     const n = l.name.toLowerCase()
@@ -330,7 +339,7 @@ export const preferRomanizedBcp47FromSnippet = (snippet) => {
   return null
 }
 
-export const preferIndicBcp47FromRomanizedPrompt = (snippet) => {
+export const preferIndicBcp47FromRomanizedPrompt = (snippet: unknown): string | null => {
   const words = new Set(
     String(snippet || '')
       .toLowerCase()
@@ -347,7 +356,7 @@ export const preferIndicBcp47FromRomanizedPrompt = (snippet) => {
   return best ? best.code : null
 }
 
-export const SCRIPT_FONT_MAP = {
+export const SCRIPT_FONT_MAP: Record<string, string> = {
   Devanagari: 'Noto Sans Devanagari, sans-serif',
   Tamil: 'Noto Sans Tamil, sans-serif',
   Telugu: 'Noto Sans Telugu, sans-serif',
@@ -395,7 +404,8 @@ export const INDIAN_DESIGN_TOKENS = {
   ],
 }
 
-export const getDefaultFontForScript = (script) =>
+export const getDefaultFontForScript = (script: string): string =>
   SCRIPT_FONT_MAP[script] || 'Inter, system-ui, sans-serif'
 
-export const lookupKnownLanguage = (code) => KNOWN_LANGUAGES.find((l) => l.code === code) || null
+export const lookupKnownLanguage = (code: string): LanguageEntry | null =>
+  KNOWN_LANGUAGES.find((l) => l.code === code) || null

@@ -26,7 +26,7 @@ const createGeneratedSession = async (
     anonymousClientId,
   })
 
-  await t.action(internal.sessions.completeGeneration, {
+  await t.mutation(internal.sessions.completeGenerationInternal, {
     sessionId,
     html: `<html><body><main><h1>${prompt}</h1></main></body></html>`,
     siteSpecJson: JSON.stringify({ brand: prompt, modules: {} }),
