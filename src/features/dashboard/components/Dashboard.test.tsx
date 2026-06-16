@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -19,6 +20,39 @@ const getConvexState = (): DashboardConvexTestState => {
     queryArgs: [],
   }
   return testGlobal.__shipFastDashboardConvexState
+}
+
+const createMemoryStorage = (): Storage => {
+  const values = new Map<string, string>()
+  return {
+    get length() {
+      return values.size
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => Array.from(values.keys())[index] ?? null,
+    removeItem: (key) => values.delete(key),
+    setItem: (key, value) => values.set(key, String(value)),
+  }
+}
+
+const ensureWindowStorage = () => {
+  try {
+    void window.localStorage.length
+  } catch {
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: createMemoryStorage(),
+    })
+  }
+  try {
+    void window.sessionStorage.length
+  } catch {
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      value: createMemoryStorage(),
+    })
+  }
 }
 
 vi.mock('convex/react', () => ({
@@ -79,7 +113,10 @@ vi.mock('@/features/exports/components/ExportPanel', () => ({
   ExportPanel: () => null,
 }))
 vi.mock('@/features/generation/components/GeneratedModulePreview', () => ({
-  GeneratedModulePreview: () => null,
+  GeneratedModulePreview: ({ source }: { source: string }) => {
+    const [initialSource] = useState(source)
+    return <div data-testid="generated-module-preview">{initialSource}</div>
+  },
 }))
 vi.mock('@/features/github/components/GitHubPanel', () => ({
   GitHubPanel: () => null,
@@ -99,6 +136,10 @@ vi.mock('@/genui/theme-apply', () => ({
 
 describe('Dashboard missing session state', () => {
   beforeEach(() => {
+    ensureWindowStorage()
+    getConvexState().generationView = null
+    getConvexState().queryArgs = []
+    window.localStorage.clear()
     window.sessionStorage.clear()
     window.matchMedia = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
@@ -186,6 +227,56 @@ describe('Dashboard missing session state', () => {
       )
     })
     expect(screen.queryByText('Composing the first screen')).toBeNull()
+  })
+
+  it('remounts the generated preview when the preview version changes', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'editable-session',
+        status: 'preview_ready',
+        prompt: 'An editable website',
+        preferredLanguage: 'en',
+        previewVersion: 1,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Original</h1></body></html>',
+        updatedAt: 100,
+      },
+      siteSpec: null,
+    }
+
+    const { rerender } = render(<Dashboard sessionId="editable-session" />)
+
+    expect(screen.getByTestId('generated-module-preview').textContent).toContain(
+      'Original',
+    )
+
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'editable-session',
+        status: 'preview_ready',
+        prompt: 'An editable website',
+        preferredLanguage: 'en',
+        previewVersion: 2,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Edited</h1></body></html>',
+        updatedAt: 200,
+      },
+      siteSpec: null,
+    }
+
+    rerender(<Dashboard sessionId="editable-session" />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('generated-module-preview').textContent,
+      ).toContain('Edited')
+    })
   })
 
   it('remembers ready public default sessions for fast repeated prompt opens', async () => {

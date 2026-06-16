@@ -28,13 +28,15 @@ export const EditPanel = ({ sessionId, selection = null }: EditPanelProps) => {
     event.preventDefault()
     if (!beforeText.trim() || !afterText.trim()) return
 
-    await applyEdit(
+    const saved = await applyEdit(
       'text',
       targetLabel.trim() || 'Text edit',
       beforeText,
       afterText,
       'Manual dashboard text edit',
     )
+    if (!saved) return
+
     setBeforeText('')
     setAfterText('')
   }

@@ -28,7 +28,7 @@ export const useEditController = (sessionId: string) => {
       const anonymousOwnerSecret =
         typeof window === 'undefined' ? undefined : readAnonymousOwnerSecret(window.localStorage, sessionId)
 
-      await createEdit({
+      const result = (await createEdit({
         sessionId: sessionId as Id<'sessions'>,
         anonymousOwnerSecret,
         editType,
@@ -37,9 +37,18 @@ export const useEditController = (sessionId: string) => {
         afterText,
         afterHtml,
         instruction,
-      })
+      })) as { saved?: boolean } | null
+
+      if (result?.saved === false) {
+        throw new Error(
+          'Selected text was not found in the current preview. Select a smaller text block and try again.',
+        )
+      }
+
+      return true
     } catch (error) {
       setEditError(error instanceof Error ? error.message : 'Edit failed')
+      return false
     } finally {
       setIsEditing(false)
     }

@@ -312,6 +312,90 @@ test('inline preview edits and history restore keep dashboard source artifacts a
   )
 })
 
+test('inline preview edits update dashboard artifacts when rendered text normalizes whitespace', async () => {
+  const t = convexTest(schema, modules)
+
+  const { sessionId } = await t.runMutation(api.sessions.create, {
+    prompt: 'Build a rental homepage',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_dashboard_whitespace_edit',
+    anonymousClientId: 'anon-dashboard-whitespace-edit',
+    anonymousOwnerSecret: 'owner-secret',
+  })
+
+  await t.action(internal.sessions.completeGeneration, {
+    sessionId,
+    html: '<html><body><main><h1 data-cms="field:hero.headline type:text">Luxury Car Rental</h1></main></body></html>',
+    openUiSource: '$page = "Home"\nroot = Text("Luxury   Car Rental")',
+    siteSpecJson: JSON.stringify({
+      hero: { headline: 'Luxury   Car Rental' },
+    }),
+    tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
+    elapsed: 1000,
+  })
+
+  await expect(
+    t.runMutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'Luxury Car Rental',
+      afterText: 'Premium Fleet Rentals',
+    }),
+  ).resolves.toMatchObject({ saved: true, previewVersion: 2 })
+
+  const editedView = await t.runQuery(api.sessions.getGenerationView, {
+    lookup: sessionId,
+  })
+  const editedPreview = await t.runQuery(api.sessions.getPublicPreview, {
+    lookup: sessionId,
+  })
+
+  expect(editedPreview?.html).toContain('Premium Fleet Rentals')
+  expect(editedView?.homeModule?.source).toContain('Premium Fleet Rentals')
+  expect(editedView?.homeModule?.source).not.toContain('Luxury   Car Rental')
+  expect(editedView?.siteSpec?.specJson).toContain('Premium Fleet Rentals')
+  expect(editedView?.siteSpec?.specJson).not.toContain('Luxury   Car Rental')
+})
+
+test('inline preview edits reject missing text without creating edit history', async () => {
+  const t = convexTest(schema, modules)
+
+  const { sessionId } = await t.runMutation(api.sessions.create, {
+    prompt: 'Build a simple homepage',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_missing_text_edit',
+    anonymousClientId: 'anon-missing-text-edit',
+    anonymousOwnerSecret: 'owner-secret',
+  })
+
+  await persistGeneratedPreview(t, sessionId, 'Build a simple homepage')
+
+  await expect(
+    t.runMutation(api.sessions.createEdit, {
+      sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+      editType: 'text',
+      targetLabel: 'Hero headline',
+      beforeText: 'Text that is not in the preview',
+      afterText: 'Replacement headline',
+    }),
+  ).rejects.toThrow()
+
+  const view = await t.runQuery(api.sessions.getGenerationView, {
+    lookup: sessionId,
+  })
+  const edits = await t.runQuery(api.sessions.listEdits, { sessionId })
+
+  expect(view?.session.previewVersion).toBe(1)
+  expect(edits).toHaveLength(0)
+})
+
 test('late generation jobs cannot clobber an existing preview', async () => {
   const t = convexTest(schema, modules)
 
