@@ -252,36 +252,43 @@ test('recordOperationalEvent makes failure and quota-limit events replayable wit
 })
 
 test('failGeneration records a structured replayable failure event', async () => {
+  const previousGroq = process.env.GROQ_API_KEY
+  process.env.GROQ_API_KEY = 'test-groq-key'
   const t = convexTest(schema, modules)
 
-  const { sessionId } = await createTestSession(t)
+  try {
+    const { sessionId } = await createTestSession(t)
 
-  await t.runMutation(internal.sessions.failGeneration, {
-    sessionId,
-    message: 'provider_timeout',
-    elapsed: 321,
-  })
-
-  const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-  })
-  const session = await t.runQuery(api.sessions.getSessionApiResponse, {
-    lookup: sessionId,
-  })
-
-  expect(metrics.count).toBe(0)
-  expect(stream.events.map((event) => event.eventType)).toContain(
-    'generation_failed',
-  )
-  expect(stream.events.find((event) => event.eventType === 'generation_failed'))
-    .toMatchObject({
+    await t.runMutation(internal.sessions.failGeneration, {
+      sessionId,
       message: 'provider_timeout',
-      error: 'provider_timeout',
-      elapsedMs: 321,
+      elapsed: 321,
     })
-  expect(session?.status).toBe('failed')
-  expect(session?.elapsed).toBe(321)
+
+    const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
+    const stream = await t.runQuery(api.sessions.getEventStream, {
+      lookup: sessionId,
+    })
+    const session = await t.runQuery(api.sessions.getSessionApiResponse, {
+      lookup: sessionId,
+    })
+
+    expect(metrics.count).toBe(0)
+    expect(stream.events.map((event) => event.eventType)).toContain(
+      'generation_failed',
+    )
+    expect(stream.events.find((event) => event.eventType === 'generation_failed'))
+      .toMatchObject({
+        message: 'provider_timeout',
+        error: 'provider_timeout',
+        elapsedMs: 321,
+      })
+    expect(session?.status).toBe('failed')
+    expect(session?.elapsed).toBe(321)
+  } finally {
+    if (previousGroq === undefined) delete process.env.GROQ_API_KEY
+    else process.env.GROQ_API_KEY = previousGroq
+  }
 })
 
 test('notification adapters skip without credentials and send only when explicitly configured', async () => {

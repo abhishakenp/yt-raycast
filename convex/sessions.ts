@@ -11,6 +11,7 @@ import {
 import type { Doc, Id } from './_generated/dataModel'
 import type { MutationCtx, QueryCtx } from './_generated/server'
 import { SHARE_BONUS_EXTRA } from '../src/billing/constants'
+import { getModelConfigurationFailure } from './generationConfig'
 
 const loadOpenUISSR = async () => {
   const { renderOpenUIToHTMLWithTheme } =
@@ -2466,10 +2467,7 @@ export const create = mutation({
       })()
 
     if (cachedSession !== null) {
-      if (
-        cachedSession !== null &&
-        args.anonymousOwnerSecret === undefined
-      ) {
+      if (args.anonymousOwnerSecret === undefined) {
         await recordOperationalGenerationEvent(ctx, {
           sessionId: cachedSession._id,
           eventType: 'cache_hit',
@@ -2504,7 +2502,7 @@ export const create = mutation({
       updatedAt: now,
     })
 
-    await ctx.db.insert('tasks', {
+    const homepageTaskId = await ctx.db.insert('tasks', {
       sessionId,
       taskKey: 'homepage',
       title: 'Generate homepage',
@@ -2539,6 +2537,41 @@ export const create = mutation({
           cloned: true,
           remaining: Math.max(0, quotaLimit - quotaCount - 1),
         }
+      }
+    }
+
+    const modelConfigurationFailure = getModelConfigurationFailure()
+    if (modelConfigurationFailure !== null) {
+      await ctx.db.patch(sessionId, {
+        status: 'failed',
+        errorCode: 'GENERATION_CONFIG_MISSING',
+        errorMessage: modelConfigurationFailure,
+        updatedAt: now,
+      })
+      await ctx.db.patch(homepageTaskId, {
+        status: 'failed',
+        errorMessage: modelConfigurationFailure,
+        updatedAt: now,
+      })
+      await ctx.db.insert('generationEvents', {
+        sessionId,
+        eventType: 'failed',
+        message: modelConfigurationFailure,
+        createdAt: now,
+      })
+      await ctx.db.insert('generationEvents', {
+        sessionId,
+        eventType: 'generation_failed',
+        message: modelConfigurationFailure,
+        createdAt: now,
+        elapsedMs: 0,
+        error: modelConfigurationFailure,
+      })
+
+      return {
+        sessionId,
+        cached: false,
+        remaining: Math.max(0, quotaLimit - quotaCount - 1),
       }
     }
 

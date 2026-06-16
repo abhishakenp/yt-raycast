@@ -113,4 +113,32 @@ describe('convex generation action', () => {
     expect(catchIndex).toBeGreaterThan(queryIndex)
     expect(source).toContain('internalFunctions.sessions.failGeneration')
   })
+
+  it('fails fast when the configured homepage model is missing its API key', () => {
+    const source = readFileSync(join(here, 'generation.ts'), 'utf8')
+    const configSource = readFileSync(join(here, 'generationConfig.ts'), 'utf8')
+    const handlerIndex = source.indexOf('handler: async (ctx, args) => {')
+    const preflightIndex = source.indexOf('getModelConfigurationFailure()', handlerIndex)
+    const runtimeIndex = source.indexOf('runHomepageOrchestrator', handlerIndex)
+
+    expect(source).toContain("import { getModelConfigurationFailure } from './generationConfig'")
+    expect(configSource).toContain('export const getModelConfigurationFailure =')
+    expect(configSource).toContain('GROQ_API_KEY')
+    expect(configSource).toContain('GEMINI_API_KEY')
+    expect(preflightIndex).toBeGreaterThan(handlerIndex)
+    expect(runtimeIndex).toBeGreaterThan(preflightIndex)
+    expect(source).toContain('throw new Error(modelConfigurationFailure)')
+  })
+
+  it('passes a timeout-backed abort signal to the homepage orchestrator', () => {
+    const source = readFileSync(join(here, 'generation.ts'), 'utf8')
+
+    expect(source).toContain('const createGenerationTimeoutController =')
+    expect(source).toContain('SHIP_FAST_GENERATION_TIMEOUT_MS')
+    expect(source).toContain("new Error('Generation timed out")
+    expect(source).toContain('const generationTimeout = createGenerationTimeoutController()')
+    expect(source).toContain('signal: generationTimeout.controller.signal')
+    expect(source).toContain('generationTimeout.clear()')
+    expect(source).not.toContain('signal: new AbortController().signal')
+  })
 })

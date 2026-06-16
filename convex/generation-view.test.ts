@@ -43,6 +43,62 @@ test('getGenerationView accepts lookup-only session ids', async () => {
   expect(view?.session.sessionId).toBe(sessionId)
 })
 
+test('create fails fast when model configuration is missing', async () => {
+  const previousGroq = process.env.GROQ_API_KEY
+  const previousGemini = process.env.GEMINI_API_KEY
+  const previousGoogle = process.env.GOOGLE_API_KEY
+  const previousHomepageModel = process.env.HOMEPAGE_MODEL
+  const previousOpenUiHomeModel = process.env.OPENUI_HOME_MODEL
+  const previousGroqModel = process.env.GROQ_MODEL
+
+  delete process.env.GROQ_API_KEY
+  delete process.env.GEMINI_API_KEY
+  delete process.env.GOOGLE_API_KEY
+  delete process.env.HOMEPAGE_MODEL
+  delete process.env.OPENUI_HOME_MODEL
+  delete process.env.GROQ_MODEL
+
+  try {
+    const t = convexTest(schema, modules)
+
+    const { sessionId } = await t.runMutation(api.sessions.create, {
+      prompt: 'Build a fast failure site',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      workspace: 'workspace_missing_model_config',
+      anonymousClientId: 'anon-missing-model-config',
+    })
+
+    const session = await t.runQuery(api.sessions.getSessionApiResponse, {
+      lookup: sessionId,
+    })
+    const stream = await t.runQuery(api.sessions.getEventStream, {
+      lookup: sessionId,
+    })
+
+    expect(session?.status).toBe('failed')
+    expect(session?.tasks[0]?.status).toBe('failed')
+    expect(session?.tasks[0]?.errorMessage).toContain('GROQ_API_KEY is missing')
+    expect(stream.events.map((event) => event.eventType)).toContain(
+      'generation_failed',
+    )
+  } finally {
+    if (previousGroq === undefined) delete process.env.GROQ_API_KEY
+    else process.env.GROQ_API_KEY = previousGroq
+    if (previousGemini === undefined) delete process.env.GEMINI_API_KEY
+    else process.env.GEMINI_API_KEY = previousGemini
+    if (previousGoogle === undefined) delete process.env.GOOGLE_API_KEY
+    else process.env.GOOGLE_API_KEY = previousGoogle
+    if (previousHomepageModel === undefined) delete process.env.HOMEPAGE_MODEL
+    else process.env.HOMEPAGE_MODEL = previousHomepageModel
+    if (previousOpenUiHomeModel === undefined) delete process.env.OPENUI_HOME_MODEL
+    else process.env.OPENUI_HOME_MODEL = previousOpenUiHomeModel
+    if (previousGroqModel === undefined) delete process.env.GROQ_MODEL
+    else process.env.GROQ_MODEL = previousGroqModel
+  }
+})
+
 test('public prompt cache is scoped by preferred language', async () => {
   const t = convexTest(schema, modules)
   const prompt = 'Build a bakery homepage with catering menus'
@@ -475,36 +531,43 @@ test('late generation jobs cannot clobber an existing preview', async () => {
 })
 
 test('duplicate generation actions cannot start the same queued session twice', async () => {
+  const previousGroq = process.env.GROQ_API_KEY
+  process.env.GROQ_API_KEY = 'test-groq-key'
   const t = convexTest(schema, modules)
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
-    prompt: 'Duplicate generation action guard',
-    preferredLanguage: 'en',
-    preferredExportTarget: 'html',
-    isPrivate: false,
-    workspace: 'workspace_duplicate_start_guard',
-    anonymousClientId: 'anon-duplicate-start-guard',
-    anonymousOwnerSecret: 'owner-secret',
-  })
+  try {
+    const { sessionId } = await t.runMutation(api.sessions.create, {
+      prompt: 'Duplicate generation action guard',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      workspace: 'workspace_duplicate_start_guard',
+      anonymousClientId: 'anon-duplicate-start-guard',
+      anonymousOwnerSecret: 'owner-secret',
+    })
 
-  await expect(
-    t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
-  ).resolves.toMatchObject({ started: true })
+    await expect(
+      t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
+    ).resolves.toMatchObject({ started: true })
 
-  await expect(
-    t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
-  ).resolves.toMatchObject({
-    started: false,
-    reason: 'generation_already_started',
-  })
+    await expect(
+      t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
+    ).resolves.toMatchObject({
+      started: false,
+      reason: 'generation_already_started',
+    })
 
-  const view = await t.runQuery(api.sessions.getGenerationView, {
-    lookup: sessionId,
-  })
-  const startedEvents = view?.events.filter(
-    (event) => event.message === 'Generation started',
-  )
+    const view = await t.runQuery(api.sessions.getGenerationView, {
+      lookup: sessionId,
+    })
+    const startedEvents = view?.events.filter(
+      (event) => event.message === 'Generation started',
+    )
 
-  expect(view?.session.status).toBe('streaming')
-  expect(startedEvents).toHaveLength(1)
+    expect(view?.session.status).toBe('streaming')
+    expect(startedEvents).toHaveLength(1)
+  } finally {
+    if (previousGroq === undefined) delete process.env.GROQ_API_KEY
+    else process.env.GROQ_API_KEY = previousGroq
+  }
 })

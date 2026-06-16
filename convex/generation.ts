@@ -7,8 +7,11 @@ import { internalAction } from './_generated/server'
 import type { Doc, Id } from './_generated/dataModel'
 import type { ActionCtx } from './_generated/server'
 import type { EngineWorkspaceTask } from '../src/features/generation/server/engine-workspace'
+import { getModelConfigurationFailure } from './generationConfig'
 
 const internalFunctions = internal as any
+
+const DEFAULT_GENERATION_TIMEOUT_MS = 90_000
 
 type GenUIEvent =
   | { type: 'status'; message: string }
@@ -28,6 +31,27 @@ const loadGenerationRuntime = async () => {
     await import('../packages/ship-fast-engine/src/genui/run.ts')
 
   return { runHomepageOrchestrator }
+}
+
+const createGenerationTimeoutController = () => {
+  const controller = new AbortController()
+  const timeoutMs = Math.max(
+    15_000,
+    Number.parseInt(
+      process.env.SHIP_FAST_GENERATION_TIMEOUT_MS ?? '',
+      10,
+    ) || DEFAULT_GENERATION_TIMEOUT_MS,
+  )
+  const timeout = setTimeout(() => {
+    controller.abort(
+      new Error('Generation timed out. Please try again with a shorter prompt.'),
+    )
+  }, timeoutMs)
+
+  return {
+    controller,
+    clear: () => clearTimeout(timeout),
+  }
 }
 
 const escapeHtml = (value: string): string =>
@@ -359,6 +383,11 @@ export const startGeneration = internalAction({
         }
       }
 
+      const modelConfigurationFailure = getModelConfigurationFailure()
+      if (modelConfigurationFailure !== null) {
+        throw new Error(modelConfigurationFailure)
+      }
+
       await ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
         sessionId: args.sessionId,
         eventType: 'status',
@@ -457,27 +486,32 @@ export const startGeneration = internalAction({
         order: 0,
       })
 
-      const result = await generationRuntime.runHomepageOrchestrator({
-        prompt: buildGenerationPrompt(session),
-        preferredLanguage: session.preferredLanguage,
-        signal: new AbortController().signal,
-        onSource: (source) => {
-          latestOpenUiSource = source
-        },
-        onEvent: (event) => {
-          const message = eventMessage(event)
+      const generationTimeout = createGenerationTimeoutController()
+      const result = await generationRuntime
+        .runHomepageOrchestrator({
+          prompt: buildGenerationPrompt(session),
+          preferredLanguage: session.preferredLanguage,
+          signal: generationTimeout.controller.signal,
+          onSource: (source) => {
+            latestOpenUiSource = source
+          },
+          onEvent: (event) => {
+            const message = eventMessage(event)
 
-          if (message !== undefined) {
-            pendingWrites.push(
-              ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
-                sessionId: args.sessionId,
-                eventType: event.type,
-                message,
-              }),
-            )
-          }
-        },
-      })
+            if (message !== undefined) {
+              pendingWrites.push(
+                ctx.runMutation(internalFunctions.sessions.addGenerationEvent, {
+                  sessionId: args.sessionId,
+                  eventType: event.type,
+                  message,
+                }),
+              )
+            }
+          },
+        })
+        .finally(() => {
+          generationTimeout.clear()
+        })
       await Promise.all(pendingWrites)
 
       const completedTask: EngineWorkspaceTask = {
@@ -490,7 +524,7 @@ export const startGeneration = internalAction({
         ...result,
         source: finalOpenUiSource,
       })
-      const locale = result.locale ?? session.preferredLanguage ?? 'en'
+      const locale = result.locale
       const staticPreviewHtml = await buildRenderedOpenUiPreviewHtml({
         source: finalOpenUiSource,
         locale,
