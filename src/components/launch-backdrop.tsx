@@ -1,5 +1,16 @@
 import { useEffect, useRef } from "react";
 
+const BACKDROP_START_DELAY_MS = 550;
+const BACKDROP_IDLE_TIMEOUT_MS = 1200;
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: () => void,
+    options?: { timeout?: number },
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 function initLaunchBackdrop(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext("2d", { alpha: true });
   if (!ctx) return () => {};
@@ -21,6 +32,7 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
   let height = 0;
   let tick = 0;
   let raf = 0;
+  let running = false;
 
   function noise2d(x: number, y: number) {
     const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
@@ -64,8 +76,8 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const target = Math.max(
-      150,
-      Math.min(260, Math.floor((width * height) / 9000)),
+      width < 760 ? 54 : 96,
+      Math.min(width < 760 ? 120 : 210, Math.floor((width * height) / 12000)),
     );
     while (particles.length < target) {
       const p = {
@@ -85,6 +97,7 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
   }
 
   function draw() {
+    if (!running) return;
     if (!document.body.contains(canvas)) return;
     raf = window.requestAnimationFrame(draw);
     tick += 1;
@@ -133,13 +146,35 @@ function initLaunchBackdrop(canvas: HTMLCanvasElement) {
     context.globalAlpha = 1;
   }
 
+  function start() {
+    if (running) return;
+    running = true;
+    draw();
+  }
+
+  function stop() {
+    running = false;
+    cancelAnimationFrame(raf);
+    raf = 0;
+  }
+
+  function handleVisibilityChange() {
+    if (document.hidden) {
+      stop();
+      return;
+    }
+    start();
+  }
+
   resize();
   window.addEventListener("resize", resize, { passive: true });
-  draw();
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  start();
 
   return () => {
     window.removeEventListener("resize", resize);
-    cancelAnimationFrame(raf);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    stop();
   };
 }
 
@@ -154,7 +189,39 @@ export function LaunchBackdrop() {
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
-    return initLaunchBackdrop(canvas);
+
+    const idleWindow = window as IdleWindow;
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+    let delayHandle: number | undefined;
+    let idleHandle: number | undefined;
+
+    const start = () => {
+      if (cancelled || document.hidden) return;
+      cleanup = initLaunchBackdrop(canvas);
+    };
+
+    delayHandle = window.setTimeout(() => {
+      if (idleWindow.requestIdleCallback) {
+        idleHandle = idleWindow.requestIdleCallback(start, {
+          timeout: BACKDROP_IDLE_TIMEOUT_MS,
+        });
+        return;
+      }
+      idleHandle = window.setTimeout(start, BACKDROP_IDLE_TIMEOUT_MS);
+    }, BACKDROP_START_DELAY_MS);
+
+    return () => {
+      cancelled = true;
+      cleanup?.();
+      if (delayHandle !== undefined) window.clearTimeout(delayHandle);
+      if (idleHandle === undefined) return;
+      if (idleWindow.cancelIdleCallback && idleWindow.requestIdleCallback) {
+        idleWindow.cancelIdleCallback(idleHandle);
+      } else {
+        window.clearTimeout(idleHandle);
+      }
+    };
   }, []);
 
   return (

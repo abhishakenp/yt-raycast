@@ -104,6 +104,20 @@ const toProjectSlug = (value: string): string =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 60) || 'ship-fast-export'
 
+const isHtmlDocumentSource = (source: string): boolean => {
+  const trimmed = source.trim()
+  return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
+}
+
+const readHtmlTitle = (html: string): string | undefined => {
+  const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
+  const title = match?.[1]
+    ?.replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return title || undefined
+}
+
 const parseSiteSpec = (
   siteSpecJson: string | undefined,
 ): Record<string, unknown> => {
@@ -1261,6 +1275,14 @@ const zipFiles = (files: Record<string, string>): Uint8Array => {
   )
 }
 
+const zipRawFiles = (files: Record<string, string>): Uint8Array =>
+  zipSync(
+    Object.fromEntries(
+      Object.entries(files).map(([name, content]) => [name, strToU8(content)]),
+    ),
+    { level: 9 },
+  )
+
 const collectExportComponents = (
   routes: ExportRoute[],
   stack: ExportStack,
@@ -1385,7 +1407,65 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   }
 }
 
+const buildRawHtmlExport = (input: OpenUIExportInput): BuiltExport => {
+  const html = input.source.trim()
+  const spec = parseSiteSpec(input.siteSpecJson)
+  const projectName =
+    typeof spec.projectName === 'string' && spec.projectName.trim()
+      ? spec.projectName.trim()
+      : (readHtmlTitle(html) ?? 'Ship Fast Site')
+
+  if (input.target === 'html') {
+    return {
+      body: html,
+      contentType: 'text/html; charset=utf-8',
+      filename: 'index.html',
+      fileCount: 1,
+    }
+  }
+
+  const slug = toProjectSlug(projectName)
+  const files = {
+    'README.md': `# ${projectName}
+
+This export contains the generated single-file HTML website from Ship Fast v2.
+
+Open index.html directly, or serve this folder with any static host.
+`,
+    'index.html': html,
+    'package.json': JSON.stringify(
+      {
+        name: slug,
+        private: true,
+        scripts: {
+          dev: 'vite --host 0.0.0.0',
+          build: 'vite build',
+          preview: 'vite preview',
+        },
+        dependencies: {
+          '@vitejs/plugin-react': '^6.0.1',
+          vite: '^8.0.0',
+        },
+        devDependencies: {},
+      },
+      null,
+      2,
+    ),
+  }
+
+  return {
+    body: zipRawFiles(files),
+    contentType: 'application/zip',
+    filename: `${slug}-${input.target}.zip`,
+    fileCount: Object.keys(files).length,
+  }
+}
+
 export function buildOpenUIExport(input: OpenUIExportInput): BuiltExport {
+  if (isHtmlDocumentSource(input.source)) {
+    return buildRawHtmlExport(input)
+  }
+
   const parsed = parseOpenUIForExport(input.source, input.siteSpecJson)
 
   if (input.target === 'html') {

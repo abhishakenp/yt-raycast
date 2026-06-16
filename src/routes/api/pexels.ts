@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { PEXELS_API_KEY, UNSPLASH_ACCESS_KEY } from '@ship-fast/engine/config.js'
 import { searchQueryFromAlt } from '@/lib/image-query'
 import { generateContextAwareQuery, type ImageContext } from '@/lib/image-context'
 
@@ -19,6 +18,9 @@ type PexelsResponse = {
 
 type UnsplashPhoto = { urls?: { raw?: string; full?: string; regular?: string; small?: string } }
 type UnsplashResponse = { results?: UnsplashPhoto[] }
+
+const readServerEnv = (key: string): string =>
+  typeof process !== 'undefined' ? (process.env?.[key]?.trim() ?? '') : ''
 
 const clampInt = (value: string | null, fallback: number, min: number, max: number) => {
   const parsed = Number.parseInt(value ?? '', 10)
@@ -84,13 +86,14 @@ const searchPexels = async (
   h: number,
   seed: string,
 ): Promise<string | null> => {
-  if (!PEXELS_API_KEY) return null
+  const pexelsApiKey = readServerEnv('PEXELS_API_KEY')
+  if (!pexelsApiKey) return null
   const pexelsUrl = new URL('https://api.pexels.com/v1/search')
   pexelsUrl.searchParams.set('query', searchQuery.slice(0, 96))
   pexelsUrl.searchParams.set('per_page', '15')
   pexelsUrl.searchParams.set('orientation', orientationFromSize(w, h))
   try {
-    const response = await fetch(pexelsUrl, { headers: { Authorization: PEXELS_API_KEY } })
+    const response = await fetch(pexelsUrl, { headers: { Authorization: pexelsApiKey } })
     if (!response.ok) return null
     const data = (await response.json()) as PexelsResponse
     const photos = data.photos ?? []
@@ -107,14 +110,15 @@ const searchUnsplash = async (
   h: number,
   seed: string,
 ): Promise<string | null> => {
-  if (!UNSPLASH_ACCESS_KEY) return null
+  const unsplashAccessKey = readServerEnv('UNSPLASH_ACCESS_KEY')
+  if (!unsplashAccessKey) return null
   const unsplashUrl = new URL('https://api.unsplash.com/search/photos')
   unsplashUrl.searchParams.set('query', searchQuery.slice(0, 96))
   unsplashUrl.searchParams.set('per_page', '15')
   unsplashUrl.searchParams.set('orientation', orientationFromSize(w, h))
   try {
     const response = await fetch(unsplashUrl, {
-      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
+      headers: { Authorization: `Client-ID ${unsplashAccessKey}` },
     })
     if (!response.ok) return null
     const data = (await response.json()) as UnsplashResponse

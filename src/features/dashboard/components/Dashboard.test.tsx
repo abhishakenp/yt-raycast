@@ -1,13 +1,39 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Dashboard } from './Dashboard'
 
+type DashboardConvexTestState = {
+  generationView: unknown
+  queryArgs: unknown[]
+}
+
+const getConvexState = (): DashboardConvexTestState => {
+  const testGlobal = globalThis as typeof globalThis & {
+    __shipFastDashboardConvexState?: DashboardConvexTestState
+  }
+  testGlobal.__shipFastDashboardConvexState ??= {
+    generationView: null,
+    queryArgs: [],
+  }
+  return testGlobal.__shipFastDashboardConvexState
+}
+
 vi.mock('convex/react', () => ({
   useMutation: () => vi.fn(),
-  useQuery: () => null,
+  useQuery: (_query: unknown, args: unknown) => {
+    const state = (
+      globalThis as typeof globalThis & {
+        __shipFastDashboardConvexState?: DashboardConvexTestState
+      }
+    ).__shipFastDashboardConvexState
+    state?.queryArgs.push(args)
+    return args && typeof args === 'object' && 'lookup' in args
+      ? state?.generationView ?? null
+      : null
+  },
 }))
 
 vi.mock('@ship-fast/lakebed/react', () => ({
@@ -73,15 +99,20 @@ vi.mock('@/genui/theme-apply', () => ({
 
 describe('Dashboard missing session state', () => {
   beforeEach(() => {
+    window.sessionStorage.clear()
     window.matchMedia = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
-      matches: true,
+      matches: false,
       removeEventListener: vi.fn(),
     })
   })
 
   afterEach(() => {
     cleanup()
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+    getConvexState().generationView = null
+    getConvexState().queryArgs = []
     vi.clearAllMocks()
   })
 
@@ -95,5 +126,189 @@ describe('Dashboard missing session state', () => {
     expect(screen.queryByText('Composing the first screen')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Publish preview' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Open auto admin' })).toBeNull()
+  })
+
+  it('does not show generated hover copy on viewport controls', () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'ready-session',
+        status: 'preview_ready',
+        prompt: 'A portfolio website',
+        preferredLanguage: 'en',
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="ready-session" />)
+
+    const viewportButtons = [
+      screen.getByRole('button', { name: 'Desktop viewport' }),
+      screen.getByRole('button', { name: 'Tablet viewport' }),
+      screen.getByRole('button', { name: 'Mobile viewport' }),
+    ]
+
+    for (const button of viewportButtons) {
+      expect(button.hasAttribute('data-tip')).toBe(false)
+      expect(button.hasAttribute('title')).toBe(false)
+    }
+  })
+
+  it('activates a ready preview immediately even after a fresh launch handoff', async () => {
+    window.sessionStorage.setItem(
+      'ship-fast:generation-launch:fast-ready-session',
+      '1',
+    )
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'fast-ready-session',
+        status: 'preview_ready',
+        prompt: 'A fast ready website',
+        preferredLanguage: 'en',
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="fast-ready-session" />)
+
+    await waitFor(() => {
+      expect(document.querySelector('#dashboard-wrap')?.className).toContain(
+        'opacity-100',
+      )
+    })
+    expect(screen.queryByText('Composing the first screen')).toBeNull()
+  })
+
+  it('remembers ready public default sessions for fast repeated prompt opens', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'ready-cache-session',
+        status: 'preview_ready',
+        prompt: 'A remembered cache website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+        designReferenceUrls: [],
+        designReferenceNotes: '',
+        cloneUrl: undefined,
+        engineVersion: undefined,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="ready-cache-session" />)
+
+    await waitFor(() => {
+      expect(
+        window.localStorage.getItem(
+          'ship-fast:ready-session:v1:en:a remembered cache website',
+        ),
+      ).toContain('ready-cache-session')
+    })
+  })
+
+  it('does not remember private ready sessions in the public prompt cache', async () => {
+    getConvexState().generationView = {
+      session: {
+        sessionId: 'private-ready-session',
+        status: 'preview_ready',
+        prompt: 'A private cache website',
+        preferredLanguage: 'en',
+        isPrivate: true,
+        designReferenceUrls: [],
+        designReferenceNotes: '',
+        cloneUrl: undefined,
+        engineVersion: undefined,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="private-ready-session" />)
+
+    await waitFor(() => {
+      expect(document.querySelector('#dashboard-wrap')?.className).toContain(
+        'opacity-100',
+      )
+    })
+    expect(
+      window.localStorage.getItem(
+        'ship-fast:ready-session:v1:en:a private cache website',
+      ),
+    ).toBeNull()
+  })
+
+  it('skips commerce and deployment side queries until the preview is ready', () => {
+    const state = getConvexState()
+    state.generationView = {
+      session: {
+        sessionId: 'streaming-session',
+        status: 'streaming',
+        prompt: 'A streaming website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'running' }],
+      events: [],
+      homeModule: null,
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="streaming-session" />)
+
+    const sidePanelArgs = state.queryArgs.filter(
+      (args) => args === 'skip' || (args && typeof args === 'object' && 'sessionId' in args),
+    )
+    expect(sidePanelArgs).toEqual(['skip', 'skip'])
+  })
+
+  it('loads commerce and deployment side queries after the preview is ready', () => {
+    const state = getConvexState()
+    state.generationView = {
+      session: {
+        sessionId: 'ready-side-panel-session',
+        status: 'preview_ready',
+        prompt: 'A ready side panel website',
+        preferredLanguage: 'en',
+        isPrivate: false,
+      },
+      tasks: [{ status: 'succeeded' }],
+      events: [],
+      homeModule: {
+        source: '<!doctype html><html><body><h1>Ready</h1></body></html>',
+      },
+      siteSpec: null,
+    }
+
+    render(<Dashboard sessionId="ready-side-panel-session" />)
+
+    const sidePanelArgs = state.queryArgs.filter(
+      (args) => args === 'skip' || (args && typeof args === 'object' && 'sessionId' in args),
+    )
+    expect(sidePanelArgs.length).toBeGreaterThanOrEqual(2)
+    expect(sidePanelArgs).not.toContain('skip')
+    expect(sidePanelArgs).toEqual(
+      expect.arrayContaining([
+        { sessionId: 'ready-side-panel-session' },
+        { sessionId: 'ready-side-panel-session' },
+      ]),
+    )
   })
 })

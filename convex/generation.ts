@@ -63,6 +63,62 @@ const buildOpenUiHandoffHtml = (
 </body>
 </html>`
 
+const buildRenderedOpenUiPreviewHtml = async ({
+  source,
+  locale,
+  brand,
+  prompt,
+  theme,
+}: {
+  source: string
+  locale: string
+  brand: string
+  prompt: string
+  theme?: string | null
+}): Promise<string> => {
+  try {
+    const [{ renderOpenUIToHTMLWithTheme }, { buildThemeHead }] =
+      await Promise.all([
+        import('../packages/ship-fast-engine/src/openui-ssr.js'),
+        import('../packages/ship-fast-engine/src/renderers/index.ts'),
+      ])
+    const { html, cssVars } = renderOpenUIToHTMLWithTheme(
+      source,
+      undefined,
+      locale,
+      undefined,
+      {
+        prompt,
+        brandContext: [brand, prompt].filter(Boolean).join(' '),
+      },
+    ) as { html: string; cssVars?: string }
+    const themeHead = buildThemeHead(
+      `${brand}\n${prompt}\n${source}`,
+      theme ?? null,
+    )
+
+    return `<!doctype html>
+<html lang="${escapeHtml(locale)}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(brand || 'Generated Site')}</title>
+  <script src="/scripts/tailwind-browser.js"></script>
+${themeHead}
+  <style>#openui-root { ${cssVars || ''} }</style>
+</head>
+<body class="min-h-screen bg-background text-foreground">
+  <div id="openui-root">${html}</div>
+</body>
+</html>`
+  } catch (error) {
+    console.error('[generation] failed to render final OpenUI preview', {
+      error: error instanceof Error ? error.message : String(error),
+    })
+    return buildOpenUiHandoffHtml(source, locale, brand, prompt)
+  }
+}
+
 const eventMessage = (event: GenUIEvent): string | undefined => {
   switch (event.type) {
     case 'status':
@@ -388,7 +444,7 @@ export const startGeneration = internalAction({
         message: 'Ship Fast OpenUI orchestrator loaded',
       })
 
-      let lastPersistedOpenUiSource: string | undefined
+      let latestOpenUiSource: string | undefined
       const pendingWrites: Array<Promise<unknown>> = []
       const runningTask: EngineWorkspaceTask = {
         id: 'homepage',
@@ -406,20 +462,7 @@ export const startGeneration = internalAction({
         preferredLanguage: session.preferredLanguage,
         signal: new AbortController().signal,
         onSource: (source) => {
-          if (source !== lastPersistedOpenUiSource) {
-            lastPersistedOpenUiSource = source
-            pendingWrites.push(
-              ctx.runMutation(
-                internalFunctions.sessions.upsertGeneratedModule,
-                {
-                  sessionId: args.sessionId,
-                  moduleKey: 'home',
-                  source,
-                  status: 'succeeded',
-                },
-              ),
-            )
-          }
+          latestOpenUiSource = source
         },
         onEvent: (event) => {
           const message = eventMessage(event)
@@ -442,21 +485,26 @@ export const startGeneration = internalAction({
         label: 'Generate homepage',
         status: 'DONE',
       }
-      const siteSpec = buildGenerationSiteSpecMetadata(session, result)
+      const finalOpenUiSource = result.source || latestOpenUiSource || ''
+      const siteSpec = buildGenerationSiteSpecMetadata(session, {
+        ...result,
+        source: finalOpenUiSource,
+      })
       const locale = result.locale ?? session.preferredLanguage ?? 'en'
-      const staticPreviewHtml = buildOpenUiHandoffHtml(
-        result.source,
+      const staticPreviewHtml = await buildRenderedOpenUiPreviewHtml({
+        source: finalOpenUiSource,
         locale,
-        result.brand,
-        session.prompt,
-      )
+        brand: result.brand,
+        prompt: session.prompt,
+        theme: result.theme,
+      })
 
       await completeGenerationFromNode(ctx, {
         sessionId: args.sessionId,
         anonymousOwnerSecret: args.anonymousOwnerSecret,
         html: staticPreviewHtml,
         siteSpecJson: JSON.stringify(siteSpec),
-        openUiSource: result.source,
+        openUiSource: finalOpenUiSource,
         tasks: [completedTask],
         elapsed: Date.now() - startedAt,
         provider: 'genui-orchestrator',

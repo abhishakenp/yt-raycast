@@ -1,8 +1,22 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { createTranslateResponse } from './translate-response'
 
 describe('createTranslateResponse', () => {
+  it('keeps the engine text-generation runtime behind the default model path', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/localization/server/translate-response.ts'),
+      'utf8',
+    )
+    const imports = source.slice(0, source.indexOf('type TranslateModel'))
+
+    expect(imports).not.toContain('@ship-fast/engine')
+    expect(source).toContain("import('@ship-fast/engine')")
+    expect(source).toContain("import('@ship-fast/engine/model-list.js')")
+  })
+
   it('rejects invalid JSON', async () => {
     const response = await createTranslateResponse(
       new Request('https://ship-fast.test/api/translate', {

@@ -1,16 +1,11 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
-import { ClerkProvider } from '@clerk/tanstack-react-start'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
 import { AppProviders } from '@/app/providers/AppProviders'
-import { clerkFrostedGlassAppearance } from '@/app/providers/provider-config'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
 
 import appCss from '../styles.css?url'
-
-const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? import.meta.env.CLERK_PUBLISHABLE_KEY
 
 const RootDocument = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
@@ -36,15 +31,9 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
 
 const RootComponent = () => (
   <RootDocument>
-    <ClerkProvider
-      publishableKey={clerkPublishableKey}
-      afterSignOutUrl="/"
-      appearance={clerkFrostedGlassAppearance}
-    >
-      <AppProviders>
-        <Outlet />
-      </AppProviders>
-    </ClerkProvider>
+    <AppProviders>
+      <Outlet />
+    </AppProviders>
   </RootDocument>
 )
 

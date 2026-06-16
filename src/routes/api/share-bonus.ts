@@ -1,32 +1,26 @@
-import { json, type RequestEvent } from '@tanstack/react-start'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { shareBonusIps } from '@/lib/rate-limit'
 
-const SITE_URL = 'https://ship-fast.io'
+const json = (body: unknown, init?: ResponseInit) =>
+  new Response(JSON.stringify(body), {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
+  })
 
-const SHARE_MESSAGES = {
-  en: `I just built a site in minutes with Ship Fast — try it free: ${SITE_URL}`,
-  hi: `मैंने Ship Fast से मिनटों में साइट बनाई — आप भी बनाएं: ${SITE_URL}`,
-  ta: `Ship Fast மூலம் நிமிடங்களில் தளம் உருவாக்கினேன் — நீங்களும் முயற்சிக்கவும்: ${SITE_URL}`,
-  te: `Ship Fast తో నిమిషాల్లో సైట్ చేశాను — మీరూ ట్రై చేయండి: ${SITE_URL}`,
-  bn: `Ship Fast দিয়ে মিনিটে সাইট বানিয়েছি — আপনিও চেষ্টা করুন: ${SITE_URL}`,
-  mr: `Ship Fast ने मिनिटांत साइट बनवली — तुम्हीही बनवा: ${SITE_URL}`,
-  kn: `Ship Fast ನಿಂದ ನಿಮಿಷಗಳಲ್ಲಿ ಸೈಟ್ ಮಾಡಿದೆ — ನೀವೂ ಮಾಡಿ: ${SITE_URL}`,
-  ml: `Ship Fast ഉപയോഗിച്ച് മിനിറ്റുകളിൽ സൈറ്റ് ഉണ്ടാക്കി — നിങ്ങളും ചെയ്യൂ: ${SITE_URL}`,
-  pa: `Ship Fast ਨਾਲ ਮਿੰਟਾਂ 'ਚ ਸਾਈਟ ਬਣਾਈ — ਤੁਸੀਂ ਵੀ ਬਣਾਓ: ${SITE_URL}`,
-  gu: `Ship Fast વડે મિનિટોમાં સાઇટ બનાવી — તમે પણ બનાવો: ${SITE_URL}`,
-}
-
-function getClientIp(event: RequestEvent): string {
-  const forwarded = event.request.headers.get('x-forwarded-for')
+function getClientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
     return forwarded.split(',')[0].trim()
   }
-  return event.request.headers.get('cf-connecting-ip') || 'unknown'
+  return request.headers.get('cf-connecting-ip') || 'unknown'
 }
 
-export async function GET({ request }: RequestEvent) {
-  const ip = getClientIp({ request } as RequestEvent)
+const getShareBonusStatus = (request: Request) => {
+  const ip = getClientIp(request)
   const stored = shareBonusIps.get(ip)
   const today = new Date().toISOString().slice(0, 10)
   const claimed = stored === today
@@ -34,8 +28,8 @@ export async function GET({ request }: RequestEvent) {
   return json({ claimed })
 }
 
-export async function POST({ request }: RequestEvent) {
-  const ip = getClientIp({ request } as RequestEvent)
+const claimShareBonus = (request: Request) => {
+  const ip = getClientIp(request)
   const today = new Date().toISOString().slice(0, 10)
   const stored = shareBonusIps.get(ip)
 
@@ -48,3 +42,12 @@ export async function POST({ request }: RequestEvent) {
   shareBonusIps.set(ip, today)
   return json({ claimed: true, success: true })
 }
+
+export const Route = createFileRoute('/api/share-bonus')({
+  server: {
+    handlers: {
+      GET: async ({ request }) => getShareBonusStatus(request),
+      POST: async ({ request }) => claimShareBonus(request),
+    },
+  },
+})

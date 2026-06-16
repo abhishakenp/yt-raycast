@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from 'convex/react'
 import type { CSSProperties } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   Bot,
@@ -24,25 +24,83 @@ import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { api } from '../../../../convex/_generated/api'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
-import { ActivityPanel } from '@/features/dashboard/components/ActivityPanel'
-import { AgentationPanel } from '@/features/agentation/components/AgentationPanel'
-import { BillingPanel } from '@/features/billing/components/BillingPanel'
-import { BrandMediaPanel } from '@/features/brand/components/BrandMediaPanel'
-import { ChatPanel } from '@/features/chat/components/ChatPanel'
-import { CmsPanel } from '@/features/cms/components/CmsPanel'
-import { CommercePanel } from '@/features/commerce/components/CommercePanel'
-import { EcommercifyTransformOverlay } from '@/features/commerce/components/EcommercifyTransformOverlay'
-import { LakebedAdminPanel } from '@/features/admin/components/LakebedAdminPanel'
-import { DeploymentPanel } from '@/features/deployments/components/DeploymentPanel'
-import { EditPanel } from '@/features/editing/components/EditPanel'
-import { ExportPanel } from '@/features/exports/components/ExportPanel'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
-import { GitHubPanel } from '@/features/github/components/GitHubPanel'
-import { LocalizationPanel } from '@/features/localization/components/LocalizationPanel'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { rememberReadySession } from '@/features/session/services/ready-session-cache'
 import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { cn } from '#/lib/utils'
+
+const ActivityPanel = lazy(() =>
+  import('@/features/dashboard/components/ActivityPanel').then((module) => ({
+    default: module.ActivityPanel,
+  })),
+)
+const AgentationPanel = lazy(() =>
+  import('@/features/agentation/components/AgentationPanel').then((module) => ({
+    default: module.AgentationPanel,
+  })),
+)
+const BillingPanel = lazy(() =>
+  import('@/features/billing/components/BillingPanel').then((module) => ({
+    default: module.BillingPanel,
+  })),
+)
+const BrandMediaPanel = lazy(() =>
+  import('@/features/brand/components/BrandMediaPanel').then((module) => ({
+    default: module.BrandMediaPanel,
+  })),
+)
+const ChatPanel = lazy(() =>
+  import('@/features/chat/components/ChatPanel').then((module) => ({
+    default: module.ChatPanel,
+  })),
+)
+const CmsPanel = lazy(() =>
+  import('@/features/cms/components/CmsPanel').then((module) => ({
+    default: module.CmsPanel,
+  })),
+)
+const CommercePanel = lazy(() =>
+  import('@/features/commerce/components/CommercePanel').then((module) => ({
+    default: module.CommercePanel,
+  })),
+)
+const EcommercifyTransformOverlay = lazy(() =>
+  import('@/features/commerce/components/EcommercifyTransformOverlay').then(
+    (module) => ({ default: module.EcommercifyTransformOverlay }),
+  ),
+)
+const LakebedAdminPanel = lazy(() =>
+  import('@/features/admin/components/LakebedAdminPanel').then((module) => ({
+    default: module.LakebedAdminPanel,
+  })),
+)
+const DeploymentPanel = lazy(() =>
+  import('@/features/deployments/components/DeploymentPanel').then((module) => ({
+    default: module.DeploymentPanel,
+  })),
+)
+const EditPanel = lazy(() =>
+  import('@/features/editing/components/EditPanel').then((module) => ({
+    default: module.EditPanel,
+  })),
+)
+const ExportPanel = lazy(() =>
+  import('@/features/exports/components/ExportPanel').then((module) => ({
+    default: module.ExportPanel,
+  })),
+)
+const GitHubPanel = lazy(() =>
+  import('@/features/github/components/GitHubPanel').then((module) => ({
+    default: module.GitHubPanel,
+  })),
+)
+const LocalizationPanel = lazy(() =>
+  import('@/features/localization/components/LocalizationPanel').then((module) => ({
+    default: module.LocalizationPanel,
+  })),
+)
 
 interface DashboardProps {
   sessionId: string
@@ -151,6 +209,18 @@ const takeGenerationLaunchHandoff = (sessionId: string): boolean => {
   if (shouldShowIntro) window.sessionStorage.removeItem(key)
   return shouldShowIntro
 }
+
+const RailPanelFallback = () => (
+  <div className="grid gap-3" aria-hidden="true">
+    <div className="h-7 w-1/2 rounded-lg bg-white/[0.08]" />
+    <div className="h-24 rounded-xl border border-white/8 bg-white/[0.045]" />
+    <div className="grid gap-2">
+      <div className="h-3 w-5/6 rounded-full bg-white/[0.07]" />
+      <div className="h-3 w-2/3 rounded-full bg-white/[0.055]" />
+      <div className="h-3 w-3/4 rounded-full bg-white/[0.055]" />
+    </div>
+  </div>
+)
 
 const PreviewLoadingState = ({
   progress,
@@ -267,16 +337,25 @@ export function Dashboard({
     lookup: sessionId,
   })
   const resolvedSessionId = generationView?.session.sessionId
+  const isMissingSession = generationView === null
+  const homeModule = generationView?.homeModule
+  const isPreviewReady =
+    !isMissingSession &&
+    generationView?.session.status === 'preview_ready' &&
+    Boolean(homeModule?.source)
+  const sidePanelQueryArgs =
+    resolvedSessionId === undefined || !isPreviewReady
+      ? 'skip'
+      : { sessionId: resolvedSessionId }
   const commerceConfig = useQuery(
     api.sessions.getCommerceConfig,
-    resolvedSessionId === undefined ? 'skip' : { sessionId: resolvedSessionId },
+    sidePanelQueryArgs,
   )
   const deploymentStatus = useQuery(
     api.sessions.getDeploymentStatus,
-    resolvedSessionId === undefined ? 'skip' : { sessionId: resolvedSessionId },
+    sidePanelQueryArgs,
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
-  const isMissingSession = generationView === null
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -297,7 +376,7 @@ export function Dashboard({
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    if (reduce) {
+    if (reduce || isPreviewReady || isMissingSession) {
       setIsDashboardActive(true)
       return
     }
@@ -312,7 +391,33 @@ export function Dashboard({
     return () => {
       window.clearTimeout(tDashboard)
     }
-  }, [startedFromGenerationFlow])
+  }, [isMissingSession, isPreviewReady, startedFromGenerationFlow])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isPreviewReady || !generationView) {
+      return
+    }
+
+    const session = generationView.session
+    const hasReferences =
+      (session.designReferenceUrls ?? []).length > 0 ||
+      Boolean(session.designReferenceNotes?.trim()) ||
+      Boolean(session.cloneUrl?.trim())
+
+    if (
+      session.isPrivate ||
+      session.engineVersion === 'v2' ||
+      hasReferences
+    ) {
+      return
+    }
+
+    rememberReadySession(window.localStorage, {
+      sessionId: session.sessionId,
+      prompt: session.prompt,
+      preferredLanguage: session.preferredLanguage,
+    })
+  }, [generationView, isPreviewReady])
 
   const progress = useMemo(() => {
     if (!generationView || generationView.tasks.length === 0) return 0
@@ -327,8 +432,6 @@ export function Dashboard({
   const hasFailures =
     generationView?.session.status === 'failed' ||
     generationView?.tasks.some((task) => task.status === 'failed') === true
-  const homeModule = generationView?.homeModule
-  const isPreviewReady = !isMissingSession && Boolean(homeModule?.source)
   const aiTheme = useMemo(
     () => readSiteThemeName(generationView?.siteSpec?.specJson),
     [generationView?.siteSpec?.specJson],
@@ -513,7 +616,7 @@ export function Dashboard({
                   className="min-w-0 truncate font-mono text-xs text-white/56 no-underline"
                   id="url-text"
                   href={currentUrl}
-                  aria-label="Current generation"
+                  aria-label="Current preview URL"
                 >
                   {currentUrl}
                 </a>
@@ -570,7 +673,7 @@ export function Dashboard({
                     type="button"
                     className="dashboard-topbar-circle-button grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.055] text-white/62 transition-colors hover:bg-white/[0.09] hover:text-white"
                     id="preview-refresh-btn"
-                    data-tip="Refresh generation view"
+                    data-tip="Refresh preview"
                     aria-label="Reload page"
                     onClick={() => window.location.reload()}
                   >
@@ -607,8 +710,13 @@ export function Dashboard({
                               'bg-cyan-300/16 text-cyan-100',
                           )}
                           data-preview-device={device}
-                          data-tip={device}
-                          aria-label={`${device} width`}
+                          aria-label={
+                            device === 'desktop'
+                              ? 'Desktop viewport'
+                              : device === 'tablet'
+                                ? 'Tablet viewport'
+                                : 'Mobile viewport'
+                          }
                           aria-pressed={currentDevice === device}
                           onClick={() => setCurrentDevice(device)}
                         >
@@ -833,7 +941,9 @@ export function Dashboard({
                       anonymousOwnerSecret={activeAnonymousOwnerSecret}
                       sessionId={activeSessionId}
                     >
-                      <LakebedAdminPanel />
+                      <Suspense fallback={<RailPanelFallback />}>
+                        <LakebedAdminPanel />
+                      </Suspense>
                     </LakebedSessionProvider>
                   ) : (
                     <div
@@ -852,7 +962,7 @@ export function Dashboard({
                           height: '100%',
                         }}
                       >
-                        {homeModule?.source ? (
+                        {isPreviewReady && homeModule?.source ? (
                           <GeneratedModulePreview
                             source={homeModule.source}
                             sessionId={sessionId}
@@ -876,7 +986,9 @@ export function Dashboard({
                           />
                         )}
                         {isCommerceTransforming ? (
-                          <EcommercifyTransformOverlay />
+                          <Suspense fallback={null}>
+                            <EcommercifyTransformOverlay />
+                          </Suspense>
                         ) : null}
                       </div>
                     </div>
@@ -1271,60 +1383,62 @@ export function Dashboard({
                       className="max-h-[calc(100vh-260px)] overflow-y-auto p-4"
                       id="rail-editor-body"
                     >
-                      {railMode === 'cms' ? (
-                        <CmsPanel
-                          sessionId={sessionId}
-                          prompt={generationView?.session.prompt}
-                        />
-                      ) : railMode === 'chat' ? (
-                        <ChatPanel sessionId={sessionId} />
-                      ) : railMode === 'edits' ? (
-                        <EditPanel
-                          sessionId={sessionId}
-                          selection={previewSelection}
-                        />
-                      ) : railMode === 'annotations' ? (
-                        <AgentationPanel sessionId={sessionId} />
-                      ) : railMode === 'activity' ? (
-                        <ActivityPanel
-                          status={generationView?.session.status}
-                          elapsed={generationView?.session.elapsed}
-                          cost={generationView?.session.cost}
-                          tasks={generationView?.tasks}
-                          events={generationView?.events}
-                        />
-                      ) : railMode === 'brand' ? (
-                        <BrandMediaPanel
-                          prompt={generationView?.session.prompt}
-                          cloneUrl={generationView?.session.cloneUrl}
-                          designReferenceNotes={
-                            generationView?.session.designReferenceNotes
-                          }
-                          designReferenceUrls={
-                            generationView?.session.designReferenceUrls
-                          }
-                        />
-                      ) : railMode === 'localization' ? (
-                        <LocalizationPanel
-                          preferredLanguage={
-                            generationView?.session.preferredLanguage
-                          }
-                          prompt={generationView?.session.prompt}
-                        />
-                      ) : railMode === 'commerce' ? (
-                        <CommercePanel
-                          sessionId={sessionId}
-                          onTransformingChange={setIsCommerceTransforming}
-                        />
-                      ) : railMode === 'deployment' ? (
-                        <DeploymentPanel sessionId={sessionId} />
-                      ) : railMode === 'github' ? (
-                        <GitHubPanel sessionId={sessionId} />
-                      ) : railMode === 'billing' ? (
-                        <BillingPanel sessionId={sessionId} />
-                      ) : (
-                        <ExportPanel sessionId={sessionId} />
-                      )}
+                      <Suspense fallback={<RailPanelFallback />}>
+                        {railMode === 'cms' ? (
+                          <CmsPanel
+                            sessionId={sessionId}
+                            prompt={generationView?.session.prompt}
+                          />
+                        ) : railMode === 'chat' ? (
+                          <ChatPanel sessionId={sessionId} />
+                        ) : railMode === 'edits' ? (
+                          <EditPanel
+                            sessionId={sessionId}
+                            selection={previewSelection}
+                          />
+                        ) : railMode === 'annotations' ? (
+                          <AgentationPanel sessionId={sessionId} />
+                        ) : railMode === 'activity' ? (
+                          <ActivityPanel
+                            status={generationView?.session.status}
+                            elapsed={generationView?.session.elapsed}
+                            cost={generationView?.session.cost}
+                            tasks={generationView?.tasks}
+                            events={generationView?.events}
+                          />
+                        ) : railMode === 'brand' ? (
+                          <BrandMediaPanel
+                            prompt={generationView?.session.prompt}
+                            cloneUrl={generationView?.session.cloneUrl}
+                            designReferenceNotes={
+                              generationView?.session.designReferenceNotes
+                            }
+                            designReferenceUrls={
+                              generationView?.session.designReferenceUrls
+                            }
+                          />
+                        ) : railMode === 'localization' ? (
+                          <LocalizationPanel
+                            preferredLanguage={
+                              generationView?.session.preferredLanguage
+                            }
+                            prompt={generationView?.session.prompt}
+                          />
+                        ) : railMode === 'commerce' ? (
+                          <CommercePanel
+                            sessionId={sessionId}
+                            onTransformingChange={setIsCommerceTransforming}
+                          />
+                        ) : railMode === 'deployment' ? (
+                          <DeploymentPanel sessionId={sessionId} />
+                        ) : railMode === 'github' ? (
+                          <GitHubPanel sessionId={sessionId} />
+                        ) : railMode === 'billing' ? (
+                          <BillingPanel sessionId={sessionId} />
+                        ) : (
+                          <ExportPanel sessionId={sessionId} />
+                        )}
+                      </Suspense>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center justify-end gap-2">

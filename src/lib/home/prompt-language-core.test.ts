@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { detectSnippetLanguageBcp47 } from './prompt-language-core'
 
@@ -33,5 +35,15 @@ describe('detectSnippetLanguageBcp47', () => {
         'Créer un SaaS dashboard en français avec pricing, témoignages clients, FAQ et une page contact responsive.',
       ),
     ).resolves.toBe('fr')
+  })
+
+  it('lazy-loads franc-min so lightweight homepage language labels stay cheap', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/lib/home/prompt-language-core.ts'),
+      'utf8',
+    )
+
+    expect(source).not.toContain("import { franc } from 'franc-min'")
+    expect(source).toContain("await import('franc-min')")
   })
 })

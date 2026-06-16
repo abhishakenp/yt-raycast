@@ -240,6 +240,73 @@ const normalizePromptCacheKey = (
     .replace(/[^a-z0-9\p{L}\p{N}]+/gu, ' ')
     .trim()}`
 
+const PROMPT_CACHE_LOOKBACK_LIMIT = 12
+const startableGenerationStatuses = new Set<
+  Doc<'sessions'>['status'] | undefined
+>([undefined, 'created', 'queued', 'validating'])
+
+const findReusablePromptCacheSession = async (
+  ctx: MutationCtx,
+  promptCacheKey: string,
+): Promise<Doc<'sessions'> | null> => {
+  const candidates = await ctx.db
+    .query('sessions')
+    .withIndex('by_promptCacheKey', (index) =>
+      index.eq('promptCacheKey', promptCacheKey),
+    )
+    .order('desc')
+    .take(PROMPT_CACHE_LOOKBACK_LIMIT)
+
+  return (
+    candidates.find(
+      (session) =>
+        session.isPrivate === false && (session.previewVersion ?? 0) > 0,
+    ) ?? null
+  )
+}
+
+const findIdempotentWorkspaceSession = async (
+  ctx: MutationCtx,
+  args: {
+    workspace: string
+    prompt: string
+    preferredLanguage: string
+    preferredExportTarget: string
+    designReferenceFingerprint?: string
+    cloneUrl?: string
+    engineVersion?: string
+    isPrivate: boolean
+    userId?: string
+    anonymousClientIdHash?: string
+  },
+): Promise<Doc<'sessions'> | null> => {
+  const existing = await ctx.db
+    .query('sessions')
+    .withIndex('by_workspace', (index) => index.eq('workspace', args.workspace))
+    .unique()
+
+  if (existing === null) return null
+
+  const sameOwner =
+    existing.userId === args.userId &&
+    existing.anonymousClientIdHash === args.anonymousClientIdHash
+  const sameRequest =
+    existing.prompt === args.prompt &&
+    existing.preferredLanguage === args.preferredLanguage &&
+    existing.preferredExportTarget === args.preferredExportTarget &&
+    existing.designReferenceFingerprint === args.designReferenceFingerprint &&
+    existing.cloneUrl === args.cloneUrl &&
+    existing.engineVersion === args.engineVersion &&
+    existing.isPrivate === args.isPrivate
+
+  if (sameOwner && sameRequest) return existing
+
+  throw new ConvexError({
+    code: 'DUPLICATE_WORKSPACE',
+    message: 'This generation request was already used for a different session.',
+  })
+}
+
 const isLikelyGibberishPrompt = (prompt: string): boolean => {
   const text = normalizeSpaces(prompt)
   if (text.length < 8) return true
@@ -995,9 +1062,8 @@ const buildChatRefinedSiteSpecJson = (
 
 const hasGalleryReadySignal = (session: Doc<'sessions'>): boolean =>
   session.genuiStatus === 'done' ||
-  session.homepageReady === true ||
-  session.siteSpecReady === true ||
   session.openuiReady === true ||
+  session.status === 'preview_ready' ||
   (session.previewVersion ?? 0) > 0
 
 const isGalleryVisibleSession = (session: Doc<'sessions'>): boolean => {
@@ -1751,6 +1817,35 @@ const createDefaultDeploymentSlug = (
   return fromPrompt || fallback || 'generated-site'
 }
 
+const reserveDefaultDeploymentSlug = async (
+  ctx: MutationCtx,
+  prompt: string,
+  sessionId: Id<'sessions'>,
+): Promise<string> => {
+  const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
+  let finalSlug = baseSlug
+  let attempts = 0
+  const maxAttempts = 10
+
+  while (attempts < maxAttempts) {
+    const existing = await ctx.db
+      .query('sessions')
+      .withIndex('by_deploymentSlug', (index) =>
+        index.eq('deploymentSlug', finalSlug),
+      )
+      .first()
+
+    if (!existing || existing._id === sessionId) break
+
+    const randomSuffix = Math.random().toString(16).slice(2, 6)
+    finalSlug = `${baseSlug}-${randomSuffix}`
+    attempts++
+  }
+
+  await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
+  return finalSlug
+}
+
 const createDeploymentUrl = (slug: string): string =>
   `https://${slug}.ship-fast.io`
 
@@ -1778,6 +1873,7 @@ const serializeSession = (session: Doc<'sessions'>) => ({
   designReferenceNotes: session.designReferenceNotes ?? '',
   cloneUrl: session.cloneUrl,
   designReferenceFingerprint: session.designReferenceFingerprint,
+  engineVersion: session.engineVersion,
 })
 
 const toTaskStatus = (status: 'PENDING' | 'IN_PROGRESS' | 'DONE' | 'FAILED') =>
@@ -1984,6 +2080,162 @@ const snapshotCurrentArtifacts = async (
   }
 }
 
+const cloneCachedGeneratedArtifacts = async (
+  ctx: MutationCtx,
+  args: {
+    cachedSession: Doc<'sessions'>
+    targetSessionId: Id<'sessions'>
+    userId?: string
+    anonymousClientIdHash?: string
+    now: number
+  },
+): Promise<boolean> => {
+  const latestPreview = await ctx.db
+    .query('previews')
+    .withIndex('by_sessionId_version', (index) =>
+      index.eq('sessionId', args.cachedSession._id),
+    )
+    .order('desc')
+    .first()
+  const homeModule = await ctx.db
+    .query('generatedModules')
+    .withIndex('by_sessionId_moduleKey', (index) =>
+      index.eq('sessionId', args.cachedSession._id).eq('moduleKey', 'home'),
+    )
+    .first()
+  const siteSpec = await ctx.db
+    .query('siteSpecs')
+    .withIndex('by_sessionId', (index) =>
+      index.eq('sessionId', args.cachedSession._id),
+    )
+    .first()
+
+  if (latestPreview === null || homeModule?.source === undefined) {
+    return false
+  }
+
+  const openUiSource = latestPreview.openUiSource ?? homeModule.source
+  const siteSpecJson =
+    latestPreview.siteSpecJson ?? siteSpec?.specJson ?? siteSpec?.spec
+
+  await ctx.db.insert('generatedModules', {
+    sessionId: args.targetSessionId,
+    moduleKey: 'home',
+    source: homeModule.source,
+    status: 'succeeded',
+    createdAt: args.now,
+    updatedAt: args.now,
+  })
+
+  if (siteSpecJson !== undefined) {
+    await ctx.db.insert('siteSpecs', {
+      sessionId: args.targetSessionId,
+      specJson: siteSpecJson,
+      createdAt: args.now,
+      updatedAt: args.now,
+    })
+  }
+
+  const cachedTasks = await ctx.db
+    .query('tasks')
+    .withIndex('by_sessionId', (index) =>
+      index.eq('sessionId', args.cachedSession._id),
+    )
+    .take(25)
+  const tasksToClone =
+    cachedTasks.length > 0
+      ? cachedTasks
+      : [
+          {
+            taskKey: 'homepage',
+            title: 'Generate homepage',
+            status: 'succeeded',
+            order: 0,
+          },
+        ]
+
+  for (const [index, task] of tasksToClone.entries()) {
+    const taskKey = task.taskKey ?? task.taskId ?? `task-${index}`
+    const taskFields = {
+      taskKey,
+      taskId: task.taskId,
+      title: task.title,
+      status: task.status === 'failed' ? 'succeeded' : task.status,
+      order: task.order ?? index,
+      filename: task.filename,
+      description: task.description,
+      dependsOn: task.dependsOn,
+      files: task.files,
+      actions: task.actions,
+      updatedAt: args.now,
+    }
+    const existingTask = await ctx.db
+      .query('tasks')
+      .withIndex('by_sessionId_taskKey', (query) =>
+        query.eq('sessionId', args.targetSessionId).eq('taskKey', taskKey),
+      )
+      .first()
+
+    existingTask === null
+      ? await ctx.db.insert('tasks', {
+          sessionId: args.targetSessionId,
+          ...taskFields,
+          createdAt: args.now,
+        })
+      : await ctx.db.patch(existingTask._id, taskFields)
+  }
+
+  await ctx.db.insert('previews', {
+    sessionId: args.targetSessionId,
+    version: 1,
+    html: latestPreview.html,
+    openUiSource,
+    siteSpecJson,
+    source: 'generation',
+    createdAt: args.now,
+  })
+
+  await seedCmsBindingsForGeneratedArtifacts(
+    ctx,
+    args.targetSessionId,
+    { html: latestPreview.html, siteSpecJson },
+    args.now,
+  )
+
+  await ctx.db.insert('generationEvents', {
+    sessionId: args.targetSessionId,
+    eventType: 'preview_ready',
+    message: 'Generated preview restored from prompt cache',
+    previewVersion: 1,
+    createdAt: args.now,
+  })
+
+  await recordOperationalGenerationEvent(ctx, {
+    sessionId: args.targetSessionId,
+    eventType: 'cache_hit',
+    message: 'Duplicate prompt cloned cached generated session',
+    cacheHit: true,
+    provider: 'prompt-cache-clone',
+    elapsedMs: 0,
+    cost: 0,
+    userId: args.userId,
+    anonymousClientIdHash: args.anonymousClientIdHash,
+    createdAt: args.now,
+  })
+
+  await ctx.db.patch(args.targetSessionId, {
+    status: 'preview_ready',
+    homepageReady: true,
+    openuiReady: true,
+    previewVersion: 1,
+    elapsed: 0,
+    cost: 0,
+    updatedAt: args.now,
+  })
+
+  return true
+}
+
 export const create = mutation({
   args: {
     prompt: v.string(),
@@ -1997,6 +2249,7 @@ export const create = mutation({
     designReferenceNotes: v.optional(v.string()),
     cloneUrl: v.optional(v.string()),
     engineVersion: v.optional(v.string()),
+    reusePublicCache: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const disableLimits = areGenerationLimitsDisabled()
@@ -2031,6 +2284,48 @@ export const create = mutation({
       prompt,
       args.preferredLanguage,
     )
+    const idempotentSession = await findIdempotentWorkspaceSession(ctx, {
+      workspace: args.workspace,
+      prompt,
+      preferredLanguage: args.preferredLanguage,
+      preferredExportTarget: args.preferredExportTarget,
+      designReferenceFingerprint,
+      cloneUrl,
+      engineVersion: args.engineVersion,
+      isPrivate: args.isPrivate,
+      userId,
+      anonymousClientIdHash,
+    })
+
+    if (idempotentSession !== null) {
+      return {
+        sessionId: idempotentSession._id,
+        cached: (idempotentSession.previewVersion ?? 0) > 0,
+        idempotent: true,
+      }
+    }
+
+    const canUsePromptCache =
+      designReferenceFingerprint === undefined &&
+      args.isPrivate === false &&
+      userId === undefined &&
+      args.engineVersion !== 'v2'
+    const cachedSession = canUsePromptCache
+      ? await findReusablePromptCacheSession(ctx, promptCacheKey)
+      : null
+
+    if (cachedSession !== null && args.reusePublicCache === true) {
+      await recordOperationalGenerationEvent(ctx, {
+        sessionId: cachedSession._id,
+        eventType: 'cache_hit',
+        message: 'Duplicate prompt reused existing generated session',
+        cacheHit: true,
+        provider: 'prompt-cache',
+        userId,
+        anonymousClientIdHash,
+      })
+      return { sessionId: cachedSession._id, cached: true, reused: true }
+    }
 
     const recentCutoff = now - RATE_WINDOW_MS
     const quotaCutoff =
@@ -2096,24 +2391,10 @@ export const create = mutation({
         })
       })()
 
-    const canReuseCachedSession =
-      designReferenceFingerprint === undefined &&
-      args.isPrivate === false &&
-      userId === undefined &&
-      args.anonymousOwnerSecret === undefined
-
-    if (canReuseCachedSession) {
-      const cachedSession = await ctx.db
-        .query('sessions')
-        .withIndex('by_promptCacheKey', (index) =>
-          index.eq('promptCacheKey', promptCacheKey),
-        )
-        .order('desc')
-        .first()
+    if (cachedSession !== null) {
       if (
         cachedSession !== null &&
-        cachedSession.isPrivate === false &&
-        (cachedSession.previewVersion ?? 0) > 0
+        args.anonymousOwnerSecret === undefined
       ) {
         await recordOperationalGenerationEvent(ctx, {
           sessionId: cachedSession._id,
@@ -2166,6 +2447,27 @@ export const create = mutation({
       createdAt: now,
     })
 
+    await reserveDefaultDeploymentSlug(ctx, prompt, sessionId)
+
+    if (cachedSession !== null && args.anonymousOwnerSecret !== undefined) {
+      const cloned = await cloneCachedGeneratedArtifacts(ctx, {
+        cachedSession,
+        targetSessionId: sessionId,
+        userId,
+        anonymousClientIdHash,
+        now,
+      })
+
+      if (cloned) {
+        return {
+          sessionId,
+          cached: true,
+          cloned: true,
+          remaining: Math.max(0, quotaLimit - quotaCount - 1),
+        }
+      }
+    }
+
     const generationArgs =
       args.anonymousOwnerSecret === undefined
         ? { sessionId }
@@ -2176,30 +2478,6 @@ export const create = mutation({
       internal.generation.startGeneration,
       generationArgs,
     )
-
-    const baseSlug = createDefaultDeploymentSlug(prompt, sessionId)
-    let finalSlug = baseSlug
-    let attempts = 0
-    const maxAttempts = 10
-
-    while (attempts < maxAttempts) {
-      const existing = await ctx.db
-        .query('sessions')
-        .withIndex('by_deploymentSlug', (index) =>
-          index.eq('deploymentSlug', finalSlug),
-        )
-        .first()
-
-      if (!existing || existing._id === sessionId) {
-        break
-      }
-
-      const randomSuffix = Math.random().toString(16).slice(2, 6)
-      finalSlug = `${baseSlug}-${randomSuffix}`
-      attempts++
-    }
-
-    await ctx.db.patch(sessionId, { deploymentSlug: finalSlug })
 
     return {
       sessionId,
@@ -2228,6 +2506,16 @@ export const markGenerationStarted = internalMutation({
       return {
         started: false,
         reason: session === null ? 'not_found' : 'preview_already_exists',
+      }
+    }
+
+    if (!startableGenerationStatuses.has(session.status)) {
+      return {
+        started: false,
+        reason:
+          session.status === 'streaming'
+            ? 'generation_already_started'
+            : 'generation_not_startable',
       }
     }
 

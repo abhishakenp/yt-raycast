@@ -21,6 +21,7 @@ import { Route as PreviewSlugRouteImport } from './routes/preview.$slug'
 import { Route as GenerateSessionIdRouteImport } from './routes/generate.$sessionId'
 import { Route as ApiTranslateRouteImport } from './routes/api/translate'
 import { Route as ApiSubscriptionStatusRouteImport } from './routes/api/subscription-status'
+import { Route as ApiShareBonusRouteImport } from './routes/api/share-bonus'
 import { Route as ApiRewriteRouteImport } from './routes/api/rewrite'
 import { Route as ApiPromptSuggestionsRouteImport } from './routes/api/prompt-suggestions'
 import { Route as ApiPexelsRouteImport } from './routes/api/pexels'
@@ -124,6 +125,11 @@ const ApiTranslateRoute = ApiTranslateRouteImport.update({
 const ApiSubscriptionStatusRoute = ApiSubscriptionStatusRouteImport.update({
   id: '/api/subscription-status',
   path: '/api/subscription-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiShareBonusRoute = ApiShareBonusRouteImport.update({
+  id: '/api/share-bonus',
+  path: '/api/share-bonus',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRewriteRoute = ApiRewriteRouteImport.update({
@@ -386,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
+  '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
@@ -444,6 +451,7 @@ export interface FileRoutesByTo {
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
+  '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
@@ -503,6 +511,7 @@ export interface FileRoutesById {
   '/api/pexels': typeof ApiPexelsRoute
   '/api/prompt-suggestions': typeof ApiPromptSuggestionsRoute
   '/api/rewrite': typeof ApiRewriteRoute
+  '/api/share-bonus': typeof ApiShareBonusRoute
   '/api/subscription-status': typeof ApiSubscriptionStatusRoute
   '/api/translate': typeof ApiTranslateRoute
   '/generate/$sessionId': typeof GenerateSessionIdRouteWithChildren
@@ -563,6 +572,7 @@ export interface FileRouteTypes {
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
+    | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
     | '/generate/$sessionId'
@@ -621,6 +631,7 @@ export interface FileRouteTypes {
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
+    | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
     | '/generate/$sessionId'
@@ -679,6 +690,7 @@ export interface FileRouteTypes {
     | '/api/pexels'
     | '/api/prompt-suggestions'
     | '/api/rewrite'
+    | '/api/share-bonus'
     | '/api/subscription-status'
     | '/api/translate'
     | '/generate/$sessionId'
@@ -738,6 +750,7 @@ export interface RootRouteChildren {
   ApiPexelsRoute: typeof ApiPexelsRoute
   ApiPromptSuggestionsRoute: typeof ApiPromptSuggestionsRoute
   ApiRewriteRoute: typeof ApiRewriteRoute
+  ApiShareBonusRoute: typeof ApiShareBonusRoute
   ApiSubscriptionStatusRoute: typeof ApiSubscriptionStatusRoute
   ApiTranslateRoute: typeof ApiTranslateRoute
   GenerateSessionIdRoute: typeof GenerateSessionIdRouteWithChildren
@@ -840,6 +853,13 @@ declare module '@tanstack/react-router' {
       path: '/api/subscription-status'
       fullPath: '/api/subscription-status'
       preLoaderRoute: typeof ApiSubscriptionStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/share-bonus': {
+      id: '/api/share-bonus'
+      path: '/api/share-bonus'
+      fullPath: '/api/share-bonus'
+      preLoaderRoute: typeof ApiShareBonusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rewrite': {
@@ -1302,6 +1322,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPexelsRoute: ApiPexelsRoute,
   ApiPromptSuggestionsRoute: ApiPromptSuggestionsRoute,
   ApiRewriteRoute: ApiRewriteRoute,
+  ApiShareBonusRoute: ApiShareBonusRoute,
   ApiSubscriptionStatusRoute: ApiSubscriptionStatusRoute,
   ApiTranslateRoute: ApiTranslateRoute,
   GenerateSessionIdRoute: GenerateSessionIdRouteWithChildren,

@@ -80,7 +80,7 @@ test('getDeploymentStatus returns deployment status', async () => {
   expect(status?.previewVersion).toBe(1)
 })
 
-test('owner-secret sessions do not reuse cached public sessions owned by another anonymous user', async () => {
+test('owner-secret sessions clone cached public previews without reusing another owner session', async () => {
   const t = convexTest(schema, modules)
   const prompt = 'Cache-safe deployment preview'
 
@@ -105,12 +105,39 @@ test('owner-secret sessions do not reuse cached public sessions owned by another
     anonymousOwnerSecret: 'owner-b',
   })
 
-  expect(second.cached).toBe(false)
+  expect(second.cached).toBe(true)
+  expect(second.cloned).toBe(true)
   expect(second.sessionId).not.toBe(first.sessionId)
 
+  const secondView = await t.runQuery(api.sessions.getGenerationView, {
+    lookup: second.sessionId,
+  })
+  expect(secondView?.session.status).toBe('preview_ready')
+  expect(secondView?.session.canClaimAnonymous).toBe(true)
+  expect(secondView?.homeModule?.source).toContain(prompt)
+  expect(secondView?.latestPreview?.html).toContain(prompt)
+  expect(secondView?.tasks).toHaveLength(1)
+  expect(secondView?.tasks[0]?.status).toBe('succeeded')
+
   await expect(
-    persistGeneratedPreview(t, second.sessionId, prompt),
-  ).resolves.toMatchObject({ previewVersion: 1 })
+    t.runMutation(api.sessions.createEdit, {
+      sessionId: second.sessionId,
+      anonymousOwnerSecret: 'owner-a',
+      editType: 'text',
+      beforeText: prompt,
+      afterText: 'Wrong owner edit',
+    }),
+  ).rejects.toThrow()
+
+  await expect(
+    t.runMutation(api.sessions.createEdit, {
+      sessionId: second.sessionId,
+      anonymousOwnerSecret: 'owner-b',
+      editType: 'text',
+      beforeText: prompt,
+      afterText: 'Owner B edited cached clone',
+    }),
+  ).resolves.toMatchObject({ previewVersion: 2 })
 })
 
 test('publishPreview repoints an existing deployment to the latest preview version', async () => {
