@@ -7,6 +7,7 @@ import {
 } from '../../genui/theme-apply'
 import type { ThemeStyles } from '../../genui/theme-presets'
 import { observeGeneratedMobileNavs } from './generated-mobile-nav'
+import { useTextEdit } from '@/features/editing/hooks/useTextEdit'
 
 export type PreviewToolMode = 'select' | 'annotate' | null
 
@@ -96,6 +97,10 @@ const DirectPreview = forwardRef<
     deviceMode?: 'desktop' | 'tablet' | 'mobile'
     previewToolMode?: PreviewToolMode
     onPreviewSelect?: (selection: PreviewSelection) => void
+    editMode?: boolean
+    onTextChange?: (change: { oldText: string; newText: string; element: HTMLElement }) => void
+    onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void
+    onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
   }
 >(({
   children,
@@ -104,6 +109,10 @@ const DirectPreview = forwardRef<
   deviceMode = 'desktop',
   previewToolMode = null,
   onPreviewSelect,
+  editMode = false,
+  onTextChange,
+  onImageChange,
+  onElementActivate,
 }, ref) => {
   const internalRef = useRef<HTMLDivElement | null>(null)
   const selectedElementRef = useRef<HTMLElement | null>(null)
@@ -126,6 +135,8 @@ const DirectPreview = forwardRef<
     },
     [ref],
   )
+
+  useTextEdit(internalRef, editMode, onTextChange || (() => {}), onImageChange, onElementActivate)
 
   useEffect(() => {
     const currentRoot = internalRef.current

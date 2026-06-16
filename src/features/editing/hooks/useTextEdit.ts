@@ -8,11 +8,17 @@ interface TextEditState {
 export function useTextEdit(
   containerRef: React.RefObject<HTMLElement | null>,
   editMode: boolean,
-  onTextChange: (change: { oldText: string; newText: string }) => void,
+  onTextChange: (change: { oldText: string; newText: string; element: HTMLElement }) => void,
+  onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void,
+  onElementActivate?: (element: HTMLElement, rect: DOMRect) => void,
 ) {
   const activeEditRef = useRef<TextEditState | null>(null)
   const callbackRef = useRef(onTextChange)
+  const imageCallbackRef = useRef(onImageChange)
+  const elementActivateCallbackRef = useRef(onElementActivate)
   callbackRef.current = onTextChange
+  imageCallbackRef.current = onImageChange
+  elementActivateCallbackRef.current = onElementActivate
 
   useEffect(() => {
     const container = containerRef.current
@@ -24,7 +30,7 @@ export function useTextEdit(
 
       const newText = active.element.textContent || ''
       if (newText !== active.originalText && newText.trim()) {
-        callbackRef.current({ oldText: active.originalText, newText })
+        callbackRef.current({ oldText: active.originalText, newText, element: active.element })
       }
 
       cleanupElement(active.element)
@@ -44,6 +50,27 @@ export function useTextEdit(
       if (!editMode) return
 
       const target = e.target as HTMLElement
+
+      // Check if target is an image or contains an image
+      const imgEl = target.tagName.toLowerCase() === 'img'
+        ? (target as HTMLImageElement)
+        : target.querySelector('img') as HTMLImageElement | null
+
+      if (imgEl) {
+        const currentSrc = imgEl.src
+        const currentAlt = imgEl.alt || ''
+
+        // Emit custom event for image target
+        const event = new CustomEvent('image-target', {
+          detail: { element: imgEl, src: currentSrc, alt: currentAlt },
+          bubbles: true,
+        })
+        target.dispatchEvent(event)
+
+        e.stopPropagation()
+        e.preventDefault()
+        return
+      }
 
       finishEdit()
 
@@ -65,6 +92,10 @@ export function useTextEdit(
       textEl.style.outline = '2px solid hsl(var(--primary))'
       textEl.style.outlineOffset = '2px'
       textEl.style.cursor = 'text'
+
+      // Notify parent that element is now editable
+      const rect = textEl.getBoundingClientRect()
+      elementActivateCallbackRef.current?.(textEl, rect)
 
       activeEditRef.current = { element: textEl, originalText }
 

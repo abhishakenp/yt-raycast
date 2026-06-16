@@ -19,6 +19,10 @@ type GeneratedModulePreviewProps = {
   previewToolMode?: PreviewToolMode
   agentationEnabled?: boolean
   onPreviewSelect?: (selection: PreviewSelection) => void
+  editMode?: boolean
+  onTextChange?: (change: { oldText: string; newText: string; element: HTMLElement }) => void
+  onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void
+  onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
 }
 
 export const isHtmlDocumentSource = (source: string): boolean => {
@@ -113,6 +117,10 @@ export function GeneratedModulePreview({
   previewToolMode = null,
   agentationEnabled = false,
   onPreviewSelect,
+  editMode = false,
+  onTextChange,
+  onImageChange,
+  onElementActivate,
 }: GeneratedModulePreviewProps) {
   const anonymousOwnerSecret =
     typeof window === 'undefined'
@@ -130,6 +138,10 @@ export function GeneratedModulePreview({
         deviceMode={deviceMode}
         previewToolMode={previewToolMode}
         onPreviewSelect={onPreviewSelect}
+        editMode={editMode}
+        onTextChange={onTextChange}
+        onImageChange={onImageChange}
+        onElementActivate={onElementActivate}
       >
         {isHtmlDocumentSource(source) ? (
           <HtmlModuleRenderer source={source} />
