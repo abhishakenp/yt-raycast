@@ -10,6 +10,7 @@
 
 import type * as billing from "../billing.js";
 import type * as generation from "../generation.js";
+import type * as generationConfig from "../generationConfig.js";
 import type * as lakebed from "../lakebed.js";
 import type * as sessions from "../sessions.js";
 
@@ -22,6 +23,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   billing: typeof billing;
   generation: typeof generation;
+  generationConfig: typeof generationConfig;
   lakebed: typeof lakebed;
   sessions: typeof sessions;
 }>;
