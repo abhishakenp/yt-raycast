@@ -5,7 +5,14 @@ nixPkgs = ["nodejs_20", "bun"]
 cmds = ["bun install --no-save"]
 
 [phases.build]
-cmds = ["NODE_ENV=production bun run build"]
+# 1. Build the frontend. 2. Deploy Convex functions to the self-hosted backend
+# so the deployed app and its backend functions can never drift out of sync.
+# deploy:convex skips cleanly when CONVEX_SELF_HOSTED_ADMIN_KEY is absent and
+# fails the build if the Convex deploy fails (fail loud, never skew).
+cmds = [
+  "NODE_ENV=production bun run build",
+  "bun run deploy:convex",
+]
 
 [start]
 cmd = "NODE_ENV=production bun .output/server/index.mjs"

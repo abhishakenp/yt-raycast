@@ -42,6 +42,7 @@
     "verify:qa": "bun run test && bun run build",
     "verify:release": "bun run verify:qa && bun run verify:providers",
     "build": "vite build",
+    "deploy:convex": "bun scripts/deploy-convex.mjs",
     "preview": "vite preview",
     "test": "vitest run --config vitest.config.ts",
     "lint": "eslint",

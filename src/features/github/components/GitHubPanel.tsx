@@ -1,6 +1,7 @@
 import { Github, Send } from 'lucide-react'
-import { useAuth } from '@clerk/tanstack-react-start'
 import { useState } from 'react'
+
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 
 type GitHubPanelProps = {
   sessionId: string
@@ -9,7 +10,7 @@ type GitHubPanelProps = {
 type ExportTarget = 'html' | 'react' | 'next'
 
 export const GitHubPanel = ({ sessionId }: GitHubPanelProps) => {
-  const { getToken, isSignedIn } = useAuth()
+  const { getToken, isSignedIn } = useOptionalAuth()
   const [githubAccessToken, setGithubAccessToken] = useState('')
   const [repoFullName, setRepoFullName] = useState('')
   const [repoName, setRepoName] = useState('')
