@@ -1,5 +1,6 @@
-import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
 import {
+  lazy,
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -11,8 +12,12 @@ import {
 } from 'react'
 
 import { LaunchBackdrop } from '@/components/launch-backdrop'
-import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'
 import { usePromptHomeController } from '@/features/home/hooks/usePromptHomeController'
+import {
+  buildLocalPromptSuggestions,
+  getPromptSuggestionCacheKey,
+  sanitizePromptSuggestions,
+} from '@/features/home/services/prompt-suggestions'
 import { GLASS_LENS_FILTER_ID } from '@/lib/glass-pill-html'
 import {
   PROMPT_LANG_DETECT_DEBOUNCE_MS,
@@ -25,12 +30,11 @@ import {
   SUBMIT_BTN_DEFAULT_LABEL,
 } from '@/lib/home/constants'
 import {
-  detectSnippetLanguageBcp47,
   getGenerateCtaLabel,
   getLanguageDisplayName,
   getLogoTaglineText,
   normalizeLanguageCode,
-} from '@/lib/home/prompt-language-core'
+} from '@/lib/home/prompt-language-labels'
 import { cn } from '@/lib/utils'
 
 const LANGUAGE_OPTIONS = [
@@ -78,6 +82,27 @@ const SAMPLE_PLACEHOLDERS = [
 const clerkPublishableKey =
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? import.meta.env.CLERK_PUBLISHABLE_KEY
 const isClerkConfigured = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0
+const HOME_GALLERY_IDLE_DELAY_MS = 1800
+const HOME_GALLERY_IDLE_TIMEOUT_MS = 2500
+
+type IdleWindow = Window & {
+  requestIdleCallback?: (
+    callback: () => void,
+    options?: { timeout?: number },
+  ) => number
+  cancelIdleCallback?: (handle: number) => void
+}
+
+const LazyHomeGallerySection = lazy(() =>
+  import('@/features/gallery/components/PublicGallery').then((module) => ({
+    default: module.HomeGallerySection,
+  })),
+)
+const LazyHomepageAuthControls = lazy(() =>
+  import('@/components/HomepageAuthControls').then((module) => ({
+    default: module.HomepageAuthControls,
+  })),
+)
 
 type PillButtonProps = {
   children: ReactNode
@@ -323,29 +348,42 @@ const PrivateGenerationModal = ({
   </div>
 )
 
-const TopActions = () => (
-  <nav className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4" aria-label="Primary">
-    <div className="pointer-events-auto ml-auto flex items-center gap-2">
-      <GlassPillAnchor className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5" href="/pricing">
-        Pricing
-      </GlassPillAnchor>
-      {isClerkConfigured ? (
-        <>
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <GlassPillButton className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5">Sign in</GlassPillButton>
-            </SignInButton>
-          </Show>
-          <Show when="signed-in">
-            <div className="grid size-9 place-items-center">
-              <UserButton afterSignOutUrl="/" />
-            </div>
-          </Show>
-        </>
-      ) : null}
-    </div>
-  </nav>
-)
+const TopActions = () => {
+  const [authRequested, setAuthRequested] = useState(false)
+
+  return (
+    <nav className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4" aria-label="Primary">
+      <div className="pointer-events-auto ml-auto flex items-center gap-2">
+        <GlassPillAnchor className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5" href="/pricing">
+          Pricing
+        </GlassPillAnchor>
+        {isClerkConfigured ? (
+          authRequested ? (
+            <Suspense
+              fallback={
+                <GlassPillButton
+                  className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
+                  disabled
+                >
+                  Sign in
+                </GlassPillButton>
+              }
+            >
+              <LazyHomepageAuthControls autoOpen />
+            </Suspense>
+          ) : (
+            <GlassPillButton
+              className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
+              onClick={() => setAuthRequested(true)}
+            >
+              Sign in
+            </GlassPillButton>
+          )
+        ) : null}
+      </div>
+    </nav>
+  )
+}
 
 const getLanguageOptionName = (code: string) =>
   LANGUAGE_OPTIONS.find(([optionCode]) => optionCode === code)?.[1] ?? getLanguageDisplayName(code)
@@ -386,6 +424,121 @@ const collectDesignReferenceUrls = (formData: FormData): string[] => {
   ).slice(0, 4)
 }
 
+const DeferredHomeGallerySection = () => {
+  const [isGalleryReady, setIsGalleryReady] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (isGalleryReady || typeof window === 'undefined') return
+
+    const idleWindow = window as IdleWindow
+    let cancelled = false
+    let userScrolled = false
+    let observer: IntersectionObserver | undefined
+    let delayHandle: number | undefined
+    let idleHandle: number | undefined
+
+    const activateGallery = () => {
+      if (cancelled) return
+      setIsGalleryReady(true)
+    }
+
+    const isPromptActive = () =>
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement.id === 'prompt-input'
+
+    const scheduleDelayedIdleActivation = () => {
+      if (cancelled) return
+      delayHandle = window.setTimeout(
+        scheduleIdleActivation,
+        HOME_GALLERY_IDLE_DELAY_MS,
+      )
+    }
+
+    const activateGalleryFromIdle = () => {
+      if (isPromptActive()) {
+        scheduleDelayedIdleActivation()
+        return
+      }
+
+      activateGallery()
+    }
+
+    const scheduleIdleActivation = () => {
+      if (cancelled) return
+      if (idleWindow.requestIdleCallback) {
+        idleHandle = idleWindow.requestIdleCallback(activateGalleryFromIdle, {
+          timeout: HOME_GALLERY_IDLE_TIMEOUT_MS,
+        })
+        return
+      }
+
+      idleHandle = window.setTimeout(
+        activateGalleryFromIdle,
+        HOME_GALLERY_IDLE_TIMEOUT_MS,
+      )
+    }
+
+    const activateIfScrolledNearGallery = () => {
+      if (!userScrolled || !sentinelRef.current) return
+      const top = sentinelRef.current.getBoundingClientRect().top
+      if (top <= window.innerHeight + 320) activateGallery()
+    }
+
+    const handleScroll = () => {
+      userScrolled = window.scrollY > 48
+      activateIfScrolledNearGallery()
+    }
+
+    scheduleDelayedIdleActivation()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    if ('IntersectionObserver' in window && sentinelRef.current) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (userScrolled && entries.some((entry) => entry.isIntersecting)) {
+            activateGallery()
+          }
+        },
+        { rootMargin: '320px 0px' },
+      )
+      observer.observe(sentinelRef.current)
+    }
+
+    return () => {
+      cancelled = true
+      observer?.disconnect()
+      window.removeEventListener('scroll', handleScroll)
+      if (delayHandle !== undefined) window.clearTimeout(delayHandle)
+      if (idleHandle === undefined) return
+      if (idleWindow.cancelIdleCallback && idleWindow.requestIdleCallback) {
+        idleWindow.cancelIdleCallback(idleHandle)
+      } else {
+        window.clearTimeout(idleHandle)
+      }
+    }
+  }, [isGalleryReady])
+
+  return (
+    <div ref={sentinelRef} className="min-h-[280px]">
+      {isGalleryReady ? (
+        <Suspense fallback={<HomeGalleryPlaceholder />}>
+          <LazyHomeGallerySection />
+        </Suspense>
+      ) : (
+        <HomeGalleryPlaceholder />
+      )}
+    </div>
+  )
+}
+
+const HomeGalleryPlaceholder = () => (
+  <div
+    className="mb-16 mt-12 min-h-[280px] rounded-[20px] border border-white/6 bg-white/[0.025]"
+    aria-hidden="true"
+  />
+)
+
 export const HomePage = () => {
   const {
     canSubmit,
@@ -393,6 +546,7 @@ export const HomePage = () => {
     errorMessage,
     isSubmitting,
     prompt,
+    refreshShareBonusStatus,
     selectExamplePrompt,
     setPrompt,
     shareBonusClaimed,
@@ -491,6 +645,9 @@ export const HomePage = () => {
       void (async () => {
         const currentPrompt = prompt.trim()
         if (currentPrompt.length < PROMPT_LANG_DETECT_MIN_CHARS) return
+        const { detectSnippetLanguageBcp47 } = await import(
+          '@/lib/home/prompt-language-core'
+        )
         const detectedLanguage = await detectSnippetLanguageBcp47(
           currentPrompt.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
         )
@@ -516,7 +673,14 @@ export const HomePage = () => {
     promptSuggestAbortRef.current = null
 
     const partial = prompt.trim()
-    if (!promptFocused || partial.length < PROMPT_SUGGEST_MIN_CHARS) {
+    const promptElementActive = document.activeElement?.id === 'prompt-input'
+    if (!promptFocused && promptElementActive) {
+      setPromptFocused(true)
+    }
+    if (
+      (!promptFocused && !promptElementActive) ||
+      partial.length < PROMPT_SUGGEST_MIN_CHARS
+    ) {
       promptSuggestTokenRef.current += 1
       setPromptSuggestions([])
       setPromptSuggestActive(0)
@@ -524,6 +688,33 @@ export const HomePage = () => {
     }
 
     const runToken = ++promptSuggestTokenRef.current
+    const cacheKey = getPromptSuggestionCacheKey(partial, preferredLanguage)
+    const localSuggestions = buildLocalPromptSuggestions(
+      partial,
+      preferredLanguage,
+      PROMPT_SUGGEST_MAX_SHOW,
+    )
+    let immediateSuggestions = localSuggestions
+    try {
+      const cached = window.sessionStorage.getItem(cacheKey)
+      const cachedSuggestions = sanitizePromptSuggestions(
+        cached ? JSON.parse(cached) : [],
+        partial,
+        PROMPT_SUGGEST_MAX_SHOW,
+      )
+      if (cachedSuggestions.length > 0) {
+        immediateSuggestions = cachedSuggestions
+      }
+    } catch {
+      window.sessionStorage.removeItem(cacheKey)
+    }
+    setPromptSuggestions(immediateSuggestions)
+    setPromptSuggestActive(0)
+
+    if (import.meta.env.VITE_ENABLE_AI_PROMPT_SUGGESTIONS !== '1') {
+      return
+    }
+
     const controller = new AbortController()
     promptSuggestAbortRef.current = controller
     const timeout = window.setTimeout(() => {
@@ -537,24 +728,31 @@ export const HomePage = () => {
           })
           if (runToken !== promptSuggestTokenRef.current) return
           if (!response.ok) {
-            setPromptSuggestions([])
-            setPromptSuggestActive(0)
+            setPromptSuggestions((current) =>
+              current.length > 0 ? current : immediateSuggestions,
+            )
             return
           }
           const data = await response.json()
           if (runToken !== promptSuggestTokenRef.current) return
-          const suggestions = Array.isArray(data?.suggestions)
-            ? data.suggestions
-                .filter((value: unknown): value is string => typeof value === 'string')
-                .slice(0, PROMPT_SUGGEST_MAX_SHOW)
-            : []
-          setPromptSuggestions(suggestions)
+          const suggestions = sanitizePromptSuggestions(
+            data?.suggestions,
+            partial,
+            PROMPT_SUGGEST_MAX_SHOW,
+          )
+          if (suggestions.length > 0) {
+            window.sessionStorage.setItem(cacheKey, JSON.stringify(suggestions))
+          }
+          setPromptSuggestions(
+            suggestions.length > 0 ? suggestions : immediateSuggestions,
+          )
           setPromptSuggestActive(0)
         } catch (error) {
           if ((error as { name?: string })?.name === 'AbortError') return
           if (runToken !== promptSuggestTokenRef.current) return
-          setPromptSuggestions([])
-          setPromptSuggestActive(0)
+          setPromptSuggestions((current) =>
+            current.length > 0 ? current : immediateSuggestions,
+          )
         }
       })()
     }, PROMPT_SUGGEST_DEBOUNCE_MS)
@@ -568,11 +766,12 @@ export const HomePage = () => {
   // Show share panel when quota is exceeded and bonus not claimed
   useEffect(() => {
     if (errorMessage?.includes('quota exhausted') && !shareBonusClaimed) {
+      void refreshShareBonusStatus()
       setShowSharePanel(true)
     } else {
       setShowSharePanel(false)
     }
-  }, [errorMessage, shareBonusClaimed])
+  }, [errorMessage, refreshShareBonusStatus, shareBonusClaimed])
 
   const handleShareClick = async (platform: string) => {
     await claimShareBonus()
@@ -809,8 +1008,14 @@ export const HomePage = () => {
                               closePromptSuggestions()
                             }, 120)
                           }}
-                          onChange={(event) => setPrompt(event.currentTarget.value)}
+                          onChange={(event) => {
+                            setPromptFocused(true)
+                            setPrompt(event.currentTarget.value)
+                          }}
+                          onClick={() => setPromptFocused(true)}
                           onFocus={() => setPromptFocused(true)}
+                          onInput={() => setPromptFocused(true)}
+                          onPointerDown={() => setPromptFocused(true)}
                           onKeyDown={handlePromptKeyDown}
                         />
                         <div className="pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200" id="prompt-placeholder" aria-hidden="true">
@@ -1061,7 +1266,6 @@ export const HomePage = () => {
                         className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/12 bg-white/[0.05] px-[7px] py-[5px] font-mono text-[11px] tracking-[0.02em] text-[rgba(237,237,239,0.88)] transition-all duration-150 hover:-translate-y-px hover:border-violet-600/55 hover:bg-violet-600/20 hover:text-white disabled:cursor-wait disabled:opacity-50"
                         data-prompt={value}
                         data-react-owned="true"
-                        title={value}
                         onClick={() => handleExamplePrompt(value)}
                       >
                         <span className="inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded bg-violet-600/55 px-1 text-[10px] font-bold text-white">{index + 1}</span>
@@ -1074,7 +1278,7 @@ export const HomePage = () => {
             </div>
           </section>
 
-          <HomeGallerySection />
+          <DeferredHomeGallerySection />
         </div>
       </div>
 

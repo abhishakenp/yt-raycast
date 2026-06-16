@@ -9,13 +9,16 @@ describe('dashboard preview tool wiring', () => {
   it('passes topbar tool state and Agentation activation into the generated preview', () => {
     const dashboardSource = readProjectFile('src/features/dashboard/components/Dashboard.tsx')
     const previewSource = readProjectFile('src/features/generation/components/GeneratedModulePreview.tsx')
+    const compactDashboardSource = dashboardSource.replace(/\s+/g, ' ')
 
-    expect(dashboardSource).toContain("useState<'select' | 'annotate' | null>(null)")
+    expect(compactDashboardSource).toContain(
+      "useState<'select' | 'annotate' | null>( null, )",
+    )
     expect(dashboardSource).toContain('previewToolMode={inspectMode}')
     expect(dashboardSource).toContain('onPreviewSelect={handlePreviewSelect}')
     expect(dashboardSource).toContain('selection={previewSelection}')
-    expect(dashboardSource).toContain(
-      "agentationEnabled={inspectMode === 'annotate' || railMode === 'annotations'}",
+    expect(compactDashboardSource).toContain(
+      "agentationEnabled={ inspectMode === 'annotate' || railMode === 'annotations' }",
     )
     expect(dashboardSource).toContain(
       "railMode === 'tools' ? 'hidden' : 'flex'",

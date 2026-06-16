@@ -1,6 +1,3 @@
-import { generateText } from '@ship-fast/engine'
-import { DEFAULT_MODEL } from '@ship-fast/engine/model-list.js'
-
 import { isTranslatableLocale, lookupKnownLanguage } from '@/config/languages.js'
 
 type TranslateModel = (
@@ -73,8 +70,14 @@ const buildTranslationPrompt = (text: string, locale: string) => {
   }
 }
 
-const defaultTranslateModel: TranslateModel = async (system, user, signal) =>
-  await generateText(DEFAULT_MODEL, system, user, signal, 2)
+const defaultTranslateModel: TranslateModel = async (system, user, signal) => {
+  const [{ generateText }, { DEFAULT_MODEL }] = await Promise.all([
+    import('@ship-fast/engine'),
+    import('@ship-fast/engine/model-list.js'),
+  ])
+
+  return await generateText(DEFAULT_MODEL, system, user, signal, 2)
+}
 
 export const createTranslateResponse = async (
   request: Request,

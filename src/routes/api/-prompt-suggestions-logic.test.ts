@@ -1,8 +1,21 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { getFallbackPromptSuggestions } from './-prompt-suggestions-logic.js'
 
 describe('getFallbackPromptSuggestions', () => {
+  it('keeps engine/Groq code behind dynamic imports for the homepage bundle', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/routes/api/-prompt-suggestions-logic.js'),
+      'utf8',
+    )
+
+    expect(source).not.toContain("import { GROQ_API_KEY }")
+    expect(source).not.toContain("import { groq }")
+    expect(source).toContain("import('@ship-fast/engine/llm/groq.js')")
+  })
+
   it('keeps an English dog-blog prefix in English even on localized browsers', () => {
     const suggestions = getFallbackPromptSuggestions('a blog about dogs', 'en')
 

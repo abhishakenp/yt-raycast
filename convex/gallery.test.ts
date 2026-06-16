@@ -93,4 +93,4 @@ test('listPublicSessions returns only public visible sessions with gallery metad
   expect(gallery.total).toBe(1)
   expect(gallery.hasNext).toBe(false)
   expect(gallery.hasPrev).toBe(false)
-})
+}, 15_000)

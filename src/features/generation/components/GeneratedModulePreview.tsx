@@ -21,6 +21,11 @@ type GeneratedModulePreviewProps = {
   onPreviewSelect?: (selection: PreviewSelection) => void
 }
 
+export const isHtmlDocumentSource = (source: string): boolean => {
+  const trimmed = source.trim()
+  return /^<!doctype\s+html/i.test(trimmed) || /^<html[\s>]/i.test(trimmed)
+}
+
 /** Best-effort brand/tagline descriptor from the persisted site spec, used as
  *  extra image-search context alongside the prompt. */
 const parseSiteSpecBrand = (siteSpecJson: string | undefined): string | undefined => {
@@ -61,6 +66,17 @@ const parseSiteSpecTheme = (siteSpecJson: string | undefined): Record<string, st
   } catch {
     return null
   }
+}
+
+export function HtmlModuleRenderer({ source }: Pick<GeneratedModulePreviewProps, 'source'>) {
+  return (
+    <iframe
+      title="Generated website preview"
+      className="size-full border-0 bg-white"
+      sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-scripts"
+      srcDoc={source}
+    />
+  )
 }
 
 export function OpenUIModuleRenderer({
@@ -115,13 +131,17 @@ export function GeneratedModulePreview({
         previewToolMode={previewToolMode}
         onPreviewSelect={onPreviewSelect}
       >
-        <OpenUIModuleRenderer
-          source={source}
-          sessionId={sessionId}
-          siteSpecJson={siteSpecJson}
-          locale={locale}
-          prompt={prompt}
-        />
+        {isHtmlDocumentSource(source) ? (
+          <HtmlModuleRenderer source={source} />
+        ) : (
+          <OpenUIModuleRenderer
+            source={source}
+            sessionId={sessionId}
+            siteSpecJson={siteSpecJson}
+            locale={locale}
+            prompt={prompt}
+          />
+        )}
         <AgentationSessionBridge
           enabled={agentationEnabled}
           sessionId={sessionId}

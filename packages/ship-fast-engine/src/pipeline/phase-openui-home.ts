@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import { writeFileSync, existsSync, readFileSync } from 'node:fs'
 import { runHomepageOrchestrator } from '../genui/run.ts'
-import { renderPreviewToWorkspace, writeStreamingShellToWorkspace } from '../renderers/index.ts'
+import { renderPreviewToWorkspace } from '../renderers/index.ts'
 import { saveSiteSpec } from '../spec/index.ts'
 // @ts-ignore - JS module without type definitions
 import { preferRomanizedBcp47FromSnippet, preferMixedEnglishBcp47FromSnippet } from '../config/languages.js'
@@ -35,32 +35,6 @@ function upsertManifest(workspace: string, route: string, title: string, file: s
   })
   manifest.generatedAt = new Date().toISOString()
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
-}
-
-async function simulateStream(
-  sessionCtx: any,
-  route: string,
-  fullText: string
-) {
-  if (!sessionCtx?.broadcast) return
-  sessionCtx.broadcast({ type: 'openui_stream_start', route })
-
-  const chunkSize = 512
-  let index = 0
-  while (index < fullText.length) {
-    const chunk = fullText.slice(index, index + chunkSize)
-    const accumulated = fullText.slice(0, index + chunkSize)
-    sessionCtx.broadcast({
-      type: 'openui_stream_chunk',
-      route,
-      token: chunk,
-      source: accumulated
-    })
-    index += chunkSize
-    await new Promise((resolve) => setTimeout(resolve, 8))
-  }
-
-  sessionCtx.broadcast({ type: 'openui_stream_done', route, source: fullText })
 }
 
 function titleFromPrompt(prompt: string): string {
@@ -105,25 +79,9 @@ export async function generateAndWriteOpenUIHome(p: {
       ? p.languageMode.code.trim().toLowerCase()
       : null
 
-  // Live stream: stand up the themed host shell the moment the first statement
-  // (the skeleton) lands — so the preview iframe mounts and subscribes — then push
-  // the FULL accumulated program on every page, so each page pops into the preview
-  // as it finishes generating instead of after the whole run completes.
   let themeName: string | null = null
   let localeName = forcedLocale || 'en'
-  let shellWritten = false
   const brandSoFar = projectTitle(p.siteSpec, p.prompt)
-
-  const writeShell = () => {
-    const theme = themeName || specThemeName || 'modern-minimal'
-    // Persist the theme, then write ONLY the host shell — NOT home.openui. Writing
-    // the artifact now would make the island's mount-time GET succeed and settle,
-    // and the WS stream would then be ignored (settledRef short-circuits it). The
-    // island streams the assembling program over the socket; home.openui is
-    // persisted at the end, for reload.
-    saveSiteSpec(p.workspace, { brand: brandSoFar, tagline, theme, locale: localeName, skeleton: '', modules: {} })
-    writeStreamingShellToWorkspace(p.workspace, brandSoFar, theme)
-  }
 
   const onEvent = (event: any) => {
     if (event.type === 'theme') {
@@ -137,28 +95,12 @@ export async function generateAndWriteOpenUIHome(p: {
     else if (event.type === 'module') log(`  genui: page ${event.id} ready`)
   }
 
-  // Fires with the full accumulated program every time a statement lands.
+  // The orchestrator can emit partial source while it is assembling the page.
+  // Do not expose that partial source as the preview: it renders with interim
+  // skeleton/theme state and can be captured by thumbnails before final colors
+  // are applied. The completed source is persisted and broadcast below.
   const onSource = (accumulated: string) => {
     if (!accumulated.trim()) return
-    if (!shellWritten) {
-      // First statement: write the themed shell + tell the dashboard to mount the
-      // preview, then open the stream so the client island takes over rendering.
-      writeShell()
-      shellWritten = true
-      ctx?.broadcast?.({ type: 'openui_stream_start', route })
-      ctx?.signalHomepageReady?.()
-    }
-    
-    // Server-side render OpenUI to HTML before sending to client
-    const currentLocale = forcedLocale || localeName || 'en'
-    const { html } = renderOpenUIToHTMLWithTheme(
-      accumulated,
-      undefined,
-      currentLocale,
-      undefined,
-    ) as OpenUIRenderResult
-    
-    ctx?.broadcast?.({ type: 'openui_stream_chunk', route, html: html, source: accumulated })
   }
 
   const result = await runHomepageOrchestrator({

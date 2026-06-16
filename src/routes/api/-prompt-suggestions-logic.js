@@ -1,7 +1,3 @@
-import { GROQ_API_KEY } from '@ship-fast/engine/config.js'
-import { groq } from '@ship-fast/engine/llm/groq.js'
-import { trimInlineAiText } from '@ship-fast/engine/llm/utils.js'
-
 const PARTIAL_MAX = 480
 const OUT_MAX = 4
 const LINE_MAX = 380
@@ -209,6 +205,19 @@ function extractJsonObject(text) {
   }
 }
 
+const hasGroqApiKey = () =>
+  typeof process !== 'undefined' &&
+  typeof process.env?.GROQ_API_KEY === 'string' &&
+  process.env.GROQ_API_KEY.trim().length > 0
+
+const loadGroqPromptSuggestionRuntime = async () => {
+  const [{ groq }, { trimInlineAiText }] = await Promise.all([
+    import('@ship-fast/engine/llm/groq.js'),
+    import('@ship-fast/engine/llm/utils.js'),
+  ])
+  return { groq, trimInlineAiText }
+}
+
 export function normalizePromptSuggestionLanguage(language) {
   const raw = String(language || '')
     .trim()
@@ -279,7 +288,7 @@ export async function getPartialPromptSuggestions(partial, options = {}) {
   const p = String(partial ?? '').trim()
   if (p.length < 2) return []
   if (p.length > PARTIAL_MAX) return []
-  if (!GROQ_API_KEY) return getFallbackPromptSuggestions(p, options.language)
+  if (!hasGroqApiKey()) return getFallbackPromptSuggestions(p, options.language)
 
   const system = [
     'You complete partial prompts for an AI that generates marketing websites.',
@@ -291,6 +300,7 @@ export async function getPartialPromptSuggestions(partial, options = {}) {
     'No markdown, no numbering, no explanation outside the JSON.',
   ].join(' ')
 
+  const { groq, trimInlineAiText } = await loadGroqPromptSuggestionRuntime()
   const r = await groq(`Partial prompt:\n${p}`, {
     system,
     temperature: 0.35,

@@ -81,6 +81,165 @@ test('public prompt cache is scoped by preferred language', async () => {
   })
 })
 
+test('public prompt cache can replay a ready session without creating an owned clone', async () => {
+  const t = convexTest(schema, modules)
+  const prompt = 'Build a replayable public prompt site'
+
+  const ready = await t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_replay_ready',
+  })
+  await persistGeneratedPreview(t, ready.sessionId, prompt)
+
+  const replay = await t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_replay_second',
+    anonymousClientId: 'anon-public-replay',
+    anonymousOwnerSecret: 'owner-public-replay',
+    reusePublicCache: true,
+  })
+
+  expect(replay).toMatchObject({
+    sessionId: ready.sessionId,
+    cached: true,
+    reused: true,
+  })
+
+  const stream = await t.runQuery(api.sessions.getEventStream, {
+    lookup: ready.sessionId,
+  })
+  expect(stream.events.find((event) => event.eventType === 'cache_hit'))
+    .toMatchObject({
+      cacheHit: true,
+      provider: 'prompt-cache',
+    })
+})
+
+test('workspace idempotency returns the same queued session for a retried create', async () => {
+  const t = convexTest(schema, modules)
+  const request = {
+    prompt: 'Build an idempotent retry site',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html' as const,
+    isPrivate: false,
+    workspace: 'workspace_retry_idempotent',
+    anonymousClientId: 'anon-retry-idempotent',
+    anonymousOwnerSecret: 'owner-retry-idempotent',
+  }
+
+  const first = await t.runMutation(api.sessions.create, request)
+  const second = await t.runMutation(api.sessions.create, request)
+
+  expect(second).toMatchObject({
+    sessionId: first.sessionId,
+    idempotent: true,
+  })
+
+  const view = await t.runQuery(api.sessions.getGenerationView, {
+    lookup: first.sessionId,
+  })
+
+  expect(view?.tasks).toHaveLength(1)
+})
+
+test('workspace idempotency rejects conflicting reuse of a workspace key', async () => {
+  const t = convexTest(schema, modules)
+
+  await t.runMutation(api.sessions.create, {
+    prompt: 'Build the original workspace site',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_conflict_guard',
+    anonymousClientId: 'anon-workspace-conflict',
+    anonymousOwnerSecret: 'owner-workspace-conflict',
+  })
+
+  await expect(
+    t.runMutation(api.sessions.create, {
+      prompt: 'Build a different workspace site',
+      preferredLanguage: 'en',
+      preferredExportTarget: 'html',
+      isPrivate: false,
+      workspace: 'workspace_conflict_guard',
+      anonymousClientId: 'anon-workspace-conflict',
+      anonymousOwnerSecret: 'owner-workspace-conflict',
+    }),
+  ).rejects.toThrow()
+})
+
+test('v2 generation does not reuse a default-engine prompt cache entry', async () => {
+  const t = convexTest(schema, modules)
+  const prompt = 'Build a v2 isolated cache prompt site'
+
+  const defaultEngine = await t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_v1_cache_ready',
+  })
+  await persistGeneratedPreview(t, defaultEngine.sessionId, prompt)
+
+  const v2 = await t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_v2_cache_request',
+    engineVersion: 'v2',
+    reusePublicCache: true,
+  })
+
+  expect(v2.cached).not.toBe(true)
+  expect(v2.sessionId).not.toBe(defaultEngine.sessionId)
+})
+
+test('public prompt cache skips newer incomplete duplicate sessions', async () => {
+  const t = convexTest(schema, modules)
+  const prompt = 'Build a durable cached prompt site'
+
+  const ready = await t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_cache_ready',
+  })
+  await persistGeneratedPreview(t, ready.sessionId, prompt)
+
+  const incomplete = await t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_cache_incomplete',
+    designReferenceUrls: ['https://example.com/reference'],
+  })
+
+  expect(incomplete.cached).not.toBe(true)
+  expect(incomplete.sessionId).not.toBe(ready.sessionId)
+
+  const cachedAgain = await t.runMutation(api.sessions.create, {
+    prompt,
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_cache_again',
+  })
+
+  expect(cachedAgain).toMatchObject({
+    sessionId: ready.sessionId,
+    cached: true,
+  })
+})
+
 test('inline preview edits and history restore keep dashboard source artifacts aligned', async () => {
   const t = convexTest(schema, modules)
 
@@ -229,4 +388,39 @@ test('late generation jobs cannot clobber an existing preview', async () => {
   expect(view?.homeModule?.source).not.toContain('Late overwrite')
   expect(view?.siteSpec?.specJson).toContain('Already ready generated site')
   expect(view?.siteSpec?.specJson).not.toContain('Late overwrite')
+})
+
+test('duplicate generation actions cannot start the same queued session twice', async () => {
+  const t = convexTest(schema, modules)
+
+  const { sessionId } = await t.runMutation(api.sessions.create, {
+    prompt: 'Duplicate generation action guard',
+    preferredLanguage: 'en',
+    preferredExportTarget: 'html',
+    isPrivate: false,
+    workspace: 'workspace_duplicate_start_guard',
+    anonymousClientId: 'anon-duplicate-start-guard',
+    anonymousOwnerSecret: 'owner-secret',
+  })
+
+  await expect(
+    t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
+  ).resolves.toMatchObject({ started: true })
+
+  await expect(
+    t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
+  ).resolves.toMatchObject({
+    started: false,
+    reason: 'generation_already_started',
+  })
+
+  const view = await t.runQuery(api.sessions.getGenerationView, {
+    lookup: sessionId,
+  })
+  const startedEvents = view?.events.filter(
+    (event) => event.message === 'Generation started',
+  )
+
+  expect(view?.session.status).toBe('streaming')
+  expect(startedEvents).toHaveLength(1)
 })

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 
 import {
@@ -56,6 +58,18 @@ describe('buildChatRefinementPrompt', () => {
 })
 
 describe('createChatRefinementResponse', () => {
+  it('keeps the engine text-generation runtime behind the planner path', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/chat/server/chat-refinement-response.ts'),
+      'utf8',
+    )
+    const imports = source.slice(0, source.indexOf('type ChatRefinementClient'))
+
+    expect(imports).not.toContain('@ship-fast/engine')
+    expect(source).toContain("import('@ship-fast/engine')")
+    expect(source).toContain("import('@ship-fast/engine/model-list.js')")
+  })
+
   it('persists an AI refinement plan through the Convex chat mutation', async () => {
     const client = {
       query: vi.fn().mockResolvedValue({

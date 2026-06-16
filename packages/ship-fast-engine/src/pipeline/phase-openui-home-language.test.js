@@ -60,6 +60,7 @@ describe('OpenUI homepage language mode', () => {
 
   it('uses the resolved language mode as the final locale over orchestrator fallback locale', async () => {
     const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-openui-language-'))
+    const signalHomepageReady = vi.fn()
 
     await generateAndWriteOpenUIHome({
       workspace,
@@ -70,7 +71,7 @@ describe('OpenUI homepage language mode', () => {
         broadcast: (event) => {
           if (event?.type === 'openui_stream_done') streamDoneEvents.push(event)
         },
-        signalHomepageReady: vi.fn(),
+        signalHomepageReady,
         signalOpenuiReady: vi.fn(),
       },
       log: vi.fn(),
@@ -78,6 +79,7 @@ describe('OpenUI homepage language mode', () => {
 
     expect(savedProjects.at(-1).locale).toBe('fr')
     expect(streamDoneEvents.at(-1).locale).toBe('fr')
+    expect(signalHomepageReady).not.toHaveBeenCalled()
   })
 
   it('passes the resolved language code into the homepage orchestrator', async () => {

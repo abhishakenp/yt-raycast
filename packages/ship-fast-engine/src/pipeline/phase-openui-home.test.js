@@ -13,4 +13,10 @@ describe('OpenUI homepage phase', () => {
     expect(source).not.toMatch(/for\s*\(\s*let\s+attempt\s*=/)
     expect(source).not.toContain('attempt ${attempt}')
   })
+
+  it('does not expose partial generated source as a live preview', () => {
+    expect(source).not.toContain('writeStreamingShellToWorkspace')
+    expect(source).not.toContain("type: 'openui_stream_chunk'")
+    expect(source).not.toContain('signalHomepageReady?.()')
+  })
 })

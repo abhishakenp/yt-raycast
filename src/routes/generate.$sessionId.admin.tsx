@@ -1,14 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-import { Dashboard } from '@/features/dashboard/components/Dashboard'
-
-const GenerateAdminRoute = () => {
-  const { sessionId } = Route.useParams()
-
-  return <Dashboard sessionId={sessionId} initialAdminView />
-}
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/generate/$sessionId/admin')({
-  component: GenerateAdminRoute,
+  component: lazyRouteComponent(
+    () => import('./-generate-dashboard-route'),
+    'GenerateAdminRoute',
+  ),
 })
-

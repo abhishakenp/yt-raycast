@@ -1,13 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-import { Dashboard } from '@/features/dashboard/components/Dashboard'
-
-const GenerateRoute = () => {
-  const { sessionId } = Route.useParams()
-
-  return <Dashboard sessionId={sessionId} />
-}
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/generate/$sessionId')({
-  component: GenerateRoute,
+  component: lazyRouteComponent(
+    () => import('./-generate-dashboard-route'),
+    'GenerateRoute',
+  ),
 })

@@ -15,7 +15,7 @@ describe('convex generation action', () => {
 
     expect(source).toContain('preferredLanguage: session.preferredLanguage')
     expect(source).not.toContain('completeWhen')
-    expect(source).toContain('buildOpenUiHandoffHtml(')
+    expect(source).toContain('buildRenderedOpenUiPreviewHtml(')
     expect(orchestratorSource).toContain('detectLanguage(p.prompt')
     expect(orchestratorSource).toContain('withLanguageEnforcementBlock')
     expect(orchestratorSource).toMatch(/generateUI\(\s*generationPrompt/)
@@ -62,7 +62,7 @@ describe('convex generation action', () => {
     expect(source).not.toContain('buildFastPreviewArtifacts')
     expect(source).not.toContain("provider: 'fast-preview'")
     expect(source).toContain("provider: 'genui-orchestrator'")
-    expect(source).toContain('buildOpenUiHandoffHtml')
+    expect(source).toContain('buildRenderedOpenUiPreviewHtml')
   })
 
   it('completes generated previews inside the node action runtime', () => {
@@ -70,13 +70,24 @@ describe('convex generation action', () => {
 
     expect(source).toContain('completeGenerationFromNode')
     expect(source).toContain('internalFunctions.sessions.completeGenerationInternal')
-    expect(source).not.toContain(
-      "await import('../packages/ship-fast-engine/src/openui-ssr.js')",
+    expect(source).toContain(
+      "import('../packages/ship-fast-engine/src/openui-ssr.js')",
     )
-    expect(source).not.toContain('renderOpenUIToHTMLWithTheme')
+    expect(source).toContain('renderOpenUIToHTMLWithTheme')
     expect(source).not.toMatch(
       /internalFunctions\.sessions\.completeGeneration(?!Internal)/,
     )
+  })
+
+  it('does not persist partial OpenUI source before final completion', () => {
+    const source = readFileSync(join(here, 'generation.ts'), 'utf8')
+    const onSourceIndex = source.indexOf('onSource: (source) => {')
+    const onEventIndex = source.indexOf('onEvent: (event)', onSourceIndex)
+    const onSourceBlock = source.slice(onSourceIndex, onEventIndex)
+
+    expect(onSourceIndex).toBeGreaterThan(-1)
+    expect(onSourceBlock).toContain('latestOpenUiSource = source')
+    expect(onSourceBlock).not.toContain('upsertGeneratedModule')
   })
 
   it('does not use a separate refinement mutation for initial generation', () => {

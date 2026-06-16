@@ -1,5 +1,3 @@
-import { resolveBrandfetchBrandProfile } from '@ship-fast/engine/brandfetch.js'
-
 type BrandProfileResult = {
   ok?: boolean
   status?: number
@@ -45,9 +43,18 @@ const normalizeBrandQuery = (request: Request): string => {
 const providerStatus = (value: number | undefined): number =>
   value !== undefined && value >= 400 && value < 500 ? value : 502
 
+const loadDefaultBrandProfileResolver =
+  async (): Promise<BrandProfileResolver> => {
+    const { resolveBrandfetchBrandProfile } = await import(
+      '@ship-fast/engine/brandfetch.js'
+    )
+
+    return resolveBrandfetchBrandProfile
+  }
+
 export const createBrandProfileResponse = async (
   request: Request,
-  resolver: BrandProfileResolver = resolveBrandfetchBrandProfile,
+  resolver?: BrandProfileResolver,
 ): Promise<Response> => {
   const query = normalizeBrandQuery(request)
 
@@ -62,7 +69,8 @@ export const createBrandProfileResponse = async (
   }
 
   try {
-    const result = await resolver({ query, timeoutMs: 5500 })
+    const resolveBrandProfile = resolver ?? (await loadDefaultBrandProfileResolver())
+    const result = await resolveBrandProfile({ query, timeoutMs: 5500 })
     if (result.ok !== true) {
       return json(
         {

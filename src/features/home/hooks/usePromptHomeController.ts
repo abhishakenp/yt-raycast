@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation } from 'convex/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { api } from '../../../../convex/_generated/api'
 import {
@@ -20,8 +20,61 @@ import {
   createAnonymousClientId,
   createSessionWorkspaceKey,
 } from '@/features/session/services/session-create-payload'
+import {
+  forgetReadySession,
+  readReadySessionCache,
+  rememberReadySession,
+  verifyReadySession,
+} from '@/features/session/services/ready-session-cache'
 
 const generationLaunchStoragePrefix = 'ship-fast:generation-launch:'
+const CREATE_SESSION_TIMEOUT_MS = 12_000
+const CREATE_SESSION_RETRY_DELAY_MS = 450
+
+const delay = (ms: number) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
+
+const withTimeout = async <T,>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T> =>
+  await new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      reject(new Error('create_session_timeout'))
+    }, timeoutMs)
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer)
+        resolve(value)
+      },
+      (error) => {
+        window.clearTimeout(timer)
+        reject(error)
+      },
+    )
+  })
+
+const createSessionWithRetry = async <Payload, Result>(
+  createSession: (payload: Payload) => Promise<Result>,
+  payload: Payload,
+): Promise<Result> => {
+  let lastError: unknown
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await withTimeout(createSession(payload), CREATE_SESSION_TIMEOUT_MS)
+    } catch (error) {
+      lastError = error
+      if (attempt === 1) break
+      await delay(CREATE_SESSION_RETRY_DELAY_MS)
+    }
+  }
+
+  throw lastError
+}
 
 export const usePromptHomeController = () => {
   const navigate = useNavigate()
@@ -30,28 +83,31 @@ export const usePromptHomeController = () => {
   const [errorMessage, setErrorMessage] = useState<string>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [shareBonusClaimed, setShareBonusClaimed] = useState(false)
+  const submitInFlightRef = useRef(false)
+  const shareBonusHydratedRef = useRef(false)
 
-  // Hydrate share bonus state from server
-  useEffect(() => {
-    const checkShareBonus = async () => {
-      try {
-        const resp = await fetch('/api/share-bonus')
-        if (resp.ok) {
-          const data = await resp.json()
-          if (data.claimed) setShareBonusClaimed(true)
-        }
-      } catch {
-        // Ignore network errors
-      }
+  const refreshShareBonusStatus = useCallback(async () => {
+    if (shareBonusHydratedRef.current) return
+    shareBonusHydratedRef.current = true
+
+    try {
+      const resp = await fetch('/api/share-bonus')
+      if (!resp.ok) return
+      const data = await resp.json()
+      if (data.claimed) setShareBonusClaimed(true)
+    } catch {
+      shareBonusHydratedRef.current = false
     }
-    checkShareBonus()
   }, [])
 
   const claimShareBonus = async () => {
     if (shareBonusClaimed) return
     try {
       const resp = await fetch('/api/share-bonus', { method: 'POST' })
-      if (resp.ok) setShareBonusClaimed(true)
+      if (resp.ok) {
+        shareBonusHydratedRef.current = true
+        setShareBonusClaimed(true)
+      }
     } catch {
       // Ignore network errors
     }
@@ -73,7 +129,7 @@ export const usePromptHomeController = () => {
     const isPrivate = opts?.isPrivate ?? false
     const hasPrompt = runtimePrompt.length > 0
 
-    if (!hasPrompt || isSubmitting) {
+    if (!hasPrompt || isSubmitting || submitInFlightRef.current) {
       return
     }
     if (!checkPromptContentPolicy(runtimePrompt).ok) {
@@ -81,38 +137,85 @@ export const usePromptHomeController = () => {
       return
     }
 
+    submitInFlightRef.current = true
     setErrorMessage(undefined)
     setIsSubmitting(true)
 
     try {
+      const canUseVerifiedReadyCache =
+        !isPrivate &&
+        (opts?.designReferenceUrls ?? []).filter((url) => url.trim()).length ===
+          0 &&
+        !(opts?.designReferenceNotes ?? '').trim() &&
+        !(opts?.cloneUrl ?? '').trim() &&
+        opts?.engineVersion !== 'v2'
+      if (canUseVerifiedReadyCache) {
+        const cached = readReadySessionCache(window.localStorage, {
+          prompt: runtimePrompt,
+          preferredLanguage,
+        })
+        if (cached !== null) {
+          const verifiedSessionId = await verifyReadySession({
+            sessionId: cached.sessionId,
+            prompt: runtimePrompt,
+            preferredLanguage,
+          }).catch(() => null)
+          if (verifiedSessionId !== null) {
+            await navigate({
+              to: '/generate/$sessionId',
+              params: { sessionId: verifiedSessionId },
+            })
+            return
+          }
+          forgetReadySession(window.localStorage, {
+            prompt: runtimePrompt,
+            preferredLanguage,
+          })
+        }
+      }
+
       const anonymousOwnerSecret = createAnonymousOwnerSecret()
       const anonymousClientId = createAnonymousClientId(window.localStorage)
-      const result = await createSession(
+      const workspace = createSessionWorkspaceKey()
+      const result = await createSessionWithRetry(
+        createSession,
         buildCreateSessionPayload({
           prompt: runtimePrompt,
           preferredLanguage,
           isPrivate,
           anonymousOwnerSecret,
           anonymousClientId,
-          workspace: createSessionWorkspaceKey(),
+          workspace,
           designReferenceUrls: opts?.designReferenceUrls,
           designReferenceNotes: opts?.designReferenceNotes,
           cloneUrl: opts?.cloneUrl,
           engineVersion: opts?.engineVersion,
+          reusePublicCache: canUseVerifiedReadyCache,
         }),
       )
       const sessionId = result.sessionId
 
-      if (result.cached !== true) {
+      const isOwnedCachedClone = result.cached === true && result.cloned === true
+
+      if (result.cached !== true || isOwnedCachedClone) {
         persistAnonymousOwnerSecret(
           window.localStorage,
           sessionId,
           anonymousOwnerSecret,
         )
+      }
+
+      if (result.cached !== true) {
         window.sessionStorage.setItem(
           `${generationLaunchStoragePrefix}${sessionId}`,
           '1',
         )
+      } else if (canUseVerifiedReadyCache) {
+        rememberReadySession(window.localStorage, {
+          sessionId,
+          prompt: runtimePrompt,
+          preferredLanguage,
+        })
       }
 
       await navigate({
@@ -122,6 +225,7 @@ export const usePromptHomeController = () => {
         },
       })
     } catch {
+      submitInFlightRef.current = false
       setErrorMessage('Generation could not start. Try again.')
       setIsSubmitting(false)
     }
@@ -142,6 +246,7 @@ export const usePromptHomeController = () => {
     examplePrompts,
     isSubmitting,
     prompt,
+    refreshShareBonusStatus,
     selectExamplePrompt,
     setPrompt,
     shareBonusClaimed,

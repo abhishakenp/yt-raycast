@@ -83,6 +83,7 @@ export default defineSchema({
   })
     .index('by_userId', ['userId'])
     .index('by_anonymousClientIdHash', ['anonymousClientIdHash'])
+    .index('by_workspace', ['workspace'])
     .index('by_promptCacheKey', ['promptCacheKey'])
     .index('by_public_createdAt', ['isPrivate', 'createdAt'])
     .index('by_deploymentSlug', ['deploymentSlug']),

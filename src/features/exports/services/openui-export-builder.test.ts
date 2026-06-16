@@ -10,6 +10,11 @@ import {
 const source = `root = SaasKimiPage("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
 
 const siteSpecJson = JSON.stringify({ projectName: 'Export Demo' })
+const rawHtmlSource = `<!DOCTYPE html>
+<html lang="en">
+<head><title>Raw Export Demo</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body><main><h1>Raw SFF export</h1></main></body>
+</html>`
 
 const unzipTextFiles = (body: Uint8Array): Record<string, string> =>
   Object.fromEntries(
@@ -43,6 +48,34 @@ describe('openui-export-builder', () => {
     expect(html).not.toContain('@openuidev')
     expect(html).not.toContain('defineComponent')
     expect(html).not.toContain('root = Stack')
+  })
+
+  it('returns raw SFF HTML directly for HTML exports', () => {
+    const result = buildOpenUIExport({
+      source: rawHtmlSource,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'html',
+    })
+
+    expect(result.contentType).toBe('text/html; charset=utf-8')
+    expect(result.filename).toBe('index.html')
+    expect(decodeExportBody(result.body)).toBe(rawHtmlSource)
+  })
+
+  it('packages raw SFF HTML as a static ZIP for app export targets', () => {
+    const result = buildOpenUIExport({
+      source: rawHtmlSource,
+      siteSpecJson,
+      sessionId: 'demo',
+      target: 'react',
+    })
+    const files = unzipTextFiles(result.body as Uint8Array)
+
+    expect(result.contentType).toBe('application/zip')
+    expect(files['index.html']).toBe(rawHtmlSource)
+    expect(files['README.md']).toContain('Export Demo')
+    expect(files['package.json']).toContain('"dev": "vite --host 0.0.0.0"')
   })
 
   it('builds a React ZIP without OpenUI internals', () => {

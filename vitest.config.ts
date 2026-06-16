@@ -9,6 +9,7 @@ export default defineConfig({
       'src/**/*.test.tsx',
       'convex/**/*.test.ts',
       'packages/ship-fast-engine/src/genui/**/*.test.ts',
+      'packages/ship-fast-engine/src/pipeline/**/*.test.ts',
     ],
   },
   resolve: {

@@ -1,12 +1,14 @@
 // @ts-ignore
 import { formatRunAllReport } from './report.js'
-import { loadSiteSpec } from '../spec/index.js'
+import { buildFallbackSiteSpec, loadSiteSpec, saveSiteSpec } from '../spec/index.js'
 import { requirePromptText } from '../prompt.js'
 // @ts-ignore
 import { resolvePipelineLanguage } from './prompt-language.js'
+import { writeSffHtmlHome } from './phase-sff-html.ts'
 // @ts-ignore
-import { generateSiteSpec } from './phase-site-spec.js'
-import { generateAndWriteOpenUIHome } from './phase-openui-home.ts'
+import { enrichBrandProfile } from './brand-profile.js'
+// @ts-ignore
+import { resolvePexelsImageHints } from './image-hints.js'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -45,6 +47,7 @@ export async function runAllV2({
   })
 
   const timings: Record<string, number> = { t0 }
+  let preparedSiteSpec: Record<string, unknown> | null = null
 
   const tasks = [
     {
@@ -56,10 +59,10 @@ export async function runAllV2({
     },
     {
       id: 'home.openui',
-      label: 'Generate Home page',
+      label: 'Generate SFF HTML homepage',
       status: 'PENDING',
       filename: 'home.openui',
-      files: ['home.openui'],
+      files: ['index.html', 'home.openui'],
     },
   ]
 
@@ -72,21 +75,22 @@ export async function runAllV2({
   persistTasks()
 
   // ── Phase 1: Blueprint ────────────────────────────────────────────────────
-  _status('Planning site blueprint…', 'spec')
+  _status('Preparing instant site blueprint…', 'spec')
   tasks[0].status = 'IN_PROGRESS'
   sessionCtx?.updateTask?.(tasks[0])
   persistTasks()
 
   try {
     timings.spec_start = Date.now()
-    await generateSiteSpec({
-      prompt: languageMode.prompt,
-      workspace,
-      log: _log,
-    })
+    const siteSpec = buildFallbackSiteSpec({ prompt: languageMode.prompt })
+    if (languageMode.code) {
+      siteSpec.locale = languageMode.code
+    }
+    saveSiteSpec(workspace, siteSpec)
+    preparedSiteSpec = siteSpec
     timings.spec_end = Date.now()
     tasks[0].status = 'DONE'
-    _log(`  ✓ Site blueprint ready (${((timings.spec_end - timings.spec_start) / 1000).toFixed(1)}s)`)
+    _log(`  ✓ Instant site blueprint ready (${((timings.spec_end - timings.spec_start) / 1000).toFixed(1)}s)`)
   } catch (specErr) {
     tasks[0].status = 'FAILED'
     _log(`  ⚠ Site spec failed, continuing with defaults: ${(specErr as Error)?.message ?? specErr}`)
@@ -96,25 +100,52 @@ export async function runAllV2({
   persistTasks()
 
   // ── Phase 2: Generation ───────────────────────────────────────────────────
-  _status('Generating homepage with the OpenUI module engine…', 'openui')
+  _status('Generating SFF-style single-file homepage…', 'html')
   tasks[1].status = 'IN_PROGRESS'
   sessionCtx?.updateTask?.(tasks[1])
   persistTasks()
 
-  let openuiStats: any
+  let htmlStats: any
   try {
-    timings.openui_start = Date.now()
-    openuiStats = await generateAndWriteOpenUIHome({
+    timings.html_start = Date.now()
+    const siteSpec = preparedSiteSpec ?? loadSiteSpec(workspace)
+    const [brandProfile, imageHints] = await Promise.all([
+      enrichBrandProfile(languageMode.prompt, workspace, _log).catch((error: unknown) => {
+        _log(`  brand-profile: skipped (${(error as Error)?.message ?? String(error)})`)
+        return null
+      }),
+      resolvePexelsImageHints(
+        {
+          prompt: languageMode.prompt,
+          hydrationPrompt: languageMode.prompt,
+          siteSpec: siteSpec ?? undefined,
+        },
+        {
+          onProgress: (partial: unknown) => {
+            const payload =
+              partial && typeof partial === 'object'
+                ? (partial as Record<string, unknown>)
+                : {}
+            sessionCtx?.broadcast?.({ type: 'media_hints', ...payload })
+          },
+        },
+      ).catch((error: unknown) => {
+        _log(`  image-hints: skipped (${(error as Error)?.message ?? String(error)})`)
+        return null
+      }),
+    ])
+    htmlStats = await writeSffHtmlHome({
       workspace,
-      siteSpec: loadSiteSpec(workspace),
       prompt: languageMode.prompt,
-      languageMode,
+      siteSpec: siteSpec ?? undefined,
+      preferredLanguage: languageMode.code ?? preferredLanguage,
+      brandProfile,
+      imageHints,
       log: _log,
       sessionCtx,
-      variationSeed: sessionCtx?.id || workspace,
     })
-    timings.openui_end = Date.now()
-    timings.preview_saved = timings.openui_end
+    timings.html_end = Date.now()
+    timings.preview_saved = timings.html_end
 
     tasks[1].status = 'DONE'
     sessionCtx?.updateTask?.(tasks[1])
@@ -129,7 +160,7 @@ export async function runAllV2({
 
     const elapsed = Number.parseFloat(((Date.now() - t0) / 1000).toFixed(1))
     sessionCtx?.setElapsed?.(elapsed)
-    sessionCtx?.setCost?.(openuiStats.cost ?? 0)
+    sessionCtx?.setCost?.(htmlStats.cost ?? 0)
 
     const completed = tasks.filter((t) => t.status === 'DONE').length
     const report = formatRunAllReport(timings, {
@@ -137,11 +168,11 @@ export async function runAllV2({
       done: completed,
       total: tasks.length,
       tasks,
-      homepageChars: openuiStats.chars ?? 0,
+      homepageChars: htmlStats.chars ?? 0,
       ctxPages: 0,
     })
 
-    _log(`  ✓ OpenUI module generation complete: ${completed}/${tasks.length} tasks ready in ${elapsed}s`)
+    _log(`  ✓ SFF HTML generation complete: ${completed}/${tasks.length} tasks ready in ${elapsed}s`)
     sessionCtx?.broadcast?.({
       type: 'run_completed',
       elapsed,

@@ -1,6 +1,4 @@
 import { ConvexHttpClient } from 'convex/browser'
-import { generateText } from '@ship-fast/engine'
-import { DEFAULT_MODEL } from '@ship-fast/engine/model-list.js'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
@@ -17,11 +15,22 @@ type ChatRefinementPlan = {
   assistantSummary?: string
 }
 
-type GenerateText = typeof generateText
+type GenerateText = (
+  model: string,
+  system: string,
+  user: string,
+  signal: AbortSignal,
+  retries?: number,
+) => Promise<string>
+type GenerateTextRuntime = {
+  generateText: GenerateText
+  DEFAULT_MODEL: string
+}
 
 const MAX_CONTEXT_CHARS = 9000
 const MAX_CONTENT_CHARS = 4000
 const CHAT_REFINEMENT_TIMEOUT_MS = 25000
+const DEFAULT_INJECTED_CHAT_MODEL = 'openai/gpt-oss-120b'
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -31,6 +40,15 @@ const json = (body: unknown, init?: ResponseInit) =>
       ...init?.headers,
     },
   })
+
+const loadGenerateTextRuntime = async (): Promise<GenerateTextRuntime> => {
+  const [{ generateText }, { DEFAULT_MODEL }] = await Promise.all([
+    import('@ship-fast/engine'),
+    import('@ship-fast/engine/model-list.js'),
+  ])
+
+  return { generateText, DEFAULT_MODEL }
+}
 
 const getString = (body: JsonBody, keys: string[]): string | undefined => {
   for (const key of keys) {
@@ -219,8 +237,9 @@ export const createChatRefinementResponse = async (
       CHAT_REFINEMENT_TIMEOUT_MS,
     )
     try {
-      const rawPlan = await (options.generate ?? generateText)(
-        options.model ?? DEFAULT_MODEL,
+      const runtime = options.generate ? null : await loadGenerateTextRuntime()
+      const rawPlan = await (options.generate ?? runtime!.generateText)(
+        options.model ?? runtime?.DEFAULT_MODEL ?? DEFAULT_INJECTED_CHAT_MODEL,
         prompt.system,
         prompt.user,
         controller.signal,
