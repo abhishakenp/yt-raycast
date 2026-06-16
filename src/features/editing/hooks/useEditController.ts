@@ -14,7 +14,7 @@ export const useEditController = (sessionId: string) => {
   const [isEditing, setIsEditing] = useState(false)
 
   const applyEdit = async (
-    editType: 'text' | 'ai_rewrite' | 'chat' | 'style',
+    editType: 'text' | 'ai_rewrite' | 'chat' | 'style' | 'image',
     targetLabel: string | undefined,
     beforeText: string | undefined,
     afterText: string | undefined,
@@ -43,6 +43,12 @@ export const useEditController = (sessionId: string) => {
         throw new Error(
           'Selected text was not found in the current preview. Select a smaller text block and try again.',
         )
+      }
+
+      // Force a page reload to refresh the preview with the new version
+      // This is needed because Convex queries don't automatically invalidate after createEdit
+      if (typeof window !== 'undefined') {
+        window.location.reload()
       }
 
       return true

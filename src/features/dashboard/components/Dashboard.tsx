@@ -20,6 +20,8 @@ import {
   Shield,
 } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
+import { useClerk } from '@clerk/tanstack-react-start'
+import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
@@ -27,6 +29,10 @@ import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { rememberReadySession } from '@/features/session/services/ready-session-cache'
+import { useEditController } from '@/features/editing/hooks/useEditController'
+import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
+import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
+import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
 import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { cn } from '#/lib/utils'
@@ -81,11 +87,6 @@ const DeploymentPanel = lazy(() =>
     default: module.DeploymentPanel,
   })),
 )
-const EditPanel = lazy(() =>
-  import('@/features/editing/components/EditPanel').then((module) => ({
-    default: module.EditPanel,
-  })),
-)
 const ExportPanel = lazy(() =>
   import('@/features/exports/components/ExportPanel').then((module) => ({
     default: module.ExportPanel,
@@ -111,7 +112,6 @@ type RailMode =
   | 'tools'
   | 'cms'
   | 'chat'
-  | 'edits'
   | 'annotations'
   | 'activity'
   | 'brand'
@@ -314,6 +314,8 @@ export function Dashboard({
   sessionId,
   initialAdminView = false,
 }: DashboardProps) {
+  const auth = useOptionalAuth()
+  const clerk = useClerk()
   const [startedFromGenerationFlow] = useState(() =>
     takeGenerationLaunchHandoff(sessionId),
   )
@@ -321,13 +323,23 @@ export function Dashboard({
   const [currentDevice, setCurrentDevice] = useState<
     'desktop' | 'tablet' | 'mobile'
   >('desktop')
-  const [inspectMode, setInspectMode] = useState<'select' | 'annotate' | null>(
-    null,
-  )
+  const [editMode, setEditMode] = useState(false)
   const [railMode, setRailMode] = useState<RailMode>('tools')
+  const [agentationEnabled] = useState(false)
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null)
-  const [previewSelection, setPreviewSelection] =
-    useState<PreviewSelection | null>(null)
+  const [imageSwapState, setImageSwapState] = useState<{
+    isOpen: boolean
+    anchorRect: DOMRect | null
+    currentSrc: string
+    currentAlt: string
+    currentElement: HTMLImageElement | null
+  }>({ isOpen: false, anchorRect: null, currentSrc: '', currentAlt: '', currentElement: null })
+  const [toolbarState, setToolbarState] = useState({
+    isOpen: false,
+    anchorRect: null as DOMRect | null,
+    activeElement: null as HTMLElement | null,
+  })
+  const [isApplyingStyle, setIsApplyingStyle] = useState(false)
   const [isDark, setIsDark] = useState(true)
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -356,6 +368,7 @@ export function Dashboard({
     sidePanelQueryArgs,
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
+  const editController = useEditController(resolvedSessionId || sessionId)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -481,21 +494,19 @@ export function Dashboard({
       ? 'Content'
       : railMode === 'chat'
         ? 'Chat refine'
-        : railMode === 'edits'
-          ? 'Edit history'
-          : railMode === 'annotations'
-            ? 'Annotations'
-            : railMode === 'activity'
-              ? 'Activity'
-              : railMode === 'brand'
-                ? 'Brand and media'
-                : railMode === 'localization'
-                  ? 'Localization'
-                  : railMode === 'commerce'
-                    ? 'Medusa commerce'
-                    : railMode === 'deployment'
-                      ? 'Deployment'
-                      : railMode === 'billing'
+        : railMode === 'annotations'
+          ? 'Annotations'
+          : railMode === 'activity'
+            ? 'Activity'
+            : railMode === 'brand'
+              ? 'Brand and media'
+              : railMode === 'localization'
+                ? 'Localization'
+                : railMode === 'commerce'
+                  ? 'Medusa commerce'
+                  : railMode === 'deployment'
+                    ? 'Deployment'
+                    : railMode === 'billing'
                         ? 'Billing'
                         : railMode === 'github'
                           ? 'GitHub'
@@ -524,10 +535,103 @@ export function Dashboard({
     }
   }
 
-  const handlePreviewSelect = (selection: PreviewSelection) => {
-    setPreviewSelection(selection)
-    setRailMode('edits')
+  const handlePreviewSelect = (_selection: PreviewSelection) => {
+    // Selection no longer used with inline editing
   }
+
+  const handleTextChange = async (change: { oldText: string; newText: string; element: HTMLElement }) => {
+    if (!auth.isSignedIn) {
+      clerk.openSignIn()
+      return
+    }
+    const tag = change.element.tagName.toLowerCase()
+    const text = change.element.textContent?.slice(0, 20) || ''
+    const label = `${tag.toUpperCase()}: ${text}…`
+    const result = await editController.applyEdit('text', label, change.oldText, change.newText, 'inline edit')
+    if (!result && editController.editError) {
+      console.error('[Inline Edit] Failed to save:', editController.editError)
+      toast.error(editController.editError)
+    }
+  }
+
+  const handleImageChange = (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => {
+    if (!auth.isSignedIn) {
+      clerk.openSignIn()
+      return
+    }
+    const label = `IMG: ${change.alt.slice(0, 20)}…`
+    // Fire and forget - the page will reload after successful edit
+    editController.applyEdit('image', label, change.oldSrc, change.newSrc, 'inline image swap').then((result) => {
+      if (!result && editController.editError) {
+        console.error('[Inline Edit] Failed to save image:', editController.editError)
+        toast.error(editController.editError)
+      }
+    })
+  }
+
+  const handleImageTarget = (e: Event) => {
+    const customEvent = e as CustomEvent<{ element: HTMLImageElement; src: string; alt: string }>
+    const { element, src, alt } = customEvent.detail
+    const rect = element.getBoundingClientRect()
+
+    setImageSwapState({
+      isOpen: true,
+      anchorRect: rect,
+      currentSrc: src,
+      currentAlt: alt,
+      currentElement: element,
+    })
+  }
+
+  const handleImageSelect = (newSrc: string) => {
+    if (imageSwapState.currentElement) {
+      handleImageChange({
+        oldSrc: imageSwapState.currentSrc,
+        newSrc,
+        element: imageSwapState.currentElement,
+        alt: imageSwapState.currentAlt,
+      })
+    }
+  }
+
+  const handleElementActivate = (element: HTMLElement, rect: DOMRect) => {
+    setToolbarState({
+      isOpen: true,
+      anchorRect: rect,
+      activeElement: element,
+    })
+  }
+
+  const handleStyleApply = async (outerHTML: string) => {
+    if (!auth.isSignedIn) {
+      clerk.openSignIn()
+      return
+    }
+    setIsApplyingStyle(true)
+    const tag = toolbarState.activeElement?.tagName.toLowerCase() || 'DIV'
+    const text = toolbarState.activeElement?.textContent?.slice(0, 20) || ''
+    const label = `${tag.toUpperCase()}: ${text}…`
+    const result = await editController.applyEdit('style', label, undefined, undefined, 'inline style', outerHTML)
+    setIsApplyingStyle(false)
+    if (result) {
+      // Close toolbar and reload for style edits
+      setToolbarState(s => ({ ...s, isOpen: false }))
+    } else if (editController.editError) {
+      console.error('[Inline Edit] Failed to save style:', editController.editError)
+      toast.error(editController.editError)
+    }
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleImageTargetEvent = (e: Event) => handleImageTarget(e)
+    window.addEventListener('image-target', handleImageTargetEvent)
+
+    return () => {
+      window.removeEventListener('image-target', handleImageTargetEvent)
+    }
+  }, [])
 
   const toggleAdminView = () => {
     setIsAdminActive((active) => {
@@ -806,102 +910,20 @@ export function Dashboard({
                   <div
                     className="dashboard-toolbar-group flex items-center gap-1 rounded-full border border-white/10 bg-black/25 p-1 max-[760px]:hidden"
                     role="group"
-                    aria-label="Inspect controls"
+                    aria-label="Edit controls"
                   >
                     <button
                       type="button"
                       className={cn(
                         'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                        inspectMode === 'select' &&
-                          'bg-cyan-300/16 text-cyan-100',
+                        editMode && 'bg-cyan-300/16 text-cyan-100',
                       )}
-                      data-tip="Select"
-                      aria-label="Select element"
-                      aria-pressed={inspectMode === 'select'}
-                      onClick={() =>
-                        setInspectMode((mode) =>
-                          mode === 'select' ? null : 'select',
-                        )
-                      }
+                      data-tip="Edit"
+                      aria-label="Toggle inline edit mode"
+                      aria-pressed={editMode}
+                      onClick={() => setEditMode((mode) => !mode)}
                     >
-                      <svg
-                        className="size-4"
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M4 3l7 17 2-7 7-2L4 3z"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      className={cn(
-                        'dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white',
-                        inspectMode === 'annotate' &&
-                          'bg-cyan-300/16 text-cyan-100',
-                      )}
-                      data-tip="Annotate"
-                      aria-label="Annotate preview"
-                      aria-pressed={inspectMode === 'annotate'}
-                      onClick={() => {
-                        setInspectMode((mode) =>
-                          mode === 'annotate' ? null : 'annotate',
-                        )
-                        setRailMode('annotations')
-                      }}
-                    >
-                      <svg
-                        className="size-4"
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M12 20h9"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      className="dashboard-toolbar-icon-button grid size-8 place-items-center rounded-full text-white/52 transition-colors hover:bg-white/[0.08] hover:text-white"
-                      data-tip="Clear selection"
-                      aria-label="Clear selection"
-                      onClick={() => setInspectMode(null)}
-                    >
-                      <svg
-                        className="size-4"
-                        viewBox="0 0 24 24"
-                        width="16"
-                        height="16"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M18 6 6 18M6 6l12 12"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                      </svg>
+                      <Edit3 className="size-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -955,6 +977,7 @@ export function Dashboard({
                         className="relative h-full min-h-[480px] overflow-hidden shadow-[0_18px_70px_rgba(0,0,0,0.38)] transition-all duration-300"
                         id="preview-device-shell"
                         data-preview-device={currentDevice}
+                        data-preview-container="true"
                         style={{
                           width: '100%',
                           minWidth: 0,
@@ -973,12 +996,12 @@ export function Dashboard({
                             isDark={isDark}
                             themeStyles={themeStyles}
                             deviceMode={currentDevice}
-                            previewToolMode={inspectMode}
-                            agentationEnabled={
-                              inspectMode === 'annotate' ||
-                              railMode === 'annotations'
-                            }
+                            agentationEnabled={agentationEnabled}
                             onPreviewSelect={handlePreviewSelect}
+                            editMode={editMode}
+                            onTextChange={handleTextChange}
+                            onImageChange={handleImageChange}
+                            onElementActivate={handleElementActivate}
                           />
                         ) : (
                           <PreviewLoadingState
@@ -1067,19 +1090,6 @@ export function Dashboard({
                         Chat refine
                       </span>
                       <span className={newBadgeClass}>AI</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={railRowClass}
-                      data-rail-action="edits"
-                      onClick={() => setRailMode('edits')}
-                    >
-                      <span className={railIconClass} aria-hidden="true">
-                        <Edit3 className="size-3.5" strokeWidth={1.9} />
-                      </span>
-                      <span className="min-w-0 flex-1 truncate">
-                        Edit history
-                      </span>
                     </button>
                     <button
                       type="button"
@@ -1392,18 +1402,12 @@ export function Dashboard({
                           />
                         ) : railMode === 'chat' ? (
                           <ChatPanel sessionId={sessionId} />
-                        ) : railMode === 'edits' ? (
-                          <EditPanel
-                            sessionId={sessionId}
-                            selection={previewSelection}
-                          />
                         ) : railMode === 'annotations' ? (
                           <AgentationPanel sessionId={sessionId} />
                         ) : railMode === 'activity' ? (
                           <ActivityPanel
                             status={generationView?.session.status}
                             elapsed={generationView?.session.elapsed}
-                            cost={generationView?.session.cost}
                             tasks={generationView?.tasks}
                             events={generationView?.events}
                           />
@@ -1492,6 +1496,24 @@ export function Dashboard({
           </div>
         </div>
       </div>
+      <ImageSwapPopover
+        isOpen={imageSwapState.isOpen}
+        onClose={() => setImageSwapState(s => ({ ...s, isOpen: false }))}
+        anchorRect={imageSwapState.anchorRect}
+        currentAlt={imageSwapState.currentAlt}
+        onImageSelect={handleImageSelect}
+        context={{
+          prompt: generationView?.session.prompt,
+        }}
+      />
+      <InlineEditToolbar
+        isOpen={toolbarState.isOpen}
+        onClose={() => setToolbarState(s => ({ ...s, isOpen: false }))}
+        anchorRect={toolbarState.anchorRect}
+        activeElement={toolbarState.activeElement}
+        onStyleApply={handleStyleApply}
+        isApplying={isApplyingStyle}
+      />
     </>
   )
 }

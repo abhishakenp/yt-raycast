@@ -380,6 +380,25 @@ const createWhitespaceTolerantTextPattern = (
   return new RegExp(tokens.map(escapeRegExp).join('\\s+'))
 }
 
+const applyImageSwap = (
+  html: string,
+  oldSrc: string | undefined,
+  newSrc: string | undefined,
+): { html: string; replaced: boolean } => {
+  const from = String(oldSrc ?? '')
+  const to = String(newSrc ?? '')
+  if (!html.trim() || !from.trim()) return { html, replaced: false }
+
+  // Replace src attribute in img tags
+  const imgPattern = new RegExp(
+    `(<img[^>]*\\s)src=["']${escapeRegExp(from)}["']([^>]*>)`,
+    'gi',
+  )
+  const replaced = html.replace(imgPattern, `$1src="${to}"$2`)
+
+  return { html: replaced, replaced: replaced !== html }
+}
+
 const applyPreviewTextEdit = (
   html: string,
   oldText: string | undefined,
@@ -3937,6 +3956,7 @@ export const createEdit = mutation({
       v.literal('ai_rewrite'),
       v.literal('chat'),
       v.literal('style'),
+      v.literal('image'),
     ),
     targetLabel: v.optional(v.string()),
     beforeText: v.optional(v.string()),
@@ -3977,13 +3997,17 @@ export const createEdit = mutation({
     const editedPreview =
       args.afterHtml !== undefined
         ? { html: args.afterHtml, replaced: true }
-        : applyPreviewTextEdit(preview.html, args.beforeText, args.afterText)
+        : args.editType === 'image'
+          ? applyImageSwap(preview.html, args.beforeText, args.afterText)
+          : applyPreviewTextEdit(preview.html, args.beforeText, args.afterText)
 
     if (!editedPreview.replaced) {
       throw new ConvexError({
         code: 'TEXT_NOT_FOUND',
         message:
-          'Selected text was not found in the current preview. Select a smaller text block and try again.',
+          args.editType === 'image'
+            ? 'Image source was not found in the current preview.'
+            : 'Selected text was not found in the current preview. Select a smaller text block and try again.',
       })
     }
 

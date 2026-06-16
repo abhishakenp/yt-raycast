@@ -1,6 +1,7 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
+import { Toaster } from 'sonner'
 
 import { AppProviders } from '@/app/providers/AppProviders'
 import { installDynamicImportRecovery } from '@/lib/chunk-load-recovery'
@@ -23,6 +24,7 @@ const RootDocument = ({ children }: { children: ReactNode }) => {
       </head>
       <body>
         {children}
+        <Toaster richColors />
         <Scripts />
       </body>
     </html>
