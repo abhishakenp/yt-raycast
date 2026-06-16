@@ -98,7 +98,7 @@ const DirectPreview = forwardRef<
     previewToolMode?: PreviewToolMode
     onPreviewSelect?: (selection: PreviewSelection) => void
     editMode?: boolean
-    onTextChange?: (change: { oldText: string; newText: string; element: HTMLElement }) => void
+    onTextChange?: (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => void
     onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void
     onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
   }

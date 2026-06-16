@@ -340,6 +340,7 @@ export function Dashboard({
     activeElement: null as HTMLElement | null,
   })
   const [isApplyingStyle, setIsApplyingStyle] = useState(false)
+  const [isForkingSession, setIsForkingSession] = useState(false)
   const [isDark, setIsDark] = useState(true)
   const [isAdminActive, setIsAdminActive] = useState(initialAdminView)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -539,7 +540,7 @@ export function Dashboard({
     // Selection no longer used with inline editing
   }
 
-  const handleTextChange = async (change: { oldText: string; newText: string; element: HTMLElement }) => {
+  const handleTextChange = async (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => {
     if (!auth.isSignedIn) {
       clerk.openSignIn()
       return
@@ -547,8 +548,20 @@ export function Dashboard({
     const tag = change.element.tagName.toLowerCase()
     const text = change.element.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
-    const result = await editController.applyEdit('text', label, change.oldText, change.newText, 'inline edit')
-    if (!result && editController.editError) {
+    const result = await editController.applyEdit('text', label, change.oldText, change.newText, 'inline edit', undefined, change.occurrenceIndex)
+    
+    if (result === 'fork_needed') {
+      // Fork the session
+      toast.info('Forking session to save your changes...')
+      const forkResult = await editController.forkCurrentSession()
+      if (!forkResult) {
+        // Fork failed, revert the change
+        change.element.textContent = change.oldText
+        toast.error(editController.editError || 'Failed to fork session')
+      }
+    } else if (!result && editController.editError) {
+      // Revert the DOM change on other errors
+      change.element.textContent = change.oldText
       console.error('[Inline Edit] Failed to save:', editController.editError)
       toast.error(editController.editError)
     }
@@ -562,7 +575,19 @@ export function Dashboard({
     const label = `IMG: ${change.alt.slice(0, 20)}…`
     // Fire and forget - the page will reload after successful edit
     editController.applyEdit('image', label, change.oldSrc, change.newSrc, 'inline image swap').then((result) => {
-      if (!result && editController.editError) {
+      if (result === 'fork_needed') {
+        // Fork the session
+        toast.info('Forking session to save your changes...')
+        editController.forkCurrentSession().then((forkResult) => {
+          if (!forkResult) {
+            // Fork failed, revert the change
+            change.element.src = change.oldSrc
+            toast.error(editController.editError || 'Failed to fork session')
+          }
+        })
+      } else if (!result && editController.editError) {
+        // Revert the DOM change on other errors
+        change.element.src = change.oldSrc
         console.error('[Inline Edit] Failed to save image:', editController.editError)
         toast.error(editController.editError)
       }
@@ -602,21 +627,67 @@ export function Dashboard({
     })
   }
 
-  const handleStyleApply = async (outerHTML: string) => {
+  const handleStyleApply = async (payload: { sourceAnchor: string; style: string; occurrenceIndex: number }) => {
     if (!auth.isSignedIn) {
       clerk.openSignIn()
       return
     }
+    
+    // Store original styles for revert
+    const activeElement = toolbarState.activeElement
+    const originalStyles: Record<string, string> = {}
+    if (activeElement) {
+      const computed = window.getComputedStyle(activeElement)
+      originalStyles.fontSize = computed.fontSize
+      originalStyles.fontWeight = computed.fontWeight
+      originalStyles.fontStyle = computed.fontStyle
+      originalStyles.color = computed.color
+      originalStyles.textAlign = computed.textAlign
+    }
+    
     setIsApplyingStyle(true)
     const tag = toolbarState.activeElement?.tagName.toLowerCase() || 'DIV'
     const text = toolbarState.activeElement?.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
-    const result = await editController.applyEdit('style', label, undefined, undefined, 'inline style', outerHTML)
+    const result = await editController.applyEdit(
+      'style',
+      label,
+      payload.sourceAnchor,
+      payload.style,
+      'inline style',
+      undefined,
+      payload.occurrenceIndex,
+    )
     setIsApplyingStyle(false)
-    if (result) {
+    
+    if (result === 'fork_needed') {
+      // Fork the session
+      setIsForkingSession(true)
+      toast.info('Forking session to save your changes...')
+      const forkResult = await editController.forkCurrentSession()
+      if (!forkResult) {
+        // Fork failed, revert the style changes
+        if (activeElement) {
+          activeElement.style.fontSize = originalStyles.fontSize
+          activeElement.style.fontWeight = originalStyles.fontWeight
+          activeElement.style.fontStyle = originalStyles.fontStyle
+          activeElement.style.color = originalStyles.color
+          activeElement.style.textAlign = originalStyles.textAlign
+        }
+        toast.error(editController.editError || 'Failed to fork session')
+      }
+    } else if (result) {
       // Close toolbar and reload for style edits
       setToolbarState(s => ({ ...s, isOpen: false }))
     } else if (editController.editError) {
+      // Revert the style changes on other errors
+      if (activeElement) {
+        activeElement.style.fontSize = originalStyles.fontSize
+        activeElement.style.fontWeight = originalStyles.fontWeight
+        activeElement.style.fontStyle = originalStyles.fontStyle
+        activeElement.style.color = originalStyles.color
+        activeElement.style.textAlign = originalStyles.textAlign
+      }
       console.error('[Inline Edit] Failed to save style:', editController.editError)
       toast.error(editController.editError)
     }
@@ -1513,6 +1584,7 @@ export function Dashboard({
         activeElement={toolbarState.activeElement}
         onStyleApply={handleStyleApply}
         isApplying={isApplyingStyle}
+        isForking={isForkingSession}
       />
     </>
   )
