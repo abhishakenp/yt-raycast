@@ -38,6 +38,24 @@ type MergedImageHintBundle = ImageHintBundle & {
   promptBlock: string
 }
 
+type ResolverProgressEvent = {
+  done: boolean
+  photos: PhotoHint[]
+  videos: VideoHint[]
+}
+
+type ResolvePexelsImageHints = (
+  hintsInput: {
+    ctx?: Record<string, unknown>
+    hydrationPrompt?: string
+    prompt?: string
+    siteSpec?: Record<string, unknown>
+  },
+  options?: {
+    onProgress?: (event: ResolverProgressEvent) => void
+  },
+) => Promise<MergedImageHintBundle>
+
 const mergeHints = mergeImageHintLists as (
   primary?: Partial<ImageHintBundle>,
   secondary?: Partial<ImageHintBundle>,
@@ -245,5 +263,172 @@ describe('image hints media hydration', () => {
 
     expect(responsive).toContain('data-sf-hero-responsive')
     expect(secondPass.match(/data-sf-hero-responsive/g) ?? []).toHaveLength(1)
+  })
+
+  it('resolves stock media with provider filtering, health probes, and progress events', async () => {
+    const originalPexelsKey = process.env.PEXELS_API_KEY
+    const originalUnsplashKey = process.env.UNSPLASH_ACCESS_KEY
+    process.env.PEXELS_API_KEY = 'pexels-test-key'
+    process.env.UNSPLASH_ACCESS_KEY = 'unsplash-test-key'
+    vi.resetModules()
+
+    const fetchMock = vi.fn(async (input: URL | string, init?: RequestInit) => {
+      const url = new URL(String(input))
+      if (url.hostname === 'api.pexels.com' && url.pathname === '/v1/search') {
+        expect(init?.headers).toEqual({ Authorization: 'pexels-test-key' })
+        const query = url.searchParams.get('query') ?? ''
+        return {
+          json: async () => ({
+            photos: query.includes('golden retriever')
+              ? [
+                  {
+                    alt: 'Cat sleeping on a laptop desk',
+                    id: 101,
+                    src: {
+                      large2x: 'https://images.pexels.com/photos/101/cat.jpeg',
+                    },
+                  },
+                  {
+                    alt: 'Golden retriever dog portrait outdoor',
+                    id: 102,
+                    src: {
+                      large2x: 'https://images.pexels.com/photos/102/dog.jpeg',
+                    },
+                  },
+                ]
+              : [],
+          }),
+          ok: true,
+        }
+      }
+      if (url.hostname === 'api.unsplash.com') {
+        expect(init?.headers).toMatchObject({
+          Authorization: 'Client-ID unsplash-test-key',
+          'Accept-Version': 'v1',
+        })
+        const query = url.searchParams.get('query') ?? ''
+        return {
+          json: async () => ({
+            results: query.includes('golden retriever')
+              ? [
+                  {
+                    alt_description: 'Golden retriever dog running grass',
+                    id: 'unsplash-dog',
+                    slug: 'golden-retriever-dog-running-grass',
+                    urls: {
+                      raw: 'https://images.unsplash.com/photo-dog-raw',
+                      regular: 'https://images.unsplash.com/photo-dog',
+                    },
+                  },
+                ]
+              : [],
+          }),
+          ok: true,
+        }
+      }
+      if (
+        url.hostname === 'api.pexels.com' &&
+        url.pathname === '/v1/videos/search'
+      ) {
+        const query = url.searchParams.get('query') ?? ''
+        return {
+          json: async () => ({
+            videos: query.includes('golden retriever')
+              ? [
+                  {
+                    id: 900,
+                    image: 'https://images.pexels.com/videos/900/poster.jpeg',
+                    video_files: [
+                      {
+                        file_type: 'video/mp4',
+                        height: 720,
+                        link: 'https://videos.pexels.com/video-files/900/sd.mp4',
+                        quality: 'sd',
+                        width: 1280,
+                      },
+                      {
+                        file_type: 'video/mp4',
+                        height: 1080,
+                        link: 'https://videos.pexels.com/video-files/900/hd.mp4',
+                        quality: 'hd',
+                        width: 1920,
+                      },
+                    ],
+                  },
+                ]
+              : [],
+          }),
+          ok: true,
+        }
+      }
+      if (
+        url.hostname === 'images.pexels.com' ||
+        url.hostname === 'images.unsplash.com'
+      ) {
+        return {
+          headers: new Headers({ 'content-type': 'image/jpeg' }),
+          ok: true,
+        }
+      }
+      return {
+        headers: new Headers(),
+        json: async () => ({}),
+        ok: false,
+      }
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const progressEvents: ResolverProgressEvent[] = []
+
+    try {
+      const { resolvePexelsImageHints } =
+        (await import('./image-hints.js')) as unknown as {
+          resolvePexelsImageHints: ResolvePexelsImageHints
+        }
+
+      const resolved = await resolvePexelsImageHints(
+        {
+          hydrationPrompt: 'Dog adoption gallery',
+          prompt:
+            'Create a dog rescue adoption blog with golden retriever stories',
+        },
+        {
+          onProgress: (event) => progressEvents.push(event),
+        },
+      )
+
+      expect(resolved.photos.map((photo) => photo.id)).toEqual([
+        '102',
+        'unsplash-dog',
+      ])
+      expect(resolved.photos.map((photo) => photo.provider)).toEqual([
+        'pexels',
+        'unsplash',
+      ])
+      expect(resolved.photos.map((photo) => photo.alt).join(' ')).not.toMatch(
+        /cat|laptop/i,
+      )
+      expect(resolved.videos).toEqual([
+        expect.objectContaining({
+          id: '900',
+          posterUrl: 'https://images.pexels.com/videos/900/poster.jpeg',
+          url: 'https://videos.pexels.com/video-files/900/hd.mp4',
+        }),
+      ])
+      expect(resolved.promptBlock).toContain('Approved still images')
+      expect(resolved.promptBlock).toContain('Approved short videos')
+      expect(progressEvents.some((event) => event.done === false)).toBe(true)
+      expect(progressEvents.at(-1)).toMatchObject({
+        done: true,
+        photos: resolved.photos,
+        videos: resolved.videos,
+      })
+    } finally {
+      if (originalPexelsKey === undefined) delete process.env.PEXELS_API_KEY
+      else process.env.PEXELS_API_KEY = originalPexelsKey
+      if (originalUnsplashKey === undefined)
+        delete process.env.UNSPLASH_ACCESS_KEY
+      else process.env.UNSPLASH_ACCESS_KEY = originalUnsplashKey
+      vi.resetModules()
+    }
   })
 })
