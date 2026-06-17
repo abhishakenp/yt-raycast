@@ -31,11 +31,11 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 - `convex/sessions.ts` is no longer under a raw formatted 500-line ceiling, but it is now a registration/orchestration surface with session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment, export, gallery, preview-history, serialization, Agentation, operational notification, commerce/Medusa, usage metrics, CMS, task, generated artifact/cache, event-stream, workspace, readiness, public-preview, internal-reference, and shared validator layers split into focused helpers with direct tests.
 - The block/capsule catalog has many 1,000+ LOC files; generated export/runtime artifacts now have a deterministic provenance lock and drift verifier, and production source capsules now have a checked origin-classification manifest. The remaining work is reducing or splitting the 184 large source-capsule files and resolving 34 unmarked origins.
-- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.18% statements, 14.81% branches, 10.75% functions, and 21.78% lines in the latest full coverage gate.
+- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.56% statements, 15.02% branches, 10.91% functions, and 22.15% lines in the latest full coverage gate.
 - Local git hooks now enforce authoring-time checks before commit and full QA before push.
 - GitNexus impact analysis is available again after rebuilding the local index with the project runner; keep the runner version aligned with the MCP reader to avoid storage-version drift.
 
-**Overall Rating: A (10.4/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and unmarked source-capsule origins that are now tracked mechanically.
+**Overall Rating: A (10.5/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and unmarked source-capsule origins that are now tracked mechanically.
 
 ---
 
@@ -91,6 +91,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 - The brand-profile enrichment path now has focused tests for prompt brand detection, the verified Brandfetch fast path, explicit-site scraping for metadata/logo/contact/social signals, and unverified fallback profile persistence. `packages/ship-fast-engine/src/pipeline/brand-profile.js` rose to 76.15% line coverage from 4.06%.
 - Renderer shared utilities now have focused tests for route helpers, exact-clone bundle slimming, language font markup, README generation, ecommerce navigation, hero/FAQ/CTA/form/footer/product sections, generic/pricing/testimonial/stat sections, exact-clone runtime/component strings, HTML runtime scripts, motion modules, and global CSS token output. `packages/ship-fast-engine/src/renderers/shared.js` rose to 84.83% line coverage from 0%.
 - Clone crawler behavior now has focused tests for URL normalization, same-domain crawling, redirect graph edges, external-link exclusion, duplicate-body collapse, failed-fetch page-cap release, and pre-aborted crawl no-op behavior. `packages/ship-fast-engine/src/clone/crawler.ts` rose to 82.44% line coverage from 2.65%.
+- Clone fallback behavior now has focused tests for DOM content extraction, coverage/duplication/hallucination scoring, dense native fallback generation, and canned-copy fallback behavior. `packages/ship-fast-engine/src/clone/fallback.ts` rose to 90.99% line coverage from 0.94%.
 - Clone token extraction now has focused tests for CSS color normalization, foreground contrast fallback, brand color selection, concrete font detection, dominant radius/gap extraction, serif detection, and theme variable mapping. `packages/ship-fast-engine/src/clone/tokens.ts` rose to 96.35% line coverage from 1.45%.
 - Clone SSRF URL guarding now has focused tests for scheme validation, unparseable URL rejection, localhost/metadata/unspecified host blocking, private IPv4/IPv6 literal blocking, public IP allowance, DNS failure/no-record handling, mixed private/public DNS rejection, and public DNS allowance. `packages/ship-fast-engine/src/clone/security.ts` rose to 95.58% line coverage from 1.47%.
 - Site-spec normalization now has configured Vitest coverage for the existing normalize tests plus focused tests for heuristic business-profile inference, profile fallback normalization, HTML render-blueprint extraction, workspace blueprint enrichment, and blueprint stripping. `packages/ship-fast-engine/src/spec/normalize.js` rose to 64.91% line coverage from 0%, `business-profile.js` rose to 81.96% from 0%, and `blueprints.js` rose to 83.33% from 0%.
@@ -143,7 +144,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Strengths:**
 
-- The latest full coverage gate passed with measured V8 coverage of 22.18% statements, 14.81% branches, 10.75% functions, and 21.78% lines.
+- The latest full coverage gate passed with measured V8 coverage of 22.56% statements, 15.02% branches, 10.91% functions, and 22.15% lines.
 - `verify:qa` now runs Vitest with V8 coverage thresholds before build and bundle verification; CI uses the same coverage-backed test command.
 - Source-level invariant tests protect architecture boundaries that ordinary behavior tests would miss.
 
@@ -223,6 +224,6 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ## Summary
 
-Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, the largest Convex coordination file is now delegated to focused helper modules, standalone HTML exports are split from full-catalog package exports, and generated OpenUI export/runtime artifacts plus source capsules now have deterministic provenance/classification. The path from 10.4/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, resolve the 34 unmarked capsule origins, and reduce the 184 large source-capsule files.
+Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, the largest Convex coordination file is now delegated to focused helper modules, standalone HTML exports are split from full-catalog package exports, and generated OpenUI export/runtime artifacts plus source capsules now have deterministic provenance/classification. The path from 10.5/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, resolve the 34 unmarked capsule origins, and reduce the 184 large source-capsule files.
 
-**Overall Rating: A (10.4/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and unmarked source-capsule origins that remain measurable and tractable.
+**Overall Rating: A (10.5/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and unmarked source-capsule origins that remain measurable and tractable.
