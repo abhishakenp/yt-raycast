@@ -15,16 +15,16 @@ Current evidence:
 
 - `bun run verify:prepush` passed with explicit lint, typecheck, coverage,
   review-readiness, generated-artifact, build, and bundle-boundary steps.
-- Latest measured full-gate coverage is 22.01% statements, 14.74% branches,
-  10.51% functions, and 21.61% lines.
+- Latest measured full-gate coverage is 22.12% statements, 14.80% branches,
+  10.64% functions, and 21.73% lines.
 - GitNexus `detect_changes` reports no staged or unstaged changes after the
   local commits; the branch-level review scope remains broad and is tracked by
   change groups.
-- The local branch differs from upstream by 222 changed paths, and
+- The local branch differs from upstream by 230 changed paths, and
   `bun run verify:change-groups` classifies every path into a review group:
-  Convex session decomposition 76, quality gates/local enforcement 22,
-  OpenUI runtime/bundle boundary 38, engine regression coverage 29, frontend
-  workflow/preview behavior 36, commerce/external integration 9, and quality
+  Convex session decomposition 78, quality gates/local enforcement 22,
+  OpenUI runtime/bundle boundary 41, engine regression coverage 31, frontend
+  workflow/preview behavior 37, commerce/external integration 9, and quality
   documentation/assessment 12.
 - `specs/architecture/quality_change_groups.md` is a generated file-level
   review manifest for the current local branch/worktree scope;
@@ -124,6 +124,9 @@ Scope:
 - `packages/ship-fast-blocks/src/generated/*`
 - `packages/ship-fast-engine/src/openui-ssr.js`
 - `src/island/openui/OpenUIViewer.tsx`
+- `src/features/exports/services/openui-html-export-builder.ts`
+- `src/features/exports/services/openui-export-builder.ts`
+- `src/features/exports/server/create-export-response.ts`
 - export/build bundle verifier tests
 
 Why it matters:
@@ -136,6 +139,8 @@ Required proof:
 - Browser runtime imports do not pull the generated capsule catalog eagerly.
 - Core OpenUI SSR loads response-scoped runtime libraries instead of the eager
   block barrel.
+- Standalone HTML export uses the response-scoped HTML builder, while
+  React/Next package export keeps the full-catalog source-manifest path.
 - Build bundle verifier rejects broad eager OpenUI chunks.
 - Generated runtime manifests are reproducible through the generator script.
 - Server export path still renders existing OpenUI outputs correctly.

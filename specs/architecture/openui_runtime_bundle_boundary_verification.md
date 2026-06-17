@@ -17,6 +17,10 @@ This checkpoint covers the OpenUI runtime and bundle boundary work:
 - `src/island/openui/OpenUIViewer.tsx`
 - `src/island/openui/openui-runtime-preprocess.ts`
 - `packages/ship-fast-engine/src/openui-ssr.js`
+- `src/features/exports/services/openui-export-types.ts`
+- `src/features/exports/services/openui-html-export-builder.ts`
+- `src/features/exports/services/openui-export-builder.ts`
+- `src/features/exports/server/create-export-response.ts`
 - `scripts/verify-build-bundles.ts`
 - export builder tests for OpenUI and SFF HTML output
 
@@ -33,9 +37,11 @@ not the eager `@ship-fast/blocks` barrel. Runtime loading should:
 - split generated metadata, prompt specs, primitives, sections, capsules, and
   runtime core into separate build chunks.
 
-The server export path is allowed to import the eager block library and the
-generated compressed React source manifest because it builds downloadable
-artifacts, not the browser preview runtime.
+React/Next package export generation is allowed to import the eager block
+library and the generated compressed React source manifest because it builds
+downloadable app artifacts. Standalone HTML export must stay on the
+response-scoped runtime path and must not share those full-catalog package
+imports.
 
 The core server SSR path should also avoid the eager `@ship-fast/blocks` barrel:
 `packages/ship-fast-engine/src/openui-ssr.js` loads
@@ -57,7 +63,10 @@ Source inventory after generation:
   210,058 bytes
 - `packages/ship-fast-blocks/src/runtime.ts`: 825 bytes
 - `src/island/openui/OpenUIViewer.tsx`: 8,634 bytes
-- `scripts/verify-build-bundles.ts`: 5,273 bytes
+- `src/features/exports/services/openui-html-export-builder.ts`: response-scoped
+  standalone HTML export builder
+- `scripts/verify-build-bundles.ts`: includes explicit router and HTML export
+  chunk absence checks for full-catalog package internals
 
 The generator was run successfully:
 
@@ -108,6 +117,23 @@ This test protects the generated browser runtime manifest directly:
 - runtime loaders must not import the root blocks barrel, full library,
   `react-export-sources`, or component-spec metadata.
 
+Added standalone HTML export boundary checks in
+`src/features/exports/services/openui-export-builder.test.ts`,
+`src/features/exports/server/create-export-response.test.ts`, and
+`scripts/verify-build-bundles.ts`.
+
+These tests and bundle rules protect the export split directly:
+
+- `target=html` downloads import `openui-html-export-builder`;
+- React/Next downloads import the full `openui-export-builder`;
+- the HTML builder imports `@ship-fast/blocks/runtime` and calls
+  `loadOpenUIRuntimeLibrary(cleaned)`;
+- the HTML builder must not import `@ship-fast/blocks`,
+  `@ship-fast/blocks/generated`, `reactExportSourcesBase64`,
+  `brotliDecompressSync`, `typescript`, or the full package builder;
+- built router and `openui-html-export-builder` chunks must not contain
+  `reactExportSourcesBase64`, `brotliDecompressSync`, or `require_typescript`.
+
 ## GitNexus Impact
 
 Key OpenUI runtime symbols were checked:
@@ -138,7 +164,7 @@ Test Files  1 passed (1)
 Tests       3 passed (3)
 ```
 
-Focused OpenUI runtime and bundle boundary group:
+Focused OpenUI runtime, bundle boundary, SSR, and export split group:
 
 ```bash
 bun vitest run --config vitest.config.ts \
@@ -147,14 +173,20 @@ bun vitest run --config vitest.config.ts \
   src/island/openui/openui-runtime-preprocess.test.ts \
   scripts/verify-build-bundles.test.ts \
   scripts/vite-openui-boundaries.test.ts \
-  src/features/generation/components/GeneratedModulePreview.test.tsx
+  src/features/generation/components/GeneratedModulePreview.test.tsx \
+  src/features/exports/services/openui-export-builder.test.ts \
+  src/features/exports/server/create-export-response.test.ts \
+  packages/ship-fast-engine/src/openui-ssr.test.js \
+  packages/ship-fast-engine/src/openui-ssr-runtime.test.js \
+  packages/ship-fast-engine/src/genui/ssr-render-crashes.test.ts \
+  packages/ship-fast-engine/src/renderers/index.test.ts
 ```
 
 Result:
 
 ```text
-Test Files  6 passed (6)
-Tests       26 passed (26)
+Test Files  12 passed (12)
+Tests       56 passed (56)
 ```
 
 Bundle boundary verifier:
@@ -181,7 +213,7 @@ Result:
 
 ```text
 Test Files  2 passed (2)
-Tests       9 passed (9)
+Tests       12 passed (12)
 ```
 
 Response-scoped SSR migration:
@@ -200,7 +232,7 @@ Result:
 
 ```text
 Test Files  6 passed (6)
-Tests       26 passed (26)
+Tests       29 passed (29)
 ```
 
 Build and bundle verification:

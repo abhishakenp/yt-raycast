@@ -2,7 +2,7 @@ import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
-import type { ExportTarget } from '../services/openui-export-builder'
+import type { ExportTarget } from '../services/openui-export-types'
 
 type ExportConvexClient = Pick<ConvexHttpClient, 'query'> &
   Partial<Pick<ConvexHttpClient, 'setAuth'>>
@@ -161,9 +161,7 @@ export const createExportResponse = async (
       })
     }
 
-    const { buildOpenUIExport } =
-      await import('../services/openui-export-builder')
-    const exportResult = await buildOpenUIExport({
+    const exportInput = {
       source,
       siteSpecJson: download.siteSpecJson,
       previewHtml: download.previewHtml,
@@ -171,7 +169,15 @@ export const createExportResponse = async (
       target: normalizedTarget,
       includeBadge: exportRecord.requiresPayment !== false,
       ...readExportThemeOptions(request),
-    })
+    }
+    const exportResult =
+      normalizedTarget === 'html'
+        ? await (
+            await import('../services/openui-html-export-builder')
+          ).buildOpenUIHtmlExport(exportInput)
+        : await (
+            await import('../services/openui-export-builder')
+          ).buildOpenUIExport(exportInput)
 
     return new Response(toResponseBody(exportResult.body), {
       headers: createDownloadHeaders(
