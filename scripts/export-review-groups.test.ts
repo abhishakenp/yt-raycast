@@ -55,7 +55,7 @@ describe('review group bundle export', () => {
     })
 
     expect(calls).toEqual([
-      ['diff', '--binary', '--', 'scripts/verify-change-groups.ts'],
+      ['diff', '--binary', 'HEAD', '--', 'scripts/verify-change-groups.ts'],
       [
         'diff',
         '--no-index',
@@ -66,5 +66,32 @@ describe('review group bundle export', () => {
       ],
     ])
     expect(patch).toContain('# Quality gates and local enforcement')
+  })
+
+  it('includes the upstream branch diff when a base ref is available', () => {
+    const [bundle] = groupStatusEntries([
+      { path: 'scripts/verify-change-groups.ts', status: 'M' },
+    ])
+    const calls: string[][] = []
+
+    renderGroupPatch(
+      bundle,
+      (args) => {
+        calls.push(args)
+        return `diff ${args.join(' ')}`
+      },
+      'upstream-base',
+    )
+
+    expect(calls).toEqual([
+      [
+        'diff',
+        '--binary',
+        'upstream-base...HEAD',
+        '--',
+        'scripts/verify-change-groups.ts',
+      ],
+      ['diff', '--binary', 'HEAD', '--', 'scripts/verify-change-groups.ts'],
+    ])
   })
 })

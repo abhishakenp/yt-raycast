@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   classifyChangedPaths,
+  parseGitNameStatusEntries,
   parseGitStatusPorcelainEntries,
   parseGitStatusPorcelain,
   renderChangeGroupReport,
@@ -27,6 +28,23 @@ describe('change group verification', () => {
       {
         path: 'src/features/dashboard/components/Dashboard.tsx',
         status: 'R ',
+      },
+    ])
+  })
+
+  it('parses git name-status output from committed branch diffs', () => {
+    const nameStatus = [
+      'M\tpackage.json',
+      'A\tconvex/lib/session_access_helpers.ts',
+      'R100\told/path.ts\tsrc/features/dashboard/components/Dashboard.tsx',
+    ].join('\n')
+
+    expect(parseGitNameStatusEntries(nameStatus)).toEqual([
+      { path: 'convex/lib/session_access_helpers.ts', status: 'A' },
+      { path: 'package.json', status: 'M' },
+      {
+        path: 'src/features/dashboard/components/Dashboard.tsx',
+        status: 'R100',
       },
     ])
   })

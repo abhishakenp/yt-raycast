@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 
 import {
@@ -8,7 +7,7 @@ import {
 import {
   changeGroupReportPath,
   changeGroups,
-  parseGitStatusPorcelainEntries,
+  readChangeScope,
   readChangedPaths,
   renderChangeGroupReport,
   verifyChangeGroups,
@@ -60,14 +59,6 @@ function withReportPath(paths: string[]) {
   return paths.includes(changeGroupReportPath)
     ? paths
     : [...paths, changeGroupReportPath].sort((a, b) => a.localeCompare(b))
-}
-
-function readCurrentStatusEntries() {
-  return parseGitStatusPorcelainEntries(
-    execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
-      encoding: 'utf8',
-    }),
-  )
 }
 
 export function verifyQualityExitFromTexts({
@@ -174,7 +165,7 @@ export function verifyQualityExit() {
   }
 
   const expectedReviewReadme = renderReviewBundleReadme(
-    groupStatusEntries(readCurrentStatusEntries()),
+    groupStatusEntries(readChangeScope().entries),
   )
   const actualReviewReadme = readRequiredFile(reviewBundlesReadmePath)
   if (actualReviewReadme !== expectedReviewReadme) {

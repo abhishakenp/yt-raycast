@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import {
   changeGroups,
   classifyChangedPath,
-  parseGitStatusPorcelainEntries,
+  readChangeScope,
   type GitStatusEntry,
 } from './verify-change-groups'
 
@@ -19,11 +19,7 @@ type ReviewGroupBundle = {
 type GitDiffRunner = (args: string[]) => string
 
 function readStatusEntries() {
-  return parseGitStatusPorcelainEntries(
-    execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
-      encoding: 'utf8',
-    }),
-  )
+  return readChangeScope().entries
 }
 
 export function groupStatusEntries(entries: GitStatusEntry[]) {
@@ -102,6 +98,7 @@ export function renderReviewBundleReadme(bundles: ReviewGroupBundle[]) {
 export function renderGroupPatch(
   bundle: ReviewGroupBundle,
   diffRunner: GitDiffRunner = runGitDiff,
+  baseRef: string | null = null,
 ) {
   const trackedPaths = bundle.entries
     .filter((entry) => entry.status !== '??')
@@ -112,8 +109,20 @@ export function renderGroupPatch(
 
   const parts = [`# ${bundle.group.title}\n`]
 
+  if (baseRef && trackedPaths.length > 0) {
+    parts.push(
+      diffRunner([
+        'diff',
+        '--binary',
+        `${baseRef}...HEAD`,
+        '--',
+        ...trackedPaths,
+      ]),
+    )
+  }
+
   if (trackedPaths.length > 0) {
-    parts.push(diffRunner(['diff', '--binary', '--', ...trackedPaths]))
+    parts.push(diffRunner(['diff', '--binary', 'HEAD', '--', ...trackedPaths]))
   }
 
   for (const path of untrackedPaths) {
@@ -128,6 +137,7 @@ export function renderGroupPatch(
 export function writeReviewBundles(
   entries = readStatusEntries(),
   outputDir = defaultReviewBundleDir,
+  baseRef = readChangeScope().baseRef,
 ) {
   const bundles = groupStatusEntries(entries)
 
@@ -142,7 +152,7 @@ export function writeReviewBundles(
     )
     writeFileSync(
       join(outputDir, `${bundle.group.id}.patch`),
-      renderGroupPatch(bundle),
+      renderGroupPatch(bundle, runGitDiff, baseRef),
     )
   }
 
