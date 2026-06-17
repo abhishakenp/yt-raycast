@@ -1,9 +1,18 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import {
+  ArrowRight,
+  ChevronDown,
+  GithubIcon,
+  LinkedinIcon,
+  StarIcon,
+  dotTokens,
+  socialIcon,
+} from './internal/portfolio-dev-icons.tsx'
 
 /**
  * PortfolioDevKimiPage — a complete, self-contained personal portfolio LANDING
@@ -31,7 +40,7 @@ import { Image } from "#/lib/img.tsx"
  * data; rich defaults make it render great with no props at all.
  */
 export const PortfolioDevKimiPage = defineCapsule({
-  name: "PortfolioDevKimiPage",
+  name: 'PortfolioDevKimiPage',
   description:
     "Complete personal PORTFOLIO landing page for a software engineer / developer with a clean, minimal, light editorial aesthetic: lots of whitespace, tight tracking-tight headings, rounded-full pill buttons, a sticky blurred navbar and a monochrome professional vibe. Includes a text-first hero (location eyebrow, big headline, intro paragraph, View-My-Work + GitHub CTAs), a grayscale 'trusted by' company-logo strip, a 2-up selected-projects grid (image-zoom cards with TypeScript/React/Go tech-stack chips and View-Project links), an open-source contributions list (repo cards with star counts, language dots, Maintainer/Contributor/Creator role badges and View-on-GitHub buttons), a 4-column technical-skills matrix (Languages / Frontend / Backend / Infrastructure with colored bullet dots), a dated work-experience timeline (role, company, summary, skill tags), a 3-up testimonials grid with headshot avatars, an inverted dark stats band (years/projects/stars/downloads), a centered contact CTA with Send-an-Email and LinkedIn buttons, and a footer with GitHub/Twitter/LinkedIn social links. Use as the ROOT/home page for a developer, software engineer, full-stack engineer, freelancer or technical consultant personal site / resume / dev portfolio when a minimal, credible, content-rich showcase of projects, open-source work, skills and experience is wanted. Supply content only — brand, nav, hero, logos, projects, openSource, skills, experience, testimonials, stats, contact, footer; the block owns all layout and styling.",
   props: z.object({
@@ -174,252 +183,239 @@ export const PortfolioDevKimiPage = defineCapsule({
   component: ({ props }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Alex Chen"
+    const brand = props.brand ?? 'Alex Chen'
     const nav = props.nav?.length
       ? props.nav
-      : ["Projects", "Open Source", "Skills", "Experience", "Get in Touch"]
+      : ['Projects', 'Open Source', 'Skills', 'Experience', 'Get in Touch']
 
     const heroEyebrow =
-      props.hero?.eyebrow ?? "Software Engineer — San Francisco, CA"
+      props.hero?.eyebrow ?? 'Software Engineer — San Francisco, CA'
     const heroHeading =
       props.hero?.heading ??
-      "Building reliable systems and developer tools that scale"
+      'Building reliable systems and developer tools that scale'
     const heroSub =
       props.hero?.subheading ??
       "I'm a full-stack engineer with 8 years of experience designing distributed systems, crafting performant frontends, and contributing to open-source tooling used by thousands of developers."
-    const heroPrimary = props.hero?.primaryCta ?? "View My Work"
-    const heroSecondary = props.hero?.secondaryCta ?? "GitHub"
+    const heroPrimary = props.hero?.primaryCta ?? 'View My Work'
+    const heroSecondary = props.hero?.secondaryCta ?? 'GitHub'
 
-    const logosLabel =
-      props.logos?.label ?? "Trusted by engineering teams at"
+    const logosLabel = props.logos?.label ?? 'Trusted by engineering teams at'
     const logoItems = props.logos?.items?.length
       ? props.logos.items
-      : ["Stripe", "Linear", "Vercel", "GitHub", "Notion"]
+      : ['Stripe', 'Linear', 'Vercel', 'GitHub', 'Notion']
 
-    const projectsHeading = props.projects?.heading ?? "Selected Projects"
+    const projectsHeading = props.projects?.heading ?? 'Selected Projects'
     const projectsDesc =
       props.projects?.description ??
       "A collection of systems and applications I've architected and built from the ground up."
-    const projectsCta = props.projects?.cta ?? "View Project"
+    const projectsCta = props.projects?.cta ?? 'View Project'
     const projectItems = props.projects?.items?.length
       ? props.projects.items
       : [
           {
-            title: "Streamline Analytics",
+            title: 'Streamline Analytics',
             description:
-              "Real-time event processing pipeline handling 50M+ events daily. Built a React dashboard with WebSocket streams and a Rust ingestion service.",
+              'Real-time event processing pipeline handling 50M+ events daily. Built a React dashboard with WebSocket streams and a Rust ingestion service.',
             imageAlt:
-              "Dashboard interface showing real-time analytics charts and data visualization",
-            tags: ["TypeScript", "React", "Rust"],
+              'Dashboard interface showing real-time analytics charts and data visualization',
+            tags: ['TypeScript', 'React', 'Rust'],
           },
           {
-            title: "API Gateway Service",
+            title: 'API Gateway Service',
             description:
-              "Distributed API gateway with rate limiting, authentication, and request routing. Serves 10K+ RPS with p99 latency under 20ms.",
+              'Distributed API gateway with rate limiting, authentication, and request routing. Serves 10K+ RPS with p99 latency under 20ms.',
             imageAlt:
-              "Code editor interface with syntax highlighting showing API documentation",
-            tags: ["Go", "PostgreSQL", "gRPC"],
+              'Code editor interface with syntax highlighting showing API documentation',
+            tags: ['Go', 'PostgreSQL', 'gRPC'],
           },
           {
-            title: "ML Model Serving Platform",
+            title: 'ML Model Serving Platform',
             description:
-              "Infrastructure for deploying and versioning machine learning models. Auto-scaling inference endpoints with A/B testing and monitoring.",
+              'Infrastructure for deploying and versioning machine learning models. Auto-scaling inference endpoints with A/B testing and monitoring.',
             imageAlt:
-              "Developer workspace showing code collaboration tools and terminal windows",
-            tags: ["Python", "TensorFlow", "AWS"],
+              'Developer workspace showing code collaboration tools and terminal windows',
+            tags: ['Python', 'TensorFlow', 'AWS'],
           },
           {
-            title: "Infrastructure Automation",
+            title: 'Infrastructure Automation',
             description:
-              "GitOps-based deployment pipeline managing 200+ microservices across 3 cloud regions. Reduced deployment time from 2 hours to 8 minutes.",
+              'GitOps-based deployment pipeline managing 200+ microservices across 3 cloud regions. Reduced deployment time from 2 hours to 8 minutes.',
             imageAlt:
-              "Server room with rows of hardware racks showing infrastructure",
-            tags: ["Terraform", "Kubernetes", "Prometheus"],
+              'Server room with rows of hardware racks showing infrastructure',
+            tags: ['Terraform', 'Kubernetes', 'Prometheus'],
           },
         ]
 
-    const osHeading =
-      props.openSource?.heading ?? "Open Source Contributions"
+    const osHeading = props.openSource?.heading ?? 'Open Source Contributions'
     const osDesc =
       props.openSource?.description ??
       "Libraries and tools I've built and maintain for the developer community."
-    const osCta = props.openSource?.cta ?? "View on GitHub"
+    const osCta = props.openSource?.cta ?? 'View on GitHub'
     const osItems = props.openSource?.items?.length
       ? props.openSource.items
       : [
           {
-            name: "jsonschema-rs",
-            role: "Maintainer",
+            name: 'jsonschema-rs',
+            role: 'Maintainer',
             description:
-              "High-performance JSON Schema validator for Rust with Python bindings. 15x faster than existing Python alternatives.",
-            language: "Rust",
-            stars: "4,892 stars",
-            license: "MIT License",
+              'High-performance JSON Schema validator for Rust with Python bindings. 15x faster than existing Python alternatives.',
+            language: 'Rust',
+            stars: '4,892 stars',
+            license: 'MIT License',
           },
           {
-            name: "react-query-hooks",
-            role: "Contributor",
+            name: 'react-query-hooks',
+            role: 'Contributor',
             description:
-              "Enhanced hooks for data fetching with automatic caching, deduplication, and optimistic updates. 2M+ weekly downloads on npm.",
-            language: "TypeScript",
-            stars: "12.4k stars",
-            license: "MIT License",
+              'Enhanced hooks for data fetching with automatic caching, deduplication, and optimistic updates. 2M+ weekly downloads on npm.',
+            language: 'TypeScript',
+            stars: '12.4k stars',
+            license: 'MIT License',
           },
           {
-            name: "distributed-cache",
-            role: "Maintainer",
+            name: 'distributed-cache',
+            role: 'Maintainer',
             description:
-              "Consistent hashing cache layer with Redis cluster support. Automatic failover, TTL management, and compression.",
-            language: "Go",
-            stars: "1,847 stars",
-            license: "Apache 2.0",
+              'Consistent hashing cache layer with Redis cluster support. Automatic failover, TTL management, and compression.',
+            language: 'Go',
+            stars: '1,847 stars',
+            license: 'Apache 2.0',
           },
           {
-            name: "terraform-provider-k8s",
-            role: "Creator",
+            name: 'terraform-provider-k8s',
+            role: 'Creator',
             description:
-              "Terraform provider for managing Kubernetes resources with better state handling and drift detection. Downloaded 500K+ times.",
-            language: "HCL",
-            stars: "3,156 stars",
-            license: "MPL 2.0",
+              'Terraform provider for managing Kubernetes resources with better state handling and drift detection. Downloaded 500K+ times.',
+            language: 'HCL',
+            stars: '3,156 stars',
+            license: 'MPL 2.0',
           },
         ]
 
-    const skillsHeading = props.skills?.heading ?? "Technical Skills"
+    const skillsHeading = props.skills?.heading ?? 'Technical Skills'
     const skillsDesc =
       props.skills?.description ??
-      "Technologies and tools I work with daily to build production systems."
+      'Technologies and tools I work with daily to build production systems.'
     const skillGroups = props.skills?.groups?.length
       ? props.skills.groups
       : [
           {
-            title: "Languages",
+            title: 'Languages',
+            items: ['TypeScript / JavaScript', 'Rust', 'Go', 'Python', 'SQL'],
+          },
+          {
+            title: 'Frontend',
             items: [
-              "TypeScript / JavaScript",
-              "Rust",
-              "Go",
-              "Python",
-              "SQL",
+              'React / Next.js',
+              'Tailwind CSS',
+              'GraphQL / Apollo',
+              'WebGL / Three.js',
+              'Jest / Testing Library',
             ],
           },
           {
-            title: "Frontend",
+            title: 'Backend',
             items: [
-              "React / Next.js",
-              "Tailwind CSS",
-              "GraphQL / Apollo",
-              "WebGL / Three.js",
-              "Jest / Testing Library",
+              'Node.js / Express',
+              'gRPC / Protocol Buffers',
+              'PostgreSQL',
+              'Redis',
+              'Apache Kafka',
             ],
           },
           {
-            title: "Backend",
+            title: 'Infrastructure',
             items: [
-              "Node.js / Express",
-              "gRPC / Protocol Buffers",
-              "PostgreSQL",
-              "Redis",
-              "Apache Kafka",
-            ],
-          },
-          {
-            title: "Infrastructure",
-            items: [
-              "Kubernetes",
-              "Terraform",
-              "AWS / GCP / Azure",
-              "Docker",
-              "GitHub Actions",
+              'Kubernetes',
+              'Terraform',
+              'AWS / GCP / Azure',
+              'Docker',
+              'GitHub Actions',
             ],
           },
         ]
 
-    const expHeading = props.experience?.heading ?? "Work Experience"
+    const expHeading = props.experience?.heading ?? 'Work Experience'
     const expDesc =
       props.experience?.description ??
-      "My journey through startups and enterprise companies building software at scale."
+      'My journey through startups and enterprise companies building software at scale.'
     const expItems = props.experience?.items?.length
       ? props.experience.items
       : [
           {
-            period: "2021 — Present",
-            role: "Staff Software Engineer",
-            company: "Stripe",
+            period: '2021 — Present',
+            role: 'Staff Software Engineer',
+            company: 'Stripe',
             summary:
-              "Leading the Payments Platform team. Architected a new payment routing system that reduced latency by 40% and increased reliability to 99.999%. Mentoring 8 engineers across two teams. Define technical direction for the next-generation payment APIs.",
-            tags: [
-              "Ruby",
-              "Go",
-              "Distributed Systems",
-              "Payment Processing",
-            ],
+              'Leading the Payments Platform team. Architected a new payment routing system that reduced latency by 40% and increased reliability to 99.999%. Mentoring 8 engineers across two teams. Define technical direction for the next-generation payment APIs.',
+            tags: ['Ruby', 'Go', 'Distributed Systems', 'Payment Processing'],
           },
           {
-            period: "2018 — 2021",
-            role: "Senior Software Engineer",
-            company: "Netlify",
+            period: '2018 — 2021',
+            role: 'Senior Software Engineer',
+            company: 'Netlify',
             summary:
-              "Core contributor to the Functions platform. Built the edge compute infrastructure serving 2M+ requests per minute. Implemented incremental static regeneration, reducing build times by 75% for large sites. Open-sourced 5 internal tools.",
-            tags: ["Node.js", "Rust", "WebAssembly", "Edge Computing"],
+              'Core contributor to the Functions platform. Built the edge compute infrastructure serving 2M+ requests per minute. Implemented incremental static regeneration, reducing build times by 75% for large sites. Open-sourced 5 internal tools.',
+            tags: ['Node.js', 'Rust', 'WebAssembly', 'Edge Computing'],
           },
           {
-            period: "2016 — 2018",
-            role: "Software Engineer",
-            company: "Segment",
+            period: '2016 — 2018',
+            role: 'Software Engineer',
+            company: 'Segment',
             summary:
-              "Built the Personas product from 0 to 1,000 customers. Designed the real-time identity resolution system processing 100K+ events per second. Improved data pipeline reliability from 99.9% to 99.99% through better error handling.",
-            tags: ["Go", "Kafka", "Kubernetes", "Data Engineering"],
+              'Built the Personas product from 0 to 1,000 customers. Designed the real-time identity resolution system processing 100K+ events per second. Improved data pipeline reliability from 99.9% to 99.99% through better error handling.',
+            tags: ['Go', 'Kafka', 'Kubernetes', 'Data Engineering'],
           },
           {
-            period: "2014 — 2016",
-            role: "Full-Stack Developer",
-            company: "Thoughtbot",
+            period: '2014 — 2016',
+            role: 'Full-Stack Developer',
+            company: 'Thoughtbot',
             summary:
-              "Consulted for startups and Fortune 500 companies. Led agile teams delivering Ruby on Rails and React applications. Introduced test-driven development practices that reduced bug reports by 60%.",
-            tags: ["Ruby on Rails", "React", "PostgreSQL", "Consulting"],
+              'Consulted for startups and Fortune 500 companies. Led agile teams delivering Ruby on Rails and React applications. Introduced test-driven development practices that reduced bug reports by 60%.',
+            tags: ['Ruby on Rails', 'React', 'PostgreSQL', 'Consulting'],
           },
         ]
 
-    const testimonialsHeading = props.testimonials?.heading ?? "Kind Words"
+    const testimonialsHeading = props.testimonials?.heading ?? 'Kind Words'
     const testimonialsDesc =
       props.testimonials?.description ??
-      "What colleagues and collaborators say about working with me."
+      'What colleagues and collaborators say about working with me.'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
-            name: "Sarah Mitchell",
-            role: "VP Engineering, Stripe",
+            name: 'Sarah Mitchell',
+            role: 'VP Engineering, Stripe',
             quote:
-              "Alex has an exceptional ability to break down complex distributed systems problems into manageable pieces. His work on our payment routing reduced p99 latency by 40%. A true technical leader.",
+              'Alex has an exceptional ability to break down complex distributed systems problems into manageable pieces. His work on our payment routing reduced p99 latency by 40%. A true technical leader.',
             avatarAlt:
-              "Professional headshot of a woman with dark hair smiling",
+              'Professional headshot of a woman with dark hair smiling',
           },
           {
-            name: "David Park",
-            role: "CTO, Netlify",
+            name: 'David Park',
+            role: 'CTO, Netlify',
             quote:
               "Working with Alex was a masterclass in systems design. He doesn't just write code—he thinks deeply about maintainability, observability, and the developer experience. Our edge functions wouldn't exist without him.",
             avatarAlt:
-              "Professional headshot of a man with short brown hair and glasses",
+              'Professional headshot of a man with short brown hair and glasses',
           },
           {
-            name: "James Rodriguez",
-            role: "Founder, Segment",
+            name: 'James Rodriguez',
+            role: 'Founder, Segment',
             quote:
               "Alex joined as our 20th engineer and immediately elevated the entire team's technical standards. His contributions to our identity resolution system are still core to how we process billions of events.",
             avatarAlt:
-              "Professional headshot of a man with dark hair and a beard",
+              'Professional headshot of a man with dark hair and a beard',
           },
         ]
 
     const statsItems = props.stats?.items?.length
       ? props.stats.items
       : [
-          { value: "8+", label: "Years Experience" },
-          { value: "50+", label: "Projects Shipped" },
-          { value: "12K+", label: "GitHub Stars" },
-          { value: "5M+", label: "Weekly Downloads" },
+          { value: '8+', label: 'Years Experience' },
+          { value: '50+', label: 'Projects Shipped' },
+          { value: '12K+', label: 'GitHub Stars' },
+          { value: '5M+', label: 'Weekly Downloads' },
         ]
 
     const contactHeading =
@@ -427,112 +423,18 @@ export const PortfolioDevKimiPage = defineCapsule({
     const contactDesc =
       props.contact?.description ??
       "I'm currently open to consulting opportunities, advisory roles, and interesting full-time positions. If you're working on challenging technical problems, I'd love to hear from you."
-    const contactPrimary = props.contact?.primaryCta ?? "Send an Email"
-    const contactSecondary = props.contact?.secondaryCta ?? "LinkedIn"
+    const contactPrimary = props.contact?.primaryCta ?? 'Send an Email'
+    const contactSecondary = props.contact?.secondaryCta ?? 'LinkedIn'
 
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["GitHub", "Twitter", "LinkedIn"]
-
-    // Rotating token palette for decorative language dots / role badges.
-    const dotTokens = [
-      "bg-chart-1",
-      "bg-chart-2",
-      "bg-chart-3",
-      "bg-chart-4",
-      "bg-chart-5",
-    ]
-
-    const ChevronDown = () => (
-      <svg
-        className="ml-2 size-4"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M19 9l-7 7-7-7" />
-      </svg>
-    )
-
-    const ArrowRight = ({ className }: { className?: string }) => (
-      <svg
-        className={cn("size-4", className)}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
-
-    const StarIcon = () => (
-      <svg
-        className="size-4"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-      </svg>
-    )
-
-    const GithubIcon = ({ className }: { className?: string }) => (
-      <svg
-        className={cn("size-5", className)}
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-      </svg>
-    )
-
-    const TwitterIcon = () => (
-      <svg
-        className="size-6"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-      </svg>
-    )
-
-    const LinkedinIcon = ({ className }: { className?: string }) => (
-      <svg
-        className={cn("size-6", className)}
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-      </svg>
-    )
-
-    const socialIcon = (name: string, className?: string) => {
-      const key = name.toLowerCase()
-      if (key.includes("twitter") || key === "x") return <TwitterIcon />
-      if (key.includes("linkedin")) return <LinkedinIcon className={className} />
-      return <GithubIcon className={cn("size-6", className)} />
-    }
+      : ['GitHub', 'Twitter', 'LinkedIn']
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -756,7 +658,7 @@ export const PortfolioDevKimiPage = defineCapsule({
                           <span className="flex items-center gap-1">
                             <span
                               className={cn(
-                                "size-3 rounded-full",
+                                'size-3 rounded-full',
                                 dotTokens[i % dotTokens.length],
                               )}
                             />
@@ -806,7 +708,7 @@ export const PortfolioDevKimiPage = defineCapsule({
                         <li key={item} className="flex items-center gap-3">
                           <span
                             className={cn(
-                              "size-2 rounded-full",
+                              'size-2 rounded-full',
                               dotTokens[(gi + ii) % dotTokens.length],
                             )}
                           />
@@ -886,10 +788,7 @@ export const PortfolioDevKimiPage = defineCapsule({
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {testimonialItems.map((t) => (
-                  <blockquote
-                    key={t.name}
-                    className="rounded-xl bg-muted p-8"
-                  >
+                  <blockquote key={t.name} className="rounded-xl bg-muted p-8">
                     <div className="mb-6 flex items-center gap-4">
                       <Image
                         alt={t.avatarAlt}

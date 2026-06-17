@@ -4,10 +4,10 @@
   "sourceRoot": "packages/ship-fast-blocks/src/capsules",
   "summary": {
     "generatedKimiPortFiles": 375,
-    "largeFiles": 183,
+    "largeFiles": 182,
     "maxLines": 1839,
     "totalFiles": 375,
-    "totalLines": 323253,
+    "totalLines": 323152,
     "unmarkedSourceFiles": 0
   },
   "files": [
@@ -2051,8 +2051,8 @@
     {
       "exports": ["PortfolioDevKimiPage"],
       "file": "packages/ship-fast-blocks/src/capsules/portfolio-dev.tsx",
-      "large": true,
-      "lines": 1012,
+      "large": false,
+      "lines": 911,
       "origin": "generated-kimi-port"
     },
     {
