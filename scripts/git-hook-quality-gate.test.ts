@@ -40,8 +40,15 @@ describe('git hook quality gate planning', () => {
   })
 
   it('reserves full QA for pre-push', () => {
-    expect(buildPrePushPlan()).toEqual([
-      { name: 'Full QA', command: 'bun', args: ['run', 'verify:qa'] },
+    expect(buildPrePushPlan().map((step) => step.name)).toEqual([
+      'ESLint',
+      'TypeScript',
+      'Coverage tests',
+      'Change groups',
+      'Review readiness',
+      'Generated artifacts',
+      'Production build',
+      'Bundle boundaries',
     ])
   })
 })

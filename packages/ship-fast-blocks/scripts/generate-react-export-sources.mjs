@@ -2,6 +2,7 @@ import { brotliCompressSync, constants } from 'node:zlib'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import prettier from 'prettier'
 
 const root = join(fileURLToPath(new URL('..', import.meta.url)))
 const registryRoot = join(root, 'src', 'registry')
@@ -34,9 +35,21 @@ const queueWrite = (path, source) => {
   pendingWrites.push({ path, source })
 }
 
-const flushWrites = () => {
+const formatGeneratedSource = async (path, source) => {
+  const config = await prettier.resolveConfig(path)
+  return prettier.format(source, { ...config, filepath: path })
+}
+
+const flushWrites = async () => {
+  const writes = await Promise.all(
+    pendingWrites.map(async ({ path, source }) => ({
+      path,
+      source: await formatGeneratedSource(path, source),
+    })),
+  )
+
   if (isCheckMode) {
-    const drifted = pendingWrites
+    const drifted = writes
       .filter(
         ({ path, source }) =>
           !existsSync(path) || readFileSync(path, 'utf8') !== source,
@@ -53,7 +66,7 @@ const flushWrites = () => {
     return
   }
 
-  for (const { path, source } of pendingWrites) {
+  for (const { path, source } of writes) {
     writeFileSync(path, source)
   }
 }
@@ -141,7 +154,7 @@ const runtimeLoadersSource = [
 ].join('\n')
 queueWrite(runtimeNamesOutFile, runtimeNamesSource)
 queueWrite(runtimeLoadersOutFile, runtimeLoadersSource)
-flushWrites()
+await flushWrites()
 
 if (!isCheckMode) {
   console.log(

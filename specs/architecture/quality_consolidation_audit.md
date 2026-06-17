@@ -32,7 +32,7 @@ Current evidence:
   manifest has matching proof documentation and appears in this audit, so group
   review evidence cannot silently drift.
 - `bun run review:groups` writes ignored per-group file lists and patch bundles
-  to `.output/review-groups/`, giving reviewers concrete slices of the broad
+  to `.quality-review-groups/`, giving reviewers concrete slices of the broad
   dirty tree without adding generated review artifacts to git.
 - The largest tracked diff is the Convex session split:
   `convex/sessions.ts` shows 295 inserted lines and 5,083 deleted lines, plus

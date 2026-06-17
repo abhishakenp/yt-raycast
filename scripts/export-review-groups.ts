@@ -9,7 +9,7 @@ import {
   type GitStatusEntry,
 } from './verify-change-groups'
 
-export const defaultReviewBundleDir = '.output/review-groups'
+export const defaultReviewBundleDir = '.quality-review-groups'
 
 type ReviewGroupBundle = {
   entries: GitStatusEntry[]

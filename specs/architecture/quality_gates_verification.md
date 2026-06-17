@@ -46,7 +46,7 @@ The group turns quality checks into enforced local and CI behavior:
   every review group must have a proof document and top-level audit/manifest
   coverage before full QA can pass.
 - Ignored per-group review bundles can be regenerated with
-  `bun run review:groups` under `.output/review-groups/`.
+  `bun run review:groups` under `.quality-review-groups/`.
 - The current file-level review manifest is checked through
   `scripts/verify-change-groups.ts --check-report`.
 
@@ -142,7 +142,7 @@ Result:
 
 - Passed.
 - Wrote ignored per-group file lists and patch bundles to
-  `.output/review-groups/`.
+  `.quality-review-groups/`.
 
 Real bundle verifier:
 
