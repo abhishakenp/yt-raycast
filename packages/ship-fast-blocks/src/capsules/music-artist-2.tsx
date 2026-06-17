@@ -1,9 +1,16 @@
-import { useState } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import {
+  ArrowRight,
+  PlayIcon,
+  SocialIcon,
+  accentBgs,
+  accents,
+} from './internal/music-artist-2-icons.tsx'
 
 /**
  * MusicArtistKimiPage2 — a complete, self-contained music ARTIST / BAND landing page.
@@ -27,7 +34,7 @@ import { Image } from "#/lib/img.tsx"
  * supply ONLY content; rich defaults make it render great with no props at all.
  */
 export const MusicArtistKimiPage2 = defineCapsule({
-  name: "MusicArtistKimiPage2",
+  name: 'MusicArtistKimiPage2',
   description:
     "Complete music ARTIST / BAND landing page in a bold, dark, high-energy synthwave / electronic aesthetic: near-black canvas, heavy black uppercase tracking-tight headings, vivid neon accent rotation (pink/cyan/purple/yellow), gradient-text hero title, blurred glow blobs and a pulsing glow CTA. This is the second style and a visually DISTINCT alternative to MusicArtistKimiPage (the warm, airy, editorial indie-folk variant) — pick this one for synth-pop, EDM, electronic, rock, hip-hop, pop, festival or club acts that want loud, neon, energetic branding. Includes a centered hero (new-album eyebrow, huge gradient album title, Stream Now + Tour Dates CTAs, streaming social-icon row), a latest-releases album-card grid (square cover art, play button, album/EP/live meta, Spotify/Apple Music/Bandcamp links), a long 2024 tour-date list with date chips, venue/city and SOLD OUT / LOW TICKETS / ON SALE status badges plus Get Tickets / Sold Out buttons, an official merch store grid (vinyl, apparel, posters with prices and add-to-cart hover), a split about-the-band section with a band photo, a years badge, member-count/album/show stats and a four-member portrait grid, a gradient 'Join the Pulse' newsletter CTA with a real email-subscribe form, and a multi-column footer with social icons and link columns. Use as the ROOT/home page for bands, musicians, DJs, electronic/synth acts, album releases, tour promotion, merch or any artist EPK/press site when a dark, neon, energetic music page with releases, tour dates, merch and band bio is wanted. Supply content only — brand, nav, hero, releases, tour, merch, about, newsletter, footer; the block owns all layout and styling.",
   props: z.object({
@@ -165,310 +172,262 @@ export const MusicArtistKimiPage2 = defineCapsule({
   component: ({ props }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "NEONPULSE"
+    const brand = props.brand ?? 'NEONPULSE'
     const brandHead = brand.slice(0, Math.ceil(brand.length / 2))
     const brandTail = brand.slice(Math.ceil(brand.length / 2))
     const nav = props.nav?.length
       ? props.nav
-      : ["Music", "Tour", "Merch", "About"]
-    const navCta = props.navCta ?? "Get Tickets"
+      : ['Music', 'Tour', 'Merch', 'About']
+    const navCta = props.navCta ?? 'Get Tickets'
 
-    const heroEyebrow = props.hero?.eyebrow ?? "New Album Out Now"
-    const heroTitleTop = props.hero?.titleTop ?? "ELECTRIC"
-    const heroTitleBottom = props.hero?.titleBottom ?? "SOULS"
+    const heroEyebrow = props.hero?.eyebrow ?? 'New Album Out Now'
+    const heroTitleTop = props.hero?.titleTop ?? 'ELECTRIC'
+    const heroTitleBottom = props.hero?.titleBottom ?? 'SOULS'
     const heroDesc =
       props.hero?.description ??
-      "The new album from Neon Pulse. 12 tracks of synth-driven sonic rebellion."
-    const heroPrimary = props.hero?.primaryCta ?? "Stream Now"
-    const heroSecondary = props.hero?.secondaryCta ?? "Tour Dates"
+      'The new album from Neon Pulse. 12 tracks of synth-driven sonic rebellion.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Stream Now'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Tour Dates'
     const heroSocials = props.hero?.socials?.length
       ? props.hero.socials
-      : ["Spotify", "Apple Music", "YouTube", "SoundCloud"]
+      : ['Spotify', 'Apple Music', 'YouTube', 'SoundCloud']
 
-    const releasesEyebrow = props.releases?.eyebrow ?? "Discography"
-    const releasesHeading = props.releases?.heading ?? "Latest Releases"
+    const releasesEyebrow = props.releases?.eyebrow ?? 'Discography'
+    const releasesHeading = props.releases?.heading ?? 'Latest Releases'
     const releasesDesc =
       props.releases?.description ??
-      "Stream our newest tracks and albums across all platforms"
+      'Stream our newest tracks and albums across all platforms'
     const releases = props.releases?.items?.length
       ? props.releases.items
       : [
           {
-            title: "Electric Souls",
-            meta: "Album • 2024 • 12 tracks",
+            title: 'Electric Souls',
+            meta: 'Album • 2024 • 12 tracks',
             blurb:
               'Our latest studio album featuring singles "Midnight Drive" and "Neon Dreams"',
             imageAlt:
-              "Album cover for Electric Souls featuring neon geometric shapes on dark background",
-            platforms: ["Spotify", "Apple Music", "Bandcamp"],
+              'Album cover for Electric Souls featuring neon geometric shapes on dark background',
+            platforms: ['Spotify', 'Apple Music', 'Bandcamp'],
           },
           {
-            title: "Midnight Drive",
-            meta: "EP • 2024 • 5 tracks",
-            blurb:
-              "Late night vibes for the open road. Released March 2024.",
+            title: 'Midnight Drive',
+            meta: 'EP • 2024 • 5 tracks',
+            blurb: 'Late night vibes for the open road. Released March 2024.',
             imageAlt:
-              "Album cover for Midnight Drive EP with retro synthwave aesthetic",
-            platforms: ["Spotify", "Apple Music", "Bandcamp"],
+              'Album cover for Midnight Drive EP with retro synthwave aesthetic',
+            platforms: ['Spotify', 'Apple Music', 'Bandcamp'],
           },
           {
-            title: "Neon Nights Live",
-            meta: "Live Album • 2023 • 18 tracks",
+            title: 'Neon Nights Live',
+            meta: 'Live Album • 2023 • 18 tracks',
             blurb:
-              "Recorded live at the Electric Ballroom, London. The full experience.",
-            imageAlt:
-              "Album cover for Neon Nights live concert recording",
-            platforms: ["Spotify", "Apple Music", "Bandcamp"],
+              'Recorded live at the Electric Ballroom, London. The full experience.',
+            imageAlt: 'Album cover for Neon Nights live concert recording',
+            platforms: ['Spotify', 'Apple Music', 'Bandcamp'],
           },
         ]
 
-    const tourEyebrow = props.tour?.eyebrow ?? "On The Road"
-    const tourHeading = props.tour?.heading ?? "2024 Tour Dates"
+    const tourEyebrow = props.tour?.eyebrow ?? 'On The Road'
+    const tourHeading = props.tour?.heading ?? '2024 Tour Dates'
     const tourDesc =
-      props.tour?.description ?? "Catch Neon Pulse live in a city near you"
-    const tourViewAll = props.tour?.viewAll ?? "View All Tour Dates"
+      props.tour?.description ?? 'Catch Neon Pulse live in a city near you'
+    const tourViewAll = props.tour?.viewAll ?? 'View All Tour Dates'
     const tourDates = props.tour?.dates?.length
       ? props.tour.dates
       : [
           {
-            month: "JUN",
-            day: "15",
-            venue: "The Fillmore",
-            city: "San Francisco, CA",
-            status: "SOLD OUT",
+            month: 'JUN',
+            day: '15',
+            venue: 'The Fillmore',
+            city: 'San Francisco, CA',
+            status: 'SOLD OUT',
             soldOut: true,
           },
           {
-            month: "JUN",
-            day: "18",
-            venue: "The Troubadour",
-            city: "Los Angeles, CA",
-            status: "LOW TICKETS",
+            month: 'JUN',
+            day: '18',
+            venue: 'The Troubadour',
+            city: 'Los Angeles, CA',
+            status: 'LOW TICKETS',
           },
           {
-            month: "JUN",
-            day: "22",
-            venue: "Red Rocks Amphitheatre",
-            city: "Morrison, CO",
-            status: "ON SALE",
+            month: 'JUN',
+            day: '22',
+            venue: 'Red Rocks Amphitheatre',
+            city: 'Morrison, CO',
+            status: 'ON SALE',
           },
           {
-            month: "JUL",
-            day: "05",
-            venue: "First Avenue",
-            city: "Minneapolis, MN",
-            status: "ON SALE",
+            month: 'JUL',
+            day: '05',
+            venue: 'First Avenue',
+            city: 'Minneapolis, MN',
+            status: 'ON SALE',
           },
           {
-            month: "JUL",
-            day: "12",
-            venue: "9:30 Club",
-            city: "Washington, DC",
-            status: "ON SALE",
+            month: 'JUL',
+            day: '12',
+            venue: '9:30 Club',
+            city: 'Washington, DC',
+            status: 'ON SALE',
           },
           {
-            month: "JUL",
-            day: "19",
-            venue: "Brooklyn Steel",
-            city: "Brooklyn, NY",
-            status: "SOLD OUT",
+            month: 'JUL',
+            day: '19',
+            venue: 'Brooklyn Steel',
+            city: 'Brooklyn, NY',
+            status: 'SOLD OUT',
             soldOut: true,
           },
           {
-            month: "AUG",
-            day: "03",
-            venue: "Electric Ballroom",
-            city: "London, UK",
-            status: "ON SALE",
+            month: 'AUG',
+            day: '03',
+            venue: 'Electric Ballroom',
+            city: 'London, UK',
+            status: 'ON SALE',
           },
           {
-            month: "AUG",
-            day: "10",
-            venue: "Lollapalooza Berlin",
-            city: "Berlin, Germany",
-            status: "ON SALE",
+            month: 'AUG',
+            day: '10',
+            venue: 'Lollapalooza Berlin',
+            city: 'Berlin, Germany',
+            status: 'ON SALE',
           },
         ]
 
-    const merchEyebrow = props.merch?.eyebrow ?? "Merchandise"
-    const merchHeading = props.merch?.heading ?? "Official Store"
+    const merchEyebrow = props.merch?.eyebrow ?? 'Merchandise'
+    const merchHeading = props.merch?.heading ?? 'Official Store'
     const merchDesc =
-      props.merch?.description ?? "Vinyl, apparel, and exclusive collectibles"
-    const merchCta = props.merch?.cta ?? "Visit Full Store"
+      props.merch?.description ?? 'Vinyl, apparel, and exclusive collectibles'
+    const merchCta = props.merch?.cta ?? 'Visit Full Store'
     const merch = props.merch?.items?.length
       ? props.merch.items
       : [
           {
-            name: "Electric Souls Vinyl",
-            variant: "Limited Edition 180g",
-            price: "$35.00",
-            imageAlt:
-              "Electric Souls vinyl record with neon pink cover art",
+            name: 'Electric Souls Vinyl',
+            variant: 'Limited Edition 180g',
+            price: '$35.00',
+            imageAlt: 'Electric Souls vinyl record with neon pink cover art',
           },
           {
-            name: "Neon Pulse Logo Tee",
-            variant: "Black / Unisex",
-            price: "$28.00",
-            imageAlt: "Black t-shirt with Neon Pulse band logo",
+            name: 'Neon Pulse Logo Tee',
+            variant: 'Black / Unisex',
+            price: '$28.00',
+            imageAlt: 'Black t-shirt with Neon Pulse band logo',
           },
           {
-            name: "Electric Dad Hat",
-            variant: "Electric Blue",
-            price: "$24.00",
+            name: 'Electric Dad Hat',
+            variant: 'Electric Blue',
+            price: '$24.00',
             imageAlt:
-              "Electric blue baseball cap with Neon Pulse logo embroidery",
+              'Electric blue baseball cap with Neon Pulse logo embroidery',
           },
           {
-            name: "Live at Electric Ballroom Poster",
-            variant: "18x24 Screen Print",
-            price: "$45.00",
+            name: 'Live at Electric Ballroom Poster',
+            variant: '18x24 Screen Print',
+            price: '$45.00',
             imageAlt:
-              "Concert poster print of Neon Pulse live at Electric Ballroom",
+              'Concert poster print of Neon Pulse live at Electric Ballroom',
           },
         ]
 
-    const aboutEyebrow = props.about?.eyebrow ?? "About The Band"
-    const aboutHeadingTop = props.about?.headingTop ?? "Four Friends."
-    const aboutHeadingBottom = props.about?.headingBottom ?? "One Sound."
+    const aboutEyebrow = props.about?.eyebrow ?? 'About The Band'
+    const aboutHeadingTop = props.about?.headingTop ?? 'Four Friends.'
+    const aboutHeadingBottom = props.about?.headingBottom ?? 'One Sound.'
     const aboutParagraphs = props.about?.paragraphs?.length
       ? props.about.paragraphs
       : [
-          "Formed in 2019, Neon Pulse emerged from the underground electronic scene of Portland, Oregon. What started as late-night jam sessions in a converted warehouse has evolved into a sonic journey that blends vintage analog synths with modern production.",
-          "Our music is built on the foundation of friendship and the shared belief that electronic music should make you feel something. From intimate club shows to festival main stages, we bring the same energy: raw, emotional, and unapologetically loud.",
+          'Formed in 2019, Neon Pulse emerged from the underground electronic scene of Portland, Oregon. What started as late-night jam sessions in a converted warehouse has evolved into a sonic journey that blends vintage analog synths with modern production.',
+          'Our music is built on the foundation of friendship and the shared belief that electronic music should make you feel something. From intimate club shows to festival main stages, we bring the same energy: raw, emotional, and unapologetically loud.',
         ]
     const aboutImageAlt =
       props.about?.imageAlt ??
-      "Neon Pulse band performing on stage with colorful stage lighting"
-    const aboutBadgeNumber = props.about?.badgeNumber ?? "5"
-    const aboutBadgeLabel = props.about?.badgeLabel ?? "Years"
+      'Neon Pulse band performing on stage with colorful stage lighting'
+    const aboutBadgeNumber = props.about?.badgeNumber ?? '5'
+    const aboutBadgeLabel = props.about?.badgeLabel ?? 'Years'
     const aboutStats = props.about?.stats?.length
       ? props.about.stats
       : [
-          { value: "4", label: "Band Members" },
-          { value: "3", label: "Studio Albums" },
-          { value: "150+", label: "Shows Played" },
+          { value: '4', label: 'Band Members' },
+          { value: '3', label: 'Studio Albums' },
+          { value: '150+', label: 'Shows Played' },
         ]
-    const membersHeading = props.about?.membersHeading ?? "Meet The Band"
+    const membersHeading = props.about?.membersHeading ?? 'Meet The Band'
     const members = props.about?.members?.length
       ? props.about.members
       : [
           {
-            name: "Alex Chen",
-            role: "Vocals / Synths",
+            name: 'Alex Chen',
+            role: 'Vocals / Synths',
             imageAlt:
-              "Professional headshot of Alex Chen, lead vocalist and synth player for Neon Pulse",
+              'Professional headshot of Alex Chen, lead vocalist and synth player for Neon Pulse',
           },
           {
-            name: "Marcus Webb",
-            role: "Bass / Production",
+            name: 'Marcus Webb',
+            role: 'Bass / Production',
             imageAlt:
-              "Professional headshot of Marcus Webb, bass player and producer for Neon Pulse",
+              'Professional headshot of Marcus Webb, bass player and producer for Neon Pulse',
           },
           {
-            name: "Sam Rivera",
-            role: "Drums / Percussion",
+            name: 'Sam Rivera',
+            role: 'Drums / Percussion',
             imageAlt:
-              "Professional headshot of Sam Rivera, drummer and percussionist for Neon Pulse",
+              'Professional headshot of Sam Rivera, drummer and percussionist for Neon Pulse',
           },
           {
-            name: "Jordan Taylor",
-            role: "Guitar / Visuals",
+            name: 'Jordan Taylor',
+            role: 'Guitar / Visuals',
             imageAlt:
-              "Professional headshot of Jordan Taylor, guitarist and visual artist for Neon Pulse",
+              'Professional headshot of Jordan Taylor, guitarist and visual artist for Neon Pulse',
           },
         ]
 
-    const newsletterHeading = props.newsletter?.heading ?? "Join The Pulse"
+    const newsletterHeading = props.newsletter?.heading ?? 'Join The Pulse'
     const newsletterDesc =
       props.newsletter?.description ??
-      "Get exclusive updates, early access to tickets, and behind-the-scenes content delivered to your inbox."
+      'Get exclusive updates, early access to tickets, and behind-the-scenes content delivered to your inbox.'
     const newsletterPlaceholder =
-      props.newsletter?.placeholder ?? "Enter your email"
-    const newsletterSubmit = props.newsletter?.submit ?? "Subscribe"
+      props.newsletter?.placeholder ?? 'Enter your email'
+    const newsletterSubmit = props.newsletter?.submit ?? 'Subscribe'
     const newsletterNote =
-      props.newsletter?.note ?? "No spam. Unsubscribe anytime."
+      props.newsletter?.note ?? 'No spam. Unsubscribe anytime.'
 
     const footerDesc =
       props.footer?.description ??
-      "Synth-driven sonic rebellion from Portland, Oregon."
+      'Synth-driven sonic rebellion from Portland, Oregon.'
     const footerSocials = props.footer?.socials?.length
       ? props.footer.socials
-      : ["Instagram", "Twitter", "TikTok", "YouTube"]
+      : ['Instagram', 'Twitter', 'TikTok', 'YouTube']
     const footerColumns = props.footer?.columns?.length
       ? props.footer.columns
       : [
           {
-            title: "Music",
-            links: ["Discography", "New Releases", "Music Videos", "Remixes"],
+            title: 'Music',
+            links: ['Discography', 'New Releases', 'Music Videos', 'Remixes'],
           },
           {
-            title: "Tour",
+            title: 'Tour',
             links: [
-              "Upcoming Shows",
-              "VIP Packages",
-              "Past Shows",
-              "Venue Info",
+              'Upcoming Shows',
+              'VIP Packages',
+              'Past Shows',
+              'Venue Info',
             ],
           },
           {
-            title: "Store",
-            links: ["Vinyl & CDs", "Apparel", "Posters", "Accessories"],
+            title: 'Store',
+            links: ['Vinyl & CDs', 'Apparel', 'Posters', 'Accessories'],
           },
         ]
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLegal = props.footer?.legal?.length
       ? props.footer.legal
-      : ["Privacy Policy", "Terms of Service", "Contact"]
-
-    /** Rotating neon accent text colors mapped to theme/chart tokens. */
-    const accents = [
-      "text-chart-1",
-      "text-chart-2",
-      "text-chart-3",
-      "text-chart-4",
-    ]
-    const accentBgs = [
-      "bg-chart-1",
-      "bg-chart-2",
-      "bg-chart-3",
-      "bg-chart-4",
-    ]
-
-    const PlayIcon = () => (
-      <svg className="ml-1 size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M8 5v14l11-7z" />
-      </svg>
-    )
-
-    const ArrowRight = ({ className }: { className?: string }) => (
-      <svg
-        className={className}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M17 8l4 4m0 0l-4 4m4-4H3"
-        />
-      </svg>
-    )
-
-    const SocialIcon = ({ label }: { label: string }) => (
-      <svg className="size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M8 13.5c2.5-.8 5-.5 7 .8" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0" />
-        <title>{label}</title>
-      </svg>
-    )
+      : ['Privacy Policy', 'Terms of Service', 'Contact']
 
     return (
       <div
         className={cn(
-          "relative min-h-svh overflow-x-hidden bg-background font-sans text-foreground antialiased",
+          'relative min-h-svh overflow-x-hidden bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -512,8 +471,19 @@ export const MusicArtistKimiPage2 = defineCapsule({
                   onClick={() => setMobileOpen((v: boolean) => !v)}
                   className="p-2 text-muted-foreground transition-colors hover:text-foreground md:hidden"
                 >
-                  <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 </button>
               </div>
@@ -629,7 +599,7 @@ export const MusicArtistKimiPage2 = defineCapsule({
                         aria-label={`Play ${release.title}`}
                         onClick={() => go(release.title)}
                         className={cn(
-                          "absolute bottom-4 right-4 flex size-14 items-center justify-center rounded-full text-primary-foreground transition-colors hover:bg-foreground hover:text-background",
+                          'absolute bottom-4 right-4 flex size-14 items-center justify-center rounded-full text-primary-foreground transition-colors hover:bg-foreground hover:text-background',
                           accentBgs[i % accentBgs.length],
                         )}
                       >
@@ -653,7 +623,7 @@ export const MusicArtistKimiPage2 = defineCapsule({
                             type="button"
                             onClick={() => go(platform)}
                             className={cn(
-                              "text-xs font-semibold transition-colors hover:text-foreground",
+                              'text-xs font-semibold transition-colors hover:text-foreground',
                               accents[i % accents.length],
                             )}
                           >
@@ -709,8 +679,8 @@ export const MusicArtistKimiPage2 = defineCapsule({
                     <div className="flex items-center justify-between gap-4 sm:justify-end sm:gap-6">
                       <span
                         className={cn(
-                          "text-sm font-bold",
-                          date.soldOut ? "text-chart-4" : "text-chart-2",
+                          'text-sm font-bold',
+                          date.soldOut ? 'text-chart-4' : 'text-chart-2',
                         )}
                       >
                         {date.status}
@@ -821,8 +791,8 @@ export const MusicArtistKimiPage2 = defineCapsule({
                     <p
                       key={i}
                       className={cn(
-                        "text-lg leading-relaxed text-muted-foreground",
-                        i < aboutParagraphs.length - 1 ? "mb-6" : "mb-8",
+                        'text-lg leading-relaxed text-muted-foreground',
+                        i < aboutParagraphs.length - 1 ? 'mb-6' : 'mb-8',
                       )}
                     >
                       {paragraph}
@@ -833,7 +803,7 @@ export const MusicArtistKimiPage2 = defineCapsule({
                       <div key={stat.label}>
                         <p
                           className={cn(
-                            "text-3xl font-black sm:text-4xl",
+                            'text-3xl font-black sm:text-4xl',
                             accents[i % accents.length],
                           )}
                         >
