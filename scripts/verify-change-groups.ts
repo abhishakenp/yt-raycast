@@ -59,7 +59,7 @@ export const changeGroups: ChangeGroup[] = [
       /^bun\.lock$/,
       /^eslint\.config\.js$/,
       /^package\.json$/,
-      /^scripts\/(?:export-review-groups\.ts|export-review-groups\.test\.ts|git-hook-quality-gate\.mjs|git-hook-quality-gate\.test\.ts|quality-gates-config\.test\.ts|verify-build-bundles\.ts|verify-build-bundles\.test\.ts|verify-change-groups\.ts|verify-change-groups\.test\.ts|verify-quality-exit\.ts|verify-quality-exit\.test\.ts|verify-review-readiness\.ts|verify-review-readiness\.test\.ts)$/,
+      /^scripts\/(?:export-review-groups\.ts|export-review-groups\.test\.ts|git-hook-quality-gate\.mjs|git-hook-quality-gate\.test\.ts|quality-gates-config\.test\.ts|verify-build-bundles\.ts|verify-build-bundles\.test\.ts|verify-capsule-source-classification\.ts|verify-capsule-source-classification\.test\.ts|verify-change-groups\.ts|verify-change-groups\.test\.ts|verify-quality-exit\.ts|verify-quality-exit\.test\.ts|verify-review-readiness\.ts|verify-review-readiness\.test\.ts)$/,
       /^tsconfig\.json$/,
       /^vitest\.config\.ts$/,
     ],

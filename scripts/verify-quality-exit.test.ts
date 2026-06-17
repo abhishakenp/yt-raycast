@@ -13,6 +13,8 @@ function completeTexts() {
     'verify:change-groups': 'bun scripts/verify-change-groups.ts',
     'verify:change-report':
       'bun scripts/verify-change-groups.ts --check-report',
+    'verify:capsule-sources':
+      'bun scripts/verify-capsule-source-classification.ts',
     'verify:generated':
       'node packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs --check',
     'verify:prepush': 'node scripts/git-hook-quality-gate.mjs pre-push',

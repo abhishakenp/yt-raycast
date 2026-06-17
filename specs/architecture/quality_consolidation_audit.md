@@ -15,8 +15,8 @@ Current evidence:
 
 - `bun run verify:prepush` passed with explicit lint, typecheck, coverage,
   review-readiness, generated-artifact, build, and bundle-boundary steps.
-- Latest measured full-gate coverage is 22.13% statements, 14.80% branches,
-  10.68% functions, and 21.74% lines.
+- Latest measured full-gate coverage is 22.18% statements, 14.81% branches,
+  10.75% functions, and 21.78% lines.
 - GitNexus `detect_changes` reports no staged or unstaged changes after the
   local commits; the branch-level review scope remains broad and is tracked by
   change groups.
@@ -318,6 +318,7 @@ The repo should not be called 11/10 until all of these are true:
   together.
 - The assessment document reflects current metrics and no stale claims.
 - Generated OpenUI/runtime artifacts have reproducible provenance.
+- Source capsule files have reproducible origin classification.
 - Coverage gates are enforced and meaningfully ratcheted, but not used as a
   substitute for structural review.
 - Product-critical paths affected by the changes have real-path verification,

@@ -15,6 +15,9 @@ describe('quality gate configuration', () => {
     expect(packageJson.scripts['verify:generated']).toBe(
       'node packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs --check',
     )
+    expect(packageJson.scripts['verify:capsule-sources']).toBe(
+      'bun scripts/verify-capsule-source-classification.ts',
+    )
     expect(packageJson.scripts['verify:change-groups']).toBe(
       'bun scripts/verify-change-groups.ts',
     )
@@ -40,6 +43,9 @@ describe('quality gate configuration', () => {
     expect(packageJson.scripts['verify:qa']).toContain(
       'bun run verify:generated',
     )
+    expect(packageJson.scripts['verify:qa']).toContain(
+      'bun run verify:capsule-sources',
+    )
     expect(vitestConfig).toContain("provider: 'v8'")
     expect(vitestConfig).toContain("'json-summary'")
     expect(vitestConfig).toContain(
@@ -58,10 +64,10 @@ describe('quality gate configuration', () => {
       "'packages/ship-fast-engine/src/spec/**/*.test.js'",
     )
     expect(vitestConfig).toContain('thresholds:')
-    expect(vitestConfig).toContain('statements: 22.13')
-    expect(vitestConfig).toContain('branches: 14.8')
-    expect(vitestConfig).toContain('functions: 10.68')
-    expect(vitestConfig).toContain('lines: 21.74')
+    expect(vitestConfig).toContain('statements: 22.18')
+    expect(vitestConfig).toContain('branches: 14.81')
+    expect(vitestConfig).toContain('functions: 10.75')
+    expect(vitestConfig).toContain('lines: 21.78')
     expect(ciWorkflow).toContain('bun run test:coverage')
   })
 })
