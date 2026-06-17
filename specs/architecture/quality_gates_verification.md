@@ -54,10 +54,10 @@ The group turns quality checks into enforced local and CI behavior:
 
 `vitest.config.ts` currently enforces:
 
-- statements: 23.46%
+- statements: 23.47%
 - branches: 15.70%
-- functions: 11.31%
-- lines: 23.03%
+- functions: 11.32%
+- lines: 23.04%
 
 These floors are intentionally not the final quality target. They are a ratchet
 that prevents the current baseline from sliding backward while higher-value
@@ -107,7 +107,7 @@ Result:
 - Passed.
 - `packages/ship-fast-blocks/src/capsules/source-classification.json` records
   375 production capsule source files: 375 classified Kimi/generated ports, 0
-  unmarked source files, 182 files over 1,000 LOC, and a current max of 1,839
+  unmarked source files, 181 files over 1,000 LOC, and a current max of 1,839
   LOC.
 
 Review group classification:
