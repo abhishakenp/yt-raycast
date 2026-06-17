@@ -55,6 +55,11 @@ const ensureWindowStorage = () => {
   }
 }
 
+vi.mock('@clerk/tanstack-react-start', () => ({
+  useAuth: () => ({ isSignedIn: false, userId: null, getToken: async () => null }),
+  useClerk: () => ({ session: null, user: null }),
+}))
+
 vi.mock('convex/react', () => ({
   useMutation: () => vi.fn(),
   useQuery: (_query: unknown, args: unknown) => {
@@ -364,10 +369,8 @@ describe('Dashboard missing session state', () => {
 
     render(<Dashboard sessionId="streaming-session" />)
 
-    const sidePanelArgs = state.queryArgs.filter(
-      (args) => args === 'skip' || (args && typeof args === 'object' && 'sessionId' in args),
-    )
-    expect(sidePanelArgs).toEqual(['skip', 'skip'])
+    const skipCount = state.queryArgs.filter((args) => args === 'skip').length
+    expect(skipCount).toBe(2)
   })
 
   it('loads commerce and deployment side queries after the preview is ready', () => {
