@@ -29,6 +29,11 @@ export type GitStatusEntry = {
   status: string
 }
 
+export type ChangeScope = {
+  baseRef: string | null
+  entries: GitStatusEntry[]
+}
+
 export const changeGroups: ChangeGroup[] = [
   {
     id: 'convex-session-decomposition',
@@ -129,6 +134,41 @@ export function parseGitStatusPorcelain(output: string): string[] {
   return parseGitStatusPorcelainEntries(output).map((entry) => entry.path)
 }
 
+export function parseGitNameStatusEntries(output: string): GitStatusEntry[] {
+  return output
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .map((line) => {
+      const parts = line.split('\t')
+      const rawPath = parts.at(-1) ?? ''
+      return {
+        path: rawPath,
+        status: parts[0] ?? '',
+      }
+    })
+    .sort((a, b) => a.path.localeCompare(b.path))
+}
+
+function mergeChangeEntries(
+  branchEntries: GitStatusEntry[],
+  worktreeEntries: GitStatusEntry[],
+) {
+  const entriesByPath = new Map<string, GitStatusEntry>()
+
+  for (const entry of branchEntries) {
+    entriesByPath.set(entry.path, entry)
+  }
+
+  for (const entry of worktreeEntries) {
+    entriesByPath.set(entry.path, entry)
+  }
+
+  return [...entriesByPath.values()].sort((a, b) =>
+    a.path.localeCompare(b.path),
+  )
+}
+
 export function classifyChangedPath(path: string): ChangeGroup | null {
   return (
     changeGroups.find((group) =>
@@ -205,11 +245,54 @@ export function renderChangeGroupReport(paths: string[]) {
 }
 
 export function readChangedPaths() {
-  return parseGitStatusPorcelain(
+  return readChangeScope().entries.map((entry) => entry.path)
+}
+
+function runGit(args: string[]) {
+  return execFileSync('git', args, { encoding: 'utf8' }).trimEnd()
+}
+
+function readWorktreeEntries() {
+  return parseGitStatusPorcelainEntries(
     execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
       encoding: 'utf8',
     }),
   )
+}
+
+function readUpstreamBaseRef() {
+  try {
+    return runGit(['merge-base', '--fork-point', '@{upstream}', 'HEAD'])
+  } catch {
+    try {
+      return runGit(['merge-base', '@{upstream}', 'HEAD'])
+    } catch {
+      return null
+    }
+  }
+}
+
+function readBranchEntries(baseRef: string | null) {
+  if (!baseRef) {
+    return []
+  }
+
+  return parseGitNameStatusEntries(
+    execFileSync('git', ['diff', '--name-status', `${baseRef}...HEAD`], {
+      encoding: 'utf8',
+    }),
+  )
+}
+
+export function readChangeScope(): ChangeScope {
+  const baseRef = readUpstreamBaseRef()
+  const branchEntries = readBranchEntries(baseRef)
+  const worktreeEntries = readWorktreeEntries()
+
+  return {
+    baseRef,
+    entries: mergeChangeEntries(branchEntries, worktreeEntries),
+  }
 }
 
 export function verifyChangeGroups(paths = readChangedPaths()) {
