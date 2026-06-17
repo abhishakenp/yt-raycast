@@ -31,7 +31,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 - `convex/sessions.ts` is no longer under a raw formatted 500-line ceiling, but it is now a registration/orchestration surface with session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment, export, gallery, preview-history, serialization, Agentation, operational notification, commerce/Medusa, usage metrics, CMS, task, generated artifact/cache, event-stream, workspace, readiness, public-preview, internal-reference, and shared validator layers split into focused helpers with direct tests.
 - The block/capsule catalog has many 1,000+ LOC files; this may be acceptable for generated catalog content, but it needs stronger mechanical generation/validation boundaries to avoid manual drift.
-- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.01% statements, 14.74% branches, 10.52% functions, and 21.62% lines in the latest full pre-push gate.
+- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.01% statements, 14.74% branches, 10.51% functions, and 21.61% lines in the latest full pre-push gate.
 - Local git hooks now enforce authoring-time checks before commit and full QA before push.
 - GitNexus impact analysis is available again after rebuilding the local index with the project runner; keep the runner version aligned with the MCP reader to avoid storage-version drift.
 
@@ -140,13 +140,13 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Strengths:**
 
-- The latest full coverage gate passed with measured V8 coverage of 22.01% statements, 14.74% branches, 10.52% functions, and 21.62% lines.
+- The latest full coverage gate passed with measured V8 coverage of 22.01% statements, 14.74% branches, 10.51% functions, and 21.61% lines.
 - `verify:qa` now runs Vitest with V8 coverage thresholds before build and bundle verification; CI uses the same coverage-backed test command.
 - Source-level invariant tests protect architecture boundaries that ordinary behavior tests would miss.
 
 **Concerns:**
 
-- Coverage thresholds are enforced at the current measured baseline, but the baseline is intentionally conservative and should be raised as focused tests land.
+- Coverage thresholds are enforced at the latest measured baseline, but the absolute baseline is intentionally conservative and should continue rising as focused tests land.
 
 ## Local Hooks & CI Pipeline ★★★★★
 
@@ -158,7 +158,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Concerns:**
 
-- Coverage thresholding is now present, but the absolute floors are low and need ratcheting once higher-value paths are covered.
+- Coverage thresholding is now present and ratcheted to the latest measured gate, but the absolute floors remain low and need continued ratcheting once higher-value paths are covered.
 
 ## Documentation & Specifications ★★★☆☆
 
