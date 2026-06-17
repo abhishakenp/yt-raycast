@@ -68,8 +68,8 @@ function TranslatedTextNode({ text, locale, node }: { text: string; locale: stri
         parent.classList.add("sf-shimmer-loading");
         parent.style.backgroundImage = `linear-gradient(90deg, #0000 calc(50% - ${text.length * 2}px), currentColor 50%, #0000 calc(50% + ${text.length * 2}px)), linear-gradient(currentColor, currentColor)`;
       }
-    } else if (data) {
-      // Remove shimmer and update text (even if unchanged, to ensure original text is displayed)
+    } else if (data && data !== text) {
+      // Remove shimmer and update text
       const parent = node.parentElement;
       if (parent) {
         parent.classList.remove("sf-shimmer-loading");
