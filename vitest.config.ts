@@ -2,14 +2,47 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    environment: 'node',
-    environmentMatchGlobs: [['convex/**/*.test.ts', 'edge-runtime']],
-    include: [
-      'src/**/*.test.ts',
-      'src/**/*.test.tsx',
-      'convex/**/*.test.ts',
-      'packages/ship-fast-engine/src/genui/**/*.test.ts',
-      'packages/ship-fast-engine/src/pipeline/**/*.test.ts',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'json-summary'],
+      reportsDirectory: 'coverage',
+      thresholds: {
+        statements: 21.48,
+        branches: 14.29,
+        functions: 10.17,
+        lines: 21.56,
+      },
+    },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: [
+            'src/**/*.test.ts',
+            'src/**/*.test.tsx',
+            'packages/ship-fast-blocks/src/**/*.test.ts',
+            'packages/ship-fast-engine/src/*.test.js',
+            'packages/ship-fast-engine/src/clone/**/*.test.ts',
+            'packages/ship-fast-engine/src/genui/**/*.test.ts',
+            'packages/ship-fast-engine/src/llm/**/*.test.js',
+            'packages/ship-fast-engine/src/pipeline/**/*.test.ts',
+            'packages/ship-fast-engine/src/renderers/**/*.test.ts',
+            'packages/ship-fast-engine/src/renderers/**/*.test.js',
+            'packages/ship-fast-engine/src/spec/**/*.test.js',
+            'scripts/**/*.test.ts',
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'convex',
+          environment: 'edge-runtime',
+          include: ['convex/**/*.test.ts'],
+        },
+      },
     ],
   },
   resolve: {

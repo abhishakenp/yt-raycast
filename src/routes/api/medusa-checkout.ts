@@ -1,6 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { getMedusaBackendUrl, getMedusaPublishableKey } from '@/features/commerce/server/medusa-store-env'
+import {
+  getMedusaBackendUrl,
+  getMedusaPublishableKey,
+} from '@/features/commerce/server/medusa-store-env'
+
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback
 
 export const Route = createFileRoute('/api/medusa-checkout')({
   server: {
@@ -29,13 +35,19 @@ export const Route = createFileRoute('/api/medusa-checkout')({
           })
 
           if (!response.ok) {
-            return Response.json({ error: 'checkout failed' }, { status: response.status })
+            return Response.json(
+              { error: 'checkout failed' },
+              { status: response.status },
+            )
           }
 
           const data = await response.json()
           return Response.json(data)
-        } catch (e) {
-          return Response.json({ error: e?.message || 'checkout failed' }, { status: 500 })
+        } catch (error) {
+          return Response.json(
+            { error: errorMessage(error, 'checkout failed') },
+            { status: 500 },
+          )
         }
       },
     },

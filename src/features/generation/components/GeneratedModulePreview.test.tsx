@@ -40,19 +40,16 @@ describe('GeneratedModulePreview', () => {
   })
 
   it('detects complete HTML document sources', () => {
-    expect(isHtmlDocumentSource('<!DOCTYPE html><html><body></body></html>')).toBe(true)
+    expect(
+      isHtmlDocumentSource('<!DOCTYPE html><html><body></body></html>'),
+    ).toBe(true)
     expect(isHtmlDocumentSource('root = Text("Hello")')).toBe(false)
   })
 
   it('renders raw generated HTML in an iframe', () => {
     const html = '<!DOCTYPE html><html><body><h1>SFF site</h1></body></html>'
 
-    render(
-      <GeneratedModulePreview
-        source={html}
-        sessionId="session-1"
-      />,
-    )
+    render(<GeneratedModulePreview source={html} sessionId="session-1" />)
 
     const iframe = screen.getByTitle('Generated website preview')
     expect(iframe).toBeInstanceOf(HTMLIFrameElement)
@@ -60,7 +57,7 @@ describe('GeneratedModulePreview', () => {
     expect(screen.queryByTestId('openui-viewer')).toBeNull()
   })
 
-  it('keeps OpenUI sources on the OpenUI renderer', () => {
+  it('keeps OpenUI sources on the OpenUI renderer', async () => {
     render(
       <GeneratedModulePreview
         source='root = Text("OpenUI site")'
@@ -68,7 +65,9 @@ describe('GeneratedModulePreview', () => {
       />,
     )
 
-    expect(screen.getByTestId('openui-viewer').textContent).toContain('OpenUI site')
+    expect((await screen.findByTestId('openui-viewer')).textContent).toContain(
+      'OpenUI site',
+    )
     expect(screen.queryByTitle('Generated website preview')).toBeNull()
   })
 })

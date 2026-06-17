@@ -252,8 +252,7 @@ function balanceSegment(seg: string): string {
   let inString = false
   let stringChar = ''
   let escape = false
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i]
+  for (const c of s) {
     if (escape) {
       escape = false
       continue
@@ -308,8 +307,7 @@ function balancePartial(code: string): string {
   let escape = false
   let parens = 0
 
-  for (let i = 0; i < code.length; i++) {
-    const c = code[i]
+  for (const c of code) {
     if (escape) {
       escape = false
       continue

@@ -7,17 +7,27 @@ const readProjectFile = (path: string): string =>
 
 describe('dashboard launch handoff', () => {
   it('only plays the intro loader for fresh non-cached generations', () => {
-    const homeSource = readProjectFile('src/features/home/hooks/usePromptHomeController.ts')
-    const dashboardSource = readProjectFile('src/features/dashboard/components/Dashboard.tsx')
+    const homeSource = readProjectFile(
+      'src/features/home/hooks/usePromptHomeController.ts',
+    )
+    const dashboardSource = readProjectFile(
+      'src/features/dashboard/components/Dashboard.tsx',
+    )
+    const handoffSource = readProjectFile(
+      'src/features/session/services/generation-launch-handoff.ts',
+    )
     const introSource = readProjectFile('src/components/GenUI/IntroLoader.tsx')
 
-    expect(homeSource).toContain('generationLaunchStoragePrefix')
+    expect(handoffSource).toContain('generationLaunchStoragePrefix')
+    expect(homeSource).toContain('rememberGenerationLaunchHandoff')
     expect(homeSource).toContain('isOwnedCachedClone')
     expect(homeSource).toContain('result.cached !== true || isOwnedCachedClone')
     expect(homeSource).toContain('result.cached !== true')
-    expect(homeSource).toContain('window.sessionStorage.setItem')
     expect(dashboardSource).toContain('takeGenerationLaunchHandoff')
-    expect(dashboardSource).toContain('startedFromGenerationFlow && !isPreviewReady')
+    expect(dashboardSource).toContain('window.sessionStorage')
+    expect(dashboardSource).toContain(
+      'startedFromGenerationFlow && !isPreviewReady',
+    )
     expect(dashboardSource).toContain('playSound={startedFromGenerationFlow}')
     expect(dashboardSource).toContain('PreviewLoadingState')
     expect(dashboardSource).toContain('cockpit-fade-up')
@@ -26,30 +36,50 @@ describe('dashboard launch handoff', () => {
   })
 
   it('keeps non-critical dashboard panels out of the initial generation bundle', () => {
-    const dashboardSource = readProjectFile('src/features/dashboard/components/Dashboard.tsx')
+    const dashboardSource = readProjectFile(
+      'src/features/dashboard/components/Dashboard.tsx',
+    )
 
-    expect(dashboardSource).toContain("import { lazy, Suspense")
+    expect(dashboardSource).toContain('import { lazy, Suspense')
     expect(dashboardSource).toContain('const CommercePanel = lazy(')
     expect(dashboardSource).toContain('const CmsPanel = lazy(')
     expect(dashboardSource).toContain('const LakebedAdminPanel = lazy(')
-    expect(dashboardSource).toContain('<Suspense fallback={<RailPanelFallback />}>')
-    expect(dashboardSource).not.toContain("import { CommercePanel }")
-    expect(dashboardSource).not.toContain("import { CmsPanel }")
-    expect(dashboardSource).not.toContain("import { LakebedAdminPanel }")
+    expect(dashboardSource).toContain(
+      '<Suspense fallback={<RailPanelFallback />}>',
+    )
+    expect(dashboardSource).not.toContain('import { CommercePanel }')
+    expect(dashboardSource).not.toContain('import { CmsPanel }')
+    expect(dashboardSource).not.toContain('import { LakebedAdminPanel }')
   })
 
   it('keeps the heavy dashboard behind lazy generate route components', () => {
-    const generateRouteSource = readProjectFile('src/routes/generate.$sessionId.tsx')
-    const generateAdminRouteSource = readProjectFile('src/routes/generate.$sessionId.admin.tsx')
-    const lazyRouteSource = readProjectFile('src/routes/-generate-dashboard-route.tsx')
+    const generateRouteSource = readProjectFile(
+      'src/routes/generate.$sessionId.tsx',
+    )
+    const generateAdminRouteSource = readProjectFile(
+      'src/routes/generate.$sessionId.admin.tsx',
+    )
+    const lazyRouteSource = readProjectFile(
+      'src/routes/-generate-dashboard-route.tsx',
+    )
 
     expect(generateRouteSource).toContain('lazyRouteComponent')
-    expect(generateRouteSource).toContain("import('./-generate-dashboard-route')")
-    expect(generateRouteSource).not.toContain('@/features/dashboard/components/Dashboard')
+    expect(generateRouteSource).toContain(
+      "import('./-generate-dashboard-route')",
+    )
+    expect(generateRouteSource).not.toContain(
+      '@/features/dashboard/components/Dashboard',
+    )
     expect(generateAdminRouteSource).toContain('lazyRouteComponent')
-    expect(generateAdminRouteSource).toContain("import('./-generate-dashboard-route')")
-    expect(generateAdminRouteSource).not.toContain('@/features/dashboard/components/Dashboard')
+    expect(generateAdminRouteSource).toContain(
+      "import('./-generate-dashboard-route')",
+    )
+    expect(generateAdminRouteSource).not.toContain(
+      '@/features/dashboard/components/Dashboard',
+    )
     expect(lazyRouteSource).toContain("getRouteApi('/generate/$sessionId')")
-    expect(lazyRouteSource).toContain('@/features/dashboard/components/Dashboard')
+    expect(lazyRouteSource).toContain(
+      '@/features/dashboard/components/Dashboard',
+    )
   })
 })

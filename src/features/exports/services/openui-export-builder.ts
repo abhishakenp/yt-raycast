@@ -1,12 +1,18 @@
+import { Buffer } from 'node:buffer'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { brotliDecompressSync } from 'node:zlib'
 import ts from 'typescript'
 import {
   createParser,
   jsonToOpenUI,
   type ElementNode,
 } from '@openuidev/lang-core'
-import { library, reactExportSources } from '@ship-fast/blocks'
+import { library } from '@ship-fast/blocks'
+import {
+  reactExportSourcesBase64,
+  reactExportSourcesEncoding,
+} from '@ship-fast/blocks/generated'
 import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
 import { zipSync, strToU8 } from 'fflate'
 
@@ -388,19 +394,39 @@ const walkRegistryFiles = (dir: string, files: string[] = []): string[] => {
   return files
 }
 
-const manifestSourceIndex = reactExportSources as Record<
+let manifestSourceIndex: Record<
   string,
   ReactExportSourceEntry | undefined
->
+> | null = null
 let componentSourceIndex: Map<string, ReactExportSourceEntry> | null = null
 
 const isExportableComponentFactory = (expression: string): boolean =>
   expression === 'defineComponent' || expression === 'defineCapsule'
 
+const getManifestSourceIndex = (): Record<
+  string,
+  ReactExportSourceEntry | undefined
+> => {
+  if (manifestSourceIndex) return manifestSourceIndex
+  if (reactExportSourcesEncoding !== 'br+base64') {
+    throw new Error(
+      `Unsupported React export source manifest encoding: ${reactExportSourcesEncoding}`,
+    )
+  }
+  const manifestJson = brotliDecompressSync(
+    Buffer.from(reactExportSourcesBase64, 'base64'),
+  ).toString('utf8')
+  manifestSourceIndex = JSON.parse(manifestJson) as Record<
+    string,
+    ReactExportSourceEntry | undefined
+  >
+  return manifestSourceIndex
+}
+
 const getComponentSourceIndex = (): Map<string, ReactExportSourceEntry> => {
   if (componentSourceIndex) return componentSourceIndex
   const index = new Map<string, ReactExportSourceEntry>()
-  for (const [name, entry] of Object.entries(manifestSourceIndex)) {
+  for (const [name, entry] of Object.entries(getManifestSourceIndex())) {
     if (entry?.source) index.set(name, entry)
   }
   if (index.size > 0) {
@@ -577,7 +603,7 @@ const findDefineComponentParts = (
         propsSchema: printNode(propsProperty.initializer, sourceFile),
         body: ts.isBlock(component.body)
           ? component.body.statements
-              .map((statement) => printNode(statement, sourceFile))
+              .map((bodyStatement) => printNode(bodyStatement, sourceFile))
               .join('\n')
           : printNode(component.body, sourceFile),
         isExpressionBody: !ts.isBlock(component.body),

@@ -1,10 +1,13 @@
 import DirectPreview from '@/components/GenUI/DirectPreview'
-import type { PreviewSelection, PreviewToolMode } from '@/components/GenUI/DirectPreview'
+import type {
+  PreviewSelection,
+  PreviewToolMode,
+} from '@/components/GenUI/DirectPreview'
 import AgentationSessionBridge from '@/components/GenUI/AgentationSessionBridge'
-import OpenUIViewer from '@/island/openui/OpenUIViewer'
 import type { ThemeStyles } from '@/genui/theme-presets'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { lazy, Suspense } from 'react'
 
 type GeneratedModulePreviewProps = {
   source: string
@@ -24,10 +27,22 @@ type GeneratedModulePreviewProps = {
   agentationEnabled?: boolean
   onPreviewSelect?: (selection: PreviewSelection) => void
   editMode?: boolean
-  onTextChange?: (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => void
-  onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void
+  onTextChange?: (change: {
+    oldText: string
+    newText: string
+    element: HTMLElement
+    occurrenceIndex: number
+  }) => void
+  onImageChange?: (change: {
+    oldSrc: string
+    newSrc: string
+    element: HTMLImageElement
+    alt: string
+  }) => void
   onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
 }
+
+const LazyOpenUIViewer = lazy(() => import('@/island/openui/OpenUIViewer'))
 
 export const isHtmlDocumentSource = (source: string): boolean => {
   const trimmed = source.trim()
@@ -36,7 +51,9 @@ export const isHtmlDocumentSource = (source: string): boolean => {
 
 /** Best-effort brand/tagline descriptor from the persisted site spec, used as
  *  extra image-search context alongside the prompt. */
-const parseSiteSpecBrand = (siteSpecJson: string | undefined): string | undefined => {
+const parseSiteSpecBrand = (
+  siteSpecJson: string | undefined,
+): string | undefined => {
   if (!siteSpecJson) return undefined
   try {
     const parsed = JSON.parse(siteSpecJson) as Record<string, unknown>
@@ -51,13 +68,16 @@ const parseSiteSpecBrand = (siteSpecJson: string | undefined): string | undefine
   }
 }
 
-const parseSiteSpecTheme = (siteSpecJson: string | undefined): Record<string, string> | null => {
+const parseSiteSpecTheme = (
+  siteSpecJson: string | undefined,
+): Record<string, string> | null => {
   if (!siteSpecJson) return null
 
   try {
     const parsed = JSON.parse(siteSpecJson) as unknown
 
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+      return null
 
     const candidate = parsed as {
       theme?: unknown
@@ -69,14 +89,18 @@ const parseSiteSpecTheme = (siteSpecJson: string | undefined): Record<string, st
     if (!theme || typeof theme !== 'object' || Array.isArray(theme)) return null
 
     return Object.fromEntries(
-      Object.entries(theme).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+      Object.entries(theme).filter(
+        (entry): entry is [string, string] => typeof entry[1] === 'string',
+      ),
     )
   } catch {
     return null
   }
 }
 
-export function HtmlModuleRenderer({ source }: Pick<GeneratedModulePreviewProps, 'source'>) {
+export function HtmlModuleRenderer({
+  source,
+}: Pick<GeneratedModulePreviewProps, 'source'>) {
   return (
     <iframe
       title="Generated website preview"
@@ -102,14 +126,18 @@ export function OpenUIModuleRenderer({
       ? { prompt, brandContext, overrides: imageOverrides }
       : null
   return (
-    <OpenUIViewer
-      response={source}
-      theme={parseSiteSpecTheme(siteSpecJson)}
-      locale={locale}
-      embed
-      sessionId={sessionId}
-      imageContext={imageContext}
-    />
+    <Suspense
+      fallback={<div className="size-full bg-background" aria-hidden="true" />}
+    >
+      <LazyOpenUIViewer
+        response={source}
+        theme={parseSiteSpecTheme(siteSpecJson)}
+        locale={locale}
+        embed
+        sessionId={sessionId}
+        imageContext={imageContext}
+      />
+    </Suspense>
   )
 }
 

@@ -1,6 +1,7 @@
 ## CRITICAL RULE - CHECK GIT HISTORY FIRST
 
 **BEFORE IMPLEMENTING ANYTHING:**
+
 1. ALWAYS check git history to see if the feature/fix was already implemented
 2. If it exists in history, use that implementation - DO NOT reimplement
 3. If unsure whether it was done, ASK THE USER before implementing
@@ -15,6 +16,7 @@ This rule exists because 95% of requests are for features that were already work
 ## CRITICAL RULE - ALWAYS VERIFY YOUR WORK
 
 **AFTER IMPLEMENTING ANYTHING:**
+
 1. ALWAYS test your changes with the actual tool/mechanism (agent-browser, curl, etc.)
 2. NEVER claim something is fixed without verification
 3. If the user asks you to test with a specific tool (agent-browser), USE THAT TOOL
@@ -28,16 +30,19 @@ This rule exists because claiming unverified fixes wastes time and breaks trust.
 **This project has suffered from repeated feature breakage and back-and-forth restoring the same features. Every fix or feature arrangement MUST be covered by unit tests.**
 
 **BEFORE implementing:**
+
 1. Check git history for past solutions (`git log --oneline -20`, `git show <commit>`)
 2. If the feature existed before, restore it from history — do not reimplement
 
 **AFTER implementing:**
+
 1. Write a unit test that covers the fix or restored behavior
 2. Prefer source-level structural assertions (read the file and assert invariants) when testing that a feature gate or code path is present/absent
 3. Run `bun test` and fix any failures BEFORE claiming the work is done
 4. NEVER push without all tests passing
 
 **Test patterns for this project:**
+
 - Use `vitest` with `describe`/`it`/`expect`
 - Source-level invariant tests: `readFileSync` the source file and assert structural properties (e.g. "file must not contain env var gate X", "file must contain API call Y")
 - Behavioral tests: import the function and test inputs/outputs directly
@@ -175,7 +180,6 @@ rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
 
 ## Token Savings Overview
 
-
 | Category         | Commands                       | Typical Savings |
 | ---------------- | ------------------------------ | --------------- |
 | Tests            | vitest, playwright, cargo test | 90-99%          |
@@ -187,10 +191,7 @@ rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
 | Infrastructure   | docker, kubectl                | 85%             |
 | Network          | curl, wget                     | 65-70%          |
 
-
 Overall average: **60-90% token reduction** on common development operations.
-
-
 
 ## Production (Ship Fast)
 
@@ -205,12 +206,12 @@ Overall average: **60-90% token reduction** on common development operations.
 
 ## Homepage engine (playground vs production)
 
-| Path | Role |
-|------|------|
-| `playground-engine-ui-ship/` | Unified homepage compiler (router, planner, composers, audits) |
+| Path                                                       | Role                                                                 |
+| ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| `playground-engine-ui-ship/`                               | Unified homepage compiler (router, planner, composers, audits)       |
 | `packages/ship-fast-engine/src/pipeline/phase-homepage.js` | Production entry — `groqHomepage` path and hybrid fallback path only |
-| `.forge/ship-native/` | Local generation artifacts |
-| `.forge/ship-gallery/` + port **7420** | Desktop screenshot grid for bench runs |
+| `.forge/ship-native/`                                      | Local generation artifacts                                           |
+| `.forge/ship-gallery/` + port **7420**                     | Desktop screenshot grid for bench runs                               |
 
 Gallery workflow:
 
@@ -236,10 +237,12 @@ Users can request any kind of website; we **cannot** maintain hardcoded rules pe
 ### Deprecated Engines (No Longer Used)
 
 The following code generation engines are deprecated and no longer used:
+
 - `playground-engine-ui-ship` (legacy UI compiler) — use the unified pipeline instead
 - All legacy per-vertical engines — consolidated into `groqHomepage` in production
 
 **Rendering Safety (Critical Fix)**
+
 - Fixed: “Cannot read properties of null” errors in `.map()` operations when streaming incomplete OpenUI responses
 - Added defensive null filtering: `.filter(Boolean)` before all array iterations
 - Added optional chaining (`?.`) for property access on potentially null items
@@ -247,9 +250,10 @@ The following code generation engines are deprecated and no longer used:
 - Updated both React and Next.js renderers in `packages/ship-fast-engine/src/renderers/`
 
 <!-- gitnexus:start -->
+
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ship-fast** (51940 symbols, 87052 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ship-fast** (54331 symbols, 91667 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -270,32 +274,34 @@ This project is indexed by GitNexus as **ship-fast** (51940 symbols, 87052 relat
 
 ## Resources
 
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/ship-fast/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/ship-fast/clusters` | All functional areas |
-| `gitnexus://repo/ship-fast/processes` | All execution flows |
-| `gitnexus://repo/ship-fast/process/{name}` | Step-by-step execution trace |
+| Resource                                   | Use for                                  |
+| ------------------------------------------ | ---------------------------------------- |
+| `gitnexus://repo/ship-fast/context`        | Codebase overview, check index freshness |
+| `gitnexus://repo/ship-fast/clusters`       | All functional areas                     |
+| `gitnexus://repo/ship-fast/processes`      | All execution flows                      |
+| `gitnexus://repo/ship-fast/process/{name}` | Step-by-step execution trace             |
 
 ## CLI
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Task                                         | Read this skill file                                        |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
+| Blast radius / "What breaks if I change X?"  | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?"             | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
+| Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
+| Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
+| Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
 
 <!-- gitnexus:end -->
 
 <!-- MACP-MCP:START -->
+
 ## MACP Coordination
 
 MACP is active for this project. The shared project id is `ship-fast`. The MCP server auto-registers this session on startup and auto-joins the default channel `ship-fast`.
 
 Normal workflow:
+
 - do not run SQL directly
 - do not manually attach another MACP server inside the agent loop
 - call `macp_poll` regularly to stay aware of peer work
@@ -304,6 +310,7 @@ Normal workflow:
 - use `macp_ext_claim_files`, shared memory, tasks, goals, and vault tools when this project requires them
 
 If this project uses shared memory, tasks, goals, or the vault, follow the local instructions in this file and use those tools as part of normal work.
+
 <!-- MACP-MCP:END -->
 
 ## Agent-browser

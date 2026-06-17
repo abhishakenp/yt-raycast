@@ -1,21 +1,21 @@
-import { describe, it, expect } from 'bun:test'
-import {
-  buildImageSearchQuery,
-  extractDomainHint,
-} from './image-search-query'
+import { describe, expect, it } from 'vitest'
+import { buildImageSearchQuery, extractDomainHint } from './image-search-query'
 
 describe('extractDomainHint', () => {
   it('leads with the domain nouns, dropping prompt scaffolding', () => {
     expect(
       extractDomainHint({
-        prompt: 'Create a website for a dental clinic in Mumbai with appointment booking',
+        prompt:
+          'Create a website for a dental clinic in Mumbai with appointment booking',
       }),
     ).toBe('dental clinic mumbai')
   })
 
   it('ignores generic web words', () => {
     expect(
-      extractDomainHint({ prompt: 'a modern landing page for an online platform' }),
+      extractDomainHint({
+        prompt: 'a modern landing page for an online platform',
+      }),
     ).toBe('')
   })
 
@@ -77,7 +77,10 @@ describe('buildImageSearchQuery', () => {
     const q = buildImageSearchQuery(
       'a very long descriptive alt text about many things',
       'very long descriptive alt text about many things subject matter extra',
-      { prompt: 'luxury bridal saree boutique in jaipur with ethnic wear collection' },
+      {
+        prompt:
+          'luxury bridal saree boutique in jaipur with ethnic wear collection',
+      },
     )
     expect(q.length).toBeLessThanOrEqual(96)
   })

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-// @ts-expect-error - JS module without type declarations
 import { renderOpenUIToHTML } from '../openui-ssr.js'
 
 /**
@@ -15,7 +14,7 @@ import { renderOpenUIToHTML } from '../openui-ssr.js'
  *    without a live Convex/Lakebed runtime).
  */
 const expectRenders = (source: string, locale = 'en') => {
-  const html = renderOpenUIToHTML(source, null, locale)
+  const html = renderOpenUIToHTML(source, undefined, locale)
   expect(html.toLowerCase()).not.toContain('openui-error')
   expect(html.toLowerCase()).not.toContain('failed to render')
   expect(html.length).toBeGreaterThan(100)

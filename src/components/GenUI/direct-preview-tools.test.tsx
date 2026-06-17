@@ -60,9 +60,13 @@ describe('DirectPreview tools', () => {
       const headline = dom.window.document.querySelector('h1') as HTMLElement
       let selectionDetail: Record<string, unknown> | undefined
       const previewRoot = dom.window.document.querySelector('.genui-preview')
-      previewRoot?.addEventListener('ship-fast-preview-select', (event) => {
-        selectionDetail = (event as CustomEvent<Record<string, unknown>>).detail
-      })
+      previewRoot?.addEventListener(
+        'ship-fast-preview-select',
+        (event: Event) => {
+          selectionDetail = (event as CustomEvent<Record<string, unknown>>)
+            .detail
+        },
+      )
 
       headline.dispatchEvent(
         new dom.window.MouseEvent('click', { bubbles: true, cancelable: true }),

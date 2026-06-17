@@ -102,43 +102,6 @@ const LOW_SIGNAL_QUERY_WORDS = new Set([
   'indian',
 ])
 
-const MATCH_ALIASES: Record<string, string[]> = {
-  bridal: ['bridal', 'bride', 'wedding'],
-  bride: ['bride', 'bridal', 'wedding'],
-  wedding: ['wedding', 'bridal', 'bride'],
-  saree: ['saree', 'sari'],
-  sari: ['sari', 'saree'],
-  jewelry: ['jewelry', 'jewellery', 'gold'],
-  jewellery: ['jewellery', 'jewelry', 'gold'],
-  dairy: ['dairy', 'milk', 'paneer', 'curd', 'yogurt', 'lassi', 'butter', 'cheese'],
-  milk: ['milk', 'dairy'],
-  butter: ['butter', 'dairy'],
-  cheese: ['cheese', 'dairy'],
-  dessert: ['dessert', 'desserts', 'sweet', 'sweets'],
-  sweets: ['sweets', 'sweet', 'dessert', 'desserts'],
-  snack: ['snack', 'snacks', 'munch', 'munchies'],
-  snacks: ['snacks', 'snack', 'munch', 'munchies'],
-  protein: ['protein', 'energy'],
-  millet: ['millet', 'grain'],
-  granola: ['granola', 'oats'],
-  chips: ['chips', 'crisps'],
-  cookies: ['cookies', 'cookie', 'biscuits', 'biscuit'],
-  cookie: ['cookie', 'cookies', 'biscuit', 'biscuits'],
-  bar: ['bar', 'bars', 'protein bar', 'energy bar'],
-  bars: ['bars', 'bar', 'protein bar', 'energy bar'],
-  bites: ['bites', 'bite', 'balls'],
-  nuts: ['nuts', 'trail mix', 'seeds'],
-  wellness: ['wellness', 'healthy', 'clean', 'organic'],
-  recipe: ['recipe', 'cooking', 'kitchen', 'chef'],
-  boutique: ['boutique', 'showroom', 'store'],
-  showroom: ['showroom', 'boutique', 'store'],
-  ethnic: ['ethnic', 'traditional', 'attire', 'outfit', 'wear'],
-  outfit: ['outfit', 'attire', 'wear', 'fashion'],
-  fashion: ['fashion', 'attire', 'outfit', 'wear'],
-  dog: ['dog', 'dogs', 'puppy', 'puppies', 'canine'],
-  cat: ['cat', 'cats', 'kitten', 'kittens', 'feline'],
-}
-
 const VISUAL_PHRASE_RE =
   /\b(dairy|milk|butter|cheese|paneer|curd|yogurt|lassi|ice cream|icecream|chocolate|beverage|sweet|dessert|mithai|recipe|snack|snacks|protein|millet|granola|chips|cookie|cookies|bar|bars|bites|trail mix|nuts|wellness|saree|silk|bridal|bride|lehenga|salwar|kurta|sherwani|ethnic wear|fashion|boutique|showroom|store|jewelry|gold|perfume|makeup|skincare|watch|shoe|bag|furniture|interior|sofa|chair|lamp|living room|bedroom|hotel|resort|homestay|restaurant|bakery|coffee|spa|salon|fitness|gym|yoga|clinic|hospital|pharmacy|diagnostic|lab|doctor|dental|physiotherapy|pet|dog|cat|farm|agriculture|crop|mandi|solar|rooftop|ev|electric|vehicle|charging|logistics|warehouse|freight|shipping|container|construction|contractor|excavator|coaching|school|college|university|temple|ngo|charity|court|legal|law|real\s+estate|property|rera|chartered|gst|payroll|shipping|export|import|bharatanatyam|kathak|odissi|kuchipudi|kathakali|mohiniyattam|manipuri|sattriya|arangetram|classical dance|folk dance|garba|dandiya|bhangra|lavani|bihu|ghoomar|handloom|khadi|madhubani|warli|handicraft|weaving|loom|carnatic|hindustani|tabla|sitar|classical music|heritage walk|museum|cultural centre|cultural center|natya|nritya)\b/i
 
@@ -165,16 +128,14 @@ function normalizeText(value = ''): string {
   return String(value).replace(/\s+/g, ' ').trim().toLowerCase()
 }
 
-function escapeRegex(value = ''): string {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 function uniqueValues(values: (string | undefined)[] = []): string[] {
   return [
     ...new Set(
       values.filter((value) => value).map((value) => normalizeText(value)),
     ),
-  ].filter((value) => value !== 'undefined' && value !== 'null' && value.length > 0)
+  ].filter(
+    (value) => value !== 'undefined' && value !== 'null' && value.length > 0,
+  )
 }
 
 function tokenizeForMatch(value = ''): string[] {
@@ -191,23 +152,6 @@ function queryMatchTokens(query = ''): { tokens: string[]; core: string[] } {
     tokens,
     core: core.length ? core : tokens,
   }
-}
-
-function tokenMatchesText(token: string, text: string): boolean {
-  const normalized = normalizeText(text)
-  if (!normalized || !token) return false
-
-  const variants = MATCH_ALIASES[token] || [token]
-  return variants.some((variant) =>
-    new RegExp(`\\b${escapeRegex(variant)}\\b`, 'i').test(normalized),
-  )
-}
-
-function phraseFromPrompt(prompt: string, maxWords = 5): string {
-  const raw = normalizeText(prompt).replace(/[^a-z0-9\s-]/g, ' ')
-  const parts = raw.split(/\s+/).filter((w) => w.length > 1 && !STOP_WORDS.has(w))
-  if (!parts.length) return ''
-  return parts.slice(0, maxWords).join(' ')
 }
 
 function cleanupPromptLine(line = ''): string {
@@ -236,11 +180,16 @@ function isVisualPhrase(phrase = ''): boolean {
 }
 
 function extractVisualPhrases(prompt = ''): string[] {
-  const lines = String(prompt).split('\n').map(cleanupPromptLine).filter(Boolean)
+  const lines = String(prompt)
+    .split('\n')
+    .map(cleanupPromptLine)
+    .filter(Boolean)
 
   const hits: string[] = []
   for (const line of lines) {
-    const content = line.includes(':') ? line.split(':').slice(1).join(':') : line
+    const content = line.includes(':')
+      ? line.split(':').slice(1).join(':')
+      : line
     const parts = content
       .split(/,|\/|\band\b/gi)
       .map(stripLeadPhrase)
@@ -260,9 +209,14 @@ function inferVisualSiteType(prompt = '', siteType?: SiteType): SiteType {
   if (siteType && siteType !== 'saas') return siteType
 
   const p = normalizeText(prompt)
-  if (/\b(ecommerce|shop|store|boutique|catalog|collection|buy|products?)\b/.test(p))
+  if (
+    /\b(ecommerce|shop|store|boutique|catalog|collection|buy|products?)\b/.test(
+      p,
+    )
+  )
     return 'ecommerce'
-  if (/\b(portfolio|case study|selected work|gallery)\b/.test(p)) return 'portfolio'
+  if (/\b(portfolio|case study|selected work|gallery)\b/.test(p))
+    return 'portfolio'
   if (/\b(blog|article|story|stories|editorial)\b/.test(p)) return 'blog'
   return siteType || 'landing'
 }
@@ -270,32 +224,54 @@ function inferVisualSiteType(prompt = '', siteType?: SiteType): SiteType {
 function queriesForVisualPhrase(
   phrase: string,
   siteType: SiteType = 'landing',
-  prompt = '',
 ): string[] {
   const p = normalizeText(phrase)
-  const source = `${normalizeText(prompt)} ${p}`
 
   // Industry-specific query mappings
-  if (/\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(p)) {
-    return ['modern hospital interior corridor healthcare', 'doctor patient consultation clinic']
+  if (
+    /\b(hospital|multispeciality|multi-speciality|clinic|diagnostics|pathology)\b/.test(
+      p,
+    )
+  ) {
+    return [
+      'modern hospital interior corridor healthcare',
+      'doctor patient consultation clinic',
+    ]
   }
   if (/\b(pharmacy|medicine distributor|ethical pharma)\b/.test(p)) {
     return ['pharmacy shelves medicine', 'pharmacist consultation counter']
   }
   if (/\b(solar|photovoltaic|rooftop\s+solar|epc\s+renewable)\b/.test(p)) {
-    return ['residential rooftop solar panels blue sky', 'solar panel installation technician roof']
+    return [
+      'residential rooftop solar panels blue sky',
+      'solar panel installation technician roof',
+    ]
   }
-  if (/\b(logistics|warehouse|3pl|freight|cold\s+storage|cold\s+chain)\b/.test(p)) {
-    return ['warehouse pallets logistics interior', 'shipping container port logistics truck']
+  if (
+    /\b(logistics|warehouse|3pl|freight|cold\s+storage|cold\s+chain)\b/.test(p)
+  ) {
+    return [
+      'warehouse pallets logistics interior',
+      'shipping container port logistics truck',
+    ]
   }
   if (/\b(coaching|jee|neet|upsc|academy|tuition)\b/.test(p)) {
-    return ['students studying classroom exam preparation', 'library books study desk']
+    return [
+      'students studying classroom exam preparation',
+      'library books study desk',
+    ]
   }
   if (/\b(temple|trust|darshan|donation\s+portal)\b/.test(p)) {
-    return ['indian temple architecture exterior', 'temple lamp prayer ceremony']
+    return [
+      'indian temple architecture exterior',
+      'temple lamp prayer ceremony',
+    ]
   }
   if (/\b(nbfc|gold\s+loan|mutual\s+fund|insurance|fintech|upi)\b/.test(p)) {
-    return ['financial planning desk calculator', 'mobile banking smartphone secure']
+    return [
+      'financial planning desk calculator',
+      'mobile banking smartphone secure',
+    ]
   }
   if (
     /\b(bharatanatyam|kathak|odissi|kuchipudi|kathakali|mohiniyattam|manipuri|sattriya|arangetram|classical dance|nritya|natya)\b/.test(
@@ -309,14 +285,22 @@ function queriesForVisualPhrase(
       'odissi dance pose temple sculpture aesthetic',
     ]
   }
-  if (/\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(p)) {
+  if (
+    /\b(garba|dandiya|navratri|bhangra|lavani|bihu|ghoomar|folk dance)\b/.test(
+      p,
+    )
+  ) {
     return [
       'indian folk dance festival colorful attire',
       'garba dancers traditional celebration',
       'bhangra dance celebration punjab',
     ]
   }
-  if (/\b(handloom|khadi|madhubani|warli|handicraft|weaving|loom|block print)\b/.test(p)) {
+  if (
+    /\b(handloom|khadi|madhubani|warli|handicraft|weaving|loom|block print)\b/.test(
+      p,
+    )
+  ) {
     return [
       'handloom weaving textile india artisan',
       'madhubani folk art painting india',
@@ -336,7 +320,8 @@ function queriesForVisualPhrase(
   const core = words.slice(0, 6).join(' ')
   if (!core) return []
 
-  if (siteType === 'ecommerce') return [`${core} product photography commercial`]
+  if (siteType === 'ecommerce')
+    return [`${core} product photography commercial`]
   if (siteType === 'portfolio') return [`${core} creative work photography`]
   return [`${core} professional photography editorial`]
 }
@@ -351,7 +336,9 @@ function extractSalientPhrases(prompt = '', max = 4): string[] {
       .replace(/\s+and\s+(appointment|booking|sections?|cta)[\s\S]+$/i, '')
       .trim()
 
-  const mFor = raw.match(/\b(?:for|about)\s+(?:a|an|the)\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i)
+  const mFor = raw.match(
+    /\b(?:for|about)\s+(?:a|an|the)\s+([a-z0-9][a-z0-9\s,'-]{10,100})/i,
+  )
   if (mFor?.[1]) {
     const chunk = stripTail(mFor[1]).slice(0, 96)
     if (chunk.length > 10) out.push(chunk)
@@ -365,7 +352,10 @@ function extractSalientPhrases(prompt = '', max = 4): string[] {
   const words = raw
     .replace(/[^a-z0-9\s-]/g, ' ')
     .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w) && !LOW_SIGNAL_QUERY_WORDS.has(w))
+    .filter(
+      (w) =>
+        w.length > 2 && !STOP_WORDS.has(w) && !LOW_SIGNAL_QUERY_WORDS.has(w),
+    )
   if (words.length >= 5) {
     out.push(words.slice(0, 9).join(' '))
   }
@@ -373,16 +363,20 @@ function extractSalientPhrases(prompt = '', max = 4): string[] {
   return uniqueValues(out).slice(0, max)
 }
 
-function salientSearchQueries(phrase: string, siteType: SiteType = 'landing', prompt = ''): string[] {
+function salientSearchQueries(
+  phrase: string,
+  siteType: SiteType = 'landing',
+): string[] {
   const p = normalizeText(phrase)
   if (!p || p.length < 8) return []
-  if (isVisualPhrase(p)) return queriesForVisualPhrase(p, siteType, prompt)
-  
+  if (isVisualPhrase(p)) return queriesForVisualPhrase(p, siteType)
+
   const words = tokenizeForMatch(p).filter((w) => !STOP_WORDS.has(w))
   const core = words.slice(0, 6).join(' ')
   if (!core) return []
-  
-  if (siteType === 'ecommerce') return [`${core} product photography commercial`]
+
+  if (siteType === 'ecommerce')
+    return [`${core} product photography commercial`]
   if (siteType === 'portfolio') return [`${core} creative work photography`]
   return [`${core} professional photography editorial`]
 }
@@ -396,22 +390,22 @@ export function generateContextAwareQuery(
   context: ImageContext = {},
 ): string {
   const { section, siteType, prompt, brandContext } = context
-  
+
   // Start with the base alt text
   const baseQuery = normalizeText(alt) || 'nature'
-  
+
   // Extract visual phrases from prompt if available
   const visualPhrases = prompt ? extractVisualPhrases(prompt) : []
-  
+
   // Extract salient phrases for broader context
   const salientPhrases = prompt ? extractSalientPhrases(prompt, 2) : []
-  
+
   // Determine the effective site type
   const effectiveSiteType = inferVisualSiteType(prompt || '', siteType)
-  
+
   // Build query components
   const queryComponents: string[] = [baseQuery]
-  
+
   // Add section-specific context
   if (section) {
     const sectionLower = normalizeText(section)
@@ -421,43 +415,57 @@ export function generateContextAwareQuery(
       if (effectiveSiteType === 'ecommerce') {
         queryComponents.push('product photography')
       }
-    } else if (sectionLower.includes('about') || sectionLower.includes('team')) {
+    } else if (
+      sectionLower.includes('about') ||
+      sectionLower.includes('team')
+    ) {
       queryComponents.push('lifestyle portrait')
     } else if (sectionLower.includes('gallery')) {
       queryComponents.push('gallery collection')
     }
   }
-  
+
   // Add visual phrases from prompt - prioritize those that match industry-specific patterns
   if (visualPhrases.length > 0) {
     // First try to find industry-specific phrases
     const industryPhrase = visualPhrases.find((phrase) => {
       const p = normalizeText(phrase)
-      return /\b(hospital|clinic|medical|dental|pharmacy|solar|logistics|coaching|temple|fintech|dance|music|handloom|fashion|dairy|food|travel|fitness)\b/.test(p)
+      return /\b(hospital|clinic|medical|dental|pharmacy|solar|logistics|coaching|temple|fintech|dance|music|handloom|fashion|dairy|food|travel|fitness)\b/.test(
+        p,
+      )
     })
-    
+
     if (industryPhrase) {
-      const phraseQueries = queriesForVisualPhrase(industryPhrase, effectiveSiteType, prompt)
+      const phraseQueries = queriesForVisualPhrase(
+        industryPhrase,
+        effectiveSiteType,
+      )
       queryComponents.push(...phraseQueries.slice(0, 2))
     } else {
       // Otherwise add any visual phrase that has some relevance
       const matchingPhrase = visualPhrases.find((phrase) => {
         const phraseTokens = tokenizeForMatch(phrase)
         const altTokens = tokenizeForMatch(baseQuery)
-        return phraseTokens.some((token) => altTokens.includes(token)) || phraseTokens.length > 0
+        return (
+          phraseTokens.some((token) => altTokens.includes(token)) ||
+          phraseTokens.length > 0
+        )
       })
       if (matchingPhrase) {
-        const phraseQueries = salientSearchQueries(matchingPhrase, effectiveSiteType, prompt)
+        const phraseQueries = salientSearchQueries(
+          matchingPhrase,
+          effectiveSiteType,
+        )
         queryComponents.push(...phraseQueries.slice(0, 2))
       }
     }
   }
-  
+
   // Add salient phrases for broader context
   if (salientPhrases.length > 0) {
     queryComponents.push(...salientPhrases.slice(0, 1))
   }
-  
+
   // Add brand context if available
   if (brandContext) {
     const brandTokens = tokenizeForMatch(brandContext).slice(0, 3)
@@ -465,7 +473,7 @@ export function generateContextAwareQuery(
       queryComponents.push(brandTokens.join(' '))
     }
   }
-  
+
   // Add site-type specific enhancement
   if (effectiveSiteType === 'ecommerce') {
     queryComponents.push('product photography')
@@ -473,33 +481,41 @@ export function generateContextAwareQuery(
   } else if (effectiveSiteType === 'portfolio') {
     queryComponents.push('creative')
   }
-  
+
   // Combine and deduplicate, but preserve important site-type specific terms
   const allTokens = queryComponents.flatMap((c) => tokenizeForMatch(c))
   const uniqueTokens = [...new Set(allTokens)]
-  
+
   // Ensure site-type specific terms are preserved even if they're in low-signal list
-  const importantTerms = new Set(['product', 'creative', 'commercial', 'hero', 'lifestyle', 'portrait'])
-  const preservedTokens = uniqueTokens.filter(token => 
-    importantTerms.has(token) || !LOW_SIGNAL_QUERY_WORDS.has(token)
+  const importantTerms = new Set([
+    'product',
+    'creative',
+    'commercial',
+    'hero',
+    'lifestyle',
+    'portrait',
+  ])
+  const preservedTokens = uniqueTokens.filter(
+    (token) => importantTerms.has(token) || !LOW_SIGNAL_QUERY_WORDS.has(token),
   )
-  
+
   // If we filtered too much, fall back to unique tokens
-  const finalTokens = preservedTokens.length > 0 ? preservedTokens : uniqueTokens
+  const finalTokens =
+    preservedTokens.length > 0 ? preservedTokens : uniqueTokens
   const { core } = queryMatchTokens(finalTokens.join(' '))
-  
+
   // Build final query with proper ordering
   let finalQuery = core.slice(0, 8).join(' ')
-  
+
   // Ensure query is not too long for APIs
   if (finalQuery.length > 96) {
     finalQuery = finalQuery.slice(0, 96).trim()
   }
-  
+
   // Fallback if query is too short
   if (finalQuery.length < 3) {
     finalQuery = baseQuery.length > 2 ? baseQuery : 'nature'
   }
-  
+
   return finalQuery
 }

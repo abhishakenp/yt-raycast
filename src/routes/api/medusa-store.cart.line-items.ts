@@ -1,6 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { getMedusaBackendUrl, getMedusaPublishableKey } from '@/features/commerce/server/medusa-store-env'
+import {
+  getMedusaBackendUrl,
+  getMedusaPublishableKey,
+} from '@/features/commerce/server/medusa-store-env'
+
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback
 
 export const Route = createFileRoute('/api/medusa-store/cart/line-items')({
   server: {
@@ -9,38 +15,56 @@ export const Route = createFileRoute('/api/medusa-store/cart/line-items')({
         const publishableKey = getMedusaPublishableKey()
 
         if (!publishableKey.trim()) {
-          return Response.json({ error: 'Medusa Store API not configured' }, { status: 503 })
+          return Response.json(
+            { error: 'Medusa Store API not configured' },
+            { status: 503 },
+          )
         }
 
         const body = await request.json()
         const cartId = String(body?.cart_id || '').trim()
         const variantId = String(body?.variant_id || '').trim()
-        const quantity = Math.max(1, Number.parseInt(String(body?.quantity || '1'), 10) || 1)
+        const quantity = Math.max(
+          1,
+          Number.parseInt(String(body?.quantity || '1'), 10) || 1,
+        )
 
         if (!cartId || !variantId) {
-          return Response.json({ error: 'cart_id and variant_id required' }, { status: 400 })
+          return Response.json(
+            { error: 'cart_id and variant_id required' },
+            { status: 400 },
+          )
         }
 
         const baseUrl = getMedusaBackendUrl()
 
         try {
-          const response = await fetch(`${baseUrl}/store/carts/${cartId}/line-items`, {
-            method: 'POST',
-            headers: {
-              'x-publishable-api-key': publishableKey.trim(),
-              'Content-Type': 'application/json',
+          const response = await fetch(
+            `${baseUrl}/store/carts/${cartId}/line-items`,
+            {
+              method: 'POST',
+              headers: {
+                'x-publishable-api-key': publishableKey.trim(),
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ variant_id: variantId, quantity }),
             },
-            body: JSON.stringify({ variant_id: variantId, quantity }),
-          })
+          )
 
           if (!response.ok) {
-            return Response.json({ error: 'line item failed' }, { status: response.status })
+            return Response.json(
+              { error: 'line item failed' },
+              { status: response.status },
+            )
           }
 
           const data = await response.json()
           return Response.json({ cart: data.cart })
-        } catch (e) {
-          return Response.json({ error: e?.message || 'line item failed' }, { status: 500 })
+        } catch (error) {
+          return Response.json(
+            { error: errorMessage(error, 'line item failed') },
+            { status: 500 },
+          )
         }
       },
     },

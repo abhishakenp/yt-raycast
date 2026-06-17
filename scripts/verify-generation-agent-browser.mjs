@@ -18,11 +18,14 @@ const baseUrl = (
   process.env.SHIP_FAST_BASE_URL ??
   'http://127.0.0.1:3000'
 ).replace(/\/$/, '')
-const prompt = args.get('--prompt') ?? process.env.SHIP_FAST_VERIFY_PROMPT ?? DEFAULT_PROMPT
+const prompt =
+  args.get('--prompt') ?? process.env.SHIP_FAST_VERIFY_PROMPT ?? DEFAULT_PROMPT
 const timeoutMs = Number(
   args.get('--timeout-ms') ?? process.env.SHIP_FAST_VERIFY_TIMEOUT_MS ?? 180000,
 )
-const pollMs = Number(args.get('--poll-ms') ?? process.env.SHIP_FAST_VERIFY_POLL_MS ?? 5000)
+const pollMs = Number(
+  args.get('--poll-ms') ?? process.env.SHIP_FAST_VERIFY_POLL_MS ?? 5000,
+)
 const sessionName =
   args.get('--browser-session') ??
   process.env.AGENT_BROWSER_SESSION ??
@@ -140,7 +143,6 @@ let lastState = null
 
 try {
   agentBrowser(['close', '--all'], {
-    headed: false,
     stdio: ['ignore', 'ignore', 'ignore'],
   })
 } catch {
@@ -165,7 +167,9 @@ try {
 
     if (lastState.failed) {
       agentBrowser(['screenshot', screenshotPath])
-      throw new Error(`Generation failed: ${lastState.stageText || lastState.statusText}`)
+      throw new Error(
+        `Generation failed: ${lastState.stageText || lastState.statusText}`,
+      )
     }
 
     if (lastState.ready) {

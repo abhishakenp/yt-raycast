@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { convexTest } from 'convex-test'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { api } from './_generated/api'
+import { api, internal } from './_generated/api'
 import schema from './schema'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -70,7 +70,9 @@ describe('billing webhook state mutation', () => {
       ctx.db
         .query('webhookEvents')
         .withIndex('by_provider_idempotencyKey', (index) =>
-          index.eq('provider', 'stripe').eq('idempotencyKey', 'evt_subscription_created'),
+          index
+            .eq('provider', 'stripe')
+            .eq('idempotencyKey', 'evt_subscription_created'),
         )
         .take(10),
     )
@@ -118,7 +120,7 @@ describe('billing webhook state mutation', () => {
       userId,
       credits: 3,
     })
-    const consumed = await t.mutation(api.billing.consumeCreditForExport, {
+    const consumed = await t.mutation(internal.billing.consumeCreditForExport, {
       userId,
     })
 

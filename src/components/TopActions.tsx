@@ -1,9 +1,15 @@
 import { Show, SignInButton, UserButton } from '@clerk/tanstack-react-start'
-import { GlassPillAnchor, GlassPillButton } from '@/features/home/components/HomePage'
+import {
+  GlassPillAnchor,
+  GlassPillButton,
+} from '@/features/home/components/HomePage'
 
 const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? import.meta.env.CLERK_PUBLISHABLE_KEY
-const isClerkConfigured = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
+  import.meta.env.CLERK_PUBLISHABLE_KEY
+const isClerkConfigured =
+  typeof clerkPublishableKey === 'string' &&
+  clerkPublishableKey.trim().length > 0
 
 export const TopActions = () => (
   <nav className="top-actions" aria-label="Primary">
@@ -15,12 +21,14 @@ export const TopActions = () => (
         <>
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <GlassPillButton className="pill--top-actions">Sign in</GlassPillButton>
+              <GlassPillButton className="pill--top-actions">
+                Sign in
+              </GlassPillButton>
             </SignInButton>
           </Show>
           <Show when="signed-in">
             <div className="grid size-9 place-items-center">
-              <UserButton afterSignOutUrl="/" />
+              <UserButton />
             </div>
           </Show>
         </>

@@ -20,19 +20,23 @@ import {
   Shield,
 } from 'lucide-react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
-import { useClerk } from '@clerk/tanstack-react-start'
 import { toast } from 'sonner'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import type { PreviewSelection } from '@/components/GenUI/DirectPreview'
 import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
+import { takeGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
 import { rememberReadySession } from '@/features/session/services/ready-session-cache'
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
 import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
-import { useOptionalAuth } from '@/shared/auth/use-optional-auth'
+import {
+  useOptionalAuth,
+  useOptionalClerk,
+} from '@/shared/auth/use-optional-auth'
 import ThemePicker from '@/genui/components/ThemePicker'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import { cn } from '#/lib/utils'
@@ -83,9 +87,11 @@ const LakebedAdminPanel = lazy(() =>
   })),
 )
 const DeploymentPanel = lazy(() =>
-  import('@/features/deployments/components/DeploymentPanel').then((module) => ({
-    default: module.DeploymentPanel,
-  })),
+  import('@/features/deployments/components/DeploymentPanel').then(
+    (module) => ({
+      default: module.DeploymentPanel,
+    }),
+  ),
 )
 const ExportPanel = lazy(() =>
   import('@/features/exports/components/ExportPanel').then((module) => ({
@@ -98,14 +104,71 @@ const GitHubPanel = lazy(() =>
   })),
 )
 const LocalizationPanel = lazy(() =>
-  import('@/features/localization/components/LocalizationPanel').then((module) => ({
-    default: module.LocalizationPanel,
-  })),
+  import('@/features/localization/components/LocalizationPanel').then(
+    (module) => ({
+      default: module.LocalizationPanel,
+    }),
+  ),
 )
 
 interface DashboardProps {
   sessionId: string
   initialAdminView?: boolean
+}
+
+type DashboardGenerationView = {
+  events: Array<{
+    _id?: string
+    eventType?: string
+    message?: string
+    previewVersion?: number
+    createdAt?: number
+    elapsedMs?: number
+    cost?: number
+    provider?: string
+    error?: string
+    quotaHit?: boolean
+    cacheHit?: boolean
+  }>
+  homeModule?: {
+    moduleKey?: string
+    source: string
+    status: string
+    updatedAt: number
+  }
+  latestPreview?: {
+    html?: string
+    openUiSource?: string
+    siteSpecJson?: string
+    version?: number
+  }
+  session: {
+    sessionId: Id<'sessions'>
+    status: string
+    previewVersion?: number
+    prompt: string
+    preferredLanguage?: string
+    preferredExportTarget?: string
+    elapsed?: number | null
+    isPrivate?: boolean
+    engineVersion?: string
+    cloneUrl?: string
+    themeOverride?: string | null
+    designReferenceUrls?: string[]
+    designReferenceNotes?: string
+  }
+  siteSpec?: {
+    specJson?: string
+    updatedAt?: number
+  }
+  tasks: Array<{
+    _id?: string
+    taskKey?: string
+    title: string
+    status: string
+    order?: number
+    updatedAt?: number
+  }>
 }
 
 type RailMode =
@@ -197,17 +260,6 @@ const readSiteThemeName = (specJson: string | undefined): string | null => {
   } catch {
     return null
   }
-}
-
-const generationLaunchStoragePrefix = 'ship-fast:generation-launch:'
-
-const takeGenerationLaunchHandoff = (sessionId: string): boolean => {
-  if (typeof window === 'undefined') return false
-
-  const key = `${generationLaunchStoragePrefix}${sessionId}`
-  const shouldShowIntro = window.sessionStorage.getItem(key) === '1'
-  if (shouldShowIntro) window.sessionStorage.removeItem(key)
-  return shouldShowIntro
 }
 
 const RailPanelFallback = () => (
@@ -315,9 +367,11 @@ export function Dashboard({
   initialAdminView = false,
 }: DashboardProps) {
   const auth = useOptionalAuth()
-  const clerk = useClerk()
+  const clerk = useOptionalClerk()
   const [startedFromGenerationFlow] = useState(() =>
-    takeGenerationLaunchHandoff(sessionId),
+    typeof window === 'undefined'
+      ? false
+      : takeGenerationLaunchHandoff(window.sessionStorage, sessionId),
   )
   const [isDashboardActive, setIsDashboardActive] = useState(false)
   const [currentDevice, setCurrentDevice] = useState<
@@ -333,7 +387,13 @@ export function Dashboard({
     currentSrc: string
     currentAlt: string
     currentElement: HTMLImageElement | null
-  }>({ isOpen: false, anchorRect: null, currentSrc: '', currentAlt: '', currentElement: null })
+  }>({
+    isOpen: false,
+    anchorRect: null,
+    currentSrc: '',
+    currentAlt: '',
+    currentElement: null,
+  })
   const [toolbarState, setToolbarState] = useState({
     isOpen: false,
     anchorRect: null as DOMRect | null,
@@ -346,9 +406,15 @@ export function Dashboard({
   const [isPublishing, setIsPublishing] = useState(false)
   const [isCommerceTransforming, setIsCommerceTransforming] = useState(false)
   const [publishError, setPublishError] = useState<string>()
-  const generationView = useQuery(api.sessions.getGenerationView, {
+  const liveGenerationView = useQuery(api.sessions.getGenerationView, {
     lookup: sessionId,
-  })
+  }) as DashboardGenerationView | null | undefined
+  const [fallbackGenerationView, setFallbackGenerationView] =
+    useState<DashboardGenerationView>()
+  const generationView =
+    liveGenerationView === undefined
+      ? fallbackGenerationView
+      : liveGenerationView
   const resolvedSessionId = generationView?.session.sessionId
   const isMissingSession = generationView === null
   const homeModule = generationView?.homeModule
@@ -369,7 +435,100 @@ export function Dashboard({
     sidePanelQueryArgs,
   )
   const publishPreview = useMutation(api.sessions.publishPreview)
+  const setThemeOverrideMutation = useMutation(api.sessions.setThemeOverride)
   const editController = useEditController(resolvedSessionId || sessionId)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (liveGenerationView !== undefined) {
+      setFallbackGenerationView(undefined)
+      return
+    }
+
+    let cancelled = false
+    const loadFallbackGenerationView = async () => {
+      try {
+        const response = await fetch(
+          `/api/sessions/${encodeURIComponent(sessionId)}`,
+          {
+            headers: { accept: 'application/json' },
+          },
+        )
+        if (!response.ok) return
+
+        const data = await response.json()
+        if (
+          cancelled ||
+          data?.status !== 'preview_ready' ||
+          typeof data?.homeModule?.source !== 'string'
+        ) {
+          return
+        }
+
+        setFallbackGenerationView({
+          events: [],
+          homeModule: {
+            moduleKey: data.homeModule.moduleKey ?? 'home',
+            source: data.homeModule.source,
+            status: data.homeModule.status ?? 'succeeded',
+            updatedAt: data.homeModule.updatedAt ?? data.updatedAt,
+          },
+          latestPreview:
+            data.preview === null || data.preview === undefined
+              ? undefined
+              : {
+                  html: data.preview.html,
+                  openUiSource: data.preview.openUiSource,
+                  siteSpecJson: data.preview.siteSpecJson,
+                  version: data.preview.version,
+                },
+          session: {
+            sessionId: data.sessionId as Id<'sessions'>,
+            status: data.status,
+            previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
+            prompt: data.prompt,
+            preferredLanguage: data.preferredLanguage ?? 'en',
+            preferredExportTarget: data.preferredExportTarget ?? 'html',
+            elapsed: data.elapsed ?? undefined,
+            isPrivate: false,
+            themeOverride: data.themeOverride ?? null,
+            designReferenceUrls: [],
+            designReferenceNotes: '',
+          },
+          siteSpec:
+            data.siteSpec === null || data.siteSpec === undefined
+              ? undefined
+              : {
+                  specJson: data.siteSpec.specJson,
+                  updatedAt: data.siteSpec.updatedAt,
+                },
+          tasks: (data.tasks ?? []).map(
+            (task: {
+              id: string
+              title: string
+              status: string
+              order?: number
+            }) => ({
+              taskKey: task.id,
+              title: task.title,
+              status: task.status,
+              order: task.order ?? 0,
+            }),
+          ),
+        })
+      } catch {
+        // The live Convex subscription remains the primary path; polling is a
+        // best-effort fallback for local/dev WebSocket failures.
+      }
+    }
+
+    void loadFallbackGenerationView()
+    const interval = window.setInterval(loadFallbackGenerationView, 1500)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [liveGenerationView, sessionId])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -418,11 +577,7 @@ export function Dashboard({
       Boolean(session.designReferenceNotes?.trim()) ||
       Boolean(session.cloneUrl?.trim())
 
-    if (
-      session.isPrivate ||
-      session.engineVersion === 'v2' ||
-      hasReferences
-    ) {
+    if (session.isPrivate || session.engineVersion === 'v2' || hasReferences) {
       return
     }
 
@@ -486,6 +641,12 @@ export function Dashboard({
     () => readSiteThemeName(generationView?.siteSpec?.specJson),
     [generationView?.siteSpec?.specJson],
   )
+  const serverThemeOverride = generationView?.session.themeOverride
+  useEffect(() => {
+    if (serverThemeOverride) {
+      setSelectedTheme(serverThemeOverride)
+    }
+  }, [serverThemeOverride])
   const effectiveTheme = selectedTheme ?? aiTheme
   const themeStyles = resolveThemeStyles(effectiveTheme)
   const activeThemeLabel = useMemo(
@@ -544,10 +705,10 @@ export function Dashboard({
                   : railMode === 'deployment'
                     ? 'Deployment'
                     : railMode === 'billing'
-                        ? 'Billing'
-                        : railMode === 'github'
-                          ? 'GitHub'
-                          : 'Export'
+                      ? 'Billing'
+                      : railMode === 'github'
+                        ? 'GitHub'
+                        : 'Export'
 
   const handlePublish = async () => {
     if (resolvedSessionId === undefined) return
@@ -576,7 +737,12 @@ export function Dashboard({
     // Selection no longer used with inline editing
   }
 
-  const handleTextChange = async (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => {
+  const handleTextChange = async (change: {
+    oldText: string
+    newText: string
+    element: HTMLElement
+    occurrenceIndex: number
+  }) => {
     if (!auth.isSignedIn) {
       clerk.openSignIn()
       return
@@ -584,8 +750,16 @@ export function Dashboard({
     const tag = change.element.tagName.toLowerCase()
     const text = change.element.textContent?.slice(0, 20) || ''
     const label = `${tag.toUpperCase()}: ${text}…`
-    const result = await editController.applyEdit('text', label, change.oldText, change.newText, 'inline edit', undefined, change.occurrenceIndex)
-    
+    const result = await editController.applyEdit(
+      'text',
+      label,
+      change.oldText,
+      change.newText,
+      'inline edit',
+      undefined,
+      change.occurrenceIndex,
+    )
+
     if (result === 'fork_needed') {
       // Fork the session
       toast.info('Forking session to save your changes...')
@@ -603,7 +777,12 @@ export function Dashboard({
     }
   }
 
-  const handleImageChange = (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => {
+  const handleImageChange = (change: {
+    oldSrc: string
+    newSrc: string
+    element: HTMLImageElement
+    alt: string
+  }) => {
     if (!auth.isSignedIn) {
       clerk.openSignIn()
       return
@@ -620,28 +799,45 @@ export function Dashboard({
     ).filter((img) => (img as HTMLImageElement).alt === change.alt)
     const occurrenceIndex = Math.max(0, sameAlt.indexOf(change.element))
     // Fire and forget - the page will reload after successful edit
-    editController.applyEdit('image', label, change.alt, change.newSrc, 'inline image swap', undefined, occurrenceIndex).then((result) => {
-      if (result === 'fork_needed') {
-        // Fork the session
-        toast.info('Forking session to save your changes...')
-        editController.forkCurrentSession().then((forkResult) => {
-          if (!forkResult) {
-            // Fork failed, revert the change
-            change.element.src = change.oldSrc
-            toast.error(editController.editError || 'Failed to fork session')
-          }
-        })
-      } else if (!result && editController.editError) {
-        // Revert the DOM change on other errors
-        change.element.src = change.oldSrc
-        console.error('[Inline Edit] Failed to save image:', editController.editError)
-        toast.error(editController.editError)
-      }
-    })
+    editController
+      .applyEdit(
+        'image',
+        label,
+        change.alt,
+        change.newSrc,
+        'inline image swap',
+        undefined,
+        occurrenceIndex,
+      )
+      .then((result) => {
+        if (result === 'fork_needed') {
+          // Fork the session
+          toast.info('Forking session to save your changes...')
+          editController.forkCurrentSession().then((forkResult) => {
+            if (!forkResult) {
+              // Fork failed, revert the change
+              change.element.src = change.oldSrc
+              toast.error(editController.editError || 'Failed to fork session')
+            }
+          })
+        } else if (!result && editController.editError) {
+          // Revert the DOM change on other errors
+          change.element.src = change.oldSrc
+          console.error(
+            '[Inline Edit] Failed to save image:',
+            editController.editError,
+          )
+          toast.error(editController.editError)
+        }
+      })
   }
 
   const handleImageTarget = (e: Event) => {
-    const customEvent = e as CustomEvent<{ element: HTMLImageElement; src: string; alt: string }>
+    const customEvent = e as CustomEvent<{
+      element: HTMLImageElement
+      src: string
+      alt: string
+    }>
     const { element, src, alt } = customEvent.detail
     const rect = element.getBoundingClientRect()
 
@@ -673,12 +869,16 @@ export function Dashboard({
     })
   }
 
-  const handleStyleApply = async (payload: { sourceAnchor: string; style: string; occurrenceIndex: number }) => {
+  const handleStyleApply = async (payload: {
+    sourceAnchor: string
+    style: string
+    occurrenceIndex: number
+  }) => {
     if (!auth.isSignedIn) {
       clerk.openSignIn()
       return
     }
-    
+
     // Store original styles for revert
     const activeElement = toolbarState.activeElement
     const originalStyles: Record<string, string> = {}
@@ -690,7 +890,7 @@ export function Dashboard({
       originalStyles.color = computed.color
       originalStyles.textAlign = computed.textAlign
     }
-    
+
     setIsApplyingStyle(true)
     const tag = toolbarState.activeElement?.tagName.toLowerCase() || 'DIV'
     const text = toolbarState.activeElement?.textContent?.slice(0, 20) || ''
@@ -705,7 +905,7 @@ export function Dashboard({
       payload.occurrenceIndex,
     )
     setIsApplyingStyle(false)
-    
+
     if (result === 'fork_needed') {
       // Fork the session
       setIsForkingSession(true)
@@ -724,7 +924,7 @@ export function Dashboard({
       }
     } else if (result) {
       // Close toolbar and reload for style edits
-      setToolbarState(s => ({ ...s, isOpen: false }))
+      setToolbarState((s) => ({ ...s, isOpen: false }))
     } else if (editController.editError) {
       // Revert the style changes on other errors
       if (activeElement) {
@@ -734,7 +934,10 @@ export function Dashboard({
         activeElement.style.color = originalStyles.color
         activeElement.style.textAlign = originalStyles.textAlign
       }
-      console.error('[Inline Edit] Failed to save style:', editController.editError)
+      console.error(
+        '[Inline Edit] Failed to save style:',
+        editController.editError,
+      )
       toast.error(editController.editError)
     }
   }
@@ -1270,7 +1473,16 @@ export function Dashboard({
                     <ThemePicker
                       value={effectiveTheme}
                       isDark={isDark}
-                      onSelect={setSelectedTheme}
+                      onSelect={(theme: string) => {
+                        setSelectedTheme(theme)
+                        if (resolvedSessionId) {
+                          setThemeOverrideMutation({
+                            sessionId: resolvedSessionId,
+                            anonymousOwnerSecret: activeAnonymousOwnerSecret,
+                            themeOverride: theme,
+                          })
+                        }
+                      }}
                       onToggleMode={() => setIsDark((dark) => !dark)}
                       trigger={
                         <button
@@ -1622,7 +1834,7 @@ export function Dashboard({
       </div>
       <ImageSwapPopover
         isOpen={imageSwapState.isOpen}
-        onClose={() => setImageSwapState(s => ({ ...s, isOpen: false }))}
+        onClose={() => setImageSwapState((s) => ({ ...s, isOpen: false }))}
         anchorRect={imageSwapState.anchorRect}
         currentAlt={imageSwapState.currentAlt}
         onImageSelect={handleImageSelect}
@@ -1632,7 +1844,7 @@ export function Dashboard({
       />
       <InlineEditToolbar
         isOpen={toolbarState.isOpen}
-        onClose={() => setToolbarState(s => ({ ...s, isOpen: false }))}
+        onClose={() => setToolbarState((s) => ({ ...s, isOpen: false }))}
         anchorRect={toolbarState.anchorRect}
         activeElement={toolbarState.activeElement}
         onStyleApply={handleStyleApply}
