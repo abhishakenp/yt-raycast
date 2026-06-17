@@ -438,7 +438,10 @@ export function buildThemeHeadFromTokens(
  * distinct visual identity. Returns null on failure; callers must surface that
  * failure instead of writing a substitute homepage.
  */
-function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
+async function renderOpenUIHomeHtml(
+  workspace: string,
+  brand: string,
+): Promise<string | null> {
   const openuiPath = join(workspace, HOME_OPENUI_FILE)
   if (!existsSync(openuiPath)) return null
   let source = ''
@@ -460,13 +463,13 @@ function renderOpenUIHomeHtml(workspace: string, brand: string): string | null {
     .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
     .join(' ')
     .trim()
-  const { html, cssVars } = renderOpenUIToHTMLWithTheme(
+  const { html, cssVars } = (await renderOpenUIToHTMLWithTheme(
     source,
     undefined,
     'en',
     undefined,
     brandContext ? { brandContext } : undefined,
-  ) as OpenUIRenderResult
+  )) as OpenUIRenderResult
   const previewSeoHead = buildPreviewSeoHead(
     siteSpec,
     brand,
@@ -789,7 +792,7 @@ export function writeRenderedFiles(
   }
 }
 
-export function renderPreviewToWorkspace(
+export async function renderPreviewToWorkspace(
   siteSpec: SiteSpecProject,
   workspace: string,
   session?: any,
@@ -798,7 +801,7 @@ export function renderPreviewToWorkspace(
   const rendered = renderProject(siteSpec, 'html', session)
   const spec: any = siteSpec
   const brand = spec?.brand || spec?.projectName || 'Generated Site'
-  const openuiHtml = renderOpenUIHomeHtml(workspace, brand)
+  const openuiHtml = await renderOpenUIHomeHtml(workspace, brand)
   if (!openuiHtml) {
     throw new Error(
       'OpenUI SSR failed; refusing to write a placeholder homepage.',

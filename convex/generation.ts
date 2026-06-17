@@ -37,14 +37,14 @@ const createGenerationTimeoutController = () => {
   const controller = new AbortController()
   const timeoutMs = Math.max(
     15_000,
-    Number.parseInt(
-      process.env.SHIP_FAST_GENERATION_TIMEOUT_MS ?? '',
-      10,
-    ) || DEFAULT_GENERATION_TIMEOUT_MS,
+    Number.parseInt(process.env.SHIP_FAST_GENERATION_TIMEOUT_MS ?? '', 10) ||
+      DEFAULT_GENERATION_TIMEOUT_MS,
   )
   const timeout = setTimeout(() => {
     controller.abort(
-      new Error('Generation timed out. Please try again with a shorter prompt.'),
+      new Error(
+        'Generation timed out. Please try again with a shorter prompt.',
+      ),
     )
   }, timeoutMs)
 
@@ -106,7 +106,7 @@ const buildRenderedOpenUiPreviewHtml = async ({
         import('../packages/ship-fast-engine/src/openui-ssr.js'),
         import('../packages/ship-fast-engine/src/renderers/index.ts'),
       ])
-    const { html, cssVars } = renderOpenUIToHTMLWithTheme(
+    const { html, cssVars } = (await renderOpenUIToHTMLWithTheme(
       source,
       undefined,
       locale,
@@ -115,7 +115,7 @@ const buildRenderedOpenUiPreviewHtml = async ({
         prompt,
         brandContext: [brand, prompt].filter(Boolean).join(' '),
       },
-    ) as { html: string; cssVars?: string }
+    )) as { html: string; cssVars?: string }
     const themeHead = buildThemeHead(
       `${brand}\n${prompt}\n${source}`,
       theme ?? null,

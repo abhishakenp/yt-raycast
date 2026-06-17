@@ -28,7 +28,8 @@ const siteSpec = {
       description: 'Preview Brand helps teams launch polished SaaS homepages.',
       seo: {
         title: 'Preview Brand | SaaS homepage',
-        description: 'Preview Brand helps teams launch polished SaaS homepages.',
+        description:
+          'Preview Brand helps teams launch polished SaaS homepages.',
         canonicalPath: '/',
       },
       sections: [
@@ -43,9 +44,18 @@ const siteSpec = {
           type: 'faq',
           headline: 'Frequently asked questions',
           items: [
-            { title: 'What is Preview Brand?', body: 'Preview Brand generates SaaS homepages.' },
-            { title: 'Who is it for?', body: 'Teams that need polished launch pages.' },
-            { title: 'Why use it?', body: 'It creates a complete, structured preview quickly.' },
+            {
+              title: 'What is Preview Brand?',
+              body: 'Preview Brand generates SaaS homepages.',
+            },
+            {
+              title: 'Who is it for?',
+              body: 'Teams that need polished launch pages.',
+            },
+            {
+              title: 'Why use it?',
+              body: 'It creates a complete, structured preview quickly.',
+            },
           ],
         },
       ],
@@ -74,38 +84,50 @@ describe('renderer Tailwind preview CSS', () => {
     expect(html).toContain('application/ld+json')
     expect(html).toContain('href="/llms.txt"')
     expect(rendered.files['llms.txt']).toContain('# Preview Brand')
-    expect(rendered.files['robots.txt']).toContain('Sitemap: https://preview.example/sitemap.xml')
-    expect(rendered.files['sitemap.xml']).toContain('<loc>https://preview.example/</loc>')
+    expect(rendered.files['robots.txt']).toContain(
+      'Sitemap: https://preview.example/sitemap.xml',
+    )
+    expect(rendered.files['sitemap.xml']).toContain(
+      '<loc>https://preview.example/</loc>',
+    )
   })
 
-  it('uses a local Tailwind CSS asset for OpenUI preview shells', () => {
+  it('uses a local Tailwind CSS asset for OpenUI preview shells', async () => {
     const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-renderer-'))
     try {
       writeFileSync(join(workspace, 'site-spec.json'), JSON.stringify(siteSpec))
-      writeFileSync(join(workspace, 'home.openui'), 'page Home { Text "Hello" }')
-      renderPreviewToWorkspace(siteSpec as any, workspace)
-      expectNoTailwindCdn(readFileSync(join(workspace, 'index.html'), 'utf8'))
-      expect(readFileSync(join(workspace, 'scripts/tailwind-browser.js'), 'utf8')).toContain(
-        'tailwind',
+      writeFileSync(
+        join(workspace, 'home.openui'),
+        'page Home { Text "Hello" }',
       )
+      await renderPreviewToWorkspace(siteSpec as any, workspace)
+      expectNoTailwindCdn(readFileSync(join(workspace, 'index.html'), 'utf8'))
+      expect(
+        readFileSync(join(workspace, 'scripts/tailwind-browser.js'), 'utf8'),
+      ).toContain('tailwind')
     } finally {
       rmSync(workspace, { recursive: true, force: true })
     }
   })
 
-  it('advertises AEO metadata assets for completed OpenUI preview sessions', () => {
+  it('advertises AEO metadata assets for completed OpenUI preview sessions', async () => {
     const workspace = mkdtempSync(join(tmpdir(), 'ship-fast-renderer-aeo-'))
     try {
       writeFileSync(join(workspace, 'site-spec.json'), JSON.stringify(siteSpec))
-      writeFileSync(join(workspace, 'home.openui'), 'page Home { Text "Hello" }')
-      renderPreviewToWorkspace(siteSpec as any, workspace)
+      writeFileSync(
+        join(workspace, 'home.openui'),
+        'page Home { Text "Hello" }',
+      )
+      await renderPreviewToWorkspace(siteSpec as any, workspace)
 
       const html = readFileSync(join(workspace, 'index.html'), 'utf8')
       expect(html).toContain('<meta name="description"')
       expect(html).toContain('<meta name="robots" content="index, follow"')
       expect(html).toContain('application/ld+json')
       expect(html).toContain('href="/llms.txt"')
-      expect(readFileSync(join(workspace, 'llms.txt'), 'utf8')).toContain('# Preview Brand')
+      expect(readFileSync(join(workspace, 'llms.txt'), 'utf8')).toContain(
+        '# Preview Brand',
+      )
       expect(readFileSync(join(workspace, 'robots.txt'), 'utf8')).toContain(
         'Sitemap: https://preview.example/sitemap.xml',
       )
@@ -138,7 +160,9 @@ describe('renderer Tailwind preview CSS', () => {
       expect(html).toContain('<meta name="robots" content="index, follow"')
       expect(html).toContain('application/ld+json')
       expect(html).toContain('href="/llms.txt"')
-      expect(readFileSync(join(workspace, 'llms.txt'), 'utf8')).toContain('# Preview Brand')
+      expect(readFileSync(join(workspace, 'llms.txt'), 'utf8')).toContain(
+        '# Preview Brand',
+      )
       expect(readFileSync(join(workspace, 'robots.txt'), 'utf8')).toContain(
         'Sitemap: https://preview.example/sitemap.xml',
       )
@@ -150,9 +174,16 @@ describe('renderer Tailwind preview CSS', () => {
 
 describe('Next.js Medusa export', () => {
   it('initializes payment sessions from the retrieved cart object', () => {
-    const source = readFileSync(join(import.meta.dirname, 'nextjs/index.js'), 'utf8')
-    expect(source).toContain('const { cart } = await client.store.cart.retrieve(cartId)')
-    expect(source).toContain('client.store.payment.initiatePaymentSession(cart, { provider_id: pid })')
+    const source = readFileSync(
+      join(import.meta.dirname, 'nextjs/index.js'),
+      'utf8',
+    )
+    expect(source).toContain(
+      'const { cart } = await client.store.cart.retrieve(cartId)',
+    )
+    expect(source).toContain(
+      'client.store.payment.initiatePaymentSession(cart, { provider_id: pid })',
+    )
     expect(source).not.toContain('initiatePaymentSession(cartId')
   })
 })

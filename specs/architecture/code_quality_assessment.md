@@ -112,7 +112,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Concerns:**
 
-- Server OpenUI rendering remains synchronous and depends on the full `@ship-fast/blocks` library. This is correct today, but it keeps `openui-runtime-core` and `openui-capsule-index` large in the server build.
+- Core OpenUI SSR now loads a response-scoped runtime library through `@ship-fast/blocks/runtime`, but React/Next export generation still needs the full catalog/source manifest and continues to emit large OpenUI server chunks.
 
 ### OpenUI Blocks (`packages/ship-fast-blocks/`) ★★★★☆
 
@@ -134,7 +134,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Concerns:**
 
-- OpenUI export still imports the full server renderer path. Moving this to async response-scoped SSR would be high-impact but needs a deliberate API migration.
+- OpenUI export now awaits the async SSR renderer for standalone HTML, but React/Next package generation still imports the full block library and compressed source manifest so downloadable app exports can materialize components.
 
 ## Testing & Quality Infrastructure ★★★★☆
 
@@ -190,11 +190,11 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ### Priority 2: Medium Impact / Medium Risk
 
-#### 2.1 Make Server OpenUI SSR Response-Scoped
+#### 2.1 Split Full-Catalog OpenUI Exports From Standalone HTML
 
-- **What**: Introduce async server rendering that loads only components referenced by a source program, then migrate `renderOpenUIToHTMLWithTheme` callers.
-- **Risk**: Medium — affects pipeline, renderer, export builder, tests, and benchmark scripts.
-- **Impact**: Removes the largest remaining eager OpenUI server chunks.
+- **What**: Keep the async response-scoped SSR path for standalone HTML, then split React/Next package generation into a separate full-catalog export module so HTML exports do not share its eager source-manifest dependency.
+- **Risk**: Medium — affects export builder module boundaries and download-route imports.
+- **Impact**: Removes the remaining full-catalog dependency from the standalone HTML export path while preserving React/Next ZIP generation.
 
 #### 2.2 Normalize Capsule Generation Provenance
 
@@ -220,6 +220,6 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ## Summary
 
-Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, and the largest Convex coordination file is now delegated to focused helper modules. The path from 10.0/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, and eventually migrate server OpenUI SSR/export to response-scoped loading.
+Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, and the largest Convex coordination file is now delegated to focused helper modules. The path from 10.0/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, and split remaining full-catalog OpenUI export work away from response-scoped standalone HTML SSR.
 
 **Overall Rating: A (10.0/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and server-side weight that remain measurable and tractable.
