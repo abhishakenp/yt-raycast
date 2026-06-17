@@ -132,5 +132,5 @@ Result: the only match is the new negative assertion in
 
 This group now has a concrete generic blog/publication fallback invariant, a
 production fix for invalid blog fallback specs, and a passing focused engine
-regression suite. It remains part of the broad dirty worktree and should be
-reviewed as one coherent engine changeset.
+regression suite. It remains part of the broad local branch review scope and
+should be reviewed as one coherent engine changeset.

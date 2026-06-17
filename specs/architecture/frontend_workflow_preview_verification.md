@@ -152,5 +152,5 @@ site-spec, preview history, and CMS content persistence.
 
 Frontend workflow group now has focused unit coverage and real headed-browser
 coverage across dashboard publish/reload, chat refinement, and CMS editing.
-The remaining repo-level risk is consolidation of the broad dirty worktree, not
-an unverified frontend preview path.
+The remaining repo-level risk is consolidation of the broad local branch review
+scope, not an unverified frontend preview path.

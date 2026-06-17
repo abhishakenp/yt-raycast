@@ -83,4 +83,13 @@ describe('quality exit verification', () => {
       /openui-runtime-bundle-boundary\.patch/,
     )
   })
+
+  it('fails when the assessment keeps stale quality evidence', () => {
+    const texts = completeTexts()
+    texts.assessment += '\nDate: 2026-06-17 (commit bfa35548)\n'
+
+    expect(() => verifyQualityExitFromTexts(texts)).toThrow(
+      /stale quality evidence: commit bfa35548/,
+    )
+  })
 })

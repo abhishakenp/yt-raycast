@@ -9,31 +9,32 @@ Purpose: stop the micro-ratchet loop and make the current quality work reviewabl
 The repo is better than at the start of the quality push, but it is not yet an
 11/10 codebase. The current blocker is no longer a single missing test or one
 broken path. The blocker is consolidation: many independent quality, runtime,
-backend, and UI changes are mixed in one broad dirty worktree.
+backend, and UI changes are mixed in one broad local branch review scope.
 
 Current evidence:
 
-- `bun run verify:prepush` passed after adding the change-group
-  classification gate.
-- Current enforced coverage floor is 21.48% statements, 14.29% branches,
-  10.17% functions, and 21.56% lines.
-- GitNexus `detect_changes` reports critical indexed dirty scope: 97 changed
-  files, 468 changed symbols, and 29 affected flows.
-- `git status --porcelain=v1 --untracked-files=all` reports 221 changed paths,
-  and `bun run verify:change-groups` classifies every path into a review group:
+- `bun run verify:prepush` passed with explicit lint, typecheck, coverage,
+  review-readiness, generated-artifact, build, and bundle-boundary steps.
+- Latest measured full-gate coverage is 22.01% statements, 14.74% branches,
+  10.52% functions, and 21.62% lines.
+- GitNexus `detect_changes` reports no staged or unstaged changes after the
+  local commits; the branch-level review scope remains broad and is tracked by
+  change groups.
+- The local branch differs from upstream by 222 changed paths, and
+  `bun run verify:change-groups` classifies every path into a review group:
   Convex session decomposition 76, quality gates/local enforcement 22,
   OpenUI runtime/bundle boundary 38, engine regression coverage 29, frontend
-  workflow/preview behavior 35, commerce/external integration 9, and quality
+  workflow/preview behavior 36, commerce/external integration 9, and quality
   documentation/assessment 12.
 - `specs/architecture/quality_change_groups.md` is a generated file-level
-  review manifest for the current dirty tree; `bun run verify:change-report`
-  checks that it matches current `git status`.
+  review manifest for the current local branch/worktree scope;
+  `bun run verify:change-report` checks that it matches the current scope.
 - `bun run verify:review-readiness` checks that every change group in the
   manifest has matching proof documentation and appears in this audit, so group
   review evidence cannot silently drift.
 - `bun run review:groups` writes ignored per-group file lists and patch bundles
   to `.quality-review-groups/`, giving reviewers concrete slices of the broad
-  dirty tree without adding generated review artifacts to git.
+  branch scope without adding generated review artifacts to git.
 - The largest tracked diff is the Convex session split:
   `convex/sessions.ts` shows 295 inserted lines and 5,083 deleted lines, plus
   many new `convex/lib/session_*` helper modules and tests.
@@ -245,13 +246,13 @@ Why it matters:
 
 - The quality push is broad enough that its evidence has to be reviewable as
   part of the patch, not reconstructed from terminal history.
-- This group ties the repo rating, dirty-tree consolidation plan, generated
+- This group ties the repo rating, branch-scope consolidation plan, generated
   review manifest, and proof documents together.
 
 Required proof:
 
 - `bun run verify:review-readiness` passes.
-- `bun run verify:change-report` passes when the dirty tree changes.
+- `bun run verify:change-report` passes when the local branch/worktree scope changes.
 - The code quality assessment date, rating, and metric claims reflect current
   gates and do not contradict the consolidation audit.
 
@@ -276,7 +277,7 @@ noise unless intentionally justified:
 
 ## Recommended Next Sequence
 
-1. Freeze new feature/coverage work until the current dirty tree is split into
+1. Freeze new feature/coverage work until the current local branch scope is split into
    the groups above.
 2. Start with the Convex session decomposition group, because it is the largest
    blast radius and explains most of the deleted/added lines.
@@ -292,11 +293,11 @@ noise unless intentionally justified:
 
 The repo should not be called 11/10 until all of these are true:
 
-- The dirty worktree is split into coherent, reviewable changesets.
+- The local branch/worktree scope is split into coherent, reviewable changesets.
 - Full `verify:prepush` passes for the final assembled worktree.
 - GitNexus `detect_changes` is understood at the group level, not dismissed as
   one broad critical blob.
-- `bun run verify:change-groups` passes, proving every dirty file is assigned
+- `bun run verify:change-groups` passes, proving every changed file is assigned
   to one of the review groups in this audit.
 - `bun run verify:change-report` passes, proving the file-level review
   manifest is current.

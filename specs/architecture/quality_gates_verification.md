@@ -34,13 +34,13 @@ The group turns quality checks into enforced local and CI behavior:
   pick up unreviewable files silently.
 - `verify:qa` checks generated OpenUI/runtime artifacts before build can
   regenerate them.
-- `verify:prepush` delegates to the full QA chain.
+- `verify:prepush` runs the full QA gates explicitly so failures are isolated by step.
 - `prepare` installs `.githooks` through `core.hooksPath`.
 - Vitest uses explicit node and Convex projects, with V8 coverage thresholds.
 - Bundle verification enforces OpenUI/browser/server chunk boundaries.
 - OpenUI generated manifests are checked for deterministic freshness through
   `generate-react-export-sources.mjs --check`.
-- Current dirty files are checked against the quality consolidation review
+- Current branch/worktree files are checked against the quality consolidation review
   groups through `scripts/verify-change-groups.ts`.
 - Review readiness is checked through `scripts/verify-review-readiness.ts`, so
   every review group must have a proof document and top-level audit/manifest
@@ -202,6 +202,7 @@ changes when preparing final review or commits.
 ## Remaining Work Before 11/10
 
 The quality-gate group is verified, but the repo is still not 11/10 because the
-dirty tree remains broad. The next consolidation group should be OpenUI runtime
-and bundle boundary, because that is the largest remaining architecture and
-performance concern after Convex decomposition and enforcement gates.
+local branch review scope remains broad. The next consolidation group should be
+OpenUI runtime and bundle boundary, because that is the largest remaining
+architecture and performance concern after Convex decomposition and enforcement
+gates.
