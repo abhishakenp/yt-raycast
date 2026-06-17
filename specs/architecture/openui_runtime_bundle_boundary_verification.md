@@ -186,6 +186,6 @@ Result: passed with no output.
 ## Status
 
 This group is verified at the source, unit, generated-manifest, bundle, and
-server-export levels. It is still part of a broad dirty worktree, so it should
-be reviewed as one coherent OpenUI runtime/bundle changeset rather than mixed
-with Convex, billing, or dashboard workflow work.
+server-export levels. It is still part of a broad local branch review scope, so
+it should be reviewed as one coherent OpenUI runtime/bundle changeset rather
+than mixed with Convex, billing, or dashboard workflow work.

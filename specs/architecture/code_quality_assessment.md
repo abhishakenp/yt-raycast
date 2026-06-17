@@ -1,20 +1,20 @@
 # Code Quality Assessment Report
 
-Date: 2026-06-17 (commit bfa35548)
+Date: 2026-06-17 (local branch snapshot)
 Repository: ship-fast
 Mode: Full Assessment
 
 ## Repository Metrics Dashboard
 
 - **Production Code**: 551,185 lines of TypeScript/JavaScript across app, Convex, packages, and scripts, excluding tests, generated `src/generated` files, local MACP vendor state, and old agent worktrees.
-- **Test Code**: 28,249 lines across 183 test/spec files by raw repository scan, about a 0.05:1 test-to-production ratio by LOC.
-- **Test Functions**: 1,163 test declarations by focused static scan; latest full coverage gate executed the configured Vitest projects.
+- **Test Code**: 192 test/spec files by raw repository scan; latest full coverage gate executed 176 configured Vitest test files.
+- **Test Functions**: 1,204 static test declarations; the latest coverage gate executed 1,161 tests in the configured projects.
 - **Documentation**: 2,461 lines across 59 Markdown files.
 - **Specifications**: 93 lines across `docs/`; this assessment is the first `specs/architecture` artifact.
 - **Dependencies**: 119 direct package dependencies including dev dependencies; heavy but normal for a broad TypeScript product/generation stack.
 - **CI/CD**: GitHub Actions runs install, lint, typecheck, coverage-backed tests with enforced baseline thresholds, build, and bundle boundary verification.
-- **Local Git Hooks**: Native `.githooks` are installed through `prepare`; pre-commit runs changed-file Prettier plus lint/typecheck and targeted changed tests, while pre-push runs full QA.
-- **File Size Distribution**: 253 non-generated source files exceed 500 LOC. `convex/sessions.ts` is down to 488 LOC after extracting session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment read/write/publish, export create/read/download/GitHub-push/entitlement, public gallery list/detail query orchestration, preview-history restore orchestration, serialization, Agentation public create/upsert/save plus sync/update/delete/list/clear helpers, operational notification action adapters, commerce/Medusa config, usage metrics, CMS config/binding/read/mutation/internal maintenance, task, generated artifact/cache, preview-history, edit-history, generation-state, generation-progress, generation-view, event-stream, session API response, workspace, readiness, public-preview helpers, internal-reference adapters, shared Convex validators, operational notification arg maps, read/query arg maps, export/publish arg maps, simple session-id query arg maps, edit/chat/theme arg maps, Agentation arg maps, CMS/commerce/gallery/usage arg maps, and generation entry/internal arg maps; large generated-style catalog/capsule files dominate under `packages/ship-fast-blocks/src/capsules/`.
+- **Local Git Hooks**: Native `.githooks` are installed through `prepare`; pre-commit runs changed-file Prettier plus lint/typecheck and targeted changed tests, while pre-push now runs each full-QA gate explicitly for clearer failures.
+- **File Size Distribution**: 248 non-generated source files exceed 500 LOC. `convex/sessions.ts` is 575 formatted LOC after Prettier, but it is now a registration/orchestration surface backed by extracted `convex/lib/session_*` helpers and a source-level boundary test that enforces helper delegation and sibling tests.
 
 ## Executive Summary
 
@@ -29,9 +29,9 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Areas for Improvement:**
 
-- `convex/sessions.ts` is now under the preferred 500 LOC ceiling at 488 LOC, with the session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment read/write/publish, export create/read/download/GitHub-push/entitlement, public gallery list/detail query orchestration, preview-history restore orchestration, serialization, Agentation public create/upsert/save plus sync/update/delete/list/clear helper layers, operational notification action adapters, commerce/Medusa config, usage metrics, CMS config/binding/read/mutation/internal maintenance, task, generated artifact/cache, preview-history, edit-history, generation-state, generation-progress, generation-view, event-stream, session API response, workspace, readiness, public-preview, internal-reference, shared Convex validator, operational notification arg-map, read/query arg-map, export/publish arg-map, simple session-id query arg-map, edit/chat/theme arg-map, Agentation arg-map, CMS/commerce/gallery/usage arg-map, and generation entry/internal arg-map layers split out and directly tested.
+- `convex/sessions.ts` is no longer under a raw formatted 500-line ceiling, but it is now a registration/orchestration surface with session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment, export, gallery, preview-history, serialization, Agentation, operational notification, commerce/Medusa, usage metrics, CMS, task, generated artifact/cache, event-stream, workspace, readiness, public-preview, internal-reference, and shared validator layers split into focused helpers with direct tests.
 - The block/capsule catalog has many 1,000+ LOC files; this may be acceptable for generated catalog content, but it needs stronger mechanical generation/validation boundaries to avoid manual drift.
-- Coverage is now enforced through Vitest/V8 thresholds, but the current baseline is low: 21.48% statements, 14.29% branches, 10.17% functions, and 21.56% lines in the enforced gate.
+- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.01% statements, 14.74% branches, 10.52% functions, and 21.62% lines in the latest full pre-push gate.
 - Local git hooks now enforce authoring-time checks before commit and full QA before push.
 - GitNexus impact analysis is available again after rebuilding the local index with the project runner; keep the runner version aligned with the MCP reader to avoid storage-version drift.
 
@@ -101,7 +101,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Concerns:**
 
-- `convex/sessions.ts` is now below the preferred 500 LOC ceiling, but it remains a dense Convex API registration surface where future edits should keep helper logic outside the registration file.
+- `convex/sessions.ts` is still a dense Convex API registration surface where future edits should keep helper logic outside the registration file.
 
 ### Generation Engine (`packages/ship-fast-engine/`) ★★★★☆
 
@@ -140,7 +140,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Strengths:**
 
-- The latest full coverage gate passed with stricter V8 thresholds of 21.48% statements, 14.29% branches, 10.17% functions, and 21.56% lines.
+- The latest full coverage gate passed with measured V8 coverage of 22.01% statements, 14.74% branches, 10.52% functions, and 21.62% lines.
 - `verify:qa` now runs Vitest with V8 coverage thresholds before build and bundle verification; CI uses the same coverage-backed test command.
 - Source-level invariant tests protect architecture boundaries that ordinary behavior tests would miss.
 
@@ -220,6 +220,6 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ## Summary
 
-Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, and the largest Convex coordination file is now below the preferred 500 LOC ceiling. The path from 10.0/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` below that ceiling, raise coverage thresholds area by area, keep GitNexus version alignment stable, and eventually migrate server OpenUI SSR/export to response-scoped loading.
+Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, and the largest Convex coordination file is now delegated to focused helper modules. The path from 10.0/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, and eventually migrate server OpenUI SSR/export to response-scoped loading.
 
 **Overall Rating: A (10.0/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and server-side weight that remain measurable and tractable.

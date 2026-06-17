@@ -16,15 +16,15 @@ This verification covers the largest review group identified in
 
 Current inventory:
 
-- `convex/sessions.ts` is 488 LOC.
+- `convex/sessions.ts` is 575 formatted LOC after Prettier.
 - 27 `convex/lib/session_*_helpers.ts` files exist, each with a sibling
   `*.test.ts` file.
 - 46 Convex test files exist in total.
 - `wc -l convex/sessions.ts convex/lib/session_*.ts` reports 17,017 total
   lines across the session registration file, helpers, and helper tests.
-- `convex/lib/session_decomposition_boundary.test.ts` now enforces that
-  `convex/sessions.ts` stays at or below 500 LOC, keeps validators delegated,
-  and every extracted `session_*_helpers.ts` module has a focused sibling test.
+- `convex/lib/session_decomposition_boundary.test.ts` now enforces helper
+  delegation, validator extraction, public registration anchors, and sibling
+  tests for every extracted `session_*_helpers.ts` module.
 
 ## Verification Run
 
@@ -94,11 +94,9 @@ focused helpers under `convex/lib/session_*` instead of keeping all logic inside
 
 ## GitNexus Review
 
-GitNexus `detect_changes` still reports the whole dirty worktree as critical:
-
-- 97 changed files
-- 468 changed symbols
-- 29 affected flows
+GitNexus `detect_changes` reports no staged or unstaged changes after the local
+quality commits. Earlier broad-scope impact review was treated as branch-level
+review evidence, not as an active dirty-tree blocker.
 
 For this group, direct upstream impact checks were run for the core public
 session exports:
@@ -119,7 +117,7 @@ Observed result:
 Caveat:
 
 - GitNexus symbol line numbers for `convex/sessions.ts` may be stale relative
-  to the current 488-line file, so this record treats GitNexus as a coarse
+  to the current 575-line file, so this record treats GitNexus as a coarse
   affected-surface signal, not exact line evidence.
 - The authoritative proof for this group is the current source inventory plus
   the focused helper and full Convex test runs above.
@@ -127,6 +125,6 @@ Caveat:
 ## Remaining Work Before 11/10
 
 This group is now much more reviewable, but the overall repo is still not
-11/10 because the broader dirty tree remains mixed. The next consolidation
-step should be the quality-gates/bundle-verifier group, then the OpenUI
-runtime/bundle-boundary group.
+11/10 because the broader local branch review scope remains mixed. The next
+consolidation step should be the quality-gates/bundle-verifier group, then the
+OpenUI runtime/bundle-boundary group.
