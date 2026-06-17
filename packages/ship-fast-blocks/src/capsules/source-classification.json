@@ -4,10 +4,10 @@
   "sourceRoot": "packages/ship-fast-blocks/src/capsules",
   "summary": {
     "generatedKimiPortFiles": 375,
-    "largeFiles": 181,
+    "largeFiles": 180,
     "maxLines": 1839,
     "totalFiles": 375,
-    "totalLines": 323122,
+    "totalLines": 323018,
     "unmarkedSourceFiles": 0
   },
   "files": [
@@ -308,8 +308,8 @@
     {
       "exports": ["BeautyStoreKimiPage"],
       "file": "packages/ship-fast-blocks/src/capsules/beauty-store.tsx",
-      "large": true,
-      "lines": 1025,
+      "large": false,
+      "lines": 921,
       "origin": "generated-kimi-port"
     },
     {

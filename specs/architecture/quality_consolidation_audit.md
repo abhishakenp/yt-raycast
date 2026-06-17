@@ -15,8 +15,10 @@ Current evidence:
 
 - `bun run verify:prepush` passed with explicit lint, typecheck, coverage,
   review-readiness, generated-artifact, build, and bundle-boundary steps.
-- Latest measured full-gate coverage is 23.47% statements, 15.70% branches,
-  11.32% functions, and 23.04% lines.
+- Latest measured full-gate coverage is 23.49% statements, 15.70% branches,
+  11.33% functions, and 23.06% lines.
+- Vitest coverage runs are capped at 2 workers to keep the CPU-heavy OpenUI SSR
+  and generation tests deterministic under full-suite load.
 - GitNexus `detect_changes` reports no staged or unstaged changes after the
   local commits; the branch-level review scope remains broad and is tracked by
   change groups.

@@ -2,15 +2,18 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
+    // OpenUI SSR/generation tests are CPU-heavy and use provider mocks; bounded
+    // workers keep full-suite coverage deterministic on dev Macs.
+    maxWorkers: 2,
     coverage: {
       provider: 'v8',
       reporter: ['text-summary', 'json-summary'],
       reportsDirectory: 'coverage',
       thresholds: {
-        statements: 23.47,
+        statements: 23.49,
         branches: 15.7,
-        functions: 11.32,
-        lines: 23.04,
+        functions: 11.33,
+        lines: 23.06,
       },
     },
     projects: [

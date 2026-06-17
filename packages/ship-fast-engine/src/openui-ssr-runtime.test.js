@@ -67,5 +67,5 @@ describe('openui SSR runtime compatibility', () => {
     delete globalThis.__renderOpenUIToHTMLType
     // @ts-expect-error: Test-only marker.
     delete globalThis.__renderOpenUIToHTMLResult
-  }, 30000)
+  }, 60000)
 })

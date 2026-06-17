@@ -1,9 +1,16 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
+import {
+  ArrowRight,
+  PlusIcon,
+  Star,
+  badgeClass,
+  benefitIcons,
+} from './internal/beauty-store-icons.tsx'
 
 /**
  * BeautyStoreKimiPage — a complete, self-contained beauty / skincare / cosmetics
@@ -28,9 +35,9 @@ import { Image } from "#/lib/img.tsx"
  * make it render great with no props at all.
  */
 export const BeautyStoreKimiPage = defineCapsule({
-  name: "BeautyStoreKimiPage",
+  name: 'BeautyStoreKimiPage',
   description:
-    "Complete beauty / skincare / cosmetics e-commerce STOREFRONT landing page with a soft, editorial clean-beauty aesthetic: light canvas, rose/blush accents, elegant serif display headings and generous whitespace. Includes a split hero (new-collection eyebrow, serif headline, dual shop CTAs, star-rated social proof with a customer avatar stack and a floating cruelty-free badge), a trusted-by beauty-brand logo strip, a 4-up benefits grid (clean ingredients, cruelty-free, sustainable, fast shipping) with icons, a shoppable bestsellers PRODUCT GRID (brand name, product title, star rating, review count, price, Bestseller/Clean/New status badges and add-to-cart buttons), a behind-the-scenes mosaic image gallery, a 3-up customer testimonials band with avatars and star ratings, and a dark newsletter CTA with a real email-capture form offering a first-order discount. Use as the ROOT/home page for a beauty store, skincare shop, cosmetics or makeup brand, clean/cruelty-free beauty retailer, perfume or spa products e-commerce site, or any premium personal-care DTC storefront wanting product showcase plus social proof. Supply content only — brand, nav, hero, logos, benefits, products, gallery, testimonials, newsletter, footer; the block owns all layout and styling.",
+    'Complete beauty / skincare / cosmetics e-commerce STOREFRONT landing page with a soft, editorial clean-beauty aesthetic: light canvas, rose/blush accents, elegant serif display headings and generous whitespace. Includes a split hero (new-collection eyebrow, serif headline, dual shop CTAs, star-rated social proof with a customer avatar stack and a floating cruelty-free badge), a trusted-by beauty-brand logo strip, a 4-up benefits grid (clean ingredients, cruelty-free, sustainable, fast shipping) with icons, a shoppable bestsellers PRODUCT GRID (brand name, product title, star rating, review count, price, Bestseller/Clean/New status badges and add-to-cart buttons), a behind-the-scenes mosaic image gallery, a 3-up customer testimonials band with avatars and star ratings, and a dark newsletter CTA with a real email-capture form offering a first-order discount. Use as the ROOT/home page for a beauty store, skincare shop, cosmetics or makeup brand, clean/cruelty-free beauty retailer, perfume or spa products e-commerce site, or any premium personal-care DTC storefront wanting product showcase plus social proof. Supply content only — brand, nav, hero, logos, benefits, products, gallery, testimonials, newsletter, footer; the block owns all layout and styling.',
   props: z.object({
     /** Brand / store name shown in the navbar and footer. */
     brand: z.string().optional(),
@@ -145,50 +152,50 @@ export const BeautyStoreKimiPage = defineCapsule({
   component: ({ props }) => {
     const go = useNavigate()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const brand = props.brand ?? "Lumière"
+    const brand = props.brand ?? 'Lumière'
     const nav = props.nav?.length
       ? props.nav
-      : ["Bestsellers", "New Arrivals", "Skincare", "Makeup", "Brands"]
+      : ['Bestsellers', 'New Arrivals', 'Skincare', 'Makeup', 'Brands']
 
-    const heroEyebrow = props.hero?.eyebrow ?? "New Collection"
-    const heroHeadingTop = props.hero?.headingTop ?? "Radiant Beauty,"
-    const heroHighlight = props.hero?.highlight ?? "Naturally Yours"
+    const heroEyebrow = props.hero?.eyebrow ?? 'New Collection'
+    const heroHeadingTop = props.hero?.headingTop ?? 'Radiant Beauty,'
+    const heroHighlight = props.hero?.highlight ?? 'Naturally Yours'
     const heroSub =
       props.hero?.subheading ??
-      "Discover our curated collection of clean, cruelty-free beauty products. From skincare essentials to makeup must-haves, embrace your natural glow with formulas that care for your skin and the planet."
-    const heroPrimary = props.hero?.primaryCta ?? "Shop Bestsellers"
-    const heroSecondary = props.hero?.secondaryCta ?? "Explore New Arrivals"
-    const heroRatingCount = props.hero?.ratingCount ?? "12,000+ Happy Customers"
-    const heroRatingValue = props.hero?.ratingValue ?? "4.9/5"
+      'Discover our curated collection of clean, cruelty-free beauty products. From skincare essentials to makeup must-haves, embrace your natural glow with formulas that care for your skin and the planet.'
+    const heroPrimary = props.hero?.primaryCta ?? 'Shop Bestsellers'
+    const heroSecondary = props.hero?.secondaryCta ?? 'Explore New Arrivals'
+    const heroRatingCount = props.hero?.ratingCount ?? '12,000+ Happy Customers'
+    const heroRatingValue = props.hero?.ratingValue ?? '4.9/5'
     const heroImageAlt =
       props.hero?.imageAlt ??
-      "arrangement of luxury skincare products including serums creams and face oils on marble surface"
-    const heroBadgeTitle = props.hero?.badgeTitle ?? "100% Cruelty-Free"
+      'arrangement of luxury skincare products including serums creams and face oils on marble surface'
+    const heroBadgeTitle = props.hero?.badgeTitle ?? '100% Cruelty-Free'
     const heroBadgeSubtitle =
-      props.hero?.badgeSubtitle ?? "Certified Clean Beauty"
+      props.hero?.badgeSubtitle ?? 'Certified Clean Beauty'
     const heroCustomerAlts = props.hero?.customerAlts?.length
       ? props.hero.customerAlts
       : [
-          "happy customer with clear glowing skin",
-          "young woman with natural makeup smiling",
-          "woman with radiant healthy skin portrait",
-          "beautiful woman with dewy makeup look",
+          'happy customer with clear glowing skin',
+          'young woman with natural makeup smiling',
+          'woman with radiant healthy skin portrait',
+          'beautiful woman with dewy makeup look',
         ]
 
     const logosHeading =
-      props.logos?.heading ?? "Trusted by Leading Beauty Brands"
+      props.logos?.heading ?? 'Trusted by Leading Beauty Brands'
     const logoBrands = props.logos?.brands?.length
       ? props.logos.brands
       : [
-          "Glow Recipe",
-          "Fenty Beauty",
-          "Rare Beauty",
-          "Summer Fridays",
-          "Tower 28",
-          "Kosas",
+          'Glow Recipe',
+          'Fenty Beauty',
+          'Rare Beauty',
+          'Summer Fridays',
+          'Tower 28',
+          'Kosas',
         ]
 
-    const benefitsHeading = props.benefits?.heading ?? "Why Choose Lumière"
+    const benefitsHeading = props.benefits?.heading ?? 'Why Choose Lumière'
     const benefitsDesc =
       props.benefits?.description ??
       "We're committed to bringing you the best in clean beauty with thoughtful curation and exceptional service."
@@ -196,273 +203,162 @@ export const BeautyStoreKimiPage = defineCapsule({
       ? props.benefits.items
       : [
           {
-            title: "Clean Ingredients",
+            title: 'Clean Ingredients',
             description:
-              "Every product is vetted for clean, non-toxic ingredients that are safe for your skin.",
+              'Every product is vetted for clean, non-toxic ingredients that are safe for your skin.',
           },
           {
-            title: "Cruelty-Free",
+            title: 'Cruelty-Free',
             description:
-              "We never stock products tested on animals. Beauty should never come at that cost.",
+              'We never stock products tested on animals. Beauty should never come at that cost.',
           },
           {
-            title: "Sustainable",
+            title: 'Sustainable',
             description:
-              "Eco-friendly packaging and carbon-neutral shipping on all orders over $50.",
+              'Eco-friendly packaging and carbon-neutral shipping on all orders over $50.',
           },
           {
-            title: "Fast Shipping",
+            title: 'Fast Shipping',
             description:
-              "Free 2-day shipping on orders over $75. 30-day hassle-free returns on all products.",
+              'Free 2-day shipping on orders over $75. 30-day hassle-free returns on all products.',
           },
         ]
 
-    const productsEyebrow = props.products?.eyebrow ?? "Most Loved"
-    const productsHeading = props.products?.heading ?? "Bestsellers"
-    const productsViewAll = props.products?.viewAll ?? "View All Products"
+    const productsEyebrow = props.products?.eyebrow ?? 'Most Loved'
+    const productsHeading = props.products?.heading ?? 'Bestsellers'
+    const productsViewAll = props.products?.viewAll ?? 'View All Products'
     const productItems = props.products?.items?.length
       ? props.products.items
       : [
           {
-            brand: "The Ordinary",
-            title: "Hyaluronic Acid 2% + B5 Hydrating Serum",
-            price: "$8.90",
-            reviews: "(2,847)",
-            badge: "Bestseller",
+            brand: 'The Ordinary',
+            title: 'Hyaluronic Acid 2% + B5 Hydrating Serum',
+            price: '$8.90',
+            reviews: '(2,847)',
+            badge: 'Bestseller',
           },
           {
-            brand: "Glow Recipe",
-            title: "Watermelon Glow Sleeping Mask",
-            price: "$45.00",
-            reviews: "(1,932)",
-            badge: "Clean",
+            brand: 'Glow Recipe',
+            title: 'Watermelon Glow Sleeping Mask',
+            price: '$45.00',
+            reviews: '(1,932)',
+            badge: 'Clean',
           },
           {
-            brand: "Laneige",
-            title: "BB Cushion Foundation SPF 50",
-            price: "$39.00",
-            reviews: "(4,156)",
-            badge: "New",
+            brand: 'Laneige',
+            title: 'BB Cushion Foundation SPF 50',
+            price: '$39.00',
+            reviews: '(4,156)',
+            badge: 'New',
           },
           {
-            brand: "Rare Beauty",
-            title: "Soft Pinch Liquid Blush - Hope",
-            price: "$23.00",
-            reviews: "(8,421)",
+            brand: 'Rare Beauty',
+            title: 'Soft Pinch Liquid Blush - Hope',
+            price: '$23.00',
+            reviews: '(8,421)',
           },
           {
-            brand: "CeraVe",
-            title: "Moisturizing Cream with Ceramides",
-            price: "$16.99",
-            reviews: "(15,203)",
-            badge: "Bestseller",
+            brand: 'CeraVe',
+            title: 'Moisturizing Cream with Ceramides',
+            price: '$16.99',
+            reviews: '(15,203)',
+            badge: 'Bestseller',
           },
           {
-            brand: "Fenty Beauty",
-            title: "Gloss Bomb Universal Lip Luminizer",
-            price: "$21.00",
-            reviews: "(6,789)",
+            brand: 'Fenty Beauty',
+            title: 'Gloss Bomb Universal Lip Luminizer',
+            price: '$21.00',
+            reviews: '(6,789)',
           },
           {
-            brand: "Drunk Elephant",
-            title: "Protini Polypeptide Cream",
-            price: "$68.00",
-            reviews: "(3,245)",
-            badge: "Clean",
+            brand: 'Drunk Elephant',
+            title: 'Protini Polypeptide Cream',
+            price: '$68.00',
+            reviews: '(3,245)',
+            badge: 'Clean',
           },
           {
-            brand: "Charlotte Tilbury",
-            title: "Airbrush Flawless Finish Setting Powder",
-            price: "$45.00",
-            reviews: "(2,156)",
-            badge: "New",
+            brand: 'Charlotte Tilbury',
+            title: 'Airbrush Flawless Finish Setting Powder',
+            price: '$45.00',
+            reviews: '(2,156)',
+            badge: 'New',
           },
         ]
 
-    const galleryEyebrow = props.gallery?.eyebrow ?? "Behind the Scenes"
-    const galleryHeading = props.gallery?.heading ?? "Beauty in Every Detail"
+    const galleryEyebrow = props.gallery?.eyebrow ?? 'Behind the Scenes'
+    const galleryHeading = props.gallery?.heading ?? 'Beauty in Every Detail'
     const galleryDesc =
       props.gallery?.description ??
-      "From our curated collections to your daily routine, discover moments of beauty that inspire."
+      'From our curated collections to your daily routine, discover moments of beauty that inspire.'
     const galleryFeatureCaption =
-      props.gallery?.featureCaption ?? "Spa Experiences"
+      props.gallery?.featureCaption ?? 'Spa Experiences'
     const galleryAlts = props.gallery?.imageAlts?.length
       ? props.gallery.imageAlts
       : [
-          "woman receiving facial treatment at luxury spa with soft ambient lighting",
-          "flat lay of organic skincare products with dried flowers",
-          "collection of colorful lipsticks arranged artistically",
-          "elegant perfume bottle with soft rose petals",
-          "minimalist skincare routine products on marble countertop",
+          'woman receiving facial treatment at luxury spa with soft ambient lighting',
+          'flat lay of organic skincare products with dried flowers',
+          'collection of colorful lipsticks arranged artistically',
+          'elegant perfume bottle with soft rose petals',
+          'minimalist skincare routine products on marble countertop',
         ]
 
-    const testimonialsEyebrow = props.testimonials?.eyebrow ?? "Customer Love"
+    const testimonialsEyebrow = props.testimonials?.eyebrow ?? 'Customer Love'
     const testimonialsHeading =
-      props.testimonials?.heading ?? "What Our Community Says"
+      props.testimonials?.heading ?? 'What Our Community Says'
     const testimonialItems = props.testimonials?.items?.length
       ? props.testimonials.items
       : [
           {
             quote:
               "I've struggled with sensitive skin for years. The products from Lumière have completely transformed my routine. No irritation, just glowing, healthy skin. The hyaluronic acid serum is now a holy grail!",
-            name: "Sophia Chen",
-            meta: "Verified Buyer • 3 months ago",
+            name: 'Sophia Chen',
+            meta: 'Verified Buyer • 3 months ago',
             avatarAlt:
-              "professional headshot of a young woman with brown hair and warm smile",
+              'professional headshot of a young woman with brown hair and warm smile',
           },
           {
             quote:
               "Finally, a beauty store that understands what 'clean' actually means. I love that they vet every brand for cruelty-free practices. Plus, the 2-day shipping is incredibly fast. My go-to for all things beauty!",
-            name: "Maya Johnson",
-            meta: "Verified Buyer • 1 month ago",
+            name: 'Maya Johnson',
+            meta: 'Verified Buyer • 1 month ago',
             avatarAlt:
-              "professional headshot of a young woman with curly hair and confident expression",
+              'professional headshot of a young woman with curly hair and confident expression',
           },
           {
             quote:
               "The Rare Beauty blush I ordered is absolutely stunning and lasts all day. Lumière's packaging was beautiful and eco-friendly too. I appreciate a company that cares about the environment as much as beauty.",
-            name: "Emma Williams",
-            meta: "Verified Buyer • 2 weeks ago",
+            name: 'Emma Williams',
+            meta: 'Verified Buyer • 2 weeks ago',
             avatarAlt:
-              "professional headshot of a smiling woman with blonde hair and natural makeup",
+              'professional headshot of a smiling woman with blonde hair and natural makeup',
           },
         ]
 
-    const newsletterEyebrow =
-      props.newsletter?.eyebrow ?? "Limited Time Offer"
+    const newsletterEyebrow = props.newsletter?.eyebrow ?? 'Limited Time Offer'
     const newsletterHeading =
-      props.newsletter?.heading ?? "Join Our Beauty Community"
+      props.newsletter?.heading ?? 'Join Our Beauty Community'
     const newsletterDesc =
       props.newsletter?.description ??
-      "Subscribe to receive 15% off your first order, exclusive access to new arrivals, and personalized beauty recommendations."
+      'Subscribe to receive 15% off your first order, exclusive access to new arrivals, and personalized beauty recommendations.'
     const newsletterPlaceholder =
-      props.newsletter?.placeholder ?? "Enter your email"
-    const newsletterSubmit = props.newsletter?.submit ?? "Get 15% Off"
+      props.newsletter?.placeholder ?? 'Enter your email'
+    const newsletterSubmit = props.newsletter?.submit ?? 'Get 15% Off'
     const newsletterNote =
-      props.newsletter?.note ?? "No spam, ever. Unsubscribe anytime."
+      props.newsletter?.note ?? 'No spam, ever. Unsubscribe anytime.'
     const newsletterImageAlt =
       props.newsletter?.imageAlt ??
-      "luxury skincare products arranged on dark marble surface"
+      'luxury skincare products arranged on dark marble surface'
 
-    const footerNote = props.footer?.note ?? "All rights reserved."
+    const footerNote = props.footer?.note ?? 'All rights reserved.'
     const footerLinks = props.footer?.links?.length
       ? props.footer.links
-      : ["Privacy", "Terms", "Contact"]
-
-    // Decorative inline icons (token-colored via currentColor).
-    const Star = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-      </svg>
-    )
-
-    const PlusIcon = () => (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-      </svg>
-    )
-
-    const ArrowRight = ({ className }: { className?: string }) => (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-        aria-hidden="true"
-      >
-        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-      </svg>
-    )
-
-    const benefitIcons: ReactNode[] = [
-      // check-shield (clean ingredients)
-      <svg
-        key="clean"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-8"
-        aria-hidden="true"
-      >
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      // heart (cruelty-free)
-      <svg
-        key="cruelty"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-8"
-        aria-hidden="true"
-      >
-        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>,
-      // globe (sustainable)
-      <svg
-        key="sustainable"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-8"
-        aria-hidden="true"
-      >
-        <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-      // clock (fast shipping)
-      <svg
-        key="shipping"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="size-8"
-        aria-hidden="true"
-      >
-        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>,
-    ]
-
-    // Status badge → token mapping (Bestseller=primary, Clean=secondary, New=accent).
-    const badgeClass = (badge?: string) => {
-      if (badge === "Clean")
-        return "bg-secondary text-secondary-foreground"
-      if (badge === "New") return "bg-accent text-accent-foreground"
-      return "bg-primary text-primary-foreground"
-    }
+      : ['Privacy', 'Terms', 'Contact']
 
     return (
       <div
         className={cn(
-          "min-h-svh bg-background font-sans text-foreground antialiased",
+          'min-h-svh bg-background font-sans text-foreground antialiased',
           props.className,
         )}
       >
@@ -798,7 +694,7 @@ export const BeautyStoreKimiPage = defineCapsule({
                       {product.badge ? (
                         <span
                           className={cn(
-                            "absolute left-3 top-3 rounded-full px-2 py-1 text-xs font-semibold",
+                            'absolute left-3 top-3 rounded-full px-2 py-1 text-xs font-semibold',
                             badgeClass(product.badge),
                           )}
                         >
