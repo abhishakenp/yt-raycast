@@ -15,8 +15,8 @@ Current evidence:
 
 - `bun run verify:prepush` passed with explicit lint, typecheck, coverage,
   review-readiness, generated-artifact, build, and bundle-boundary steps.
-- Latest measured full-gate coverage is 23.38% statements, 15.67% branches,
-  11.26% functions, and 22.95% lines.
+- Latest measured full-gate coverage is 23.43% statements, 15.70% branches,
+  11.29% functions, and 23.00% lines.
 - GitNexus `detect_changes` reports no staged or unstaged changes after the
   local commits; the branch-level review scope remains broad and is tracked by
   change groups.
