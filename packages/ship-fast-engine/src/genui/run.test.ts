@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   generateText: vi.fn(),
+  isHardLlmFailure: vi.fn(),
 }))
 
 vi.mock('../generate.ts', () => ({
   formatLlmFailureMessage: (error: unknown) => String(error),
   generateText: mocks.generateText,
-  isHardLlmFailure: () => false,
+  isHardLlmFailure: mocks.isHardLlmFailure,
 }))
 
 const delay = (ms: number) =>
@@ -28,6 +29,8 @@ describe('runHomepageOrchestrator multi-page generation', () => {
   beforeEach(() => {
     vi.resetModules()
     mocks.generateText.mockReset()
+    mocks.isHardLlmFailure.mockReset()
+    mocks.isHardLlmFailure.mockReturnValue(false)
   })
 
   it('waits for secondary page modules so the final source is a complete site', async () => {
@@ -346,6 +349,53 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     )
     expect(result.source).not.toContain('server language code')
     expect(result.source).not.toContain('All user-visible copy')
+  })
+
+  it('surfaces hard planner failures instead of falling back to placeholders', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+    const events: string[] = []
+    const sources: string[] = []
+
+    mocks.isHardLlmFailure.mockReturnValue(true)
+    mocks.generateText.mockRejectedValue(new Error('provider quota exhausted'))
+
+    await expect(
+      runHomepageOrchestrator({
+        onEvent: (event) => events.push(event.type),
+        onSource: (source) => sources.push(source),
+        prompt: 'Build a SaaS landing page for FastCo',
+      }),
+    ).rejects.toThrow('provider quota exhausted')
+
+    expect(events).toEqual(['status', 'error'])
+    expect(sources).toEqual([])
+    expect(mocks.generateText).toHaveBeenCalledTimes(1)
+  })
+
+  it('fails the run when fallback planning produces only failed modules', async () => {
+    const { runHomepageOrchestrator } = await import('./run.ts')
+    const events: Array<{ failed?: boolean; type: string }> = []
+    const sources: string[] = []
+
+    mocks.generateText.mockRejectedValue(new Error('transient model outage'))
+
+    await expect(
+      runHomepageOrchestrator({
+        onEvent: (event) => events.push(event),
+        onSource: (source) => sources.push(source),
+        prompt: 'Build a SaaS landing page for FastCo',
+      }),
+    ).rejects.toThrow('placeholder blocks')
+
+    expect(events.map((event) => event.type)).toContain('skeleton')
+    expect(events.filter((event) => event.type === 'module')).toHaveLength(5)
+    expect(events.filter((event) => event.type === 'module')).toEqual(
+      expect.arrayContaining([expect.objectContaining({ failed: true })]),
+    )
+    expect(events.at(-1)).toMatchObject({ type: 'error' })
+    expect(sources[0]).toContain('root = PageSwitch')
+    expect(sources.at(-1)).toContain('Build A')
+    expect(sources.at(-1)).toContain('Build a SaaS landing page for FastCo')
   })
 
   it('does not expose a home-only completion option', async () => {
