@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest'
 import {
   extractOpenUIRuntimeComponentNames,
   getOpenUIRuntimeLibraryCacheKey,
+  loadOpenUIRuntimeComponent,
+  loadOpenUIRuntimeLibrary,
 } from './runtime-library'
 
 describe('OpenUI runtime library loading', () => {
@@ -25,6 +27,28 @@ describe('OpenUI runtime library loading', () => {
     ).toBe(
       getOpenUIRuntimeLibraryCacheKey('page = Stack([])\nroot = Text("Hi")'),
     )
+  })
+
+  it('loads selected runtime components through generated dynamic loaders', async () => {
+    const names = [
+      'Stack',
+      'Grid',
+      'Box',
+      'Section',
+      'Heading',
+      'Text',
+    ] as Array<Parameters<typeof loadOpenUIRuntimeComponent>[0]>
+
+    const capsules = await Promise.all(names.map(loadOpenUIRuntimeComponent))
+    const library = await loadOpenUIRuntimeLibrary(`
+      root = Stack(children=[heading, body])
+      heading = Heading(text="Launch")
+      body = Text(text="A response-scoped runtime")
+    `)
+
+    expect(capsules).toHaveLength(names.length)
+    expect(capsules.every((capsule) => capsule.client)).toBe(true)
+    expect(library).toBeTruthy()
   })
 
   it('keeps runtime loaders dynamic and independent from generated source manifests', () => {

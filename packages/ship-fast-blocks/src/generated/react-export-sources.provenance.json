@@ -1,0 +1,4783 @@
+{
+  "generatorVersion": 1,
+  "generatedBy": "packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs",
+  "sourceRoots": ["src/registry", "src/capsules"],
+  "outputs": [
+    "src/generated/react-export-sources.json",
+    "src/generated/react-export-sources.compressed.ts",
+    "src/generated/runtime-component-loaders.ts",
+    "src/generated/runtime-component-names.ts",
+    "src/generated/react-export-sources.provenance.json"
+  ],
+  "componentCount": 1192,
+  "components": [
+    {
+      "name": "AboutHero",
+      "sourceFile": "src/registry/sections/about/AboutHero.tsx"
+    },
+    {
+      "name": "AboutKimiPage",
+      "sourceFile": "src/capsules/about.tsx"
+    },
+    {
+      "name": "AboutKimiPage2",
+      "sourceFile": "src/capsules/about-2.tsx"
+    },
+    {
+      "name": "AboutNavbar",
+      "sourceFile": "src/registry/sections/about/AboutNavbar.tsx"
+    },
+    {
+      "name": "AboutStory",
+      "sourceFile": "src/registry/sections/about/AboutStory.tsx"
+    },
+    {
+      "name": "Accordion",
+      "sourceFile": "src/registry/primitives/accordion.tsx"
+    },
+    {
+      "name": "AccountingFirmAbout",
+      "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmAbout.tsx"
+    },
+    {
+      "name": "AccountingFirmHero",
+      "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmHero.tsx"
+    },
+    {
+      "name": "AccountingFirmKimiPage",
+      "sourceFile": "src/capsules/accounting-firm.tsx"
+    },
+    {
+      "name": "AccountingFirmKimiPage2",
+      "sourceFile": "src/capsules/accounting-firm-2.tsx"
+    },
+    {
+      "name": "AccountingFirmKimiPage3",
+      "sourceFile": "src/capsules/accounting-firm-3.tsx"
+    },
+    {
+      "name": "AccountingFirmLogos",
+      "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmLogos.tsx"
+    },
+    {
+      "name": "AccountingFirmNavbar",
+      "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmNavbar.tsx"
+    },
+    {
+      "name": "AccountingFirmProcess",
+      "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmProcess.tsx"
+    },
+    {
+      "name": "AccountingFirmServices",
+      "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmServices.tsx"
+    },
+    {
+      "name": "AccountingFirmTeam",
+      "sourceFile": "src/registry/sections/accounting-firm/AccountingFirmTeam.tsx"
+    },
+    {
+      "name": "AeoDirectAnswer",
+      "sourceFile": "src/registry/sections/aeo/AeoDirectAnswer.tsx"
+    },
+    {
+      "name": "AeoFaqSection",
+      "sourceFile": "src/registry/sections/aeo/AeoFaqSection.tsx"
+    },
+    {
+      "name": "AeoUseCases",
+      "sourceFile": "src/registry/sections/aeo/AeoUseCases.tsx"
+    },
+    {
+      "name": "AgencyContactCta",
+      "sourceFile": "src/registry/sections/agency/AgencyContactCta.tsx"
+    },
+    {
+      "name": "AgencyFooter",
+      "sourceFile": "src/registry/sections/agency/AgencyFooter.tsx"
+    },
+    {
+      "name": "AgencyHero",
+      "sourceFile": "src/registry/sections/agency/AgencyHero.tsx"
+    },
+    {
+      "name": "AgencyKimiPage",
+      "sourceFile": "src/capsules/agency.tsx"
+    },
+    {
+      "name": "AgencyKimiPage2",
+      "sourceFile": "src/capsules/agency-2.tsx"
+    },
+    {
+      "name": "AgencyKimiPage3",
+      "sourceFile": "src/capsules/agency-3.tsx"
+    },
+    {
+      "name": "AgencyKimiPage4",
+      "sourceFile": "src/capsules/agency-4.tsx"
+    },
+    {
+      "name": "AgencyKimiPage5",
+      "sourceFile": "src/capsules/agency-5.tsx"
+    },
+    {
+      "name": "AgencyNavbar",
+      "sourceFile": "src/registry/sections/agency/AgencyNavbar.tsx"
+    },
+    {
+      "name": "AgencyServices",
+      "sourceFile": "src/registry/sections/agency/AgencyServices.tsx"
+    },
+    {
+      "name": "AgencyStats",
+      "sourceFile": "src/registry/sections/agency/AgencyStats.tsx"
+    },
+    {
+      "name": "AgencyTestimonial",
+      "sourceFile": "src/registry/sections/agency/AgencyTestimonial.tsx"
+    },
+    {
+      "name": "AgencyWork",
+      "sourceFile": "src/registry/sections/agency/AgencyWork.tsx"
+    },
+    {
+      "name": "AiProductFeatures",
+      "sourceFile": "src/registry/sections/ai-product/AiProductFeatures.tsx"
+    },
+    {
+      "name": "AiProductGallery",
+      "sourceFile": "src/registry/sections/ai-product/AiProductGallery.tsx"
+    },
+    {
+      "name": "AiProductHero",
+      "sourceFile": "src/registry/sections/ai-product/AiProductHero.tsx"
+    },
+    {
+      "name": "AiProductKimiPage",
+      "sourceFile": "src/capsules/ai-product.tsx"
+    },
+    {
+      "name": "AiProductKimiPage10",
+      "sourceFile": "src/capsules/ai-product-10.tsx"
+    },
+    {
+      "name": "AiProductKimiPage2",
+      "sourceFile": "src/capsules/ai-product-2.tsx"
+    },
+    {
+      "name": "AiProductKimiPage3",
+      "sourceFile": "src/capsules/ai-product-3.tsx"
+    },
+    {
+      "name": "AiProductKimiPage4",
+      "sourceFile": "src/capsules/ai-product-4.tsx"
+    },
+    {
+      "name": "AiProductKimiPage5",
+      "sourceFile": "src/capsules/ai-product-5.tsx"
+    },
+    {
+      "name": "AiProductKimiPage6",
+      "sourceFile": "src/capsules/ai-product-6.tsx"
+    },
+    {
+      "name": "AiProductKimiPage7",
+      "sourceFile": "src/capsules/ai-product-7.tsx"
+    },
+    {
+      "name": "AiProductKimiPage8",
+      "sourceFile": "src/capsules/ai-product-8.tsx"
+    },
+    {
+      "name": "AiProductKimiPage9",
+      "sourceFile": "src/capsules/ai-product-9.tsx"
+    },
+    {
+      "name": "AiProductLogos",
+      "sourceFile": "src/registry/sections/ai-product/AiProductLogos.tsx"
+    },
+    {
+      "name": "AiProductNavbar",
+      "sourceFile": "src/registry/sections/ai-product/AiProductNavbar.tsx"
+    },
+    {
+      "name": "AiProductSteps",
+      "sourceFile": "src/registry/sections/ai-product/AiProductSteps.tsx"
+    },
+    {
+      "name": "Alert",
+      "sourceFile": "src/registry/primitives/alert.tsx"
+    },
+    {
+      "name": "AlertDialog",
+      "sourceFile": "src/registry/primitives/alert-dialog.tsx"
+    },
+    {
+      "name": "AnalyticsHeader",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsHeader.tsx"
+    },
+    {
+      "name": "AnalyticsKimiPage",
+      "sourceFile": "src/capsules/analytics.tsx"
+    },
+    {
+      "name": "AnalyticsKimiPage2",
+      "sourceFile": "src/capsules/analytics-2.tsx"
+    },
+    {
+      "name": "AnalyticsKimiPage3",
+      "sourceFile": "src/capsules/analytics-3.tsx"
+    },
+    {
+      "name": "AnalyticsKpis",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsKpis.tsx"
+    },
+    {
+      "name": "AnalyticsSidebar",
+      "sourceFile": "src/registry/sections/analytics/AnalyticsSidebar.tsx"
+    },
+    {
+      "name": "ArchitectureFirmHero",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmHero.tsx"
+    },
+    {
+      "name": "ArchitectureFirmKimiPage",
+      "sourceFile": "src/capsules/architecture-firm.tsx"
+    },
+    {
+      "name": "ArchitectureFirmKimiPage2",
+      "sourceFile": "src/capsules/architecture-firm-2.tsx"
+    },
+    {
+      "name": "ArchitectureFirmKimiPage3",
+      "sourceFile": "src/capsules/architecture-firm-3.tsx"
+    },
+    {
+      "name": "ArchitectureFirmLogos",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmLogos.tsx"
+    },
+    {
+      "name": "ArchitectureFirmNavbar",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmNavbar.tsx"
+    },
+    {
+      "name": "ArchitectureFirmPhilosophy",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmPhilosophy.tsx"
+    },
+    {
+      "name": "ArchitectureFirmProcess",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmProcess.tsx"
+    },
+    {
+      "name": "ArchitectureFirmStats",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmStats.tsx"
+    },
+    {
+      "name": "ArchitectureFirmTestimonials",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmTestimonials.tsx"
+    },
+    {
+      "name": "ArchitectureFirmWork",
+      "sourceFile": "src/registry/sections/architecture-firm/ArchitectureFirmWork.tsx"
+    },
+    {
+      "name": "AspectRatio",
+      "sourceFile": "src/registry/primitives/aspect-ratio.tsx"
+    },
+    {
+      "name": "AuthKimiPage",
+      "sourceFile": "src/capsules/auth.tsx"
+    },
+    {
+      "name": "AuthKimiPage2",
+      "sourceFile": "src/capsules/auth-2.tsx"
+    },
+    {
+      "name": "AuthKimiPage3",
+      "sourceFile": "src/capsules/auth-3.tsx"
+    },
+    {
+      "name": "AuthKimiPage4",
+      "sourceFile": "src/capsules/auth-4.tsx"
+    },
+    {
+      "name": "AuthKimiPage5",
+      "sourceFile": "src/capsules/auth-5.tsx"
+    },
+    {
+      "name": "AutoDealershipFeatures",
+      "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipFeatures.tsx"
+    },
+    {
+      "name": "AutoDealershipFinancing",
+      "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipFinancing.tsx"
+    },
+    {
+      "name": "AutoDealershipHero",
+      "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipHero.tsx"
+    },
+    {
+      "name": "AutoDealershipInventory",
+      "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipInventory.tsx"
+    },
+    {
+      "name": "AutoDealershipKimiPage",
+      "sourceFile": "src/capsules/auto-dealership.tsx"
+    },
+    {
+      "name": "AutoDealershipKimiPage2",
+      "sourceFile": "src/capsules/auto-dealership-2.tsx"
+    },
+    {
+      "name": "AutoDealershipKimiPage3",
+      "sourceFile": "src/capsules/auto-dealership-3.tsx"
+    },
+    {
+      "name": "AutoDealershipLogos",
+      "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipLogos.tsx"
+    },
+    {
+      "name": "AutoDealershipNavbar",
+      "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipNavbar.tsx"
+    },
+    {
+      "name": "AutoDealershipStats",
+      "sourceFile": "src/registry/sections/auto-dealership/AutoDealershipStats.tsx"
+    },
+    {
+      "name": "Avatar",
+      "sourceFile": "src/registry/primitives/avatar.tsx"
+    },
+    {
+      "name": "AvatarGroup",
+      "sourceFile": "src/registry/primitives/avatar.tsx"
+    },
+    {
+      "name": "Badge",
+      "sourceFile": "src/registry/primitives/badge.tsx"
+    },
+    {
+      "name": "BakeryFeatures",
+      "sourceFile": "src/registry/sections/bakery/BakeryFeatures.tsx"
+    },
+    {
+      "name": "BakeryGallery",
+      "sourceFile": "src/registry/sections/bakery/BakeryGallery.tsx"
+    },
+    {
+      "name": "BakeryHero",
+      "sourceFile": "src/registry/sections/bakery/BakeryHero.tsx"
+    },
+    {
+      "name": "BakeryKimiPage",
+      "sourceFile": "src/capsules/bakery.tsx"
+    },
+    {
+      "name": "BakeryKimiPage2",
+      "sourceFile": "src/capsules/bakery-2.tsx"
+    },
+    {
+      "name": "BakeryKimiPage3",
+      "sourceFile": "src/capsules/bakery-3.tsx"
+    },
+    {
+      "name": "BakeryLogos",
+      "sourceFile": "src/registry/sections/bakery/BakeryLogos.tsx"
+    },
+    {
+      "name": "BakeryMenu",
+      "sourceFile": "src/registry/sections/bakery/BakeryMenu.tsx"
+    },
+    {
+      "name": "BakeryNavbar",
+      "sourceFile": "src/registry/sections/bakery/BakeryNavbar.tsx"
+    },
+    {
+      "name": "BakerySteps",
+      "sourceFile": "src/registry/sections/bakery/BakerySteps.tsx"
+    },
+    {
+      "name": "BarNightclubEvents",
+      "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubEvents.tsx"
+    },
+    {
+      "name": "BarNightclubFeatures",
+      "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubFeatures.tsx"
+    },
+    {
+      "name": "BarNightclubGallery",
+      "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubGallery.tsx"
+    },
+    {
+      "name": "BarNightclubHero",
+      "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubHero.tsx"
+    },
+    {
+      "name": "BarNightclubKimiPage",
+      "sourceFile": "src/capsules/bar-nightclub.tsx"
+    },
+    {
+      "name": "BarNightclubKimiPage2",
+      "sourceFile": "src/capsules/bar-nightclub-2.tsx"
+    },
+    {
+      "name": "BarNightclubKimiPage3",
+      "sourceFile": "src/capsules/bar-nightclub-3.tsx"
+    },
+    {
+      "name": "BarNightclubMenu",
+      "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubMenu.tsx"
+    },
+    {
+      "name": "BarNightclubNavbar",
+      "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubNavbar.tsx"
+    },
+    {
+      "name": "BarNightclubSteps",
+      "sourceFile": "src/registry/sections/bar-nightclub/BarNightclubSteps.tsx"
+    },
+    {
+      "name": "BeautyStoreBenefits",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreBenefits.tsx"
+    },
+    {
+      "name": "BeautyStoreFooter",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreFooter.tsx"
+    },
+    {
+      "name": "BeautyStoreGallery",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreGallery.tsx"
+    },
+    {
+      "name": "BeautyStoreHero",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreHero.tsx"
+    },
+    {
+      "name": "BeautyStoreKimiPage",
+      "sourceFile": "src/capsules/beauty-store.tsx"
+    },
+    {
+      "name": "BeautyStoreKimiPage2",
+      "sourceFile": "src/capsules/beauty-store-2.tsx"
+    },
+    {
+      "name": "BeautyStoreKimiPage3",
+      "sourceFile": "src/capsules/beauty-store-3.tsx"
+    },
+    {
+      "name": "BeautyStoreLogos",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreLogos.tsx"
+    },
+    {
+      "name": "BeautyStoreNavbar",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreNavbar.tsx"
+    },
+    {
+      "name": "BeautyStoreNewsletter",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreNewsletter.tsx"
+    },
+    {
+      "name": "BeautyStoreProducts",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreProducts.tsx"
+    },
+    {
+      "name": "BeautyStoreTestimonials",
+      "sourceFile": "src/registry/sections/beauty-store/BeautyStoreTestimonials.tsx"
+    },
+    {
+      "name": "BlogFooter",
+      "sourceFile": "src/registry/sections/blog/BlogFooter.tsx"
+    },
+    {
+      "name": "BlogHeader",
+      "sourceFile": "src/registry/sections/blog/BlogHeader.tsx"
+    },
+    {
+      "name": "BlogHero",
+      "sourceFile": "src/registry/sections/blog/BlogHero.tsx"
+    },
+    {
+      "name": "BlogKimiPage",
+      "sourceFile": "src/capsules/blog.tsx"
+    },
+    {
+      "name": "BlogKimiPage2",
+      "sourceFile": "src/capsules/blog-2.tsx"
+    },
+    {
+      "name": "BlogKimiPage3",
+      "sourceFile": "src/capsules/blog-3.tsx"
+    },
+    {
+      "name": "BlogLatestStories",
+      "sourceFile": "src/registry/sections/blog/BlogLatestStories.tsx"
+    },
+    {
+      "name": "BlogPostBody",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostBody.tsx"
+    },
+    {
+      "name": "BlogPostCoverImage",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostCoverImage.tsx"
+    },
+    {
+      "name": "BlogPostFooter",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostFooter.tsx"
+    },
+    {
+      "name": "BlogPostHeader",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostHeader.tsx"
+    },
+    {
+      "name": "BlogPostKimiPage",
+      "sourceFile": "src/capsules/blog-post.tsx"
+    },
+    {
+      "name": "BlogPostKimiPage2",
+      "sourceFile": "src/capsules/blog-post-2.tsx"
+    },
+    {
+      "name": "BlogPostKimiPage3",
+      "sourceFile": "src/capsules/blog-post-3.tsx"
+    },
+    {
+      "name": "BlogPostKimiPage4",
+      "sourceFile": "src/capsules/blog-post-4.tsx"
+    },
+    {
+      "name": "BlogPostNavbar",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostNavbar.tsx"
+    },
+    {
+      "name": "BlogPostNewsletter",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostNewsletter.tsx"
+    },
+    {
+      "name": "BlogPostRelated",
+      "sourceFile": "src/registry/sections/blog-post/BlogPostRelated.tsx"
+    },
+    {
+      "name": "BootcampApplyCta",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampApplyCta.tsx"
+    },
+    {
+      "name": "BootcampCurriculum",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampCurriculum.tsx"
+    },
+    {
+      "name": "BootcampFaq",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampFaq.tsx"
+    },
+    {
+      "name": "BootcampFooter",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampFooter.tsx"
+    },
+    {
+      "name": "BootcampHero",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampHero.tsx"
+    },
+    {
+      "name": "BootcampKimiPage",
+      "sourceFile": "src/capsules/bootcamp.tsx"
+    },
+    {
+      "name": "BootcampKimiPage2",
+      "sourceFile": "src/capsules/bootcamp-2.tsx"
+    },
+    {
+      "name": "BootcampKimiPage3",
+      "sourceFile": "src/capsules/bootcamp-3.tsx"
+    },
+    {
+      "name": "BootcampLogos",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampLogos.tsx"
+    },
+    {
+      "name": "BootcampMentors",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampMentors.tsx"
+    },
+    {
+      "name": "BootcampNavbar",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampNavbar.tsx"
+    },
+    {
+      "name": "BootcampOutcomes",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampOutcomes.tsx"
+    },
+    {
+      "name": "BootcampPricing",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampPricing.tsx"
+    },
+    {
+      "name": "BootcampSteps",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampSteps.tsx"
+    },
+    {
+      "name": "BootcampTestimonials",
+      "sourceFile": "src/registry/sections/bootcamp/BootcampTestimonials.tsx"
+    },
+    {
+      "name": "Box",
+      "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "Breadcrumb",
+      "sourceFile": "src/registry/primitives/breadcrumb.tsx"
+    },
+    {
+      "name": "Button",
+      "sourceFile": "src/registry/primitives/button.tsx"
+    },
+    {
+      "name": "ButtonGroup",
+      "sourceFile": "src/registry/primitives/button-group.tsx"
+    },
+    {
+      "name": "ButtonGroupDivider",
+      "sourceFile": "src/registry/primitives/button-group.tsx"
+    },
+    {
+      "name": "CafeFooter",
+      "sourceFile": "src/registry/sections/cafe/CafeFooter.tsx"
+    },
+    {
+      "name": "CafeGallery",
+      "sourceFile": "src/registry/sections/cafe/CafeGallery.tsx"
+    },
+    {
+      "name": "CafeHero",
+      "sourceFile": "src/registry/sections/cafe/CafeHero.tsx"
+    },
+    {
+      "name": "CafeKimiPage",
+      "sourceFile": "src/capsules/cafe.tsx"
+    },
+    {
+      "name": "CafeKimiPage2",
+      "sourceFile": "src/capsules/cafe-2.tsx"
+    },
+    {
+      "name": "CafeKimiPage3",
+      "sourceFile": "src/capsules/cafe-3.tsx"
+    },
+    {
+      "name": "CafeLocation",
+      "sourceFile": "src/registry/sections/cafe/CafeLocation.tsx"
+    },
+    {
+      "name": "CafeMenu",
+      "sourceFile": "src/registry/sections/cafe/CafeMenu.tsx"
+    },
+    {
+      "name": "CafeNavbar",
+      "sourceFile": "src/registry/sections/cafe/CafeNavbar.tsx"
+    },
+    {
+      "name": "CafeNewsletter",
+      "sourceFile": "src/registry/sections/cafe/CafeNewsletter.tsx"
+    },
+    {
+      "name": "CafeProcess",
+      "sourceFile": "src/registry/sections/cafe/CafeProcess.tsx"
+    },
+    {
+      "name": "CafeReviews",
+      "sourceFile": "src/registry/sections/cafe/CafeReviews.tsx"
+    },
+    {
+      "name": "CafeStory",
+      "sourceFile": "src/registry/sections/cafe/CafeStory.tsx"
+    },
+    {
+      "name": "CafeValues",
+      "sourceFile": "src/registry/sections/cafe/CafeValues.tsx"
+    },
+    {
+      "name": "Calendar",
+      "sourceFile": "src/registry/primitives/calendar.tsx"
+    },
+    {
+      "name": "Card",
+      "sourceFile": "src/registry/primitives/card.tsx"
+    },
+    {
+      "name": "Carousel",
+      "sourceFile": "src/registry/primitives/carousel.tsx"
+    },
+    {
+      "name": "Chart",
+      "sourceFile": "src/registry/primitives/chart.tsx"
+    },
+    {
+      "name": "Checkbox",
+      "sourceFile": "src/registry/primitives/checkbox.tsx"
+    },
+    {
+      "name": "ChurchEvents",
+      "sourceFile": "src/registry/sections/church/ChurchEvents.tsx"
+    },
+    {
+      "name": "ChurchFaq",
+      "sourceFile": "src/registry/sections/church/ChurchFaq.tsx"
+    },
+    {
+      "name": "ChurchFooter",
+      "sourceFile": "src/registry/sections/church/ChurchFooter.tsx"
+    },
+    {
+      "name": "ChurchGive",
+      "sourceFile": "src/registry/sections/church/ChurchGive.tsx"
+    },
+    {
+      "name": "ChurchHero",
+      "sourceFile": "src/registry/sections/church/ChurchHero.tsx"
+    },
+    {
+      "name": "ChurchKimiPage",
+      "sourceFile": "src/capsules/church.tsx"
+    },
+    {
+      "name": "ChurchKimiPage2",
+      "sourceFile": "src/capsules/church-2.tsx"
+    },
+    {
+      "name": "ChurchKimiPage3",
+      "sourceFile": "src/capsules/church-3.tsx"
+    },
+    {
+      "name": "ChurchNavbar",
+      "sourceFile": "src/registry/sections/church/ChurchNavbar.tsx"
+    },
+    {
+      "name": "ChurchPartners",
+      "sourceFile": "src/registry/sections/church/ChurchPartners.tsx"
+    },
+    {
+      "name": "ChurchPathways",
+      "sourceFile": "src/registry/sections/church/ChurchPathways.tsx"
+    },
+    {
+      "name": "ChurchServices",
+      "sourceFile": "src/registry/sections/church/ChurchServices.tsx"
+    },
+    {
+      "name": "ChurchStats",
+      "sourceFile": "src/registry/sections/church/ChurchStats.tsx"
+    },
+    {
+      "name": "ChurchTestimonials",
+      "sourceFile": "src/registry/sections/church/ChurchTestimonials.tsx"
+    },
+    {
+      "name": "CleaningServiceContactCta",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceContactCta.tsx"
+    },
+    {
+      "name": "CleaningServiceFaq",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceFaq.tsx"
+    },
+    {
+      "name": "CleaningServiceFooter",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceFooter.tsx"
+    },
+    {
+      "name": "CleaningServiceGallery",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceGallery.tsx"
+    },
+    {
+      "name": "CleaningServiceHero",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceHero.tsx"
+    },
+    {
+      "name": "CleaningServiceKimiPage",
+      "sourceFile": "src/capsules/cleaning-service.tsx"
+    },
+    {
+      "name": "CleaningServiceKimiPage2",
+      "sourceFile": "src/capsules/cleaning-service-2.tsx"
+    },
+    {
+      "name": "CleaningServiceKimiPage3",
+      "sourceFile": "src/capsules/cleaning-service-3.tsx"
+    },
+    {
+      "name": "CleaningServiceLogos",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceLogos.tsx"
+    },
+    {
+      "name": "CleaningServiceNavbar",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceNavbar.tsx"
+    },
+    {
+      "name": "CleaningServicePricing",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServicePricing.tsx"
+    },
+    {
+      "name": "CleaningServiceReviews",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceReviews.tsx"
+    },
+    {
+      "name": "CleaningServiceServices",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceServices.tsx"
+    },
+    {
+      "name": "CleaningServiceStats",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceStats.tsx"
+    },
+    {
+      "name": "CleaningServiceSteps",
+      "sourceFile": "src/registry/sections/cleaning-service/CleaningServiceSteps.tsx"
+    },
+    {
+      "name": "CloudInfraFaq",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraFaq.tsx"
+    },
+    {
+      "name": "CloudInfraFeatures",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraFeatures.tsx"
+    },
+    {
+      "name": "CloudInfraFinalCta",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraFinalCta.tsx"
+    },
+    {
+      "name": "CloudInfraFooter",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraFooter.tsx"
+    },
+    {
+      "name": "CloudInfraGallery",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraGallery.tsx"
+    },
+    {
+      "name": "CloudInfraHero",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraHero.tsx"
+    },
+    {
+      "name": "CloudInfraKimiPage",
+      "sourceFile": "src/capsules/cloud-infra.tsx"
+    },
+    {
+      "name": "CloudInfraKimiPage2",
+      "sourceFile": "src/capsules/cloud-infra-2.tsx"
+    },
+    {
+      "name": "CloudInfraKimiPage3",
+      "sourceFile": "src/capsules/cloud-infra-3.tsx"
+    },
+    {
+      "name": "CloudInfraLogos",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraLogos.tsx"
+    },
+    {
+      "name": "CloudInfraNavbar",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraNavbar.tsx"
+    },
+    {
+      "name": "CloudInfraPricing",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraPricing.tsx"
+    },
+    {
+      "name": "CloudInfraStats",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraStats.tsx"
+    },
+    {
+      "name": "CloudInfraSteps",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraSteps.tsx"
+    },
+    {
+      "name": "CloudInfraTestimonials",
+      "sourceFile": "src/registry/sections/cloud-infra/CloudInfraTestimonials.tsx"
+    },
+    {
+      "name": "Collapsible",
+      "sourceFile": "src/registry/primitives/collapsible.tsx"
+    },
+    {
+      "name": "Combobox",
+      "sourceFile": "src/registry/primitives/combobox.tsx"
+    },
+    {
+      "name": "ComingSoonCta",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonCta.tsx"
+    },
+    {
+      "name": "ComingSoonFaq",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonFaq.tsx"
+    },
+    {
+      "name": "ComingSoonFeatures",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonFeatures.tsx"
+    },
+    {
+      "name": "ComingSoonFooter",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonFooter.tsx"
+    },
+    {
+      "name": "ComingSoonHero",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonHero.tsx"
+    },
+    {
+      "name": "ComingSoonKimiPage",
+      "sourceFile": "src/capsules/coming-soon.tsx"
+    },
+    {
+      "name": "ComingSoonKimiPage2",
+      "sourceFile": "src/capsules/coming-soon-2.tsx"
+    },
+    {
+      "name": "ComingSoonKimiPage3",
+      "sourceFile": "src/capsules/coming-soon-3.tsx"
+    },
+    {
+      "name": "ComingSoonLogos",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonLogos.tsx"
+    },
+    {
+      "name": "ComingSoonNavbar",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonNavbar.tsx"
+    },
+    {
+      "name": "ComingSoonPricing",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonPricing.tsx"
+    },
+    {
+      "name": "ComingSoonTestimonials",
+      "sourceFile": "src/registry/sections/coming-soon/ComingSoonTestimonials.tsx"
+    },
+    {
+      "name": "Command",
+      "sourceFile": "src/registry/primitives/command.tsx"
+    },
+    {
+      "name": "CommunityForumContactCta",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumContactCta.tsx"
+    },
+    {
+      "name": "CommunityForumFaq",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumFaq.tsx"
+    },
+    {
+      "name": "CommunityForumFeatures",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumFeatures.tsx"
+    },
+    {
+      "name": "CommunityForumFooter",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumFooter.tsx"
+    },
+    {
+      "name": "CommunityForumHero",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumHero.tsx"
+    },
+    {
+      "name": "CommunityForumKimiPage",
+      "sourceFile": "src/capsules/community-forum.tsx"
+    },
+    {
+      "name": "CommunityForumKimiPage2",
+      "sourceFile": "src/capsules/community-forum-2.tsx"
+    },
+    {
+      "name": "CommunityForumKimiPage3",
+      "sourceFile": "src/capsules/community-forum-3.tsx"
+    },
+    {
+      "name": "CommunityForumLogos",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumLogos.tsx"
+    },
+    {
+      "name": "CommunityForumNavbar",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumNavbar.tsx"
+    },
+    {
+      "name": "CommunityForumPricing",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumPricing.tsx"
+    },
+    {
+      "name": "CommunityForumStats",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumStats.tsx"
+    },
+    {
+      "name": "CommunityForumSteps",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumSteps.tsx"
+    },
+    {
+      "name": "CommunityForumTestimonials",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumTestimonials.tsx"
+    },
+    {
+      "name": "CommunityForumTopics",
+      "sourceFile": "src/registry/sections/community-forum/CommunityForumTopics.tsx"
+    },
+    {
+      "name": "ConstructionFaq",
+      "sourceFile": "src/registry/sections/construction/ConstructionFaq.tsx"
+    },
+    {
+      "name": "ConstructionFooter",
+      "sourceFile": "src/registry/sections/construction/ConstructionFooter.tsx"
+    },
+    {
+      "name": "ConstructionHero",
+      "sourceFile": "src/registry/sections/construction/ConstructionHero.tsx"
+    },
+    {
+      "name": "ConstructionKimiPage",
+      "sourceFile": "src/capsules/construction.tsx"
+    },
+    {
+      "name": "ConstructionKimiPage2",
+      "sourceFile": "src/capsules/construction-2.tsx"
+    },
+    {
+      "name": "ConstructionKimiPage3",
+      "sourceFile": "src/capsules/construction-3.tsx"
+    },
+    {
+      "name": "ConstructionLogos",
+      "sourceFile": "src/registry/sections/construction/ConstructionLogos.tsx"
+    },
+    {
+      "name": "ConstructionNavbar",
+      "sourceFile": "src/registry/sections/construction/ConstructionNavbar.tsx"
+    },
+    {
+      "name": "ConstructionPricing",
+      "sourceFile": "src/registry/sections/construction/ConstructionPricing.tsx"
+    },
+    {
+      "name": "ConstructionProcess",
+      "sourceFile": "src/registry/sections/construction/ConstructionProcess.tsx"
+    },
+    {
+      "name": "ConstructionProjects",
+      "sourceFile": "src/registry/sections/construction/ConstructionProjects.tsx"
+    },
+    {
+      "name": "ConstructionQuote",
+      "sourceFile": "src/registry/sections/construction/ConstructionQuote.tsx"
+    },
+    {
+      "name": "ConstructionServices",
+      "sourceFile": "src/registry/sections/construction/ConstructionServices.tsx"
+    },
+    {
+      "name": "ConstructionStats",
+      "sourceFile": "src/registry/sections/construction/ConstructionStats.tsx"
+    },
+    {
+      "name": "ConstructionTestimonials",
+      "sourceFile": "src/registry/sections/construction/ConstructionTestimonials.tsx"
+    },
+    {
+      "name": "ConsultingCaseStudies",
+      "sourceFile": "src/registry/sections/consulting/ConsultingCaseStudies.tsx"
+    },
+    {
+      "name": "ConsultingHero",
+      "sourceFile": "src/registry/sections/consulting/ConsultingHero.tsx"
+    },
+    {
+      "name": "ConsultingKimiPage",
+      "sourceFile": "src/capsules/consulting.tsx"
+    },
+    {
+      "name": "ConsultingKimiPage2",
+      "sourceFile": "src/capsules/consulting-2.tsx"
+    },
+    {
+      "name": "ConsultingKimiPage3",
+      "sourceFile": "src/capsules/consulting-3.tsx"
+    },
+    {
+      "name": "ConsultingKimiPage4",
+      "sourceFile": "src/capsules/consulting-4.tsx"
+    },
+    {
+      "name": "ConsultingLogos",
+      "sourceFile": "src/registry/sections/consulting/ConsultingLogos.tsx"
+    },
+    {
+      "name": "ConsultingNavbar",
+      "sourceFile": "src/registry/sections/consulting/ConsultingNavbar.tsx"
+    },
+    {
+      "name": "ConsultingPricing",
+      "sourceFile": "src/registry/sections/consulting/ConsultingPricing.tsx"
+    },
+    {
+      "name": "ConsultingProcess",
+      "sourceFile": "src/registry/sections/consulting/ConsultingProcess.tsx"
+    },
+    {
+      "name": "ConsultingServices",
+      "sourceFile": "src/registry/sections/consulting/ConsultingServices.tsx"
+    },
+    {
+      "name": "ContactFaq",
+      "sourceFile": "src/registry/sections/contact/ContactFaq.tsx"
+    },
+    {
+      "name": "ContactFooter",
+      "sourceFile": "src/registry/sections/contact/ContactFooter.tsx"
+    },
+    {
+      "name": "ContactFormDetails",
+      "sourceFile": "src/registry/sections/contact/ContactFormDetails.tsx"
+    },
+    {
+      "name": "ContactHero",
+      "sourceFile": "src/registry/sections/contact/ContactHero.tsx"
+    },
+    {
+      "name": "ContactKimiPage",
+      "sourceFile": "src/capsules/contact.tsx"
+    },
+    {
+      "name": "ContactKimiPage2",
+      "sourceFile": "src/capsules/contact-2.tsx"
+    },
+    {
+      "name": "ContactNavbar",
+      "sourceFile": "src/registry/sections/contact/ContactNavbar.tsx"
+    },
+    {
+      "name": "ContactOfficeMap",
+      "sourceFile": "src/registry/sections/contact/ContactOfficeMap.tsx"
+    },
+    {
+      "name": "ContextMenu",
+      "sourceFile": "src/registry/primitives/context-menu.tsx"
+    },
+    {
+      "name": "CorporateContactCta",
+      "sourceFile": "src/registry/sections/corporate/CorporateContactCta.tsx"
+    },
+    {
+      "name": "CorporateFaq",
+      "sourceFile": "src/registry/sections/corporate/CorporateFaq.tsx"
+    },
+    {
+      "name": "CorporateFooter",
+      "sourceFile": "src/registry/sections/corporate/CorporateFooter.tsx"
+    },
+    {
+      "name": "CorporateGallery",
+      "sourceFile": "src/registry/sections/corporate/CorporateGallery.tsx"
+    },
+    {
+      "name": "CorporateHero",
+      "sourceFile": "src/registry/sections/corporate/CorporateHero.tsx"
+    },
+    {
+      "name": "CorporateKimiPage",
+      "sourceFile": "src/capsules/corporate.tsx"
+    },
+    {
+      "name": "CorporateKimiPage2",
+      "sourceFile": "src/capsules/corporate-2.tsx"
+    },
+    {
+      "name": "CorporateKimiPage3",
+      "sourceFile": "src/capsules/corporate-3.tsx"
+    },
+    {
+      "name": "CorporateLogos",
+      "sourceFile": "src/registry/sections/corporate/CorporateLogos.tsx"
+    },
+    {
+      "name": "CorporateNavbar",
+      "sourceFile": "src/registry/sections/corporate/CorporateNavbar.tsx"
+    },
+    {
+      "name": "CorporatePricing",
+      "sourceFile": "src/registry/sections/corporate/CorporatePricing.tsx"
+    },
+    {
+      "name": "CorporateSolutions",
+      "sourceFile": "src/registry/sections/corporate/CorporateSolutions.tsx"
+    },
+    {
+      "name": "CorporateStats",
+      "sourceFile": "src/registry/sections/corporate/CorporateStats.tsx"
+    },
+    {
+      "name": "CorporateSteps",
+      "sourceFile": "src/registry/sections/corporate/CorporateSteps.tsx"
+    },
+    {
+      "name": "CorporateTestimonials",
+      "sourceFile": "src/registry/sections/corporate/CorporateTestimonials.tsx"
+    },
+    {
+      "name": "CoworkingHero",
+      "sourceFile": "src/registry/sections/coworking/CoworkingHero.tsx"
+    },
+    {
+      "name": "CoworkingKimiPage",
+      "sourceFile": "src/capsules/coworking.tsx"
+    },
+    {
+      "name": "CoworkingKimiPage2",
+      "sourceFile": "src/capsules/coworking-2.tsx"
+    },
+    {
+      "name": "CoworkingKimiPage3",
+      "sourceFile": "src/capsules/coworking-3.tsx"
+    },
+    {
+      "name": "CoworkingNavbar",
+      "sourceFile": "src/registry/sections/coworking/CoworkingNavbar.tsx"
+    },
+    {
+      "name": "CrmCta",
+      "sourceFile": "src/registry/sections/crm/CrmCta.tsx"
+    },
+    {
+      "name": "CrmFaq",
+      "sourceFile": "src/registry/sections/crm/CrmFaq.tsx"
+    },
+    {
+      "name": "CrmFeatures",
+      "sourceFile": "src/registry/sections/crm/CrmFeatures.tsx"
+    },
+    {
+      "name": "CrmFooter",
+      "sourceFile": "src/registry/sections/crm/CrmFooter.tsx"
+    },
+    {
+      "name": "CrmHero",
+      "sourceFile": "src/registry/sections/crm/CrmHero.tsx"
+    },
+    {
+      "name": "CrmIntegrations",
+      "sourceFile": "src/registry/sections/crm/CrmIntegrations.tsx"
+    },
+    {
+      "name": "CrmKimiPage",
+      "sourceFile": "src/capsules/crm.tsx"
+    },
+    {
+      "name": "CrmKimiPage2",
+      "sourceFile": "src/capsules/crm-2.tsx"
+    },
+    {
+      "name": "CrmKimiPage3",
+      "sourceFile": "src/capsules/crm-3.tsx"
+    },
+    {
+      "name": "CrmLogos",
+      "sourceFile": "src/registry/sections/crm/CrmLogos.tsx"
+    },
+    {
+      "name": "CrmNavbar",
+      "sourceFile": "src/registry/sections/crm/CrmNavbar.tsx"
+    },
+    {
+      "name": "CrmPricing",
+      "sourceFile": "src/registry/sections/crm/CrmPricing.tsx"
+    },
+    {
+      "name": "CrmStats",
+      "sourceFile": "src/registry/sections/crm/CrmStats.tsx"
+    },
+    {
+      "name": "CrmSteps",
+      "sourceFile": "src/registry/sections/crm/CrmSteps.tsx"
+    },
+    {
+      "name": "CrmTestimonials",
+      "sourceFile": "src/registry/sections/crm/CrmTestimonials.tsx"
+    },
+    {
+      "name": "CrowdfundingCta",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingCta.tsx"
+    },
+    {
+      "name": "CrowdfundingFaq",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingFaq.tsx"
+    },
+    {
+      "name": "CrowdfundingFeatures",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingFeatures.tsx"
+    },
+    {
+      "name": "CrowdfundingFooter",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingFooter.tsx"
+    },
+    {
+      "name": "CrowdfundingGallery",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingGallery.tsx"
+    },
+    {
+      "name": "CrowdfundingHero",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingHero.tsx"
+    },
+    {
+      "name": "CrowdfundingKimiPage",
+      "sourceFile": "src/capsules/crowdfunding.tsx"
+    },
+    {
+      "name": "CrowdfundingKimiPage2",
+      "sourceFile": "src/capsules/crowdfunding-2.tsx"
+    },
+    {
+      "name": "CrowdfundingKimiPage3",
+      "sourceFile": "src/capsules/crowdfunding-3.tsx"
+    },
+    {
+      "name": "CrowdfundingNavbar",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingNavbar.tsx"
+    },
+    {
+      "name": "CrowdfundingPress",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingPress.tsx"
+    },
+    {
+      "name": "CrowdfundingRewards",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingRewards.tsx"
+    },
+    {
+      "name": "CrowdfundingStory",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingStory.tsx"
+    },
+    {
+      "name": "CrowdfundingTestimonials",
+      "sourceFile": "src/registry/sections/crowdfunding/CrowdfundingTestimonials.tsx"
+    },
+    {
+      "name": "CryptoContactCta",
+      "sourceFile": "src/registry/sections/crypto/CryptoContactCta.tsx"
+    },
+    {
+      "name": "CryptoFaq",
+      "sourceFile": "src/registry/sections/crypto/CryptoFaq.tsx"
+    },
+    {
+      "name": "CryptoFeatures",
+      "sourceFile": "src/registry/sections/crypto/CryptoFeatures.tsx"
+    },
+    {
+      "name": "CryptoFooter",
+      "sourceFile": "src/registry/sections/crypto/CryptoFooter.tsx"
+    },
+    {
+      "name": "CryptoHero",
+      "sourceFile": "src/registry/sections/crypto/CryptoHero.tsx"
+    },
+    {
+      "name": "CryptoKimiPage",
+      "sourceFile": "src/capsules/crypto.tsx"
+    },
+    {
+      "name": "CryptoKimiPage2",
+      "sourceFile": "src/capsules/crypto-2.tsx"
+    },
+    {
+      "name": "CryptoKimiPage3",
+      "sourceFile": "src/capsules/crypto-3.tsx"
+    },
+    {
+      "name": "CryptoLogos",
+      "sourceFile": "src/registry/sections/crypto/CryptoLogos.tsx"
+    },
+    {
+      "name": "CryptoNavbar",
+      "sourceFile": "src/registry/sections/crypto/CryptoNavbar.tsx"
+    },
+    {
+      "name": "CryptoNetworkStats",
+      "sourceFile": "src/registry/sections/crypto/CryptoNetworkStats.tsx"
+    },
+    {
+      "name": "CryptoRoadmap",
+      "sourceFile": "src/registry/sections/crypto/CryptoRoadmap.tsx"
+    },
+    {
+      "name": "CryptoSteps",
+      "sourceFile": "src/registry/sections/crypto/CryptoSteps.tsx"
+    },
+    {
+      "name": "CryptoTestimonials",
+      "sourceFile": "src/registry/sections/crypto/CryptoTestimonials.tsx"
+    },
+    {
+      "name": "CybersecurityContactCta",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityContactCta.tsx"
+    },
+    {
+      "name": "CybersecurityFaq",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityFaq.tsx"
+    },
+    {
+      "name": "CybersecurityFeatures",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityFeatures.tsx"
+    },
+    {
+      "name": "CybersecurityFooter",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityFooter.tsx"
+    },
+    {
+      "name": "CybersecurityGallery",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityGallery.tsx"
+    },
+    {
+      "name": "CybersecurityHero",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityHero.tsx"
+    },
+    {
+      "name": "CybersecurityKimiPage",
+      "sourceFile": "src/capsules/cybersecurity.tsx"
+    },
+    {
+      "name": "CybersecurityKimiPage2",
+      "sourceFile": "src/capsules/cybersecurity-2.tsx"
+    },
+    {
+      "name": "CybersecurityKimiPage3",
+      "sourceFile": "src/capsules/cybersecurity-3.tsx"
+    },
+    {
+      "name": "CybersecurityLogos",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityLogos.tsx"
+    },
+    {
+      "name": "CybersecurityNavbar",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityNavbar.tsx"
+    },
+    {
+      "name": "CybersecurityPricing",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityPricing.tsx"
+    },
+    {
+      "name": "CybersecurityStats",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityStats.tsx"
+    },
+    {
+      "name": "CybersecuritySteps",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecuritySteps.tsx"
+    },
+    {
+      "name": "CybersecurityTestimonials",
+      "sourceFile": "src/registry/sections/cybersecurity/CybersecurityTestimonials.tsx"
+    },
+    {
+      "name": "DashboardChartActivity",
+      "sourceFile": "src/registry/sections/dashboard/DashboardChartActivity.tsx"
+    },
+    {
+      "name": "DashboardHeader",
+      "sourceFile": "src/registry/sections/dashboard/DashboardHeader.tsx"
+    },
+    {
+      "name": "DashboardKimiPage",
+      "sourceFile": "src/capsules/dashboard.tsx"
+    },
+    {
+      "name": "DashboardKpis",
+      "sourceFile": "src/registry/sections/dashboard/DashboardKpis.tsx"
+    },
+    {
+      "name": "DashboardOrdersTable",
+      "sourceFile": "src/registry/sections/dashboard/DashboardOrdersTable.tsx"
+    },
+    {
+      "name": "DashboardSidebar",
+      "sourceFile": "src/registry/sections/dashboard/DashboardSidebar.tsx"
+    },
+    {
+      "name": "DashboardTopbar",
+      "sourceFile": "src/registry/sections/dashboard/DashboardTopbar.tsx"
+    },
+    {
+      "name": "DatingAppDownloadCta",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppDownloadCta.tsx"
+    },
+    {
+      "name": "DatingAppFaq",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppFaq.tsx"
+    },
+    {
+      "name": "DatingAppFeatures",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppFeatures.tsx"
+    },
+    {
+      "name": "DatingAppFooter",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppFooter.tsx"
+    },
+    {
+      "name": "DatingAppHero",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppHero.tsx"
+    },
+    {
+      "name": "DatingAppKimiPage",
+      "sourceFile": "src/capsules/dating-app.tsx"
+    },
+    {
+      "name": "DatingAppKimiPage2",
+      "sourceFile": "src/capsules/dating-app-2.tsx"
+    },
+    {
+      "name": "DatingAppLogos",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppLogos.tsx"
+    },
+    {
+      "name": "DatingAppNavbar",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppNavbar.tsx"
+    },
+    {
+      "name": "DatingAppPricing",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppPricing.tsx"
+    },
+    {
+      "name": "DatingAppStats",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppStats.tsx"
+    },
+    {
+      "name": "DatingAppSteps",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppSteps.tsx"
+    },
+    {
+      "name": "DatingAppTestimonials",
+      "sourceFile": "src/registry/sections/dating-app/DatingAppTestimonials.tsx"
+    },
+    {
+      "name": "DentalContactCta",
+      "sourceFile": "src/registry/sections/dental/DentalContactCta.tsx"
+    },
+    {
+      "name": "DentalFaq",
+      "sourceFile": "src/registry/sections/dental/DentalFaq.tsx"
+    },
+    {
+      "name": "DentalFooter",
+      "sourceFile": "src/registry/sections/dental/DentalFooter.tsx"
+    },
+    {
+      "name": "DentalGallery",
+      "sourceFile": "src/registry/sections/dental/DentalGallery.tsx"
+    },
+    {
+      "name": "DentalHero",
+      "sourceFile": "src/registry/sections/dental/DentalHero.tsx"
+    },
+    {
+      "name": "DentalKimiPage",
+      "sourceFile": "src/capsules/dental.tsx"
+    },
+    {
+      "name": "DentalKimiPage2",
+      "sourceFile": "src/capsules/dental-2.tsx"
+    },
+    {
+      "name": "DentalKimiPage3",
+      "sourceFile": "src/capsules/dental-3.tsx"
+    },
+    {
+      "name": "DentalLogos",
+      "sourceFile": "src/registry/sections/dental/DentalLogos.tsx"
+    },
+    {
+      "name": "DentalNavbar",
+      "sourceFile": "src/registry/sections/dental/DentalNavbar.tsx"
+    },
+    {
+      "name": "DentalPricing",
+      "sourceFile": "src/registry/sections/dental/DentalPricing.tsx"
+    },
+    {
+      "name": "DentalServices",
+      "sourceFile": "src/registry/sections/dental/DentalServices.tsx"
+    },
+    {
+      "name": "DentalStats",
+      "sourceFile": "src/registry/sections/dental/DentalStats.tsx"
+    },
+    {
+      "name": "DentalTeam",
+      "sourceFile": "src/registry/sections/dental/DentalTeam.tsx"
+    },
+    {
+      "name": "DentalTestimonials",
+      "sourceFile": "src/registry/sections/dental/DentalTestimonials.tsx"
+    },
+    {
+      "name": "DentalWhyChooseUs",
+      "sourceFile": "src/registry/sections/dental/DentalWhyChooseUs.tsx"
+    },
+    {
+      "name": "DevToolContactCta",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolContactCta.tsx"
+    },
+    {
+      "name": "DevToolFaq",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolFaq.tsx"
+    },
+    {
+      "name": "DevToolFeatures",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolFeatures.tsx"
+    },
+    {
+      "name": "DevToolFooter",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolFooter.tsx"
+    },
+    {
+      "name": "DevToolGallery",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolGallery.tsx"
+    },
+    {
+      "name": "DevToolHero",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolHero.tsx"
+    },
+    {
+      "name": "DevToolKimiPage",
+      "sourceFile": "src/capsules/dev-tool.tsx"
+    },
+    {
+      "name": "DevToolKimiPage10",
+      "sourceFile": "src/capsules/dev-tool-10.tsx"
+    },
+    {
+      "name": "DevToolKimiPage2",
+      "sourceFile": "src/capsules/dev-tool-2.tsx"
+    },
+    {
+      "name": "DevToolKimiPage3",
+      "sourceFile": "src/capsules/dev-tool-3.tsx"
+    },
+    {
+      "name": "DevToolKimiPage4",
+      "sourceFile": "src/capsules/dev-tool-4.tsx"
+    },
+    {
+      "name": "DevToolKimiPage5",
+      "sourceFile": "src/capsules/dev-tool-5.tsx"
+    },
+    {
+      "name": "DevToolKimiPage6",
+      "sourceFile": "src/capsules/dev-tool-6.tsx"
+    },
+    {
+      "name": "DevToolKimiPage7",
+      "sourceFile": "src/capsules/dev-tool-7.tsx"
+    },
+    {
+      "name": "DevToolKimiPage8",
+      "sourceFile": "src/capsules/dev-tool-8.tsx"
+    },
+    {
+      "name": "DevToolKimiPage9",
+      "sourceFile": "src/capsules/dev-tool-9.tsx"
+    },
+    {
+      "name": "DevToolLogos",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolLogos.tsx"
+    },
+    {
+      "name": "DevToolNavbar",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolNavbar.tsx"
+    },
+    {
+      "name": "DevToolPricing",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolPricing.tsx"
+    },
+    {
+      "name": "DevToolStats",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolStats.tsx"
+    },
+    {
+      "name": "DevToolSteps",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolSteps.tsx"
+    },
+    {
+      "name": "DevToolTestimonials",
+      "sourceFile": "src/registry/sections/dev-tool/DevToolTestimonials.tsx"
+    },
+    {
+      "name": "Dialog",
+      "sourceFile": "src/registry/primitives/dialog.tsx"
+    },
+    {
+      "name": "DirectoryCategories",
+      "sourceFile": "src/registry/sections/directory/DirectoryCategories.tsx"
+    },
+    {
+      "name": "DirectoryCta",
+      "sourceFile": "src/registry/sections/directory/DirectoryCta.tsx"
+    },
+    {
+      "name": "DirectoryFaq",
+      "sourceFile": "src/registry/sections/directory/DirectoryFaq.tsx"
+    },
+    {
+      "name": "DirectoryFeatured",
+      "sourceFile": "src/registry/sections/directory/DirectoryFeatured.tsx"
+    },
+    {
+      "name": "DirectoryFooter",
+      "sourceFile": "src/registry/sections/directory/DirectoryFooter.tsx"
+    },
+    {
+      "name": "DirectoryHero",
+      "sourceFile": "src/registry/sections/directory/DirectoryHero.tsx"
+    },
+    {
+      "name": "DirectoryKimiPage",
+      "sourceFile": "src/capsules/directory.tsx"
+    },
+    {
+      "name": "DirectoryKimiPage2",
+      "sourceFile": "src/capsules/directory-2.tsx"
+    },
+    {
+      "name": "DirectoryNavbar",
+      "sourceFile": "src/registry/sections/directory/DirectoryNavbar.tsx"
+    },
+    {
+      "name": "DirectoryPricing",
+      "sourceFile": "src/registry/sections/directory/DirectoryPricing.tsx"
+    },
+    {
+      "name": "DirectoryStats",
+      "sourceFile": "src/registry/sections/directory/DirectoryStats.tsx"
+    },
+    {
+      "name": "DirectorySteps",
+      "sourceFile": "src/registry/sections/directory/DirectorySteps.tsx"
+    },
+    {
+      "name": "DirectoryTestimonials",
+      "sourceFile": "src/registry/sections/directory/DirectoryTestimonials.tsx"
+    },
+    {
+      "name": "DocsKimiPage",
+      "sourceFile": "src/capsules/docs.tsx"
+    },
+    {
+      "name": "DocsKimiPage10",
+      "sourceFile": "src/capsules/docs-10.tsx"
+    },
+    {
+      "name": "DocsKimiPage2",
+      "sourceFile": "src/capsules/docs-2.tsx"
+    },
+    {
+      "name": "DocsKimiPage3",
+      "sourceFile": "src/capsules/docs-3.tsx"
+    },
+    {
+      "name": "DocsKimiPage4",
+      "sourceFile": "src/capsules/docs-4.tsx"
+    },
+    {
+      "name": "DocsKimiPage5",
+      "sourceFile": "src/capsules/docs-5.tsx"
+    },
+    {
+      "name": "DocsKimiPage6",
+      "sourceFile": "src/capsules/docs-6.tsx"
+    },
+    {
+      "name": "DocsKimiPage7",
+      "sourceFile": "src/capsules/docs-7.tsx"
+    },
+    {
+      "name": "DocsKimiPage8",
+      "sourceFile": "src/capsules/docs-8.tsx"
+    },
+    {
+      "name": "DocsKimiPage9",
+      "sourceFile": "src/capsules/docs-9.tsx"
+    },
+    {
+      "name": "DocsNavbar",
+      "sourceFile": "src/registry/sections/docs/DocsNavbar.tsx"
+    },
+    {
+      "name": "DocsSidebar",
+      "sourceFile": "src/registry/sections/docs/DocsSidebar.tsx"
+    },
+    {
+      "name": "Drawer",
+      "sourceFile": "src/registry/primitives/drawer.tsx"
+    },
+    {
+      "name": "DropdownMenu",
+      "sourceFile": "src/registry/primitives/dropdown-menu.tsx"
+    },
+    {
+      "name": "EcommerceKimiPage",
+      "sourceFile": "src/capsules/ecommerce.tsx"
+    },
+    {
+      "name": "EcommerceKimiPage2",
+      "sourceFile": "src/capsules/ecommerce-2.tsx"
+    },
+    {
+      "name": "EcommerceKimiPage3",
+      "sourceFile": "src/capsules/ecommerce-3.tsx"
+    },
+    {
+      "name": "EcommerceKimiPage4",
+      "sourceFile": "src/capsules/ecommerce-4.tsx"
+    },
+    {
+      "name": "EcommerceKimiPage5",
+      "sourceFile": "src/capsules/ecommerce-5.tsx"
+    },
+    {
+      "name": "EcommerceOverview",
+      "sourceFile": "src/registry/sections/ecommerce/EcommerceOverview.tsx"
+    },
+    {
+      "name": "EducationKimiPage",
+      "sourceFile": "src/capsules/education.tsx"
+    },
+    {
+      "name": "EducationKimiPage2",
+      "sourceFile": "src/capsules/education-2.tsx"
+    },
+    {
+      "name": "EducationKimiPage3",
+      "sourceFile": "src/capsules/education-3.tsx"
+    },
+    {
+      "name": "EducationKimiPage4",
+      "sourceFile": "src/capsules/education-4.tsx"
+    },
+    {
+      "name": "EducationKimiPage5",
+      "sourceFile": "src/capsules/education-5.tsx"
+    },
+    {
+      "name": "ElectronicsStoreCategories",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreCategories.tsx"
+    },
+    {
+      "name": "ElectronicsStoreDeals",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreDeals.tsx"
+    },
+    {
+      "name": "ElectronicsStoreFaq",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreFaq.tsx"
+    },
+    {
+      "name": "ElectronicsStoreFeatures",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreFeatures.tsx"
+    },
+    {
+      "name": "ElectronicsStoreFooter",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreFooter.tsx"
+    },
+    {
+      "name": "ElectronicsStoreGallery",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreGallery.tsx"
+    },
+    {
+      "name": "ElectronicsStoreHero",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreHero.tsx"
+    },
+    {
+      "name": "ElectronicsStoreKimiPage",
+      "sourceFile": "src/capsules/electronics-store.tsx"
+    },
+    {
+      "name": "ElectronicsStoreKimiPage2",
+      "sourceFile": "src/capsules/electronics-store-2.tsx"
+    },
+    {
+      "name": "ElectronicsStoreKimiPage3",
+      "sourceFile": "src/capsules/electronics-store-3.tsx"
+    },
+    {
+      "name": "ElectronicsStoreLogos",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreLogos.tsx"
+    },
+    {
+      "name": "ElectronicsStoreNavbar",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreNavbar.tsx"
+    },
+    {
+      "name": "ElectronicsStoreNewsletter",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreNewsletter.tsx"
+    },
+    {
+      "name": "ElectronicsStoreProducts",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreProducts.tsx"
+    },
+    {
+      "name": "ElectronicsStoreStats",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreStats.tsx"
+    },
+    {
+      "name": "ElectronicsStoreTestimonials",
+      "sourceFile": "src/registry/sections/electronics-store/ElectronicsStoreTestimonials.tsx"
+    },
+    {
+      "name": "Empty",
+      "sourceFile": "src/registry/primitives/empty.tsx"
+    },
+    {
+      "name": "EventAgenda",
+      "sourceFile": "src/registry/sections/event/EventAgenda.tsx"
+    },
+    {
+      "name": "EventCta",
+      "sourceFile": "src/registry/sections/event/EventCta.tsx"
+    },
+    {
+      "name": "EventFaq",
+      "sourceFile": "src/registry/sections/event/EventFaq.tsx"
+    },
+    {
+      "name": "EventFeatures",
+      "sourceFile": "src/registry/sections/event/EventFeatures.tsx"
+    },
+    {
+      "name": "EventFooter",
+      "sourceFile": "src/registry/sections/event/EventFooter.tsx"
+    },
+    {
+      "name": "EventGallery",
+      "sourceFile": "src/registry/sections/event/EventGallery.tsx"
+    },
+    {
+      "name": "EventHero",
+      "sourceFile": "src/registry/sections/event/EventHero.tsx"
+    },
+    {
+      "name": "EventKimiPage",
+      "sourceFile": "src/capsules/event.tsx"
+    },
+    {
+      "name": "EventKimiPage2",
+      "sourceFile": "src/capsules/event-2.tsx"
+    },
+    {
+      "name": "EventKimiPage3",
+      "sourceFile": "src/capsules/event-3.tsx"
+    },
+    {
+      "name": "EventLogos",
+      "sourceFile": "src/registry/sections/event/EventLogos.tsx"
+    },
+    {
+      "name": "EventNavbar",
+      "sourceFile": "src/registry/sections/event/EventNavbar.tsx"
+    },
+    {
+      "name": "EventPlannerContact",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerContact.tsx"
+    },
+    {
+      "name": "EventPlannerFaq",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerFaq.tsx"
+    },
+    {
+      "name": "EventPlannerFooter",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerFooter.tsx"
+    },
+    {
+      "name": "EventPlannerGallery",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerGallery.tsx"
+    },
+    {
+      "name": "EventPlannerHero",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerHero.tsx"
+    },
+    {
+      "name": "EventPlannerKimiPage",
+      "sourceFile": "src/capsules/event-planner.tsx"
+    },
+    {
+      "name": "EventPlannerKimiPage2",
+      "sourceFile": "src/capsules/event-planner-2.tsx"
+    },
+    {
+      "name": "EventPlannerLogos",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerLogos.tsx"
+    },
+    {
+      "name": "EventPlannerNavbar",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerNavbar.tsx"
+    },
+    {
+      "name": "EventPlannerPricing",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerPricing.tsx"
+    },
+    {
+      "name": "EventPlannerProcess",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerProcess.tsx"
+    },
+    {
+      "name": "EventPlannerServices",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerServices.tsx"
+    },
+    {
+      "name": "EventPlannerStats",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerStats.tsx"
+    },
+    {
+      "name": "EventPlannerTestimonials",
+      "sourceFile": "src/registry/sections/event-planner/EventPlannerTestimonials.tsx"
+    },
+    {
+      "name": "EventSpeakers",
+      "sourceFile": "src/registry/sections/event/EventSpeakers.tsx"
+    },
+    {
+      "name": "EventTestimonials",
+      "sourceFile": "src/registry/sections/event/EventTestimonials.tsx"
+    },
+    {
+      "name": "EventTickets",
+      "sourceFile": "src/registry/sections/event/EventTickets.tsx"
+    },
+    {
+      "name": "EventVenue",
+      "sourceFile": "src/registry/sections/event/EventVenue.tsx"
+    },
+    {
+      "name": "FaqAccordion",
+      "sourceFile": "src/registry/sections/faq/FaqAccordion.tsx"
+    },
+    {
+      "name": "FaqContactCta",
+      "sourceFile": "src/registry/sections/faq/FaqContactCta.tsx"
+    },
+    {
+      "name": "FaqFooter",
+      "sourceFile": "src/registry/sections/faq/FaqFooter.tsx"
+    },
+    {
+      "name": "FaqHero",
+      "sourceFile": "src/registry/sections/faq/FaqHero.tsx"
+    },
+    {
+      "name": "FaqKimiPage",
+      "sourceFile": "src/capsules/faq.tsx"
+    },
+    {
+      "name": "FaqKimiPage2",
+      "sourceFile": "src/capsules/faq-2.tsx"
+    },
+    {
+      "name": "FaqNavbar",
+      "sourceFile": "src/registry/sections/faq/FaqNavbar.tsx"
+    },
+    {
+      "name": "FaqTopics",
+      "sourceFile": "src/registry/sections/faq/FaqTopics.tsx"
+    },
+    {
+      "name": "FashionStoreAbout",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreAbout.tsx"
+    },
+    {
+      "name": "FashionStoreCollections",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreCollections.tsx"
+    },
+    {
+      "name": "FashionStoreFaq",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreFaq.tsx"
+    },
+    {
+      "name": "FashionStoreFooter",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreFooter.tsx"
+    },
+    {
+      "name": "FashionStoreHero",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreHero.tsx"
+    },
+    {
+      "name": "FashionStoreKimiPage",
+      "sourceFile": "src/capsules/fashion-store.tsx"
+    },
+    {
+      "name": "FashionStoreKimiPage2",
+      "sourceFile": "src/capsules/fashion-store-2.tsx"
+    },
+    {
+      "name": "FashionStoreKimiPage3",
+      "sourceFile": "src/capsules/fashion-store-3.tsx"
+    },
+    {
+      "name": "FashionStoreLogos",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreLogos.tsx"
+    },
+    {
+      "name": "FashionStoreLookbook",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreLookbook.tsx"
+    },
+    {
+      "name": "FashionStoreNavbar",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreNavbar.tsx"
+    },
+    {
+      "name": "FashionStoreNewsletter",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreNewsletter.tsx"
+    },
+    {
+      "name": "FashionStoreProducts",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreProducts.tsx"
+    },
+    {
+      "name": "FashionStoreStats",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreStats.tsx"
+    },
+    {
+      "name": "FashionStoreTestimonials",
+      "sourceFile": "src/registry/sections/fashion-store/FashionStoreTestimonials.tsx"
+    },
+    {
+      "name": "FeaturesKimiPage",
+      "sourceFile": "src/capsules/features.tsx"
+    },
+    {
+      "name": "FeaturesKimiPage2",
+      "sourceFile": "src/capsules/features-2.tsx"
+    },
+    {
+      "name": "FeaturesKimiPage3",
+      "sourceFile": "src/capsules/features-3.tsx"
+    },
+    {
+      "name": "FeaturesKimiPage4",
+      "sourceFile": "src/capsules/features-4.tsx"
+    },
+    {
+      "name": "FeaturesKimiPage5",
+      "sourceFile": "src/capsules/features-5.tsx"
+    },
+    {
+      "name": "Field",
+      "sourceFile": "src/registry/primitives/field.tsx"
+    },
+    {
+      "name": "FieldDivider",
+      "sourceFile": "src/registry/primitives/field.tsx"
+    },
+    {
+      "name": "FieldSetGroup",
+      "sourceFile": "src/registry/primitives/field.tsx"
+    },
+    {
+      "name": "FilmDirectorContactCta",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorContactCta.tsx"
+    },
+    {
+      "name": "FilmDirectorFaq",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorFaq.tsx"
+    },
+    {
+      "name": "FilmDirectorFooter",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorFooter.tsx"
+    },
+    {
+      "name": "FilmDirectorHero",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorHero.tsx"
+    },
+    {
+      "name": "FilmDirectorKimiPage",
+      "sourceFile": "src/capsules/film-director.tsx"
+    },
+    {
+      "name": "FilmDirectorKimiPage2",
+      "sourceFile": "src/capsules/film-director-2.tsx"
+    },
+    {
+      "name": "FilmDirectorKimiPage3",
+      "sourceFile": "src/capsules/film-director-3.tsx"
+    },
+    {
+      "name": "FilmDirectorLogos",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorLogos.tsx"
+    },
+    {
+      "name": "FilmDirectorNavbar",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorNavbar.tsx"
+    },
+    {
+      "name": "FilmDirectorPricing",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorPricing.tsx"
+    },
+    {
+      "name": "FilmDirectorProcess",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorProcess.tsx"
+    },
+    {
+      "name": "FilmDirectorServices",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorServices.tsx"
+    },
+    {
+      "name": "FilmDirectorStats",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorStats.tsx"
+    },
+    {
+      "name": "FilmDirectorTestimonials",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorTestimonials.tsx"
+    },
+    {
+      "name": "FilmDirectorWork",
+      "sourceFile": "src/registry/sections/film-director/FilmDirectorWork.tsx"
+    },
+    {
+      "name": "FintechFeatures",
+      "sourceFile": "src/registry/sections/fintech/FintechFeatures.tsx"
+    },
+    {
+      "name": "FintechKimiPage",
+      "sourceFile": "src/capsules/fintech.tsx"
+    },
+    {
+      "name": "FintechKimiPage2",
+      "sourceFile": "src/capsules/fintech-2.tsx"
+    },
+    {
+      "name": "FintechKimiPage3",
+      "sourceFile": "src/capsules/fintech-3.tsx"
+    },
+    {
+      "name": "FintechLogos",
+      "sourceFile": "src/registry/sections/fintech/FintechLogos.tsx"
+    },
+    {
+      "name": "FintechNavbar",
+      "sourceFile": "src/registry/sections/fintech/FintechNavbar.tsx"
+    },
+    {
+      "name": "FitnessClasses",
+      "sourceFile": "src/registry/sections/fitness/FitnessClasses.tsx"
+    },
+    {
+      "name": "FitnessCta",
+      "sourceFile": "src/registry/sections/fitness/FitnessCta.tsx"
+    },
+    {
+      "name": "FitnessFaq",
+      "sourceFile": "src/registry/sections/fitness/FitnessFaq.tsx"
+    },
+    {
+      "name": "FitnessFooter",
+      "sourceFile": "src/registry/sections/fitness/FitnessFooter.tsx"
+    },
+    {
+      "name": "FitnessGallery",
+      "sourceFile": "src/registry/sections/fitness/FitnessGallery.tsx"
+    },
+    {
+      "name": "FitnessHero",
+      "sourceFile": "src/registry/sections/fitness/FitnessHero.tsx"
+    },
+    {
+      "name": "FitnessKimiPage",
+      "sourceFile": "src/capsules/fitness.tsx"
+    },
+    {
+      "name": "FitnessKimiPage2",
+      "sourceFile": "src/capsules/fitness-2.tsx"
+    },
+    {
+      "name": "FitnessKimiPage3",
+      "sourceFile": "src/capsules/fitness-3.tsx"
+    },
+    {
+      "name": "FitnessLogos",
+      "sourceFile": "src/registry/sections/fitness/FitnessLogos.tsx"
+    },
+    {
+      "name": "FitnessNavbar",
+      "sourceFile": "src/registry/sections/fitness/FitnessNavbar.tsx"
+    },
+    {
+      "name": "FitnessPricing",
+      "sourceFile": "src/registry/sections/fitness/FitnessPricing.tsx"
+    },
+    {
+      "name": "FitnessSchedule",
+      "sourceFile": "src/registry/sections/fitness/FitnessSchedule.tsx"
+    },
+    {
+      "name": "FitnessStats",
+      "sourceFile": "src/registry/sections/fitness/FitnessStats.tsx"
+    },
+    {
+      "name": "FitnessTestimonials",
+      "sourceFile": "src/registry/sections/fitness/FitnessTestimonials.tsx"
+    },
+    {
+      "name": "FitnessTrainers",
+      "sourceFile": "src/registry/sections/fitness/FitnessTrainers.tsx"
+    },
+    {
+      "name": "FlightSimulatorKimiPage",
+      "sourceFile": "src/capsules/flight-simulator.tsx"
+    },
+    {
+      "name": "FoodDeliveryCta",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryCta.tsx"
+    },
+    {
+      "name": "FoodDeliveryFeatures",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryFeatures.tsx"
+    },
+    {
+      "name": "FoodDeliveryFooter",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryFooter.tsx"
+    },
+    {
+      "name": "FoodDeliveryHero",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryHero.tsx"
+    },
+    {
+      "name": "FoodDeliveryKimiPage",
+      "sourceFile": "src/capsules/food-delivery.tsx"
+    },
+    {
+      "name": "FoodDeliveryKimiPage2",
+      "sourceFile": "src/capsules/food-delivery-2.tsx"
+    },
+    {
+      "name": "FoodDeliveryKimiPage3",
+      "sourceFile": "src/capsules/food-delivery-3.tsx"
+    },
+    {
+      "name": "FoodDeliveryLogos",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryLogos.tsx"
+    },
+    {
+      "name": "FoodDeliveryNavbar",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryNavbar.tsx"
+    },
+    {
+      "name": "FoodDeliveryRestaurants",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryRestaurants.tsx"
+    },
+    {
+      "name": "FoodDeliveryStats",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryStats.tsx"
+    },
+    {
+      "name": "FoodDeliverySteps",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliverySteps.tsx"
+    },
+    {
+      "name": "FoodDeliveryTestimonials",
+      "sourceFile": "src/registry/sections/food-delivery/FoodDeliveryTestimonials.tsx"
+    },
+    {
+      "name": "FoodTruckCatering",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckCatering.tsx"
+    },
+    {
+      "name": "FoodTruckContactCta",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckContactCta.tsx"
+    },
+    {
+      "name": "FoodTruckFaq",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckFaq.tsx"
+    },
+    {
+      "name": "FoodTruckFeatures",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckFeatures.tsx"
+    },
+    {
+      "name": "FoodTruckFooter",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckFooter.tsx"
+    },
+    {
+      "name": "FoodTruckGallery",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckGallery.tsx"
+    },
+    {
+      "name": "FoodTruckHero",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckHero.tsx"
+    },
+    {
+      "name": "FoodTruckKimiPage",
+      "sourceFile": "src/capsules/food-truck.tsx"
+    },
+    {
+      "name": "FoodTruckKimiPage2",
+      "sourceFile": "src/capsules/food-truck-2.tsx"
+    },
+    {
+      "name": "FoodTruckKimiPage3",
+      "sourceFile": "src/capsules/food-truck-3.tsx"
+    },
+    {
+      "name": "FoodTruckLocations",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckLocations.tsx"
+    },
+    {
+      "name": "FoodTruckMenu",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckMenu.tsx"
+    },
+    {
+      "name": "FoodTruckNavbar",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckNavbar.tsx"
+    },
+    {
+      "name": "FoodTruckStats",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckStats.tsx"
+    },
+    {
+      "name": "FoodTruckTestimonials",
+      "sourceFile": "src/registry/sections/food-truck/FoodTruckTestimonials.tsx"
+    },
+    {
+      "name": "FurnitureStoreDesign",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreDesign.tsx"
+    },
+    {
+      "name": "FurnitureStoreFeatures",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreFeatures.tsx"
+    },
+    {
+      "name": "FurnitureStoreFooter",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreFooter.tsx"
+    },
+    {
+      "name": "FurnitureStoreHero",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreHero.tsx"
+    },
+    {
+      "name": "FurnitureStoreKimiPage",
+      "sourceFile": "src/capsules/furniture-store.tsx"
+    },
+    {
+      "name": "FurnitureStoreKimiPage2",
+      "sourceFile": "src/capsules/furniture-store-2.tsx"
+    },
+    {
+      "name": "FurnitureStoreKimiPage3",
+      "sourceFile": "src/capsules/furniture-store-3.tsx"
+    },
+    {
+      "name": "FurnitureStoreNavbar",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreNavbar.tsx"
+    },
+    {
+      "name": "FurnitureStoreNewsletter",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreNewsletter.tsx"
+    },
+    {
+      "name": "FurnitureStorePress",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStorePress.tsx"
+    },
+    {
+      "name": "FurnitureStoreProducts",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreProducts.tsx"
+    },
+    {
+      "name": "FurnitureStoreRooms",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreRooms.tsx"
+    },
+    {
+      "name": "FurnitureStoreTestimonials",
+      "sourceFile": "src/registry/sections/furniture-store/FurnitureStoreTestimonials.tsx"
+    },
+    {
+      "name": "Grid",
+      "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "Heading",
+      "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "HealthcareCta",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareCta.tsx"
+    },
+    {
+      "name": "HealthcareDoctors",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareDoctors.tsx"
+    },
+    {
+      "name": "HealthcareFaq",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareFaq.tsx"
+    },
+    {
+      "name": "HealthcareFooter",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareFooter.tsx"
+    },
+    {
+      "name": "HealthcareHero",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareHero.tsx"
+    },
+    {
+      "name": "HealthcareInsurers",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareInsurers.tsx"
+    },
+    {
+      "name": "HealthcareKimiPage",
+      "sourceFile": "src/capsules/healthcare.tsx"
+    },
+    {
+      "name": "HealthcareKimiPage2",
+      "sourceFile": "src/capsules/healthcare-2.tsx"
+    },
+    {
+      "name": "HealthcareKimiPage3",
+      "sourceFile": "src/capsules/healthcare-3.tsx"
+    },
+    {
+      "name": "HealthcareNavbar",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareNavbar.tsx"
+    },
+    {
+      "name": "HealthcarePricing",
+      "sourceFile": "src/registry/sections/healthcare/HealthcarePricing.tsx"
+    },
+    {
+      "name": "HealthcareServices",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareServices.tsx"
+    },
+    {
+      "name": "HealthcareStats",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareStats.tsx"
+    },
+    {
+      "name": "HealthcareSteps",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareSteps.tsx"
+    },
+    {
+      "name": "HealthcareTestimonials",
+      "sourceFile": "src/registry/sections/healthcare/HealthcareTestimonials.tsx"
+    },
+    {
+      "name": "HotelResortAmenities",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortAmenities.tsx"
+    },
+    {
+      "name": "HotelResortBooking",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortBooking.tsx"
+    },
+    {
+      "name": "HotelResortCta",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortCta.tsx"
+    },
+    {
+      "name": "HotelResortFaq",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortFaq.tsx"
+    },
+    {
+      "name": "HotelResortFooter",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortFooter.tsx"
+    },
+    {
+      "name": "HotelResortGallery",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortGallery.tsx"
+    },
+    {
+      "name": "HotelResortHero",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortHero.tsx"
+    },
+    {
+      "name": "HotelResortKimiPage",
+      "sourceFile": "src/capsules/hotel-resort.tsx"
+    },
+    {
+      "name": "HotelResortKimiPage2",
+      "sourceFile": "src/capsules/hotel-resort-2.tsx"
+    },
+    {
+      "name": "HotelResortKimiPage3",
+      "sourceFile": "src/capsules/hotel-resort-3.tsx"
+    },
+    {
+      "name": "HotelResortNavbar",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortNavbar.tsx"
+    },
+    {
+      "name": "HotelResortRooms",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortRooms.tsx"
+    },
+    {
+      "name": "HotelResortStats",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortStats.tsx"
+    },
+    {
+      "name": "HotelResortTestimonials",
+      "sourceFile": "src/registry/sections/hotel-resort/HotelResortTestimonials.tsx"
+    },
+    {
+      "name": "HoverCard",
+      "sourceFile": "src/registry/primitives/hover-card.tsx"
+    },
+    {
+      "name": "IllustratorAbout",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorAbout.tsx"
+    },
+    {
+      "name": "IllustratorContactCta",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorContactCta.tsx"
+    },
+    {
+      "name": "IllustratorFaq",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorFaq.tsx"
+    },
+    {
+      "name": "IllustratorFooter",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorFooter.tsx"
+    },
+    {
+      "name": "IllustratorHero",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorHero.tsx"
+    },
+    {
+      "name": "IllustratorKimiPage",
+      "sourceFile": "src/capsules/illustrator.tsx"
+    },
+    {
+      "name": "IllustratorKimiPage2",
+      "sourceFile": "src/capsules/illustrator-2.tsx"
+    },
+    {
+      "name": "IllustratorKimiPage3",
+      "sourceFile": "src/capsules/illustrator-3.tsx"
+    },
+    {
+      "name": "IllustratorLogos",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorLogos.tsx"
+    },
+    {
+      "name": "IllustratorNavbar",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorNavbar.tsx"
+    },
+    {
+      "name": "IllustratorServices",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorServices.tsx"
+    },
+    {
+      "name": "IllustratorShop",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorShop.tsx"
+    },
+    {
+      "name": "IllustratorStats",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorStats.tsx"
+    },
+    {
+      "name": "IllustratorTestimonials",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorTestimonials.tsx"
+    },
+    {
+      "name": "IllustratorWork",
+      "sourceFile": "src/registry/sections/illustrator/IllustratorWork.tsx"
+    },
+    {
+      "name": "Input",
+      "sourceFile": "src/registry/primitives/input.tsx"
+    },
+    {
+      "name": "InputGroup",
+      "sourceFile": "src/registry/primitives/input-group.tsx"
+    },
+    {
+      "name": "InputOTP",
+      "sourceFile": "src/registry/primitives/input-otp.tsx"
+    },
+    {
+      "name": "InsuranceCoverage",
+      "sourceFile": "src/registry/sections/insurance/InsuranceCoverage.tsx"
+    },
+    {
+      "name": "InsuranceCta",
+      "sourceFile": "src/registry/sections/insurance/InsuranceCta.tsx"
+    },
+    {
+      "name": "InsuranceFaq",
+      "sourceFile": "src/registry/sections/insurance/InsuranceFaq.tsx"
+    },
+    {
+      "name": "InsuranceFooter",
+      "sourceFile": "src/registry/sections/insurance/InsuranceFooter.tsx"
+    },
+    {
+      "name": "InsuranceHero",
+      "sourceFile": "src/registry/sections/insurance/InsuranceHero.tsx"
+    },
+    {
+      "name": "InsuranceKimiPage",
+      "sourceFile": "src/capsules/insurance.tsx"
+    },
+    {
+      "name": "InsuranceKimiPage2",
+      "sourceFile": "src/capsules/insurance-2.tsx"
+    },
+    {
+      "name": "InsuranceKimiPage3",
+      "sourceFile": "src/capsules/insurance-3.tsx"
+    },
+    {
+      "name": "InsuranceLogos",
+      "sourceFile": "src/registry/sections/insurance/InsuranceLogos.tsx"
+    },
+    {
+      "name": "InsuranceNavbar",
+      "sourceFile": "src/registry/sections/insurance/InsuranceNavbar.tsx"
+    },
+    {
+      "name": "InsurancePricing",
+      "sourceFile": "src/registry/sections/insurance/InsurancePricing.tsx"
+    },
+    {
+      "name": "InsuranceStats",
+      "sourceFile": "src/registry/sections/insurance/InsuranceStats.tsx"
+    },
+    {
+      "name": "InsuranceSteps",
+      "sourceFile": "src/registry/sections/insurance/InsuranceSteps.tsx"
+    },
+    {
+      "name": "InsuranceTestimonials",
+      "sourceFile": "src/registry/sections/insurance/InsuranceTestimonials.tsx"
+    },
+    {
+      "name": "InteriorDesignContactCta",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignContactCta.tsx"
+    },
+    {
+      "name": "InteriorDesignFaq",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignFaq.tsx"
+    },
+    {
+      "name": "InteriorDesignFooter",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignFooter.tsx"
+    },
+    {
+      "name": "InteriorDesignHero",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignHero.tsx"
+    },
+    {
+      "name": "InteriorDesignKimiPage",
+      "sourceFile": "src/capsules/interior-design.tsx"
+    },
+    {
+      "name": "InteriorDesignKimiPage2",
+      "sourceFile": "src/capsules/interior-design-2.tsx"
+    },
+    {
+      "name": "InteriorDesignKimiPage3",
+      "sourceFile": "src/capsules/interior-design-3.tsx"
+    },
+    {
+      "name": "InteriorDesignLogos",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignLogos.tsx"
+    },
+    {
+      "name": "InteriorDesignNavbar",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignNavbar.tsx"
+    },
+    {
+      "name": "InteriorDesignPricing",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignPricing.tsx"
+    },
+    {
+      "name": "InteriorDesignProcess",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignProcess.tsx"
+    },
+    {
+      "name": "InteriorDesignProjects",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignProjects.tsx"
+    },
+    {
+      "name": "InteriorDesignServices",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignServices.tsx"
+    },
+    {
+      "name": "InteriorDesignStats",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignStats.tsx"
+    },
+    {
+      "name": "InteriorDesignTestimonials",
+      "sourceFile": "src/registry/sections/interior-design/InteriorDesignTestimonials.tsx"
+    },
+    {
+      "name": "InvestingCta",
+      "sourceFile": "src/registry/sections/investing/InvestingCta.tsx"
+    },
+    {
+      "name": "InvestingFaq",
+      "sourceFile": "src/registry/sections/investing/InvestingFaq.tsx"
+    },
+    {
+      "name": "InvestingFeatures",
+      "sourceFile": "src/registry/sections/investing/InvestingFeatures.tsx"
+    },
+    {
+      "name": "InvestingFooter",
+      "sourceFile": "src/registry/sections/investing/InvestingFooter.tsx"
+    },
+    {
+      "name": "InvestingGallery",
+      "sourceFile": "src/registry/sections/investing/InvestingGallery.tsx"
+    },
+    {
+      "name": "InvestingHero",
+      "sourceFile": "src/registry/sections/investing/InvestingHero.tsx"
+    },
+    {
+      "name": "InvestingKimiPage",
+      "sourceFile": "src/capsules/investing.tsx"
+    },
+    {
+      "name": "InvestingKimiPage2",
+      "sourceFile": "src/capsules/investing-2.tsx"
+    },
+    {
+      "name": "InvestingKimiPage3",
+      "sourceFile": "src/capsules/investing-3.tsx"
+    },
+    {
+      "name": "InvestingLogos",
+      "sourceFile": "src/registry/sections/investing/InvestingLogos.tsx"
+    },
+    {
+      "name": "InvestingMarkets",
+      "sourceFile": "src/registry/sections/investing/InvestingMarkets.tsx"
+    },
+    {
+      "name": "InvestingNavbar",
+      "sourceFile": "src/registry/sections/investing/InvestingNavbar.tsx"
+    },
+    {
+      "name": "InvestingPricing",
+      "sourceFile": "src/registry/sections/investing/InvestingPricing.tsx"
+    },
+    {
+      "name": "InvestingStats",
+      "sourceFile": "src/registry/sections/investing/InvestingStats.tsx"
+    },
+    {
+      "name": "InvestingSteps",
+      "sourceFile": "src/registry/sections/investing/InvestingSteps.tsx"
+    },
+    {
+      "name": "InvestingTestimonials",
+      "sourceFile": "src/registry/sections/investing/InvestingTestimonials.tsx"
+    },
+    {
+      "name": "Item",
+      "sourceFile": "src/registry/primitives/item.tsx"
+    },
+    {
+      "name": "ItemList",
+      "sourceFile": "src/registry/primitives/item.tsx"
+    },
+    {
+      "name": "JewelryStoreAppointmentCta",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreAppointmentCta.tsx"
+    },
+    {
+      "name": "JewelryStoreCollections",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreCollections.tsx"
+    },
+    {
+      "name": "JewelryStoreCraftsmanship",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreCraftsmanship.tsx"
+    },
+    {
+      "name": "JewelryStoreFaq",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreFaq.tsx"
+    },
+    {
+      "name": "JewelryStoreFooter",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreFooter.tsx"
+    },
+    {
+      "name": "JewelryStoreGallery",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreGallery.tsx"
+    },
+    {
+      "name": "JewelryStoreHero",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreHero.tsx"
+    },
+    {
+      "name": "JewelryStoreKimiPage",
+      "sourceFile": "src/capsules/jewelry-store.tsx"
+    },
+    {
+      "name": "JewelryStoreKimiPage2",
+      "sourceFile": "src/capsules/jewelry-store-2.tsx"
+    },
+    {
+      "name": "JewelryStoreKimiPage3",
+      "sourceFile": "src/capsules/jewelry-store-3.tsx"
+    },
+    {
+      "name": "JewelryStoreLogos",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreLogos.tsx"
+    },
+    {
+      "name": "JewelryStoreNavbar",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreNavbar.tsx"
+    },
+    {
+      "name": "JewelryStorePieces",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStorePieces.tsx"
+    },
+    {
+      "name": "JewelryStoreStats",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreStats.tsx"
+    },
+    {
+      "name": "JewelryStoreTestimonials",
+      "sourceFile": "src/registry/sections/jewelry-store/JewelryStoreTestimonials.tsx"
+    },
+    {
+      "name": "JobBoardCategories",
+      "sourceFile": "src/registry/sections/job-board/JobBoardCategories.tsx"
+    },
+    {
+      "name": "JobBoardCta",
+      "sourceFile": "src/registry/sections/job-board/JobBoardCta.tsx"
+    },
+    {
+      "name": "JobBoardFeatures",
+      "sourceFile": "src/registry/sections/job-board/JobBoardFeatures.tsx"
+    },
+    {
+      "name": "JobBoardFooter",
+      "sourceFile": "src/registry/sections/job-board/JobBoardFooter.tsx"
+    },
+    {
+      "name": "JobBoardHero",
+      "sourceFile": "src/registry/sections/job-board/JobBoardHero.tsx"
+    },
+    {
+      "name": "JobBoardJobs",
+      "sourceFile": "src/registry/sections/job-board/JobBoardJobs.tsx"
+    },
+    {
+      "name": "JobBoardKimiPage",
+      "sourceFile": "src/capsules/job-board.tsx"
+    },
+    {
+      "name": "JobBoardKimiPage2",
+      "sourceFile": "src/capsules/job-board-2.tsx"
+    },
+    {
+      "name": "JobBoardKimiPage3",
+      "sourceFile": "src/capsules/job-board-3.tsx"
+    },
+    {
+      "name": "JobBoardLogos",
+      "sourceFile": "src/registry/sections/job-board/JobBoardLogos.tsx"
+    },
+    {
+      "name": "JobBoardNavbar",
+      "sourceFile": "src/registry/sections/job-board/JobBoardNavbar.tsx"
+    },
+    {
+      "name": "JobBoardStats",
+      "sourceFile": "src/registry/sections/job-board/JobBoardStats.tsx"
+    },
+    {
+      "name": "JobBoardSteps",
+      "sourceFile": "src/registry/sections/job-board/JobBoardSteps.tsx"
+    },
+    {
+      "name": "JobBoardTestimonials",
+      "sourceFile": "src/registry/sections/job-board/JobBoardTestimonials.tsx"
+    },
+    {
+      "name": "Kbd",
+      "sourceFile": "src/registry/primitives/kbd.tsx"
+    },
+    {
+      "name": "KbdCombo",
+      "sourceFile": "src/registry/primitives/kbd.tsx"
+    },
+    {
+      "name": "KidsEducationActivities",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationActivities.tsx"
+    },
+    {
+      "name": "KidsEducationCta",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationCta.tsx"
+    },
+    {
+      "name": "KidsEducationFaq",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationFaq.tsx"
+    },
+    {
+      "name": "KidsEducationFooter",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationFooter.tsx"
+    },
+    {
+      "name": "KidsEducationGallery",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationGallery.tsx"
+    },
+    {
+      "name": "KidsEducationHero",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationHero.tsx"
+    },
+    {
+      "name": "KidsEducationKimiPage",
+      "sourceFile": "src/capsules/kids-education.tsx"
+    },
+    {
+      "name": "KidsEducationKimiPage2",
+      "sourceFile": "src/capsules/kids-education-2.tsx"
+    },
+    {
+      "name": "KidsEducationKimiPage3",
+      "sourceFile": "src/capsules/kids-education-3.tsx"
+    },
+    {
+      "name": "KidsEducationLogos",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationLogos.tsx"
+    },
+    {
+      "name": "KidsEducationNavbar",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationNavbar.tsx"
+    },
+    {
+      "name": "KidsEducationPricing",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationPricing.tsx"
+    },
+    {
+      "name": "KidsEducationStats",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationStats.tsx"
+    },
+    {
+      "name": "KidsEducationSteps",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationSteps.tsx"
+    },
+    {
+      "name": "KidsEducationTestimonials",
+      "sourceFile": "src/registry/sections/kids-education/KidsEducationTestimonials.tsx"
+    },
+    {
+      "name": "KnowledgeBaseCategories",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseCategories.tsx"
+    },
+    {
+      "name": "KnowledgeBaseFaq",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseFaq.tsx"
+    },
+    {
+      "name": "KnowledgeBaseFooter",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseFooter.tsx"
+    },
+    {
+      "name": "KnowledgeBaseGuides",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseGuides.tsx"
+    },
+    {
+      "name": "KnowledgeBaseHero",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseHero.tsx"
+    },
+    {
+      "name": "KnowledgeBaseKimiPage",
+      "sourceFile": "src/capsules/knowledge-base.tsx"
+    },
+    {
+      "name": "KnowledgeBaseKimiPage2",
+      "sourceFile": "src/capsules/knowledge-base-2.tsx"
+    },
+    {
+      "name": "KnowledgeBaseKimiPage3",
+      "sourceFile": "src/capsules/knowledge-base-3.tsx"
+    },
+    {
+      "name": "KnowledgeBaseNavbar",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseNavbar.tsx"
+    },
+    {
+      "name": "KnowledgeBasePopular",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBasePopular.tsx"
+    },
+    {
+      "name": "KnowledgeBaseStats",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseStats.tsx"
+    },
+    {
+      "name": "KnowledgeBaseSupportCta",
+      "sourceFile": "src/registry/sections/knowledge-base/KnowledgeBaseSupportCta.tsx"
+    },
+    {
+      "name": "Label",
+      "sourceFile": "src/registry/primitives/label.tsx"
+    },
+    {
+      "name": "LandscapingFooter",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingFooter.tsx"
+    },
+    {
+      "name": "LandscapingGallery",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingGallery.tsx"
+    },
+    {
+      "name": "LandscapingHero",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingHero.tsx"
+    },
+    {
+      "name": "LandscapingKimiPage",
+      "sourceFile": "src/capsules/landscaping.tsx"
+    },
+    {
+      "name": "LandscapingKimiPage2",
+      "sourceFile": "src/capsules/landscaping-2.tsx"
+    },
+    {
+      "name": "LandscapingKimiPage3",
+      "sourceFile": "src/capsules/landscaping-3.tsx"
+    },
+    {
+      "name": "LandscapingLogos",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingLogos.tsx"
+    },
+    {
+      "name": "LandscapingNavbar",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingNavbar.tsx"
+    },
+    {
+      "name": "LandscapingPricing",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingPricing.tsx"
+    },
+    {
+      "name": "LandscapingProcess",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingProcess.tsx"
+    },
+    {
+      "name": "LandscapingServices",
+      "sourceFile": "src/registry/sections/landscaping/LandscapingServices.tsx"
+    },
+    {
+      "name": "LawFirmAttorneys",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmAttorneys.tsx"
+    },
+    {
+      "name": "LawFirmContact",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmContact.tsx"
+    },
+    {
+      "name": "LawFirmFaq",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmFaq.tsx"
+    },
+    {
+      "name": "LawFirmFooter",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmFooter.tsx"
+    },
+    {
+      "name": "LawFirmHero",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmHero.tsx"
+    },
+    {
+      "name": "LawFirmKimiPage",
+      "sourceFile": "src/capsules/law-firm.tsx"
+    },
+    {
+      "name": "LawFirmKimiPage2",
+      "sourceFile": "src/capsules/law-firm-2.tsx"
+    },
+    {
+      "name": "LawFirmKimiPage3",
+      "sourceFile": "src/capsules/law-firm-3.tsx"
+    },
+    {
+      "name": "LawFirmLogos",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmLogos.tsx"
+    },
+    {
+      "name": "LawFirmNavbar",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmNavbar.tsx"
+    },
+    {
+      "name": "LawFirmPracticeAreas",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmPracticeAreas.tsx"
+    },
+    {
+      "name": "LawFirmProcess",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmProcess.tsx"
+    },
+    {
+      "name": "LawFirmStats",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmStats.tsx"
+    },
+    {
+      "name": "LawFirmTestimonials",
+      "sourceFile": "src/registry/sections/law-firm/LawFirmTestimonials.tsx"
+    },
+    {
+      "name": "LendingBenefits",
+      "sourceFile": "src/registry/sections/lending/LendingBenefits.tsx"
+    },
+    {
+      "name": "LendingCalculator",
+      "sourceFile": "src/registry/sections/lending/LendingCalculator.tsx"
+    },
+    {
+      "name": "LendingCta",
+      "sourceFile": "src/registry/sections/lending/LendingCta.tsx"
+    },
+    {
+      "name": "LendingFaq",
+      "sourceFile": "src/registry/sections/lending/LendingFaq.tsx"
+    },
+    {
+      "name": "LendingFooter",
+      "sourceFile": "src/registry/sections/lending/LendingFooter.tsx"
+    },
+    {
+      "name": "LendingHero",
+      "sourceFile": "src/registry/sections/lending/LendingHero.tsx"
+    },
+    {
+      "name": "LendingKimiPage",
+      "sourceFile": "src/capsules/lending.tsx"
+    },
+    {
+      "name": "LendingKimiPage2",
+      "sourceFile": "src/capsules/lending-2.tsx"
+    },
+    {
+      "name": "LendingKimiPage3",
+      "sourceFile": "src/capsules/lending-3.tsx"
+    },
+    {
+      "name": "LendingLogos",
+      "sourceFile": "src/registry/sections/lending/LendingLogos.tsx"
+    },
+    {
+      "name": "LendingNavbar",
+      "sourceFile": "src/registry/sections/lending/LendingNavbar.tsx"
+    },
+    {
+      "name": "LendingRates",
+      "sourceFile": "src/registry/sections/lending/LendingRates.tsx"
+    },
+    {
+      "name": "LendingStats",
+      "sourceFile": "src/registry/sections/lending/LendingStats.tsx"
+    },
+    {
+      "name": "LendingSteps",
+      "sourceFile": "src/registry/sections/lending/LendingSteps.tsx"
+    },
+    {
+      "name": "LendingTestimonials",
+      "sourceFile": "src/registry/sections/lending/LendingTestimonials.tsx"
+    },
+    {
+      "name": "LinkInBioFooter",
+      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioFooter.tsx"
+    },
+    {
+      "name": "LinkInBioKimiPage",
+      "sourceFile": "src/capsules/link-in-bio.tsx"
+    },
+    {
+      "name": "LinkInBioKimiPage2",
+      "sourceFile": "src/capsules/link-in-bio-2.tsx"
+    },
+    {
+      "name": "LinkInBioKimiPage3",
+      "sourceFile": "src/capsules/link-in-bio-3.tsx"
+    },
+    {
+      "name": "LinkInBioProfile",
+      "sourceFile": "src/registry/sections/link-in-bio/LinkInBioProfile.tsx"
+    },
+    {
+      "name": "LogisticsCta",
+      "sourceFile": "src/registry/sections/logistics/LogisticsCta.tsx"
+    },
+    {
+      "name": "LogisticsFaq",
+      "sourceFile": "src/registry/sections/logistics/LogisticsFaq.tsx"
+    },
+    {
+      "name": "LogisticsFooter",
+      "sourceFile": "src/registry/sections/logistics/LogisticsFooter.tsx"
+    },
+    {
+      "name": "LogisticsGallery",
+      "sourceFile": "src/registry/sections/logistics/LogisticsGallery.tsx"
+    },
+    {
+      "name": "LogisticsHero",
+      "sourceFile": "src/registry/sections/logistics/LogisticsHero.tsx"
+    },
+    {
+      "name": "LogisticsKimiPage",
+      "sourceFile": "src/capsules/logistics.tsx"
+    },
+    {
+      "name": "LogisticsKimiPage2",
+      "sourceFile": "src/capsules/logistics-2.tsx"
+    },
+    {
+      "name": "LogisticsKimiPage3",
+      "sourceFile": "src/capsules/logistics-3.tsx"
+    },
+    {
+      "name": "LogisticsLogos",
+      "sourceFile": "src/registry/sections/logistics/LogisticsLogos.tsx"
+    },
+    {
+      "name": "LogisticsNavbar",
+      "sourceFile": "src/registry/sections/logistics/LogisticsNavbar.tsx"
+    },
+    {
+      "name": "LogisticsPricing",
+      "sourceFile": "src/registry/sections/logistics/LogisticsPricing.tsx"
+    },
+    {
+      "name": "LogisticsProcess",
+      "sourceFile": "src/registry/sections/logistics/LogisticsProcess.tsx"
+    },
+    {
+      "name": "LogisticsServices",
+      "sourceFile": "src/registry/sections/logistics/LogisticsServices.tsx"
+    },
+    {
+      "name": "LogisticsStats",
+      "sourceFile": "src/registry/sections/logistics/LogisticsStats.tsx"
+    },
+    {
+      "name": "LogisticsTestimonials",
+      "sourceFile": "src/registry/sections/logistics/LogisticsTestimonials.tsx"
+    },
+    {
+      "name": "ManufacturingCapabilities",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingCapabilities.tsx"
+    },
+    {
+      "name": "ManufacturingCta",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingCta.tsx"
+    },
+    {
+      "name": "ManufacturingFaq",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingFaq.tsx"
+    },
+    {
+      "name": "ManufacturingFooter",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingFooter.tsx"
+    },
+    {
+      "name": "ManufacturingGallery",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingGallery.tsx"
+    },
+    {
+      "name": "ManufacturingHero",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingHero.tsx"
+    },
+    {
+      "name": "ManufacturingIndustries",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingIndustries.tsx"
+    },
+    {
+      "name": "ManufacturingKimiPage",
+      "sourceFile": "src/capsules/manufacturing.tsx"
+    },
+    {
+      "name": "ManufacturingKimiPage2",
+      "sourceFile": "src/capsules/manufacturing-2.tsx"
+    },
+    {
+      "name": "ManufacturingKimiPage3",
+      "sourceFile": "src/capsules/manufacturing-3.tsx"
+    },
+    {
+      "name": "ManufacturingLogos",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingLogos.tsx"
+    },
+    {
+      "name": "ManufacturingNavbar",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingNavbar.tsx"
+    },
+    {
+      "name": "ManufacturingPricing",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingPricing.tsx"
+    },
+    {
+      "name": "ManufacturingProcess",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingProcess.tsx"
+    },
+    {
+      "name": "ManufacturingStats",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingStats.tsx"
+    },
+    {
+      "name": "ManufacturingTestimonials",
+      "sourceFile": "src/registry/sections/manufacturing/ManufacturingTestimonials.tsx"
+    },
+    {
+      "name": "MarketingAgencyCases",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyCases.tsx"
+    },
+    {
+      "name": "MarketingAgencyContactCta",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyContactCta.tsx"
+    },
+    {
+      "name": "MarketingAgencyFaq",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyFaq.tsx"
+    },
+    {
+      "name": "MarketingAgencyFooter",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyFooter.tsx"
+    },
+    {
+      "name": "MarketingAgencyHero",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyHero.tsx"
+    },
+    {
+      "name": "MarketingAgencyKimiPage",
+      "sourceFile": "src/capsules/marketing-agency.tsx"
+    },
+    {
+      "name": "MarketingAgencyKimiPage2",
+      "sourceFile": "src/capsules/marketing-agency-2.tsx"
+    },
+    {
+      "name": "MarketingAgencyKimiPage3",
+      "sourceFile": "src/capsules/marketing-agency-3.tsx"
+    },
+    {
+      "name": "MarketingAgencyLogos",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyLogos.tsx"
+    },
+    {
+      "name": "MarketingAgencyNavbar",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyNavbar.tsx"
+    },
+    {
+      "name": "MarketingAgencyPricing",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyPricing.tsx"
+    },
+    {
+      "name": "MarketingAgencyProcess",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyProcess.tsx"
+    },
+    {
+      "name": "MarketingAgencyServices",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyServices.tsx"
+    },
+    {
+      "name": "MarketingAgencyStats",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyStats.tsx"
+    },
+    {
+      "name": "MarketingAgencyTestimonials",
+      "sourceFile": "src/registry/sections/marketing-agency/MarketingAgencyTestimonials.tsx"
+    },
+    {
+      "name": "MarketingCta",
+      "sourceFile": "src/registry/sections/marketing/MarketingCta.tsx"
+    },
+    {
+      "name": "MarketingFeatures",
+      "sourceFile": "src/registry/sections/marketing/MarketingFeatures.tsx"
+    },
+    {
+      "name": "MarketingFooter",
+      "sourceFile": "src/registry/sections/marketing/MarketingFooter.tsx"
+    },
+    {
+      "name": "MarketingHero",
+      "sourceFile": "src/registry/sections/marketing/MarketingHero.tsx"
+    },
+    {
+      "name": "MarketingKimiPage",
+      "sourceFile": "src/capsules/marketing.tsx"
+    },
+    {
+      "name": "MarketingKimiPage2",
+      "sourceFile": "src/capsules/marketing-2.tsx"
+    },
+    {
+      "name": "MarketingLogos",
+      "sourceFile": "src/registry/sections/marketing/MarketingLogos.tsx"
+    },
+    {
+      "name": "MarketingNavbar",
+      "sourceFile": "src/registry/sections/marketing/MarketingNavbar.tsx"
+    },
+    {
+      "name": "MarketingPricing",
+      "sourceFile": "src/registry/sections/marketing/MarketingPricing.tsx"
+    },
+    {
+      "name": "MarketingTestimonial",
+      "sourceFile": "src/registry/sections/marketing/MarketingTestimonial.tsx"
+    },
+    {
+      "name": "MarketplaceCategories",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceCategories.tsx"
+    },
+    {
+      "name": "MarketplaceFooter",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceFooter.tsx"
+    },
+    {
+      "name": "MarketplaceHero",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceHero.tsx"
+    },
+    {
+      "name": "MarketplaceKimiPage",
+      "sourceFile": "src/capsules/marketplace.tsx"
+    },
+    {
+      "name": "MarketplaceKimiPage2",
+      "sourceFile": "src/capsules/marketplace-2.tsx"
+    },
+    {
+      "name": "MarketplaceKimiPage3",
+      "sourceFile": "src/capsules/marketplace-3.tsx"
+    },
+    {
+      "name": "MarketplaceNavbar",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceNavbar.tsx"
+    },
+    {
+      "name": "MarketplaceSellers",
+      "sourceFile": "src/registry/sections/marketplace/MarketplaceSellers.tsx"
+    },
+    {
+      "name": "MembershipClubBenefits",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubBenefits.tsx"
+    },
+    {
+      "name": "MembershipClubCta",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubCta.tsx"
+    },
+    {
+      "name": "MembershipClubFaq",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubFaq.tsx"
+    },
+    {
+      "name": "MembershipClubFooter",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubFooter.tsx"
+    },
+    {
+      "name": "MembershipClubGallery",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubGallery.tsx"
+    },
+    {
+      "name": "MembershipClubHero",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubHero.tsx"
+    },
+    {
+      "name": "MembershipClubKimiPage",
+      "sourceFile": "src/capsules/membership-club.tsx"
+    },
+    {
+      "name": "MembershipClubKimiPage2",
+      "sourceFile": "src/capsules/membership-club-2.tsx"
+    },
+    {
+      "name": "MembershipClubKimiPage3",
+      "sourceFile": "src/capsules/membership-club-3.tsx"
+    },
+    {
+      "name": "MembershipClubLogos",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubLogos.tsx"
+    },
+    {
+      "name": "MembershipClubNavbar",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubNavbar.tsx"
+    },
+    {
+      "name": "MembershipClubPricing",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubPricing.tsx"
+    },
+    {
+      "name": "MembershipClubStats",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubStats.tsx"
+    },
+    {
+      "name": "MembershipClubSteps",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubSteps.tsx"
+    },
+    {
+      "name": "MembershipClubTestimonials",
+      "sourceFile": "src/registry/sections/membership-club/MembershipClubTestimonials.tsx"
+    },
+    {
+      "name": "MentalHealthContactCta",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthContactCta.tsx"
+    },
+    {
+      "name": "MentalHealthFaq",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthFaq.tsx"
+    },
+    {
+      "name": "MentalHealthFooter",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthFooter.tsx"
+    },
+    {
+      "name": "MentalHealthHero",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthHero.tsx"
+    },
+    {
+      "name": "MentalHealthKimiPage",
+      "sourceFile": "src/capsules/mental-health.tsx"
+    },
+    {
+      "name": "MentalHealthKimiPage2",
+      "sourceFile": "src/capsules/mental-health-2.tsx"
+    },
+    {
+      "name": "MentalHealthKimiPage3",
+      "sourceFile": "src/capsules/mental-health-3.tsx"
+    },
+    {
+      "name": "MentalHealthLogos",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthLogos.tsx"
+    },
+    {
+      "name": "MentalHealthNavbar",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthNavbar.tsx"
+    },
+    {
+      "name": "MentalHealthPricing",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthPricing.tsx"
+    },
+    {
+      "name": "MentalHealthServices",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthServices.tsx"
+    },
+    {
+      "name": "MentalHealthStats",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthStats.tsx"
+    },
+    {
+      "name": "MentalHealthSteps",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthSteps.tsx"
+    },
+    {
+      "name": "MentalHealthTeam",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthTeam.tsx"
+    },
+    {
+      "name": "MentalHealthTestimonials",
+      "sourceFile": "src/registry/sections/mental-health/MentalHealthTestimonials.tsx"
+    },
+    {
+      "name": "Menubar",
+      "sourceFile": "src/registry/primitives/menubar.tsx"
+    },
+    {
+      "name": "MenuKimiPage",
+      "sourceFile": "src/capsules/menu.tsx"
+    },
+    {
+      "name": "MenuKimiPage2",
+      "sourceFile": "src/capsules/menu-2.tsx"
+    },
+    {
+      "name": "MenuKimiPage3",
+      "sourceFile": "src/capsules/menu-3.tsx"
+    },
+    {
+      "name": "MenuKimiPage4",
+      "sourceFile": "src/capsules/menu-4.tsx"
+    },
+    {
+      "name": "MenuKimiPage5",
+      "sourceFile": "src/capsules/menu-5.tsx"
+    },
+    {
+      "name": "MobileAppDownloadCta",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppDownloadCta.tsx"
+    },
+    {
+      "name": "MobileAppFaq",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppFaq.tsx"
+    },
+    {
+      "name": "MobileAppFeatures",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppFeatures.tsx"
+    },
+    {
+      "name": "MobileAppFooter",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppFooter.tsx"
+    },
+    {
+      "name": "MobileAppGallery",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppGallery.tsx"
+    },
+    {
+      "name": "MobileAppHero",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppHero.tsx"
+    },
+    {
+      "name": "MobileAppHowItWorks",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppHowItWorks.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage",
+      "sourceFile": "src/capsules/mobile-app.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage10",
+      "sourceFile": "src/capsules/mobile-app-10.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage2",
+      "sourceFile": "src/capsules/mobile-app-2.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage3",
+      "sourceFile": "src/capsules/mobile-app-3.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage4",
+      "sourceFile": "src/capsules/mobile-app-4.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage5",
+      "sourceFile": "src/capsules/mobile-app-5.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage6",
+      "sourceFile": "src/capsules/mobile-app-6.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage7",
+      "sourceFile": "src/capsules/mobile-app-7.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage8",
+      "sourceFile": "src/capsules/mobile-app-8.tsx"
+    },
+    {
+      "name": "MobileAppKimiPage9",
+      "sourceFile": "src/capsules/mobile-app-9.tsx"
+    },
+    {
+      "name": "MobileAppLogos",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppLogos.tsx"
+    },
+    {
+      "name": "MobileAppNavbar",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppNavbar.tsx"
+    },
+    {
+      "name": "MobileAppPricing",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppPricing.tsx"
+    },
+    {
+      "name": "MobileAppStats",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppStats.tsx"
+    },
+    {
+      "name": "MobileAppTestimonials",
+      "sourceFile": "src/registry/sections/mobile-app/MobileAppTestimonials.tsx"
+    },
+    {
+      "name": "MusicArtistAbout",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistAbout.tsx"
+    },
+    {
+      "name": "MusicArtistFooter",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistFooter.tsx"
+    },
+    {
+      "name": "MusicArtistGallery",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistGallery.tsx"
+    },
+    {
+      "name": "MusicArtistHero",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistHero.tsx"
+    },
+    {
+      "name": "MusicArtistKimiPage",
+      "sourceFile": "src/capsules/music-artist.tsx"
+    },
+    {
+      "name": "MusicArtistKimiPage2",
+      "sourceFile": "src/capsules/music-artist-2.tsx"
+    },
+    {
+      "name": "MusicArtistKimiPage3",
+      "sourceFile": "src/capsules/music-artist-3.tsx"
+    },
+    {
+      "name": "MusicArtistMailing",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistMailing.tsx"
+    },
+    {
+      "name": "MusicArtistMusic",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistMusic.tsx"
+    },
+    {
+      "name": "MusicArtistNavbar",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistNavbar.tsx"
+    },
+    {
+      "name": "MusicArtistPress",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistPress.tsx"
+    },
+    {
+      "name": "MusicArtistStreaming",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistStreaming.tsx"
+    },
+    {
+      "name": "MusicArtistTour",
+      "sourceFile": "src/registry/sections/music-artist/MusicArtistTour.tsx"
+    },
+    {
+      "name": "MusicFestivalCta",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalCta.tsx"
+    },
+    {
+      "name": "MusicFestivalExperience",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalExperience.tsx"
+    },
+    {
+      "name": "MusicFestivalFaq",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalFaq.tsx"
+    },
+    {
+      "name": "MusicFestivalFooter",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalFooter.tsx"
+    },
+    {
+      "name": "MusicFestivalGallery",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalGallery.tsx"
+    },
+    {
+      "name": "MusicFestivalHero",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalHero.tsx"
+    },
+    {
+      "name": "MusicFestivalKimiPage",
+      "sourceFile": "src/capsules/music-festival.tsx"
+    },
+    {
+      "name": "MusicFestivalKimiPage2",
+      "sourceFile": "src/capsules/music-festival-2.tsx"
+    },
+    {
+      "name": "MusicFestivalKimiPage3",
+      "sourceFile": "src/capsules/music-festival-3.tsx"
+    },
+    {
+      "name": "MusicFestivalLineup",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalLineup.tsx"
+    },
+    {
+      "name": "MusicFestivalLogos",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalLogos.tsx"
+    },
+    {
+      "name": "MusicFestivalNavbar",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalNavbar.tsx"
+    },
+    {
+      "name": "MusicFestivalSchedule",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalSchedule.tsx"
+    },
+    {
+      "name": "MusicFestivalStats",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalStats.tsx"
+    },
+    {
+      "name": "MusicFestivalTestimonials",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalTestimonials.tsx"
+    },
+    {
+      "name": "MusicFestivalTickets",
+      "sourceFile": "src/registry/sections/music-festival/MusicFestivalTickets.tsx"
+    },
+    {
+      "name": "NativeSelect",
+      "sourceFile": "src/registry/primitives/native-select.tsx"
+    },
+    {
+      "name": "NavigationMenu",
+      "sourceFile": "src/registry/primitives/navigation-menu.tsx"
+    },
+    {
+      "name": "NewsCategories",
+      "sourceFile": "src/registry/sections/news/NewsCategories.tsx"
+    },
+    {
+      "name": "NewsCta",
+      "sourceFile": "src/registry/sections/news/NewsCta.tsx"
+    },
+    {
+      "name": "NewsFeatured",
+      "sourceFile": "src/registry/sections/news/NewsFeatured.tsx"
+    },
+    {
+      "name": "NewsFooter",
+      "sourceFile": "src/registry/sections/news/NewsFooter.tsx"
+    },
+    {
+      "name": "NewsKimiPage",
+      "sourceFile": "src/capsules/news.tsx"
+    },
+    {
+      "name": "NewsKimiPage2",
+      "sourceFile": "src/capsules/news-2.tsx"
+    },
+    {
+      "name": "NewsKimiPage3",
+      "sourceFile": "src/capsules/news-3.tsx"
+    },
+    {
+      "name": "NewsLatest",
+      "sourceFile": "src/registry/sections/news/NewsLatest.tsx"
+    },
+    {
+      "name": "NewsletterCta",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterCta.tsx"
+    },
+    {
+      "name": "NewsletterFaq",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterFaq.tsx"
+    },
+    {
+      "name": "NewsletterFeatures",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterFeatures.tsx"
+    },
+    {
+      "name": "NewsletterFooter",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterFooter.tsx"
+    },
+    {
+      "name": "NewsletterHero",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterHero.tsx"
+    },
+    {
+      "name": "NewsletterIssues",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterIssues.tsx"
+    },
+    {
+      "name": "NewsletterKimiPage",
+      "sourceFile": "src/capsules/newsletter.tsx"
+    },
+    {
+      "name": "NewsletterKimiPage2",
+      "sourceFile": "src/capsules/newsletter-2.tsx"
+    },
+    {
+      "name": "NewsletterKimiPage3",
+      "sourceFile": "src/capsules/newsletter-3.tsx"
+    },
+    {
+      "name": "NewsletterNavbar",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterNavbar.tsx"
+    },
+    {
+      "name": "NewsletterPricing",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterPricing.tsx"
+    },
+    {
+      "name": "NewsletterStats",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterStats.tsx"
+    },
+    {
+      "name": "NewsletterTestimonials",
+      "sourceFile": "src/registry/sections/newsletter/NewsletterTestimonials.tsx"
+    },
+    {
+      "name": "NewsNavbar",
+      "sourceFile": "src/registry/sections/news/NewsNavbar.tsx"
+    },
+    {
+      "name": "NewsSidebar",
+      "sourceFile": "src/registry/sections/news/NewsSidebar.tsx"
+    },
+    {
+      "name": "NewsTestimonials",
+      "sourceFile": "src/registry/sections/news/NewsTestimonials.tsx"
+    },
+    {
+      "name": "NoCodeCta",
+      "sourceFile": "src/registry/sections/no-code/NoCodeCta.tsx"
+    },
+    {
+      "name": "NoCodeFaq",
+      "sourceFile": "src/registry/sections/no-code/NoCodeFaq.tsx"
+    },
+    {
+      "name": "NoCodeFeatures",
+      "sourceFile": "src/registry/sections/no-code/NoCodeFeatures.tsx"
+    },
+    {
+      "name": "NoCodeFooter",
+      "sourceFile": "src/registry/sections/no-code/NoCodeFooter.tsx"
+    },
+    {
+      "name": "NoCodeHero",
+      "sourceFile": "src/registry/sections/no-code/NoCodeHero.tsx"
+    },
+    {
+      "name": "NoCodeKimiPage",
+      "sourceFile": "src/capsules/no-code.tsx"
+    },
+    {
+      "name": "NoCodeKimiPage2",
+      "sourceFile": "src/capsules/no-code-2.tsx"
+    },
+    {
+      "name": "NoCodeKimiPage3",
+      "sourceFile": "src/capsules/no-code-3.tsx"
+    },
+    {
+      "name": "NoCodeLogos",
+      "sourceFile": "src/registry/sections/no-code/NoCodeLogos.tsx"
+    },
+    {
+      "name": "NoCodeNavbar",
+      "sourceFile": "src/registry/sections/no-code/NoCodeNavbar.tsx"
+    },
+    {
+      "name": "NoCodePricing",
+      "sourceFile": "src/registry/sections/no-code/NoCodePricing.tsx"
+    },
+    {
+      "name": "NoCodeStats",
+      "sourceFile": "src/registry/sections/no-code/NoCodeStats.tsx"
+    },
+    {
+      "name": "NoCodeSteps",
+      "sourceFile": "src/registry/sections/no-code/NoCodeSteps.tsx"
+    },
+    {
+      "name": "NoCodeTemplates",
+      "sourceFile": "src/registry/sections/no-code/NoCodeTemplates.tsx"
+    },
+    {
+      "name": "NoCodeTestimonials",
+      "sourceFile": "src/registry/sections/no-code/NoCodeTestimonials.tsx"
+    },
+    {
+      "name": "NonprofitHero",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitHero.tsx"
+    },
+    {
+      "name": "NonprofitKimiPage",
+      "sourceFile": "src/capsules/nonprofit.tsx"
+    },
+    {
+      "name": "NonprofitKimiPage2",
+      "sourceFile": "src/capsules/nonprofit-2.tsx"
+    },
+    {
+      "name": "NonprofitNavbar",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitNavbar.tsx"
+    },
+    {
+      "name": "NonprofitPartners",
+      "sourceFile": "src/registry/sections/nonprofit/NonprofitPartners.tsx"
+    },
+    {
+      "name": "NutritionHero",
+      "sourceFile": "src/registry/sections/nutrition/NutritionHero.tsx"
+    },
+    {
+      "name": "NutritionKimiPage",
+      "sourceFile": "src/capsules/nutrition.tsx"
+    },
+    {
+      "name": "NutritionKimiPage2",
+      "sourceFile": "src/capsules/nutrition-2.tsx"
+    },
+    {
+      "name": "NutritionKimiPage3",
+      "sourceFile": "src/capsules/nutrition-3.tsx"
+    },
+    {
+      "name": "NutritionLogos",
+      "sourceFile": "src/registry/sections/nutrition/NutritionLogos.tsx"
+    },
+    {
+      "name": "NutritionNavbar",
+      "sourceFile": "src/registry/sections/nutrition/NutritionNavbar.tsx"
+    },
+    {
+      "name": "OnlineCourseHero",
+      "sourceFile": "src/registry/sections/online-course/OnlineCourseHero.tsx"
+    },
+    {
+      "name": "OnlineCourseKimiPage",
+      "sourceFile": "src/capsules/online-course.tsx"
+    },
+    {
+      "name": "OnlineCourseKimiPage2",
+      "sourceFile": "src/capsules/online-course-2.tsx"
+    },
+    {
+      "name": "OnlineCourseKimiPage3",
+      "sourceFile": "src/capsules/online-course-3.tsx"
+    },
+    {
+      "name": "OnlineCourseNavbar",
+      "sourceFile": "src/registry/sections/online-course/OnlineCourseNavbar.tsx"
+    },
+    {
+      "name": "PageSwitch",
+      "sourceFile": "src/registry/primitives/page-switch.tsx"
+    },
+    {
+      "name": "Pagination",
+      "sourceFile": "src/registry/primitives/pagination.tsx"
+    },
+    {
+      "name": "PetVeterinaryHero",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryHero.tsx"
+    },
+    {
+      "name": "PetVeterinaryKimiPage",
+      "sourceFile": "src/capsules/pet-veterinary.tsx"
+    },
+    {
+      "name": "PetVeterinaryKimiPage2",
+      "sourceFile": "src/capsules/pet-veterinary-2.tsx"
+    },
+    {
+      "name": "PetVeterinaryKimiPage3",
+      "sourceFile": "src/capsules/pet-veterinary-3.tsx"
+    },
+    {
+      "name": "PetVeterinaryNavbar",
+      "sourceFile": "src/registry/sections/pet-veterinary/PetVeterinaryNavbar.tsx"
+    },
+    {
+      "name": "PhotographyHero",
+      "sourceFile": "src/registry/sections/photography/PhotographyHero.tsx"
+    },
+    {
+      "name": "PhotographyKimiPage",
+      "sourceFile": "src/capsules/photography.tsx"
+    },
+    {
+      "name": "PhotographyKimiPage2",
+      "sourceFile": "src/capsules/photography-2.tsx"
+    },
+    {
+      "name": "PhotographyKimiPage3",
+      "sourceFile": "src/capsules/photography-3.tsx"
+    },
+    {
+      "name": "PhotographyLogos",
+      "sourceFile": "src/registry/sections/photography/PhotographyLogos.tsx"
+    },
+    {
+      "name": "PhotographyNavbar",
+      "sourceFile": "src/registry/sections/photography/PhotographyNavbar.tsx"
+    },
+    {
+      "name": "PlumbingHvacKimiPage",
+      "sourceFile": "src/capsules/plumbing-hvac.tsx"
+    },
+    {
+      "name": "PlumbingHvacKimiPage2",
+      "sourceFile": "src/capsules/plumbing-hvac-2.tsx"
+    },
+    {
+      "name": "PlumbingHvacOverview",
+      "sourceFile": "src/registry/sections/plumbing-hvac/PlumbingHvacOverview.tsx"
+    },
+    {
+      "name": "PodcastKimiPage",
+      "sourceFile": "src/capsules/podcast.tsx"
+    },
+    {
+      "name": "PodcastKimiPage2",
+      "sourceFile": "src/capsules/podcast-2.tsx"
+    },
+    {
+      "name": "PodcastKimiPage3",
+      "sourceFile": "src/capsules/podcast-3.tsx"
+    },
+    {
+      "name": "PodcastOverview",
+      "sourceFile": "src/registry/sections/podcast/PodcastOverview.tsx"
+    },
+    {
+      "name": "Popover",
+      "sourceFile": "src/registry/primitives/popover.tsx"
+    },
+    {
+      "name": "PortfolioDevKimiPage",
+      "sourceFile": "src/capsules/portfolio-dev.tsx"
+    },
+    {
+      "name": "PortfolioDevKimiPage2",
+      "sourceFile": "src/capsules/portfolio-dev-2.tsx"
+    },
+    {
+      "name": "PortfolioDevKimiPage3",
+      "sourceFile": "src/capsules/portfolio-dev-3.tsx"
+    },
+    {
+      "name": "PortfolioDevKimiPage4",
+      "sourceFile": "src/capsules/portfolio-dev-4.tsx"
+    },
+    {
+      "name": "PortfolioDevOverview",
+      "sourceFile": "src/registry/sections/portfolio-dev/PortfolioDevOverview.tsx"
+    },
+    {
+      "name": "PortfolioHero",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioHero.tsx"
+    },
+    {
+      "name": "PortfolioKimiPage",
+      "sourceFile": "src/capsules/portfolio.tsx"
+    },
+    {
+      "name": "PortfolioKimiPage2",
+      "sourceFile": "src/capsules/portfolio-2.tsx"
+    },
+    {
+      "name": "PortfolioKimiPage3",
+      "sourceFile": "src/capsules/portfolio-3.tsx"
+    },
+    {
+      "name": "PortfolioKimiPage4",
+      "sourceFile": "src/capsules/portfolio-4.tsx"
+    },
+    {
+      "name": "PortfolioKimiPage5",
+      "sourceFile": "src/capsules/portfolio-5.tsx"
+    },
+    {
+      "name": "PortfolioLogos",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioLogos.tsx"
+    },
+    {
+      "name": "PortfolioNavbar",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioNavbar.tsx"
+    },
+    {
+      "name": "PortfolioWork",
+      "sourceFile": "src/registry/sections/portfolio/PortfolioWork.tsx"
+    },
+    {
+      "name": "PricingKimiPage",
+      "sourceFile": "src/capsules/pricing.tsx"
+    },
+    {
+      "name": "PricingKimiPage2",
+      "sourceFile": "src/capsules/pricing-2.tsx"
+    },
+    {
+      "name": "PricingOverview",
+      "sourceFile": "src/registry/sections/pricing/PricingOverview.tsx"
+    },
+    {
+      "name": "ProductDetailKimiPage",
+      "sourceFile": "src/capsules/product-detail.tsx"
+    },
+    {
+      "name": "ProductDetailKimiPage2",
+      "sourceFile": "src/capsules/product-detail-2.tsx"
+    },
+    {
+      "name": "ProductDetailKimiPage3",
+      "sourceFile": "src/capsules/product-detail-3.tsx"
+    },
+    {
+      "name": "ProductDetailOverview",
+      "sourceFile": "src/registry/sections/product-detail/ProductDetailOverview.tsx"
+    },
+    {
+      "name": "Progress",
+      "sourceFile": "src/registry/primitives/progress.tsx"
+    },
+    {
+      "name": "PropertyListingKimiPage",
+      "sourceFile": "src/capsules/property-listing.tsx"
+    },
+    {
+      "name": "PropertyListingKimiPage2",
+      "sourceFile": "src/capsules/property-listing-2.tsx"
+    },
+    {
+      "name": "PropertyListingKimiPage3",
+      "sourceFile": "src/capsules/property-listing-3.tsx"
+    },
+    {
+      "name": "PropertyListingOverview",
+      "sourceFile": "src/registry/sections/property-listing/PropertyListingOverview.tsx"
+    },
+    {
+      "name": "RadioGroup",
+      "sourceFile": "src/registry/primitives/radio-group.tsx"
+    },
+    {
+      "name": "RealEstateKimiPage",
+      "sourceFile": "src/capsules/real-estate.tsx"
+    },
+    {
+      "name": "RealEstateKimiPage2",
+      "sourceFile": "src/capsules/real-estate-2.tsx"
+    },
+    {
+      "name": "RealEstateKimiPage3",
+      "sourceFile": "src/capsules/real-estate-3.tsx"
+    },
+    {
+      "name": "RealEstateOverview",
+      "sourceFile": "src/registry/sections/real-estate/RealEstateOverview.tsx"
+    },
+    {
+      "name": "Resizable",
+      "sourceFile": "src/registry/primitives/resizable.tsx"
+    },
+    {
+      "name": "RestaurantHero",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantHero.tsx"
+    },
+    {
+      "name": "RestaurantKimiPage",
+      "sourceFile": "src/capsules/restaurant.tsx"
+    },
+    {
+      "name": "RestaurantKimiPage2",
+      "sourceFile": "src/capsules/restaurant-2.tsx"
+    },
+    {
+      "name": "RestaurantKimiPage3",
+      "sourceFile": "src/capsules/restaurant-3.tsx"
+    },
+    {
+      "name": "RestaurantNavbar",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantNavbar.tsx"
+    },
+    {
+      "name": "RestaurantStory",
+      "sourceFile": "src/registry/sections/restaurant/RestaurantStory.tsx"
+    },
+    {
+      "name": "ResumeCvKimiPage",
+      "sourceFile": "src/capsules/resume-cv.tsx"
+    },
+    {
+      "name": "ResumeCvKimiPage2",
+      "sourceFile": "src/capsules/resume-cv-2.tsx"
+    },
+    {
+      "name": "ResumeCvKimiPage3",
+      "sourceFile": "src/capsules/resume-cv-3.tsx"
+    },
+    {
+      "name": "ResumeCvOverview",
+      "sourceFile": "src/registry/sections/resume-cv/ResumeCvOverview.tsx"
+    },
+    {
+      "name": "SaasHero",
+      "sourceFile": "src/registry/sections/saas/SaasHero.tsx"
+    },
+    {
+      "name": "SaasKimiPage",
+      "sourceFile": "src/capsules/saas.tsx"
+    },
+    {
+      "name": "SaasKimiPage10",
+      "sourceFile": "src/capsules/saas-10.tsx"
+    },
+    {
+      "name": "SaasKimiPage2",
+      "sourceFile": "src/capsules/saas-2.tsx"
+    },
+    {
+      "name": "SaasKimiPage3",
+      "sourceFile": "src/capsules/saas-3.tsx"
+    },
+    {
+      "name": "SaasKimiPage4",
+      "sourceFile": "src/capsules/saas-4.tsx"
+    },
+    {
+      "name": "SaasKimiPage5",
+      "sourceFile": "src/capsules/saas-5.tsx"
+    },
+    {
+      "name": "SaasKimiPage6",
+      "sourceFile": "src/capsules/saas-6.tsx"
+    },
+    {
+      "name": "SaasKimiPage7",
+      "sourceFile": "src/capsules/saas-7.tsx"
+    },
+    {
+      "name": "SaasKimiPage8",
+      "sourceFile": "src/capsules/saas-8.tsx"
+    },
+    {
+      "name": "SaasKimiPage9",
+      "sourceFile": "src/capsules/saas-9.tsx"
+    },
+    {
+      "name": "SaasLogos",
+      "sourceFile": "src/registry/sections/saas/SaasLogos.tsx"
+    },
+    {
+      "name": "SaasNavbar",
+      "sourceFile": "src/registry/sections/saas/SaasNavbar.tsx"
+    },
+    {
+      "name": "SalonBarberKimiPage",
+      "sourceFile": "src/capsules/salon-barber.tsx"
+    },
+    {
+      "name": "SalonBarberKimiPage2",
+      "sourceFile": "src/capsules/salon-barber-2.tsx"
+    },
+    {
+      "name": "SalonBarberKimiPage3",
+      "sourceFile": "src/capsules/salon-barber-3.tsx"
+    },
+    {
+      "name": "SalonBarberOverview",
+      "sourceFile": "src/registry/sections/salon-barber/SalonBarberOverview.tsx"
+    },
+    {
+      "name": "ScheduleKimiPage",
+      "sourceFile": "src/capsules/schedule.tsx"
+    },
+    {
+      "name": "ScheduleKimiPage2",
+      "sourceFile": "src/capsules/schedule-2.tsx"
+    },
+    {
+      "name": "ScheduleKimiPage3",
+      "sourceFile": "src/capsules/schedule-3.tsx"
+    },
+    {
+      "name": "ScheduleKimiPage4",
+      "sourceFile": "src/capsules/schedule-4.tsx"
+    },
+    {
+      "name": "ScheduleKimiPage5",
+      "sourceFile": "src/capsules/schedule-5.tsx"
+    },
+    {
+      "name": "ScrollArea",
+      "sourceFile": "src/registry/primitives/scroll-area.tsx"
+    },
+    {
+      "name": "Section",
+      "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "Select",
+      "sourceFile": "src/registry/primitives/select.tsx"
+    },
+    {
+      "name": "Separator",
+      "sourceFile": "src/registry/primitives/separator.tsx"
+    },
+    {
+      "name": "Sheet",
+      "sourceFile": "src/registry/primitives/sheet.tsx"
+    },
+    {
+      "name": "ShopKimiPage",
+      "sourceFile": "src/capsules/shop.tsx"
+    },
+    {
+      "name": "ShopKimiPage2",
+      "sourceFile": "src/capsules/shop-2.tsx"
+    },
+    {
+      "name": "ShopOverview",
+      "sourceFile": "src/registry/sections/shop/ShopOverview.tsx"
+    },
+    {
+      "name": "Skeleton",
+      "sourceFile": "src/registry/primitives/skeleton.tsx"
+    },
+    {
+      "name": "Slider",
+      "sourceFile": "src/registry/primitives/slider.tsx"
+    },
+    {
+      "name": "Spacer",
+      "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "SpaWellnessKimiPage",
+      "sourceFile": "src/capsules/spa-wellness.tsx"
+    },
+    {
+      "name": "SpaWellnessKimiPage2",
+      "sourceFile": "src/capsules/spa-wellness-2.tsx"
+    },
+    {
+      "name": "SpaWellnessKimiPage3",
+      "sourceFile": "src/capsules/spa-wellness-3.tsx"
+    },
+    {
+      "name": "SpaWellnessOverview",
+      "sourceFile": "src/registry/sections/spa-wellness/SpaWellnessOverview.tsx"
+    },
+    {
+      "name": "Spinner",
+      "sourceFile": "src/registry/primitives/spinner.tsx"
+    },
+    {
+      "name": "Stack",
+      "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "SubscriptionBoxKimiPage",
+      "sourceFile": "src/capsules/subscription-box.tsx"
+    },
+    {
+      "name": "SubscriptionBoxKimiPage2",
+      "sourceFile": "src/capsules/subscription-box-2.tsx"
+    },
+    {
+      "name": "SubscriptionBoxKimiPage3",
+      "sourceFile": "src/capsules/subscription-box-3.tsx"
+    },
+    {
+      "name": "SubscriptionBoxOverview",
+      "sourceFile": "src/registry/sections/subscription-box/SubscriptionBoxOverview.tsx"
+    },
+    {
+      "name": "Switch",
+      "sourceFile": "src/registry/primitives/switch.tsx"
+    },
+    {
+      "name": "Table",
+      "sourceFile": "src/registry/primitives/table.tsx"
+    },
+    {
+      "name": "Tabs",
+      "sourceFile": "src/registry/primitives/tabs.tsx"
+    },
+    {
+      "name": "TeamKimiPage",
+      "sourceFile": "src/capsules/team.tsx"
+    },
+    {
+      "name": "TeamKimiPage2",
+      "sourceFile": "src/capsules/team-2.tsx"
+    },
+    {
+      "name": "TeamOverview",
+      "sourceFile": "src/registry/sections/team/TeamOverview.tsx"
+    },
+    {
+      "name": "TelehealthKimiPage",
+      "sourceFile": "src/capsules/telehealth.tsx"
+    },
+    {
+      "name": "TelehealthKimiPage2",
+      "sourceFile": "src/capsules/telehealth-2.tsx"
+    },
+    {
+      "name": "TelehealthKimiPage3",
+      "sourceFile": "src/capsules/telehealth-3.tsx"
+    },
+    {
+      "name": "TelehealthOverview",
+      "sourceFile": "src/registry/sections/telehealth/TelehealthOverview.tsx"
+    },
+    {
+      "name": "TestimonialsKimiPage",
+      "sourceFile": "src/capsules/testimonials.tsx"
+    },
+    {
+      "name": "TestimonialsKimiPage2",
+      "sourceFile": "src/capsules/testimonials-2.tsx"
+    },
+    {
+      "name": "TestimonialsOverview",
+      "sourceFile": "src/registry/sections/testimonials/TestimonialsOverview.tsx"
+    },
+    {
+      "name": "Text",
+      "sourceFile": "src/registry/primitives/layout.tsx"
+    },
+    {
+      "name": "Textarea",
+      "sourceFile": "src/registry/primitives/textarea.tsx"
+    },
+    {
+      "name": "Toggle",
+      "sourceFile": "src/registry/primitives/toggle.tsx"
+    },
+    {
+      "name": "ToggleGroup",
+      "sourceFile": "src/registry/primitives/toggle-group.tsx"
+    },
+    {
+      "name": "Tooltip",
+      "sourceFile": "src/registry/primitives/tooltip.tsx"
+    },
+    {
+      "name": "TourExperiencesKimiPage",
+      "sourceFile": "src/capsules/tour-experiences.tsx"
+    },
+    {
+      "name": "TourExperiencesKimiPage2",
+      "sourceFile": "src/capsules/tour-experiences-2.tsx"
+    },
+    {
+      "name": "TourExperiencesKimiPage3",
+      "sourceFile": "src/capsules/tour-experiences-3.tsx"
+    },
+    {
+      "name": "TourExperiencesOverview",
+      "sourceFile": "src/registry/sections/tour-experiences/TourExperiencesOverview.tsx"
+    },
+    {
+      "name": "TravelAgencyKimiPage",
+      "sourceFile": "src/capsules/travel-agency.tsx"
+    },
+    {
+      "name": "TravelAgencyKimiPage2",
+      "sourceFile": "src/capsules/travel-agency-2.tsx"
+    },
+    {
+      "name": "TravelAgencyOverview",
+      "sourceFile": "src/registry/sections/travel-agency/TravelAgencyOverview.tsx"
+    },
+    {
+      "name": "TutoringKimiPage",
+      "sourceFile": "src/capsules/tutoring.tsx"
+    },
+    {
+      "name": "TutoringKimiPage2",
+      "sourceFile": "src/capsules/tutoring-2.tsx"
+    },
+    {
+      "name": "TutoringKimiPage3",
+      "sourceFile": "src/capsules/tutoring-3.tsx"
+    },
+    {
+      "name": "TutoringOverview",
+      "sourceFile": "src/registry/sections/tutoring/TutoringOverview.tsx"
+    },
+    {
+      "name": "UniversityKimiPage",
+      "sourceFile": "src/capsules/university.tsx"
+    },
+    {
+      "name": "UniversityKimiPage2",
+      "sourceFile": "src/capsules/university-2.tsx"
+    },
+    {
+      "name": "UniversityKimiPage3",
+      "sourceFile": "src/capsules/university-3.tsx"
+    },
+    {
+      "name": "UniversityOverview",
+      "sourceFile": "src/registry/sections/university/UniversityOverview.tsx"
+    },
+    {
+      "name": "VacationRentalKimiPage",
+      "sourceFile": "src/capsules/vacation-rental.tsx"
+    },
+    {
+      "name": "VacationRentalKimiPage2",
+      "sourceFile": "src/capsules/vacation-rental-2.tsx"
+    },
+    {
+      "name": "VacationRentalKimiPage3",
+      "sourceFile": "src/capsules/vacation-rental-3.tsx"
+    },
+    {
+      "name": "VacationRentalOverview",
+      "sourceFile": "src/registry/sections/vacation-rental/VacationRentalOverview.tsx"
+    },
+    {
+      "name": "VideoStreamingKimiPage",
+      "sourceFile": "src/capsules/video-streaming.tsx"
+    },
+    {
+      "name": "VideoStreamingKimiPage2",
+      "sourceFile": "src/capsules/video-streaming-2.tsx"
+    },
+    {
+      "name": "VideoStreamingKimiPage3",
+      "sourceFile": "src/capsules/video-streaming-3.tsx"
+    },
+    {
+      "name": "VideoStreamingOverview",
+      "sourceFile": "src/registry/sections/video-streaming/VideoStreamingOverview.tsx"
+    },
+    {
+      "name": "WebinarKimiPage",
+      "sourceFile": "src/capsules/webinar.tsx"
+    },
+    {
+      "name": "WebinarKimiPage2",
+      "sourceFile": "src/capsules/webinar-2.tsx"
+    },
+    {
+      "name": "WebinarKimiPage3",
+      "sourceFile": "src/capsules/webinar-3.tsx"
+    },
+    {
+      "name": "WebinarOverview",
+      "sourceFile": "src/registry/sections/webinar/WebinarOverview.tsx"
+    },
+    {
+      "name": "WeddingKimiPage",
+      "sourceFile": "src/capsules/wedding.tsx"
+    },
+    {
+      "name": "WeddingKimiPage2",
+      "sourceFile": "src/capsules/wedding-2.tsx"
+    },
+    {
+      "name": "WeddingKimiPage3",
+      "sourceFile": "src/capsules/wedding-3.tsx"
+    },
+    {
+      "name": "WeddingOverview",
+      "sourceFile": "src/registry/sections/wedding/WeddingOverview.tsx"
+    },
+    {
+      "name": "WineryBreweryKimiPage",
+      "sourceFile": "src/capsules/winery-brewery.tsx"
+    },
+    {
+      "name": "WineryBreweryKimiPage2",
+      "sourceFile": "src/capsules/winery-brewery-2.tsx"
+    },
+    {
+      "name": "WineryBreweryKimiPage3",
+      "sourceFile": "src/capsules/winery-brewery-3.tsx"
+    },
+    {
+      "name": "WineryBreweryOverview",
+      "sourceFile": "src/registry/sections/winery-brewery/WineryBreweryOverview.tsx"
+    },
+    {
+      "name": "WriterAuthorKimiPage",
+      "sourceFile": "src/capsules/writer-author.tsx"
+    },
+    {
+      "name": "WriterAuthorKimiPage2",
+      "sourceFile": "src/capsules/writer-author-2.tsx"
+    },
+    {
+      "name": "WriterAuthorKimiPage3",
+      "sourceFile": "src/capsules/writer-author-3.tsx"
+    },
+    {
+      "name": "WriterAuthorOverview",
+      "sourceFile": "src/registry/sections/writer-author/WriterAuthorOverview.tsx"
+    },
+    {
+      "name": "YogaStudioKimiPage",
+      "sourceFile": "src/capsules/yoga-studio.tsx"
+    },
+    {
+      "name": "YogaStudioKimiPage2",
+      "sourceFile": "src/capsules/yoga-studio-2.tsx"
+    },
+    {
+      "name": "YogaStudioKimiPage3",
+      "sourceFile": "src/capsules/yoga-studio-3.tsx"
+    },
+    {
+      "name": "YogaStudioOverview",
+      "sourceFile": "src/registry/sections/yoga-studio/YogaStudioOverview.tsx"
+    }
+  ]
+}
