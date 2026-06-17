@@ -68,8 +68,8 @@ function TranslatedTextNode({ text, locale, node }: { text: string; locale: stri
         parent.classList.add("sf-shimmer-loading");
         parent.style.backgroundImage = `linear-gradient(90deg, #0000 calc(50% - ${text.length * 2}px), currentColor 50%, #0000 calc(50% + ${text.length * 2}px)), linear-gradient(currentColor, currentColor)`;
       }
-    } else if (data) {
-      // Remove shimmer (always remove when we have data, even if unchanged)
+    } else if (data && data !== text) {
+      // Remove shimmer and update text
       const parent = node.parentElement;
       if (parent) {
         parent.classList.remove("sf-shimmer-loading");
@@ -78,10 +78,7 @@ function TranslatedTextNode({ text, locale, node }: { text: string; locale: stri
         parent.style.webkitBackgroundClip = "";
         parent.style.color = "";
       }
-      // Only update text content if it actually changed
-      if (data !== text) {
-        node.textContent = data;
-      }
+      node.textContent = data;
     }
   }, [data, isLoading, text, node]);
 
