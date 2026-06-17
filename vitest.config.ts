@@ -7,10 +7,10 @@ export default defineConfig({
       reporter: ['text-summary', 'json-summary'],
       reportsDirectory: 'coverage',
       thresholds: {
-        statements: 22.56,
-        branches: 15.02,
-        functions: 10.91,
-        lines: 22.15,
+        statements: 22.79,
+        branches: 15.16,
+        functions: 11.05,
+        lines: 22.37,
       },
     },
     projects: [
@@ -31,6 +31,8 @@ export default defineConfig({
             'packages/ship-fast-engine/src/renderers/**/*.test.ts',
             'packages/ship-fast-engine/src/renderers/**/*.test.js',
             'packages/ship-fast-engine/src/spec/**/*.test.js',
+            'packages/ship-fast-lakebed/src/**/*.test.ts',
+            'packages/ship-fast-lakebed/src/**/*.test.tsx',
             'scripts/**/*.test.ts',
           ],
         },

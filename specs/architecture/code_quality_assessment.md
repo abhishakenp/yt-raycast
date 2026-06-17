@@ -31,11 +31,11 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 - `convex/sessions.ts` is no longer under a raw formatted 500-line ceiling, but it is now a registration/orchestration surface with session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment, export, gallery, preview-history, serialization, Agentation, operational notification, commerce/Medusa, usage metrics, CMS, task, generated artifact/cache, event-stream, workspace, readiness, public-preview, internal-reference, and shared validator layers split into focused helpers with direct tests.
 - The block/capsule catalog has many 1,000+ LOC files; generated export/runtime artifacts now have a deterministic provenance lock and drift verifier, and production source capsules now have a checked origin-classification manifest. The remaining work is reducing or splitting the 184 large source-capsule files and resolving 34 unmarked origins.
-- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.56% statements, 15.02% branches, 10.91% functions, and 22.15% lines in the latest full coverage gate.
+- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.79% statements, 15.16% branches, 11.05% functions, and 22.37% lines in the latest full coverage gate.
 - Local git hooks now enforce authoring-time checks before commit and full QA before push.
 - GitNexus impact analysis is available again after rebuilding the local index with the project runner; keep the runner version aligned with the MCP reader to avoid storage-version drift.
 
-**Overall Rating: A (10.5/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and unmarked source-capsule origins that are now tracked mechanically.
+**Overall Rating: A (10.6/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and unmarked source-capsule origins that are now tracked mechanically.
 
 ---
 
@@ -144,7 +144,8 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Strengths:**
 
-- The latest full coverage gate passed with measured V8 coverage of 22.56% statements, 15.02% branches, 10.91% functions, and 22.15% lines.
+- The latest full coverage gate passed with measured V8 coverage of 22.79% statements, 15.16% branches, 11.05% functions, and 22.37% lines.
+- Lakebed browser auth now has focused coverage for current and legacy stored identities, decoded Google token claims, Google callback exchange/persistence, PKCE sign-in URL creation, unsafe return-route filtering, and sign-out; `packages/ship-fast-lakebed/src/auth.tsx` rose from 25.80% to 86.02% line coverage.
 - `verify:qa` now runs Vitest with V8 coverage thresholds before build and bundle verification; CI uses the same coverage-backed test command.
 - Source-level invariant tests protect architecture boundaries that ordinary behavior tests would miss.
 
@@ -224,6 +225,6 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ## Summary
 
-Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, the largest Convex coordination file is now delegated to focused helper modules, standalone HTML exports are split from full-catalog package exports, and generated OpenUI export/runtime artifacts plus source capsules now have deterministic provenance/classification. The path from 10.5/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, resolve the 34 unmarked capsule origins, and reduce the 184 large source-capsule files.
+Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, the largest Convex coordination file is now delegated to focused helper modules, standalone HTML exports are split from full-catalog package exports, and generated OpenUI export/runtime artifacts plus source capsules now have deterministic provenance/classification. The path from 10.6/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, resolve the 34 unmarked capsule origins, and reduce the 184 large source-capsule files.
 
-**Overall Rating: A (10.5/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and unmarked source-capsule origins that remain measurable and tractable.
+**Overall Rating: A (10.6/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and unmarked source-capsule origins that remain measurable and tractable.

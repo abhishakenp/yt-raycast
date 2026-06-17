@@ -63,11 +63,17 @@ describe('quality gate configuration', () => {
     expect(vitestConfig).toContain(
       "'packages/ship-fast-engine/src/spec/**/*.test.js'",
     )
+    expect(vitestConfig).toContain(
+      "'packages/ship-fast-lakebed/src/**/*.test.ts'",
+    )
+    expect(vitestConfig).toContain(
+      "'packages/ship-fast-lakebed/src/**/*.test.tsx'",
+    )
     expect(vitestConfig).toContain('thresholds:')
-    expect(vitestConfig).toContain('statements: 22.56')
-    expect(vitestConfig).toContain('branches: 15.02')
-    expect(vitestConfig).toContain('functions: 10.91')
-    expect(vitestConfig).toContain('lines: 22.15')
+    expect(vitestConfig).toContain('statements: 22.79')
+    expect(vitestConfig).toContain('branches: 15.16')
+    expect(vitestConfig).toContain('functions: 11.05')
+    expect(vitestConfig).toContain('lines: 22.37')
     expect(ciWorkflow).toContain('bun run test:coverage')
   })
 })
