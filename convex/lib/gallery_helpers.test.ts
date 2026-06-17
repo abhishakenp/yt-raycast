@@ -7,7 +7,7 @@ import {
   formatGalleryCategory,
   getGalleryCategoryOptions,
   matchesGalleryFilters,
-} from './gallery-helpers'
+} from './gallery_helpers'
 
 const makeSession = (overrides: Record<string, unknown> = {}) =>
   ({ _id: 'session-1', prompt: '', ...overrides }) as any

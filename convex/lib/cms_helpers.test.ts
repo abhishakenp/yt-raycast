@@ -19,7 +19,7 @@ import {
   type CmsBindingCandidate,
   CMS_SITE_SPEC_MAX_CANDIDATES,
   CMS_SITE_SPEC_MAX_DEPTH,
-} from './cms-helpers'
+} from './cms_helpers'
 
 describe('escapeHtml', () => {
   it('escapes all five HTML special characters', () => {

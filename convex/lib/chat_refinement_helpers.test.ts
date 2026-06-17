@@ -27,7 +27,7 @@ import {
   escapeOpenUiString,
   sanitizeOpenUiComment,
   type ChatRefinementPlan,
-} from './chat-refinement-helpers'
+} from './chat_refinement_helpers'
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
