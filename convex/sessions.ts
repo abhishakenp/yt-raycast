@@ -18,7 +18,7 @@ import {
   escapeRegExp,
   extractCmsBindingCandidatesFromHtml,
   extractCmsBindingCandidatesFromSiteSpec,
-} from './lib/cms-helpers'
+} from './lib/cms_helpers'
 import {
   buildChatRefinedOpenUiSource,
   buildChatRefinedPreviewHtml,
@@ -27,13 +27,13 @@ import {
   parseChatRefinementPlanJson,
   replaceFirstJsonText,
   truncateText,
-} from './lib/chat-refinement-helpers'
+} from './lib/chat_refinement_helpers'
 import {
   getGalleryCategories,
   getGalleryCategoryOptions,
   isGalleryVisibleSession,
   matchesGalleryFilters,
-} from './lib/gallery-helpers'
+} from './lib/gallery_helpers'
 
 const loadOpenUISSR = async () => {
   const { renderOpenUIToHTMLWithTheme } =
