@@ -23,19 +23,19 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 **Key Strengths:**
 
 - Full QA is enforced locally and in CI: lint, strict typecheck, tests, build, and bundle verification all run through `verify:qa` and `.github/workflows/ci.yml`.
-- OpenUI runtime boundaries are now explicit and tested: `@ship-fast/blocks/runtime`, `@ship-fast/blocks/theme`, `@ship-fast/blocks/component-names`, generated runtime loaders, HTML-only export routing, and `scripts/verify-build-bundles.ts` prevent broad runtime regressions.
+- OpenUI runtime boundaries are now explicit and tested: `@ship-fast/blocks/runtime`, `@ship-fast/blocks/theme`, `@ship-fast/blocks/component-names`, generated runtime loaders, generated artifact provenance, HTML-only export routing, and `scripts/verify-build-bundles.ts` prevent broad runtime regressions.
 - The codebase has recognizable ownership boundaries: `src/features`, `convex`, `packages/ship-fast-engine`, `packages/ship-fast-blocks`, and `packages/ship-fast-lakebed` each have distinct responsibilities.
 - Tests cover recurring regression surfaces such as Convex sessions, billing, generation, export entitlement, OpenUI preprocessing, bundle boundaries, and dashboard behaviors.
 
 **Areas for Improvement:**
 
 - `convex/sessions.ts` is no longer under a raw formatted 500-line ceiling, but it is now a registration/orchestration surface with session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment, export, gallery, preview-history, serialization, Agentation, operational notification, commerce/Medusa, usage metrics, CMS, task, generated artifact/cache, event-stream, workspace, readiness, public-preview, internal-reference, and shared validator layers split into focused helpers with direct tests.
-- The block/capsule catalog has many 1,000+ LOC files; this may be acceptable for generated catalog content, but it needs stronger mechanical generation/validation boundaries to avoid manual drift.
-- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.12% statements, 14.80% branches, 10.64% functions, and 21.73% lines in the latest full coverage gate.
+- The block/capsule catalog has many 1,000+ LOC files; generated export/runtime artifacts now have a deterministic provenance lock and drift verifier, but the source capsule files still need a clear hand-authored-vs-generated classification.
+- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.13% statements, 14.80% branches, 10.68% functions, and 21.74% lines in the latest full coverage gate.
 - Local git hooks now enforce authoring-time checks before commit and full QA before push.
 - GitNexus impact analysis is available again after rebuilding the local index with the project runner; keep the runner version aligned with the MCP reader to avoid storage-version drift.
 
-**Overall Rating: A (10.2/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and full-catalog package-export weight/provenance.
+**Overall Rating: A (10.3/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and full-catalog package-export/source-capsule provenance that is only partly normalized.
 
 ---
 
@@ -120,10 +120,11 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 - Browser runtime concerns are now split into runtime, theme, generated metadata, and component-name subpaths with source-level tests preventing accidental eager imports.
 - Bundle verification rejects public eager capsule indexes and broad OpenUI runtime chunks.
+- Generated OpenUI export/runtime artifacts now include `react-export-sources.provenance.json`, recording the generator, source roots, output files, and 1,192 input component source files; `verify:generated` checks the provenance lock together with the generated manifests.
 
 **Concerns:**
 
-- Many capsule files exceed 1,000 LOC. If they are generated, they need stronger generator provenance and validation; if hand-edited, they are too large for safe manual maintenance.
+- Many capsule files exceed 1,000 LOC. Generated export/runtime manifests now have provenance and validation, but the large source capsule files still need explicit generated-vs-hand-authored classification.
 
 ### Export & Deployment (`src/features/exports`, routes, renderer services) ★★★★☆
 
@@ -141,7 +142,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Strengths:**
 
-- The latest full coverage gate passed with measured V8 coverage of 22.12% statements, 14.80% branches, 10.64% functions, and 21.73% lines.
+- The latest full coverage gate passed with measured V8 coverage of 22.13% statements, 14.80% branches, 10.68% functions, and 21.74% lines.
 - `verify:qa` now runs Vitest with V8 coverage thresholds before build and bundle verification; CI uses the same coverage-backed test command.
 - Source-level invariant tests protect architecture boundaries that ordinary behavior tests would miss.
 
@@ -199,9 +200,9 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 #### 2.2 Normalize Capsule Generation Provenance
 
-- **What**: Mark generated capsule/catalog files clearly, store generator inputs, and add a verifier that generated outputs are current.
+- **What**: Continue the new generated-artifact provenance pattern into the remaining capsule/catalog maintenance surface. `react-export-sources.provenance.json` now records the generator, source roots, output files, and component input files, and `verify:generated` checks it; the remaining work is classifying the large source capsule files as generated or hand-authored.
 - **Risk**: Medium — depends on how much catalog content is hand-edited.
-- **Impact**: Makes the 1,000+ LOC capsule files safe to maintain mechanically.
+- **Impact**: Makes the 1,000+ LOC capsule files safe to maintain mechanically instead of relying on conversation memory or ad hoc edits.
 
 ### Priority 3: Strategic / Long-Term
 
@@ -221,6 +222,6 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ## Summary
 
-Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, the largest Convex coordination file is now delegated to focused helper modules, and standalone HTML exports are split from full-catalog package exports. The path from 10.2/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, and normalize capsule generation provenance.
+Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, the largest Convex coordination file is now delegated to focused helper modules, standalone HTML exports are split from full-catalog package exports, and generated OpenUI export/runtime artifacts now have deterministic provenance. The path from 10.3/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, and classify the remaining large source capsule files.
 
-**Overall Rating: A (10.2/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and package-export/catalog provenance that remain measurable and tractable.
+**Overall Rating: A (10.3/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and package-export/source-capsule provenance that remain measurable and tractable.

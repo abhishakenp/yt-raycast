@@ -61,6 +61,9 @@ Source inventory after generation:
   2,080,777 bytes
 - `packages/ship-fast-blocks/src/generated/runtime-component-loaders.ts`:
   210,058 bytes
+- `packages/ship-fast-blocks/src/generated/react-export-sources.provenance.json`:
+  records the generator, source roots, generated outputs, and 1,192 component
+  input files
 - `packages/ship-fast-blocks/src/runtime.ts`: 825 bytes
 - `src/island/openui/OpenUIViewer.tsx`: 8,634 bytes
 - `src/features/exports/services/openui-html-export-builder.ts`: response-scoped
@@ -81,12 +84,12 @@ Wrote 1192 component sources to src/generated/react-export-sources.json
 Wrote compressed component sources to src/generated/react-export-sources.compressed.ts
 Wrote runtime component names to src/generated/runtime-component-names.ts
 Wrote runtime component loaders to src/generated/runtime-component-loaders.ts
+Wrote generated artifact provenance to src/generated/react-export-sources.provenance.json
 ```
 
-The generator left a small tracked diff in
-`packages/ship-fast-blocks/src/generated/react-export-sources.json` because the
-current worktree has changed corporate component source text. That is expected
-provenance evidence: the generated JSON reflects current source files.
+The generator check now validates the deterministic provenance lock together
+with the generated JSON, compressed source manifest, runtime component names,
+and runtime component loaders.
 
 ## Added Guardrail
 
@@ -116,6 +119,18 @@ This test protects the generated browser runtime manifest directly:
   registry and capsule modules;
 - runtime loaders must not import the root blocks barrel, full library,
   `react-export-sources`, or component-spec metadata.
+
+Added a generated-artifact provenance invariant in
+`packages/ship-fast-blocks/src/generated-provenance.test.ts`.
+
+This test protects the generator/catalog maintenance boundary directly:
+
+- the provenance file must name
+  `packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs`;
+- source roots must be exactly `src/registry` and `src/capsules`;
+- every declared generated output must exist;
+- the provenance component list must match `runtime-component-names.ts`;
+- every recorded component source must exist under registry or capsules.
 
 Added standalone HTML export boundary checks in
 `src/features/exports/services/openui-export-builder.test.ts`,

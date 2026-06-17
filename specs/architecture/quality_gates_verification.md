@@ -54,10 +54,10 @@ The group turns quality checks into enforced local and CI behavior:
 
 `vitest.config.ts` currently enforces:
 
-- statements: 22.12%
+- statements: 22.13%
 - branches: 14.80%
-- functions: 10.64%
-- lines: 21.73%
+- functions: 10.68%
+- lines: 21.74%
 
 These floors are intentionally not the final quality target. They are a ratchet
 that prevents the current baseline from sliding backward while higher-value
@@ -93,7 +93,8 @@ Result:
 - Passed.
 - `packages/ship-fast-blocks/scripts/generate-react-export-sources.mjs --check`
   confirmed the committed JSON, compressed source manifest, runtime component
-  names, and runtime component loaders match the generator output.
+  names, runtime component loaders, and generated provenance lock match the
+  generator output.
 
 Review group classification:
 
