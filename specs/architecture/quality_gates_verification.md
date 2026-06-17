@@ -54,10 +54,10 @@ The group turns quality checks into enforced local and CI behavior:
 
 `vitest.config.ts` currently enforces:
 
-- statements: 22.18%
-- branches: 14.81%
-- functions: 10.75%
-- lines: 21.78%
+- statements: 22.56%
+- branches: 15.02%
+- functions: 10.91%
+- lines: 22.15%
 
 These floors are intentionally not the final quality target. They are a ratchet
 that prevents the current baseline from sliding backward while higher-value
