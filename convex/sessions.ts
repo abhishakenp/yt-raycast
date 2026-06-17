@@ -25,12 +25,12 @@ import {
   buildChatRefinedSiteSpecJson,
   MAX_CHAT_MESSAGE_LENGTH,
   parseChatRefinementPlanJson,
+  replaceFirstJsonText,
   truncateText,
 } from './lib/chat-refinement-helpers'
 import {
   getGalleryCategories,
   getGalleryCategoryOptions,
-  hasGalleryReadySignal,
   isGalleryVisibleSession,
   matchesGalleryFilters,
 } from './lib/gallery-helpers'
@@ -811,9 +811,6 @@ const seedCmsBindingsForGeneratedArtifacts = async (
 
   return created
 }
-
-const escapeOpenUiText = (value: string): string =>
-  value.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n')
 
 const assertCanMutateSession = async (
   ctx: MutationCtx,
