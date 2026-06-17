@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { strFromU8, unzipSync } from 'fflate'
 
@@ -6,6 +7,10 @@ import {
   decodeExportBody,
   parseOpenUIForExport,
 } from './openui-export-builder'
+import {
+  buildOpenUIHtmlExport,
+  parseOpenUIForHtmlExport,
+} from './openui-html-export-builder'
 
 const source = `root = SaasKimiPage("Export Demo", ["Home"], {"heading": "Hello export", "highlight": "export"})`
 
@@ -33,8 +38,19 @@ describe('openui-export-builder', () => {
     expect(parsed.root.typeName).toBe('SaasKimiPage')
   })
 
+  it('parses OpenUI source into HTML export metadata with a response-scoped library', async () => {
+    const parsed = await parseOpenUIForHtmlExport(source, siteSpecJson)
+
+    expect(parsed.projectName).toBe('Export Demo')
+    expect(parsed.routes).toEqual(['Home'])
+    expect(parsed.root.typeName).toBe('SaasKimiPage')
+    expect(JSON.stringify(parsed.library.toJSONSchema())).toContain(
+      'SaasKimiPage',
+    )
+  })
+
   it('builds standalone HTML without exposing OpenUI source', async () => {
-    const result = await buildOpenUIExport({
+    const result = await buildOpenUIHtmlExport({
       source,
       siteSpecJson,
       sessionId: 'demo',
@@ -51,7 +67,7 @@ describe('openui-export-builder', () => {
   })
 
   it('returns raw SFF HTML directly for HTML exports', async () => {
-    const result = await buildOpenUIExport({
+    const result = await buildOpenUIHtmlExport({
       source: rawHtmlSource,
       siteSpecJson,
       sessionId: 'demo',
@@ -61,6 +77,29 @@ describe('openui-export-builder', () => {
     expect(result.contentType).toBe('text/html; charset=utf-8')
     expect(result.filename).toBe('index.html')
     expect(decodeExportBody(result.body)).toBe(rawHtmlSource)
+  })
+
+  it('keeps standalone HTML export isolated from full-catalog package imports', () => {
+    const htmlBuilderSource = readFileSync(
+      new URL('./openui-html-export-builder.ts', import.meta.url),
+      'utf8',
+    )
+    const packageBuilderSource = readFileSync(
+      new URL('./openui-export-builder.ts', import.meta.url),
+      'utf8',
+    )
+
+    expect(htmlBuilderSource).toContain('@ship-fast/blocks/runtime')
+    expect(htmlBuilderSource).toContain('loadOpenUIRuntimeLibrary(cleaned)')
+    expect(htmlBuilderSource).not.toContain("from '@ship-fast/blocks'")
+    expect(htmlBuilderSource).not.toContain('@ship-fast/blocks/generated')
+    expect(htmlBuilderSource).not.toContain('reactExportSourcesBase64')
+    expect(htmlBuilderSource).not.toContain('brotliDecompressSync')
+    expect(htmlBuilderSource).not.toContain("from 'typescript'")
+    expect(htmlBuilderSource).not.toContain('./openui-export-builder')
+    expect(packageBuilderSource).toContain(
+      "await import('./openui-html-export-builder')",
+    )
   })
 
   it('packages raw SFF HTML as a static ZIP for app export targets', async () => {

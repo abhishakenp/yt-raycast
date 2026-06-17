@@ -41,7 +41,24 @@ const publicRules: AssetRule[] = [
 
 const serverRules: AssetRule[] = [
   { pattern: /^GeneratedModulePreview-.+\.mjs$/, maxBytes: mib(0.08) },
-  { pattern: /^router-.+\.mjs$/, maxBytes: mib(0.3) },
+  {
+    pattern: /^router-.+\.mjs$/,
+    maxBytes: mib(0.3),
+    requiredAbsentText: [
+      'reactExportSourcesBase64',
+      'brotliDecompressSync',
+      'require_typescript',
+    ],
+  },
+  {
+    pattern: /^openui-html-export-builder-.+\.mjs$/,
+    maxBytes: mib(0.2),
+    requiredAbsentText: [
+      'reactExportSourcesBase64',
+      'brotliDecompressSync',
+      'require_typescript',
+    ],
+  },
   { pattern: /^openui-export-builder-.+\.mjs$/, maxBytes: mib(4) },
   { pattern: /^openui-runtime-core-.+\.mjs$/, maxBytes: mib(7.5) },
   { pattern: /^openui-capsule-index-.+\.mjs$/, maxBytes: mib(12.5) },

@@ -3,43 +3,18 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { brotliDecompressSync } from 'node:zlib'
 import ts from 'typescript'
-import {
-  createParser,
-  jsonToOpenUI,
-  type ElementNode,
-} from '@openuidev/lang-core'
+import { createParser, type ElementNode } from '@openuidev/lang-core'
 import { library } from '@ship-fast/blocks'
 import {
   reactExportSourcesBase64,
   reactExportSourcesEncoding,
 } from '@ship-fast/blocks/generated'
-import { renderOpenUIToHTMLWithTheme } from '@ship-fast/engine/openui-ssr.js'
 import { zipSync, strToU8 } from 'fflate'
 
 import { preprocessOpenUIResponse } from '@ship-fast/engine'
 import { resolveThemeStyles } from '@/genui/theme-apply'
 import type { ThemeStyles } from '@/genui/theme-presets'
-import { buildHtmlExport } from './html-export-builder'
-
-export type ExportTarget = 'html' | 'react' | 'next'
-
-export type OpenUIExportInput = {
-  source: string
-  siteSpecJson?: string
-  previewHtml?: string
-  sessionId: string
-  target: ExportTarget
-  themeName?: string
-  isDark?: boolean
-  includeBadge?: boolean
-}
-
-export type BuiltExport = {
-  body: string | Uint8Array
-  contentType: string
-  filename: string
-  fileCount: number
-}
+import type { BuiltExport, OpenUIExportInput } from './openui-export-types'
 
 type ParsedOpenUIProgram = {
   root: ElementNode
@@ -69,12 +44,6 @@ type ReactExportSourceEntry = {
 }
 
 const textDecoder = new TextDecoder()
-const cssPath = join(
-  process.cwd(),
-  'public',
-  'styles',
-  'openui-preview-tailwind.css',
-)
 const blocksRegistryPath = join(
   process.cwd(),
   'packages',
@@ -93,14 +62,6 @@ const forbiddenExportTokens = [
   'data-tsd-source',
   'dangerouslySetInnerHTML',
 ] as const
-
-const readPreviewCss = (): string => {
-  try {
-    return readFileSync(cssPath, 'utf8')
-  } catch {
-    return ''
-  }
-}
 
 const toProjectSlug = (value: string): string =>
   value
@@ -223,38 +184,6 @@ const buildThemeStyle = (
     })
     .join(' ')
 }
-
-const buildThemeFontLinks = (styles: ThemeStyles | null): string => {
-  if (!styles) return ''
-  const systemFontRe =
-    /^(ui-|system|-apple|blinkmac|segoe|roboto$|helvetica|arial|sans-serif|serif|monospace|menlo|consolas|courier|georgia|cambria|times)/i
-  const families = new Set<string>()
-  for (const variant of [styles.light, styles.dark]) {
-    for (const key of ['font-sans', 'font-serif', 'font-mono'] as const) {
-      const raw = variant[key]
-      if (typeof raw !== 'string') continue
-      const first = raw
-        .split(',')[0]
-        ?.trim()
-        .replace(/^["']|["']$/g, '')
-      if (first && !systemFontRe.test(first)) families.add(first)
-    }
-  }
-  if (families.size === 0) return ''
-  const params = [...families]
-    .map(
-      (family) =>
-        `family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@400;500;600;700`,
-    )
-    .join('&')
-  return `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${params}&display=swap" />`
-}
-
-const stringifyJs = (value: unknown): string =>
-  JSON.stringify(value)
-    .replaceAll('<', '\\u003c')
-    .replaceAll('\u2028', '\\u2028')
-    .replaceAll('\u2029', '\\u2029')
 
 const assertNoOpenUIInternals = (files: Record<string, string>): void => {
   for (const [name, content] of Object.entries(files)) {
@@ -953,136 +882,6 @@ export function parseOpenUIForExport(
   }
 }
 
-const renderPageHtml = async (page: ElementNode): Promise<string> => {
-  const pageSource = jsonToOpenUI(page, library)
-  const { html } = (await renderOpenUIToHTMLWithTheme(
-    pageSource,
-    undefined,
-    'en',
-    undefined,
-  )) as {
-    html: string
-    cssVars: string
-  }
-  return html
-}
-
-const buildRouteScript = (routes: string[]): string => `
-(function () {
-  var routes = ${stringifyJs(routes)};
-  var current = 0;
-  function normalize(value) { return String(value || '').trim().toLowerCase(); }
-  function findRoute(label) {
-    var t = normalize(label);
-    if (!t) return -1;
-    var exact = routes.findIndex(function (route) { return normalize(route) === t; });
-    if (exact >= 0) return exact;
-    var pairs = [
-      [/shop|store|product|buy|cart|order|browse|collection/, /shop|store|product|collection|menu|work|gallery/],
-      [/price|plan|pricing|subscribe|upgrade|tier/, /pric|plan/],
-      [/contact|reach|get in touch|book|reserve|demo|quote|sign ?up|start|join|get started|register/, /contact|book|reserve|demo|start|join/],
-      [/about|story|team|who we are|mission/, /about|team|story/],
-      [/blog|news|post|article|read|stories|journal/, /blog|news|post|article|stories/],
-      [/feature|service|how it works|learn|explore|tour/, /feature|service|how/]
-    ];
-    for (var i = 0; i < pairs.length; i++) {
-      if (!pairs[i][0].test(t)) continue;
-      var idx = routes.findIndex(function (route) { return pairs[i][1].test(normalize(route)); });
-      if (idx >= 0) return idx;
-    }
-    return 0;
-  }
-  function show(index) {
-    if (index < 0 || index >= routes.length) return;
-    current = index;
-    document.querySelectorAll('[data-sf-export-page]').forEach(function (page, pageIndex) {
-      page.hidden = pageIndex !== current;
-    });
-  }
-  document.addEventListener('click', function (event) {
-    var target = event.target instanceof Element ? event.target.closest('button,a') : null;
-    if (!target) return;
-    var idx = findRoute(target.textContent);
-    if (idx < 0) return;
-    event.preventDefault();
-    show(idx);
-  });
-  document.addEventListener('submit', function (event) { event.preventDefault(); });
-  show(0);
-})();`
-
-const buildPagesMarkup = async (parsed: ParsedOpenUIProgram): Promise<string> =>
-  (
-    await Promise.all(
-      parsed.pages.map(async (page, index) => {
-        const label = parsed.routes[index] ?? `Page ${index + 1}`
-        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page)}</section>`
-      }),
-    )
-  ).join('\n')
-
-const absolutizeHtmlAssetUrls = (html: string): string =>
-  html.replaceAll('="/api/pexels?', '="https://ship-fast.io/api/pexels?')
-
-const buildStandaloneHtmlDocument = async (
-  input: OpenUIExportInput,
-  parsed: ParsedOpenUIProgram,
-): Promise<string> => {
-  const siteSpec = parseSiteSpec(input.siteSpecJson)
-  const themeName = readThemeName(siteSpec, input.themeName)
-  const isDark = input.isDark ?? true
-  const themeStyles = resolveThemeStyles(themeName)
-  const themeStyle = buildThemeStyle(themeStyles, isDark)
-  const themeFontLinks = buildThemeFontLinks(themeStyles)
-  const { cssVars } = (await renderOpenUIToHTMLWithTheme(
-    input.source,
-    undefined,
-    'en',
-    undefined,
-  )) as {
-    html: string
-    cssVars: string
-  }
-  const css = readPreviewCss()
-  const pagesMarkup = absolutizeHtmlAssetUrls(await buildPagesMarkup(parsed))
-
-  return buildHtmlExport(
-    `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(parsed.projectName)}</title>
-  ${themeFontLinks}
-  <style>
-${css}
-    :root { ${themeStyle} }
-    #openui-root { ${cssVars || ''} ${themeStyle} }
-    html, body { min-height: 100%; margin: 0; background: var(--background); color: var(--foreground); }
-  </style>
-</head>
-<body class="min-h-screen bg-background text-foreground">
-  <div id="openui-root" class="genui-preview size-full bg-background${isDark ? ' dark' : ''}" style="${escapeAttribute(`${themeStyle} color-scheme: ${isDark ? 'dark' : 'light'}`)}">${pagesMarkup || input.previewHtml || ''}</div>
-  <script>
-    window.__SHIP_FAST_EXPORT__ = ${stringifyJs({ routes: parsed.routes, projectName: parsed.projectName, themeName, mode: isDark ? 'dark' : 'light' })};
-    ${buildRouteScript(parsed.routes)}
-  </script>
-</body>
-</html>`,
-    { includeBadge: input.includeBadge ?? true },
-  )
-}
-
-const escapeHtml = (value: string): string =>
-  value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;')
-
-const escapeAttribute = escapeHtml
-
 const renderReactPackageJson = (
   projectName: string,
   dependencies: Record<string, string>,
@@ -1492,21 +1291,17 @@ Open index.html directly, or serve this folder with any static host.
 export async function buildOpenUIExport(
   input: OpenUIExportInput,
 ): Promise<BuiltExport> {
+  if (input.target === 'html') {
+    const { buildOpenUIHtmlExport } =
+      await import('./openui-html-export-builder')
+    return buildOpenUIHtmlExport(input)
+  }
+
   if (isHtmlDocumentSource(input.source)) {
     return buildRawHtmlExport(input)
   }
 
   const parsed = parseOpenUIForExport(input.source, input.siteSpecJson)
-
-  if (input.target === 'html') {
-    const documentHtml = await buildStandaloneHtmlDocument(input, parsed)
-    return {
-      body: documentHtml,
-      contentType: 'text/html; charset=utf-8',
-      filename: 'index.html',
-      fileCount: 1,
-    }
-  }
 
   return input.target === 'react'
     ? buildReactExport(input, parsed)

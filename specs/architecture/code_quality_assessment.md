@@ -18,12 +18,12 @@ Mode: Full Assessment
 
 ## Executive Summary
 
-Ship Fast is an ambitious full-stack generation product with strong quality gates and a clear feature/module structure. The repo now has unusually good runtime/bundle guardrails for the OpenUI path, including response-scoped browser rendering and explicit bundle verification. The deduction from an A+ / 11-out-of-10 state is not about basic correctness: it is about scale hygiene. Large source files, low current coverage, and a still-eager server OpenUI SSR/export path make future change risk higher than it needs to be.
+Ship Fast is an ambitious full-stack generation product with strong quality gates and a clear feature/module structure. The repo now has unusually good runtime/bundle guardrails for the OpenUI path, including response-scoped browser rendering, response-scoped standalone HTML export rendering, and explicit bundle verification. The deduction from an A+ / 11-out-of-10 state is not about basic correctness: it is about scale hygiene. Large source files, low current coverage, and full-catalog React/Next package export weight make future change risk higher than it needs to be.
 
 **Key Strengths:**
 
 - Full QA is enforced locally and in CI: lint, strict typecheck, tests, build, and bundle verification all run through `verify:qa` and `.github/workflows/ci.yml`.
-- OpenUI browser runtime boundaries are now explicit and tested: `@ship-fast/blocks/runtime`, `@ship-fast/blocks/theme`, `@ship-fast/blocks/component-names`, generated runtime loaders, and `scripts/verify-build-bundles.ts` prevent broad browser regressions.
+- OpenUI runtime boundaries are now explicit and tested: `@ship-fast/blocks/runtime`, `@ship-fast/blocks/theme`, `@ship-fast/blocks/component-names`, generated runtime loaders, HTML-only export routing, and `scripts/verify-build-bundles.ts` prevent broad runtime regressions.
 - The codebase has recognizable ownership boundaries: `src/features`, `convex`, `packages/ship-fast-engine`, `packages/ship-fast-blocks`, and `packages/ship-fast-lakebed` each have distinct responsibilities.
 - Tests cover recurring regression surfaces such as Convex sessions, billing, generation, export entitlement, OpenUI preprocessing, bundle boundaries, and dashboard behaviors.
 
@@ -31,11 +31,11 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 - `convex/sessions.ts` is no longer under a raw formatted 500-line ceiling, but it is now a registration/orchestration surface with session edit, create-edit mutation orchestration, ownership/read/write/theme, prompt, create-admission/cache/quota, create mutation orchestration, chat-history/chat-refinement mutation, fork orchestration, complete-generation action orchestration, deployment, export, gallery, preview-history, serialization, Agentation, operational notification, commerce/Medusa, usage metrics, CMS, task, generated artifact/cache, event-stream, workspace, readiness, public-preview, internal-reference, and shared validator layers split into focused helpers with direct tests.
 - The block/capsule catalog has many 1,000+ LOC files; this may be acceptable for generated catalog content, but it needs stronger mechanical generation/validation boundaries to avoid manual drift.
-- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.01% statements, 14.74% branches, 10.51% functions, and 21.61% lines in the latest full pre-push gate.
+- Coverage is now enforced through Vitest/V8 thresholds, but the current measured baseline is still low: 22.12% statements, 14.80% branches, 10.64% functions, and 21.73% lines in the latest full coverage gate.
 - Local git hooks now enforce authoring-time checks before commit and full QA before push.
 - GitNexus impact analysis is available again after rebuilding the local index with the project runner; keep the runner version aligned with the MCP reader to avoid storage-version drift.
 
-**Overall Rating: A (10.0/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and server-side OpenUI weight.
+**Overall Rating: A (10.2/10).** The codebase is production-capable and improving quickly, but the deduction from A+ is for scale-risk controls that are not yet complete: low absolute coverage despite enforced thresholds, remaining large-file decomposition, and full-catalog package-export weight/provenance.
 
 ---
 
@@ -112,7 +112,7 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 **Concerns:**
 
-- Core OpenUI SSR now loads a response-scoped runtime library through `@ship-fast/blocks/runtime`, but React/Next export generation still needs the full catalog/source manifest and continues to emit large OpenUI server chunks.
+- Core OpenUI SSR and standalone HTML export rendering now load response-scoped runtime libraries through `@ship-fast/blocks/runtime`, but React/Next export generation still needs the full catalog/source manifest and continues to emit large OpenUI server chunks.
 
 ### OpenUI Blocks (`packages/ship-fast-blocks/`) ★★★★☆
 
@@ -130,17 +130,18 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 **Strengths:**
 
 - Export routes defer heavy export-builder loading until entitlement/session checks pass.
-- Bundle budgets explicitly cap export-builder and router chunk growth.
+- Standalone HTML downloads now route through `openui-html-export-builder`, which uses `loadOpenUIRuntimeLibrary` instead of the full block barrel/source manifest.
+- Bundle budgets explicitly cap export-builder, HTML export-builder, and router chunk growth.
 
 **Concerns:**
 
-- OpenUI export now awaits the async SSR renderer for standalone HTML, but React/Next package generation still imports the full block library and compressed source manifest so downloadable app exports can materialize components.
+- React/Next package generation still imports the full block library and compressed source manifest so downloadable app exports can materialize components.
 
 ## Testing & Quality Infrastructure ★★★★☆
 
 **Strengths:**
 
-- The latest full coverage gate passed with measured V8 coverage of 22.01% statements, 14.74% branches, 10.51% functions, and 21.61% lines.
+- The latest full coverage gate passed with measured V8 coverage of 22.12% statements, 14.80% branches, 10.64% functions, and 21.73% lines.
 - `verify:qa` now runs Vitest with V8 coverage thresholds before build and bundle verification; CI uses the same coverage-backed test command.
 - Source-level invariant tests protect architecture boundaries that ordinary behavior tests would miss.
 
@@ -190,11 +191,11 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ### Priority 2: Medium Impact / Medium Risk
 
-#### 2.1 Split Full-Catalog OpenUI Exports From Standalone HTML
+#### 2.1 Keep Full-Catalog OpenUI Exports Behind App Targets
 
-- **What**: Keep the async response-scoped SSR path for standalone HTML, then split React/Next package generation into a separate full-catalog export module so HTML exports do not share its eager source-manifest dependency.
-- **Risk**: Medium — affects export builder module boundaries and download-route imports.
-- **Impact**: Removes the remaining full-catalog dependency from the standalone HTML export path while preserving React/Next ZIP generation.
+- **What**: Preserve the new split where `target=html` imports `openui-html-export-builder` and React/Next app targets import `openui-export-builder`; keep bundle verification rejecting full-catalog package internals inside the HTML export chunk.
+- **Risk**: Low to Medium — future export refactors could accidentally recombine the paths without source and bundle guardrails.
+- **Impact**: Keeps standalone HTML downloads response-scoped while preserving React/Next ZIP generation.
 
 #### 2.2 Normalize Capsule Generation Provenance
 
@@ -220,6 +221,6 @@ Ship Fast is an ambitious full-stack generation product with strong quality gate
 
 ## Summary
 
-Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, and the largest Convex coordination file is now delegated to focused helper modules. The path from 10.0/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, and split remaining full-catalog OpenUI export work away from response-scoped standalone HTML SSR.
+Ship Fast is already well above average for a fast-moving TypeScript generation product: it has strong local hooks and CI, real bundle guardrails, a modular product layout, restored graph impact analysis, enforced coverage thresholds in the main QA path, the largest Convex coordination file is now delegated to focused helper modules, and standalone HTML exports are split from full-catalog package exports. The path from 10.2/10 to a credible 11/10 is now clear: keep `convex/sessions.ts` as a thin registration surface, raise coverage thresholds area by area, keep GitNexus version alignment stable, and normalize capsule generation provenance.
 
-**Overall Rating: A (10.0/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and server-side weight that remain measurable and tractable.
+**Overall Rating: A (10.2/10).** The deduction from A+ is for low absolute coverage, remaining large-file decomposition, and package-export/catalog provenance that remain measurable and tractable.

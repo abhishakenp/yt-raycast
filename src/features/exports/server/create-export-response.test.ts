@@ -4,22 +4,36 @@ import { createExportResponse } from './create-export-response'
 
 const queryMock = vi.fn()
 const setAuthMock = vi.fn()
+const buildOpenUIHtmlExportMock = vi.hoisted(() => vi.fn())
+const buildOpenUIExportMock = vi.hoisted(() => vi.fn())
 const fakeClient = { query: queryMock, setAuth: setAuthMock } as never
 const openUiSource = `root = SaasKimiPage("Paid export", ["Home"], {"heading": "Paid export", "highlight": "export"})`
 const siteSpecJson = JSON.stringify({ projectName: 'Paid export' })
 
+vi.mock('../services/openui-html-export-builder', () => ({
+  buildOpenUIHtmlExport: buildOpenUIHtmlExportMock,
+}))
+
 vi.mock('../services/openui-export-builder', () => ({
-  buildOpenUIExport: vi.fn(() => ({
-    body: '<html><body><h1>Paid export</h1></body></html>',
-    contentType: 'text/html; charset=utf-8',
-    filename: 'ship-fast-session_123-html.zip',
-  })),
+  buildOpenUIExport: buildOpenUIExportMock,
 }))
 
 describe('createExportResponse', () => {
   beforeEach(() => {
     queryMock.mockReset()
     setAuthMock.mockReset()
+    buildOpenUIHtmlExportMock.mockReset()
+    buildOpenUIExportMock.mockReset()
+    buildOpenUIHtmlExportMock.mockResolvedValue({
+      body: '<html><body><h1>Paid export</h1></body></html>',
+      contentType: 'text/html; charset=utf-8',
+      filename: 'index.html',
+    })
+    buildOpenUIExportMock.mockResolvedValue({
+      body: new Uint8Array([1, 2, 3]),
+      contentType: 'application/zip',
+      filename: 'paid-export-next.zip',
+    })
   })
 
   it('blocks payment-required exports before reading public preview HTML', async () => {
@@ -67,6 +81,38 @@ describe('createExportResponse', () => {
     )
     expect(html).toContain('Paid export')
     expect(html).not.toContain('data-ship-fast-export-badge="1"')
+    expect(buildOpenUIHtmlExportMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: 'html',
+        includeBadge: false,
+      }),
+    )
+    expect(buildOpenUIExportMock).not.toHaveBeenCalled()
+  })
+
+  it('uses the full package builder only for app export targets', async () => {
+    queryMock.mockResolvedValueOnce({
+      export: {
+        status: 'ready',
+        requiresPayment: false,
+      },
+      source: openUiSource,
+      siteSpecJson,
+      latestPreviewVersion: 1,
+    })
+
+    const response = await createExportResponse(
+      'session_123',
+      'next',
+      fakeClient,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('application/zip')
+    expect(buildOpenUIExportMock).toHaveBeenCalledWith(
+      expect.objectContaining({ target: 'next' }),
+    )
+    expect(buildOpenUIHtmlExportMock).not.toHaveBeenCalled()
   })
 
   it('forwards bearer auth and owner secret to the owned download query', async () => {

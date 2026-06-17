@@ -73,6 +73,11 @@ const writePassingAssets = (root: string) => {
   )
   writeAsset(
     root,
+    '.output/server/_ssr/openui-html-export-builder-test.mjs',
+    'export const htmlExportBuilder = true',
+  )
+  writeAsset(
+    root,
     '.output/server/_ssr/openui-runtime-core-test.mjs',
     'export const runtimeCore = true',
   )
@@ -127,6 +132,20 @@ describe('verifyBuildBundles', () => {
     writeAsset(root, '.output/server/_ssr/router-test.mjs', 'x'.repeat(400_000))
 
     expect(() => verifyBuildBundles(root)).toThrow(/router-test\.mjs/)
+  })
+
+  it('rejects standalone HTML export chunks with full-catalog package internals', () => {
+    const root = createBuildRoot()
+    writePassingAssets(root)
+    writeAsset(
+      root,
+      '.output/server/_ssr/openui-html-export-builder-test.mjs',
+      'const reactExportSourcesBase64 = "full catalog"',
+    )
+
+    expect(() => verifyBuildBundles(root)).toThrow(
+      /forbidden token reactExportSourcesBase64/,
+    )
   })
 
   it('rejects large anonymous source chunks', () => {
