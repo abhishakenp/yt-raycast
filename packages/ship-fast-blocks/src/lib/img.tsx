@@ -226,10 +226,13 @@ export function Image({
   // Explicit prop wins; otherwise inherit the ambient page-level context.
   const ambientContext = useContext(ImageContextContext)
   const effectiveContext = context ?? ambientContext ?? undefined
+  const overrideSrc = effectiveContext?.overrides?.[normalizedAlt]
   const imageSrc =
     typeof src === "string" && src.trim()
       ? src
-      : getPexelsProxyUrl(normalizedAlt, w, h, effectiveContext)
+      : typeof overrideSrc === "string" && overrideSrc.trim()
+        ? overrideSrc
+        : getPexelsProxyUrl(normalizedAlt, w, h, effectiveContext)
 
   return (
     <img

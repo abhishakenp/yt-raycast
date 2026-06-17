@@ -1,13 +1,36 @@
 import { useEffect, useRef } from 'react'
 
+interface CapturedTextNode {
+  node: Text
+  value: string
+}
+
 interface TextEditState {
   element: HTMLElement
   originalText: string
+  /** Snapshot of the element's text nodes at activation, in document order.
+   *  Edits are diffed per-node so inline structure (<br>, <span>, <strong>, …)
+   *  is preserved and each change yields a precise, matchable text run instead
+   *  of the element's flattened textContent. */
+  originalNodes: CapturedTextNode[]
 }
 
-/** 0-based index of the element's text among identical occurrences in document
- *  order, so the server edits the clicked element rather than the first textual
- *  match (e.g. the same word in the nav vs. a heading). */
+/** Collect every Text node under `el` in document order (including those nested
+ *  in inline wrappers like <span>/<strong>). */
+function collectTextNodes(el: HTMLElement): Text[] {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+  const nodes: Text[] = []
+  let current = walker.nextNode()
+  while (current) {
+    nodes.push(current as Text)
+    current = walker.nextNode()
+  }
+  return nodes
+}
+
+/** 0-based index of `target` among identical occurrences in document order
+ *  before `element`, so the server edits the clicked run rather than the first
+ *  textual match (e.g. the same word in the nav vs. a heading). */
 function computeOccurrenceIndex(
   container: HTMLElement,
   element: HTMLElement,
@@ -50,27 +73,74 @@ export function useTextEdit(
     const container = containerRef.current
     if (!container) return
 
+    // Diff the element's current text nodes against the snapshot taken at
+    // activation and return one change per modified node. Preserves structure:
+    // a node's value changes, the surrounding <br>/<span>/etc. do not. Falls back
+    // to a single whole-element change only if the node structure itself changed
+    // (e.g. the user deleted across a <br>, merging nodes).
+    const diffEdits = (
+      active: TextEditState,
+    ): Array<{ oldText: string; newText: string }> => {
+      const current = collectTextNodes(active.element)
+      if (current.length === active.originalNodes.length) {
+        const changes: Array<{ oldText: string; newText: string }> = []
+        for (let i = 0; i < current.length; i += 1) {
+          const oldText = active.originalNodes[i].value
+          const newText = current[i].nodeValue ?? ''
+          if (oldText !== newText && oldText.trim() && newText.trim()) {
+            changes.push({ oldText, newText })
+          }
+        }
+        return changes
+      }
+      const flattened = active.element.textContent ?? ''
+      if (flattened !== active.originalText && flattened.trim()) {
+        return [{ oldText: active.originalText, newText: flattened }]
+      }
+      return []
+    }
+
     const finishEdit = () => {
       const active = activeEditRef.current
       if (!active) return
-
-      const newText = active.element.textContent || ''
-      if (newText !== active.originalText && newText.trim()) {
-        const occurrenceIndex = computeOccurrenceIndex(container, active.element, active.originalText)
-        callbackRef.current({ oldText: active.originalText, newText, element: active.element, occurrenceIndex })
-      }
-
-      cleanupElement(active.element)
+      // Clear the ref BEFORE anything that can re-enter this handler. cleanupElement
+      // resets contentEditable, which blurs the focused element and synchronously
+      // fires the capture `blur` listener → finishEdit again. Clearing first makes
+      // that re-entrant call a no-op, preventing a duplicate (stale) edit submit.
       activeEditRef.current = null
+
+      const changes = diffEdits(active)
+      cleanupElement(active.element)
+      for (const change of changes) {
+        const occurrenceIndex = computeOccurrenceIndex(
+          container,
+          active.element,
+          change.oldText,
+        )
+        callbackRef.current({
+          oldText: change.oldText,
+          newText: change.newText,
+          element: active.element,
+          occurrenceIndex,
+        })
+      }
     }
 
     const cancelEdit = () => {
       const active = activeEditRef.current
       if (!active) return
-
-      active.element.textContent = active.originalText
-      cleanupElement(active.element)
       activeEditRef.current = null
+      // Restore original text-node values (preserves structure); fall back to a
+      // flat restore only if the node structure changed during editing.
+      const current = collectTextNodes(active.element)
+      if (current.length === active.originalNodes.length) {
+        for (let i = 0; i < current.length; i += 1) {
+          current[i].nodeValue = active.originalNodes[i].value
+        }
+      } else {
+        active.element.textContent = active.originalText
+      }
+      cleanupElement(active.element)
     }
 
     const handleClick = (e: MouseEvent) => {
@@ -110,11 +180,24 @@ export function useTextEdit(
       textEl.contentEditable = 'true'
       textEl.focus()
 
-      const range = document.createRange()
-      range.selectNodeContents(textEl)
+      // Place the caret where the user clicked instead of selecting the whole
+      // element. Select-all means the first keystroke replaces ALL of the
+      // element's content, flattening <br>/<span> structure into a single text
+      // run. Per-character caret editing keeps the structure intact.
+      const caretRange =
+        typeof document.caretRangeFromPoint === 'function'
+          ? document.caretRangeFromPoint(e.clientX, e.clientY)
+          : null
       const sel = window.getSelection()
       sel?.removeAllRanges()
-      sel?.addRange(range)
+      if (caretRange && textEl.contains(caretRange.startContainer)) {
+        sel?.addRange(caretRange)
+      } else {
+        const fallback = document.createRange()
+        fallback.selectNodeContents(textEl)
+        fallback.collapse(false)
+        sel?.addRange(fallback)
+      }
 
       textEl.style.outline = '2px solid hsl(var(--primary))'
       textEl.style.outlineOffset = '2px'
@@ -124,7 +207,14 @@ export function useTextEdit(
       const rect = textEl.getBoundingClientRect()
       elementActivateCallbackRef.current?.(textEl, rect)
 
-      activeEditRef.current = { element: textEl, originalText }
+      activeEditRef.current = {
+        element: textEl,
+        originalText,
+        originalNodes: collectTextNodes(textEl).map((node) => ({
+          node,
+          value: node.nodeValue ?? '',
+        })),
+      }
 
       e.stopPropagation()
       e.preventDefault()
@@ -135,7 +225,7 @@ export function useTextEdit(
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         finishEdit()
       }

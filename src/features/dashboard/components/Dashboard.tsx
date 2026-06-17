@@ -443,6 +443,42 @@ export function Dashboard({
     return Math.max(5, Math.round((done / generationView.tasks.length) * 100))
   }, [generationView])
 
+  const imageOverrides = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const edit of editController.edits ?? []) {
+      if (
+        edit.editType === 'image' &&
+        typeof edit.beforeText === 'string' &&
+        typeof edit.afterText === 'string' &&
+        !(edit.beforeText in map)
+      ) {
+        // edits are newest-first, so the first seen alt wins (latest swap).
+        map[edit.beforeText] = edit.afterText
+      }
+    }
+    return map
+  }, [editController.edits])
+
+  const styleOverrides = useMemo(() => {
+    const seen = new Set<string>()
+    const overrides: Array<{ classAnchor: string; occurrenceIndex: number; style: string }> = []
+    for (const edit of editController.edits ?? []) {
+      if (
+        edit.editType === 'style' &&
+        typeof edit.beforeText === 'string' &&
+        typeof edit.afterText === 'string'
+      ) {
+        const occurrenceIndex = edit.occurrenceIndex ?? 0
+        const key = `${edit.beforeText}#${occurrenceIndex}`
+        // edits are newest-first, so the first seen class+occurrence wins.
+        if (seen.has(key)) continue
+        seen.add(key)
+        overrides.push({ classAnchor: edit.beforeText, occurrenceIndex, style: edit.afterText })
+      }
+    }
+    return overrides
+  }, [editController.edits])
+
   const hasFailures =
     generationView?.session.status === 'failed' ||
     generationView?.tasks.some((task) => task.status === 'failed') === true
@@ -572,9 +608,19 @@ export function Dashboard({
       clerk.openSignIn()
       return
     }
+    // Optimistic: show the new image immediately (reverted below on failure).
+    change.element.src = change.newSrc
     const label = `IMG: ${change.alt.slice(0, 20)}…`
+    // Anchor the swap on the image's `alt` (stable across renders), not its src:
+    // the stored preview HTML and the live DOM resolve different /api/pexels
+    // queries from the same alt, so src never matches. occurrenceIndex picks the
+    // right image when several share an alt.
+    const sameAlt = Array.from(
+      change.element.ownerDocument.querySelectorAll('img'),
+    ).filter((img) => (img as HTMLImageElement).alt === change.alt)
+    const occurrenceIndex = Math.max(0, sameAlt.indexOf(change.element))
     // Fire and forget - the page will reload after successful edit
-    editController.applyEdit('image', label, change.oldSrc, change.newSrc, 'inline image swap').then((result) => {
+    editController.applyEdit('image', label, change.alt, change.newSrc, 'inline image swap', undefined, occurrenceIndex).then((result) => {
       if (result === 'fork_needed') {
         // Fork the session
         toast.info('Forking session to save your changes...')
@@ -1058,12 +1104,19 @@ export function Dashboard({
                       >
                         {isPreviewReady && homeModule?.source ? (
                           <GeneratedModulePreview
-                            key={`${generationView.session.previewVersion}:${homeModule.updatedAt}`}
+                            // Key on the rendered source's updatedAt only — NOT previewVersion.
+                            // previewVersion bumps on every edit (incl. image swaps, which don't
+                            // touch homeModule), so keying on it remounts the whole preview and
+                            // scrolls to top on every swap. homeModule.updatedAt changes only when
+                            // the displayed source actually changes (text edit / restore / regen).
+                            key={`${homeModule.updatedAt ?? generationView.session.previewVersion}`}
                             source={homeModule.source}
                             sessionId={sessionId}
                             siteSpecJson={generationView.siteSpec?.specJson}
                             locale={generationView.session.preferredLanguage}
                             prompt={generationView.session.prompt}
+                            imageOverrides={imageOverrides}
+                            styleOverrides={styleOverrides}
                             isDark={isDark}
                             themeStyles={themeStyles}
                             deviceMode={currentDevice}
