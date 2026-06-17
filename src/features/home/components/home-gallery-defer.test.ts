@@ -9,12 +9,17 @@ const readHomePageSource = () =>
   )
 
 const readLaunchBackdropSource = () =>
-  readFileSync(join(process.cwd(), 'src/components/launch-backdrop.tsx'), 'utf8')
+  readFileSync(
+    join(process.cwd(), 'src/components/launch-backdrop.tsx'),
+    'utf8',
+  )
 
 describe('homepage gallery deferral', () => {
   it('mounts the public gallery only after viewport or idle readiness', () => {
     const source = readHomePageSource()
-    const renderBody = source.slice(source.indexOf('export const HomePage = () => {'))
+    const renderBody = source.slice(
+      source.indexOf('export const HomePage = () => {'),
+    )
 
     expect(source).toContain('const DeferredHomeGallerySection = () =>')
     expect(source).toContain('IntersectionObserver')
@@ -28,7 +33,7 @@ describe('homepage gallery deferral', () => {
       "import { HomeGallerySection } from '@/features/gallery/components/PublicGallery'",
     )
     expect(source).toContain("document.activeElement.id === 'prompt-input'")
-    expect(source).toContain('window.addEventListener(\'scroll\', handleScroll')
+    expect(source).toContain("window.addEventListener('scroll', handleScroll")
     expect(renderBody).toContain('<DeferredHomeGallerySection />')
     expect(renderBody).not.toContain('<HomeGallerySection />')
   })
@@ -59,7 +64,9 @@ describe('homepage gallery deferral', () => {
 
     expect(imports).toContain('@/lib/home/prompt-language-labels')
     expect(imports).not.toContain('@/lib/home/prompt-language-core')
-    expect(source).toContain("await import(\n          '@/lib/home/prompt-language-core'")
+    expect(source).toMatch(
+      /await\s+import\(\s*['"]@\/lib\/home\/prompt-language-core['"]\s*\)/,
+    )
   })
 
   it('defers and pauses the animated homepage canvas backdrop', () => {
@@ -67,7 +74,9 @@ describe('homepage gallery deferral', () => {
 
     expect(source).toContain('BACKDROP_START_DELAY_MS')
     expect(source).toContain('requestIdleCallback')
-    expect(source).toContain('document.addEventListener("visibilitychange"')
+    expect(source).toMatch(
+      /document\.addEventListener\(\s*['"]visibilitychange['"]/,
+    )
     expect(source).toContain('document.hidden')
     expect(source).toContain('width < 760 ? 54 : 96')
   })

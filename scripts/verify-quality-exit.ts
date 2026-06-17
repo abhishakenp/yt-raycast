@@ -19,7 +19,7 @@ import {
 
 export const qualityAssessmentPath =
   'specs/architecture/code_quality_assessment.md'
-export const reviewBundlesReadmePath = '.output/review-groups/README.md'
+export const reviewBundlesReadmePath = '.quality-review-groups/README.md'
 
 export const requiredQualityExitCriteria = [
   'The dirty worktree is split into coherent, reviewable changesets.',

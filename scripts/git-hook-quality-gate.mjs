@@ -89,7 +89,32 @@ export function buildPreCommitPlan(stagedFiles) {
 }
 
 export function buildPrePushPlan() {
-  return [{ name: 'Full QA', command: 'bun', args: ['run', 'verify:qa'] }]
+  return [
+    { name: 'ESLint', command: 'bun', args: ['run', 'lint'] },
+    { name: 'TypeScript', command: 'bun', args: ['run', 'typecheck'] },
+    { name: 'Coverage tests', command: 'bun', args: ['run', 'test:coverage'] },
+    {
+      name: 'Change groups',
+      command: 'bun',
+      args: ['run', 'verify:change-groups'],
+    },
+    {
+      name: 'Review readiness',
+      command: 'bun',
+      args: ['run', 'verify:review-readiness'],
+    },
+    {
+      name: 'Generated artifacts',
+      command: 'bun',
+      args: ['run', 'verify:generated'],
+    },
+    { name: 'Production build', command: 'bun', args: ['run', 'build'] },
+    {
+      name: 'Bundle boundaries',
+      command: 'bun',
+      args: ['run', 'verify:bundle'],
+    },
+  ]
 }
 
 export function readStagedFiles() {
