@@ -1,4 +1,4 @@
-import { useAuth } from '@clerk/tanstack-react-start'
+import { useAuth, useClerk } from '@clerk/tanstack-react-start'
 
 /**
  * Build-time constant: whether a Clerk publishable key was baked into this
@@ -13,22 +13,46 @@ const clerkPublishableKey =
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
   import.meta.env.CLERK_PUBLISHABLE_KEY
 const isClerkConfigured =
-  typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0
+  typeof clerkPublishableKey === 'string' &&
+  clerkPublishableKey.trim().length > 0
 
 type OptionalAuth = Pick<ReturnType<typeof useAuth>, 'getToken' | 'isSignedIn'>
+type OptionalClerk = Pick<
+  ReturnType<typeof useClerk>,
+  'openSignIn' | 'session' | 'user'
+>
 
 const anonymousAuth: OptionalAuth = {
   getToken: async () => null,
   isSignedIn: false,
 }
+const anonymousClerk: OptionalClerk = {
+  openSignIn: () => undefined,
+  session: null,
+  user: null,
+}
 
 /**
- * Clerk's `useAuth` throws if called outside a `<ClerkProvider>`. When the build
- * has no Clerk key (anonymous mode) no provider is mounted, which previously
- * white-screened the whole generate dashboard. This wrapper returns safe
- * signed-out defaults in that case so the page degrades gracefully instead of
- * crashing. `isClerkConfigured` is a build-time constant, so the conditional
- * hook call is stable for the lifetime of the bundle.
+ * Clerk's `useAuth` throws if called outside a `<ClerkProvider>`. Anonymous
+ * routes can intentionally avoid that provider even when a Clerk key exists, so
+ * this wrapper returns signed-out defaults instead of crashing the page.
  */
-export const useOptionalAuth = (): OptionalAuth =>
-  isClerkConfigured ? useAuth() : anonymousAuth
+export const useOptionalAuth = (): OptionalAuth => {
+  if (!isClerkConfigured) return anonymousAuth
+
+  try {
+    return useAuth()
+  } catch {
+    return anonymousAuth
+  }
+}
+
+export const useOptionalClerk = (): OptionalClerk => {
+  if (!isClerkConfigured) return anonymousClerk
+
+  try {
+    return useClerk()
+  } catch {
+    return anonymousClerk
+  }
+}

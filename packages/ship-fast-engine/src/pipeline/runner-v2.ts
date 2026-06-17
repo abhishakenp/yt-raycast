@@ -1,16 +1,52 @@
-// @ts-ignore
+// @ts-ignore -- legacy JS module lacks TypeScript declarations.
 import { formatRunAllReport } from './report.js'
-import { buildFallbackSiteSpec, loadSiteSpec, saveSiteSpec } from '../spec/index.js'
+import {
+  buildFallbackSiteSpec,
+  loadSiteSpec,
+  saveSiteSpec,
+} from '../spec/index.js'
 import { requirePromptText } from '../prompt.js'
-// @ts-ignore
+// @ts-ignore -- legacy JS module lacks TypeScript declarations.
 import { resolvePipelineLanguage } from './prompt-language.js'
 import { writeSffHtmlHome } from './phase-sff-html.ts'
-// @ts-ignore
+// @ts-ignore -- legacy JS module lacks TypeScript declarations.
 import { enrichBrandProfile } from './brand-profile.js'
-// @ts-ignore
+// @ts-ignore -- legacy JS module lacks TypeScript declarations.
 import { resolvePexelsImageHints } from './image-hints.js'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+
+type SiteSpecRecord = Record<string, unknown> & { locale?: string }
+
+const buildFallbackSiteSpecTyped = buildFallbackSiteSpec as (input: {
+  prompt: string
+  ctx?: Record<string, unknown>
+  designBrief?: string
+  siteType?: string
+}) => SiteSpecRecord
+
+const enrichBrandProfileTyped = enrichBrandProfile as (
+  prompt: string,
+  workspace: string,
+  log?: (message: string) => void,
+) => Promise<Record<string, unknown> | null>
+
+const resolvePexelsImageHintsTyped = resolvePexelsImageHints as unknown as (
+  input: {
+    prompt: string
+    hydrationPrompt: string
+    siteSpec?: Record<string, unknown>
+  },
+  options?: { onProgress?: (partial: unknown) => void },
+) => Promise<{
+  photos?: Array<{ query?: string; alt?: string; url?: string }>
+  videos?: Array<{
+    query?: string
+    alt?: string
+    url?: string
+    posterUrl?: string
+  }>
+} | null>
 
 const log = (sessionCtx: any) => (msg: string) => {
   console.log(msg)
@@ -22,19 +58,21 @@ const status = (sessionCtx: any) => (message: string, phase: string) => {
   sessionCtx?.broadcast?.({ type: 'status', message, phase })
 }
 
-export async function runAllV2({
-  prompt,
-  workspace,
-  sessionCtx,
-  integrations,
-  preferredLanguage,
-}: {
-  prompt?: string
-  workspace: string
-  sessionCtx?: any
-  integrations?: any
-  preferredLanguage?: string
-} = {} as any) {
+export async function runAllV2(
+  {
+    prompt,
+    workspace,
+    sessionCtx,
+    integrations,
+    preferredLanguage,
+  }: {
+    prompt?: string
+    workspace: string
+    sessionCtx?: any
+    integrations?: any
+    preferredLanguage?: string
+  } = {} as any,
+) {
   const _log = log(sessionCtx)
   const _status = status(sessionCtx)
   const t0 = Date.now()
@@ -47,7 +85,7 @@ export async function runAllV2({
   })
 
   const timings: Record<string, number> = { t0 }
-  let preparedSiteSpec: Record<string, unknown> | null = null
+  let preparedSiteSpec: SiteSpecRecord | null = null
 
   const tasks = [
     {
@@ -67,7 +105,10 @@ export async function runAllV2({
   ]
 
   const persistTasks = () => {
-    writeFileSync(join(workspace, 'tasks.json'), JSON.stringify({ tasks }, null, 2))
+    writeFileSync(
+      join(workspace, 'tasks.json'),
+      JSON.stringify({ tasks }, null, 2),
+    )
   }
 
   sessionCtx?.setPrompt?.(normalizedPrompt)
@@ -82,7 +123,10 @@ export async function runAllV2({
 
   try {
     timings.spec_start = Date.now()
-    const siteSpec = buildFallbackSiteSpec({ prompt: languageMode.prompt })
+    const siteSpec = buildFallbackSiteSpecTyped({
+      prompt: languageMode.prompt,
+      siteType: 'landing',
+    })
     if (languageMode.code) {
       siteSpec.locale = languageMode.code
     }
@@ -90,10 +134,14 @@ export async function runAllV2({
     preparedSiteSpec = siteSpec
     timings.spec_end = Date.now()
     tasks[0].status = 'DONE'
-    _log(`  ✓ Instant site blueprint ready (${((timings.spec_end - timings.spec_start) / 1000).toFixed(1)}s)`)
+    _log(
+      `  ✓ Instant site blueprint ready (${((timings.spec_end - timings.spec_start) / 1000).toFixed(1)}s)`,
+    )
   } catch (specErr) {
     tasks[0].status = 'FAILED'
-    _log(`  ⚠ Site spec failed, continuing with defaults: ${(specErr as Error)?.message ?? specErr}`)
+    _log(
+      `  ⚠ Site spec failed, continuing with defaults: ${(specErr as Error)?.message ?? specErr}`,
+    )
   }
 
   sessionCtx?.updateTask?.(tasks[0])
@@ -110,11 +158,15 @@ export async function runAllV2({
     timings.html_start = Date.now()
     const siteSpec = preparedSiteSpec ?? loadSiteSpec(workspace)
     const [brandProfile, imageHints] = await Promise.all([
-      enrichBrandProfile(languageMode.prompt, workspace, _log).catch((error: unknown) => {
-        _log(`  brand-profile: skipped (${(error as Error)?.message ?? String(error)})`)
-        return null
-      }),
-      resolvePexelsImageHints(
+      enrichBrandProfileTyped(languageMode.prompt, workspace, _log).catch(
+        (error: unknown) => {
+          _log(
+            `  brand-profile: skipped (${(error as Error)?.message ?? String(error)})`,
+          )
+          return null
+        },
+      ),
+      resolvePexelsImageHintsTyped(
         {
           prompt: languageMode.prompt,
           hydrationPrompt: languageMode.prompt,
@@ -130,7 +182,9 @@ export async function runAllV2({
           },
         },
       ).catch((error: unknown) => {
-        _log(`  image-hints: skipped (${(error as Error)?.message ?? String(error)})`)
+        _log(
+          `  image-hints: skipped (${(error as Error)?.message ?? String(error)})`,
+        )
         return null
       }),
     ])
@@ -154,8 +208,13 @@ export async function runAllV2({
     sessionCtx?.signalOpenuiReady?.()
 
     if (integrations?.afterSiteSpecSaved) {
-      const siteSpec = loadSiteSpec(workspace)
-      await integrations.afterSiteSpecSaved({ workspace, siteSpec, log: _log, status: _status })
+      const savedSiteSpec = loadSiteSpec(workspace)
+      await integrations.afterSiteSpecSaved({
+        workspace,
+        siteSpec: savedSiteSpec,
+        log: _log,
+        status: _status,
+      })
     }
 
     const elapsed = Number.parseFloat(((Date.now() - t0) / 1000).toFixed(1))
@@ -172,7 +231,9 @@ export async function runAllV2({
       ctxPages: 0,
     })
 
-    _log(`  ✓ SFF HTML generation complete: ${completed}/${tasks.length} tasks ready in ${elapsed}s`)
+    _log(
+      `  ✓ SFF HTML generation complete: ${completed}/${tasks.length} tasks ready in ${elapsed}s`,
+    )
     sessionCtx?.broadcast?.({
       type: 'run_completed',
       elapsed,

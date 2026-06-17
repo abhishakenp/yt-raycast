@@ -1,10 +1,5 @@
-import { ConvexHttpClient } from 'convex/browser'
-
 import { api } from '../../../../convex/_generated/api'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
-
-type SessionEventStreamConvexClient = Pick<ConvexHttpClient, 'query'> &
-  Partial<Pick<ConvexHttpClient, 'setAuth'>>
 
 type GenerationEvent = {
   _id?: string
@@ -18,6 +13,20 @@ type GenerationEvent = {
   error?: string
   quotaHit?: boolean
   cacheHit?: boolean
+}
+
+type EventStreamData = {
+  cursor?: number
+  events: GenerationEvent[]
+  session: { sessionId: string }
+} | null
+
+type SessionEventStreamConvexClient = {
+  query: (
+    query: unknown,
+    args: Record<string, unknown>,
+  ) => Promise<EventStreamData>
+  setAuth?: (token: string) => void
 }
 
 const parseSince = (request: Request): number | undefined => {
@@ -89,7 +98,9 @@ export const createSessionEventStreamResponse = async (
   clientOverride?: SessionEventStreamConvexClient,
 ): Promise<Response> => {
   try {
-    const client = clientOverride ?? createRuntimeConvexHttpClient()
+    const client =
+      clientOverride ??
+      (createRuntimeConvexHttpClient() as unknown as SessionEventStreamConvexClient)
     const token = getBearerToken(request)
     if (token !== null) client.setAuth?.(token)
     const anonymousOwnerSecret = getOwnerSecret(request)
@@ -110,7 +121,7 @@ export const createSessionEventStreamResponse = async (
       )
     }
 
-    const events = data.events as GenerationEvent[]
+    const events = data.events
     const replay = events.map(serializeSseEvent).join('')
     const cursor = data.cursor ?? parseSince(request) ?? Date.now()
     const heartbeat = [
@@ -119,7 +130,7 @@ export const createSessionEventStreamResponse = async (
       sseLine(
         'data',
         JSON.stringify({
-          sessionId: data.session.id,
+          sessionId: data.session.sessionId,
           cursor,
           count: events.length,
         }),

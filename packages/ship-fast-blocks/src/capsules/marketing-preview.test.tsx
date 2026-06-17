@@ -1,4 +1,3 @@
-import React from 'react'
 import { describe, expect, it } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ImageContextProvider, Renderer, library } from '../index.ts'

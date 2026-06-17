@@ -74,7 +74,10 @@ export const createReadySession = ({
     },
     timeoutMs,
   )
-  assert(typeof created.sessionId === 'string', 'sessions:create did not return sessionId')
+  assert(
+    typeof created.sessionId === 'string',
+    'sessions:create did not return sessionId',
+  )
 
   convexRun(
     'internal.sessions.completeGeneration',
@@ -113,7 +116,6 @@ export const createAgentBrowser = ({
   agentBrowser.closeAll = () => {
     try {
       agentBrowser(['close', '--all'], {
-        headed: false,
         stdio: ['ignore', 'ignore', 'ignore'],
         timeoutMs: 10000,
       })

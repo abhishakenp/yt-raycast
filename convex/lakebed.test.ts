@@ -40,7 +40,7 @@ const createSession = async (
   }
 
   return identity === undefined
-    ? await t.runMutation(api.sessions.create, args)
+    ? await t.mutation(api.sessions.create, args)
     : await t.withIdentity(identity).mutation(api.sessions.create, args)
 }
 
@@ -65,11 +65,13 @@ test('lakebed session data is isolated by session, capsule, and user', async () 
     patch: { count: 1 },
     sessionId: firstSession.sessionId,
   })
-  await t.withIdentity(secondUser).mutation(convexApi.lakebed.mergeSessionData, {
-    capsule: 'Cart',
-    patch: { count: 7 },
-    sessionId: firstSession.sessionId,
-  })
+  await t
+    .withIdentity(secondUser)
+    .mutation(convexApi.lakebed.mergeSessionData, {
+      capsule: 'Cart',
+      patch: { count: 7 },
+      sessionId: firstSession.sessionId,
+    })
   await t.withIdentity(firstUser).mutation(convexApi.lakebed.mergeSessionData, {
     capsule: 'Cart',
     patch: { count: 2 },
@@ -115,7 +117,7 @@ test('lakebed session data can be listed for generated admin views', async () =>
     prompt: 'Lakebed admin data',
   })
 
-  await t.runMutation(convexApi.lakebed.replaceSessionData, {
+  await t.mutation(convexApi.lakebed.replaceSessionData, {
     anonymousOwnerSecret: ownerSecret,
     capsule: 'Store',
     data: {
@@ -123,14 +125,14 @@ test('lakebed session data can be listed for generated admin views', async () =>
     },
     sessionId,
   })
-  await t.runMutation(convexApi.lakebed.mergeSessionData, {
+  await t.mutation(convexApi.lakebed.mergeSessionData, {
     anonymousOwnerSecret: ownerSecret,
     capsule: 'Cart',
     patch: { items: [{ productId: 'p1', quantity: 1 }] },
     sessionId,
   })
 
-  const docs = await t.runQuery(convexApi.lakebed.listSessionData, {
+  const docs = await t.query(convexApi.lakebed.listSessionData, {
     anonymousOwnerSecret: ownerSecret,
     sessionId,
   })
@@ -157,7 +159,7 @@ test('lakebed admin listing includes legacy session data without owner keys', as
     prompt: 'Lakebed legacy admin data',
   })
 
-  await t.runMutation(convexApi.lakebed.mergeSessionData, {
+  await t.mutation(convexApi.lakebed.mergeSessionData, {
     anonymousOwnerSecret: ownerSecret,
     capsule: 'Store',
     patch: {
@@ -187,7 +189,7 @@ test('lakebed admin listing includes legacy session data without owner keys', as
   expect(legacyDocs).toHaveLength(1)
 
   await expect(
-    t.runQuery(convexApi.lakebed.listSessionData, {
+    t.query(convexApi.lakebed.listSessionData, {
       anonymousOwnerSecret: ownerSecret,
       sessionId,
     }),
@@ -247,11 +249,13 @@ test('ecommerce capsule favorite mutation persists through lakebed session data'
     const { context, getPatch } = createLakebedHandlerContext({
       ...(await makeCtx()),
       replaceData: (data: Record<string, unknown>) =>
-        t.withIdentity(identity).mutation(convexApi.lakebed.replaceSessionData, {
-          capsule: capsuleName,
-          data,
-          sessionId,
-        }),
+        t
+          .withIdentity(identity)
+          .mutation(convexApi.lakebed.replaceSessionData, {
+            capsule: capsuleName,
+            data,
+            sessionId,
+          }),
       schema: lakebed.schema,
       setData: (patch: Record<string, unknown>) =>
         t.withIdentity(identity).mutation(convexApi.lakebed.mergeSessionData, {
@@ -265,11 +269,13 @@ test('ecommerce capsule favorite mutation persists through lakebed session data'
     const patch = getPatch()
 
     if (Object.keys(patch).length > 0) {
-      await t.withIdentity(identity).mutation(convexApi.lakebed.mergeSessionData, {
-        capsule: capsuleName,
-        patch,
-        sessionId,
-      })
+      await t
+        .withIdentity(identity)
+        .mutation(convexApi.lakebed.mergeSessionData, {
+          capsule: capsuleName,
+          patch,
+          sessionId,
+        })
     }
 
     return result

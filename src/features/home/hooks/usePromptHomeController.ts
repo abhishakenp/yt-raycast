@@ -26,8 +26,8 @@ import {
   rememberReadySession,
   verifyReadySession,
 } from '@/features/session/services/ready-session-cache'
+import { rememberGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
 
-const generationLaunchStoragePrefix = 'ship-fast:generation-launch:'
 const CREATE_SESSION_TIMEOUT_MS = 12_000
 const CREATE_SESSION_RETRY_DELAY_MS = 450
 
@@ -36,7 +36,7 @@ const delay = (ms: number) =>
     window.setTimeout(resolve, ms)
   })
 
-const withTimeout = async <T,>(
+const withTimeout = async <T>(
   promise: Promise<T>,
   timeoutMs: number,
 ): Promise<T> =>
@@ -65,7 +65,10 @@ const createSessionWithRetry = async <Payload, Result>(
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      return await withTimeout(createSession(payload), CREATE_SESSION_TIMEOUT_MS)
+      return await withTimeout(
+        createSession(payload),
+        CREATE_SESSION_TIMEOUT_MS,
+      )
     } catch (error) {
       lastError = error
       if (attempt === 1) break
@@ -226,7 +229,8 @@ export const usePromptHomeController = () => {
       )
       const sessionId = result.sessionId
 
-      const isOwnedCachedClone = result.cached === true && result.cloned === true
+      const isOwnedCachedClone =
+        result.cached === true && result.cloned === true
 
       if (result.cached !== true || isOwnedCachedClone) {
         persistAnonymousOwnerSecret(
@@ -237,10 +241,7 @@ export const usePromptHomeController = () => {
       }
 
       if (result.cached !== true) {
-        window.sessionStorage.setItem(
-          `${generationLaunchStoragePrefix}${sessionId}`,
-          '1',
-        )
+        rememberGenerationLaunchHandoff(window.sessionStorage, sessionId)
       } else if (canUseVerifiedReadyCache) {
         rememberReadySession(window.localStorage, {
           sessionId,

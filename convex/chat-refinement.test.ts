@@ -5,11 +5,16 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
+const requireEventStream = <T>(stream: T | null): T => {
+  if (stream === null) throw new Error('Expected event stream')
+  return stream
+}
+
 const createReadySession = async (
   t: ReturnType<typeof convexTest>,
   html = '<html><body><main><h1>Old headline</h1><a href="/start">Start now</a></main></body></html>',
 ) => {
-  const created = await t.runMutation(api.sessions.create, {
+  const created = await t.mutation(api.sessions.create, {
     prompt: 'Build a durable chat refinement test site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -30,7 +35,8 @@ const createReadySession = async (
       },
       sections: [],
     }),
-    openUiSource: '$page = "Home"\nroot = Text("Old headline")\ncta = Button("Start now")',
+    openUiSource:
+      '$page = "Home"\nroot = Text("Old headline")\ncta = Button("Start now")',
     tasks: [
       {
         id: 'home.openui',
@@ -47,25 +53,27 @@ test('sendChatMessage changes durable preview HTML and stores chat history', asy
   const t = convexTest(schema, modules)
   const { sessionId } = await createReadySession(t)
 
-  const result = await t.runMutation(api.sessions.sendChatMessage, {
+  const result = await t.mutation(api.sessions.sendChatMessage, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     content: 'Change headline to "Launch pastries faster"',
   })
 
-  const preview = await t.runQuery(api.sessions.getPublicPreview, {
+  const preview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
-  const history = await t.runQuery(api.sessions.listPreviewHistory, {
+  const history = await t.query(api.sessions.listPreviewHistory, {
     sessionId,
   })
-  const messages = await t.runQuery(api.sessions.listChatMessages, {
+  const messages = await t.query(api.sessions.listChatMessages, {
     sessionId,
   })
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-  })
-  const generationView = await t.runQuery(api.sessions.getGenerationView, {
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+    }),
+  )
+  const generationView = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
 
@@ -101,19 +109,19 @@ test('sendChatMessage can add requested sections when no direct text target exis
   const t = convexTest(schema, modules)
   const { sessionId } = await createReadySession(t)
 
-  await t.runMutation(api.sessions.sendChatMessage, {
+  await t.mutation(api.sessions.sendChatMessage, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     content: 'Add a testimonials section about weekend croissants',
   })
 
-  const preview = await t.runQuery(api.sessions.getPublicPreview, {
+  const preview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
-  const messages = await t.runQuery(api.sessions.listChatMessages, {
+  const messages = await t.query(api.sessions.listChatMessages, {
     sessionId,
   })
-  const generationView = await t.runQuery(api.sessions.getGenerationView, {
+  const generationView = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
 
@@ -132,7 +140,7 @@ test('sendChatMessage applies AI refinement plans across preview, OpenUI, and si
   const t = convexTest(schema, modules)
   const { sessionId } = await createReadySession(t)
 
-  await t.runMutation(api.sessions.sendChatMessage, {
+  await t.mutation(api.sessions.sendChatMessage, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     content: 'Make the bakery launch page more premium',
@@ -156,13 +164,13 @@ test('sendChatMessage applies AI refinement plans across preview, OpenUI, and si
     }),
   })
 
-  const preview = await t.runQuery(api.sessions.getPublicPreview, {
+  const preview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
-  const generationView = await t.runQuery(api.sessions.getGenerationView, {
+  const generationView = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
-  const messages = await t.runQuery(api.sessions.listChatMessages, {
+  const messages = await t.query(api.sessions.listChatMessages, {
     sessionId,
   })
 

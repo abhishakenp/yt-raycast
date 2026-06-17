@@ -128,7 +128,7 @@ test('Convex dev mode bypasses anonymous daily quota at the live mutation bounda
   })
 
   await expect(
-    t.runMutation(api.sessions.create, {
+    t.mutation(api.sessions.create, {
       ...createPayload('anonymous-dev-mode-allowed'),
       anonymousClientId,
       anonymousOwnerSecret: 'owner-secret',

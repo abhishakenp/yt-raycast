@@ -1,11 +1,11 @@
-import * as React from "react"
-import { Check, ChevronRight } from "lucide-react"
+import * as React from 'react'
+import { Check, ChevronRight } from 'lucide-react'
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "#/components/ui/collapsible.tsx"
+} from '#/components/ui/collapsible.tsx'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-} from "#/components/ui/sidebar.tsx"
+} from '#/components/ui/sidebar.tsx'
 
 export function Calendars({
   calendars,
@@ -38,18 +38,18 @@ export function Calendars({
                 className="group/label w-full text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <CollapsibleTrigger>
-                  {calendar.name}{" "}
+                  {calendar.name}{' '}
                   <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                 </CollapsibleTrigger>
               </SidebarGroupLabel>
               <CollapsibleContent>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {calendar.items.map((item, index) => (
+                    {calendar.items.map((item, itemIndex) => (
                       <SidebarMenuItem key={item}>
                         <SidebarMenuButton>
                           <div
-                            data-active={index < 2}
+                            data-active={itemIndex < 2}
                             className="group/calendar-item flex aspect-square size-4 shrink-0 items-center justify-center rounded-xs border border-sidebar-border text-sidebar-primary-foreground data-[active=true]:border-sidebar-primary data-[active=true]:bg-sidebar-primary"
                           >
                             <Check className="hidden size-3 group-data-[active=true]/calendar-item:block" />

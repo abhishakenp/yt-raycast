@@ -1,6 +1,7 @@
 import type { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type PreviewEditClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
@@ -25,6 +26,9 @@ const readJsonBody = async (request: Request): Promise<JsonBody> => {
     ? (parsed as JsonBody)
     : {}
 }
+
+const asSessionId = (sessionId: string): Id<'sessions'> =>
+  sessionId as Id<'sessions'>
 
 const getString = (body: JsonBody, keys: string[]): string | undefined => {
   for (const key of keys) {
@@ -61,7 +65,11 @@ const getConvexErrorPayload = (
 
   try {
     const parsed = JSON.parse(match[0]) as unknown
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    if (
+      parsed === null ||
+      typeof parsed !== 'object' ||
+      Array.isArray(parsed)
+    ) {
       return null
     }
 
@@ -113,7 +121,7 @@ export const createPreviewHistoryResponse = async (
   try {
     const history = await createClient(clientOverride).query(
       api.sessions.listPreviewHistory,
-      { sessionId },
+      { sessionId: asSessionId(sessionId) },
     )
     return json({ history })
   } catch (error) {
@@ -137,7 +145,7 @@ export const createPreviewRestoreResponse = async (
     const result = await createClient(clientOverride).mutation(
       api.sessions.restorePreviewVersion,
       {
-        sessionId,
+        sessionId: asSessionId(sessionId),
         version: parsedVersion,
         anonymousOwnerSecret: getOwnerSecret(request, body),
       },
@@ -164,7 +172,7 @@ export const createPreviewHtmlSaveResponse = async (
     const result = await createClient(clientOverride).mutation(
       api.sessions.createEdit,
       {
-        sessionId,
+        sessionId: asSessionId(sessionId),
         editType: 'style',
         targetLabel: getString(body, ['targetLabel']) ?? 'Preview HTML',
         afterHtml: html,
@@ -198,7 +206,7 @@ export const createInlineTextEditResponse = async (
     const result = await createClient(clientOverride).mutation(
       api.sessions.createEdit,
       {
-        sessionId,
+        sessionId: asSessionId(sessionId),
         editType: 'text',
         targetLabel: getString(body, ['targetLabel', 'label']),
         beforeText,
@@ -229,7 +237,7 @@ export const createInlineStyleEditResponse = async (
     const result = await createClient(clientOverride).mutation(
       api.sessions.createEdit,
       {
-        sessionId,
+        sessionId: asSessionId(sessionId),
         editType: 'style',
         targetLabel: getString(body, ['targetLabel', 'label']),
         afterHtml,

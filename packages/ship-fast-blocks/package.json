@@ -6,6 +6,10 @@
   "exports": {
     ".": "./src/index.ts",
     "./capsules": "./src/capsules/index.ts",
+    "./component-names": "./src/component-names.ts",
+    "./generated": "./src/generated/index.ts",
+    "./theme": "./src/theme.ts",
+    "./runtime": "./src/runtime.ts",
     "./portal": "./src/components/ui/portal-container.tsx"
   },
   "dependencies": {

@@ -58,12 +58,46 @@ type LakebedDocument = JsonRecord & {
   __rowId: string
 }
 
-const lakebedApi = (api as unknown as {
-  lakebed: {
-    listSessionData: unknown
-    replaceSessionData: unknown
+type LakebedSessionArgs = {
+  anonymousOwnerSecret?: string
+  sessionId: string
+}
+
+type ReplaceSessionDataArgs = LakebedSessionArgs & {
+  capsule: string
+  data: JsonRecord
+}
+
+type ResizableColumn = Column<LakebedDocument> & {
+  disableResizing?: boolean
+  minWidth?: number
+  width?: number
+}
+
+type ResizableHeader = ReturnType<
+  typeof useTable<LakebedDocument>
+>['headerGroups'][number]['headers'][number] & {
+  disableResizing?: boolean
+  getResizerProps?: () => React.HTMLAttributes<HTMLDivElement>
+}
+
+const lakebedApi = (
+  api as unknown as {
+    lakebed: {
+      listSessionData: unknown
+      replaceSessionData: unknown
+    }
   }
-}).lakebed
+).lakebed
+
+const useLakebedSessionData = useQuery as (
+  query: unknown,
+  args: LakebedSessionArgs | 'skip',
+) => LakebedSessionDataDoc[] | undefined
+
+const useReplaceSessionData = useMutation as (
+  mutation: unknown,
+) => (args: ReplaceSessionDataArgs) => Promise<unknown>
 
 const rowHeight = 38
 
@@ -145,7 +179,7 @@ const nextDataForRowSave = ({
     const nextKey =
       typeof rowRecord._key === 'string' && rowRecord._key.trim()
         ? rowRecord._key.trim()
-        : row.key ?? row.id
+        : (row.key ?? row.id)
     currentMap[nextKey] = withoutGeneratedFields(rowRecord)
     if (row.key && row.key !== nextKey) delete currentMap[row.key]
     nextData[table.field] = currentMap
@@ -248,11 +282,10 @@ export function LakebedAdminPanel() {
     }),
     [session],
   )
-  const docs = useQuery(
-    lakebedApi.listSessionData as never,
-    sessionArgs,
-  ) as LakebedSessionDataDoc[] | undefined
-  const replaceSessionData = useMutation(lakebedApi.replaceSessionData as never)
+  const docs = useLakebedSessionData(lakebedApi.listSessionData, sessionArgs)
+  const replaceSessionData = useReplaceSessionData(
+    lakebedApi.replaceSessionData,
+  )
 
   const tables = useMemo(() => createLakebedAdminTables(docs), [docs])
   const [selectedTableId, setSelectedTableId] = useState<string>()
@@ -276,7 +309,9 @@ export function LakebedAdminPanel() {
     tables.find((table) => table.id === selectedTableId) ??
     visibleTables[0] ??
     tables[0]
-  const selectedDoc = docs?.find((doc) => doc.capsule === selectedTable?.capsule)
+  const selectedDoc = docs?.find(
+    (doc) => doc.capsule === selectedTable?.capsule,
+  )
 
   useEffect(() => {
     if (!selectedTable) return
@@ -365,10 +400,15 @@ export function LakebedAdminPanel() {
   )
 
   const addDocument = async (value: unknown) => {
-    if (!selectedTable || !selectedDoc || selectedTable.storage === 'value') return
+    if (!selectedTable || !selectedDoc || selectedTable.storage === 'value')
+      return
     await saveData(
       selectedTable,
-      nextDataForRowAdd({ data: selectedDoc.data, table: selectedTable, value }),
+      nextDataForRowAdd({
+        data: selectedDoc.data,
+        table: selectedTable,
+        value,
+      }),
     )
     setPopup(undefined)
   }
@@ -388,7 +428,8 @@ export function LakebedAdminPanel() {
   }
 
   const deleteRows = async (rowIds: Set<string>) => {
-    if (!selectedTable || !selectedDoc || selectedTable.storage === 'value') return
+    if (!selectedTable || !selectedDoc || selectedTable.storage === 'value')
+      return
     let data = selectedDoc.data
     for (const rowId of rowIds) {
       const row = selectedTable.rows.find((candidate) => candidate.id === rowId)
@@ -442,7 +483,7 @@ export function LakebedAdminPanel() {
 
       <main className="min-h-0 overflow-hidden bg-[#282622] p-4">
         {selectedTable ? (
-          <PanelGroup direction="horizontal" className="h-full min-h-0">
+          <PanelGroup orientation="horizontal" className="h-full min-h-0">
             <Panel
               className="flex min-w-[18rem] flex-col gap-3 overflow-hidden py-2"
               defaultSize={popupPanel ? 62 : 100}
@@ -495,7 +536,6 @@ export function LakebedAdminPanel() {
                 data={documents}
                 isSaving={isSaving}
                 selectedRows={selectedRows}
-                table={selectedTable}
                 onEditDocument={(row) =>
                   setPopup({
                     row,
@@ -522,7 +562,9 @@ export function LakebedAdminPanel() {
           </PanelGroup>
         ) : (
           <div className="grid h-full place-items-center rounded-lg border border-[#57544f] bg-[#2d2b27] text-sm text-[#a1a1aa]">
-            {docs === undefined ? 'Loading session data...' : 'No session data.'}
+            {docs === undefined
+              ? 'Loading session data...'
+              : 'No session data.'}
           </div>
         )}
       </main>
@@ -563,7 +605,9 @@ function DataSidebar({
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-1">
         <div className="flex flex-col gap-0.5">
           {[...tables]
-            .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+            .sort((a, b) =>
+              a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
+            )
             .map((table) => (
               <button
                 key={table.id}
@@ -584,7 +628,6 @@ function DataSidebar({
             ))}
         </div>
       </div>
-
     </aside>
   )
 }
@@ -850,7 +893,6 @@ function DataTable({
   onSaveCell,
   onSelectRows,
   selectedRows,
-  table,
 }: {
   columns: string[]
   data: LakebedDocument[]
@@ -863,9 +905,8 @@ function DataTable({
   ) => Promise<void>
   onSelectRows: (rows: Set<string>) => void
   selectedRows: Set<string>
-  table: LakebedAdminTable
 }) {
-  const tableColumns = useMemo<Column<LakebedDocument>[]>(
+  const tableColumns = useMemo<ResizableColumn[]>(
     () => [
       {
         Header: '*select',
@@ -893,7 +934,13 @@ function DataTable({
       ...columns.map((column) => ({
         Header: column,
         accessor: column,
-        Cell: ({ row, value }: { row: Row<LakebedDocument>; value: unknown }) => (
+        Cell: ({
+          row,
+          value,
+        }: {
+          row: Row<LakebedDocument>
+          value: unknown
+        }) => (
           <DataCell
             column={column}
             document={row.original}
@@ -915,8 +962,7 @@ function DataTable({
 
   const tableInstance = useTable(
     {
-      autoResetSortBy: false,
-      columns: tableColumns,
+      columns: tableColumns as Column<LakebedDocument>[],
       data,
       getRowId: (row) => row.__rowId,
     },
@@ -1010,43 +1056,48 @@ function TableHeader({
   return (
     <div className="sticky top-0 z-20 bg-[#302e2a]">
       {headerGroups.map((headerGroup) => {
-        const { key: groupKey, ...groupProps } = headerGroup.getHeaderGroupProps()
+        const { key: groupKey, ...groupProps } =
+          headerGroup.getHeaderGroupProps()
         return (
           <div
             key={groupKey}
             {...groupProps}
             className="border-x border-x-transparent"
           >
-          {headerGroup.headers.map((column, columnIndex) => {
-            const { key: columnKey, ...columnProps } = column.getHeaderProps()
-            return (
-              <div
-                key={columnKey}
-                {...columnProps}
-                className={classNames(
-                  'group relative flex h-[38px] items-center border-b border-r border-[#57544f] bg-[#302e2a] px-3 text-left font-mono text-xs font-semibold text-[#d4d4d8]',
-                  columnIndex === 0 && 'justify-center px-0',
-                )}
-              >
-              {column.Header === '*select' ? (
-                <TableCheckbox
-                  checked={allRowsSelected}
-                  indeterminate={!allRowsSelected && selectedRows.size > 0}
-                  onToggle={onToggleAll}
-                />
-              ) : (
-                <span className="truncate">{String(column.Header)}</span>
-              )}
-              {!column.disableResizing && (
+            {headerGroup.headers.map((column, columnIndex) => {
+              const { key: columnKey, ...columnProps } = column.getHeaderProps()
+              return (
                 <div
-                  {...column.getResizerProps()}
-                  className="absolute right-0 top-0 h-full w-2 cursor-col-resize touch-none"
-                />
-              )}
-            </div>
-            )
-          })}
-        </div>
+                  key={columnKey}
+                  {...columnProps}
+                  className={classNames(
+                    'group relative flex h-[38px] items-center border-b border-r border-[#57544f] bg-[#302e2a] px-3 text-left font-mono text-xs font-semibold text-[#d4d4d8]',
+                    columnIndex === 0 && 'justify-center px-0',
+                  )}
+                >
+                  {column.Header === '*select' ? (
+                    <TableCheckbox
+                      checked={allRowsSelected}
+                      indeterminate={!allRowsSelected && selectedRows.size > 0}
+                      onToggle={onToggleAll}
+                    />
+                  ) : (
+                    <span className="truncate">{String(column.Header)}</span>
+                  )}
+                  {(() => {
+                    const resizableColumn = column as ResizableHeader
+                    return !resizableColumn.disableResizing &&
+                      resizableColumn.getResizerProps ? (
+                      <div
+                        {...resizableColumn.getResizerProps()}
+                        className="absolute right-0 top-0 h-full w-2 cursor-col-resize touch-none"
+                      />
+                    ) : null
+                  })()}
+                </div>
+              )
+            })}
+          </div>
         )
       })}
     </div>
@@ -1067,7 +1118,8 @@ function TableCheckbox({
   const inputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
-    if (inputRef.current) inputRef.current.indeterminate = Boolean(indeterminate)
+    if (inputRef.current)
+      inputRef.current.indeterminate = Boolean(indeterminate)
   }, [indeterminate])
 
   return (

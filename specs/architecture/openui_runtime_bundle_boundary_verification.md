@@ -1,0 +1,191 @@
+# OpenUI Runtime And Bundle Boundary Verification
+
+Date: 2026-06-17 18:42 CEST
+Repository: ship-fast
+Group: Quality Consolidation Audit group 3
+
+## Scope
+
+This checkpoint covers the OpenUI runtime and bundle boundary work:
+
+- `vite.config.ts`
+- `packages/ship-fast-blocks/src/runtime.ts`
+- `packages/ship-fast-blocks/src/runtime-library.ts`
+- `packages/ship-fast-blocks/src/component-names.ts`
+- `packages/ship-fast-blocks/src/theme.ts`
+- `packages/ship-fast-blocks/src/generated/*`
+- `src/island/openui/OpenUIViewer.tsx`
+- `src/island/openui/openui-runtime-preprocess.ts`
+- `scripts/verify-build-bundles.ts`
+- export builder tests for OpenUI and SFF HTML output
+
+## Boundary Contract
+
+The browser OpenUI preview path should import from `@ship-fast/blocks/runtime`,
+not the eager `@ship-fast/blocks` barrel. Runtime loading should:
+
+- preprocess streamed OpenUI in the island without importing engine metadata;
+- extract component names from the current OpenUI response;
+- always include the `Stack` root capsule;
+- dynamically load only the capsules needed by that response;
+- keep generated source manifests behind `@ship-fast/blocks/generated`;
+- split generated metadata, prompt specs, primitives, sections, capsules, and
+  runtime core into separate build chunks.
+
+The server export path is allowed to import the eager block library and the
+generated compressed React source manifest because it builds downloadable
+artifacts, not the browser preview runtime.
+
+## Current Evidence
+
+Source inventory after generation:
+
+- `packages/ship-fast-blocks/src/generated/react-export-sources.json`:
+  19,542,323 bytes
+- `packages/ship-fast-blocks/src/generated/react-export-sources.compressed.ts`:
+  2,080,777 bytes
+- `packages/ship-fast-blocks/src/generated/runtime-component-loaders.ts`:
+  210,058 bytes
+- `packages/ship-fast-blocks/src/runtime.ts`: 825 bytes
+- `src/island/openui/OpenUIViewer.tsx`: 8,634 bytes
+- `scripts/verify-build-bundles.ts`: 5,273 bytes
+
+The generator was run successfully:
+
+```bash
+bun run generate:react-export-sources
+```
+
+Output:
+
+```text
+Wrote 1192 component sources to src/generated/react-export-sources.json
+Wrote compressed component sources to src/generated/react-export-sources.compressed.ts
+Wrote runtime component names to src/generated/runtime-component-names.ts
+Wrote runtime component loaders to src/generated/runtime-component-loaders.ts
+```
+
+The generator left a small tracked diff in
+`packages/ship-fast-blocks/src/generated/react-export-sources.json` because the
+current worktree has changed corporate component source text. That is expected
+provenance evidence: the generated JSON reflects current source files.
+
+## Added Guardrail
+
+Added `scripts/vite-openui-boundaries.test.ts`.
+
+This source-level invariant test protects the Vite chunking contract directly:
+
+- generated block metadata must use `openui-generated-metadata`;
+- generated metadata must be excluded from the runtime chunk group;
+- prompt specs must use `openui-prompt-spec`;
+- runtime modules must split into primitive, section, capsule, and core chunk
+  groups;
+- the runtime group must use `getOpenUIRuntimeChunkName` for both `name` and
+  membership testing.
+
+This closes the previous gap where Vite chunking was only indirectly covered by
+post-build bundle checks.
+
+Added a runtime-loader source invariant in
+`packages/ship-fast-blocks/src/runtime-library.test.ts`.
+
+This test protects the generated browser runtime manifest directly:
+
+- `runtime-library.ts` may depend on `runtime-component-loaders.ts`, but not
+  the eager block library or generated source manifest subpath;
+- `runtime-component-loaders.ts` must keep dynamic `import(...)` entries for
+  registry and capsule modules;
+- runtime loaders must not import the root blocks barrel, full library,
+  `react-export-sources`, or component-spec metadata.
+
+## GitNexus Impact
+
+Key OpenUI runtime symbols were checked:
+
+- `OpenUIViewer`, `src/island/openui/OpenUIViewer.tsx`: LOW risk, no indexed
+  upstream callers.
+- `loadOpenUIRuntimeLibrary`,
+  `packages/ship-fast-blocks/src/runtime-library.ts`: LOW risk, one direct
+  caller, `OpenUIViewer`.
+- `getOpenUIRuntimeChunkName`, `vite.config.ts`: LOW risk, one direct indexed
+  caller in the Vite code-splitting group test function.
+
+The first `getOpenUIRuntimeChunkName` lookup was ambiguous between a function
+and const symbol, so the function UID was used for the final impact check.
+
+## Verification Commands
+
+New Vite boundary invariant:
+
+```bash
+bun vitest run --config vitest.config.ts scripts/vite-openui-boundaries.test.ts
+```
+
+Result:
+
+```text
+Test Files  1 passed (1)
+Tests       3 passed (3)
+```
+
+Focused OpenUI runtime and bundle boundary group:
+
+```bash
+bun vitest run --config vitest.config.ts \
+  packages/ship-fast-blocks/src/index.test.ts \
+  packages/ship-fast-blocks/src/runtime-library.test.ts \
+  src/island/openui/openui-runtime-preprocess.test.ts \
+  scripts/verify-build-bundles.test.ts \
+  scripts/vite-openui-boundaries.test.ts \
+  src/features/generation/components/GeneratedModulePreview.test.tsx
+```
+
+Result:
+
+```text
+Test Files  6 passed (6)
+Tests       26 passed (26)
+```
+
+Bundle boundary verifier:
+
+```bash
+bun run verify:bundle
+```
+
+Result:
+
+```text
+Bundle boundary verification passed
+```
+
+Server export compatibility:
+
+```bash
+bun vitest run --config vitest.config.ts \
+  src/features/exports/services/openui-export-builder.test.ts \
+  src/features/exports/server/create-export-response.test.ts
+```
+
+Result:
+
+```text
+Test Files  2 passed (2)
+Tests       9 passed (9)
+```
+
+Whitespace check:
+
+```bash
+git diff --check -- scripts/vite-openui-boundaries.test.ts
+```
+
+Result: passed with no output.
+
+## Status
+
+This group is verified at the source, unit, generated-manifest, bundle, and
+server-export levels. It is still part of a broad dirty worktree, so it should
+be reviewed as one coherent OpenUI runtime/bundle changeset rather than mixed
+with Convex, billing, or dashboard workflow work.

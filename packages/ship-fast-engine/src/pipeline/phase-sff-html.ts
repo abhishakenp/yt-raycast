@@ -16,6 +16,26 @@ type GenerateHtmlResult = {
   cost?: number
 }
 
+const brandProfilePromptBlockTyped = brandProfilePromptBlock as (
+  brandProfile?: Record<string, unknown> | null,
+) => string
+
+const groqStreamTyped = groqStream as (
+  prompt: string,
+  opts: {
+    system: string
+    temperature: number
+    maxTokens: number
+    model: string
+    onToken?: (token: string, accumulated: string) => void
+  },
+) => Promise<GenerateHtmlResult>
+
+const ensureLucideIconRuntimeTyped = ensureLucideIconRuntime as (
+  html: string,
+  log?: (message: string) => void,
+) => string
+
 type WriteSffHtmlHomeInput = {
   workspace: string
   prompt: string
@@ -163,7 +183,7 @@ Language:
 ${preferredLanguage?.trim() || 'Use the language implied by the brief; default to English.'}
 
 ${buildMediaPromptBlock(imageHints)}
-${brandProfilePromptBlock(brandProfile)}
+${brandProfilePromptBlockTyped(brandProfile)}
 
 Faithfulness target:
 Match the /Users/livio/Desktop/sff prototype generator behavior: one fast, polished, complete single-file site that feels immediately shippable in the preview frame.`
@@ -173,7 +193,7 @@ const defaultGenerateHtml = async ({
   user,
   onToken,
 }: GenerateHtmlInput): Promise<GenerateHtmlResult> => {
-  const result = await groqStream(user, {
+  const result = await groqStreamTyped(user, {
     system,
     temperature: 0.78,
     maxTokens: Math.min(9000, LLM_CONFIG.homepage.maxTokens),
@@ -212,15 +232,22 @@ export async function writeSffHtmlHome({
       })
     },
   })
-  const html = ensureLucideIconRuntime(sanitizeSffHtml(result.content), log)
+  const html = ensureLucideIconRuntimeTyped(
+    sanitizeSffHtml(result.content),
+    log,
+  )
 
   if (!isCompleteSffHtml(html)) {
-    throw new Error('SFF HTML generation did not return a complete HTML document')
+    throw new Error(
+      'SFF HTML generation did not return a complete HTML document',
+    )
   }
 
   writeFileSync(join(workspace, 'index.html'), html)
   writeFileSync(join(workspace, 'home.openui'), html)
-  log?.(`  sff-html: ${html.length} chars generated${chunks.length ? ` in ${chunks.length} chunks` : ''}`)
+  log?.(
+    `  sff-html: ${html.length} chars generated${chunks.length ? ` in ${chunks.length} chunks` : ''}`,
+  )
 
   return {
     chars: html.length,

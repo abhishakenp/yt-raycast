@@ -1,8 +1,8 @@
-import type { ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineComponent } from "@openuidev/react-lang"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
+import type { ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineComponent } from '@openuidev/react-lang'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
 
 /**
  * CorporateSolutions — enterprise solutions / feature grid for a corporate B2B
@@ -14,7 +14,7 @@ import { useNavigate } from "#/lib/use-navigate.tsx"
  * services, risk) on SaaS, IT, or consultancy sites.
  */
 export const CorporateSolutions = defineComponent({
-  name: "CorporateSolutions",
+  name: 'CorporateSolutions',
   description:
     "Enterprise solutions / feature grid for a corporate B2B homepage: centered section heading and lead above a responsive 1/2/3-column grid of bordered cards, each with a solid dark icon tile (rotating inline SVGs), a title, description, and a 'Learn more' text button with an arrow. Cards gain subtle hover border change. Use to present enterprise offerings on SaaS, IT, or consultancy sites. All card links route through useNavigate.",
   props: z.object({
@@ -30,43 +30,42 @@ export const CorporateSolutions = defineComponent({
   }),
   component: ({ props }) => {
     const go = useNavigate()
-    const heading =
-      props.heading ?? "Enterprise solutions built for scale"
+    const heading = props.heading ?? 'Enterprise solutions built for scale'
     const description =
       props.description ??
-      "Comprehensive infrastructure and software solutions designed to meet the security, compliance, and performance demands of global enterprises."
+      'Comprehensive infrastructure and software solutions designed to meet the security, compliance, and performance demands of global enterprises.'
     const items = props.items?.length
       ? props.items
       : [
           {
-            title: "Cloud Infrastructure",
+            title: 'Cloud Infrastructure',
             description:
-              "Multi-cloud orchestration platform supporting AWS, Azure, and GCP with unified management, cost optimization, and automated scaling.",
+              'Multi-cloud orchestration platform supporting AWS, Azure, and GCP with unified management, cost optimization, and automated scaling.',
           },
           {
-            title: "Security & Compliance",
+            title: 'Security & Compliance',
             description:
-              "Enterprise-grade security with zero-trust architecture, continuous compliance monitoring, and automated threat detection and response.",
+              'Enterprise-grade security with zero-trust architecture, continuous compliance monitoring, and automated threat detection and response.',
           },
           {
-            title: "Data Analytics",
+            title: 'Data Analytics',
             description:
-              "Real-time analytics platform with AI-powered insights, predictive modeling, and custom dashboards for executive decision-making.",
+              'Real-time analytics platform with AI-powered insights, predictive modeling, and custom dashboards for executive decision-making.',
           },
           {
-            title: "Digital Transformation",
+            title: 'Digital Transformation',
             description:
-              "End-to-end transformation consulting, legacy modernization, and agile implementation to accelerate your digital journey.",
+              'End-to-end transformation consulting, legacy modernization, and agile implementation to accelerate your digital journey.',
           },
           {
-            title: "Managed Services",
+            title: 'Managed Services',
             description:
-              "24/7 operations center with dedicated teams for monitoring, incident response, and proactive system optimization.",
+              '24/7 operations center with dedicated teams for monitoring, incident response, and proactive system optimization.',
           },
           {
-            title: "Risk Management",
+            title: 'Risk Management',
             description:
-              "Comprehensive risk assessment frameworks, business continuity planning, and disaster recovery with industry-leading RTOs.",
+              'Comprehensive risk assessment frameworks, business continuity planning, and disaster recovery with industry-leading RTOs.',
           },
         ]
 
@@ -190,19 +189,17 @@ export const CorporateSolutions = defineComponent({
       </svg>
     )
 
-    const sectionHead = (heading: string, desc: string) => (
+    const sectionHead = (title: string, desc: string) => (
       <div className="mx-auto mb-16 max-w-3xl text-center">
         <h2 className="mb-4 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          {heading}
+          {title}
         </h2>
         <p className="text-lg text-muted-foreground">{desc}</p>
       </div>
     )
 
     return (
-      <section
-        className={cn("bg-background py-20 lg:py-32", props.className)}
-      >
+      <section className={cn('bg-background py-20 lg:py-32', props.className)}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {sectionHead(heading, description)}
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">

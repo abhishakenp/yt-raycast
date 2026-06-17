@@ -1,6 +1,7 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type ChatRefinementClient = Pick<ConvexHttpClient, 'query' | 'mutation'>
@@ -31,6 +32,9 @@ const MAX_CONTEXT_CHARS = 9000
 const MAX_CONTENT_CHARS = 4000
 const CHAT_REFINEMENT_TIMEOUT_MS = 25000
 const DEFAULT_INJECTED_CHAT_MODEL = 'openai/gpt-oss-120b'
+
+const asSessionId = (sessionId: string): Id<'sessions'> =>
+  sessionId as Id<'sessions'>
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
@@ -75,7 +79,10 @@ const getOwnerSecret = (request: Request, body: JsonBody): string | undefined =>
 const truncate = (value: unknown, max: number): string =>
   String(value ?? '').slice(0, max)
 
-const normalizePlanString = (value: unknown, max: number): string | undefined =>
+const normalizePlanString = (
+  value: unknown,
+  max: number,
+): string | undefined =>
   typeof value === 'string' && value.trim()
     ? value.trim().slice(0, max)
     : undefined
@@ -89,7 +96,11 @@ const normalizePlan = (value: unknown): ChatRefinementPlan | undefined => {
   const replacements = Array.isArray(record.replacements)
     ? record.replacements
         .map((entry) => {
-          if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
+          if (
+            entry === null ||
+            typeof entry !== 'object' ||
+            Array.isArray(entry)
+          ) {
             return null
           }
           const item = entry as Record<string, unknown>
@@ -97,23 +108,40 @@ const normalizePlan = (value: unknown): ChatRefinementPlan | undefined => {
           const newText = normalizePlanString(item.newText, 500)
           return oldText && newText ? { oldText, newText } : null
         })
-        .filter((entry): entry is { oldText: string; newText: string } => entry !== null)
+        .filter(
+          (entry): entry is { oldText: string; newText: string } =>
+            entry !== null,
+        )
         .slice(0, 8)
     : undefined
 
   const sections = Array.isArray(record.sections)
     ? record.sections
         .map((entry) => {
-          if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) {
+          if (
+            entry === null ||
+            typeof entry !== 'object' ||
+            Array.isArray(entry)
+          ) {
             return null
           }
           const item = entry as Record<string, unknown>
           const kind = normalizePlanString(item.kind, 80)
           const title = normalizePlanString(item.title, 140)
           const body = normalizePlanString(item.body, 800)
-          return title || body ? { kind, title, body } : null
+          const section: NonNullable<ChatRefinementPlan['sections']>[number] =
+            {}
+          if (kind) section.kind = kind
+          if (title) section.title = title
+          if (body) section.body = body
+          return section.title || section.body ? section : null
         })
-        .filter((entry): entry is { kind?: string; title?: string; body?: string } => entry !== null)
+        .filter(
+          (
+            entry,
+          ): entry is NonNullable<ChatRefinementPlan['sections']>[number] =>
+            entry !== null,
+        )
         .slice(0, 4)
     : undefined
 
@@ -178,7 +206,7 @@ export const buildChatRefinementPrompt = ({
 
   return {
     system:
-      'You are Ship Fast\'s OpenUI site refinement planner. Return only compact JSON. Do not include markdown. Produce a safe edit plan that updates the current generated website while preserving structure and intent.',
+      "You are Ship Fast's OpenUI site refinement planner. Return only compact JSON. Do not include markdown. Produce a safe edit plan that updates the current generated website while preserving structure and intent.",
     user: truncate(
       [
         'User instruction:',
@@ -225,7 +253,7 @@ export const createChatRefinementResponse = async (
 
   try {
     const generationView = await client.query(api.sessions.getGenerationView, {
-      sessionId,
+      sessionId: asSessionId(sessionId),
     })
     const prompt = buildChatRefinementPrompt({
       content: truncate(content, MAX_CONTENT_CHARS),
@@ -255,7 +283,7 @@ export const createChatRefinementResponse = async (
   }
 
   const result = await client.mutation(api.sessions.sendChatMessage, {
-    sessionId,
+    sessionId: asSessionId(sessionId),
     anonymousOwnerSecret,
     content,
     refinementPlanJson:

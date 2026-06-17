@@ -21,11 +21,15 @@ import {
 } from './payment-routing'
 import { devFlags } from '../lib/dev-flags'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyConvexClient = { query: (name: any, args?: any) => Promise<any>; mutation: (name: any, args?: any) => Promise<any> }
+type AnyConvexClient = {
+  query: (name: any, args?: any) => Promise<any>
+  mutation: (name: any, args?: any) => Promise<any>
+}
 
 let convex: AnyConvexClient | null = null
-let activeSubscriptionLookupForTest: ((uid: string) => boolean | Promise<boolean>) | null = null
+let activeSubscriptionLookupForTest:
+  | ((uid: string) => boolean | Promise<boolean>)
+  | null = null
 
 const getConvexClient = (): AnyConvexClient => {
   if (convex) return convex
@@ -62,9 +66,13 @@ const ensureBillingDir = (): string | null => {
 
 const PAYWALL_DISABLED = devFlags.disablePaywall
 
-const EARLY_ADOPTER_MAX = parseInt(process.env.EARLY_ADOPTER_MAX_USERS || '500', 10)
+const EARLY_ADOPTER_MAX = parseInt(
+  process.env.EARLY_ADOPTER_MAX_USERS || '500',
+  10,
+)
 const EARLY_ADOPTER_PLAN_ID = process.env.RAZORPAY_EARLY_ADOPTER_PLAN_ID || ''
-const STRIPE_EARLY_ADOPTER_PRICE_ID = process.env.STRIPE_EARLY_ADOPTER_PRICE_ID || ''
+const STRIPE_EARLY_ADOPTER_PRICE_ID =
+  process.env.STRIPE_EARLY_ADOPTER_PRICE_ID || ''
 
 type EarlyAdopterData = { count: number; users: string[] }
 
@@ -89,12 +97,18 @@ const readEarlyAdopterCount = async (): Promise<EarlyAdopterData> => {
     const data = await getConvexClient().query('billing:getEarlyAdopterStatus')
     return { count: data.count || 0, users: data.users || [] }
   } catch (err: unknown) {
-    console.warn('[early-adopter] Convex read failed, falling back to file:', (err as Error)?.message)
+    console.warn(
+      '[early-adopter] Convex read failed, falling back to file:',
+      (err as Error)?.message,
+    )
     return readEarlyAdopterCountFromFile()
   }
 }
 
-export const getUserGenerationQuota = async (userId: string | null | undefined, clientIp: string | null | undefined) => {
+export const getUserGenerationQuota = async (
+  userId: string | null | undefined,
+  clientIp: string | null | undefined,
+) => {
   if (userId) {
     const currentMonthly = (userMonthlyHits.get(userId) || []).filter(
       (t) => Date.now() - t < MONTHLY_WINDOW_MS,
@@ -125,9 +139,13 @@ export const getUserGenerationQuota = async (userId: string | null | undefined, 
   }
 }
 
-export const incrementEarlyAdopterCount = async (uid: string): Promise<void> => {
+export const incrementEarlyAdopterCount = async (
+  uid: string,
+): Promise<void> => {
   try {
-    await getConvexClient().mutation('billing:incrementEarlyAdopterCount', { userId: uid })
+    await getConvexClient().mutation('billing:incrementEarlyAdopterCount', {
+      userId: uid,
+    })
   } catch (err: unknown) {
     console.error(
       '[early-adopter] Convex mutation failed:',
@@ -140,7 +158,10 @@ export const isEarlyAdopterSlotAvailable = async (): Promise<boolean> => {
   try {
     return await getConvexClient().query('billing:isEarlyAdopterSlotAvailable')
   } catch (err: unknown) {
-    console.warn('[early-adopter] Convex query failed, falling back to file:', (err as Error)?.message)
+    console.warn(
+      '[early-adopter] Convex query failed, falling back to file:',
+      (err as Error)?.message,
+    )
     const data = await readEarlyAdopterCount()
     return data.count < EARLY_ADOPTER_MAX
   }
@@ -158,7 +179,10 @@ export const getEarlyAdopterStatus = async () => {
       priceId: EARLY_ADOPTER_PLAN_ID,
     }
   } catch (err: unknown) {
-    console.warn('[early-adopter] Convex query failed, falling back to file:', (err as Error)?.message)
+    console.warn(
+      '[early-adopter] Convex query failed, falling back to file:',
+      (err as Error)?.message,
+    )
     const data = await readEarlyAdopterCount()
     return {
       eligible:
@@ -214,10 +238,16 @@ const CREDIT_PACKS = [
   },
 ]
 
-const credits3Configured = Boolean(parseInt(process.env.RAZORPAY_CREDITS_3_PAISE || '0', 10))
-const credits10Configured = Boolean(parseInt(process.env.RAZORPAY_CREDITS_10_PAISE || '0', 10))
+const credits3Configured = Boolean(
+  parseInt(process.env.RAZORPAY_CREDITS_3_PAISE || '0', 10),
+)
+const credits10Configured = Boolean(
+  parseInt(process.env.RAZORPAY_CREDITS_10_PAISE || '0', 10),
+)
 const stripeCredits3Configured = Boolean(process.env.STRIPE_CREDITS_3_PRICE_ID)
-const stripeCredits10Configured = Boolean(process.env.STRIPE_CREDITS_10_PRICE_ID)
+const stripeCredits10Configured = Boolean(
+  process.env.STRIPE_CREDITS_10_PRICE_ID,
+)
 
 const GEO_HEADERS = [
   'x-ship-fast-country-hint',
@@ -253,17 +283,29 @@ const deriveCountryFromAcceptLanguage = (rawValue: unknown): string | null => {
   return null
 }
 
-const resolveCountryCodeFromHeaders = (headers: Record<string, string | undefined> = {}): string | null => {
+const resolveCountryCodeFromHeaders = (
+  headers: Record<string, string | undefined> = {},
+): string | null => {
   for (const headerName of GEO_HEADERS) {
     const country = normalizeCountryCode(headers[headerName])
     if (country) return country
   }
-  const acceptLanguageCountry = deriveCountryFromAcceptLanguage(headers['accept-language'])
+  const acceptLanguageCountry = deriveCountryFromAcceptLanguage(
+    headers['accept-language'],
+  )
   if (acceptLanguageCountry) return acceptLanguageCountry
   return null
 }
 
-export const resolveCountryCode = (req: { headers?: Record<string, string | undefined>; query?: Record<string, unknown> } | null | undefined): string => {
+export const resolveCountryCode = (
+  req:
+    | {
+        headers?: Record<string, string | undefined>
+        query?: Record<string, unknown>
+      }
+    | null
+    | undefined,
+): string => {
   const country = resolveCountryCodeFromHeaders(req?.headers ?? {})
   if (country) return country
   const queryCountry = normalizeCountryCode(req?.query?.countryHint)
@@ -271,52 +313,82 @@ export const resolveCountryCode = (req: { headers?: Record<string, string | unde
   return 'GLOBAL'
 }
 
-
-export const hasActiveSubscription = async (uid: string | null | undefined): Promise<boolean> => {
+export const hasActiveSubscription = async (
+  uid: string | null | undefined,
+): Promise<boolean> => {
   if (!uid) return false
-  if (activeSubscriptionLookupForTest) return activeSubscriptionLookupForTest(uid)
+  if (activeSubscriptionLookupForTest)
+    return activeSubscriptionLookupForTest(uid)
   try {
-    return await getConvexClient().query('billing:hasActiveSubscription', { userId: uid })
+    return await getConvexClient().query('billing:hasActiveSubscription', {
+      userId: uid,
+    })
   } catch (err: unknown) {
-    console.error('[payments] hasActiveSubscription error:', (err as Error)?.message)
+    console.error(
+      '[payments] hasActiveSubscription error:',
+      (err as Error)?.message,
+    )
     return false
   }
 }
 
-export const setActiveSubscriptionLookupForTest = (lookup: ((uid: string) => boolean | Promise<boolean>) | null): void => {
+export const setActiveSubscriptionLookupForTest = (
+  lookup: ((uid: string) => boolean | Promise<boolean>) | null,
+): void => {
   activeSubscriptionLookupForTest = lookup
 }
 
-export const getUserCredits = async (uid: string | null | undefined): Promise<number> => {
+export const getUserCredits = async (
+  uid: string | null | undefined,
+): Promise<number> => {
   if (!uid) return 0
   try {
-    return await getConvexClient().query('billing:getUserCredits', { userId: uid })
+    return await getConvexClient().query('billing:getUserCredits', {
+      userId: uid,
+    })
   } catch (err: unknown) {
     console.error('[payments] getUserCredits error:', (err as Error)?.message)
     return 0
   }
 }
 
-export const addUserCredits = async (uid: string | null | undefined, amount: number, paymentRef: string | null = null): Promise<void> => {
+export const addUserCredits = async (
+  uid: string | null | undefined,
+  amount: number,
+  paymentRef: string | null = null,
+): Promise<void> => {
   if (!uid) return
   try {
-    await getConvexClient().mutation('billing:addUserCredits', { userId: uid, amount, paymentRef })
+    await getConvexClient().mutation('billing:addUserCredits', {
+      userId: uid,
+      amount,
+      paymentRef,
+    })
   } catch (err: unknown) {
     console.error('[payments] addUserCredits error:', (err as Error)?.message)
   }
 }
 
-export const consumeUserCredit = async (uid: string | null | undefined): Promise<boolean> => {
+export const consumeUserCredit = async (
+  uid: string | null | undefined,
+): Promise<boolean> => {
   if (!uid) return false
   try {
-    return await getConvexClient().mutation('billing:consumeUserCredit', { userId: uid })
+    return await getConvexClient().mutation('billing:consumeUserCredit', {
+      userId: uid,
+    })
   } catch (err: unknown) {
-    console.error('[payments] consumeUserCredit error:', (err as Error)?.message)
+    console.error(
+      '[payments] consumeUserCredit error:',
+      (err as Error)?.message,
+    )
     return false
   }
 }
 
-export const zeroUserCredits = async (uid: string | null | undefined): Promise<void> => {
+export const zeroUserCredits = async (
+  uid: string | null | undefined,
+): Promise<void> => {
   if (!uid) return
   try {
     await getConvexClient().mutation('billing:zeroUserCredits', { userId: uid })
@@ -335,7 +407,9 @@ type ExportZipAccess = {
 
 type Session = { id?: string; userId?: string | null }
 
-const resolveExportZipAccess = async (session: Session | null | undefined): Promise<ExportZipAccess> => {
+const resolveExportZipAccess = async (
+  session: Session | null | undefined,
+): Promise<ExportZipAccess> => {
   if (PAYWALL_DISABLED) {
     return {
       canDownload: true,
@@ -395,7 +469,11 @@ const resolveExportZipAccess = async (session: Session | null | undefined): Prom
   }
 }
 
-const logExportAccessDebug = (session: Session | null | undefined, target: string | null | undefined, payload: Record<string, unknown>): void => {
+const logExportAccessDebug = (
+  session: Session | null | undefined,
+  target: string | null | undefined,
+  payload: Record<string, unknown>,
+): void => {
   if (process.env.NODE_ENV !== 'development') return
   const uid = session?.userId
   console.log(
@@ -409,13 +487,19 @@ const logExportAccessDebug = (session: Session | null | undefined, target: strin
   )
 }
 
-export const getDownloadAccessDecision = async (session: Session | null | undefined, target: string | null | undefined) => {
+export const getDownloadAccessDecision = async (
+  session: Session | null | undefined,
+  target: string | null | undefined,
+) => {
   if (PAYWALL_DISABLED) {
     logExportAccessDebug(session, target, {
       allowed: true,
       reason: 'DISABLE_PAYWALL',
     })
-    return { allowed: true, payment: { subscriptionActive: true, credits: null } }
+    return {
+      allowed: true,
+      payment: { subscriptionActive: true, credits: null },
+    }
   }
 
   const access = await resolveExportZipAccess(session)
@@ -431,12 +515,16 @@ export const getDownloadAccessDecision = async (session: Session | null | undefi
     return {
       allowed: false,
       payment: { subscriptionActive: false, credits: 0 },
-      error: 'Subscribe to Pro or purchase download credits to export ZIP files.',
+      error:
+        'Subscribe to Pro or purchase download credits to export ZIP files.',
     }
   }
 
   if (access.viaSubscription) {
-    return { allowed: true, payment: { subscriptionActive: true, credits: null } }
+    return {
+      allowed: true,
+      payment: { subscriptionActive: true, credits: null },
+    }
   }
 
   if (access.viaCredits) {
@@ -454,7 +542,10 @@ export const getDownloadAccessDecision = async (session: Session | null | undefi
   }
 }
 
-export const decorateExportTargetsForRequest = async (session: Session | null | undefined, targets: Record<string, unknown>[]) => {
+export const decorateExportTargetsForRequest = async (
+  session: Session | null | undefined,
+  targets: Record<string, unknown>[],
+) => {
   if (PAYWALL_DISABLED) {
     return targets.map((targetEntry) => ({
       ...targetEntry,
@@ -482,9 +573,13 @@ type PaymentDetailsOptions = {
   headers?: Record<string, string | undefined>
 }
 
-export const getSessionPaymentDetails = async (session: Session | null | undefined, options: PaymentDetailsOptions = {}) => {
+export const getSessionPaymentDetails = async (
+  session: Session | null | undefined,
+  options: PaymentDetailsOptions = {},
+) => {
   const { ip = null, countryCode = null, headers = {} } = options
-  const resolvedCountry = countryCode || resolveCountryCodeFromHeaders(headers) || 'GLOBAL'
+  const resolvedCountry =
+    countryCode || resolveCountryCodeFromHeaders(headers) || 'GLOBAL'
   const isIndianUser = resolvedCountry === 'IN'
   const gateway = resolvePaymentGateway(resolvedCountry)
   const currency = resolvePaymentCurrency(gateway)
@@ -512,8 +607,10 @@ export const getSessionPaymentDetails = async (session: Session | null | undefin
     },
     pricing: PRO_PLAN.pricing,
     creditPacks: CREDIT_PACKS.filter((p) => {
-      if (p.id === '3_credits') return isStripe ? stripeCredits3Configured : credits3Configured
-      if (p.id === '10_credits') return isStripe ? stripeCredits10Configured : credits10Configured
+      if (p.id === '3_credits')
+        return isStripe ? stripeCredits3Configured : credits3Configured
+      if (p.id === '10_credits')
+        return isStripe ? stripeCredits10Configured : credits10Configured
       return false
     }).map((p) => ({
       id: p.id,

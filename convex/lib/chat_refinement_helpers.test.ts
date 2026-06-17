@@ -1,10 +1,16 @@
+import { readFileSync } from 'node:fs'
+
 import { describe, it, expect } from 'vitest'
+import type { Doc, Id } from '../_generated/dataModel'
+import type { QueryCtx } from '../_generated/server'
 import {
   MAX_CHAT_MESSAGE_LENGTH,
   CHAT_REFINEMENT_RE,
   CHAT_LEGACY_REFINEMENT_NOTE_RE,
   CHAT_OPENUI_REFINEMENT_RE,
   truncateText,
+  listSessionChatMessages,
+  serializeChatMessage,
   extractQuotedText,
   extractTargetText,
   getChatInstructionIntent,
@@ -29,6 +35,71 @@ import {
   type ChatRefinementPlan,
 } from './chat_refinement_helpers'
 
+type ChatMessageRecord = Doc<'chatMessages'>
+
+const sessionId = 'session_chat_history' as Id<'sessions'>
+
+const chatMessageDoc = (
+  overrides: Partial<ChatMessageRecord> = {},
+): ChatMessageRecord =>
+  ({
+    _id: 'chat_message_1' as Id<'chatMessages'>,
+    _creationTime: 1,
+    sessionId,
+    role: 'user',
+    content: 'Change the headline',
+    createdAt: 200,
+    ...overrides,
+  }) as ChatMessageRecord
+
+const queryCtxForChatMessages = (messages: ChatMessageRecord[]) => {
+  const db = {
+    query: (table: 'chatMessages') => {
+      expect(table).toBe('chatMessages')
+      let rows = [...messages]
+
+      const builder = {
+        withIndex: (
+          indexName: 'by_sessionId_createdAt',
+          applyIndex: (index: {
+            eq: (field: string, value: unknown) => typeof index
+          }) => unknown,
+        ) => {
+          expect(indexName).toBe('by_sessionId_createdAt')
+          const filters = new Map<string, unknown>()
+          const index = {
+            eq: (field: string, value: unknown) => {
+              filters.set(field, value)
+              return index
+            },
+          }
+
+          applyIndex(index)
+          rows = rows.filter(
+            (message) => message.sessionId === filters.get('sessionId'),
+          )
+
+          return builder
+        },
+        order: (direction: 'asc' | 'desc') => {
+          rows = [...rows].sort((left, right) =>
+            direction === 'asc'
+              ? left.createdAt - right.createdAt
+              : right.createdAt - left.createdAt,
+          )
+
+          return builder
+        },
+        take: async (limit: number) => rows.slice(0, limit),
+      }
+
+      return builder
+    },
+  } as unknown as Pick<QueryCtx, 'db'>['db']
+
+  return { db } as Pick<QueryCtx, 'db'>
+}
+
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
@@ -36,6 +107,48 @@ import {
 describe('MAX_CHAT_MESSAGE_LENGTH', () => {
   it('is 4000', () => {
     expect(MAX_CHAT_MESSAGE_LENGTH).toBe(4000)
+  })
+})
+
+describe('chat message history helpers', () => {
+  it('serializes chat messages for the client', () => {
+    expect(serializeChatMessage(chatMessageDoc())).toEqual({
+      messageId: 'chat_message_1',
+      role: 'user',
+      content: 'Change the headline',
+      createdAt: 200,
+    })
+  })
+
+  it('lists session chat messages oldest first with the query limit applied', async () => {
+    const otherSessionId = 'other_session' as Id<'sessions'>
+    const messages = [
+      chatMessageDoc({ _id: 'chat_new' as Id<'chatMessages'>, createdAt: 300 }),
+      chatMessageDoc({ _id: 'chat_old' as Id<'chatMessages'>, createdAt: 100 }),
+      chatMessageDoc({
+        _id: 'chat_other' as Id<'chatMessages'>,
+        sessionId: otherSessionId,
+        createdAt: 50,
+      }),
+    ]
+
+    await expect(
+      listSessionChatMessages(queryCtxForChatMessages(messages), sessionId),
+    ).resolves.toEqual([
+      expect.objectContaining({ messageId: 'chat_old', createdAt: 100 }),
+      expect.objectContaining({ messageId: 'chat_new', createdAt: 300 }),
+    ])
+  })
+
+  it('keeps the public listChatMessages query delegated to chat helpers', () => {
+    const sessionsSource = readFileSync('convex/sessions.ts', 'utf8')
+
+    expect(sessionsSource).toMatch(
+      /import\s*\{\s*listSessionChatMessages\s*\}\s*from\s*['"]\.\/lib\/chat_refinement_helpers['"]/,
+    )
+    expect(sessionsSource).toMatch(
+      /handler:\s*async\s*\(ctx,\s*args\)\s*=>\s*listSessionChatMessages\(ctx,\s*args\.sessionId\)/,
+    )
   })
 })
 
@@ -140,11 +253,15 @@ describe('truncateText', () => {
 
 describe('extractQuotedText', () => {
   it('extracts text within curly double quotes', () => {
-    expect(extractQuotedText('Set the title to “My Great Site”')).toBe('My Great Site')
+    expect(extractQuotedText('Set the title to “My Great Site”')).toBe(
+      'My Great Site',
+    )
   })
 
   it('extracts text within straight double quotes', () => {
-    expect(extractQuotedText('Set the title to "My Great Site"')).toBe('My Great Site')
+    expect(extractQuotedText('Set the title to "My Great Site"')).toBe(
+      'My Great Site',
+    )
   })
 
   it('returns undefined when no quotes present', () => {
@@ -160,7 +277,9 @@ describe('extractQuotedText', () => {
   })
 
   it('handles multiple quoted strings and returns the first', () => {
-    expect(extractQuotedText('Replace "Old Title" with "New Title"')).toBe('Old Title')
+    expect(extractQuotedText('Replace "Old Title" with "New Title"')).toBe(
+      'Old Title',
+    )
   })
 })
 
@@ -170,11 +289,15 @@ describe('extractQuotedText', () => {
 
 describe('extractTargetText', () => {
   it('returns quoted text when present', () => {
-    expect(extractTargetText('Change headline to "My New Title"')).toBe('My New Title')
+    expect(extractTargetText('Change headline to "My New Title"')).toBe(
+      'My New Title',
+    )
   })
 
   it('falls back to keyword-based extraction', () => {
-    expect(extractTargetText('headline: Welcome to the site')).toBe('Welcome to the site')
+    expect(extractTargetText('headline: Welcome to the site')).toBe(
+      'Welcome to the site',
+    )
   })
 
   it('strips trailing punctuation from keyword extraction', () => {
@@ -186,11 +309,15 @@ describe('extractTargetText', () => {
   })
 
   it('handles "to" keyword', () => {
-    expect(extractTargetText('Change it to Build Something Great')).toBe('Build Something Great')
+    expect(extractTargetText('Change it to Build Something Great')).toBe(
+      'Build Something Great',
+    )
   })
 
   it('handles "say" keyword', () => {
-    expect(extractTargetText('Make it say Welcome to our store')).toBe('Welcome to our store')
+    expect(extractTargetText('Make it say Welcome to our store')).toBe(
+      'Welcome to our store',
+    )
   })
 
   it('handles "button" keyword', () => {
@@ -204,7 +331,9 @@ describe('extractTargetText', () => {
 
 describe('getChatInstructionIntent', () => {
   it('detects headline intent', () => {
-    const result = getChatInstructionIntent('Change the headline to "Welcome Home"')
+    const result = getChatInstructionIntent(
+      'Change the headline to "Welcome Home"',
+    )
     expect(result).toEqual({ kind: 'headline', targetText: 'Welcome Home' })
   })
 
@@ -214,7 +343,9 @@ describe('getChatInstructionIntent', () => {
   })
 
   it('detects headline intent with hero title keyword', () => {
-    const result = getChatInstructionIntent('Update the hero title to "Launch Fast"')
+    const result = getChatInstructionIntent(
+      'Update the hero title to "Launch Fast"',
+    )
     expect(result).toEqual({ kind: 'headline', targetText: 'Launch Fast' })
   })
 
@@ -229,18 +360,30 @@ describe('getChatInstructionIntent', () => {
   })
 
   it('detects cta intent with call-to-action keyword', () => {
-    const result = getChatInstructionIntent('Set the call-to-action to "Buy Now"')
+    const result = getChatInstructionIntent(
+      'Set the call-to-action to "Buy Now"',
+    )
     expect(result).toEqual({ kind: 'cta', targetText: 'Buy Now' })
   })
 
   it('detects replace intent', () => {
-    const result = getChatInstructionIntent('Replace "Old Text" with "New Text"')
-    expect(result).toEqual({ kind: 'replace', oldText: 'Old Text', newText: 'New Text' })
+    const result = getChatInstructionIntent(
+      'Replace "Old Text" with "New Text"',
+    )
+    expect(result).toEqual({
+      kind: 'replace',
+      oldText: 'Old Text',
+      newText: 'New Text',
+    })
   })
 
   it('detects replace intent with change keyword', () => {
     const result = getChatInstructionIntent('Change "Hello" to "Goodbye"')
-    expect(result).toEqual({ kind: 'replace', oldText: 'Hello', newText: 'Goodbye' })
+    expect(result).toEqual({
+      kind: 'replace',
+      oldText: 'Hello',
+      newText: 'Goodbye',
+    })
   })
 
   it('detects section intent for testimonials', () => {
@@ -264,7 +407,9 @@ describe('getChatInstructionIntent', () => {
   })
 
   it('falls back to note intent for unrecognized instructions', () => {
-    const result = getChatInstructionIntent('Make it look better with more color')
+    const result = getChatInstructionIntent(
+      'Make it look better with more color',
+    )
     expect(result).toEqual({ kind: 'note' })
   })
 
@@ -317,7 +462,11 @@ describe('replaceFirstElementText', () => {
 
   it('escapes HTML entities in the replacement text', () => {
     const html = '<h1>Old</h1>'
-    const result = replaceFirstElementText(html, ['h1'], '<script>alert("xss")</script>')
+    const result = replaceFirstElementText(
+      html,
+      ['h1'],
+      '<script>alert("xss")</script>',
+    )
     expect(result.replaced).toBe(true)
     expect(result.html).not.toContain('<script>')
     expect(result.html).toContain('&lt;script&gt;')
@@ -355,7 +504,9 @@ describe('appendHtmlBeforeClose', () => {
   it('inserts before </main> when present', () => {
     const html = '<main><p>Content</p></main><footer>F</footer>'
     const result = appendHtmlBeforeClose(html, '<section>New</section>')
-    expect(result).toBe('<main><p>Content</p><section>New</section></main><footer>F</footer>')
+    expect(result).toBe(
+      '<main><p>Content</p><section>New</section></main><footer>F</footer>',
+    )
   })
 
   it('inserts before </body> when no </main>', () => {
@@ -392,7 +543,10 @@ describe('buildGeneratedRefinementSection', () => {
   })
 
   it('escapes HTML in title and body', () => {
-    const result = buildGeneratedRefinementSection('<b>Title</b>', '<script>alert(1)</script>')
+    const result = buildGeneratedRefinementSection(
+      '<b>Title</b>',
+      '<script>alert(1)</script>',
+    )
     expect(result).not.toContain('<b>Title</b>')
     expect(result).not.toContain('<script>')
     expect(result).toContain('&lt;b&gt;Title&lt;/b&gt;')
@@ -413,7 +567,10 @@ describe('buildGeneratedRefinementSection', () => {
 describe('applyInstructionDrivenHtmlRefinement', () => {
   it('updates a headline when instruction targets headline', () => {
     const html = '<h1>Old Title</h1><p>body</p>'
-    const result = applyInstructionDrivenHtmlRefinement(html, 'Change the headline to "New Title"')
+    const result = applyInstructionDrivenHtmlRefinement(
+      html,
+      'Change the headline to "New Title"',
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('New Title')
     expect(result.summary).toContain('headline')
@@ -421,7 +578,10 @@ describe('applyInstructionDrivenHtmlRefinement', () => {
 
   it('updates a CTA button', () => {
     const html = '<h1>Title</h1><button>Old CTA</button>'
-    const result = applyInstructionDrivenHtmlRefinement(html, 'Change the CTA to "Subscribe"')
+    const result = applyInstructionDrivenHtmlRefinement(
+      html,
+      'Change the CTA to "Subscribe"',
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('Subscribe')
     expect(result.summary).toContain('call-to-action')
@@ -429,14 +589,20 @@ describe('applyInstructionDrivenHtmlRefinement', () => {
 
   it('replaces text when instruction is a replace command', () => {
     const html = '<p>Hello World</p>'
-    const result = applyInstructionDrivenHtmlRefinement(html, 'Replace "Hello World" with "Goodbye World"')
+    const result = applyInstructionDrivenHtmlRefinement(
+      html,
+      'Replace "Hello World" with "Goodbye World"',
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('Goodbye World')
   })
 
   it('adds a section for section intents', () => {
     const html = '<main><h1>Title</h1></main>'
-    const result = applyInstructionDrivenHtmlRefinement(html, 'Add a testimonials section')
+    const result = applyInstructionDrivenHtmlRefinement(
+      html,
+      'Add a testimonials section',
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('<section')
     expect(result.summary).toContain('testimonials')
@@ -444,7 +610,10 @@ describe('applyInstructionDrivenHtmlRefinement', () => {
 
   it('falls back to appending a note section for unrecognized instructions', () => {
     const html = '<main><h1>Title</h1></main>'
-    const result = applyInstructionDrivenHtmlRefinement(html, 'Make it more colorful and vibrant')
+    const result = applyInstructionDrivenHtmlRefinement(
+      html,
+      'Make it more colorful and vibrant',
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('Latest updates')
     expect(result.summary).toContain('update')
@@ -457,14 +626,16 @@ describe('applyInstructionDrivenHtmlRefinement', () => {
 
 describe('buildChatRefinedPreviewHtml', () => {
   it('strips existing refinement blocks before applying', () => {
-    const html = '<h1>Title</h1> <!-- ship-fast-chat-refinement:1 --> <section data-ship-fast-chat-refinement="1">old note</section>'
+    const html =
+      '<h1>Title</h1> <!-- ship-fast-chat-refinement:1 --> <section data-ship-fast-chat-refinement="1">old note</section>'
     const result = buildChatRefinedPreviewHtml(html, 'Make it brighter')
     expect(result.html).not.toContain('ship-fast-chat-refinement')
     expect(result.changed).toBe(true)
   })
 
   it('strips legacy refinement note blocks', () => {
-    const html = '<h1>Title</h1> <!-- ship-fast-chat-refinement-note:2 --> <section data-ship-fast-chat-note="1">old</section>'
+    const html =
+      '<h1>Title</h1> <!-- ship-fast-chat-refinement-note:2 --> <section data-ship-fast-chat-note="1">old</section>'
     const result = buildChatRefinedPreviewHtml(html, 'Update it')
     expect(result.html).not.toContain('ship-fast-chat-refinement-note')
   })
@@ -472,7 +643,11 @@ describe('buildChatRefinedPreviewHtml', () => {
   it('uses plan-driven refinement when plan is provided and succeeds', () => {
     const html = '<h1>Old Headline</h1>'
     const plan: ChatRefinementPlan = { headline: 'Plan Headline' }
-    const result = buildChatRefinedPreviewHtml(html, 'Change the headline', plan)
+    const result = buildChatRefinedPreviewHtml(
+      html,
+      'Change the headline',
+      plan,
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('Plan Headline')
   })
@@ -480,7 +655,11 @@ describe('buildChatRefinedPreviewHtml', () => {
   it('falls back to instruction-driven refinement when plan does not change anything', () => {
     const html = '<h1>Title</h1><button>Click</button>'
     const plan: ChatRefinementPlan = {}
-    const result = buildChatRefinedPreviewHtml(html, 'Change the CTA to "Buy Now"', plan)
+    const result = buildChatRefinedPreviewHtml(
+      html,
+      'Change the CTA to "Buy Now"',
+      plan,
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('Buy Now')
   })
@@ -552,7 +731,13 @@ describe('normalizeChatRefinementPlan', () => {
 
   it('returns plan with headline', () => {
     const result = normalizeChatRefinementPlan({ headline: 'Hello' })
-    expect(result).toEqual({ headline: 'Hello', ctaLabel: undefined, replacements: undefined, sections: undefined, assistantSummary: undefined })
+    expect(result).toEqual({
+      headline: 'Hello',
+      ctaLabel: undefined,
+      replacements: undefined,
+      sections: undefined,
+      assistantSummary: undefined,
+    })
   })
 
   it('returns plan with ctaLabel', () => {
@@ -569,7 +754,10 @@ describe('normalizeChatRefinementPlan', () => {
       ],
     })
     expect(result?.replacements).toHaveLength(1)
-    expect(result?.replacements?.[0]).toEqual({ oldText: 'old', newText: 'new' })
+    expect(result?.replacements?.[0]).toEqual({
+      oldText: 'old',
+      newText: 'new',
+    })
   })
 
   it('limits replacements to 8 entries', () => {
@@ -629,7 +817,9 @@ describe('normalizeChatRefinementPlan', () => {
   })
 
   it('returns undefined when only assistantSummary is present (no actionable fields)', () => {
-    const result = normalizeChatRefinementPlan({ assistantSummary: 'Just a summary' })
+    const result = normalizeChatRefinementPlan({
+      assistantSummary: 'Just a summary',
+    })
     expect(result).toBeUndefined()
   })
 })
@@ -677,11 +867,16 @@ describe('parseChatRefinementPlanJson', () => {
 /* ------------------------------------------------------------------ */
 
 describe('applyPlanDrivenHtmlRefinement', () => {
-  const baseHtml = '<main><h1>Old Heading</h1><button>Old CTA</button><p>Some body text</p></main>'
+  const baseHtml =
+    '<main><h1>Old Heading</h1><button>Old CTA</button><p>Some body text</p></main>'
 
   it('applies headline replacement', () => {
     const plan: ChatRefinementPlan = { headline: 'New Heading' }
-    const result = applyPlanDrivenHtmlRefinement(baseHtml, 'update heading', plan)
+    const result = applyPlanDrivenHtmlRefinement(
+      baseHtml,
+      'update heading',
+      plan,
+    )
     expect(result.changed).toBe(true)
     expect(result.html).toContain('New Heading')
     expect(result.summary).toContain('headline')
@@ -720,7 +915,13 @@ describe('applyPlanDrivenHtmlRefinement', () => {
 
   it('adds sections from plan', () => {
     const plan: ChatRefinementPlan = {
-      sections: [{ kind: 'testimonial', title: 'Customer Reviews', body: 'Great product!' }],
+      sections: [
+        {
+          kind: 'testimonial',
+          title: 'Customer Reviews',
+          body: 'Great product!',
+        },
+      ],
     }
     const result = applyPlanDrivenHtmlRefinement(baseHtml, 'add reviews', plan)
     expect(result.changed).toBe(true)
@@ -820,7 +1021,9 @@ describe('sanitizeOpenUiComment', () => {
   })
 
   it('escapes close-comment sequences', () => {
-    expect(sanitizeOpenUiComment('end of comment */')).toBe('end of comment * /')
+    expect(sanitizeOpenUiComment('end of comment */')).toBe(
+      'end of comment * /',
+    )
   })
 
   it('truncates long strings', () => {
@@ -845,14 +1048,22 @@ describe('replaceFirstOpenUiCallText', () => {
 
   it('tries call names in order', () => {
     const source = 'Button("Click")\nText("Hello")'
-    const result = replaceFirstOpenUiCallText(source, ['Heading', 'Text'], 'World')
+    const result = replaceFirstOpenUiCallText(
+      source,
+      ['Heading', 'Text'],
+      'World',
+    )
     expect(result.replaced).toBe(true)
     expect(result.source).toContain('Text("World")')
   })
 
   it('returns replaced false when no call matches', () => {
     const source = 'Image("photo.jpg")'
-    const result = replaceFirstOpenUiCallText(source, ['Text', 'Heading'], 'New')
+    const result = replaceFirstOpenUiCallText(
+      source,
+      ['Text', 'Heading'],
+      'New',
+    )
     expect(result.replaced).toBe(false)
     expect(result.source).toBe(source)
   })
@@ -900,7 +1111,12 @@ describe('appendOpenUiRefinementNote', () => {
       '// instruction: old instruction',
       '// summary: old summary',
     ].join('\n')
-    const result = appendOpenUiRefinementNote(source, 'new instruction', 'new summary', 2)
+    const result = appendOpenUiRefinementNote(
+      source,
+      'new instruction',
+      'new summary',
+      2,
+    )
     expect(result).not.toContain('old instruction')
     expect(result).toContain('// ship-fast-chat-refinement:2')
     expect(result).toContain('// instruction: new instruction')
@@ -1060,7 +1276,12 @@ describe('replaceFirstMatchingJsonString', () => {
     const result = replaceFirstMatchingJsonString(obj, /heading/i, 'New')
     expect(result.replaced).toBe(true)
     expect(
-      ((result.value as Record<string, unknown>).hero as Record<string, unknown>).heading,
+      (
+        (result.value as Record<string, unknown>).hero as Record<
+          string,
+          unknown
+        >
+      ).heading,
     ).toBe('New')
   })
 
@@ -1068,8 +1289,12 @@ describe('replaceFirstMatchingJsonString', () => {
     const arr = [{ name: 'First' }, { name: 'Second' }]
     const result = replaceFirstMatchingJsonString(arr, /name/i, 'Replaced')
     expect(result.replaced).toBe(true)
-    expect((result.value as Array<Record<string, unknown>>)[0].name).toBe('Replaced')
-    expect((result.value as Array<Record<string, unknown>>)[1].name).toBe('Second')
+    expect((result.value as Array<Record<string, unknown>>)[0].name).toBe(
+      'Replaced',
+    )
+    expect((result.value as Array<Record<string, unknown>>)[1].name).toBe(
+      'Second',
+    )
   })
 
   it('returns replaced false when key pattern does not match', () => {
@@ -1088,13 +1313,23 @@ describe('replaceFirstMatchingJsonString', () => {
 
   it('truncates replacement to 500 chars', () => {
     const obj = { title: 'Old' }
-    const result = replaceFirstMatchingJsonString(obj, /title/i, 'X'.repeat(600))
+    const result = replaceFirstMatchingJsonString(
+      obj,
+      /title/i,
+      'X'.repeat(600),
+    )
     expect(result.replaced).toBe(true)
-    expect(((result.value as Record<string, unknown>).title as string).length).toBe(500)
+    expect(
+      ((result.value as Record<string, unknown>).title as string).length,
+    ).toBe(500)
   })
 
   it('handles primitive values by returning them unchanged', () => {
-    const result = replaceFirstMatchingJsonString('just a string', /title/i, 'New')
+    const result = replaceFirstMatchingJsonString(
+      'just a string',
+      /title/i,
+      'New',
+    )
     expect(result.replaced).toBe(false)
     expect(result.value).toBe('just a string')
   })
@@ -1138,7 +1373,12 @@ describe('replaceFirstJsonText', () => {
     const result = replaceFirstJsonText(obj, 'Find Me', 'Found You')
     expect(result.replaced).toBe(true)
     expect(
-      ((result.value as Record<string, unknown>).nested as Record<string, unknown>).text,
+      (
+        (result.value as Record<string, unknown>).nested as Record<
+          string,
+          unknown
+        >
+      ).text,
     ).toBe('Found You Here')
   })
 
@@ -1149,9 +1389,18 @@ describe('replaceFirstJsonText', () => {
   })
 
   it('handles non-object non-string primitives', () => {
-    expect(replaceFirstJsonText(42, 'foo', 'bar')).toEqual({ value: 42, replaced: false })
-    expect(replaceFirstJsonText(null, 'foo', 'bar')).toEqual({ value: null, replaced: false })
-    expect(replaceFirstJsonText(true, 'foo', 'bar')).toEqual({ value: true, replaced: false })
+    expect(replaceFirstJsonText(42, 'foo', 'bar')).toEqual({
+      value: 42,
+      replaced: false,
+    })
+    expect(replaceFirstJsonText(null, 'foo', 'bar')).toEqual({
+      value: null,
+      replaced: false,
+    })
+    expect(replaceFirstJsonText(true, 'foo', 'bar')).toEqual({
+      value: true,
+      replaced: false,
+    })
   })
 })
 
@@ -1162,10 +1411,18 @@ describe('replaceFirstJsonText', () => {
 describe('appendChatRefinementToSiteSpec', () => {
   it('appends a refinement entry to a spec without existing refinements', () => {
     const spec = { name: 'MySite' }
-    const result = appendChatRefinementToSiteSpec(spec, 'instruction', 'summary', 1, 1000)
+    const result = appendChatRefinementToSiteSpec(
+      spec,
+      'instruction',
+      'summary',
+      1,
+      1000,
+    )
     expect(result.name).toBe('MySite')
     expect(result.shipFastChatRefinements).toHaveLength(1)
-    expect((result.shipFastChatRefinements as Array<Record<string, unknown>>)[0]).toEqual({
+    expect(
+      (result.shipFastChatRefinements as Array<Record<string, unknown>>)[0],
+    ).toEqual({
       instruction: 'instruction',
       summary: 'summary',
       previewVersion: 1,
@@ -1175,9 +1432,17 @@ describe('appendChatRefinementToSiteSpec', () => {
 
   it('appends to existing refinements', () => {
     const spec = {
-      shipFastChatRefinements: [{ instruction: 'old', summary: 's', previewVersion: 1, createdAt: 500 }],
+      shipFastChatRefinements: [
+        { instruction: 'old', summary: 's', previewVersion: 1, createdAt: 500 },
+      ],
     }
-    const result = appendChatRefinementToSiteSpec(spec, 'new', 'new summary', 2, 1000)
+    const result = appendChatRefinementToSiteSpec(
+      spec,
+      'new',
+      'new summary',
+      2,
+      1000,
+    )
     expect((result.shipFastChatRefinements as unknown[]).length).toBe(2)
   })
 
@@ -1189,15 +1454,29 @@ describe('appendChatRefinementToSiteSpec', () => {
       createdAt: i * 100,
     }))
     const spec = { shipFastChatRefinements: existing }
-    const result = appendChatRefinementToSiteSpec(spec, 'newest', 'newest summary', 31, 5000)
+    const result = appendChatRefinementToSiteSpec(
+      spec,
+      'newest',
+      'newest summary',
+      31,
+      5000,
+    )
     expect((result.shipFastChatRefinements as unknown[]).length).toBe(25)
   })
 
   it('truncates instruction to 1000 chars', () => {
     const spec = {}
     const longInstruction = 'I'.repeat(1200)
-    const result = appendChatRefinementToSiteSpec(spec, longInstruction, 'sum', 1, 100)
-    const entry = (result.shipFastChatRefinements as Array<Record<string, unknown>>)[0]
+    const result = appendChatRefinementToSiteSpec(
+      spec,
+      longInstruction,
+      'sum',
+      1,
+      100,
+    )
+    const entry = (
+      result.shipFastChatRefinements as Array<Record<string, unknown>>
+    )[0]
     expect((entry.instruction as string).length).toBe(1000)
   })
 
@@ -1214,15 +1493,21 @@ describe('appendChatRefinementToSiteSpec', () => {
 
 describe('buildChatRefinedSiteSpecJson', () => {
   it('returns undefined for undefined specJson', () => {
-    expect(buildChatRefinedSiteSpecJson(undefined, 'inst', 'sum', 1, 100)).toBeUndefined()
+    expect(
+      buildChatRefinedSiteSpecJson(undefined, 'inst', 'sum', 1, 100),
+    ).toBeUndefined()
   })
 
   it('returns original string for unparseable JSON', () => {
-    expect(buildChatRefinedSiteSpecJson('{bad', 'inst', 'sum', 1, 100)).toBe('{bad')
+    expect(buildChatRefinedSiteSpecJson('{bad', 'inst', 'sum', 1, 100)).toBe(
+      '{bad',
+    )
   })
 
   it('returns original string when parsed value is not an object', () => {
-    expect(buildChatRefinedSiteSpecJson('"string"', 'inst', 'sum', 1, 100)).toBe('"string"')
+    expect(
+      buildChatRefinedSiteSpecJson('"string"', 'inst', 'sum', 1, 100),
+    ).toBe('"string"')
   })
 
   it('applies headline intent to site spec', () => {

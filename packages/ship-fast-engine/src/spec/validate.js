@@ -1,4 +1,7 @@
-import { SUPPORTED_EXPORT_TARGETS, SUPPORTED_SECTION_TYPES } from './defaults.js'
+import {
+  SUPPORTED_EXPORT_TARGETS,
+  SUPPORTED_SECTION_TYPES,
+} from './defaults.js'
 
 export function validateSiteSpec(spec) {
   const errors = []
@@ -10,7 +13,10 @@ export function validateSiteSpec(spec) {
   if (!spec.projectName) errors.push('projectName is required.')
   if (!spec.slug) errors.push('slug is required.')
   if (!spec.siteType) errors.push('siteType is required.')
-  if (!Array.isArray(spec.exportableFrameworks) || spec.exportableFrameworks.length === 0) {
+  if (
+    !Array.isArray(spec.exportableFrameworks) ||
+    spec.exportableFrameworks.length === 0
+  ) {
     errors.push('exportableFrameworks must contain at least one target.')
   } else {
     for (const target of spec.exportableFrameworks) {
@@ -20,11 +26,18 @@ export function validateSiteSpec(spec) {
     }
   }
 
-  if (!spec.theme || typeof spec.theme !== 'object') errors.push('theme is required.')
+  if (!spec.theme || typeof spec.theme !== 'object')
+    errors.push('theme is required.')
   if (spec.exportOptions != null) {
-    if (typeof spec.exportOptions !== 'object' || Array.isArray(spec.exportOptions)) {
+    if (
+      typeof spec.exportOptions !== 'object' ||
+      Array.isArray(spec.exportOptions)
+    ) {
       errors.push('exportOptions must be an object.')
-    } else if (spec.exportOptions.cms != null && spec.exportOptions.cms !== 'sanity') {
+    } else if (
+      spec.exportOptions.cms != null &&
+      spec.exportOptions.cms !== 'sanity'
+    ) {
       errors.push(`Unsupported exportOptions.cms "${spec.exportOptions.cms}".`)
     }
     if (
@@ -34,32 +47,46 @@ export function validateSiteSpec(spec) {
       errors.push('exportOptions.embedSanityStudio must be a boolean.')
     }
   }
-  if (!Array.isArray(spec.pages) || spec.pages.length === 0) errors.push('pages must contain at least one page.')
+  if (!Array.isArray(spec.pages) || spec.pages.length === 0)
+    errors.push('pages must contain at least one page.')
 
   const seenRoutes = new Set()
   const seenPageIds = new Set()
 
   for (const page of spec.pages || []) {
     if (!page.id) errors.push('Every page requires an id.')
-    if (!page.route) errors.push(`Page "${page.name || page.id || 'unknown'}" is missing a route.`)
-    if (!Array.isArray(page.sections)) {
-      errors.push(`Page "${page.name || page.id || 'unknown'}" must include sections.`)
-      continue
-    }
+    if (!page.route)
+      errors.push(
+        `Page "${page.name || page.id || 'unknown'}" is missing a route.`,
+      )
     if (seenPageIds.has(page.id)) errors.push(`Duplicate page id "${page.id}".`)
-    if (seenRoutes.has(page.route)) errors.push(`Duplicate page route "${page.route}".`)
+    if (seenRoutes.has(page.route))
+      errors.push(`Duplicate page route "${page.route}".`)
     seenPageIds.add(page.id)
     seenRoutes.add(page.route)
 
+    if (!Array.isArray(page.sections)) {
+      errors.push(
+        `Page "${page.name || page.id || 'unknown'}" must include sections.`,
+      )
+      continue
+    }
+
     const seenSectionIds = new Set()
     for (const section of page.sections) {
-      if (!section.id) errors.push(`Page "${page.id}" has a section without an id.`)
-      if (!section.type) errors.push(`Section "${section.id || 'unknown'}" is missing a type.`)
+      if (!section.id)
+        errors.push(`Page "${page.id}" has a section without an id.`)
+      if (!section.type)
+        errors.push(`Section "${section.id || 'unknown'}" is missing a type.`)
       if (section.type && !SUPPORTED_SECTION_TYPES.includes(section.type)) {
-        errors.push(`Section "${section.id || 'unknown'}" has unsupported type "${section.type}".`)
+        errors.push(
+          `Section "${section.id || 'unknown'}" has unsupported type "${section.type}".`,
+        )
       }
       if (seenSectionIds.has(section.id)) {
-        errors.push(`Page "${page.id}" has duplicate section id "${section.id}".`)
+        errors.push(
+          `Page "${page.id}" has duplicate section id "${section.id}".`,
+        )
       }
       seenSectionIds.add(section.id)
     }

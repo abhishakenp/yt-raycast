@@ -1288,8 +1288,7 @@ export async function* generateFromClone(
         ch.push({ type: 'plan', ids })
 
         // Progressive page modules (home first, then the rest in order).
-        for (let i = 0; i < pagePlan.length; i++) {
-          const { id, sections } = pagePlan[i]
+        for (const { id, sections } of pagePlan) {
           ch.push({ type: 'module_start', id })
           ch.push({ type: 'module', id, text: assemblePage(id, sections) })
         }

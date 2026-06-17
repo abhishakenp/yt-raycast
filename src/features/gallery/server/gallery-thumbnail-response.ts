@@ -1,7 +1,10 @@
 import { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
-import { captureGalleryThumb, readCachedGalleryThumb } from './gallery-thumbnail-capture'
+import {
+  captureGalleryThumb,
+  readCachedGalleryThumb,
+} from './gallery-thumbnail-capture'
 import { createRuntimeConvexHttpClient } from '@/shared/convex/http-client'
 
 type GalleryConvexClient = Pick<ConvexHttpClient, 'query'>
@@ -12,14 +15,14 @@ type GalleryThumbnailSession = {
   categories?: string[]
   elapsed?: number | null
   cost?: number | null
-  homepageReady?: boolean
-  siteSpecReady?: boolean
-  openuiReady?: boolean
+  homepageReady?: boolean | null
+  siteSpecReady?: boolean | null
+  openuiReady?: boolean | null
   readiness?: {
-    homepageReady?: boolean
-    siteSpecReady?: boolean
-    openuiReady?: boolean
-    previewReady?: boolean
+    homepageReady?: boolean | null
+    siteSpecReady?: boolean | null
+    openuiReady?: boolean | null
+    previewReady?: boolean | null
   }
 }
 
@@ -35,11 +38,42 @@ const truncateText = (value: string, max: number): string =>
   value.length <= max ? value : value.slice(0, max)
 
 const galleryCategoryTerms = {
-  saas: ['saas', 'software', 'platform', 'dashboard', 'analytics', 'copilot', 'ai'],
-  commerce: ['store', 'shop', 'ecommerce', 'commerce', 'product', 'checkout', 'subscription'],
-  portfolio: ['portfolio', 'studio', 'agency', 'consultancy', 'case studies', 'architecture'],
+  saas: [
+    'saas',
+    'software',
+    'platform',
+    'dashboard',
+    'analytics',
+    'copilot',
+    'ai',
+  ],
+  commerce: [
+    'store',
+    'shop',
+    'ecommerce',
+    'commerce',
+    'product',
+    'checkout',
+    'subscription',
+  ],
+  portfolio: [
+    'portfolio',
+    'studio',
+    'agency',
+    'consultancy',
+    'case studies',
+    'architecture',
+  ],
   blog: ['blog', 'publication', 'news', 'story', 'stories', 'article'],
-  service: ['service', 'booking', 'local', 'gym', 'wellness', 'grooming', 'restaurant'],
+  service: [
+    'service',
+    'booking',
+    'local',
+    'gym',
+    'wellness',
+    'grooming',
+    'restaurant',
+  ],
   app: ['app', 'mobile', 'tool', 'planner', 'manager', 'studio'],
 } as const
 
@@ -47,7 +81,9 @@ export const getGalleryCategories = (prompt: string): string[] => {
   const normalizedPrompt = prompt.toLowerCase()
 
   return Object.entries(galleryCategoryTerms)
-    .filter(([, terms]) => terms.some((term) => normalizedPrompt.includes(term)))
+    .filter(([, terms]) =>
+      terms.some((term) => normalizedPrompt.includes(term)),
+    )
     .map(([category]) => category)
 }
 
@@ -59,17 +95,21 @@ export const formatGalleryCategory = (category: string): string =>
     .join(' ')
 
 const formatElapsed = (elapsed?: number | null): string | null => {
-  if (typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0) return null
+  if (typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0)
+    return null
   const seconds = elapsed / 1000
   if (seconds < 1) return '<1s'
   if (seconds < 60) return `${Math.round(seconds)}s`
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = Math.round(seconds % 60)
-  return remainingSeconds === 0 ? `${minutes}m` : `${minutes}m ${remainingSeconds}s`
+  return remainingSeconds === 0
+    ? `${minutes}m`
+    : `${minutes}m ${remainingSeconds}s`
 }
 
 const formatCost = (cost?: number | null): string | null => {
-  if (typeof cost !== 'number' || !Number.isFinite(cost) || cost < 0) return null
+  if (typeof cost !== 'number' || !Number.isFinite(cost) || cost < 0)
+    return null
   if (cost === 0) return '$0.00'
   return `$${cost.toFixed(cost < 1 ? 4 : 2)}`
 }
@@ -97,17 +137,20 @@ export const generateDeterministicThumbnailSvg = (
   metadataLabel = 'Public generated site',
 ): string => {
   const safePrompt = escapeHtml(truncateText(prompt, 80))
-  const title = safePrompt.split(/\s+/).slice(0, 4).join(' ') || 'Generated website'
+  const title =
+    safePrompt.split(/\s+/).slice(0, 4).join(' ') || 'Generated website'
   const primaryCategory = categories[0] || 'website'
   const formattedCategory = escapeHtml(formatGalleryCategory(primaryCategory))
-  const statusLabel = status === 'done' || status === 'preview_ready' ? 'Ready' : 'In Progress'
-  const statusColor = status === 'done' || status === 'preview_ready' ? '#22c55e' : '#f59e0b'
+  const statusLabel =
+    status === 'done' || status === 'preview_ready' ? 'Ready' : 'In Progress'
+  const statusColor =
+    status === 'done' || status === 'preview_ready' ? '#22c55e' : '#f59e0b'
   const safeMetadataLabel = escapeHtml(metadataLabel)
 
   // Generate deterministic gradient based on prompt hash
   let hash = 0
   for (let i = 0; i < prompt.length; i++) {
-    hash = ((hash << 5) - hash) + prompt.charCodeAt(i)
+    hash = (hash << 5) - hash + prompt.charCodeAt(i)
     hash |= 0
   }
   const hue1 = Math.abs(hash % 360)
@@ -190,7 +233,9 @@ export const createGalleryThumbnailResponse = async (
 ): Promise<Response> => {
   try {
     const client = clientOverride ?? createRuntimeConvexHttpClient()
-    const session = await client.query(api.sessions.getPublicGallerySession, { sessionId })
+    const session = await client.query(api.sessions.getPublicGallerySession, {
+      sessionId,
+    })
 
     if (session === null) {
       return new Response('Session not found or not public', { status: 404 })

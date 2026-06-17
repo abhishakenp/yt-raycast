@@ -6,6 +6,11 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
+const requireEventStream = <T>(stream: T | null): T => {
+  if (stream === null) throw new Error('Expected event stream')
+  return stream
+}
+
 const identityFor = (userId: string) => ({
   issuer: 'https://convex.test',
   subject: userId,
@@ -20,7 +25,7 @@ const createReadySession = async (
   const createArgs = {
     prompt: `Export entitlement verifier ${identity?.subject ?? 'anonymous'}`,
     preferredLanguage: 'en',
-    preferredExportTarget: 'html',
+    preferredExportTarget: 'html' as const,
     isPrivate: options.isPrivate ?? false,
     workspace: `workspace_export_entitlement_${identity?.subject ?? 'anonymous'}`,
     ...(identity === undefined
@@ -32,10 +37,10 @@ const createReadySession = async (
   }
   const created =
     identity === undefined
-      ? await t.runMutation(api.sessions.create, createArgs)
+      ? await t.mutation(api.sessions.create, createArgs)
       : await t.withIdentity(identity).mutation(api.sessions.create, createArgs)
 
-  await t.runMutation(internal.sessions.completeGenerationInternal, {
+  await t.mutation(internal.sessions.completeGenerationInternal, {
     sessionId: created.sessionId,
     html: '<html><body><main><h1>Export entitlement</h1></main></body></html>',
     openUiSource: '$page = "Home"\nroot = Text("Export entitlement")',
@@ -53,18 +58,20 @@ test('anonymous exports are recorded as payment-required instead of badge-free r
   const t = convexTest(schema, modules)
   const sessionId = await createReadySession(t)
 
-  const result = await t.runMutation(api.sessions.createExport, {
+  const result = await t.mutation(api.sessions.createExport, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     target: 'html',
   })
-  const exportRecord = await t.runQuery(api.sessions.getExport, {
+  const exportRecord = await t.query(api.sessions.getExport, {
     sessionId,
     target: 'html',
   })
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-  })
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+    }),
+  )
 
   expect(result).toMatchObject({
     status: 'payment_required',
@@ -167,15 +174,17 @@ test('private event streams require the session owner', async () => {
   const sessionId = await createReadySession(t, undefined, { isPrivate: true })
 
   await expect(
-    t.runQuery(api.sessions.getEventStream, {
+    t.query(api.sessions.getEventStream, {
       lookup: sessionId,
     }),
   ).rejects.toThrow(/own this session/)
 
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-    anonymousOwnerSecret: 'owner-secret',
-  })
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+      anonymousOwnerSecret: 'owner-secret',
+    }),
+  )
 
   expect(stream.events.map((event) => event.eventType)).toContain(
     'preview_ready',

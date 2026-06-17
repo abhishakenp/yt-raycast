@@ -1,6 +1,7 @@
 ## CRITICAL RULE - CHECK GIT HISTORY FIRST
 
 **BEFORE IMPLEMENTING ANYTHING:**
+
 1. ALWAYS check git history to see if the feature/fix was already implemented
 2. If it exists in history, use that implementation - DO NOT reimplement
 3. If unsure whether it was done, ASK THE USER before implementing
@@ -15,6 +16,7 @@ This rule exists because 95% of requests are for features that were already work
 ## CRITICAL RULE - ALWAYS VERIFY YOUR WORK
 
 **AFTER IMPLEMENTING ANYTHING:**
+
 1. ALWAYS test your changes with the actual tool/mechanism (agent-browser, curl, etc.)
 2. NEVER claim something is fixed without verification
 3. If the user asks you to test with a specific tool (agent-browser), USE THAT TOOL
@@ -28,16 +30,19 @@ This rule exists because claiming unverified fixes wastes time and breaks trust.
 **This project has suffered from repeated feature breakage and back-and-forth restoring the same features. Every fix or feature arrangement MUST be covered by unit tests.**
 
 **BEFORE implementing:**
+
 1. Check git history for past solutions (`git log --oneline -20`, `git show <commit>`)
 2. If the feature existed before, restore it from history — do not reimplement
 
 **AFTER implementing:**
+
 1. Write a unit test that covers the fix or restored behavior
 2. Prefer source-level structural assertions (read the file and assert invariants) when testing that a feature gate or code path is present/absent
 3. Run `bun test` and fix any failures BEFORE claiming the work is done
 4. NEVER push without all tests passing
 
 **Test patterns for this project:**
+
 - Use `vitest` with `describe`/`it`/`expect`
 - Source-level invariant tests: `readFileSync` the source file and assert structural properties (e.g. "file must not contain env var gate X", "file must contain API call Y")
 - Behavioral tests: import the function and test inputs/outputs directly
@@ -78,14 +83,15 @@ Ship Fast cannot predict what websites users will describe. Inputs are open-ende
 - **Build generic mechanisms:** site-kind inference (`blog`, `commerce`, `software`, …), page grammars, planner genomes, shared contracts, stitch/repair, and audits keyed on **structure** (e.g. “publication index = featured story + archive grid”), not on named examples.
 - **Do not hardcode infinite verticals:** avoid new `if (slug === 'blog-dogs')` branches, fixed copy decks, or stub content lists tied to one demo brief. Prefer fallbacks derived from the user brief + site kind.
 - **Regression tests use exemplars, production stays general:** stress briefs like `blog-dogs` are for CI/gallery only; fixes must generalize to any blog/publication brief.
-- **Safety nets repair missing structure, not a single brand:** post-process injectors should detect absent *patterns* (no post grid on a blog home) and fill with brief-aware generic placeholders—not permanent “dog blog” templates in core logic.
+- **Safety nets repair missing structure, not a single brand:** post-process injectors should detect absent _patterns_ (no post grid on a blog home) and fill with brief-aware generic placeholders—not permanent “dog blog” templates in core logic.
 
-When adding engine behavior, ask: *“Does this work for the next arbitrary prompt?”* If not, lift it to a site kind or layout grammar instead.
+When adding engine behavior, ask: _“Does this work for the next arbitrary prompt?”_ If not, lift it to a site kind or layout grammar instead.
 
 <!-- gitnexus:start -->
+
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ship-fast** (51940 symbols, 87052 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ship-fast** (54331 symbols, 91667 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -106,23 +112,23 @@ This project is indexed by GitNexus as **ship-fast** (51940 symbols, 87052 relat
 
 ## Resources
 
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/ship-fast/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/ship-fast/clusters` | All functional areas |
-| `gitnexus://repo/ship-fast/processes` | All execution flows |
-| `gitnexus://repo/ship-fast/process/{name}` | Step-by-step execution trace |
+| Resource                                   | Use for                                  |
+| ------------------------------------------ | ---------------------------------------- |
+| `gitnexus://repo/ship-fast/context`        | Codebase overview, check index freshness |
+| `gitnexus://repo/ship-fast/clusters`       | All functional areas                     |
+| `gitnexus://repo/ship-fast/processes`      | All execution flows                      |
+| `gitnexus://repo/ship-fast/process/{name}` | Step-by-step execution trace             |
 
 ## CLI
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Task                                         | Read this skill file                                        |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md`       |
+| Blast radius / "What breaks if I change X?"  | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?"             | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md`       |
+| Rename / extract / split / refactor          | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md`     |
+| Tools, resources, schema reference           | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md`           |
+| Index, status, clean, wiki CLI commands      | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md`             |
 
 <!-- gitnexus:end -->
 
@@ -139,11 +145,13 @@ Before working on any task, read `codemap.md` to understand:
 For deep work on a specific folder, also read that folder's `codemap.md`.
 
 <!-- MACP-MCP:START -->
+
 ## MACP Coordination
 
 MACP is active for this project. The shared project id is `ship-fast`. The MCP server auto-registers this session on startup and auto-joins the default channel `ship-fast`.
 
 Normal workflow:
+
 - do not run SQL directly
 - do not manually attach another MACP server inside the agent loop
 - call `macp_poll` regularly to stay aware of peer work
@@ -152,6 +160,7 @@ Normal workflow:
 - use `macp_ext_claim_files`, shared memory, tasks, goals, and vault tools when this project requires them
 
 If this project uses shared memory, tasks, goals, or the vault, follow the local instructions in this file and use those tools as part of normal work.
+
 <!-- MACP-MCP:END -->
 
 ## Agent-browser

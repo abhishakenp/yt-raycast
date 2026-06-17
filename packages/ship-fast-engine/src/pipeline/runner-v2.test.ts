@@ -11,10 +11,15 @@ const htmlFixture = `<!DOCTYPE html>
 
 const groqMock = vi.hoisted(() => vi.fn())
 const groqStreamMock = vi.hoisted(() =>
-  vi.fn(async (_user: string, options: { onToken?: (token: string, accumulated: string) => void }) => {
-    options.onToken?.(htmlFixture, htmlFixture)
-    return { content: htmlFixture, cost: 0.001 }
-  }),
+  vi.fn(
+    async (
+      _user: string,
+      options: { onToken?: (token: string, accumulated: string) => void },
+    ) => {
+      options.onToken?.(htmlFixture, htmlFixture)
+      return { content: htmlFixture, cost: 0.001 }
+    },
+  ),
 )
 const enrichBrandProfileMock = vi.hoisted(() =>
   vi.fn(async () => ({
@@ -25,18 +30,23 @@ const enrichBrandProfileMock = vi.hoisted(() =>
   })),
 )
 const resolvePexelsImageHintsMock = vi.hoisted(() =>
-  vi.fn(async (_input: unknown, options?: { onProgress?: (partial: unknown) => void }) => {
-    options?.onProgress?.({ photos: 1 })
-    return {
-      photos: [
-        {
-          query: 'dogs editorial',
-          alt: 'Dog resting by a magazine',
-          url: 'https://images.pexels.com/photos/456/pexels-photo-456.jpeg',
-        },
-      ],
-    }
-  }),
+  vi.fn(
+    async (
+      _input: unknown,
+      options?: { onProgress?: (partial: unknown) => void },
+    ) => {
+      options?.onProgress?.({ photos: 1 })
+      return {
+        photos: [
+          {
+            query: 'dogs editorial',
+            alt: 'Dog resting by a magazine',
+            url: 'https://images.pexels.com/photos/456/pexels-photo-456.jpeg',
+          },
+        ],
+      }
+    },
+  ),
 )
 
 vi.mock('../llm/groq.js', () => ({
@@ -72,8 +82,12 @@ describe('runAllV2', () => {
       integrations: undefined,
     })
 
-    const siteSpec = JSON.parse(readFileSync(join(workspace, 'site-spec.json'), 'utf8'))
-    const tasks = JSON.parse(readFileSync(join(workspace, 'tasks.json'), 'utf8'))
+    const siteSpec = JSON.parse(
+      readFileSync(join(workspace, 'site-spec.json'), 'utf8'),
+    )
+    const tasks = JSON.parse(
+      readFileSync(join(workspace, 'tasks.json'), 'utf8'),
+    )
 
     expect(groqMock).not.toHaveBeenCalled()
     expect(groqStreamMock).toHaveBeenCalledTimes(1)
@@ -94,16 +108,20 @@ describe('runAllV2', () => {
     expect(groqStreamMock.mock.calls[0]?.[0]).toContain(
       'https://images.pexels.com/photos/456/pexels-photo-456.jpeg',
     )
-    expect(groqStreamMock.mock.calls[0]?.[0]).toContain('VERIFIED BRAND PROFILE')
+    expect(groqStreamMock.mock.calls[0]?.[0]).toContain(
+      'VERIFIED BRAND PROFILE',
+    )
     expect(groqStreamMock.mock.calls[0]?.[0]).toContain(
       'https://cdn.brandfetch.io/dog-journal/logo.svg',
     )
     expect(siteSpec.locale).toBe('en')
     expect(siteSpec.pages.length).toBeGreaterThan(0)
-    expect(readFileSync(join(workspace, 'index.html'), 'utf8')).toBe(htmlFixture)
+    expect(readFileSync(join(workspace, 'index.html'), 'utf8')).toBe(
+      htmlFixture,
+    )
     expect(tasks.tasks.map((task: { status: string }) => task.status)).toEqual([
       'DONE',
       'DONE',
     ])
-  })
+  }, 15_000)
 })

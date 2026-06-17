@@ -6,6 +6,11 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
+const requireEventStream = <T>(stream: T | null): T => {
+  if (stream === null) throw new Error('Expected event stream')
+  return stream
+}
+
 const persistGeneratedPreview = (
   t: ReturnType<typeof convexTest>,
   sessionId: Id<'sessions'>,
@@ -27,7 +32,7 @@ const persistGeneratedPreview = (
 test('getGenerationView accepts lookup-only session ids', async () => {
   const t = convexTest(schema, modules)
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Build a concise product site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -36,7 +41,7 @@ test('getGenerationView accepts lookup-only session ids', async () => {
     anonymousClientId: 'anon-generation-view',
   })
 
-  const view = await t.runQuery(api.sessions.getGenerationView, {
+  const view = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
 
@@ -61,7 +66,7 @@ test('create fails fast when model configuration is missing', async () => {
   try {
     const t = convexTest(schema, modules)
 
-    const { sessionId } = await t.runMutation(api.sessions.create, {
+    const { sessionId } = await t.mutation(api.sessions.create, {
       prompt: 'Build a fast failure site',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
@@ -70,12 +75,14 @@ test('create fails fast when model configuration is missing', async () => {
       anonymousClientId: 'anon-missing-model-config',
     })
 
-    const session = await t.runQuery(api.sessions.getSessionApiResponse, {
+    const session = await t.query(api.sessions.getSessionApiResponse, {
       lookup: sessionId,
     })
-    const stream = await t.runQuery(api.sessions.getEventStream, {
-      lookup: sessionId,
-    })
+    const stream = requireEventStream(
+      await t.query(api.sessions.getEventStream, {
+        lookup: sessionId,
+      }),
+    )
 
     expect(session?.status).toBe('failed')
     expect(session?.tasks[0]?.status).toBe('failed')
@@ -92,7 +99,8 @@ test('create fails fast when model configuration is missing', async () => {
     else process.env.GOOGLE_API_KEY = previousGoogle
     if (previousHomepageModel === undefined) delete process.env.HOMEPAGE_MODEL
     else process.env.HOMEPAGE_MODEL = previousHomepageModel
-    if (previousOpenUiHomeModel === undefined) delete process.env.OPENUI_HOME_MODEL
+    if (previousOpenUiHomeModel === undefined)
+      delete process.env.OPENUI_HOME_MODEL
     else process.env.OPENUI_HOME_MODEL = previousOpenUiHomeModel
     if (previousGroqModel === undefined) delete process.env.GROQ_MODEL
     else process.env.GROQ_MODEL = previousGroqModel
@@ -103,7 +111,7 @@ test('public prompt cache is scoped by preferred language', async () => {
   const t = convexTest(schema, modules)
   const prompt = 'Build a bakery homepage with catering menus'
 
-  const english = await t.runMutation(api.sessions.create, {
+  const english = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -113,7 +121,7 @@ test('public prompt cache is scoped by preferred language', async () => {
 
   await persistGeneratedPreview(t, english.sessionId, prompt)
 
-  const hindi = await t.runMutation(api.sessions.create, {
+  const hindi = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'hi',
     preferredExportTarget: 'html',
@@ -121,7 +129,7 @@ test('public prompt cache is scoped by preferred language', async () => {
     workspace: 'workspace_language_cache_hi',
   })
 
-  const englishAgain = await t.runMutation(api.sessions.create, {
+  const englishAgain = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -141,7 +149,7 @@ test('public prompt cache can replay a ready session without creating an owned c
   const t = convexTest(schema, modules)
   const prompt = 'Build a replayable public prompt site'
 
-  const ready = await t.runMutation(api.sessions.create, {
+  const ready = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -150,7 +158,7 @@ test('public prompt cache can replay a ready session without creating an owned c
   })
   await persistGeneratedPreview(t, ready.sessionId, prompt)
 
-  const replay = await t.runMutation(api.sessions.create, {
+  const replay = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -167,14 +175,17 @@ test('public prompt cache can replay a ready session without creating an owned c
     reused: true,
   })
 
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: ready.sessionId,
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: ready.sessionId,
+    }),
+  )
+  expect(
+    stream.events.find((event) => event.eventType === 'cache_hit'),
+  ).toMatchObject({
+    cacheHit: true,
+    provider: 'prompt-cache',
   })
-  expect(stream.events.find((event) => event.eventType === 'cache_hit'))
-    .toMatchObject({
-      cacheHit: true,
-      provider: 'prompt-cache',
-    })
 })
 
 test('workspace idempotency returns the same queued session for a retried create', async () => {
@@ -189,15 +200,15 @@ test('workspace idempotency returns the same queued session for a retried create
     anonymousOwnerSecret: 'owner-retry-idempotent',
   }
 
-  const first = await t.runMutation(api.sessions.create, request)
-  const second = await t.runMutation(api.sessions.create, request)
+  const first = await t.mutation(api.sessions.create, request)
+  const second = await t.mutation(api.sessions.create, request)
 
   expect(second).toMatchObject({
     sessionId: first.sessionId,
     idempotent: true,
   })
 
-  const view = await t.runQuery(api.sessions.getGenerationView, {
+  const view = await t.query(api.sessions.getGenerationView, {
     lookup: first.sessionId,
   })
 
@@ -207,7 +218,7 @@ test('workspace idempotency returns the same queued session for a retried create
 test('workspace idempotency rejects conflicting reuse of a workspace key', async () => {
   const t = convexTest(schema, modules)
 
-  await t.runMutation(api.sessions.create, {
+  await t.mutation(api.sessions.create, {
     prompt: 'Build the original workspace site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -218,7 +229,7 @@ test('workspace idempotency rejects conflicting reuse of a workspace key', async
   })
 
   await expect(
-    t.runMutation(api.sessions.create, {
+    t.mutation(api.sessions.create, {
       prompt: 'Build a different workspace site',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
@@ -234,7 +245,7 @@ test('v2 generation does not reuse a default-engine prompt cache entry', async (
   const t = convexTest(schema, modules)
   const prompt = 'Build a v2 isolated cache prompt site'
 
-  const defaultEngine = await t.runMutation(api.sessions.create, {
+  const defaultEngine = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -243,7 +254,7 @@ test('v2 generation does not reuse a default-engine prompt cache entry', async (
   })
   await persistGeneratedPreview(t, defaultEngine.sessionId, prompt)
 
-  const v2 = await t.runMutation(api.sessions.create, {
+  const v2 = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -261,7 +272,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   const t = convexTest(schema, modules)
   const prompt = 'Build a durable cached prompt site'
 
-  const ready = await t.runMutation(api.sessions.create, {
+  const ready = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -270,7 +281,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   })
   await persistGeneratedPreview(t, ready.sessionId, prompt)
 
-  const incomplete = await t.runMutation(api.sessions.create, {
+  const incomplete = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -282,7 +293,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
   expect(incomplete.cached).not.toBe(true)
   expect(incomplete.sessionId).not.toBe(ready.sessionId)
 
-  const cachedAgain = await t.runMutation(api.sessions.create, {
+  const cachedAgain = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -299,7 +310,7 @@ test('public prompt cache skips newer incomplete duplicate sessions', async () =
 test('inline preview edits and history restore keep dashboard source artifacts aligned', async () => {
   const t = convexTest(schema, modules)
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Dashboard artifact alignment site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -309,9 +320,13 @@ test('inline preview edits and history restore keep dashboard source artifacts a
     anonymousOwnerSecret: 'owner-secret',
   })
 
-  await persistGeneratedPreview(t, sessionId, 'Dashboard artifact alignment site')
+  await persistGeneratedPreview(
+    t,
+    sessionId,
+    'Dashboard artifact alignment site',
+  )
 
-  await t.runMutation(api.sessions.createEdit, {
+  await t.mutation(api.sessions.createEdit, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     editType: 'text',
@@ -320,10 +335,10 @@ test('inline preview edits and history restore keep dashboard source artifacts a
     afterText: 'Edited dashboard artifact headline',
   })
 
-  const editedView = await t.runQuery(api.sessions.getGenerationView, {
+  const editedView = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
-  const editedPreview = await t.runQuery(api.sessions.getPublicPreview, {
+  const editedPreview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
 
@@ -336,16 +351,16 @@ test('inline preview edits and history restore keep dashboard source artifacts a
     'Edited dashboard artifact headline',
   )
 
-  await t.runMutation(api.sessions.restorePreviewVersion, {
+  await t.mutation(api.sessions.restorePreviewVersion, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     version: 1,
   })
 
-  const restoredView = await t.runQuery(api.sessions.getGenerationView, {
+  const restoredView = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
-  const restoredPreview = await t.runQuery(api.sessions.getPublicPreview, {
+  const restoredPreview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
 
@@ -371,7 +386,7 @@ test('inline preview edits and history restore keep dashboard source artifacts a
 test('inline preview edits update dashboard artifacts when rendered text normalizes whitespace', async () => {
   const t = convexTest(schema, modules)
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Build a rental homepage',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -393,7 +408,7 @@ test('inline preview edits update dashboard artifacts when rendered text normali
   })
 
   await expect(
-    t.runMutation(api.sessions.createEdit, {
+    t.mutation(api.sessions.createEdit, {
       sessionId,
       anonymousOwnerSecret: 'owner-secret',
       editType: 'text',
@@ -403,10 +418,10 @@ test('inline preview edits update dashboard artifacts when rendered text normali
     }),
   ).resolves.toMatchObject({ saved: true, previewVersion: 2 })
 
-  const editedView = await t.runQuery(api.sessions.getGenerationView, {
+  const editedView = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
-  const editedPreview = await t.runQuery(api.sessions.getPublicPreview, {
+  const editedPreview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
 
@@ -420,7 +435,7 @@ test('inline preview edits update dashboard artifacts when rendered text normali
 test('inline preview edits reject missing text without creating edit history', async () => {
   const t = convexTest(schema, modules)
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Build a simple homepage',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -433,7 +448,7 @@ test('inline preview edits reject missing text without creating edit history', a
   await persistGeneratedPreview(t, sessionId, 'Build a simple homepage')
 
   await expect(
-    t.runMutation(api.sessions.createEdit, {
+    t.mutation(api.sessions.createEdit, {
       sessionId,
       anonymousOwnerSecret: 'owner-secret',
       editType: 'text',
@@ -443,10 +458,10 @@ test('inline preview edits reject missing text without creating edit history', a
     }),
   ).rejects.toThrow()
 
-  const view = await t.runQuery(api.sessions.getGenerationView, {
+  const view = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
-  const edits = await t.runQuery(api.sessions.listEdits, { sessionId })
+  const edits = await t.query(api.sessions.listEdits, { sessionId })
 
   expect(view?.session.previewVersion).toBe(1)
   expect(edits).toHaveLength(0)
@@ -455,7 +470,7 @@ test('inline preview edits reject missing text without creating edit history', a
 test('late generation jobs cannot clobber an existing preview', async () => {
   const t = convexTest(schema, modules)
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Already ready generated site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -468,20 +483,20 @@ test('late generation jobs cannot clobber an existing preview', async () => {
   await persistGeneratedPreview(t, sessionId, 'Already ready generated site')
 
   await expect(
-    t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
+    t.mutation(internal.sessions.markGenerationStarted, { sessionId }),
   ).resolves.toMatchObject({
     started: false,
     reason: 'preview_already_exists',
   })
 
-  await t.runMutation(internal.sessions.addGenerationEvent, {
+  await t.mutation(internal.sessions.addGenerationEvent, {
     sessionId,
     eventType: 'status',
     message: 'Late generation status',
   })
 
   await expect(
-    t.runMutation(internal.sessions.failGeneration, {
+    t.mutation(internal.sessions.failGeneration, {
       sessionId,
       anonymousOwnerSecret: 'owner-secret',
       message: 'Late provider failure',
@@ -513,10 +528,10 @@ test('late generation jobs cannot clobber an existing preview', async () => {
     reason: 'preview_already_exists',
   })
 
-  const preview = await t.runQuery(api.sessions.getPublicPreview, {
+  const preview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
-  const view = await t.runQuery(api.sessions.getGenerationView, {
+  const view = await t.query(api.sessions.getGenerationView, {
     lookup: sessionId,
   })
 
@@ -536,7 +551,7 @@ test('duplicate generation actions cannot start the same queued session twice', 
   const t = convexTest(schema, modules)
 
   try {
-    const { sessionId } = await t.runMutation(api.sessions.create, {
+    const { sessionId } = await t.mutation(api.sessions.create, {
       prompt: 'Duplicate generation action guard',
       preferredLanguage: 'en',
       preferredExportTarget: 'html',
@@ -547,17 +562,17 @@ test('duplicate generation actions cannot start the same queued session twice', 
     })
 
     await expect(
-      t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
+      t.mutation(internal.sessions.markGenerationStarted, { sessionId }),
     ).resolves.toMatchObject({ started: true })
 
     await expect(
-      t.runMutation(internal.sessions.markGenerationStarted, { sessionId }),
+      t.mutation(internal.sessions.markGenerationStarted, { sessionId }),
     ).resolves.toMatchObject({
       started: false,
       reason: 'generation_already_started',
     })
 
-    const view = await t.runQuery(api.sessions.getGenerationView, {
+    const view = await t.query(api.sessions.getGenerationView, {
       lookup: sessionId,
     })
     const startedEvents = view?.events.filter(

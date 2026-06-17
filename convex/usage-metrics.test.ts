@@ -5,8 +5,16 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
-const createTestSession = (t: ReturnType<typeof convexTest>, prompt = 'Test site') =>
-  t.runMutation(api.sessions.create, {
+const requireEventStream = <T>(stream: T | null): T => {
+  if (stream === null) throw new Error('Expected event stream')
+  return stream
+}
+
+const createTestSession = (
+  t: ReturnType<typeof convexTest>,
+  prompt = 'Test site',
+) =>
+  t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -24,7 +32,7 @@ test('recordUsageMetric stores metric data', async () => {
 
   const { sessionId } = await createTestSession(t)
 
-  const result = await t.runMutation(internal.sessions.recordUsageMetric, {
+  const result = await t.mutation(internal.sessions.recordUsageMetric, {
     sessionId,
     eventType: 'generation',
     elapsedMs: 5000,
@@ -41,7 +49,7 @@ test('getUsageMetrics aggregates session metrics', async () => {
 
   const { sessionId } = await createTestSession(t)
 
-  await t.runMutation(internal.sessions.recordUsageMetric, {
+  await t.mutation(internal.sessions.recordUsageMetric, {
     sessionId,
     eventType: 'generation',
     elapsedMs: 5000,
@@ -50,7 +58,7 @@ test('getUsageMetrics aggregates session metrics', async () => {
     userId: 'user-123',
   })
 
-  await t.runMutation(internal.sessions.recordUsageMetric, {
+  await t.mutation(internal.sessions.recordUsageMetric, {
     sessionId,
     eventType: 'generation',
     elapsedMs: 3000,
@@ -59,7 +67,7 @@ test('getUsageMetrics aggregates session metrics', async () => {
     userId: 'user-123',
   })
 
-  const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
+  const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })
 
   expect(metrics.totalCost).toBe(0.08)
   expect(metrics.totalElapsedMs).toBe(8000)
@@ -73,7 +81,7 @@ test('getUserUsageMetrics filters by time', async () => {
 
   const now = Date.now()
 
-  await t.runMutation(internal.sessions.recordUsageMetric, {
+  await t.mutation(internal.sessions.recordUsageMetric, {
     sessionId,
     eventType: 'generation',
     elapsedMs: 5000,
@@ -82,7 +90,7 @@ test('getUserUsageMetrics filters by time', async () => {
     userId: 'user-123',
   })
 
-  const metrics = await t.runQuery(api.sessions.getUserUsageMetrics, {
+  const metrics = await t.query(api.sessions.getUserUsageMetrics, {
     userId: 'user-123',
     since: now - 10000,
   })
@@ -95,7 +103,7 @@ test('recordOperationalEvent stores completed generation metrics and observable 
 
   const { sessionId } = await createTestSession(t)
 
-  const result = await t.runMutation(internal.sessions.recordOperationalEvent, {
+  const result = await t.mutation(internal.sessions.recordOperationalEvent, {
     sessionId,
     eventType: 'run_completed',
     message: 'Generation completed',
@@ -106,10 +114,12 @@ test('recordOperationalEvent stores completed generation metrics and observable 
     userId: 'user-123',
   })
 
-  const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-  })
+  const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+    }),
+  )
 
   expect(result).toEqual({
     recorded: true,
@@ -140,14 +150,13 @@ test('completeGeneration records runtime usage metrics and a replayable completi
     elapsed: 4321,
   })
 
-  const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-  })
-  const session = await t.runQuery(api.sessions.getSessionApiResponse, {
-    lookup: sessionId,
-  })
-  const generationView = await t.runQuery(api.sessions.getGenerationView, {
+  const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+    }),
+  )
+  const session = await t.query(api.sessions.getSessionApiResponse, {
     lookup: sessionId,
   })
 
@@ -161,13 +170,14 @@ test('completeGeneration records runtime usage metrics and a replayable completi
   expect(stream.events.map((event) => event.eventType)).toContain(
     'run_completed',
   )
-  expect(stream.events.find((event) => event.eventType === 'run_completed'))
-    .toMatchObject({
-      elapsedMs: 4321,
-      cost: 0,
-      provider: 'ship-fast-engine',
-      cacheHit: false,
-    })
+  expect(
+    stream.events.find((event) => event.eventType === 'run_completed'),
+  ).toMatchObject({
+    elapsedMs: 4321,
+    cost: 0,
+    provider: 'ship-fast-engine',
+    cacheHit: false,
+  })
   expect(session?.elapsed).toBe(4321)
   expect(session?.cost).toBe(0)
 })
@@ -176,7 +186,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
   const t = convexTest(schema, modules)
   const prompt = 'Reusable public cache prompt'
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -191,7 +201,7 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
     elapsed: 1000,
   })
 
-  const cached = await t.runMutation(api.sessions.create, {
+  const cached = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -199,11 +209,15 @@ test('duplicate public prompt cache hits record replayable alert metadata', asyn
     workspace: 'workspace_cache_second',
   })
 
-  const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-  })
-  const cacheHit = stream.events.find((event) => event.eventType === 'cache_hit')
+  const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+    }),
+  )
+  const cacheHit = stream.events.find(
+    (event) => event.eventType === 'cache_hit',
+  )
 
   expect(cached).toMatchObject({ sessionId, cached: true })
   expect(cacheHit).toMatchObject({
@@ -220,23 +234,25 @@ test('recordOperationalEvent makes failure and quota-limit events replayable wit
 
   const { sessionId } = await createTestSession(t)
 
-  const failure = await t.runMutation(internal.sessions.recordOperationalEvent, {
+  const failure = await t.mutation(internal.sessions.recordOperationalEvent, {
     sessionId,
     eventType: 'generation_failed',
     message: 'Generation failed',
     error: 'provider_timeout',
   })
-  const quota = await t.runMutation(internal.sessions.recordOperationalEvent, {
+  const quota = await t.mutation(internal.sessions.recordOperationalEvent, {
     sessionId,
     eventType: 'quota_limited',
     message: 'Anonymous daily quota exceeded',
     quotaHit: true,
   })
 
-  const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
-  const stream = await t.runQuery(api.sessions.getEventStream, {
-    lookup: sessionId,
-  })
+  const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })
+  const stream = requireEventStream(
+    await t.query(api.sessions.getEventStream, {
+      lookup: sessionId,
+    }),
+  )
 
   expect(failure).toMatchObject({ usageRecorded: false, alertable: true })
   expect(quota).toMatchObject({ usageRecorded: false, alertable: true })
@@ -247,8 +263,9 @@ test('recordOperationalEvent makes failure and quota-limit events replayable wit
   expect(stream.events.map((event) => event.eventType)).toContain(
     'quota_limited',
   )
-  expect(stream.events.find((event) => event.eventType === 'quota_limited'))
-    .toMatchObject({ quotaHit: true })
+  expect(
+    stream.events.find((event) => event.eventType === 'quota_limited'),
+  ).toMatchObject({ quotaHit: true })
 })
 
 test('failGeneration records a structured replayable failure event', async () => {
@@ -259,17 +276,19 @@ test('failGeneration records a structured replayable failure event', async () =>
   try {
     const { sessionId } = await createTestSession(t)
 
-    await t.runMutation(internal.sessions.failGeneration, {
+    await t.mutation(internal.sessions.failGeneration, {
       sessionId,
       message: 'provider_timeout',
       elapsed: 321,
     })
 
-    const metrics = await t.runQuery(api.sessions.getUsageMetrics, { sessionId })
-    const stream = await t.runQuery(api.sessions.getEventStream, {
-      lookup: sessionId,
-    })
-    const session = await t.runQuery(api.sessions.getSessionApiResponse, {
+    const metrics = await t.query(api.sessions.getUsageMetrics, { sessionId })
+    const stream = requireEventStream(
+      await t.query(api.sessions.getEventStream, {
+        lookup: sessionId,
+      }),
+    )
+    const session = await t.query(api.sessions.getSessionApiResponse, {
       lookup: sessionId,
     })
 
@@ -277,12 +296,13 @@ test('failGeneration records a structured replayable failure event', async () =>
     expect(stream.events.map((event) => event.eventType)).toContain(
       'generation_failed',
     )
-    expect(stream.events.find((event) => event.eventType === 'generation_failed'))
-      .toMatchObject({
-        message: 'provider_timeout',
-        error: 'provider_timeout',
-        elapsedMs: 321,
-      })
+    expect(
+      stream.events.find((event) => event.eventType === 'generation_failed'),
+    ).toMatchObject({
+      message: 'provider_timeout',
+      error: 'provider_timeout',
+      elapsedMs: 321,
+    })
     expect(session?.status).toBe('failed')
     expect(session?.elapsed).toBe(321)
   } finally {
@@ -297,24 +317,24 @@ test('notification adapters skip without credentials and send only when explicit
   vi.stubGlobal('fetch', fetchMock)
 
   await expect(
-    t.runAction(internal.sessions.sendSlackNotification, {
+    t.action(internal.sessions.sendSlackNotification, {
       message: 'Quota limit reached',
     }),
   ).resolves.toEqual({ sent: false, reason: 'no_webhook_url' })
   await expect(
-    t.runAction(internal.sessions.sendTelegramNotification, {
+    t.action(internal.sessions.sendTelegramNotification, {
       message: 'Quota limit reached',
     }),
   ).resolves.toEqual({ sent: false, reason: 'missing_credentials' })
 
   await expect(
-    t.runAction(internal.sessions.sendSlackNotification, {
+    t.action(internal.sessions.sendSlackNotification, {
       message: 'Quota limit reached',
       webhookUrl: 'https://hooks.slack.test/services/ship-fast',
     }),
   ).resolves.toEqual({ sent: true })
   await expect(
-    t.runAction(internal.sessions.sendTelegramNotification, {
+    t.action(internal.sessions.sendTelegramNotification, {
       message: 'Quota limit reached',
       botToken: 'telegram-token',
       chatId: 'chat-123',
@@ -322,10 +342,14 @@ test('notification adapters skip without credentials and send only when explicit
   ).resolves.toEqual({ sent: true })
 
   expect(fetchMock).toHaveBeenCalledTimes(2)
-  expect(fetchMock.mock.calls[0][0]).toBe(
-    'https://hooks.slack.test/services/ship-fast',
-  )
-  expect(String(fetchMock.mock.calls[1][0])).toContain(
+  const fetchCalls = fetchMock.mock.calls as unknown as Array<
+    [input: RequestInfo | URL, init?: RequestInit]
+  >
+  const slackCall = fetchCalls.at(0)
+  const telegramCall = fetchCalls.at(1)
+
+  expect(slackCall?.[0]).toBe('https://hooks.slack.test/services/ship-fast')
+  expect(String(telegramCall?.[0])).toContain(
     'https://api.telegram.org/bottelegram-token/sendMessage',
   )
 })

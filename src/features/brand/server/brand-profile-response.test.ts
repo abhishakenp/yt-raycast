@@ -7,7 +7,10 @@ import { createBrandProfileResponse } from './brand-profile-response'
 describe('createBrandProfileResponse', () => {
   it('keeps Brandfetch engine code behind the default resolver path', () => {
     const source = readFileSync(
-      join(process.cwd(), 'src/features/brand/server/brand-profile-response.ts'),
+      join(
+        process.cwd(),
+        'src/features/brand/server/brand-profile-response.ts',
+      ),
       'utf8',
     )
     const imports = source.slice(0, source.indexOf('type BrandProfileResult'))
@@ -81,7 +84,9 @@ describe('createBrandProfileResponse', () => {
 
   it('passes through Brandfetch search fallback warnings', async () => {
     const response = await createBrandProfileResponse(
-      new Request('https://ship-fast.test/api/brand-profile?domain=https://linear.app/customers'),
+      new Request(
+        'https://ship-fast.test/api/brand-profile?domain=https://linear.app/customers',
+      ),
       async () => ({
         ok: true,
         match: {
@@ -153,10 +158,13 @@ describe('createBrandProfileResponse', () => {
     }) as typeof fetch
 
     try {
-      const { resolveBrandfetchBrandProfile } = await import(
-        '@ship-fast/engine/brandfetch.js'
-      )
-      const result = await resolveBrandfetchBrandProfile({
+      const { resolveBrandfetchBrandProfile } =
+        await import('@ship-fast/engine/brandfetch.js')
+      const resolveProfile = resolveBrandfetchBrandProfile as (input: {
+        query: string
+        timeoutMs?: number
+      }) => Promise<unknown>
+      const result = await resolveProfile({
         query: 'linear.app',
         timeoutMs: 1000,
       })
@@ -175,9 +183,9 @@ describe('createBrandProfileResponse', () => {
           status: 403,
         },
       })
-      expect(fetchCalls.some((url) => url.includes('/v2/search/linear.app'))).toBe(
-        true,
-      )
+      expect(
+        fetchCalls.some((url) => url.includes('/v2/search/linear.app')),
+      ).toBe(true)
       expect(
         fetchCalls.some((url) => url.includes('/v2/brands/domain/linear.app')),
       ).toBe(true)

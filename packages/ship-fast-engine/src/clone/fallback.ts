@@ -1,6 +1,9 @@
-import { pickBlock, type BlockMeta } from "../../../ship-fast-blocks/src/registry/taxonomy.ts"
-import type { SectionKind, ClonedSection, ExtractedTokens } from "./types.ts"
-import { parseHTML } from "linkedom"
+import {
+  pickBlock,
+  type BlockMeta,
+} from '../../../ship-fast-blocks/src/registry/taxonomy.ts'
+import type { SectionKind, ClonedSection, ExtractedTokens } from './types.ts'
+import { parseHTML } from 'linkedom'
 
 // Nearest native block by taxonomy tags for failed sections. Whatever we emit
 // here MUST satisfy the clone CONTRACT: a section program defines exactly one
@@ -11,27 +14,27 @@ import { parseHTML } from "linkedom"
 
 // Map section kinds to taxonomy tags for matching
 const SECTION_KIND_TO_TAGS: Record<SectionKind, string[]> = {
-  nav: ["nav", "navigation", "header"],
-  hero: ["home", "landing", "hero"],
-  features: ["features", "saas", "product"],
-  pricing: ["pricing", "plans", "subscription"],
-  testimonials: ["testimonials", "reviews", "social-proof"],
-  cta: ["cta", "call-to-action", "marketing"],
-  footer: ["footer"],
-  content: ["content", "blog", "article"],
-  sidebar: ["sidebar", "docs"],
-  header: ["header", "nav"],
-  about: ["about", "company"],
-  contact: ["contact", "support"],
-  blog: ["blog", "articles", "index"],
-  gallery: ["gallery", "portfolio"],
-  unknown: ["home", "landing"],
+  nav: ['nav', 'navigation', 'header'],
+  hero: ['home', 'landing', 'hero'],
+  features: ['features', 'saas', 'product'],
+  pricing: ['pricing', 'plans', 'subscription'],
+  testimonials: ['testimonials', 'reviews', 'social-proof'],
+  cta: ['cta', 'call-to-action', 'marketing'],
+  footer: ['footer'],
+  content: ['content', 'blog', 'article'],
+  sidebar: ['sidebar', 'docs'],
+  header: ['header', 'nav'],
+  about: ['about', 'company'],
+  contact: ['contact', 'support'],
+  blog: ['blog', 'articles', 'index'],
+  gallery: ['gallery', 'portfolio'],
+  unknown: ['home', 'landing'],
 }
 
 // Deterministic per-(kind,index) RNG so a given failed section always falls
 // back to the same block. pickBlock expects rng() -> float in [0, 1).
 function makeRng(seed: number): () => number {
-  let s = (seed % 2147483647) || 1
+  let s = seed % 2147483647 || 1
   return () => {
     s = (s * 16807) % 2147483647
     return (s - 1) / 2147483646
@@ -62,54 +65,78 @@ export function findFallbackBlock(sectionKind: SectionKind, index = 0): string {
 
   // Per-kind defaults used when no taxonomy entry matches.
   const defaults: Record<SectionKind, string> = {
-    nav: "SaasKimiPage",
-    hero: "MarketingKimiPage",
-    features: "SaasKimiPage",
-    pricing: "PricingKimiPage",
-    testimonials: "SaasKimiPage",
-    cta: "MarketingKimiPage",
-    footer: "SaasKimiPage",
-    content: "BlogKimiPage",
-    sidebar: "DocsKimiPage",
-    header: "SaasKimiPage",
-    about: "AboutKimiPage",
-    contact: "ContactKimiPage",
-    blog: "BlogKimiPage",
-    gallery: "PortfolioKimiPage",
-    unknown: "MarketingKimiPage",
+    nav: 'SaasKimiPage',
+    hero: 'MarketingKimiPage',
+    features: 'SaasKimiPage',
+    pricing: 'PricingKimiPage',
+    testimonials: 'SaasKimiPage',
+    cta: 'MarketingKimiPage',
+    footer: 'SaasKimiPage',
+    content: 'BlogKimiPage',
+    sidebar: 'DocsKimiPage',
+    header: 'SaasKimiPage',
+    about: 'AboutKimiPage',
+    contact: 'ContactKimiPage',
+    blog: 'BlogKimiPage',
+    gallery: 'PortfolioKimiPage',
+    unknown: 'MarketingKimiPage',
   }
 
-  return pickBlock(rng, matches, defaults[sectionKind] || "MarketingKimiPage")
+  return pickBlock(rng, matches, defaults[sectionKind] || 'MarketingKimiPage')
 }
 
 // Default heading/sub copy per section kind for the primitive composition.
-const KIND_COPY: Record<SectionKind, { heading: string; sub: string; cta?: string }> = {
-  nav: { heading: "Navigation", sub: "" },
-  hero: { heading: "Welcome", sub: "Build something great, faster.", cta: "Get Started" },
-  features: { heading: "Features", sub: "Everything you need in one place." },
-  pricing: { heading: "Pricing", sub: "Simple plans that scale with you.", cta: "Choose Plan" },
-  testimonials: { heading: "What people say", sub: "Trusted by teams everywhere." },
-  cta: { heading: "Ready to start?", sub: "Join us today.", cta: "Get Started" },
-  footer: { heading: "", sub: "© All rights reserved." },
-  content: { heading: "Overview", sub: "Read more about this." },
-  sidebar: { heading: "Sections", sub: "" },
-  header: { heading: "", sub: "" },
-  about: { heading: "About us", sub: "Our story and mission." },
-  contact: { heading: "Contact", sub: "Get in touch with the team.", cta: "Send Message" },
-  blog: { heading: "Latest posts", sub: "Insights and updates." },
-  gallery: { heading: "Gallery", sub: "A selection of our work." },
-  unknown: { heading: "Section", sub: "" },
+const KIND_COPY: Record<
+  SectionKind,
+  { heading: string; sub: string; cta?: string }
+> = {
+  nav: { heading: 'Navigation', sub: '' },
+  hero: {
+    heading: 'Welcome',
+    sub: 'Build something great, faster.',
+    cta: 'Get Started',
+  },
+  features: { heading: 'Features', sub: 'Everything you need in one place.' },
+  pricing: {
+    heading: 'Pricing',
+    sub: 'Simple plans that scale with you.',
+    cta: 'Choose Plan',
+  },
+  testimonials: {
+    heading: 'What people say',
+    sub: 'Trusted by teams everywhere.',
+  },
+  cta: {
+    heading: 'Ready to start?',
+    sub: 'Join us today.',
+    cta: 'Get Started',
+  },
+  footer: { heading: '', sub: '© All rights reserved.' },
+  content: { heading: 'Overview', sub: 'Read more about this.' },
+  sidebar: { heading: 'Sections', sub: '' },
+  header: { heading: '', sub: '' },
+  about: { heading: 'About us', sub: 'Our story and mission.' },
+  contact: {
+    heading: 'Contact',
+    sub: 'Get in touch with the team.',
+    cta: 'Send Message',
+  },
+  blog: { heading: 'Latest posts', sub: 'Insights and updates.' },
+  gallery: { heading: 'Gallery', sub: 'A selection of our work.' },
+  unknown: { heading: 'Section', sub: '' },
 }
 
 // Escape a string for embedding inside an OpenUI-Lang double-quoted literal.
 function lit(s: string): string {
-  return `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`
+  return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
 }
 
 // Collapse runs of whitespace and trim — DOM textContent is noisy with newlines
 // and indentation from the scraped markup.
 function clean(s: string | null | undefined): string {
-  return String(s || "").replace(/\s+/g, " ").trim()
+  return String(s || '')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 // One emittable content node extracted from the original section DOM. Order is
@@ -119,17 +146,17 @@ function clean(s: string | null | undefined): string {
 // itself an <a>) emits as ONE row, never as a left-aligned Text PLUS a separate
 // centered Button — the duplicate-entry / density-collapse degeneracy.
 export type ContentNode =
-  | { t: "heading"; text: string; level: string }
-  | { t: "text"; text: string }
-  | { t: "link"; text: string }
-  | { t: "row"; text: string; link: string }
+  | { t: 'heading'; text: string; level: string }
+  | { t: 'text'; text: string }
+  | { t: 'link'; text: string }
+  | { t: 'row'; text: string; link: string }
 
 // Strip a trailing URL token off a heading/text label so a heading that already
 // contains its own URL (e.g. "http://info.cern.ch — site") doesn't get a second
 // stray URL Text node emitted alongside it. Returns the URL found (or "").
 function leadingOrTrailingUrl(text: string): string {
   const m = text.match(/https?:\/\/[^\s]+/)
-  return m ? m[0] : ""
+  return m ? m[0] : ''
 }
 
 // Walk the section DOM and pull out the meaningful content in document order:
@@ -153,7 +180,7 @@ export function extractContentNodes(html: string): ContentNode[] {
   let root: Element | null = null
   try {
     const { document: doc } = parseHTML(`<div id="__clone_root">${html}</div>`)
-    root = doc.getElementById("__clone_root")
+    root = doc.getElementById('__clone_root')
   } catch {
     return nodes
   }
@@ -204,7 +231,7 @@ export function extractContentNodes(html: string): ContentNode[] {
     let changed = false
     for (let i = nodes.length - 1; i >= 0; i--) {
       const n = nodes[i]
-      const prim = n.t === "row" ? `${n.text} ${n.link}` : n.text
+      const prim = n.t === 'row' ? `${n.text} ${n.link}` : n.text
       const e = norm(prim)
       if (e.length < 4 || e === nt) continue
       if (nt.includes(e) && e.length >= nt.length * 0.5) {
@@ -221,13 +248,13 @@ export function extractContentNodes(html: string): ContentNode[] {
   const text = (el: Element): string => clean(el.textContent).slice(0, MAX_LEN)
 
   const push = (n: ContentNode): boolean => {
-    const primary = n.t === "row" ? `${n.text} ${n.link}` : n.text
+    const primary = n.t === 'row' ? `${n.text} ${n.link}` : n.text
     const exactKey = `${n.t}:${primary.toLowerCase()}`
     if (seenExact.has(exactKey)) return true
     seenExact.add(exactKey)
     nodes.push(n)
     emitted.push(norm(primary))
-    if (n.t === "row" && n.link) emitted.push(norm(n.link))
+    if (n.t === 'row' && n.link) emitted.push(norm(n.link))
     return nodes.length < MAX_NODES
   }
 
@@ -235,16 +262,18 @@ export function extractContentNodes(html: string): ContentNode[] {
   // the actionable label of the row. Returns its label when the row decomposes
   // into "lead text + one trailing link", else "".
   const rowLink = (el: Element): string => {
-    const anchors = Array.from(el.querySelectorAll("a")) as Element[]
-    if (anchors.length !== 1) return ""
+    const anchors = Array.from(el.querySelectorAll('a')) as Element[]
+    if (anchors.length !== 1) return ''
     const label = clean(anchors[0].textContent)
-    return label.length > 0 && label.length <= 120 ? label : ""
+    return label.length > 0 && label.length <= 120 ? label : ''
   }
 
   // Selector covers the content-bearing leaf elements we know how to map onto
   // primitives. Document order is preserved by querySelectorAll.
   const candidates = Array.from(
-    root.querySelectorAll("h1, h2, h3, h4, h5, h6, p, li, a, blockquote, figcaption"),
+    root.querySelectorAll(
+      'h1, h2, h3, h4, h5, h6, p, li, a, blockquote, figcaption',
+    ),
   ) as Element[]
 
   for (const el of candidates) {
@@ -261,17 +290,17 @@ export function extractContentNodes(html: string): ContentNode[] {
       // url/anchor that is a prefix of the full title), drop it so the full
       // heading text replaces it instead of the heading being truncated.
       subsumeShorter(t)
-      if (!push({ t: "heading", text: t, level: tag.slice(1) })) break
+      if (!push({ t: 'heading', text: t, level: tag.slice(1) })) break
       if (url) emitted.push(norm(url)) // suppress the bare-URL duplicate
       continue
     }
 
-    if (tag === "a") {
+    if (tag === 'a') {
       // Anchors that are wrappers around an already-emitted heading/paragraph/row
       // (or whose label is contained in one) are skipped — the content is present.
       if (t.length > 80) continue
       if (isContained(t)) continue
-      if (!push({ t: "link", text: t })) break
+      if (!push({ t: 'link', text: t })) break
       continue
     }
 
@@ -286,15 +315,17 @@ export function extractContentNodes(html: string): ContentNode[] {
       const lead = clean(t.slice(0, t.length))
       // If the whole row IS just the link, emit a single link, not a row.
       if (norm(lead) === norm(link)) {
-        if (!push({ t: "link", text: link })) break
+        if (!push({ t: 'link', text: link })) break
       } else {
-        const leadOnly = clean(t.replace(link, "")).replace(/[|•·\-–—]+$/g, "").trim()
-        if (!push({ t: "row", text: leadOnly || lead, link })) break
+        const leadOnly = clean(t.replace(link, ''))
+          .replace(/[|•·\-–—]+$/g, '')
+          .trim()
+        if (!push({ t: 'row', text: leadOnly || lead, link })) break
       }
       continue
     }
 
-    if (!push({ t: "text", text: t })) break
+    if (!push({ t: 'text', text: t })) break
   }
 
   return nodes
@@ -304,9 +335,9 @@ export function extractContentNodes(html: string): ContentNode[] {
 // alphanumerics, collapse whitespace. Lets us check whether an LLM program
 // reproduces a piece of scraped copy even if it re-quoted/re-cased it slightly.
 function normForMatch(s: string): string {
-  return String(s || "")
+  return String(s || '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/[^a-z0-9]+/g, ' ')
     .trim()
 }
 
@@ -317,7 +348,7 @@ export function expectedContentStrings(html: string): string[] {
   const out: string[] = []
   for (const n of extractContentNodes(html)) {
     out.push(normForMatch(n.text))
-    if (n.t === "row" && n.link) out.push(normForMatch(n.link))
+    if (n.t === 'row' && n.link) out.push(normForMatch(n.link))
   }
   return out.filter((s) => s.length >= 3)
 }
@@ -344,7 +375,7 @@ export function contentCoverage(program: string, html: string): number {
 // a Text line and a separate Button).
 function programLiterals(program: string): string[] {
   const out: string[] = []
-  for (const m of String(program || "").matchAll(/"((?:\\.|[^"\\])*)"/g)) {
+  for (const m of String(program || '').matchAll(/"((?:\\.|[^"\\])*)"/g)) {
     const v = normForMatch(m[1])
     if (v.length >= 3) out.push(v)
   }
@@ -365,8 +396,8 @@ export function duplicationRatio(program: string, html: string): number {
   let counted = 0
   for (const want of expected) {
     let n = 0
-    for (const lit of lits) {
-      if (lit === want || lit.includes(want)) n++
+    for (const literal of lits) {
+      if (literal === want || literal.includes(want)) n++
     }
     if (n > 0) {
       total += n
@@ -399,7 +430,8 @@ export function hallucinationRatio(program: string, html: string): number {
   // Source vocabulary = every word in every extracted content node + raw text.
   for (const n of extractContentNodes(html)) {
     for (const tok of contentTokens(n.text)) sourceVocab.add(tok)
-    if (n.t === "row" && n.link) for (const tok of contentTokens(n.link)) sourceVocab.add(tok)
+    if (n.t === 'row' && n.link)
+      for (const tok of contentTokens(n.link)) sourceVocab.add(tok)
   }
   // Also fold in the raw section text so prose not captured as a discrete node
   // (e.g. inline emphasis) still counts as grounding vocabulary.
@@ -421,12 +453,12 @@ export function hallucinationRatio(program: string, html: string): number {
 // Plain text of a section's HTML (whitespace-collapsed). Used to build the
 // source vocabulary for groundedness scoring without re-walking the DOM tree.
 function htmlToText(html: string): string {
-  if (!html || !html.trim()) return ""
+  if (!html || !html.trim()) return ''
   try {
     const { document: doc } = parseHTML(`<div id="__clone_txt">${html}</div>`)
-    return clean(doc.getElementById("__clone_txt")?.textContent)
+    return clean(doc.getElementById('__clone_txt')?.textContent)
   } catch {
-    return ""
+    return ''
   }
 }
 
@@ -441,16 +473,20 @@ function emitContentNodes(
   const childVars: string[] = []
   contentNodes.forEach((node, i) => {
     const v = `${sectionVar}_n${i}`
-    if (node.t === "heading") {
+    if (node.t === 'heading') {
       // Heading level enum only accepts "1".."4"; clamp h5/h6 down to "4".
       const n = parseInt(node.level, 10)
-      const level = Number.isFinite(n) ? String(Math.min(Math.max(n, 1), 4)) : "2"
-      lines.push(`${v} = Heading(${lit(node.text)}, ${lit(level)}, "text-foreground")`)
+      const level = Number.isFinite(n)
+        ? String(Math.min(Math.max(n, 1), 4))
+        : '2'
+      lines.push(
+        `${v} = Heading(${lit(node.text)}, ${lit(level)}, "text-foreground")`,
+      )
       childVars.push(v)
-    } else if (node.t === "link") {
+    } else if (node.t === 'link') {
       lines.push(`${v} = Button(${lit(node.text)}, "link")`)
       childVars.push(v)
-    } else if (node.t === "row") {
+    } else if (node.t === 'row') {
       // A list row: lead text + trailing link on a SINGLE compact line. Keeping
       // them in one horizontal Stack (no per-node vertical padding) preserves the
       // original dense, one-row-per-entry layout instead of exploding each entry
@@ -459,9 +495,7 @@ function emitContentNodes(
       const linkV = `${v}_a`
       lines.push(`${leadV} = Text(${lit(node.text)}, "muted")`)
       lines.push(`${linkV} = Button(${lit(node.link)}, "link")`)
-      lines.push(
-        `${v} = Stack([${leadV}, ${linkV}], "row", "sm")`,
-      )
+      lines.push(`${v} = Stack([${leadV}, ${linkV}], "row", "sm")`)
       childVars.push(v)
     } else {
       lines.push(`${v} = Text(${lit(node.text)}, "muted")`)
@@ -510,7 +544,9 @@ export function generateFallbackSection(
     const sVar = `${sectionVar}_s`
     const cVar = `${sectionVar}_c`
     if (copy.heading) {
-      lines.push(`${hVar} = Heading(${lit(copy.heading)}, "2", "text-foreground")`)
+      lines.push(
+        `${hVar} = Heading(${lit(copy.heading)}, "2", "text-foreground")`,
+      )
       childVars.push(hVar)
     }
     if (copy.sub) {
@@ -523,7 +559,9 @@ export function generateFallbackSection(
     }
     // Guarantee at least one child so the section is never empty.
     if (childVars.length === 0) {
-      lines.push(`${hVar} = Text(${lit(copy.sub || "Content")}, "default", "text-foreground")`)
+      lines.push(
+        `${hVar} = Text(${lit(copy.sub || 'Content')}, "default", "text-foreground")`,
+      )
       childVars.push(hVar)
     }
   }
@@ -542,19 +580,24 @@ export function generateFallbackSection(
   //  - default: ordinary small content block — comfortable but NOT hero-tall, so a
   //    compact "heading + intro + a couple links" page (the big-empty-gap defect)
   //    stays tight instead of leaving most of the viewport blank.
-  const linkish = contentNodes.filter((n) => n.t === "link" || n.t === "row").length
-  const headings = contentNodes.filter((n) => n.t === "heading").length
-  const hasMedia = /\bImage\(|aspect-video|bg-muted rounded/.test(lines.join("\n"))
+  const linkish = contentNodes.filter(
+    (n) => n.t === 'link' || n.t === 'row',
+  ).length
+  const headings = contentNodes.filter((n) => n.t === 'heading').length
+  const hasMedia = /\bImage\(|aspect-video|bg-muted rounded/.test(
+    lines.join('\n'),
+  )
   const dense = childVars.length >= 8 || (linkish >= 3 && !hasMedia)
   // A hero is a near-bare heading band: 1 heading and at most one extra (a CTA or
   // single intro line), no link index. Only this gets the tall padding.
-  const heroLike = !dense && headings >= 1 && childVars.length <= 2 && linkish === 0
-  const gap = dense ? "sm" : "md"
-  const pad = dense ? "py-8 px-4" : heroLike ? "py-16 px-4" : "py-10 px-4"
+  const heroLike =
+    !dense && headings >= 1 && childVars.length <= 2 && linkish === 0
+  const gap = dense ? 'sm' : 'md'
+  const pad = dense ? 'py-8 px-4' : heroLike ? 'py-16 px-4' : 'py-10 px-4'
   const program = [
     ...lines,
-    `${sectionVar} = Section([Stack([${childVars.join(", ")}], "col", "${gap}")], "bg-background text-foreground ${pad}")`,
-  ].join("\n")
+    `${sectionVar} = Section([Stack([${childVars.join(', ')}], "col", "${gap}")], "bg-background text-foreground ${pad}")`,
+  ].join('\n')
 
   return {
     pageUrl,
@@ -564,6 +607,6 @@ export function generateFallbackSection(
     contentRefs: [],
     assets: [],
     hash: `fallback_${sectionKind}_${index}_${blockName}`,
-    source: "native-fallback",
+    source: 'native-fallback',
   }
 }

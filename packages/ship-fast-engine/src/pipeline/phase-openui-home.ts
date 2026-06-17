@@ -4,7 +4,10 @@ import { runHomepageOrchestrator } from '../genui/run.ts'
 import { renderPreviewToWorkspace } from '../renderers/index.ts'
 import { saveSiteSpec } from '../spec/index.ts'
 // @ts-ignore - JS module without type definitions
-import { preferRomanizedBcp47FromSnippet, preferMixedEnglishBcp47FromSnippet } from '../config/languages.js'
+import {
+  preferRomanizedBcp47FromSnippet,
+  preferMixedEnglishBcp47FromSnippet,
+} from '../config/languages.js'
 // @ts-ignore - JS module without type definitions
 import { translateHtml } from '../llm/translator.js'
 import { renderOpenUIToHTMLWithTheme } from '../openui-ssr.js'
@@ -15,9 +18,19 @@ const OPENUI_PAGES_DIR = 'pages'
 const OPENUI_MANIFEST_FILE = 'openui-manifest.json'
 type OpenUIRenderResult = { html: string; cssVars?: string }
 
-function upsertManifest(workspace: string, route: string, title: string, file: string) {
+function upsertManifest(
+  workspace: string,
+  route: string,
+  title: string,
+  file: string,
+) {
   const manifestPath = join(workspace, OPENUI_MANIFEST_FILE)
-  let manifest: any = { version: 1, generatedAt: new Date().toISOString(), home: HOME_OPENUI_FILE, pages: [] }
+  let manifest: any = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    home: HOME_OPENUI_FILE,
+    pages: [],
+  }
   if (existsSync(manifestPath)) {
     try {
       manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
@@ -31,10 +44,36 @@ function upsertManifest(workspace: string, route: string, title: string, file: s
     route,
     title,
     file,
-    ready: true
+    ready: true,
   })
   manifest.generatedAt = new Date().toISOString()
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+}
+
+async function simulateStream(
+  sessionCtx: any,
+  route: string,
+  fullText: string,
+) {
+  if (!sessionCtx?.broadcast) return
+  sessionCtx.broadcast({ type: 'openui_stream_start', route })
+
+  const chunkSize = 512
+  let index = 0
+  while (index < fullText.length) {
+    const chunk = fullText.slice(index, index + chunkSize)
+    const accumulated = fullText.slice(0, index + chunkSize)
+    sessionCtx.broadcast({
+      type: 'openui_stream_chunk',
+      route,
+      token: chunk,
+      source: accumulated,
+    })
+    index += chunkSize
+    await new Promise((resolve) => setTimeout(resolve, 8))
+  }
+
+  sessionCtx.broadcast({ type: 'openui_stream_done', route, source: fullText })
 }
 
 function titleFromPrompt(prompt: string): string {
@@ -73,25 +112,25 @@ export async function generateAndWriteOpenUIHome(p: {
   const route = '/'
   const ctx = p.sessionCtx
   const tagline = p.siteSpec?.tagline || p.siteSpec?.metadata?.description || ''
-  const specThemeName = typeof p.siteSpec?.theme === 'string' ? p.siteSpec.theme : null
+  const specThemeName =
+    typeof p.siteSpec?.theme === 'string' ? p.siteSpec.theme : null
   const forcedLocale =
     typeof p.languageMode?.code === 'string' && p.languageMode.code.trim()
       ? p.languageMode.code.trim().toLowerCase()
       : null
 
-  let themeName: string | null = null
   let localeName = forcedLocale || 'en'
   const brandSoFar = projectTitle(p.siteSpec, p.prompt)
 
   const onEvent = (event: any) => {
     if (event.type === 'theme') {
-      themeName = event.name
       log(`  genui: theme → ${event.name}`)
     } else if (event.type === 'locale') {
       if (!forcedLocale) localeName = event.code
       log(`  genui: locale → ${event.code}`)
     } else if (event.type === 'status') log(`  genui: ${event.message}`)
-    else if (event.type === 'plan') log(`  genui: pages → ${event.ids.join(', ')}`)
+    else if (event.type === 'plan')
+      log(`  genui: pages → ${event.ids.join(', ')}`)
     else if (event.type === 'module') log(`  genui: page ${event.id} ready`)
   }
 
@@ -120,9 +159,18 @@ export async function generateAndWriteOpenUIHome(p: {
   // "roman hindi", "tamil english mix", …) is authoritative over the small planner
   // LLM's guess, which is unreliable at picking the variant codes.
   const promptLocale =
-    preferRomanizedBcp47FromSnippet(p.prompt) || preferMixedEnglishBcp47FromSnippet(p.prompt)
-  const locale = promptLocale || forcedLocale || result.locale || localeName || 'en'
-  const project = { brand, tagline, theme, locale, skeleton: '', modules: { home: source } }
+    preferRomanizedBcp47FromSnippet(p.prompt) ||
+    preferMixedEnglishBcp47FromSnippet(p.prompt)
+  const locale =
+    promptLocale || forcedLocale || result.locale || localeName || 'en'
+  const project = {
+    brand,
+    tagline,
+    theme,
+    locale,
+    skeleton: '',
+    modules: { home: source },
+  }
 
   // Finalize: persist the complete program + shell (for reload), then close the
   // stream so the client locks in the final, fully-merged source.
@@ -137,12 +185,13 @@ export async function generateAndWriteOpenUIHome(p: {
   const ms = Date.now() - startedAt
 
   // Server-side render final HTML
-  const { html: renderedFinalHtml, cssVars: themeCssVars } = renderOpenUIToHTMLWithTheme(
-    source,
-    undefined,
-    locale,
-    undefined,
-  ) as OpenUIRenderResult
+  const { html: renderedFinalHtml, cssVars: themeCssVars } =
+    renderOpenUIToHTMLWithTheme(
+      source,
+      undefined,
+      locale,
+      undefined,
+    ) as OpenUIRenderResult
   let finalHtml = renderedFinalHtml
   if (p.languageMode?.needsTranslation) {
     try {
@@ -156,29 +205,36 @@ export async function generateAndWriteOpenUIHome(p: {
           writeFileSync(previewPath, translatedPreview.content)
         }
       }
-      const translatedFinal = await translateHtml(renderedFinalHtml, p.languageMode)
+      const translatedFinal = await translateHtml(
+        renderedFinalHtml,
+        p.languageMode,
+      )
       if (translatedFinal?.content && !translatedFinal.error) {
         finalHtml = translatedFinal.content
         log(`  genui: translated preview to ${p.languageMode.code}`)
       } else {
-        log(`  genui: translation skipped — ${translatedFinal?.error ?? 'empty response'}`)
+        log(
+          `  genui: translation skipped — ${translatedFinal?.error ?? 'empty response'}`,
+        )
       }
     } catch (error: any) {
       log(`  genui: translation error — ${error?.message || String(error)}`)
     }
   }
-  
-  ctx?.broadcast?.({ 
-    type: 'openui_stream_done', 
-    route, 
-    source, 
+
+  ctx?.broadcast?.({
+    type: 'openui_stream_done',
+    route,
+    source,
     html: finalHtml,
     cssVars: themeCssVars,
-    locale 
+    locale,
   })
   ctx?.broadcast?.({ type: 'preview_reload', at: Date.now() })
   p.sessionCtx?.signalOpenuiReady?.()
-  log(`  genui: ${source.length} chars, theme=${theme}, locale=${locale} in ${(ms / 1000).toFixed(1)}s`)
+  log(
+    `  genui: ${source.length} chars, theme=${theme}, locale=${locale} in ${(ms / 1000).toFixed(1)}s`,
+  )
 
   return {
     source,
@@ -205,11 +261,11 @@ export async function generateAndWriteOpenUIPage(p: {
   if (route === '/') {
     return generateAndWriteOpenUIHome(p)
   }
-  
+
   const pageId = p.page.id || slug(p.page.title || p.page.name || 'page')
   const file = join(OPENUI_PAGES_DIR, `${pageId}.openui`)
   const fullPath = join(p.workspace, file)
-  
+
   if (existsSync(fullPath)) {
     const source = readFileSync(fullPath, 'utf-8')
     await simulateStream(p.sessionCtx, route, source)
@@ -218,11 +274,13 @@ export async function generateAndWriteOpenUIPage(p: {
       chars: source.length,
       inputTokens: 0,
       outputTokens: 0,
-      cost: 0
+      cost: 0,
     }
   }
-  
-  throw new Error(`OpenUI page source is missing for route "${route}" at ${file}`)
+
+  throw new Error(
+    `OpenUI page source is missing for route "${route}" at ${file}`,
+  )
 }
 
 export function readOpenUIHomeFile(workspace: string): string | null {

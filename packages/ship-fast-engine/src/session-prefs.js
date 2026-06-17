@@ -5,6 +5,10 @@ import { join } from 'node:path'
 const SESSION_META_FILE = '.session.json'
 const DEFAULT_PREFERRED_LANGUAGE = 'en'
 
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 function normalizePreferredLanguage(value) {
   const requested = String(value || '')
     .trim()
@@ -16,6 +20,10 @@ function normalizePreferredLanguage(value) {
   return /^[a-z]{2,8}$/.test(requested) ? requested : DEFAULT_PREFERRED_LANGUAGE
 }
 
+/**
+ * @param {string} workspace
+ * @returns {{ preferredLanguage: string }}
+ */
 function readSessionMeta(workspace) {
   const metaPath = join(workspace, SESSION_META_FILE)
   if (!existsSync(metaPath)) {
@@ -31,7 +39,11 @@ function readSessionMeta(workspace) {
   }
 }
 
-/** Preferred language for pipeline prompts, from workspace `.session.json` if present. */
+/**
+ * Preferred language for pipeline prompts, from workspace `.session.json` if present.
+ * @param {string | null | undefined} workspace
+ * @returns {string}
+ */
 export function getWorkspacePreferredLanguage(workspace) {
   if (!workspace) return DEFAULT_PREFERRED_LANGUAGE
   return readSessionMeta(workspace).preferredLanguage

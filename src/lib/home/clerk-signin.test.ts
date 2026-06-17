@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { bindHomepageClerkSignIn } from './clerk-signin'
 
 class FakeElement {
-  private readonly listeners = new Map<string, Array<(event: { preventDefault: () => void }) => void>>()
+  private readonly listeners = new Map<string, EventListener[]>()
   readonly style = {
     display: '',
   }
@@ -12,22 +12,22 @@ class FakeElement {
     remove: () => undefined,
   }
 
-  addEventListener = (type: string, listener: (event: { preventDefault: () => void }) => void): void => {
+  addEventListener = (type: string, listener: EventListener): void => {
     this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener])
   }
 
-  removeEventListener = (type: string, listener: (event: { preventDefault: () => void }) => void): void => {
+  removeEventListener = (type: string, listener: EventListener): void => {
     this.listeners.set(
       type,
       (this.listeners.get(type) ?? []).filter((entry) => entry !== listener),
     )
   }
 
-  setAttribute = () => undefined
+  setAttribute = (_name: string, _value: string) => undefined
 
   click = (): void => {
     for (const listener of this.listeners.get('click') ?? []) {
-      listener({ preventDefault: () => undefined })
+      listener(new Event('click'))
     }
   }
 }
@@ -59,9 +59,10 @@ describe('bindHomepageClerkSignIn', () => {
 
   test('opens sign-in when a child inside the sign-in button receives the click', () => {
     let openCount = 0
-    let documentClick: ((event: { preventDefault: () => void; target: unknown }) => void) | undefined
+    let documentClick: EventListener | undefined
     const target = {
-      closest: (selector: string) => (selector.includes('#signin-btn') ? new FakeElement() : null),
+      closest: (selector: string) =>
+        selector.includes('#signin-btn') ? new FakeElement() : null,
     }
 
     bindHomepageClerkSignIn({
@@ -83,7 +84,10 @@ describe('bindHomepageClerkSignIn', () => {
       },
     })
 
-    documentClick?.({ preventDefault: () => undefined, target })
+    documentClick?.({
+      preventDefault: () => undefined,
+      target,
+    } as unknown as Event)
 
     expect(openCount).toBe(1)
   })
@@ -91,11 +95,12 @@ describe('bindHomepageClerkSignIn', () => {
   test('hides sign-in and skips opening the modal when Clerk already has a user', () => {
     let openCount = 0
     let profileCount = 0
-    let documentClick: ((event: { preventDefault: () => void; target: unknown }) => void) | undefined
+    let documentClick: EventListener | undefined
     const signInButton = new FakeElement()
     const signOutButton = new FakeElement()
     const target = {
-      closest: (selector: string) => (selector.includes('#signin-btn') ? signInButton : null),
+      closest: (selector: string) =>
+        selector.includes('#signin-btn') ? signInButton : null,
     }
 
     bindHomepageClerkSignIn({
@@ -129,7 +134,10 @@ describe('bindHomepageClerkSignIn', () => {
       },
     })
 
-    documentClick?.({ preventDefault: () => undefined, target })
+    documentClick?.({
+      preventDefault: () => undefined,
+      target,
+    } as unknown as Event)
 
     expect(signInButton.style.display).toBe('none')
     expect(signOutButton.style.display).toBe('inline-flex')
@@ -140,11 +148,12 @@ describe('bindHomepageClerkSignIn', () => {
   test('treats Clerk client sessions as already signed in', () => {
     let openCount = 0
     let profileCount = 0
-    let documentClick: ((event: { preventDefault: () => void; target: unknown }) => void) | undefined
+    let documentClick: EventListener | undefined
     const signInButton = new FakeElement()
     const signOutButton = new FakeElement()
     const target = {
-      closest: (selector: string) => (selector.includes('#signin-btn') ? signInButton : null),
+      closest: (selector: string) =>
+        selector.includes('#signin-btn') ? signInButton : null,
     }
 
     bindHomepageClerkSignIn({
@@ -180,7 +189,10 @@ describe('bindHomepageClerkSignIn', () => {
       },
     })
 
-    documentClick?.({ preventDefault: () => undefined, target })
+    documentClick?.({
+      preventDefault: () => undefined,
+      target,
+    } as unknown as Event)
 
     expect(signInButton.style.display).toBe('none')
     expect(signOutButton.style.display).toBe('inline-flex')
@@ -189,11 +201,12 @@ describe('bindHomepageClerkSignIn', () => {
   })
 
   test('swallows Clerk single-session sign-in errors and switches to signed-in controls', () => {
-    let documentClick: ((event: { preventDefault: () => void; target: unknown }) => void) | undefined
+    let documentClick: EventListener | undefined
     const signInButton = new FakeElement()
     const signOutButton = new FakeElement()
     const target = {
-      closest: (selector: string) => (selector.includes('#signin-btn') ? signInButton : null),
+      closest: (selector: string) =>
+        selector.includes('#signin-btn') ? signInButton : null,
     }
 
     bindHomepageClerkSignIn({
@@ -225,7 +238,12 @@ describe('bindHomepageClerkSignIn', () => {
       },
     })
 
-    expect(() => documentClick?.({ preventDefault: () => undefined, target })).not.toThrow()
+    expect(() =>
+      documentClick?.({
+        preventDefault: () => undefined,
+        target,
+      } as unknown as Event),
+    ).not.toThrow()
     expect(signInButton.style.display).toBe('none')
     expect(signOutButton.style.display).toBe('inline-flex')
   })
@@ -233,12 +251,13 @@ describe('bindHomepageClerkSignIn', () => {
   test('skips opening sign-up when Clerk already has a client session', () => {
     let signUpCount = 0
     let profileCount = 0
-    let documentClick: ((event: { preventDefault: () => void; target: unknown }) => void) | undefined
+    let documentClick: EventListener | undefined
     const signInButton = new FakeElement()
     const signOutButton = new FakeElement()
     const signUpButton = new FakeElement()
     const target = {
-      closest: (selector: string) => (selector.includes('#email-signup-btn') ? signUpButton : null),
+      closest: (selector: string) =>
+        selector.includes('#email-signup-btn') ? signUpButton : null,
     }
 
     bindHomepageClerkSignIn({
@@ -277,7 +296,10 @@ describe('bindHomepageClerkSignIn', () => {
       },
     })
 
-    documentClick?.({ preventDefault: () => undefined, target })
+    documentClick?.({
+      preventDefault: () => undefined,
+      target,
+    } as unknown as Event)
 
     expect(signUpCount).toBe(0)
     expect(profileCount).toBe(1)
@@ -287,10 +309,14 @@ describe('bindHomepageClerkSignIn', () => {
 
   test('signs out and restores signed-out controls from the homepage sign-out button', () => {
     let signOutCount = 0
-    let documentClick: ((event: { preventDefault: () => void; target: unknown }) => void) | undefined
+    let documentClick: EventListener | undefined
     const signInButton = new FakeElement()
     const signOutButton = new FakeElement()
-    const clerk = {
+    const clerk: {
+      user?: unknown
+      session?: unknown
+      signOut: () => void
+    } = {
       user: {},
       session: {},
       signOut: () => {
@@ -300,7 +326,8 @@ describe('bindHomepageClerkSignIn', () => {
       },
     }
     const target = {
-      closest: (selector: string) => (selector.includes('#signout-btn') ? signOutButton : null),
+      closest: (selector: string) =>
+        selector.includes('#signout-btn') ? signOutButton : null,
     }
 
     bindHomepageClerkSignIn({
@@ -326,7 +353,10 @@ describe('bindHomepageClerkSignIn', () => {
       },
     })
 
-    documentClick?.({ preventDefault: () => undefined, target })
+    documentClick?.({
+      preventDefault: () => undefined,
+      target,
+    } as unknown as Event)
 
     expect(signOutCount).toBe(1)
     expect(signInButton.style.display).toBe('inline-flex')

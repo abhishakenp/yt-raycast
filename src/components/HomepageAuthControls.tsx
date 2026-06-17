@@ -63,7 +63,7 @@ const HomepageAuthInner = ({ autoOpen = false }: HomepageAuthControlsProps) => {
       </Show>
       <Show when="signed-in">
         <div className="grid size-9 place-items-center">
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
         </div>
       </Show>
     </>

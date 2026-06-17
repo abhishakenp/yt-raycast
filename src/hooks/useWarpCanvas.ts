@@ -5,7 +5,9 @@ type WarpController = {
   stop: () => void
 }
 
-export function useWarpCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
+export function useWarpCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
+) {
   const controllerRef = useRef<WarpController | null>(null)
 
   useEffect(() => {
@@ -25,7 +27,9 @@ export function useWarpCanvas(canvasRef: React.RefObject<HTMLCanvasElement | nul
   return controllerRef
 }
 
-function createWarpController(canvasEl: HTMLCanvasElement): WarpController {
+export function createWarpController(
+  canvasEl: HTMLCanvasElement,
+): WarpController {
   let c: HTMLCanvasElement | null = null
   let ctx: CanvasRenderingContext2D | null = null
   let raf = 0
@@ -38,7 +42,8 @@ function createWarpController(canvasEl: HTMLCanvasElement): WarpController {
   const SEG = 1.85
   const CYCLE = SEG + 2.0
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-  const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v)
+  const clamp = (v: number, lo: number, hi: number) =>
+    v < lo ? lo : v > hi ? hi : v
   const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
   const col = (t: number) => {
     if (t < 0.34) {
@@ -64,8 +69,16 @@ function createWarpController(canvasEl: HTMLCanvasElement): WarpController {
       const t = i / PTS
       const u = 1 - t
       pts.push({
-        x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
-        y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+        x:
+          u * u * u * p0.x +
+          3 * u * u * t * p1.x +
+          3 * u * t * t * p2.x +
+          t * t * t * p3.x,
+        y:
+          u * u * u * p0.y +
+          3 * u * u * t * p1.y +
+          3 * u * t * t * p2.y +
+          t * t * t * p3.y,
       })
     }
     for (let i = 0; i <= PTS; i++) {
@@ -115,7 +128,10 @@ function createWarpController(canvasEl: HTMLCanvasElement): WarpController {
     const parent = c.parentElement
     const w = parent ? parent.clientWidth : c.clientWidth
     const h = parent ? parent.clientHeight : c.clientHeight
-    D = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2)
+    D = Math.min(
+      typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1,
+      2,
+    )
     W = c.width = Math.max(1, w) * D
     H = c.height = Math.max(1, h) * D
     c.style.width = `${Math.max(1, w)}px`
@@ -156,8 +172,7 @@ function createWarpController(canvasEl: HTMLCanvasElement): WarpController {
       raf = requestAnimationFrame(draw)
       return
     }
-    for (let pi = 0; pi < passes.length; pi++) {
-      const pass = passes[pi]
+    for (const pass of passes) {
       ctx.beginPath()
       for (let k = 0; k < count; k++) {
         const pt = arc.pts[k]
@@ -251,7 +266,14 @@ function createWarpController(canvasEl: HTMLCanvasElement): WarpController {
       ctx.arc(hx, hy, hsz * 0.4, 0, Math.PI * 2)
       ctx.fill()
     }
-    const vg = ctx.createRadialGradient(W / 2, H / 2, W * 0.15, W / 2, H / 2, W * 0.9)
+    const vg = ctx.createRadialGradient(
+      W / 2,
+      H / 2,
+      W * 0.15,
+      W / 2,
+      H / 2,
+      W * 0.9,
+    )
     vg.addColorStop(0, 'rgba(0,0,0,0)')
     vg.addColorStop(1, `rgba(7,7,16,${lerp(0.22, 0.05, warp)})`)
     ctx.fillStyle = vg

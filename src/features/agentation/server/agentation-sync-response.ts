@@ -1,6 +1,7 @@
 import type { ConvexHttpClient } from 'convex/browser'
 
 import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 import {
   buildAgentationSessionKey,
   getAnnotationElementLabel,
@@ -22,6 +23,9 @@ const json = (body: unknown, init?: ResponseInit) =>
 
 const createClient = (clientOverride?: AgentationSyncClient) =>
   clientOverride ?? createRuntimeConvexHttpClient()
+
+const asSessionId = (sessionId: string): Id<'sessions'> =>
+  sessionId as Id<'sessions'>
 
 const readJsonBody = async (request: Request): Promise<JsonBody> => {
   const text = await request.text()
@@ -51,7 +55,8 @@ const getSessionIdFromUrl = (url: string | undefined) => {
 }
 
 const normalizeAnnotation = (annotation: JsonBody) => {
-  const id = getString(annotation, 'id') ?? getString(annotation, 'annotationId')
+  const id =
+    getString(annotation, 'id') ?? getString(annotation, 'annotationId')
   const comment = getString(annotation, 'comment') ?? ''
   const elementLabel =
     getString(annotation, 'element') ??
@@ -106,8 +111,7 @@ const readAnnotationPayload = (row: {
 const errorResponse = (error: unknown) =>
   json(
     {
-      error:
-        error instanceof Error ? error.message : 'Agentation sync failed',
+      error: error instanceof Error ? error.message : 'Agentation sync failed',
     },
     { status: 500 },
   )
@@ -121,7 +125,10 @@ export const createAgentationSessionResponse = async (
     const body = await readJsonBody(request)
     const sessionId = getSessionIdFromUrl(getString(body, 'url'))
     if (!sessionId) {
-      return json({ error: 'Unable to resolve Ship Fast session id' }, { status: 400 })
+      return json(
+        { error: 'Unable to resolve Ship Fast session id' },
+        { status: 400 },
+      )
     }
 
     return json({
@@ -139,12 +146,14 @@ export const getAgentationSessionResponse = async (
   clientOverride?: AgentationSyncClient,
 ): Promise<Response> => {
   try {
-    const sessionId = readSessionIdFromAgentationSessionKey(agentationSessionKey)
-    if (!sessionId) return json({ error: 'Invalid Agentation session id' }, { status: 400 })
+    const sessionId =
+      readSessionIdFromAgentationSessionKey(agentationSessionKey)
+    if (!sessionId)
+      return json({ error: 'Invalid Agentation session id' }, { status: 400 })
 
     const annotations = await createClient(clientOverride).query(
       api.sessions.listAnnotations,
-      { sessionId },
+      { sessionId: asSessionId(sessionId) },
     )
 
     return json({
@@ -164,7 +173,8 @@ export const createAgentationAnnotationResponse = async (
   try {
     const body = await readJsonBody(request)
     const annotation = normalizeAnnotation(body)
-    if (!annotation) return json({ error: 'Annotation id is required' }, { status: 400 })
+    if (!annotation)
+      return json({ error: 'Annotation id is required' }, { status: 400 })
 
     await createClient(clientOverride).mutation(
       (api.sessions as any).upsertAgentationSyncAnnotation,
@@ -195,7 +205,8 @@ export const updateAgentationAnnotationResponse = async (
   try {
     const body = await readJsonBody(request)
     const annotation = normalizeAnnotation({ ...body, id: annotationId })
-    if (!annotation) return json({ error: 'Annotation id is required' }, { status: 400 })
+    if (!annotation)
+      return json({ error: 'Annotation id is required' }, { status: 400 })
 
     await createClient(clientOverride).mutation(
       (api.sessions as any).updateAgentationSyncAnnotation,

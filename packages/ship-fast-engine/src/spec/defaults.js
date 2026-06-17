@@ -25,6 +25,8 @@ export const SUPPORTED_SECTION_TYPES = [
   'stats',
   'team',
   'blog-list',
+  'newsletter',
+  'content',
   'notice-board',
   'document-list',
   'careers-table',
@@ -69,12 +71,18 @@ function parseTypography(ctx, designBrief = '') {
   const mono = /jetbrains mono|ibm plex mono|fira code/i.test(source)
     ? source.match(/(JetBrains Mono|IBM Plex Mono|Fira Code)/i)?.[0]
     : 'JetBrains Mono'
-  const body = /inter|space grotesk|manrope|sora|plus jakarta sans|dm sans/i.test(source)
-    ? source.match(/(Inter|Space Grotesk|Manrope|Sora|Plus Jakarta Sans|DM Sans)/i)?.[0]
-    : 'Inter'
-  const heading = /space grotesk|manrope|sora|plus jakarta sans|dm sans|inter/i.test(source)
-    ? source.match(/(Space Grotesk|Manrope|Sora|Plus Jakarta Sans|DM Sans|Inter)/i)?.[0]
-    : body
+  const body =
+    /inter|space grotesk|manrope|sora|plus jakarta sans|dm sans/i.test(source)
+      ? source.match(
+          /(Inter|Space Grotesk|Manrope|Sora|Plus Jakarta Sans|DM Sans)/i,
+        )?.[0]
+      : 'Inter'
+  const heading =
+    /space grotesk|manrope|sora|plus jakarta sans|dm sans|inter/i.test(source)
+      ? source.match(
+          /(Space Grotesk|Manrope|Sora|Plus Jakarta Sans|DM Sans|Inter)/i,
+        )?.[0]
+      : body
 
   return {
     heading,
@@ -94,6 +102,8 @@ function parseTypography(ctx, designBrief = '') {
 function normalizeSiteUrlInput(value = '') {
   const raw = String(value || '').trim()
   if (!raw) return ''
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) && !/^https?:\/\//i.test(raw))
+    return ''
 
   try {
     const candidate = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
@@ -131,7 +141,8 @@ function defaultPageNamesForSiteType(siteType) {
 }
 
 function findPageRoute(pageNames = [], pattern, fallback = '#') {
-  const normalizedPattern = pattern instanceof RegExp ? pattern : new RegExp(String(pattern), 'i')
+  const normalizedPattern =
+    pattern instanceof RegExp ? pattern : new RegExp(String(pattern), 'i')
   const matchIndex = pageNames.findIndex((pageName) =>
     normalizedPattern.test(String(pageName || '')),
   )
@@ -170,15 +181,21 @@ function inferHomeSeoTitle(projectName, tagline, siteType) {
 function inferPageTitle(pageName, projectName, siteType, tagline = '') {
   const lower = String(pageName || '').toLowerCase()
   if (lower === 'home') return inferHomeSeoTitle(projectName, tagline, siteType)
-  if (lower.includes('pricing')) return `${projectName} Pricing | Plans, Features and FAQs`
-  if (lower.includes('contact')) return `Contact ${projectName} | Sales and Support`
+  if (lower.includes('pricing'))
+    return `${projectName} Pricing | Plans, Features and FAQs`
+  if (lower.includes('contact'))
+    return `Contact ${projectName} | Sales and Support`
   if (lower.includes('about')) return `About ${projectName} | Company Overview`
-  if (lower.includes('docs')) return `${projectName} Docs | Guides and Reference`
-  if (lower.includes('blog')) return `${projectName} Blog | Insights and Updates`
+  if (lower.includes('docs'))
+    return `${projectName} Docs | Guides and Reference`
+  if (lower.includes('blog'))
+    return `${projectName} Blog | Insights and Updates`
   if (lower.includes('notices')) return `${projectName} | Notices and tenders`
   if (lower.includes('careers')) return `${projectName} | Careers`
-  if (lower.includes('faq')) return `${projectName} FAQ | Common Questions and Answers`
-  if (lower.includes('work')) return `${projectName} Work | Projects and Case Studies`
+  if (lower.includes('faq'))
+    return `${projectName} FAQ | Common Questions and Answers`
+  if (lower.includes('work'))
+    return `${projectName} Work | Projects and Case Studies`
   if (lower.includes('shop') || lower.includes('catalog'))
     return `${projectName} Shop | Browse Our Collection`
   return `${pageName} | ${projectName}`
@@ -220,26 +237,70 @@ function defaultNavActions(projectName, pageNames = [], siteType = 'landing') {
     const cartHref = findPageRoute(pageNames, /cart/i, '/cart')
     return [
       { id: 'cta-primary', label: 'Shop', href: shopHref, style: 'primary' },
-      { id: 'cta-secondary', label: 'Cart', href: cartHref, style: 'secondary' },
+      {
+        id: 'cta-secondary',
+        label: 'Cart',
+        href: cartHref,
+        style: 'secondary',
+      },
     ]
   }
   if (siteType === 'institutional') {
     const noticesHref = findPageRoute(pageNames, /notices/i, '/notices')
     const careersHref = findPageRoute(pageNames, /careers/i, '/careers')
     return [
-      { id: 'cta-primary', label: 'Careers', href: careersHref, style: 'primary' },
-      { id: 'cta-secondary', label: 'Notices', href: noticesHref, style: 'secondary' },
+      {
+        id: 'cta-primary',
+        label: 'Careers',
+        href: careersHref,
+        style: 'primary',
+      },
+      {
+        id: 'cta-secondary',
+        label: 'Notices',
+        href: noticesHref,
+        style: 'secondary',
+      },
+    ]
+  }
+  if (siteType === 'blog') {
+    const blogHref = findPageRoute(pageNames, /blog|writing|articles/i, '/blog')
+    const aboutHref = findPageRoute(pageNames, /about/i, '/about')
+    return [
+      { id: 'cta-primary', label: 'Blog', href: blogHref, style: 'primary' },
+      {
+        id: 'cta-secondary',
+        label: 'About',
+        href: aboutHref,
+        style: 'secondary',
+      },
     ]
   }
   const pricingHref = findPageRoute(pageNames, /pricing/i, '#pricing')
   const contactHref = findPageRoute(pageNames, /contact/i, '#contact')
   return [
-    { id: 'cta-primary', label: 'Get Started', href: contactHref, style: 'primary' },
-    { id: 'cta-secondary', label: 'See Pricing', href: pricingHref, style: 'secondary' },
+    {
+      id: 'cta-primary',
+      label: 'Get Started',
+      href: contactHref,
+      style: 'primary',
+    },
+    {
+      id: 'cta-secondary',
+      label: 'See Pricing',
+      href: pricingHref,
+      style: 'secondary',
+    },
   ]
 }
 
-function defaultHero(projectName, tagline, siteType, features = [], pageNames = []) {
+function defaultHero(
+  projectName,
+  tagline,
+  siteType,
+  features = [],
+  pageNames = [],
+) {
   if (siteType === 'ecommerce') {
     const shopHref = findPageRoute(pageNames, /shop|catalog/i, '/shop')
     const cartHref = findPageRoute(pageNames, /cart/i, '/cart')
@@ -257,8 +318,14 @@ function defaultHero(projectName, tagline, siteType, features = [], pageNames = 
         { label: 'Shop now', href: shopHref, style: 'primary' },
         { label: 'View cart', href: cartHref, style: 'secondary' },
       ],
-      items: [{ title: 'New arrivals' }, { title: 'Secure checkout' }, { title: 'Easy returns' }],
-      interactions: [{ type: 'heroCta', behavior: 'scroll', target: '#featured-products' }],
+      items: [
+        { title: 'New arrivals' },
+        { title: 'Secure checkout' },
+        { title: 'Easy returns' },
+      ],
+      interactions: [
+        { type: 'heroCta', behavior: 'scroll', target: '#featured-products' },
+      ],
     }
   }
   if (siteType === 'institutional') {
@@ -272,7 +339,8 @@ function defaultHero(projectName, tagline, siteType, features = [], pageNames = 
       type: 'hero',
       variant: 'split',
       headline: projectName,
-      subheadline: tagline || 'Official information for stakeholders and applicants.',
+      subheadline:
+        tagline || 'Official information for stakeholders and applicants.',
       body,
       actions: [
         { label: 'View notices', href: noticesHref, style: 'primary' },
@@ -283,13 +351,16 @@ function defaultHero(projectName, tagline, siteType, features = [], pageNames = 
         { title: 'Document downloads' },
         { title: 'Job openings' },
       ],
-      interactions: [{ type: 'heroCta', behavior: 'navigate', target: noticesHref }],
+      interactions: [
+        { type: 'heroCta', behavior: 'navigate', target: noticesHref },
+      ],
     }
   }
   const body =
     siteType === 'dashboard'
       ? `Operate ${projectName} from one control surface with focused workflows and fast team collaboration.`
-      : tagline || `${projectName} helps teams move from idea to launch without the usual drag.`
+      : tagline ||
+        `${projectName} helps teams move from idea to launch without the usual drag.`
   return {
     id: 'hero',
     type: 'hero',
@@ -470,7 +541,9 @@ function buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames) {
       headline: `${projectName} — common questions`,
       body: 'Shipping, returns, and order help in one place.',
       items: defaultEcommerceFaqItems(projectName),
-      interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
+      interactions: [
+        { type: 'accordion', behavior: 'single', defaultOpenItem: 0 },
+      ],
     },
     {
       id: 'contact',
@@ -479,7 +552,13 @@ function buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames) {
       headline: 'We are here to help',
       body: 'Questions about an order, sizing, or delivery? Send a message and we will get back to you.',
       fields: [
-        { name: 'name', label: 'Name', type: 'text', placeholder: 'Your name', required: true },
+        {
+          name: 'name',
+          label: 'Name',
+          type: 'text',
+          placeholder: 'Your name',
+          required: true,
+        },
         {
           name: 'email',
           label: 'Email',
@@ -522,9 +601,20 @@ function buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames) {
   ]
 }
 
-function buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames) {
+function buildInstitutionalDefaultSections(
+  ctx,
+  projectName,
+  tagline,
+  pageNames,
+) {
   return [
-    defaultHero(projectName, tagline, 'institutional', ctx?.features || [], pageNames),
+    defaultHero(
+      projectName,
+      tagline,
+      'institutional',
+      ctx?.features || [],
+      pageNames,
+    ),
     {
       id: 'notice-board',
       type: 'notice-board',
@@ -563,7 +653,11 @@ function buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
       headline: 'Job openings',
       body: 'Vacancies with closing dates and application channels.',
       items: [
-        { title: 'Graduate engineer trainee', body: 'Full time · multiple locations', href: '#' },
+        {
+          title: 'Graduate engineer trainee',
+          body: 'Full time · multiple locations',
+          href: '#',
+        },
         { title: 'Assistant officer', body: 'Operations', href: '#' },
       ],
     },
@@ -585,7 +679,9 @@ function buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
       headline: `${projectName} — information for visitors`,
       body: 'Guidance for stakeholders, applicants, and partners.',
       items: defaultFaqItems(projectName, 'institutional', ctx),
-      interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
+      interactions: [
+        { type: 'accordion', behavior: 'single', defaultOpenItem: 0 },
+      ],
     },
     {
       id: 'contact',
@@ -594,7 +690,13 @@ function buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
       headline: 'Contact',
       body: 'General enquiries, partnerships, and office locations.',
       fields: [
-        { name: 'name', label: 'Name', type: 'text', placeholder: 'Full name', required: true },
+        {
+          name: 'name',
+          label: 'Name',
+          type: 'text',
+          placeholder: 'Full name',
+          required: true,
+        },
         {
           name: 'email',
           label: 'Email',
@@ -621,19 +723,31 @@ function buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
       type: 'footer',
       variant: 'simple',
       headline: projectName,
-      links: pageNames
-        .slice(0, 6)
-        .map((pageName, pageIdx) => ({ label: pageName, href: toPageRoute(pageName, pageIdx) })),
+      links: pageNames.slice(0, 6).map((pageName, pageIdx) => ({
+        label: pageName,
+        href: toPageRoute(pageName, pageIdx),
+      })),
     },
   ]
 }
 
-function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNames = []) {
+function defaultSectionsForSiteType(
+  ctx,
+  siteType,
+  projectName,
+  tagline,
+  pageNames = [],
+) {
   if (siteType === 'ecommerce') {
     return buildEcommerceDefaultSections(ctx, projectName, tagline, pageNames)
   }
   if (siteType === 'institutional') {
-    return buildInstitutionalDefaultSections(ctx, projectName, tagline, pageNames)
+    return buildInstitutionalDefaultSections(
+      ctx,
+      projectName,
+      tagline,
+      pageNames,
+    )
   }
   if (siteType === 'blog') {
     return [
@@ -702,7 +816,10 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       headline: 'Quick start',
       body: 'Set up the project, understand the architecture, and move into production changes fast.',
       items: [
-        { title: 'Install', body: 'Install dependencies and boot the app locally.' },
+        {
+          title: 'Install',
+          body: 'Install dependencies and boot the app locally.',
+        },
         {
           title: 'Generate',
           body: 'Create a session from a prompt and inspect the canonical site spec.',
@@ -741,9 +858,18 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       variant: 'workspace',
       headline: 'Operational workspace',
       items: [
-        { title: 'Overview', body: 'Track work, exports, and release readiness from one screen.' },
-        { title: 'Projects', body: 'Move between generated surfaces without losing context.' },
-        { title: 'Activity', body: 'Review state changes and generated outputs as they happen.' },
+        {
+          title: 'Overview',
+          body: 'Track work, exports, and release readiness from one screen.',
+        },
+        {
+          title: 'Projects',
+          body: 'Move between generated surfaces without losing context.',
+        },
+        {
+          title: 'Activity',
+          body: 'Review state changes and generated outputs as they happen.',
+        },
       ],
     })
   } else {
@@ -800,7 +926,9 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       headline: `${projectName} FAQ`,
       body: 'Answer common buyer questions directly on the homepage and link to deeper pages when visitors need more detail.',
       items: defaultFaqItems(projectName, siteType, ctx),
-      interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
+      interactions: [
+        { type: 'accordion', behavior: 'single', defaultOpenItem: 0 },
+      ],
     },
     {
       id: 'contact',
@@ -809,7 +937,13 @@ function defaultSectionsForSiteType(ctx, siteType, projectName, tagline, pageNam
       headline: 'Start with a prompt',
       body: 'Describe the site once and export it to the stack you want afterward.',
       fields: [
-        { name: 'name', label: 'Name', type: 'text', placeholder: 'Jane Doe', required: true },
+        {
+          name: 'name',
+          label: 'Name',
+          type: 'text',
+          placeholder: 'Jane Doe',
+          required: true,
+        },
         {
           name: 'email',
           label: 'Email',
@@ -901,8 +1035,16 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         headline: `${projectName} pricing`,
         body: 'Choose the operating model that fits your team.',
         items: [
-          { title: 'Starter', price: '$0', features: ['1 workspace', 'HTML export'] },
-          { title: 'Pro', price: '$49', features: ['React export', 'Unlimited sessions'] },
+          {
+            title: 'Starter',
+            price: '$0',
+            features: ['1 workspace', 'HTML export'],
+          },
+          {
+            title: 'Pro',
+            price: '$49',
+            features: ['React export', 'Unlimited sessions'],
+          },
           {
             title: 'Enterprise',
             price: 'Custom',
@@ -916,7 +1058,9 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         variant: 'banner',
         headline: 'Need a custom workflow?',
         body: 'Talk to the team about enterprise rollout and framework standards.',
-        actions: [{ label: 'Contact Sales', href: '/contact', style: 'primary' }],
+        actions: [
+          { label: 'Contact Sales', href: '/contact', style: 'primary' },
+        ],
       },
     ]
   }
@@ -930,7 +1074,13 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         headline: `Talk to the ${projectName} team`,
         body: 'Share the product, workflow, or launch brief you need help with.',
         fields: [
-          { name: 'name', label: 'Name', type: 'text', placeholder: 'Jane Doe', required: true },
+          {
+            name: 'name',
+            label: 'Name',
+            type: 'text',
+            placeholder: 'Jane Doe',
+            required: true,
+          },
           {
             name: 'email',
             label: 'Email',
@@ -964,7 +1114,9 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         headline: `${projectName} frequently asked questions`,
         body: 'Answer buyer questions in one place and give visitors an easy path to pricing or contact.',
         items: defaultFaqItems(projectName, siteType, {}),
-        interactions: [{ type: 'accordion', behavior: 'single', defaultOpenItem: 0 }],
+        interactions: [
+          { type: 'accordion', behavior: 'single', defaultOpenItem: 0 },
+        ],
       },
       {
         id: 'faq-cta',
@@ -1056,7 +1208,11 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
         headline: `Careers at ${projectName}`,
         body: 'Current vacancies and how to apply.',
         items: [
-          { title: 'Executive trainee', body: 'Engineering · PAN India', href: '#' },
+          {
+            title: 'Executive trainee',
+            body: 'Engineering · PAN India',
+            href: '#',
+          },
           { title: 'Safety officer', body: 'Full time', href: '#' },
         ],
       },
@@ -1122,17 +1278,30 @@ function buildSecondaryPageSections(pageName, projectName, siteType) {
   ]
 }
 
-export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', siteType }) {
+export function buildFallbackSiteSpec({
+  prompt,
+  ctx = {},
+  designBrief = '',
+  siteType,
+}) {
   const inferredSiteType = inferSiteType(ctx, siteType)
-  const projectName = ctx.project_name || promptSnippet(prompt, 40, 'Generated Project')
+  const projectName =
+    ctx.project_name || promptSnippet(prompt, 40, 'Generated Project')
   const normalizedSlug = ctx.slug || slug(projectName)
   const siteUrl = normalizeSiteUrlInput(ctx.site_url || '')
-  const pageNames = ctx.pages?.length ? ctx.pages : defaultPageNamesForSiteType(inferredSiteType)
+  const pageNames = ctx.pages?.length
+    ? ctx.pages
+    : defaultPageNamesForSiteType(inferredSiteType)
   const pages = pageNames.map((name, idx) => ({
     id: idx === 0 ? 'page-home' : `page-${slug(name || `page-${idx + 1}`)}`,
     name: name || `Page ${idx + 1}`,
     route: toPageRoute(name || `Page ${idx + 1}`, idx),
-    title: inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
+    title: inferPageTitle(
+      name || `Page ${idx + 1}`,
+      projectName,
+      inferredSiteType,
+      ctx.tagline,
+    ),
     description: inferPageDescription(
       name || `Page ${idx + 1}`,
       projectName,
@@ -1140,7 +1309,12 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
       ctx.tagline,
     ),
     seo: {
-      title: inferPageTitle(name || `Page ${idx + 1}`, projectName, inferredSiteType, ctx.tagline),
+      title: inferPageTitle(
+        name || `Page ${idx + 1}`,
+        projectName,
+        inferredSiteType,
+        ctx.tagline,
+      ),
       description: inferPageDescription(
         name || `Page ${idx + 1}`,
         projectName,
@@ -1174,8 +1348,14 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
                 label: pageName,
                 href: toPageRoute(pageName, pageIdx),
               })),
-              actions: defaultNavActions(projectName, pageNames, inferredSiteType),
-              interactions: [{ type: 'mobileMenu', target: 'main-nav', behavior: 'toggle' }],
+              actions: defaultNavActions(
+                projectName,
+                pageNames,
+                inferredSiteType,
+              ),
+              interactions: [
+                { type: 'mobileMenu', target: 'main-nav', behavior: 'toggle' },
+              ],
             },
             ...defaultSectionsForSiteType(
               ctx,
@@ -1185,7 +1365,11 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
               pageNames,
             ),
           ]
-        : buildSecondaryPageSections(name || `Page ${idx + 1}`, projectName, inferredSiteType),
+        : buildSecondaryPageSections(
+            name || `Page ${idx + 1}`,
+            projectName,
+            inferredSiteType,
+          ),
   }))
 
   const palette = parseDesignPalette(designBrief)
@@ -1247,20 +1431,28 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
       .filter((section) => section.type === 'contact-form')
       .map((section) => ({
         id: `${section.id}-form`,
-        pageId: pages.find((page) => page.sections.includes(section))?.id || 'page-home',
+        pageId:
+          pages.find((page) => page.sections.includes(section))?.id ||
+          'page-home',
         fields: section.fields || [],
         validationHints: (section.fields || []).map((field) => ({
           field: field.name,
           required: !!field.required,
         })),
-        successMessage: section.form?.successMessage || 'Submitted successfully.',
+        successMessage:
+          section.form?.successMessage || 'Submitted successfully.',
         errorMessage: section.form?.errorMessage || 'Unable to submit.',
-        action: section.form?.action || { type: 'placeholder', target: 'lead_capture' },
+        action: section.form?.action || {
+          type: 'placeholder',
+          target: 'lead_capture',
+        },
       })),
     assets: [],
     seo: {
       title: projectName,
-      description: ctx.tagline || `${projectName} generated from a canonical site specification.`,
+      description:
+        ctx.tagline ||
+        `${projectName} generated from a canonical site specification.`,
       siteName: projectName,
       siteUrl,
       keywords: [projectName, inferredSiteType, ...(ctx.features || [])]
@@ -1277,13 +1469,18 @@ export function buildFallbackSiteSpec({ prompt, ctx = {}, designBrief = '', site
       ? {
           ecommerce: {
             provider: 'medusa',
-            settings: { currency: 'USD', storeName: projectName, provider: 'medusa' },
+            settings: {
+              currency: 'USD',
+              storeName: projectName,
+              provider: 'medusa',
+            },
             products: [
               {
                 id: 'prod-1',
                 title: 'Signature Collection Item',
                 handle: 'signature-collection',
-                description: 'Our flagship product combining form and function.',
+                description:
+                  'Our flagship product combining form and function.',
                 price: 49.99,
                 currency: 'USD',
                 image: '',

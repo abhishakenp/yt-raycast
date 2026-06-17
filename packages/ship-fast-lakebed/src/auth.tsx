@@ -100,7 +100,8 @@ const currentGuestName = () => {
   const win = browserWindow()
   if (!win) return 'local'
   return (
-    new URLSearchParams(win.location.search).get('lakebed_guest') ?? 'local'
+    new URLSearchParams(win.location?.search ?? '').get('lakebed_guest') ??
+    'local'
   )
 }
 

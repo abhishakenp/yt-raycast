@@ -12,7 +12,9 @@ describe('provider config', () => {
   })
 
   it('activates Convex without Clerk for anonymous generation', () => {
-    expect(resolveProviderMode({ convexUrl: 'https://convex.ship-fast.io' })).toBe('convex_anonymous')
+    expect(
+      resolveProviderMode({ convexUrl: 'https://convex.ship-fast.io' }),
+    ).toBe('convex_anonymous')
   })
 
   it('activates Clerk and Convex when both public values exist', () => {
@@ -24,11 +26,11 @@ describe('provider config', () => {
     ).toBe('clerk_convex')
   })
 
-  it('keeps authenticated providers off the anonymous homepage route', () => {
+  it('keeps authenticated providers off anonymous routes', () => {
     expect(shouldUseAuthenticatedProviders('/')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/gallery')).toBe(false)
     expect(shouldUseAuthenticatedProviders('/pricing')).toBe(true)
-    expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(true)
+    expect(shouldUseAuthenticatedProviders('/generate/session_123')).toBe(false)
   })
 
   it('provides a frosted glass Clerk appearance theme', () => {
@@ -37,8 +39,12 @@ describe('provider config', () => {
       elements: {
         cardBox: expect.objectContaining({ backdropFilter: 'blur(40px)' }),
         headerTitle: expect.objectContaining({ color: '#ffffff' }),
-        socialButtonsBlockButtonText: expect.objectContaining({ color: '#ffffff' }),
-        formButtonPrimary: expect.objectContaining({ background: expect.stringContaining('linear-gradient') }),
+        socialButtonsBlockButtonText: expect.objectContaining({
+          color: '#ffffff',
+        }),
+        formButtonPrimary: expect.objectContaining({
+          background: expect.stringContaining('linear-gradient'),
+        }),
       },
       variables: {
         borderRadius: '22px',

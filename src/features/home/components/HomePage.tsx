@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
   type FormEvent,
-  type KeyboardEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent,
 } from 'react'
 
@@ -71,7 +71,10 @@ const EXAMPLE_CHIPS = [
     'SaaS dashboard',
     'Create a clean SaaS marketing dashboard for a remote team productivity platform with charts and responsive cards.',
   ],
-  ['Hindi gym site', 'Mere local gym ke liye ek powerful modern website banao with membership plans'],
+  [
+    'Hindi gym site',
+    'Mere local gym ke liye ek powerful modern website banao with membership plans',
+  ],
 ] as const
 
 const SAMPLE_PLACEHOLDERS = [
@@ -82,8 +85,11 @@ const SAMPLE_PLACEHOLDERS = [
 ] as const
 
 const clerkPublishableKey =
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? import.meta.env.CLERK_PUBLISHABLE_KEY
-const isClerkConfigured = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ??
+  import.meta.env.CLERK_PUBLISHABLE_KEY
+const isClerkConfigured =
+  typeof clerkPublishableKey === 'string' &&
+  clerkPublishableKey.trim().length > 0
 const HOME_GALLERY_IDLE_DELAY_MS = 1800
 const HOME_GALLERY_IDLE_TIMEOUT_MS = 2500
 
@@ -112,9 +118,15 @@ const TopActions = () => {
   const [authRequested, setAuthRequested] = useState(false)
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4" aria-label="Primary">
+    <nav
+      className="pointer-events-none fixed inset-x-0 top-0 z-[210] flex items-center justify-start gap-2 bg-transparent px-6 py-4"
+      aria-label="Primary"
+    >
       <div className="pointer-events-auto ml-auto flex items-center gap-2">
-        <GlassPillAnchor className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5" href="/pricing">
+        <GlassPillAnchor
+          className="pill--top-actions min-h-9 px-4 py-0 font-sans text-[13px] font-medium text-[#f0f0f5] [&>span:last-child]:gap-1.5"
+          href="/pricing"
+        >
           Pricing
         </GlassPillAnchor>
         {isClerkConfigured ? (
@@ -146,7 +158,8 @@ const TopActions = () => {
 }
 
 const getLanguageOptionName = (code: string) =>
-  LANGUAGE_OPTIONS.find(([optionCode]) => optionCode === code)?.[1] ?? getLanguageDisplayName(code)
+  LANGUAGE_OPTIONS.find(([optionCode]) => optionCode === code)?.[1] ??
+  getLanguageDisplayName(code)
 
 const buildFocusedLanguageOptions = (selectedLanguage: string) => {
   const normalized = normalizeLanguageCode(selectedLanguage) || 'en'
@@ -197,6 +210,7 @@ const DeferredHomeGallerySection = () => {
     let observer: IntersectionObserver | undefined
     let delayHandle: number | undefined
     let idleHandle: number | undefined
+    let idleHandleUsesIdleCallback = false
 
     const activateGallery = () => {
       if (cancelled) return
@@ -227,12 +241,14 @@ const DeferredHomeGallerySection = () => {
     const scheduleIdleActivation = () => {
       if (cancelled) return
       if (idleWindow.requestIdleCallback) {
+        idleHandleUsesIdleCallback = true
         idleHandle = idleWindow.requestIdleCallback(activateGalleryFromIdle, {
           timeout: HOME_GALLERY_IDLE_TIMEOUT_MS,
         })
         return
       }
 
+      idleHandleUsesIdleCallback = false
       idleHandle = window.setTimeout(
         activateGalleryFromIdle,
         HOME_GALLERY_IDLE_TIMEOUT_MS,
@@ -271,7 +287,7 @@ const DeferredHomeGallerySection = () => {
       window.removeEventListener('scroll', handleScroll)
       if (delayHandle !== undefined) window.clearTimeout(delayHandle)
       if (idleHandle === undefined) return
-      if (idleWindow.cancelIdleCallback && idleWindow.requestIdleCallback) {
+      if (idleHandleUsesIdleCallback && idleWindow.cancelIdleCallback) {
         idleWindow.cancelIdleCallback(idleHandle)
       } else {
         window.clearTimeout(idleHandle)
@@ -317,9 +333,9 @@ export const HomePage = () => {
   const [privateModalOpen, setPrivateModalOpen] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderLength, setPlaceholderLength] = useState(0)
-  const [languageOptions, setLanguageOptions] = useState<ReadonlyArray<readonly [string, string]>>(
-    DEFAULT_LANGUAGE_OPTIONS,
-  )
+  const [languageOptions, setLanguageOptions] = useState<
+    ReadonlyArray<readonly [string, string]>
+  >(DEFAULT_LANGUAGE_OPTIONS)
   const [languageRowUnlocked, setLanguageRowUnlocked] = useState(false)
   const [preferredLanguage, setPreferredLanguage] = useState('en')
   const [promptFocused, setPromptFocused] = useState(false)
@@ -341,7 +357,9 @@ export const HomePage = () => {
   const submitCtaLabel = languageRowVisible
     ? getGenerateCtaLabel(preferredLanguage)
     : SUBMIT_BTN_DEFAULT_LABEL
-  const logoTagline = languageRowVisible ? getLogoTaglineText(preferredLanguage) : ''
+  const logoTagline = languageRowVisible
+    ? getLogoTaglineText(preferredLanguage)
+    : ''
   const promptSuggestionsOpen = promptFocused && promptSuggestions.length > 0
   const promptCaption = prompt.length > 0 ? 'My prompt' : 'Try a prompt like'
 
@@ -359,7 +377,10 @@ export const HomePage = () => {
 
     const fullText = SAMPLE_PLACEHOLDERS[placeholderIndex]
     if (placeholderLength < fullText.length) {
-      const timeout = window.setTimeout(() => setPlaceholderLength((length) => length + 1), 34)
+      const timeout = window.setTimeout(
+        () => setPlaceholderLength((length) => length + 1),
+        34,
+      )
       return () => window.clearTimeout(timeout)
     }
 
@@ -373,7 +394,7 @@ export const HomePage = () => {
   useEffect(() => {
     if (!privateModalOpen) return
 
-    const onKeyDown = (event: KeyboardEvent) => {
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') setPrivateModalOpen(false)
     }
 
@@ -405,9 +426,8 @@ export const HomePage = () => {
       void (async () => {
         const currentPrompt = prompt.trim()
         if (currentPrompt.length < PROMPT_LANG_DETECT_MIN_CHARS) return
-        const { detectSnippetLanguageBcp47 } = await import(
-          '@/lib/home/prompt-language-core'
-        )
+        const { detectSnippetLanguageBcp47 } =
+          await import('@/lib/home/prompt-language-core')
         const detectedLanguage = await detectSnippetLanguageBcp47(
           currentPrompt.slice(0, PROMPT_LANG_DETECT_SNIPPET_MAX),
         )
@@ -539,7 +559,9 @@ export const HomePage = () => {
     const form = event.currentTarget
     const formData = new FormData(form)
     const designReferenceUrls = collectDesignReferenceUrls(formData)
-    const designReferenceNotes = String(formData.get('design-ref-notes') ?? '').trim()
+    const designReferenceNotes = String(
+      formData.get('design-ref-notes') ?? '',
+    ).trim()
     void submitPrompt({
       prompt: String(formData.get('prompt') ?? prompt),
       preferredLanguage: String(formData.get('prompt-language') ?? 'en'),
@@ -579,17 +601,22 @@ export const HomePage = () => {
     setPrompt(value)
   }
 
-  const handlePromptKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handlePromptKeyDown = (
+    event: ReactKeyboardEvent<HTMLTextAreaElement>,
+  ) => {
     if (promptSuggestionsOpen) {
       if (event.key === 'ArrowDown') {
         event.preventDefault()
-        setPromptSuggestActive((index) => (index + 1) % promptSuggestions.length)
+        setPromptSuggestActive(
+          (index) => (index + 1) % promptSuggestions.length,
+        )
         return
       }
       if (event.key === 'ArrowUp') {
         event.preventDefault()
-        setPromptSuggestActive((index) =>
-          (index - 1 + promptSuggestions.length) % promptSuggestions.length,
+        setPromptSuggestActive(
+          (index) =>
+            (index - 1 + promptSuggestions.length) % promptSuggestions.length,
         )
         return
       }
@@ -621,8 +648,14 @@ export const HomePage = () => {
     const rect = card.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
     const y = ((event.clientY - rect.top) / rect.height) * 100
-    card.style.setProperty('--hero-glow-x', `${Math.max(0, Math.min(100, x)).toFixed(1)}%`)
-    card.style.setProperty('--hero-glow-y', `${Math.max(0, Math.min(100, y)).toFixed(1)}%`)
+    card.style.setProperty(
+      '--hero-glow-x',
+      `${Math.max(0, Math.min(100, x)).toFixed(1)}%`,
+    )
+    card.style.setProperty(
+      '--hero-glow-y',
+      `${Math.max(0, Math.min(100, y)).toFixed(1)}%`,
+    )
   }
 
   const handleHeroCardPointerLeave = (event: PointerEvent<HTMLDivElement>) => {
@@ -637,7 +670,10 @@ export const HomePage = () => {
       <GlassDefs />
       <LaunchBackdrop />
 
-      <PrivateGenerationModal isOpen={privateModalOpen} onClose={() => setPrivateModalOpen(false)} />
+      <PrivateGenerationModal
+        isOpen={privateModalOpen}
+        onClose={() => setPrivateModalOpen(false)}
+      />
       <TopActions />
 
       <div className="hidden" id="wappalyzer-banner">
@@ -652,7 +688,9 @@ export const HomePage = () => {
               <div className="h-[clamp(31px,2.7vw,39px)] w-[clamp(76px,6.6vw,96px)] text-cyan-300 drop-shadow-[0_0_18px_rgba(38,231,255,0.58)] max-[760px]:h-[23px] max-[760px]:w-[57px]">
                 <LogoMark />
               </div>
-              <span className="bg-[linear-gradient(135deg,#ffffff_0%,#dffbff_46%,#23e5ff_100%)] bg-[length:180%_180%] bg-clip-text font-sans text-[clamp(42px,4.2vw,56px)] font-extrabold tracking-[-0.055em] text-transparent [-webkit-text-fill-color:transparent] max-[760px]:text-[clamp(32px,9vw,40px)] max-[760px]:tracking-[-0.035em]">SHIP FAST</span>
+              <span className="bg-[linear-gradient(135deg,#ffffff_0%,#dffbff_46%,#23e5ff_100%)] bg-[length:180%_180%] bg-clip-text font-sans text-[clamp(42px,4.2vw,56px)] font-extrabold tracking-[-0.055em] text-transparent [-webkit-text-fill-color:transparent] max-[760px]:text-[clamp(32px,9vw,40px)] max-[760px]:tracking-[-0.035em]">
+                SHIP FAST
+              </span>
             </div>
             <p
               className={cn(
@@ -667,8 +705,14 @@ export const HomePage = () => {
             </p>
           </div>
 
-          <section className="relative grid min-h-[70svh] w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(32px,5vw,62px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:min-h-[600px] max-[760px]:rounded-[22px] max-[760px]:p-[22px]" aria-label="Print your mind in seconds">
-            <div className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-visible" aria-hidden="true">
+          <section
+            className="relative grid min-h-[70svh] w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(32px,5vw,62px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:min-h-[600px] max-[760px]:rounded-[22px] max-[760px]:p-[22px]"
+            aria-label="Print your mind in seconds"
+          >
+            <div
+              className="pointer-events-none fixed inset-0 z-0 h-screen w-screen overflow-visible"
+              aria-hidden="true"
+            >
               <img
                 className="absolute left-0 top-0 z-[-1] block h-screen max-h-screen w-screen max-w-screen select-none object-contain object-right opacity-100 drop-shadow-[20px_-10px_42px_rgba(223,53,255,0.18)]"
                 src="/assets/rocket-transparent.png"
@@ -679,7 +723,9 @@ export const HomePage = () => {
             </div>
 
             <div className="relative z-[4] flex w-full flex-col items-start justify-start pt-[clamp(34px,3vw,44px)] text-left max-[1100px]:items-center max-[1100px]:pt-0 max-[1100px]:text-center max-[760px]:pt-[92px]">
-              <p className="m-0 mb-[18px] font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#26e7ff] [text-shadow:0_0_18px_rgba(38,231,255,0.48)]">Prompt. Generate. Launch.</p>
+              <p className="m-0 mb-[18px] font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#26e7ff] [text-shadow:0_0_18px_rgba(38,231,255,0.48)]">
+                Prompt. Generate. Launch.
+              </p>
               <h2 className="m-0 max-w-[640px] text-balance font-sans text-[clamp(22px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[-0.02em] text-[rgba(221,236,255,0.92)] [text-shadow:0_1px_0_rgba(255,255,255,0.35),0_0_24px_rgba(255,255,255,0.1),0_12px_32px_rgba(0,0,0,0.38)] max-[760px]:text-[clamp(20px,5.5vw,28px)]">
                 Print your mind
                 <br />
@@ -696,7 +742,11 @@ export const HomePage = () => {
                   onPointerLeave={handleHeroCardPointerLeave}
                 >
                   <div className="hero-card-inner relative z-[2] min-w-0 overflow-hidden rounded-[25px] bg-transparent p-[clamp(22px,2.1vw,30px)]">
-                    <form id="prompt-form" className="flex w-full min-w-0 flex-col gap-[11px]" onSubmit={handleSubmit}>
+                    <form
+                      id="prompt-form"
+                      className="flex w-full min-w-0 flex-col gap-[11px]"
+                      onSubmit={handleSubmit}
+                    >
                       <label className="sr-only" htmlFor="prompt-input">
                         Describe the website you want to build
                       </label>
@@ -713,7 +763,9 @@ export const HomePage = () => {
                           maxLength={5000}
                           value={prompt}
                           aria-activedescendant={
-                            promptSuggestionsOpen ? `prompt-suggest-${promptSuggestActive}` : undefined
+                            promptSuggestionsOpen
+                              ? `prompt-suggest-${promptSuggestActive}`
+                              : undefined
                           }
                           aria-autocomplete="list"
                           aria-controls="prompt-suggestions-list"
@@ -733,8 +785,14 @@ export const HomePage = () => {
                           onPointerDown={() => setPromptFocused(true)}
                           onKeyDown={handlePromptKeyDown}
                         />
-                        <div className="pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200" id="prompt-placeholder" aria-hidden="true">
-                          <span className="block font-sans text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-[rgba(38,231,255,0.88)]">{promptCaption}</span>
+                        <div
+                          className="pointer-events-none absolute bottom-[var(--prompt-inset-bottom)] left-[var(--prompt-inset-x)] right-[var(--prompt-inset-x)] top-[var(--prompt-inset-top)] flex flex-col items-start gap-[var(--prompt-caption-gap)] text-left transition-opacity duration-200"
+                          id="prompt-placeholder"
+                          aria-hidden="true"
+                        >
+                          <span className="block font-sans text-[11px] font-semibold uppercase leading-[1.25] tracking-[0.1em] text-[rgba(38,231,255,0.88)]">
+                            {promptCaption}
+                          </span>
                           {!prompt ? (
                             <span className="block max-h-[calc(1.6em*3)] max-w-full overflow-hidden text-[15px] leading-[1.6] text-[rgba(219,237,255,0.48)] [mask-image:linear-gradient(180deg,#000_70%,transparent)]">
                               <span id="prompt-placeholder-text">
@@ -745,7 +803,10 @@ export const HomePage = () => {
                           ) : null}
                         </div>
                         <div
-                          className={cn('prompt-suggestions', promptSuggestionsOpen && 'is-open')}
+                          className={cn(
+                            'prompt-suggestions',
+                            promptSuggestionsOpen && 'is-open',
+                          )}
                           id="prompt-suggestions"
                           hidden={!promptSuggestionsOpen}
                         >
@@ -770,8 +831,12 @@ export const HomePage = () => {
                                   applyPromptSuggestion(suggestion)
                                 }}
                               >
-                                <span>{suggestion.slice(0, prompt.trim().length)}</span>
-                                <mark>{suggestion.slice(prompt.trim().length)}</mark>
+                                <span>
+                                  {suggestion.slice(0, prompt.trim().length)}
+                                </span>
+                                <mark>
+                                  {suggestion.slice(prompt.trim().length)}
+                                </mark>
                               </li>
                             ))}
                           </ul>
@@ -792,7 +857,11 @@ export const HomePage = () => {
                             name="prompt-language"
                             aria-label="Preferred generation language"
                             value={preferredLanguage}
-                            onChange={(event) => handlePreferredLanguageChange(event.currentTarget.value)}
+                            onChange={(event) =>
+                              handlePreferredLanguageChange(
+                                event.currentTarget.value,
+                              )
+                            }
                           >
                             {languageOptions.map(([code, name]) => (
                               <option key={code} value={code}>
@@ -821,11 +890,24 @@ export const HomePage = () => {
                             placeholder="Search a site or paste an HTTPS URL"
                           />
                         </div>
-                        <div className="hidden items-center gap-3 rounded-xl border border-white/10 bg-black/25 p-2" id="design-ref-preview">
-                          <img className="size-5 rounded" id="design-ref-preview-favicon" alt="" />
+                        <div
+                          className="hidden items-center gap-3 rounded-xl border border-white/10 bg-black/25 p-2"
+                          id="design-ref-preview"
+                        >
+                          <img
+                            className="size-5 rounded"
+                            id="design-ref-preview-favicon"
+                            alt=""
+                          />
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm text-white" id="design-ref-preview-title" />
-                            <div className="truncate text-xs text-white/45" id="design-ref-preview-url" />
+                            <div
+                              className="truncate text-sm text-white"
+                              id="design-ref-preview-title"
+                            />
+                            <div
+                              className="truncate text-xs text-white/45"
+                              id="design-ref-preview-url"
+                            />
                           </div>
                           <GlassPillButton
                             className="size-7 min-h-7 min-w-7 p-0"
@@ -837,13 +919,29 @@ export const HomePage = () => {
                         </div>
 
                         <p className="m-0 text-xs leading-relaxed text-white/40">
-                          Use a site you have rights to reference. Ship Fast creates an original layout.
+                          Use a site you have rights to reference. Ship Fast
+                          creates an original layout.
                         </p>
                       </div>
 
-                      <input type="hidden" id="design-ref-url-1" name="design-ref-url-1" value="" />
-                      <input type="hidden" id="design-ref-url-2" name="design-ref-url-2" value="" />
-                      <input type="hidden" id="design-ref-notes" name="design-ref-notes" value="" />
+                      <input
+                        type="hidden"
+                        id="design-ref-url-1"
+                        name="design-ref-url-1"
+                        value=""
+                      />
+                      <input
+                        type="hidden"
+                        id="design-ref-url-2"
+                        name="design-ref-url-2"
+                        value=""
+                      />
+                      <input
+                        type="hidden"
+                        id="design-ref-notes"
+                        name="design-ref-notes"
+                        value=""
+                      />
 
                       <div className="mt-1.5 flex w-full flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-4">
@@ -853,9 +951,14 @@ export const HomePage = () => {
                               className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full border border-white/20 bg-white/[0.08] outline-none transition-all duration-300 checked:border-cyan-300/50 checked:bg-cyan-300/25 before:absolute before:left-0.5 before:top-0.5 before:size-3.5 before:rounded-full before:bg-white/40 before:transition-all checked:before:translate-x-4 checked:before:bg-cyan-200"
                               id="design-ref-toggle"
                               checked={designRefOpen}
-                              onChange={(event) => setDesignRefOpen(event.currentTarget.checked)}
+                              onChange={(event) =>
+                                setDesignRefOpen(event.currentTarget.checked)
+                              }
                             />
-                            <label className="text-sm text-[rgba(219,237,255,0.75)]" htmlFor="design-ref-toggle">
+                            <label
+                              className="text-sm text-[rgba(219,237,255,0.75)]"
+                              htmlFor="design-ref-toggle"
+                            >
                               Layout inspiration
                             </label>
                           </div>
@@ -866,29 +969,52 @@ export const HomePage = () => {
                               id="engine-v2-toggle"
                               name="engine-version-v2"
                               checked={engineVersion === 'v2'}
-                              onChange={(event) => setEngineVersion(event.currentTarget.checked ? 'v2' : 'v1')}
+                              onChange={(event) =>
+                                setEngineVersion(
+                                  event.currentTarget.checked ? 'v2' : 'v1',
+                                )
+                              }
                             />
-                            <label className="text-sm text-[rgba(219,237,255,0.75)]" htmlFor="engine-v2-toggle">
+                            <label
+                              className="text-sm text-[rgba(219,237,255,0.75)]"
+                              htmlFor="engine-v2-toggle"
+                            >
                               Method 2 engine
                             </label>
                           </div>
                         </div>
                         <GlassPillButton
                           type="submit"
-                          className={cn('submit-btn min-h-11 px-[22px] py-2.5 text-sm font-extrabold text-[#00121a] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset,0_0_34px_rgba(38,231,255,0.22),0_16px_34px_rgba(0,0,0,0.34)] disabled:text-[rgba(230,248,255,0.46)] max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:px-0', canSubmit && 'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)]', isSubmitting && 'opacity-70', submitCtaShaking && 'submit-btn--cta-shake')}
+                          className={cn(
+                            'submit-btn min-h-11 px-[22px] py-2.5 text-sm font-extrabold text-[#00121a] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset,0_0_34px_rgba(38,231,255,0.22),0_16px_34px_rgba(0,0,0,0.34)] disabled:text-[rgba(230,248,255,0.46)] max-[760px]:w-[52px] max-[760px]:min-w-[52px] max-[760px]:px-0',
+                            canSubmit &&
+                              'bg-[linear-gradient(135deg,#6dfbff_0%,#25dff5_45%,#38a8ff_100%)]',
+                            isSubmitting && 'opacity-70',
+                            submitCtaShaking && 'submit-btn--cta-shake',
+                          )}
                           id="submit-btn"
                           disabled={!canSubmit}
                           onAnimationEnd={() => setSubmitCtaShaking(false)}
                         >
                           <ZapIcon />
-                          <span className="btn-label max-[760px]:hidden">{submitCtaLabel}</span>
-                          <div className={cn('hidden size-4 animate-spin rounded-full border-2 border-white/20 border-t-white', isSubmitting && 'block')} />
+                          <span className="btn-label max-[760px]:hidden">
+                            {submitCtaLabel}
+                          </span>
+                          <div
+                            className={cn(
+                              'hidden size-4 animate-spin rounded-full border-2 border-white/20 border-t-white',
+                              isSubmitting && 'block',
+                            )}
+                          />
                         </GlassPillButton>
                       </div>
                     </form>
 
                     <div
-                      className={cn('mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300', !errorMessage && 'hidden')}
+                      className={cn(
+                        'mt-4 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-300',
+                        !errorMessage && 'hidden',
+                      )}
                       id="prompt-policy-block"
                       role="alert"
                       aria-live="assertive"
@@ -898,10 +1024,16 @@ export const HomePage = () => {
                     </div>
                     <div className="hidden" id="gen-counter" />
 
-                    <ShareBonusPanel visible={showSharePanel} onShareClick={onShareClick} />
+                    <ShareBonusPanel
+                      visible={showSharePanel}
+                      onShareClick={onShareClick}
+                    />
 
                     <div className="hidden" id="private-gen-row">
-                      <label className="flex items-center gap-2 text-sm text-white/60" htmlFor="private-gen-checkbox">
+                      <label
+                        className="flex items-center gap-2 text-sm text-white/60"
+                        htmlFor="private-gen-checkbox"
+                      >
                         <input
                           type="checkbox"
                           id="private-gen-checkbox"
@@ -914,14 +1046,19 @@ export const HomePage = () => {
                           }}
                         />
                         <span>Private generation</span>
-                        <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.12em] text-cyan-200">PRO</span>
+                        <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-2 py-0.5 font-mono text-[10px] font-bold tracking-[0.12em] text-cyan-200">
+                          PRO
+                        </span>
                       </label>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <div className="mx-auto mt-2 flex max-w-full flex-nowrap justify-center gap-0 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:flex-wrap max-[760px]:justify-start max-[760px]:gap-1" aria-label="Example prompts">
+                  <div
+                    className="mx-auto mt-2 flex max-w-full flex-nowrap justify-center gap-0 rounded-[14px] border border-white/10 bg-[rgba(20,20,24,0.35)] px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-[12px] max-[760px]:flex-wrap max-[760px]:justify-start max-[760px]:gap-1"
+                    aria-label="Example prompts"
+                  >
                     {EXAMPLE_CHIPS.map(([label, value], index) => (
                       <button
                         key={label}
@@ -931,7 +1068,9 @@ export const HomePage = () => {
                         data-react-owned="true"
                         onClick={() => handleExamplePrompt(value)}
                       >
-                        <span className="inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded bg-violet-600/55 px-1 text-[10px] font-bold text-white">{index + 1}</span>
+                        <span className="inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded bg-violet-600/55 px-1 text-[10px] font-bold text-white">
+                          {index + 1}
+                        </span>
                         <span className="whitespace-nowrap">{label}</span>
                       </button>
                     ))}
@@ -946,8 +1085,13 @@ export const HomePage = () => {
       </div>
 
       <footer className="relative z-[1] mx-auto mb-8 flex w-[min(1160px,calc(100%_-_48px))] flex-wrap items-center justify-between gap-5 rounded-[20px] border border-white/6 bg-[linear-gradient(145deg,rgba(255,255,255,0.06),rgba(255,255,255,0.015))] px-7 py-[22px] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.2),0_0_60px_rgba(100,80,200,0.04)] backdrop-blur-[20px] max-[720px]:w-[min(100%,calc(100%_-_32px))] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-4">
-        <span className="font-mono text-[13px] tracking-[0.12em] text-[#97a0b0]">SHIP FAST © {footerYear}</span>
-        <nav className="flex flex-wrap items-center gap-5 [&_a]:text-[13px] [&_a]:text-[#97a0b0] [&_a]:transition-colors hover:[&_a]:text-[#EDEDEF]" aria-label="Footer links">
+        <span className="font-mono text-[13px] tracking-[0.12em] text-[#97a0b0]">
+          SHIP FAST © {footerYear}
+        </span>
+        <nav
+          className="flex flex-wrap items-center gap-5 [&_a]:text-[13px] [&_a]:text-[#97a0b0] [&_a]:transition-colors hover:[&_a]:text-[#EDEDEF]"
+          aria-label="Footer links"
+        >
           <a href="/">Home</a>
           <a href="/pricing">Pricing</a>
           <a href="/privacy">Privacy</a>
@@ -957,7 +1101,8 @@ export const HomePage = () => {
 
       <noscript>
         <div className="fixed inset-x-4 bottom-4 z-[300] rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
-          JavaScript is required for generation, but the homepage metadata is still rendered on the server.
+          JavaScript is required for generation, but the homepage metadata is
+          still rendered on the server.
         </div>
       </noscript>
     </div>

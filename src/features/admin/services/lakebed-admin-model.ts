@@ -106,7 +106,11 @@ export function createLakebedAdminTables(
 
       if (isJsonRecord(value) && Object.values(value).every(isJsonRecord)) {
         const rows = Object.entries(value).map(([key, item], index) =>
-          rowFromValue({ _key: key, ...item }, index, key),
+          rowFromValue(
+            { _key: key, ...(isJsonRecord(item) ? item : {}) },
+            index,
+            key,
+          ),
         )
         tables.push({
           capsule: doc.capsule,
@@ -140,7 +144,8 @@ export function createLakebedAdminTables(
 
 export function previewAdminValue(value: unknown): string {
   if (typeof value === 'string') return value
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value)
   if (value === null) return 'null'
   if (value === undefined) return ''
 
@@ -161,4 +166,3 @@ export function parseAdminValue(value: string): unknown {
     return value
   }
 }
-

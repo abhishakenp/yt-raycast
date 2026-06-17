@@ -1,3 +1,5 @@
+import type { Doc, Id } from '../_generated/dataModel'
+import type { QueryCtx } from '../_generated/server'
 import { applyPreviewTextEdit, escapeHtml } from './cms_helpers'
 
 /* ------------------------------------------------------------------ */
@@ -28,6 +30,28 @@ export const CHAT_OPENUI_REFINEMENT_RE =
 
 export const truncateText = (value: string, max: number): string =>
   value.length <= max ? value : value.slice(0, max)
+
+export const serializeChatMessage = (message: Doc<'chatMessages'>) => ({
+  messageId: message._id,
+  role: message.role,
+  content: message.content,
+  createdAt: message.createdAt,
+})
+
+export const listSessionChatMessages = async (
+  ctx: Pick<QueryCtx, 'db'>,
+  sessionId: Id<'sessions'>,
+) => {
+  const messages = await ctx.db
+    .query('chatMessages')
+    .withIndex('by_sessionId_createdAt', (index) =>
+      index.eq('sessionId', sessionId),
+    )
+    .order('asc')
+    .take(200)
+
+  return messages.map(serializeChatMessage)
+}
 
 export type ChatPreviewRefinement = {
   html: string
@@ -67,7 +91,6 @@ export type ChatInstructionIntent =
   | {
       kind: 'note'
     }
-
 
 export const extractQuotedText = (instruction: string): string | undefined =>
   instruction.match(/["“]([^"”]{2,180})["”]/)?.[1]?.trim()
@@ -144,7 +167,10 @@ export const replaceFirstElementText = (
   return { html, replaced: false }
 }
 
-export const appendHtmlBeforeClose = (html: string, addition: string): string => {
+export const appendHtmlBeforeClose = (
+  html: string,
+  addition: string,
+): string => {
   if (/<\/main>/i.test(html))
     return html.replace(/<\/main>/i, `${addition}</main>`)
   if (/<\/body>/i.test(html))
@@ -152,7 +178,10 @@ export const appendHtmlBeforeClose = (html: string, addition: string): string =>
   return `${html}${addition}`
 }
 
-export const buildGeneratedRefinementSection = (title: string, body: string): string =>
+export const buildGeneratedRefinementSection = (
+  title: string,
+  body: string,
+): string =>
   `<section style="margin:32px auto;padding:24px;max-width:960px;border:1px solid rgba(15,23,42,.12);border-radius:16px;background:rgba(248,250,252,.92);color:#0f172a"><p style="margin:0 0 8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#0891b2;font-weight:700">${escapeHtml(title)}</p><p style="margin:0;font-size:16px;line-height:1.65">${escapeHtml(truncateText(body, 420))}</p></section>`
 
 export const applyInstructionDrivenHtmlRefinement = (

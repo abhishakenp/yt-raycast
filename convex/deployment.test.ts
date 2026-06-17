@@ -6,8 +6,11 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
-const createTestSession = (t: ReturnType<typeof convexTest>, prompt = 'Test site') =>
-  t.runMutation(api.sessions.create, {
+const createTestSession = (
+  t: ReturnType<typeof convexTest>,
+  prompt = 'Test site',
+) =>
+  t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -42,13 +45,13 @@ test('getDeploymentBySlug returns deployment with session metadata', async () =>
 
   await persistGeneratedPreview(t, sessionId)
 
-  await t.runMutation(api.sessions.publishPreview, {
+  await t.mutation(api.sessions.publishPreview, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     requestedSlug: 'test-site',
   })
 
-  const deployment = await t.runQuery(api.sessions.getDeploymentBySlug, {
+  const deployment = await t.query(api.sessions.getDeploymentBySlug, {
     slug: 'test-site',
   })
 
@@ -65,13 +68,13 @@ test('getDeploymentStatus returns deployment status', async () => {
 
   await persistGeneratedPreview(t, sessionId)
 
-  await t.runMutation(api.sessions.publishPreview, {
+  await t.mutation(api.sessions.publishPreview, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     requestedSlug: 'test-site',
   })
 
-  const status = await t.runQuery(api.sessions.getDeploymentStatus, {
+  const status = await t.query(api.sessions.getDeploymentStatus, {
     sessionId,
   })
 
@@ -84,7 +87,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   const t = convexTest(schema, modules)
   const prompt = 'Cache-safe deployment preview'
 
-  const first = await t.runMutation(api.sessions.create, {
+  const first = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -95,7 +98,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   })
   await persistGeneratedPreview(t, first.sessionId, prompt)
 
-  const second = await t.runMutation(api.sessions.create, {
+  const second = await t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -109,7 +112,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   expect(second.cloned).toBe(true)
   expect(second.sessionId).not.toBe(first.sessionId)
 
-  const secondView = await t.runQuery(api.sessions.getGenerationView, {
+  const secondView = await t.query(api.sessions.getGenerationView, {
     lookup: second.sessionId,
   })
   expect(secondView?.session.status).toBe('preview_ready')
@@ -120,7 +123,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   expect(secondView?.tasks[0]?.status).toBe('succeeded')
 
   await expect(
-    t.runMutation(api.sessions.createEdit, {
+    t.mutation(api.sessions.createEdit, {
       sessionId: second.sessionId,
       anonymousOwnerSecret: 'owner-a',
       editType: 'text',
@@ -130,7 +133,7 @@ test('owner-secret sessions clone cached public previews without reusing another
   ).rejects.toThrow()
 
   await expect(
-    t.runMutation(api.sessions.createEdit, {
+    t.mutation(api.sessions.createEdit, {
       sessionId: second.sessionId,
       anonymousOwnerSecret: 'owner-b',
       editType: 'text',
@@ -147,24 +150,24 @@ test('publishPreview repoints an existing deployment to the latest preview versi
 
   await persistGeneratedPreview(t, sessionId)
 
-  await t.runMutation(api.sessions.publishPreview, {
+  await t.mutation(api.sessions.publishPreview, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     requestedSlug: 'test-site',
   })
 
-  await t.runMutation(api.sessions.createEdit, {
+  await t.mutation(api.sessions.createEdit, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     editType: 'text',
     afterHtml: '<html><body><h1>Updated deployment</h1></body></html>',
   })
 
-  const republish = await t.runMutation(api.sessions.publishPreview, {
+  const republish = await t.mutation(api.sessions.publishPreview, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
   })
-  const status = await t.runQuery(api.sessions.getDeploymentStatus, {
+  const status = await t.query(api.sessions.getDeploymentStatus, {
     sessionId,
   })
 
@@ -179,23 +182,23 @@ test('public preview by deployment slug serves the published preview version unt
 
   await persistGeneratedPreview(t, sessionId)
 
-  await t.runMutation(api.sessions.publishPreview, {
+  await t.mutation(api.sessions.publishPreview, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     requestedSlug: 'versioned-site',
   })
 
-  await t.runMutation(api.sessions.createEdit, {
+  await t.mutation(api.sessions.createEdit, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
     editType: 'text',
     afterHtml: '<html><body><h1>Unpublished edit</h1></body></html>',
   })
 
-  const publicBeforeRepublish = await t.runQuery(api.sessions.getPublicPreview, {
+  const publicBeforeRepublish = await t.query(api.sessions.getPublicPreview, {
     lookup: 'versioned-site',
   })
-  const directLatestPreview = await t.runQuery(api.sessions.getPublicPreview, {
+  const directLatestPreview = await t.query(api.sessions.getPublicPreview, {
     lookup: sessionId,
   })
 
@@ -204,12 +207,12 @@ test('public preview by deployment slug serves the published preview version unt
   expect(directLatestPreview?.previewVersion).toBe(2)
   expect(directLatestPreview?.html).toContain('Unpublished edit')
 
-  await t.runMutation(api.sessions.publishPreview, {
+  await t.mutation(api.sessions.publishPreview, {
     sessionId,
     anonymousOwnerSecret: 'owner-secret',
   })
 
-  const publicAfterRepublish = await t.runQuery(api.sessions.getPublicPreview, {
+  const publicAfterRepublish = await t.query(api.sessions.getPublicPreview, {
     lookup: 'versioned-site',
   })
 

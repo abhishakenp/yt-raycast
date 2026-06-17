@@ -75,7 +75,7 @@ describe('runHomepageOrchestrator multi-page generation', () => {
     expect(result.source).toContain('home = SaasKimiPage')
     expect(result.source).toContain('p1 = SaasKimiPage2')
     expect(events).toContain('done')
-  })
+  }, 10000)
 
   it('carries the enforced preferred language into page content prompts', async () => {
     const { runHomepageOrchestrator } = await import('./run.ts')

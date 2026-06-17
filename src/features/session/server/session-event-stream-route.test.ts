@@ -12,7 +12,7 @@ describe('createSessionEventStreamResponse', () => {
         query: async (_ref, args) => {
           calls.push(args)
           return {
-            session: { id: 'session_123' },
+            session: { sessionId: 'session_123' },
             cursor: 200,
             events: [
               {
@@ -74,7 +74,7 @@ describe('createSessionEventStreamResponse', () => {
           anonymousOwnerSecret: 'owner-secret',
         })
         return {
-          session: { id: 'session_123' },
+          session: { sessionId: 'session_123' },
           cursor: 100,
           events: [],
         }

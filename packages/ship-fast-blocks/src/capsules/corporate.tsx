@@ -1,9 +1,9 @@
-import { useState, type ReactNode } from "react"
-import { z } from "zod/v4"
-import { defineCapsule } from "./openui.ts"
-import { cn } from "#/lib/utils.ts"
-import { useNavigate } from "#/lib/use-navigate.tsx"
-import { Image } from "#/lib/img.tsx"
+import { useState, type ReactNode } from 'react'
+import { z } from 'zod/v4'
+import { defineCapsule } from './openui.ts'
+import { cn } from '#/lib/utils.ts'
+import { useNavigate } from '#/lib/use-navigate.tsx'
+import { Image } from '#/lib/img.tsx'
 
 /**
  * CorporateKimiPage — a complete, self-contained ENTERPRISE / B2B corporate
@@ -27,7 +27,7 @@ import { Image } from "#/lib/img.tsx"
  * supply ONLY content data; rich defaults make it render great with no props.
  */
 export const CorporateKimiPage = defineCapsule({
-  name: "CorporateKimiPage",
+  name: 'CorporateKimiPage',
   description:
     "Complete ENTERPRISE / corporate B2B marketing homepage with a clean, professional, trustworthy aesthetic: white canvas, soft muted section bands, neutral near-black accents and serious typography built for Fortune 500 credibility. Includes a split hero (live trust badge, authoritative headline, dual CTAs, SOC 2 / ISO compliance check-marks, and a showcase office photo with a floating ROI stat card), a client logo trust-bar, a 6-up enterprise solutions grid with icons (cloud infrastructure, security & compliance, data analytics, digital transformation, managed services, risk management), a numbered 4-phase implementation timeline, a 6-up global office gallery with gradient-caption overlays, a 3-tier transparent pricing table with a featured dark 'Most Popular' plan, a dark KPI stats band, a 3-up customer testimonial grid with star ratings and avatars, an accordion FAQ, a dark conversion CTA, and a fat 5-column footer with social icons and legal links. Use as the ROOT/home page for enterprise software vendors, cloud-infrastructure / SaaS platforms, IT consultancies, digital-transformation firms, managed-services providers, financial / B2B services companies, or any corporate site that needs gravitas, compliance signals, and pricing. Supply content only — brand, nav, hero, logos, solutions, steps, offices, pricing, stats, testimonials, faq, cta, footer; the block owns all layout and styling.",
   props: z.object({
@@ -145,9 +145,7 @@ export const CorporateKimiPage = defineCapsule({
       .object({
         heading: z.string().optional(),
         description: z.string().optional(),
-        items: z
-          .array(z.object({ q: z.string(), a: z.string() }))
-          .optional(),
+        items: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       })
       .optional(),
     /** Final conversion CTA band. */
@@ -165,9 +163,7 @@ export const CorporateKimiPage = defineCapsule({
       .object({
         about: z.string().optional(),
         columns: z
-          .array(
-            z.object({ title: z.string(), links: z.array(z.string()) }),
-          )
+          .array(z.object({ title: z.string(), links: z.array(z.string()) }))
           .optional(),
         copyright: z.string().optional(),
         legal: z.array(z.string()).optional(),
@@ -184,11 +180,19 @@ export const CorporateKimiPage = defineCapsule({
       value !== null && typeof value === 'object' && !Array.isArray(value)
 
     const nonEmptyString = (value: unknown, fallback: string): string =>
-      typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback
+      typeof value === 'string' && value.trim().length > 0
+        ? value.trim()
+        : fallback
 
-    const normalizeStringArray = (value: unknown, fallback: string[]): string[] => {
+    const normalizeStringArray = (
+      value: unknown,
+      fallback: string[],
+    ): string[] => {
       if (!Array.isArray(value)) return fallback
-      return value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+      return value.filter(
+        (item): item is string =>
+          typeof item === 'string' && item.trim().length > 0,
+      )
     }
 
     const normalizeObjectArray = <T extends Record<string, unknown>>(
@@ -200,204 +204,249 @@ export const CorporateKimiPage = defineCapsule({
       return value.filter((item): item is T => {
         if (!isRecord(item)) return false
         return requiredKeys.every((key) => {
-          const value = item[String(key)]
-          return typeof value === 'string' && value.trim().length > 0
+          const fieldValue = item[String(key)]
+          return typeof fieldValue === 'string' && fieldValue.trim().length > 0
         })
       })
     }
 
-    const brand = nonEmptyString(props.brand, "Nexus")
-    const nav = normalizeStringArray(props.nav, ["Solutions", "Customers", "Pricing", "Investors", "Company"])
+    const brand = nonEmptyString(props.brand, 'Nexus')
+    const nav = normalizeStringArray(props.nav, [
+      'Solutions',
+      'Customers',
+      'Pricing',
+      'Investors',
+      'Company',
+    ])
 
-    const heroBadge = nonEmptyString(props.hero?.badge, "Trusted by 500+ Enterprise Clients")
-    const heroHeading = nonEmptyString(props.hero?.heading, "Enterprise infrastructure for the modern economy")
+    const heroBadge = nonEmptyString(
+      props.hero?.badge,
+      'Trusted by 500+ Enterprise Clients',
+    )
+    const heroHeading = nonEmptyString(
+      props.hero?.heading,
+      'Enterprise infrastructure for the modern economy',
+    )
     const heroSub = nonEmptyString(
       props.hero?.subheading,
       "Nexus delivers mission-critical cloud infrastructure, enterprise software, and digital transformation solutions that power the world's most demanding organizations. From Fortune 500 to high-growth startups.",
     )
-    const heroPrimary = nonEmptyString(props.hero?.primaryCta, "Schedule a Demo")
-    const heroSecondary = nonEmptyString(props.hero?.secondaryCta, "Explore Solutions")
-    const heroBadges = normalizeStringArray(props.hero?.badges, ["SOC 2 Type II Certified", "ISO 27001 Compliant"])
+    const heroPrimary = nonEmptyString(
+      props.hero?.primaryCta,
+      'Schedule a Demo',
+    )
+    const heroSecondary = nonEmptyString(
+      props.hero?.secondaryCta,
+      'Explore Solutions',
+    )
+    const heroBadges = normalizeStringArray(props.hero?.badges, [
+      'SOC 2 Type II Certified',
+      'ISO 27001 Compliant',
+    ])
     const heroImageAlt = nonEmptyString(
       props.hero?.imageAlt,
-      "Modern corporate office interior with glass walls and collaborative workspace",
+      'Modern corporate office interior with glass walls and collaborative workspace',
     )
-    const heroStatLabel = nonEmptyString(props.hero?.statLabel, "Average ROI")
-    const heroStatValue = nonEmptyString(props.hero?.statValue, "340%")
+    const heroStatLabel = nonEmptyString(props.hero?.statLabel, 'Average ROI')
+    const heroStatValue = nonEmptyString(props.hero?.statValue, '340%')
 
-    const logosHeading = nonEmptyString(props.logos?.heading, "Trusted by leading enterprises worldwide")
-    const logoItems = normalizeStringArray(props.logos?.items, ["AcmeCorp", "Globex", "Initech", "Hooli", "Massive", "Soylent"])
+    const logosHeading = nonEmptyString(
+      props.logos?.heading,
+      'Trusted by leading enterprises worldwide',
+    )
+    const logoItems = normalizeStringArray(props.logos?.items, [
+      'AcmeCorp',
+      'Globex',
+      'Initech',
+      'Hooli',
+      'Massive',
+      'Soylent',
+    ])
 
-    const solutionsHeading = nonEmptyString(props.solutions?.heading, "Enterprise solutions built for scale")
+    const solutionsHeading = nonEmptyString(
+      props.solutions?.heading,
+      'Enterprise solutions built for scale',
+    )
     const solutionsDesc = nonEmptyString(
       props.solutions?.description,
-      "Comprehensive infrastructure and software solutions designed to meet the security, compliance, and performance demands of global enterprises.",
+      'Comprehensive infrastructure and software solutions designed to meet the security, compliance, and performance demands of global enterprises.',
     )
     const solutionItems = normalizeObjectArray(
       props.solutions?.items,
       ['title', 'description'],
       [
         {
-          title: "Cloud Infrastructure",
+          title: 'Cloud Infrastructure',
           description:
-            "Multi-cloud orchestration platform supporting AWS, Azure, and GCP with unified management, cost optimization, and automated scaling.",
+            'Multi-cloud orchestration platform supporting AWS, Azure, and GCP with unified management, cost optimization, and automated scaling.',
         },
         {
-          title: "Security & Compliance",
+          title: 'Security & Compliance',
           description:
-            "Enterprise-grade security with zero-trust architecture, continuous compliance monitoring, and automated threat detection and response.",
+            'Enterprise-grade security with zero-trust architecture, continuous compliance monitoring, and automated threat detection and response.',
         },
         {
-          title: "Data Analytics",
+          title: 'Data Analytics',
           description:
-            "Real-time analytics platform with AI-powered insights, predictive modeling, and custom dashboards for executive decision-making.",
+            'Real-time analytics platform with AI-powered insights, predictive modeling, and custom dashboards for executive decision-making.',
         },
         {
-          title: "Digital Transformation",
+          title: 'Digital Transformation',
           description:
-            "End-to-end transformation consulting, legacy modernization, and agile implementation to accelerate your digital journey.",
+            'End-to-end transformation consulting, legacy modernization, and agile implementation to accelerate your digital journey.',
         },
         {
-          title: "Managed Services",
+          title: 'Managed Services',
           description:
-            "24/7 operations center with dedicated teams for monitoring, incident response, and proactive system optimization.",
+            '24/7 operations center with dedicated teams for monitoring, incident response, and proactive system optimization.',
         },
         {
-          title: "Risk Management",
+          title: 'Risk Management',
           description:
-            "Comprehensive risk assessment frameworks, business continuity planning, and disaster recovery with industry-leading RTOs.",
+            'Comprehensive risk assessment frameworks, business continuity planning, and disaster recovery with industry-leading RTOs.',
         },
       ],
     )
 
-    const stepsHeading = nonEmptyString(props.steps?.heading, "Implementation in four phases")
+    const stepsHeading = nonEmptyString(
+      props.steps?.heading,
+      'Implementation in four phases',
+    )
     const stepsDesc = nonEmptyString(
       props.steps?.description,
-      "Our proven methodology ensures seamless deployment with minimal disruption to your operations.",
+      'Our proven methodology ensures seamless deployment with minimal disruption to your operations.',
     )
     const stepItems = normalizeObjectArray(
       props.steps?.items,
       ['title', 'description'],
       [
         {
-          title: "Discovery",
+          title: 'Discovery',
           description:
-            "Comprehensive assessment of your current infrastructure, workflows, and business objectives. We identify opportunities and define success metrics.",
+            'Comprehensive assessment of your current infrastructure, workflows, and business objectives. We identify opportunities and define success metrics.',
         },
         {
-          title: "Design",
+          title: 'Design',
           description:
-            "Custom architecture design tailored to your requirements. Security-first approach with scalability built into every component.",
+            'Custom architecture design tailored to your requirements. Security-first approach with scalability built into every component.',
         },
         {
-          title: "Deployment",
+          title: 'Deployment',
           description:
-            "Phased rollout with parallel systems during transition. Our team manages the entire process with 24/7 support throughout.",
+            'Phased rollout with parallel systems during transition. Our team manages the entire process with 24/7 support throughout.',
         },
         {
-          title: "Optimization",
+          title: 'Optimization',
           description:
-            "Continuous monitoring and refinement post-deployment. Regular reviews ensure maximum ROI and alignment with evolving needs.",
+            'Continuous monitoring and refinement post-deployment. Regular reviews ensure maximum ROI and alignment with evolving needs.',
         },
       ],
     )
 
-    const officesHeading = nonEmptyString(props.offices?.heading, "Global presence, local expertise")
+    const officesHeading = nonEmptyString(
+      props.offices?.heading,
+      'Global presence, local expertise',
+    )
     const officesDesc = nonEmptyString(
       props.offices?.description,
-      "14 offices across 6 continents, serving clients in 47 countries with round-the-clock support.",
+      '14 offices across 6 continents, serving clients in 47 countries with round-the-clock support.',
     )
     const officeItems = normalizeObjectArray(
       props.offices?.items,
       ['title', 'caption', 'imageAlt'],
       [
         {
-          title: "New York Headquarters",
-          caption: "Global HQ & Innovation Center",
-          imageAlt: "Modern glass skyscraper corporate headquarters at sunset",
+          title: 'New York Headquarters',
+          caption: 'Global HQ & Innovation Center',
+          imageAlt: 'Modern glass skyscraper corporate headquarters at sunset',
         },
         {
-          title: "London Office",
-          caption: "EMEA Regional Hub",
-          imageAlt: "Tower Bridge and modern city skyline in London at golden hour",
+          title: 'London Office',
+          caption: 'EMEA Regional Hub',
+          imageAlt:
+            'Tower Bridge and modern city skyline in London at golden hour',
         },
         {
-          title: "Tokyo Office",
-          caption: "APAC Operations Center",
-          imageAlt: "Tokyo cityscape with illuminated skyscrapers at night",
+          title: 'Tokyo Office',
+          caption: 'APAC Operations Center',
+          imageAlt: 'Tokyo cityscape with illuminated skyscrapers at night',
         },
         {
-          title: "Sydney Office",
-          caption: "ANZ Regional Office",
-          imageAlt: "Sydney Opera House and harbor waterfront panorama",
+          title: 'Sydney Office',
+          caption: 'ANZ Regional Office',
+          imageAlt: 'Sydney Opera House and harbor waterfront panorama',
         },
         {
-          title: "Singapore Office",
-          caption: "Southeast Asia Hub",
-          imageAlt: "Singapore Marina Bay skyline with modern architecture",
+          title: 'Singapore Office',
+          caption: 'Southeast Asia Hub',
+          imageAlt: 'Singapore Marina Bay skyline with modern architecture',
         },
         {
-          title: "Berlin Office",
-          caption: "European Development Center",
-          imageAlt: "Modern corporate building in Berlin with contemporary architecture",
+          title: 'Berlin Office',
+          caption: 'European Development Center',
+          imageAlt:
+            'Modern corporate building in Berlin with contemporary architecture',
         },
       ],
     )
 
-    const pricingHeading = nonEmptyString(props.pricing?.heading, "Transparent enterprise pricing")
+    const pricingHeading = nonEmptyString(
+      props.pricing?.heading,
+      'Transparent enterprise pricing',
+    )
     const pricingDesc = nonEmptyString(
       props.pricing?.description,
-      "Flexible plans designed to scale with your organization. All plans include implementation support.",
+      'Flexible plans designed to scale with your organization. All plans include implementation support.',
     )
     const pricingPlans = normalizeObjectArray(
       props.pricing?.plans,
       ['name', 'blurb', 'price', 'features', 'cta'],
       [
         {
-          name: "Professional",
-          blurb: "For growing teams up to 250 employees",
-          price: "$2,500",
-          period: "/month",
+          name: 'Professional',
+          blurb: 'For growing teams up to 250 employees',
+          price: '$2,500',
+          period: '/month',
           features: [
-            "Up to 5 cloud environments",
-            "24/7 email and chat support",
-            "Standard security features",
-            "Basic analytics dashboard",
-            "Quarterly business reviews",
+            'Up to 5 cloud environments',
+            '24/7 email and chat support',
+            'Standard security features',
+            'Basic analytics dashboard',
+            'Quarterly business reviews',
           ],
-          cta: "Get Started",
+          cta: 'Get Started',
           featured: false,
         },
         {
-          name: "Enterprise",
-          blurb: "For mid-size organizations up to 5,000 employees",
-          price: "$8,500",
-          period: "/month",
+          name: 'Enterprise',
+          blurb: 'For mid-size organizations up to 5,000 employees',
+          price: '$8,500',
+          period: '/month',
           features: [
-            "Unlimited cloud environments",
-            "24/7 phone, email & chat support",
-            "Advanced security & compliance",
-            "Custom analytics & AI insights",
-            "Monthly business reviews",
-            "Dedicated success manager",
+            'Unlimited cloud environments',
+            '24/7 phone, email & chat support',
+            'Advanced security & compliance',
+            'Custom analytics & AI insights',
+            'Monthly business reviews',
+            'Dedicated success manager',
           ],
-          cta: "Contact Sales",
+          cta: 'Contact Sales',
           featured: true,
-          badge: "Most Popular",
+          badge: 'Most Popular',
         },
         {
-          name: "Global",
-          blurb: "For large enterprises with 5,000+ employees",
-          price: "Custom",
-          period: "",
+          name: 'Global',
+          blurb: 'For large enterprises with 5,000+ employees',
+          price: 'Custom',
+          period: '',
           features: [
-            "Everything in Enterprise",
-            "Multi-region deployment",
-            "Custom SLAs & contracts",
-            "On-premise deployment options",
-            "Executive advisory board access",
+            'Everything in Enterprise',
+            'Multi-region deployment',
+            'Custom SLAs & contracts',
+            'On-premise deployment options',
+            'Executive advisory board access',
           ],
-          cta: "Contact Sales",
+          cta: 'Contact Sales',
           featured: false,
         },
       ],
@@ -407,17 +456,20 @@ export const CorporateKimiPage = defineCapsule({
       props.stats?.items,
       ['value', 'label'],
       [
-        { value: "$2.4B", label: "Customer cost savings delivered" },
-        { value: "500+", label: "Enterprise clients worldwide" },
-        { value: "99.99%", label: "Platform uptime SLA" },
-        { value: "14", label: "Global office locations" },
+        { value: '$2.4B', label: 'Customer cost savings delivered' },
+        { value: '500+', label: 'Enterprise clients worldwide' },
+        { value: '99.99%', label: 'Platform uptime SLA' },
+        { value: '14', label: 'Global office locations' },
       ],
     )
 
-    const testimonialsHeading = nonEmptyString(props.testimonials?.heading, "Trusted by industry leaders")
+    const testimonialsHeading = nonEmptyString(
+      props.testimonials?.heading,
+      'Trusted by industry leaders',
+    )
     const testimonialsDesc = nonEmptyString(
       props.testimonials?.description,
-      "See how leading organizations transformed their operations with Nexus.",
+      'See how leading organizations transformed their operations with Nexus.',
     )
     const testimonialItems = normalizeObjectArray(
       props.testimonials?.items,
@@ -426,96 +478,136 @@ export const CorporateKimiPage = defineCapsule({
         {
           quote:
             "Nexus transformed our infrastructure in just 90 days. We reduced operational costs by 40% while improving system reliability. Their team's expertise is unmatched in the industry.",
-          name: "Michael Chen",
-          role: "CTO, Meridian Financial Group",
-          avatarAlt: "Professional headshot of a smiling male executive in business attire",
+          name: 'Michael Chen',
+          role: 'CTO, Meridian Financial Group',
+          avatarAlt:
+            'Professional headshot of a smiling male executive in business attire',
         },
         {
           quote:
-            "The security and compliance features gave our board complete confidence. We passed our SOC 2 audit with zero findings—a first for our company. Nexus made it possible.",
-          name: "Sarah Williams",
-          role: "CISO, Horizon Healthcare Systems",
-          avatarAlt: "Professional headshot of a female executive with confident expression",
+            'The security and compliance features gave our board complete confidence. We passed our SOC 2 audit with zero findings—a first for our company. Nexus made it possible.',
+          name: 'Sarah Williams',
+          role: 'CISO, Horizon Healthcare Systems',
+          avatarAlt:
+            'Professional headshot of a female executive with confident expression',
         },
         {
           quote:
-            "We evaluated 12 vendors before choosing Nexus. Their analytics platform helped us identify $3.2M in operational inefficiencies within the first quarter.",
-          name: "David Park",
-          role: "COO, Pacific Logistics Inc.",
-          avatarAlt: "Professional headshot of a middle-aged male business leader with glasses",
+            'We evaluated 12 vendors before choosing Nexus. Their analytics platform helped us identify $3.2M in operational inefficiencies within the first quarter.',
+          name: 'David Park',
+          role: 'COO, Pacific Logistics Inc.',
+          avatarAlt:
+            'Professional headshot of a middle-aged male business leader with glasses',
         },
       ],
     )
 
-    const faqHeading = nonEmptyString(props.faq?.heading, "Frequently asked questions")
+    const faqHeading = nonEmptyString(
+      props.faq?.heading,
+      'Frequently asked questions',
+    )
     const faqDesc = nonEmptyString(
       props.faq?.description,
-      "Everything you need to know about Nexus enterprise solutions.",
+      'Everything you need to know about Nexus enterprise solutions.',
     )
     const faqItems = normalizeObjectArray(
       props.faq?.items,
       ['q', 'a'],
       [
         {
-          q: "What is the typical implementation timeline?",
-          a: "Most implementations are completed within 90-120 days, depending on complexity and scope. Our phased approach ensures minimal disruption to your operations, with parallel systems running during the transition period. Enterprise and Global plans include dedicated project managers to accelerate deployment.",
+          q: 'What is the typical implementation timeline?',
+          a: 'Most implementations are completed within 90-120 days, depending on complexity and scope. Our phased approach ensures minimal disruption to your operations, with parallel systems running during the transition period. Enterprise and Global plans include dedicated project managers to accelerate deployment.',
         },
         {
-          q: "How does your pricing model work?",
-          a: "Our Professional and Enterprise plans are priced as flat monthly subscriptions based on employee count and feature requirements. The Global plan is customized based on your specific needs, including multi-region deployment, custom SLAs, and specialized compliance requirements. All plans include implementation support.",
+          q: 'How does your pricing model work?',
+          a: 'Our Professional and Enterprise plans are priced as flat monthly subscriptions based on employee count and feature requirements. The Global plan is customized based on your specific needs, including multi-region deployment, custom SLAs, and specialized compliance requirements. All plans include implementation support.',
         },
         {
-          q: "What security certifications do you maintain?",
-          a: "Nexus maintains SOC 2 Type II, ISO 27001, ISO 9001, and HIPAA compliance certifications. Our platform is GDPR compliant and we undergo annual third-party security audits. Enterprise and Global customers receive access to our compliance documentation and can request custom security assessments.",
+          q: 'What security certifications do you maintain?',
+          a: 'Nexus maintains SOC 2 Type II, ISO 27001, ISO 9001, and HIPAA compliance certifications. Our platform is GDPR compliant and we undergo annual third-party security audits. Enterprise and Global customers receive access to our compliance documentation and can request custom security assessments.',
         },
         {
-          q: "Do you offer on-premise deployment options?",
-          a: "Yes, our Global plan includes on-premise, hybrid, and private cloud deployment options for organizations with specific data residency or regulatory requirements. Our solutions can be deployed in your own data centers while maintaining the same management and monitoring capabilities as our cloud offering.",
+          q: 'Do you offer on-premise deployment options?',
+          a: 'Yes, our Global plan includes on-premise, hybrid, and private cloud deployment options for organizations with specific data residency or regulatory requirements. Our solutions can be deployed in your own data centers while maintaining the same management and monitoring capabilities as our cloud offering.',
         },
         {
-          q: "What support options are available?",
-          a: "Professional plans include 24/7 email and chat support with 4-hour response times. Enterprise plans add 24/7 phone support and dedicated success managers with 1-hour response times. Global plans include a dedicated technical account manager, quarterly business reviews, and custom SLA guarantees.",
+          q: 'What support options are available?',
+          a: 'Professional plans include 24/7 email and chat support with 4-hour response times. Enterprise plans add 24/7 phone support and dedicated success managers with 1-hour response times. Global plans include a dedicated technical account manager, quarterly business reviews, and custom SLA guarantees.',
         },
         {
-          q: "Can I integrate with existing systems?",
-          a: "Absolutely. Nexus provides comprehensive REST APIs, webhooks, and pre-built connectors for major enterprise systems including Salesforce, SAP, Oracle, Workday, ServiceNow, and 200+ other platforms. Our integration team can build custom connectors for proprietary systems as part of your implementation.",
+          q: 'Can I integrate with existing systems?',
+          a: 'Absolutely. Nexus provides comprehensive REST APIs, webhooks, and pre-built connectors for major enterprise systems including Salesforce, SAP, Oracle, Workday, ServiceNow, and 200+ other platforms. Our integration team can build custom connectors for proprietary systems as part of your implementation.',
         },
       ],
     )
 
-    const ctaHeading = nonEmptyString(props.cta?.heading, "Ready to transform your enterprise?")
+    const ctaHeading = nonEmptyString(
+      props.cta?.heading,
+      'Ready to transform your enterprise?',
+    )
     const ctaDesc = nonEmptyString(
       props.cta?.description,
-      "Join 500+ organizations that trust Nexus for mission-critical infrastructure. Schedule a personalized demo with our solutions team.",
+      'Join 500+ organizations that trust Nexus for mission-critical infrastructure. Schedule a personalized demo with our solutions team.',
     )
-    const ctaPrimary = nonEmptyString(props.cta?.primaryCta, "Schedule a Demo")
-    const ctaSecondary = nonEmptyString(props.cta?.secondaryCta, "Contact Sales")
-    const ctaNote = nonEmptyString(props.cta?.note, "Average response time: Under 2 hours during business hours")
+    const ctaPrimary = nonEmptyString(props.cta?.primaryCta, 'Schedule a Demo')
+    const ctaSecondary = nonEmptyString(
+      props.cta?.secondaryCta,
+      'Contact Sales',
+    )
+    const ctaNote = nonEmptyString(
+      props.cta?.note,
+      'Average response time: Under 2 hours during business hours',
+    )
 
     const footerAbout = nonEmptyString(
       props.footer?.about,
-      "Nexus Enterprise Solutions delivers mission-critical cloud infrastructure and digital transformation services to organizations worldwide.",
+      'Nexus Enterprise Solutions delivers mission-critical cloud infrastructure and digital transformation services to organizations worldwide.',
     )
     const footerColumns = normalizeObjectArray(
       props.footer?.columns,
       ['title', 'links'],
       [
         {
-          title: "Solutions",
-          links: ["Cloud Infrastructure", "Security", "Data Analytics", "Digital Transformation", "Managed Services"],
+          title: 'Solutions',
+          links: [
+            'Cloud Infrastructure',
+            'Security',
+            'Data Analytics',
+            'Digital Transformation',
+            'Managed Services',
+          ],
         },
         {
-          title: "Company",
-          links: ["About Us", "Careers", "Press", "Partners", "Investor Relations"],
+          title: 'Company',
+          links: [
+            'About Us',
+            'Careers',
+            'Press',
+            'Partners',
+            'Investor Relations',
+          ],
         },
         {
-          title: "Resources",
-          links: ["Documentation", "API Reference", "Case Studies", "Blog", "Contact"],
+          title: 'Resources',
+          links: [
+            'Documentation',
+            'API Reference',
+            'Case Studies',
+            'Blog',
+            'Contact',
+          ],
         },
       ],
     )
-    const footerCopyright = nonEmptyString(props.footer?.copyright, "© 2026 Nexus Enterprise Solutions, Inc. All rights reserved.")
-    const footerLegal = normalizeStringArray(props.footer?.legal, ["Privacy Policy", "Terms of Service", "Cookie Policy"])
+    const footerCopyright = nonEmptyString(
+      props.footer?.copyright,
+      '© 2026 Nexus Enterprise Solutions, Inc. All rights reserved.',
+    )
+    const footerLegal = normalizeStringArray(props.footer?.legal, [
+      'Privacy Policy',
+      'Terms of Service',
+      'Cookie Policy',
+    ])
 
     // Brand logo tile — solid token surface with the brand initial (decorative brand asset).
     const LogoMark = ({
@@ -527,10 +619,10 @@ export const CorporateKimiPage = defineCapsule({
     }) => (
       <span
         className={cn(
-          "grid place-items-center rounded-lg font-bold",
+          'grid place-items-center rounded-lg font-bold',
           inverse
-            ? "bg-background text-foreground"
-            : "bg-foreground text-background",
+            ? 'bg-background text-foreground'
+            : 'bg-foreground text-background',
           className,
         )}
         aria-hidden="true"
@@ -691,16 +783,16 @@ export const CorporateKimiPage = defineCapsule({
 
     const socialIcons: { label: string; path: string }[] = [
       {
-        label: "LinkedIn",
-        path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z",
+        label: 'LinkedIn',
+        path: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z',
       },
       {
-        label: "Twitter",
-        path: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z",
+        label: 'Twitter',
+        path: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
       },
       {
-        label: "YouTube",
-        path: "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+        label: 'YouTube',
+        path: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
       },
     ]
 
@@ -716,7 +808,7 @@ export const CorporateKimiPage = defineCapsule({
     return (
       <div
         className={cn(
-          "min-h-svh bg-background text-foreground antialiased",
+          'min-h-svh bg-background text-foreground antialiased',
           props.className,
         )}
       >
@@ -1039,10 +1131,10 @@ export const CorporateKimiPage = defineCapsule({
                   <div
                     key={plan.name}
                     className={cn(
-                      "relative rounded-xl border p-8",
+                      'relative rounded-xl border p-8',
                       plan.featured
-                        ? "border-foreground bg-foreground"
-                        : "border-border bg-background",
+                        ? 'border-foreground bg-foreground'
+                        : 'border-border bg-background',
                     )}
                   >
                     {plan.badge && (
@@ -1054,18 +1146,18 @@ export const CorporateKimiPage = defineCapsule({
                     )}
                     <h3
                       className={cn(
-                        "mb-2 text-lg font-semibold",
-                        plan.featured ? "text-background" : "text-foreground",
+                        'mb-2 text-lg font-semibold',
+                        plan.featured ? 'text-background' : 'text-foreground',
                       )}
                     >
                       {plan.name}
                     </h3>
                     <p
                       className={cn(
-                        "mb-6 text-sm",
+                        'mb-6 text-sm',
                         plan.featured
-                          ? "text-background/70"
-                          : "text-muted-foreground",
+                          ? 'text-background/70'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {plan.blurb}
@@ -1073,10 +1165,8 @@ export const CorporateKimiPage = defineCapsule({
                     <div className="mb-6">
                       <span
                         className={cn(
-                          "text-4xl font-semibold",
-                          plan.featured
-                            ? "text-background"
-                            : "text-foreground",
+                          'text-4xl font-semibold',
+                          plan.featured ? 'text-background' : 'text-foreground',
                         )}
                       >
                         {plan.price}
@@ -1085,8 +1175,8 @@ export const CorporateKimiPage = defineCapsule({
                         <span
                           className={cn(
                             plan.featured
-                              ? "text-background/70"
-                              : "text-muted-foreground",
+                              ? 'text-background/70'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {plan.period}
@@ -1098,18 +1188,18 @@ export const CorporateKimiPage = defineCapsule({
                         <li key={feature} className="flex items-start gap-3">
                           <Check
                             className={cn(
-                              "mt-0.5 size-5 flex-shrink-0",
+                              'mt-0.5 size-5 flex-shrink-0',
                               plan.featured
-                                ? "text-primary-foreground"
-                                : "text-primary",
+                                ? 'text-primary-foreground'
+                                : 'text-primary',
                             )}
                           />
                           <span
                             className={cn(
-                              "text-sm",
+                              'text-sm',
                               plan.featured
-                                ? "text-background/80"
-                                : "text-muted-foreground",
+                                ? 'text-background/80'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {feature}
@@ -1121,10 +1211,10 @@ export const CorporateKimiPage = defineCapsule({
                       type="button"
                       onClick={() => go(plan.cta)}
                       className={cn(
-                        "w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                        'w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                         plan.featured
-                          ? "bg-background text-foreground hover:bg-muted"
-                          : "bg-muted text-foreground hover:bg-accent",
+                          ? 'bg-background text-foreground hover:bg-muted'
+                          : 'bg-muted text-foreground hover:bg-accent',
                       )}
                     >
                       {plan.cta}

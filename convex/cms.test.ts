@@ -5,8 +5,11 @@ import schema from './schema'
 
 const modules = import.meta.glob('./**/*.ts')
 
-const createTestSession = (t: ReturnType<typeof convexTest>, prompt = 'Test site') =>
-  t.runMutation(api.sessions.create, {
+const createTestSession = (
+  t: ReturnType<typeof convexTest>,
+  prompt = 'Test site',
+) =>
+  t.mutation(api.sessions.create, {
     prompt,
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -27,7 +30,7 @@ test('extractCmsBindings parses data-cms attributes', async () => {
     <div data-cms="type:link field:url">Link</div>
   `
 
-  const result = await t.runMutation(internal.sessions.extractCmsBindings, {
+  const result = await t.mutation(internal.sessions.extractCmsBindings, {
     sessionId,
     html,
   })
@@ -40,14 +43,14 @@ test('updateCmsEntry creates entry and revision', async () => {
 
   const { sessionId } = await createTestSession(t)
 
-  const bindingId = await t.runMutation(internal.sessions.insertCmsBinding, {
+  const bindingId = await t.mutation(internal.sessions.insertCmsBinding, {
     sessionId,
     selector: 'type:text field:title',
     type: 'text',
     field: 'title',
   })
 
-  const result = await t.runMutation(internal.sessions.updateCmsEntry, {
+  const result = await t.mutation(internal.sessions.updateCmsEntry, {
     sessionId,
     bindingId,
     content: 'Updated content',
@@ -63,14 +66,14 @@ test('restoreCmsRevision reverts to previous version', async () => {
 
   const { sessionId } = await createTestSession(t)
 
-  const bindingId = await t.runMutation(internal.sessions.insertCmsBinding, {
+  const bindingId = await t.mutation(internal.sessions.insertCmsBinding, {
     sessionId,
     selector: 'type:text field:title',
     type: 'text',
     field: 'title',
   })
 
-  await t.runMutation(internal.sessions.updateCmsEntry, {
+  await t.mutation(internal.sessions.updateCmsEntry, {
     sessionId,
     bindingId,
     content: 'Initial content',
@@ -78,10 +81,10 @@ test('restoreCmsRevision reverts to previous version', async () => {
     updatedBy: 'test-user',
   })
 
-  const entries = await t.runQuery(api.sessions.listCmsEntries, { sessionId })
+  const entries = await t.query(api.sessions.listCmsEntries, { sessionId })
   const entryId = entries[0]._id
 
-  await t.runMutation(internal.sessions.updateCmsEntry, {
+  await t.mutation(internal.sessions.updateCmsEntry, {
     sessionId,
     bindingId,
     content: 'Updated content',
@@ -89,10 +92,12 @@ test('restoreCmsRevision reverts to previous version', async () => {
     updatedBy: 'test-user',
   })
 
-  const revisions = await t.runQuery(internal.sessions.listCmsRevisions, { entryId })
+  const revisions = await t.query(internal.sessions.listCmsRevisions, {
+    entryId,
+  })
   const revisionId = revisions[0]._id
 
-  const result = await t.runMutation(internal.sessions.restoreCmsRevision, {
+  const result = await t.mutation(internal.sessions.restoreCmsRevision, {
     sessionId,
     revisionId,
   })
@@ -104,7 +109,7 @@ test('CMS image and link edits update rendered preview attributes', async () => 
   const t = convexTest(schema, modules)
   const ownerSecret = 'cms-asset-owner'
 
-  const { sessionId } = await t.runMutation(api.sessions.create, {
+  const { sessionId } = await t.mutation(api.sessions.create, {
     prompt: 'Build a CMS asset editing test site',
     preferredLanguage: 'en',
     preferredExportTarget: 'html',
@@ -133,7 +138,7 @@ test('CMS image and link edits update rendered preview attributes', async () => 
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
   })
 
-  const content = await t.runQuery(api.sessions.listCmsContent, { sessionId })
+  const content = await t.query(api.sessions.listCmsContent, { sessionId })
   const image = content.find((item) => item.field === 'hero.image')
   const link = content.find((item) => item.field === 'hero.ctaUrl')
 
@@ -142,7 +147,7 @@ test('CMS image and link edits update rendered preview attributes', async () => 
   expect(image?.type).toBe('image')
   expect(link?.type).toBe('link')
 
-  await t.runMutation(api.sessions.upsertCmsContentEntry, {
+  await t.mutation(api.sessions.upsertCmsContentEntry, {
     sessionId,
     anonymousOwnerSecret: ownerSecret,
     bindingId: image!.bindingId,
@@ -151,7 +156,7 @@ test('CMS image and link edits update rendered preview attributes', async () => 
     beforeContent: image!.content,
   })
 
-  await t.runMutation(api.sessions.upsertCmsContentEntry, {
+  await t.mutation(api.sessions.upsertCmsContentEntry, {
     sessionId,
     anonymousOwnerSecret: ownerSecret,
     bindingId: link!.bindingId,
@@ -160,9 +165,11 @@ test('CMS image and link edits update rendered preview attributes', async () => 
     beforeContent: link!.content,
   })
 
-  const view = await t.runQuery(api.sessions.getGenerationView, { sessionId })
+  const view = await t.query(api.sessions.getGenerationView, { sessionId })
 
-  expect(view?.latestPreview?.html).toContain('src="https://cdn.example.com/new.jpg"')
+  expect(view?.latestPreview?.html).toContain(
+    'src="https://cdn.example.com/new.jpg"',
+  )
   expect(view?.latestPreview?.html).toContain('href="https://example.com/new"')
   expect(view?.latestPreview?.version).toBe(3)
 })
@@ -221,7 +228,7 @@ test('CMS seeding extracts generated content collections from site spec without 
     tasks: [{ id: 'homepage', label: 'Generate homepage', status: 'DONE' }],
   })
 
-  const content = await t.runQuery(api.sessions.listCmsContent, { sessionId })
+  const content = await t.query(api.sessions.listCmsContent, { sessionId })
   const fields = new Set(content.map((item) => item.field))
 
   expect(fields.has('features.0.title')).toBe(true)
