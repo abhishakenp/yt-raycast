@@ -31,6 +31,7 @@ export const requiredQualityExitCriteria = [
   '`bun run review:groups` has been run, producing ignored per-group file lists',
   'The assessment document reflects current metrics and no stale claims.',
   'Generated OpenUI/runtime artifacts have reproducible provenance.',
+  'Source capsule files have reproducible origin classification.',
   'Coverage gates are enforced and meaningfully ratcheted, but not used as a',
   'Product-critical paths affected by the changes have real-path verification,',
 ]
@@ -105,6 +106,7 @@ export function verifyQualityExitFromTexts({
     'verify:review-readiness',
     'review:groups',
     'verify:generated',
+    'verify:capsule-sources',
     'test:coverage',
   ]) {
     if (!scripts[scriptName]) {
