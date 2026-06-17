@@ -37,10 +37,14 @@ export type CapsuleSourceClassification = {
   files: CapsuleSourceClassificationEntry[]
 }
 
+const kimiPageExportPattern = /KimiPage\d*$/
+
 export function classifyCapsuleSourceOrigin(
   source: string,
+  exports: string[] = extractCapsuleExports(source),
 ): CapsuleSourceOrigin {
-  return generatedPortPattern.test(source)
+  return generatedPortPattern.test(source) ||
+    exports.some((name) => kimiPageExportPattern.test(name))
     ? 'generated-kimi-port'
     : 'unmarked-source'
 }

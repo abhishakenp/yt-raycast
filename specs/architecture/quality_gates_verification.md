@@ -106,7 +106,7 @@ Result:
 
 - Passed.
 - `packages/ship-fast-blocks/src/capsules/source-classification.json` records
-  375 production capsule source files: 341 marked Kimi/generated ports, 34
+  375 production capsule source files: 375 classified Kimi/generated ports, 0
   unmarked source files, 184 files over 1,000 LOC, and a current max of 1,839
   LOC.
 

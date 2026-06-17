@@ -3,12 +3,12 @@
   "largeFileThreshold": 1000,
   "sourceRoot": "packages/ship-fast-blocks/src/capsules",
   "summary": {
-    "generatedKimiPortFiles": 341,
+    "generatedKimiPortFiles": 375,
     "largeFiles": 184,
     "maxLines": 1839,
     "totalFiles": 375,
     "totalLines": 323315,
-    "unmarkedSourceFiles": 34
+    "unmarkedSourceFiles": 0
   },
   "files": [
     {
@@ -58,7 +58,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/agency-3.tsx",
       "large": true,
       "lines": 1404,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["AgencyKimiPage4"],
@@ -100,7 +100,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/ai-product-3.tsx",
       "large": true,
       "lines": 1391,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["AiProductKimiPage4"],
@@ -128,7 +128,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/ai-product-7.tsx",
       "large": true,
       "lines": 1302,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["AiProductKimiPage8"],
@@ -576,7 +576,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/corporate-2.tsx",
       "large": true,
       "lines": 1627,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["CorporateKimiPage3"],
@@ -751,7 +751,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/dev-tool-2.tsx",
       "large": true,
       "lines": 1400,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["DevToolKimiPage3"],
@@ -786,7 +786,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/dev-tool-7.tsx",
       "large": true,
       "lines": 1379,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["DevToolKimiPage8"],
@@ -849,14 +849,14 @@
       "file": "packages/ship-fast-blocks/src/capsules/docs-4.tsx",
       "large": true,
       "lines": 1102,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["DocsKimiPage5"],
       "file": "packages/ship-fast-blocks/src/capsules/docs-5.tsx",
       "large": true,
       "lines": 1131,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["DocsKimiPage6"],
@@ -898,7 +898,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/ecommerce-2.tsx",
       "large": false,
       "lines": 996,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["EcommerceKimiPage3"],
@@ -968,7 +968,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/electronics-store-2.tsx",
       "large": true,
       "lines": 1391,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["ElectronicsStoreKimiPage3"],
@@ -1115,7 +1115,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/fintech-2.tsx",
       "large": true,
       "lines": 1446,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["FintechKimiPage3"],
@@ -1157,7 +1157,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/flight-simulator.tsx",
       "large": false,
       "lines": 18,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["FoodDeliveryKimiPage2"],
@@ -1395,7 +1395,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/kids-education-2.tsx",
       "large": true,
       "lines": 1317,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["KidsEducationKimiPage3"],
@@ -1542,7 +1542,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/manufacturing-2.tsx",
       "large": true,
       "lines": 1420,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["ManufacturingKimiPage3"],
@@ -1696,7 +1696,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/mobile-app-10.tsx",
       "large": true,
       "lines": 1470,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["MobileAppKimiPage2"],
@@ -1724,7 +1724,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/mobile-app-5.tsx",
       "large": true,
       "lines": 1390,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["MobileAppKimiPage6"],
@@ -1752,7 +1752,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/mobile-app-9.tsx",
       "large": true,
       "lines": 1328,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["MobileAppKimiPage"],
@@ -1808,7 +1808,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/news-2.tsx",
       "large": true,
       "lines": 1088,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["NewsKimiPage3"],
@@ -1850,7 +1850,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/no-code-2.tsx",
       "large": true,
       "lines": 1478,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["NoCodeKimiPage3"],
@@ -1885,7 +1885,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/nutrition-2.tsx",
       "large": true,
       "lines": 1360,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["NutritionKimiPage3"],
@@ -1906,7 +1906,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/online-course-2.tsx",
       "large": true,
       "lines": 1504,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["OnlineCourseKimiPage3"],
@@ -2123,7 +2123,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/real-estate-2.tsx",
       "large": true,
       "lines": 1837,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["RealEstateKimiPage3"],
@@ -2144,7 +2144,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/restaurant-2.tsx",
       "large": true,
       "lines": 1152,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["RestaurantKimiPage3"],
@@ -2158,14 +2158,14 @@
       "file": "packages/ship-fast-blocks/src/capsules/restaurant.tsx",
       "large": true,
       "lines": 1043,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["ResumeCvKimiPage2"],
       "file": "packages/ship-fast-blocks/src/capsules/resume-cv-2.tsx",
       "large": false,
       "lines": 871,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["ResumeCvKimiPage3"],
@@ -2186,7 +2186,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/saas-10.tsx",
       "large": true,
       "lines": 1839,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["SaasKimiPage2"],
@@ -2207,28 +2207,28 @@
       "file": "packages/ship-fast-blocks/src/capsules/saas-4.tsx",
       "large": true,
       "lines": 1246,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["SaasKimiPage5"],
       "file": "packages/ship-fast-blocks/src/capsules/saas-5.tsx",
       "large": true,
       "lines": 1096,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["SaasKimiPage6"],
       "file": "packages/ship-fast-blocks/src/capsules/saas-6.tsx",
       "large": true,
       "lines": 1180,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["SaasKimiPage7"],
       "file": "packages/ship-fast-blocks/src/capsules/saas-7.tsx",
       "large": true,
       "lines": 1213,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["SaasKimiPage8"],
@@ -2242,7 +2242,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/saas-9.tsx",
       "large": true,
       "lines": 1056,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["SaasKimiPage"],
@@ -2452,7 +2452,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/tutoring-2.tsx",
       "large": true,
       "lines": 1627,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["TutoringKimiPage3"],
@@ -2599,7 +2599,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/writer-author-2.tsx",
       "large": false,
       "lines": 945,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["WriterAuthorKimiPage3"],
@@ -2620,7 +2620,7 @@
       "file": "packages/ship-fast-blocks/src/capsules/yoga-studio-2.tsx",
       "large": true,
       "lines": 1633,
-      "origin": "unmarked-source"
+      "origin": "generated-kimi-port"
     },
     {
       "exports": ["YogaStudioKimiPage3"],

@@ -43,6 +43,11 @@ describe('capsule source classification verifier', () => {
         '/* converted from generated Kimi HTML into a responsive page block */',
       ),
     ).toBe('generated-kimi-port')
+    expect(
+      classifyCapsuleSourceOrigin(
+        'export const AgencyKimiPage3 = defineCapsule({})',
+      ),
+    ).toBe('generated-kimi-port')
     expect(classifyCapsuleSourceOrigin('export const Unmarked = {}')).toBe(
       'unmarked-source',
     )
@@ -66,7 +71,9 @@ describe('capsule source classification verifier', () => {
         'b.tsx':
           '/* converted from generated Kimi HTML */\nexport const B = defineCapsule({})\n',
         'a.tsx': `${Array.from({ length: 1_001 }, (_, index) =>
-          index === 0 ? 'export const A = defineCapsule({})' : '// line',
+          index === 0
+            ? 'export const AgencyKimiPage3 = defineCapsule({})'
+            : '// line',
         ).join('\n')}\n`,
       },
       async (root) => {
@@ -76,21 +83,21 @@ describe('capsule source classification verifier', () => {
           'scripts/verify-capsule-source-classification.ts',
         )
         expect(classification.summary).toEqual({
-          generatedKimiPortFiles: 1,
+          generatedKimiPortFiles: 2,
           largeFiles: 1,
           maxLines: 1_001,
           totalFiles: 2,
           totalLines: 1_003,
-          unmarkedSourceFiles: 1,
+          unmarkedSourceFiles: 0,
         })
         expect(classification.files.map(({ file }) => file)).toEqual([
           'packages/ship-fast-blocks/src/capsules/a.tsx',
           'packages/ship-fast-blocks/src/capsules/b.tsx',
         ])
         expect(classification.files[0]).toMatchObject({
-          exports: ['A'],
+          exports: ['AgencyKimiPage3'],
           large: true,
-          origin: 'unmarked-source',
+          origin: 'generated-kimi-port',
         })
         expect(classification.files[1]).toMatchObject({
           exports: ['B'],
