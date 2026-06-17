@@ -101,6 +101,9 @@ const DirectPreview = forwardRef<
     onTextChange?: (change: { oldText: string; newText: string; element: HTMLElement; occurrenceIndex: number }) => void
     onImageChange?: (change: { oldSrc: string; newSrc: string; element: HTMLImageElement; alt: string }) => void
     onElementActivate?: (element: HTMLElement, rect: DOMRect) => void
+    /** Inline style/align edits to re-apply on render, since openUiSource can't
+     *  hold inline styles. Keyed by the element's exact class + occurrence. */
+    styleOverrides?: Array<{ classAnchor: string; occurrenceIndex: number; style: string }>
   }
 >(({
   children,
@@ -113,6 +116,7 @@ const DirectPreview = forwardRef<
   onTextChange,
   onImageChange,
   onElementActivate,
+  styleOverrides,
 }, ref) => {
   const internalRef = useRef<HTMLDivElement | null>(null)
   const selectedElementRef = useRef<HTMLElement | null>(null)
@@ -137,6 +141,41 @@ const DirectPreview = forwardRef<
   )
 
   useTextEdit(internalRef, editMode, onTextChange || (() => {}), onImageChange, onElementActivate)
+
+  // Re-apply saved inline style/align edits after every render. The preview
+  // renders from openUiSource (the DSL), which can't store inline styles, so
+  // style edits would otherwise vanish on reload. We re-apply them imperatively,
+  // anchored on the element's exact class + occurrence (matching how they were
+  // captured), and re-run on subtree mutations so React re-renders don't drop them.
+  useEffect(() => {
+    const root = internalRef.current
+    if (!root || !styleOverrides || styleOverrides.length === 0) return
+
+    const apply = () => {
+      for (const override of styleOverrides) {
+        if (!override.classAnchor) continue
+        const matches = Array.from(root.querySelectorAll<HTMLElement>('*')).filter(
+          (el) => el.getAttribute('class') === override.classAnchor,
+        )
+        const el = matches[override.occurrenceIndex] ?? matches[0]
+        if (!el) continue
+        for (const declaration of override.style.split(';')) {
+          const colon = declaration.indexOf(':')
+          if (colon === -1) continue
+          const prop = declaration.slice(0, colon).trim()
+          const value = declaration.slice(colon + 1).trim()
+          if (prop) el.style.setProperty(prop, value)
+        }
+      }
+    }
+
+    apply()
+    // childList/subtree only (NOT attributes) — apply() mutates style attributes,
+    // so observing attributes would loop; node replacements from re-render do not.
+    const observer = new MutationObserver(() => apply())
+    observer.observe(root, { childList: true, subtree: true })
+    return () => observer.disconnect()
+  }, [styleOverrides, children])
 
   useEffect(() => {
     const currentRoot = internalRef.current

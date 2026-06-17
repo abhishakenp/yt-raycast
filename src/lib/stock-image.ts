@@ -116,7 +116,7 @@ export const resolveStockImage = async ({
   context,
 }: ResolveInput): Promise<ResolveResult> => {
   const seed = (alt ?? query ?? "image").trim() || "image"
-  
+
   // Use context-aware query generation if context is provided, otherwise fall back to simple query
   let resolvedQuery: string
   if (context && (context.section || context.siteType || context.prompt || context.brandContext)) {
@@ -124,14 +124,14 @@ export const resolveStockImage = async ({
   } else {
     resolvedQuery = (query?.trim() || searchQueryFromAlt(seed)).trim() || "nature"
   }
-  
+
   const key = cacheKey(resolvedQuery, w, h)
 
   const cached = cache.get(key)
   if (cached) return cached
 
-  const pexelsKey = process.env.PEXELS_API_KEY
-  const unsplashKey = process.env.UNSPLASH_ACCESS_KEY
+  const pexelsKey = process.env.PEXELS_API_KEY || process.env.VITE_PEXELS_API_KEY || import.meta.env.VITE_PEXELS_API_KEY
+  const unsplashKey = process.env.UNSPLASH_ACCESS_KEY || process.env.VITE_UNSPLASH_ACCESS_KEY || import.meta.env.VITE_UNSPLASH_ACCESS_KEY
 
   if (pexelsKey) {
     try {
@@ -169,7 +169,7 @@ export const resolveStockImage = async ({
 
   if (!pexelsKey && !unsplashKey) {
     console.warn(
-      "No stock image API keys configured (PEXELS_API_KEY / UNSPLASH_ACCESS_KEY); using picsum fallback",
+      "No stock image API keys configured (VITE_PEXELS_API_KEY / VITE_UNSPLASH_ACCESS_KEY); using picsum fallback",
     )
   }
 

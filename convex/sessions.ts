@@ -452,23 +452,53 @@ const createMarkupTolerantTextPattern = (
   return new RegExp(pattern)
 }
 
+const decodeHtmlEntitiesForSrc = (value: string): string =>
+  value
+    .replace(/&amp;/g, '&')
+    .replace(/&#38;/g, '&')
+    .replace(/&#x26;/gi, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#34;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+
+// Swap an image's `src`, anchored on its `alt` attribute — NOT its src. The src
+// is unreliable as an anchor: the live editor renders images with the brand
+// ImageContext blended into the /api/pexels query (e.g. "pawwell pet max dog")
+// while the stored preview HTML is rendered without context ("max dog"), so the
+// browser-sent src never matches the stored src. The `alt` is deterministic from
+// the source DSL and identical in both. `occurrenceIndex` disambiguates repeated
+// alts in document order. Returns replaced:false (never throws) when the anchor
+// is missing or not found, so a failed swap leaves the page untouched.
 const applyImageSwap = (
   html: string,
-  oldSrc: string | undefined,
+  altAnchor: string | undefined,
   newSrc: string | undefined,
+  occurrenceIndex?: number,
 ): { html: string; replaced: boolean } => {
-  const from = String(oldSrc ?? '')
-  const to = String(newSrc ?? '')
-  if (!html.trim() || !from.trim()) return { html, replaced: false }
-
-  // Replace src attribute in img tags
-  const imgPattern = new RegExp(
-    `(<img[^>]*\\s)src=["']${escapeRegExp(from)}["']([^>]*>)`,
-    'gi',
-  )
-  const replaced = html.replace(imgPattern, `$1src="${to}"$2`)
-
-  return { html: replaced, replaced: replaced !== html }
+  const wantAlt = decodeHtmlEntitiesForSrc(String(altAnchor ?? '')).trim()
+  if (!html.trim() || !wantAlt) return { html, replaced: false }
+  const escapedNew = String(newSrc ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+  const wanted =
+    occurrenceIndex !== undefined && occurrenceIndex >= 0 ? occurrenceIndex : 0
+  let matchCount = -1
+  let replaced = false
+  const out = html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const altMatch = tag.match(/\balt\s*=\s*("([^"]*)"|'([^']*)')/i)
+    const alt = altMatch
+      ? decodeHtmlEntitiesForSrc(altMatch[2] ?? altMatch[3] ?? '').trim()
+      : ''
+    if (alt !== wantAlt) return tag
+    matchCount += 1
+    if (replaced || matchCount !== wanted) return tag
+    const srcMatch = tag.match(/(\ssrc\s*=\s*)("([^"]*)"|'([^']*)')/i)
+    if (srcMatch === null) return tag
+    replaced = true
+    return tag.replace(srcMatch[0], `${srcMatch[1]}"${escapedNew}"`)
+  })
+  return { html: out, replaced }
 }
 
 // Surgically update only the inline `style` attribute of the element identified
@@ -3002,7 +3032,12 @@ const applySessionEdit = async (
     args.afterHtml !== undefined
       ? { html: args.afterHtml, replaced: true }
       : args.editType === 'image'
-        ? applyImageSwap(preview.html, args.beforeText, args.afterText)
+        ? applyImageSwap(
+            preview.html,
+            args.beforeText,
+            args.afterText,
+            args.occurrenceIndex,
+          )
         : args.editType === 'style'
           ? applyStyleEdit(
               preview.html,
@@ -3031,7 +3066,11 @@ const applySessionEdit = async (
 
   let openUiSource: string | undefined
   let siteSpecJson: string | undefined
-  if (args.afterHtml === undefined && args.editType !== 'style') {
+  if (
+    args.afterHtml === undefined &&
+    args.editType !== 'style' &&
+    args.editType !== 'image'
+  ) {
     // The rendered preview HTML already matched (checked above), so the edit is
     // valid and gets saved regardless. Updating the editable OpenUI/site-spec
     // source is best-effort: inline markup (<br>, <span>, …) can split the text
@@ -3074,22 +3113,22 @@ const applySessionEdit = async (
     createdAt: now,
   })
 
-  // The edits table only models text-style edits (not image swaps), so record
-  // history for those; the preview/artifact updates above apply regardless.
-  if (args.editType !== 'image') {
-    await ctx.db.insert('edits', {
-      sessionId,
-      previewVersion: nextPreviewVersion,
-      editType: args.editType,
-      targetLabel: args.targetLabel,
-      beforeText: args.beforeText,
-      afterText: args.afterText,
-      afterHtml: args.afterHtml,
-      instruction: args.instruction,
-      createdAt: now,
-      userId: session.userId,
-    })
-  }
+  // Record edit history for all edit types. Image swaps store the image's alt as
+  // beforeText and the new src as afterText so the client can rebuild the
+  // alt→src override map that re-applies swaps on render.
+  await ctx.db.insert('edits', {
+    sessionId,
+    previewVersion: nextPreviewVersion,
+    editType: args.editType,
+    targetLabel: args.targetLabel,
+    beforeText: args.beforeText,
+    afterText: args.afterText,
+    afterHtml: args.afterHtml,
+    instruction: args.instruction,
+    occurrenceIndex: args.occurrenceIndex,
+    createdAt: now,
+    userId: session.userId,
+  })
 
   return {
     sessionId,
@@ -3291,6 +3330,7 @@ export const listEdits = query({
       afterText: edit.afterText,
       afterHtml: edit.afterHtml,
       instruction: edit.instruction,
+      occurrenceIndex: edit.occurrenceIndex,
       previewVersion: edit.previewVersion,
       createdAt: edit.createdAt,
       userId: edit.userId,

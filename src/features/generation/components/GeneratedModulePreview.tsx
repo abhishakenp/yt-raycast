@@ -13,6 +13,10 @@ type GeneratedModulePreviewProps = {
   locale?: string
   /** User's original build prompt — biases generated stock images toward the business. */
   prompt?: string
+  /** Inline image swaps to re-apply on render, keyed by image alt -> new src. */
+  imageOverrides?: Record<string, string>
+  /** Inline style/align edits to re-apply on render (class + occurrence -> style). */
+  styleOverrides?: Array<{ classAnchor: string; occurrenceIndex: number; style: string }>
   isDark?: boolean
   themeStyles?: ThemeStyles | null
   deviceMode?: 'desktop' | 'tablet' | 'mobile'
@@ -89,10 +93,14 @@ export function OpenUIModuleRenderer({
   siteSpecJson,
   locale,
   prompt,
+  imageOverrides,
 }: GeneratedModulePreviewProps) {
   const brandContext = parseSiteSpecBrand(siteSpecJson)
+  const hasOverrides = !!imageOverrides && Object.keys(imageOverrides).length > 0
   const imageContext =
-    prompt || brandContext ? { prompt, brandContext } : null
+    prompt || brandContext || hasOverrides
+      ? { prompt, brandContext, overrides: imageOverrides }
+      : null
   return (
     <OpenUIViewer
       response={source}
@@ -111,6 +119,8 @@ export function GeneratedModulePreview({
   siteSpecJson,
   locale,
   prompt,
+  imageOverrides,
+  styleOverrides,
   isDark = true,
   themeStyles = null,
   deviceMode = 'desktop',
@@ -142,6 +152,7 @@ export function GeneratedModulePreview({
         onTextChange={onTextChange}
         onImageChange={onImageChange}
         onElementActivate={onElementActivate}
+        styleOverrides={styleOverrides}
       >
         {isHtmlDocumentSource(source) ? (
           <HtmlModuleRenderer source={source} />
@@ -152,6 +163,7 @@ export function GeneratedModulePreview({
             siteSpecJson={siteSpecJson}
             locale={locale}
             prompt={prompt}
+            imageOverrides={imageOverrides}
           />
         )}
         <AgentationSessionBridge

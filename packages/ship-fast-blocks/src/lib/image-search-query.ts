@@ -20,6 +20,10 @@ export interface ImageContext {
   prompt?: string
   /** Brand or business descriptor (name + tagline). */
   brandContext?: string
+  /** Per-image src overrides keyed by the image's alt text. When present for an
+   *  image's alt, the resolved <Image> uses this URL verbatim instead of the
+   *  stock-photo lookup (used to persist inline image swaps). */
+  overrides?: Record<string, string>
 }
 
 // Prompt scaffolding and generic web words that carry no visual signal.

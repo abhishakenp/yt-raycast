@@ -12,6 +12,9 @@ import type * as billing from "../billing.js";
 import type * as generation from "../generation.js";
 import type * as generationConfig from "../generationConfig.js";
 import type * as lakebed from "../lakebed.js";
+import type * as lib_chat_refinement_helpers from "../lib/chat_refinement_helpers.js";
+import type * as lib_cms_helpers from "../lib/cms_helpers.js";
+import type * as lib_gallery_helpers from "../lib/gallery_helpers.js";
 import type * as sessions from "../sessions.js";
 
 import type {
@@ -25,6 +28,9 @@ declare const fullApi: ApiFromModules<{
   generation: typeof generation;
   generationConfig: typeof generationConfig;
   lakebed: typeof lakebed;
+  "lib/chat_refinement_helpers": typeof lib_chat_refinement_helpers;
+  "lib/cms_helpers": typeof lib_cms_helpers;
+  "lib/gallery_helpers": typeof lib_gallery_helpers;
   sessions: typeof sessions;
 }>;
 
