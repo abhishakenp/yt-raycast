@@ -40,6 +40,8 @@ export const changeGroups: ChangeGroup[] = [
     title: 'Convex session decomposition',
     patterns: [
       /^convex\/_generated\/api\.d\.ts$/,
+      /^convex\/generation\.test\.ts$/,
+      /^convex\/generation\.ts$/,
       /^convex\/session_completion\.ts$/,
       /^convex\/session-readiness\.test\.ts$/,
       /^convex\/sessions\.ts$/,
@@ -70,6 +72,7 @@ export const changeGroups: ChangeGroup[] = [
       /^packages\/ship-fast-engine\/src\/openui-/,
       /^scripts\/vite-openui-boundaries\.test\.ts$/,
       /^src\/features\/exports\/services\/openui-export-builder\.ts$/,
+      /^src\/features\/exports\/services\/openui-export-builder\.test\.ts$/,
       /^src\/features\/generation\/components\/GeneratedModulePreview\.(?:test\.)?tsx$/,
       /^src\/island\/openui\//,
       /^vite\.config\.ts$/,
@@ -78,7 +81,10 @@ export const changeGroups: ChangeGroup[] = [
   {
     id: 'engine-regression-coverage',
     title: 'Engine regression coverage',
-    patterns: [/^packages\/ship-fast-engine\//],
+    patterns: [
+      /^packages\/ship-fast-engine\//,
+      /^scripts\/bench-render-crashes\.mjs$/,
+    ],
   },
   {
     id: 'frontend-workflow-preview',

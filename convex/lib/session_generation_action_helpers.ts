@@ -79,12 +79,12 @@ export const completeGenerationAction = async (
   if (shouldRenderOpenUISource(args.html, args.openUiSource)) {
     try {
       const { renderOpenUIToHTMLWithTheme } = await references.loadOpenUISSR()
-      const { html } = renderOpenUIToHTMLWithTheme(
+      const { html } = (await renderOpenUIToHTMLWithTheme(
         args.openUiSource,
         undefined,
         session.preferredLanguage ?? 'en',
         undefined,
-      ) as { html: string; cssVars?: string }
+      )) as { html: string; cssVars?: string }
       if (html.includes('openui-error')) {
         throw new Error('OpenUI renderer returned error HTML')
       }

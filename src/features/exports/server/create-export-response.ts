@@ -163,7 +163,7 @@ export const createExportResponse = async (
 
     const { buildOpenUIExport } =
       await import('../services/openui-export-builder')
-    const exportResult = buildOpenUIExport({
+    const exportResult = await buildOpenUIExport({
       source,
       siteSpecJson: download.siteSpecJson,
       previewHtml: download.previewHtml,

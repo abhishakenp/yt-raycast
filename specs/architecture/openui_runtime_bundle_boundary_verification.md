@@ -16,6 +16,7 @@ This checkpoint covers the OpenUI runtime and bundle boundary work:
 - `packages/ship-fast-blocks/src/generated/*`
 - `src/island/openui/OpenUIViewer.tsx`
 - `src/island/openui/openui-runtime-preprocess.ts`
+- `packages/ship-fast-engine/src/openui-ssr.js`
 - `scripts/verify-build-bundles.ts`
 - export builder tests for OpenUI and SFF HTML output
 
@@ -35,6 +36,14 @@ not the eager `@ship-fast/blocks` barrel. Runtime loading should:
 The server export path is allowed to import the eager block library and the
 generated compressed React source manifest because it builds downloadable
 artifacts, not the browser preview runtime.
+
+The core server SSR path should also avoid the eager `@ship-fast/blocks` barrel:
+`packages/ship-fast-engine/src/openui-ssr.js` loads
+`@ship-fast/blocks/runtime` and builds a per-response library with
+`loadOpenUIRuntimeLibrary(preprocessed)`. This keeps Convex completion,
+workspace preview rendering, and standalone HTML export rendering on the same
+response-scoped contract. React/Next package exports may still use the full
+catalog while they materialize component source files.
 
 ## Current Evidence
 
@@ -175,6 +184,37 @@ Test Files  2 passed (2)
 Tests       9 passed (9)
 ```
 
+Response-scoped SSR migration:
+
+```bash
+bun vitest run --config vitest.config.ts \
+  packages/ship-fast-engine/src/openui-ssr.test.js \
+  packages/ship-fast-engine/src/openui-ssr-runtime.test.js \
+  packages/ship-fast-engine/src/genui/ssr-render-crashes.test.ts \
+  packages/ship-fast-engine/src/renderers/index.test.ts \
+  src/features/exports/services/openui-export-builder.test.ts \
+  src/features/exports/server/create-export-response.test.ts
+```
+
+Result:
+
+```text
+Test Files  6 passed (6)
+Tests       26 passed (26)
+```
+
+Build and bundle verification:
+
+```bash
+bun run build && bun run verify:bundle
+```
+
+Result:
+
+```text
+Bundle boundary verification passed
+```
+
 Whitespace check:
 
 ```bash
@@ -185,7 +225,8 @@ Result: passed with no output.
 
 ## Status
 
-This group is verified at the source, unit, generated-manifest, bundle, and
-server-export levels. It is still part of a broad local branch review scope, so
-it should be reviewed as one coherent OpenUI runtime/bundle changeset rather
+This group is verified at the source, unit, generated-manifest, bundle,
+server-export, and response-scoped SSR levels. It is still part of a broad local
+branch review scope, so it should be reviewed as one coherent OpenUI
+runtime/bundle changeset rather
 than mixed with Convex, billing, or dashboard workflow work.

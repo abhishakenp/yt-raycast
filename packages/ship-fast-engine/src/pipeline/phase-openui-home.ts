@@ -177,7 +177,7 @@ export async function generateAndWriteOpenUIHome(p: {
   writeFileSync(join(p.workspace, HOME_OPENUI_FILE), source)
   upsertManifest(p.workspace, route, 'Home', HOME_OPENUI_FILE)
   saveSiteSpec(p.workspace, project)
-  renderPreviewToWorkspace(project, p.workspace)
+  await renderPreviewToWorkspace(project, p.workspace)
 
   // Capture elapsed AFTER persistence + preview render so this logged number
   // covers the same span the runner stores as `elapsed` (the gallery time) —
@@ -186,12 +186,12 @@ export async function generateAndWriteOpenUIHome(p: {
 
   // Server-side render final HTML
   const { html: renderedFinalHtml, cssVars: themeCssVars } =
-    renderOpenUIToHTMLWithTheme(
+    (await renderOpenUIToHTMLWithTheme(
       source,
       undefined,
       locale,
       undefined,
-    ) as OpenUIRenderResult
+    )) as OpenUIRenderResult
   let finalHtml = renderedFinalHtml
   if (p.languageMode?.needsTranslation) {
     try {

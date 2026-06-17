@@ -99,7 +99,7 @@ const MUTATIONS = {
 
 const LOCALES = ['en', 'zh', 'ar', 'hi', 'ta-en']
 
-function run() {
+async function run() {
   const fixtures = loadFixtures()
   if (fixtures.length === 0) {
     console.error('No session fixtures found under', SESSIONS)
@@ -127,7 +127,7 @@ function run() {
         total++
         let html = ''
         try {
-          html = renderOpenUIToHTML(source, null, locale)
+          html = await renderOpenUIToHTML(source, null, locale)
         } catch (err) {
           failures.push({
             fixture: fixture.name,
@@ -165,7 +165,7 @@ function run() {
       total++
       let html = ''
       try {
-        html = renderOpenUIToHTML(`root = ${name}()`, null, locale)
+        html = await renderOpenUIToHTML(`root = ${name}()`, null, locale)
       } catch (err) {
         failures.push({
           fixture: `<no-props>`,
@@ -208,4 +208,4 @@ function run() {
   process.exit(1)
 }
 
-run()
+await run()

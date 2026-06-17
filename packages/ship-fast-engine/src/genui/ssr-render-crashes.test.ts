@@ -13,8 +13,8 @@ import { renderOpenUIToHTML } from '../openui-ssr.js'
  *  - SSR-safe stub providers in `openui-ssr.js` (so data-backed capsules render
  *    without a live Convex/Lakebed runtime).
  */
-const expectRenders = (source: string, locale = 'en') => {
-  const html = renderOpenUIToHTML(source, undefined, locale)
+const expectRenders = async (source: string, locale = 'en') => {
+  const html = await renderOpenUIToHTML(source, undefined, locale)
   expect(html.toLowerCase()).not.toContain('openui-error')
   expect(html.toLowerCase()).not.toContain('failed to render')
   expect(html.length).toBeGreaterThan(100)
@@ -22,22 +22,22 @@ const expectRenders = (source: string, locale = 'en') => {
 }
 
 describe('SSR render crash safety', () => {
-  it('renders a blog post page whose section is missing its required blocks array', () => {
+  it('renders a blog post page whose section is missing its required blocks array', async () => {
     // `blocks` is a required nested array; a model emitting it as null/omitted
     // previously threw `section.blocks.map is not a function`.
-    expectRenders(
+    await expectRenders(
       'root = BlogPostKimiPage("Acme", ["Home"], {title: "A"}, {imageAlt: "x"}, ["intro"], [{heading: "One", blocks: null}, {heading: "Two"}])',
     )
   })
 
-  it('renders the data-backed ecommerce page with no props (no live Convex/Lakebed runtime)', () => {
-    const html = expectRenders('root = EcommerceKimiPage()')
+  it('renders the data-backed ecommerce page with no props (no live Convex/Lakebed runtime)', async () => {
+    const html = await expectRenders('root = EcommerceKimiPage()')
     // It should fall back to its built-in catalogue rather than the error panel.
     expect(html.length).toBeGreaterThan(1000)
   })
 
-  it('does not render ecommerce demo partner placeholders without supplied partner content', () => {
-    const html = expectRenders(
+  it('does not render ecommerce demo partner placeholders without supplied partner content', async () => {
+    const html = await expectRenders(
       'root = EcommerceKimiPage("Kerala Health Foods", ["ഹോം"], {heading: "കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ", subheading: "നാടൻ ആരോഗ്യ ഉൽപ്പന്നങ്ങൾ"})',
       'ml',
     )
@@ -46,8 +46,8 @@ describe('SSR render crash safety', () => {
     expect(html).not.toContain('Brand Two')
   })
 
-  it('renders localized ecommerce content from positional section arguments', () => {
-    const html = expectRenders(
+  it('renders localized ecommerce content from positional section arguments', async () => {
+    const html = await expectRenders(
       'root = EcommerceKimiPage("Kerala Health Foods", ["ഹോം"], {heading: "കേരള ആരോഗ്യ ഭക്ഷണങ്ങൾ", subheading: "നാടൻ ആരോഗ്യ ഉൽപ്പന്നങ്ങൾ"}, "വിശ്വസിക്കുന്ന നാട്ടു ബ്രാൻഡുകൾ", {heading: "വിഭാഗങ്ങൾ", items: [{label: "കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി"}]}, {heading: "ജനപ്രിയ ഉൽപ്പന്നങ്ങൾ", items: [{name: "നാടൻ കഞ്ഞിപ്പൊടി", alt: "കേരള കഞ്ഞിപ്പൊടി", price: "₹180"}]})',
       'ml',
     )
@@ -57,12 +57,12 @@ describe('SSR render crash safety', () => {
     expect(html).not.toContain('Discover\\nSomething New')
   })
 
-  it('renders pages with non-Latin / RTL copy', () => {
-    expectRenders(
+  it('renders pages with non-Latin / RTL copy', async () => {
+    await expectRenders(
       'root = BlogKimiPage("المتجر", ["الرئيسية"], {title: "أحدث القصص"})',
       'ar',
     )
-    expectRenders(
+    await expectRenders(
       'root = BlogKimiPage("博客", ["首页"], {title: "最新故事"})',
       'zh',
     )

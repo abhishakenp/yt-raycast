@@ -953,14 +953,14 @@ export function parseOpenUIForExport(
   }
 }
 
-const renderPageHtml = (page: ElementNode): string => {
+const renderPageHtml = async (page: ElementNode): Promise<string> => {
   const pageSource = jsonToOpenUI(page, library)
-  const { html } = renderOpenUIToHTMLWithTheme(
+  const { html } = (await renderOpenUIToHTMLWithTheme(
     pageSource,
     undefined,
     'en',
     undefined,
-  ) as {
+  )) as {
     html: string
     cssVars: string
   }
@@ -1011,38 +1011,40 @@ const buildRouteScript = (routes: string[]): string => `
   show(0);
 })();`
 
-const buildPagesMarkup = (parsed: ParsedOpenUIProgram): string =>
-  parsed.pages
-    .map((page, index) => {
-      const label = parsed.routes[index] ?? `Page ${index + 1}`
-      return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${renderPageHtml(page)}</section>`
-    })
-    .join('\n')
+const buildPagesMarkup = async (parsed: ParsedOpenUIProgram): Promise<string> =>
+  (
+    await Promise.all(
+      parsed.pages.map(async (page, index) => {
+        const label = parsed.routes[index] ?? `Page ${index + 1}`
+        return `<section data-sf-export-page="${escapeHtml(label)}"${index === 0 ? '' : ' hidden'}>${await renderPageHtml(page)}</section>`
+      }),
+    )
+  ).join('\n')
 
 const absolutizeHtmlAssetUrls = (html: string): string =>
   html.replaceAll('="/api/pexels?', '="https://ship-fast.io/api/pexels?')
 
-const buildStandaloneHtmlDocument = (
+const buildStandaloneHtmlDocument = async (
   input: OpenUIExportInput,
   parsed: ParsedOpenUIProgram,
-): string => {
+): Promise<string> => {
   const siteSpec = parseSiteSpec(input.siteSpecJson)
   const themeName = readThemeName(siteSpec, input.themeName)
   const isDark = input.isDark ?? true
   const themeStyles = resolveThemeStyles(themeName)
   const themeStyle = buildThemeStyle(themeStyles, isDark)
   const themeFontLinks = buildThemeFontLinks(themeStyles)
-  const { cssVars } = renderOpenUIToHTMLWithTheme(
+  const { cssVars } = (await renderOpenUIToHTMLWithTheme(
     input.source,
     undefined,
     'en',
     undefined,
-  ) as {
+  )) as {
     html: string
     cssVars: string
   }
   const css = readPreviewCss()
-  const pagesMarkup = absolutizeHtmlAssetUrls(buildPagesMarkup(parsed))
+  const pagesMarkup = absolutizeHtmlAssetUrls(await buildPagesMarkup(parsed))
 
   return buildHtmlExport(
     `<!doctype html>
@@ -1487,7 +1489,9 @@ Open index.html directly, or serve this folder with any static host.
   }
 }
 
-export function buildOpenUIExport(input: OpenUIExportInput): BuiltExport {
+export async function buildOpenUIExport(
+  input: OpenUIExportInput,
+): Promise<BuiltExport> {
   if (isHtmlDocumentSource(input.source)) {
     return buildRawHtmlExport(input)
   }
@@ -1495,7 +1499,7 @@ export function buildOpenUIExport(input: OpenUIExportInput): BuiltExport {
   const parsed = parseOpenUIForExport(input.source, input.siteSpecJson)
 
   if (input.target === 'html') {
-    const documentHtml = buildStandaloneHtmlDocument(input, parsed)
+    const documentHtml = await buildStandaloneHtmlDocument(input, parsed)
     return {
       body: documentHtml,
       contentType: 'text/html; charset=utf-8',

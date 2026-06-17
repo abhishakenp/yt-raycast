@@ -29,7 +29,7 @@ describe('openui SSR runtime compatibility', () => {
         contents: `
           import { renderOpenUIToHTML } from './packages/ship-fast-engine/src/openui-ssr.js'
           globalThis.__renderOpenUIToHTMLType = typeof renderOpenUIToHTML
-          globalThis.__renderOpenUIToHTMLResult = renderOpenUIToHTML('$page = "Home"\\nroot = Text("Runtime verifier")')
+          globalThis.__renderOpenUIToHTMLResult = await renderOpenUIToHTML('$page = "Home"\\nroot = Text("Runtime verifier")')
         `,
         loader: 'js',
         resolveDir: process.cwd(),

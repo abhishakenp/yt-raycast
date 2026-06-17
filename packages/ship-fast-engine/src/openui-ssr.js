@@ -6,7 +6,11 @@
 
 import './openui-message-channel-polyfill.js'
 import { createElement } from 'react'
-import { Renderer, library, ImageContextProvider } from '@ship-fast/blocks'
+import {
+  Renderer,
+  ImageContextProvider,
+  loadOpenUIRuntimeLibrary,
+} from '@ship-fast/blocks/runtime'
 import { ConvexProvider } from 'convex/react'
 import { LakebedSessionProvider } from '@ship-fast/lakebed/react'
 import { preprocessOpenUIResponse } from './lib/openui-preprocess.js'
@@ -69,7 +73,7 @@ const { renderToString } = await import('react-dom/server')
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @returns {string} Rendered HTML
  */
-export function renderOpenUIToHTML(
+export async function renderOpenUIToHTML(
   source,
   theme = null,
   locale = 'en',
@@ -80,6 +84,7 @@ export function renderOpenUIToHTML(
     const preprocessed = preprocessOpenUIResponse(source, {
       resolveRefs: false,
     })
+    const library = await loadOpenUIRuntimeLibrary(preprocessed)
 
     const html = renderToString(
       withSSRProviders(
@@ -108,14 +113,14 @@ export function renderOpenUIToHTML(
  * @param {object} imageContext - Page-level prompt/brand context for relevant stock images
  * @returns {object} { html: string, cssVars: string }
  */
-export function renderOpenUIToHTMLWithTheme(
+export async function renderOpenUIToHTMLWithTheme(
   source,
   theme = null,
   locale = 'en',
   integrations = null,
   imageContext = null,
 ) {
-  const html = renderOpenUIToHTML(
+  const html = await renderOpenUIToHTML(
     source,
     theme,
     locale,

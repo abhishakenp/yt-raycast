@@ -122,6 +122,7 @@ Scope:
 - `packages/ship-fast-blocks/src/theme.ts`
 - `packages/ship-fast-blocks/src/component-names.ts`
 - `packages/ship-fast-blocks/src/generated/*`
+- `packages/ship-fast-engine/src/openui-ssr.js`
 - `src/island/openui/OpenUIViewer.tsx`
 - export/build bundle verifier tests
 
@@ -133,6 +134,8 @@ Why it matters:
 Required proof:
 
 - Browser runtime imports do not pull the generated capsule catalog eagerly.
+- Core OpenUI SSR loads response-scoped runtime libraries instead of the eager
+  block barrel.
 - Build bundle verifier rejects broad eager OpenUI chunks.
 - Generated runtime manifests are reproducible through the generator script.
 - Server export path still renders existing OpenUI outputs correctly.

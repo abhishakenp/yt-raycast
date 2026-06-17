@@ -33,8 +33,8 @@ describe('openui-export-builder', () => {
     expect(parsed.root.typeName).toBe('SaasKimiPage')
   })
 
-  it('builds standalone HTML without exposing OpenUI source', () => {
-    const result = buildOpenUIExport({
+  it('builds standalone HTML without exposing OpenUI source', async () => {
+    const result = await buildOpenUIExport({
       source,
       siteSpecJson,
       sessionId: 'demo',
@@ -50,8 +50,8 @@ describe('openui-export-builder', () => {
     expect(html).not.toContain('root = Stack')
   })
 
-  it('returns raw SFF HTML directly for HTML exports', () => {
-    const result = buildOpenUIExport({
+  it('returns raw SFF HTML directly for HTML exports', async () => {
+    const result = await buildOpenUIExport({
       source: rawHtmlSource,
       siteSpecJson,
       sessionId: 'demo',
@@ -63,8 +63,8 @@ describe('openui-export-builder', () => {
     expect(decodeExportBody(result.body)).toBe(rawHtmlSource)
   })
 
-  it('packages raw SFF HTML as a static ZIP for app export targets', () => {
-    const result = buildOpenUIExport({
+  it('packages raw SFF HTML as a static ZIP for app export targets', async () => {
+    const result = await buildOpenUIExport({
       source: rawHtmlSource,
       siteSpecJson,
       sessionId: 'demo',
@@ -78,8 +78,8 @@ describe('openui-export-builder', () => {
     expect(files['package.json']).toContain('"dev": "vite --host 0.0.0.0"')
   })
 
-  it('builds a React ZIP without OpenUI internals', () => {
-    const result = buildOpenUIExport({
+  it('builds a React ZIP without OpenUI internals', async () => {
+    const result = await buildOpenUIExport({
       source,
       siteSpecJson,
       sessionId: 'demo',
@@ -109,8 +109,8 @@ describe('openui-export-builder', () => {
     expect(Object.values(files).join('\n')).not.toContain('root = Stack')
   })
 
-  it('builds a Next.js ZIP without OpenUI internals', () => {
-    const result = buildOpenUIExport({
+  it('builds a Next.js ZIP without OpenUI internals', async () => {
+    const result = await buildOpenUIExport({
       source,
       siteSpecJson,
       sessionId: 'demo',

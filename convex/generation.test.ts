@@ -54,7 +54,10 @@ describe('convex generation action', () => {
     const source = readFileSync(join(here, 'generation.ts'), 'utf8')
     const handlerIndex = source.indexOf('handler: async (ctx, args) => {')
     const runtimeIndex = source.indexOf('runHomepageOrchestrator', handlerIndex)
-    const v1ProviderIndex = source.indexOf("provider: 'genui-orchestrator'", runtimeIndex)
+    const v1ProviderIndex = source.indexOf(
+      "provider: 'genui-orchestrator'",
+      runtimeIndex,
+    )
 
     expect(handlerIndex).toBeGreaterThan(-1)
     expect(runtimeIndex).toBeGreaterThan(-1)
@@ -69,7 +72,9 @@ describe('convex generation action', () => {
     const source = readFileSync(join(here, 'generation.ts'), 'utf8')
 
     expect(source).toContain('completeGenerationFromNode')
-    expect(source).toContain('internalFunctions.sessions.completeGenerationInternal')
+    expect(source).toContain(
+      'internalFunctions.sessions.completeGenerationInternal',
+    )
     expect(source).toContain(
       "import('../packages/ship-fast-engine/src/openui-ssr.js')",
     )
@@ -118,11 +123,18 @@ describe('convex generation action', () => {
     const source = readFileSync(join(here, 'generation.ts'), 'utf8')
     const configSource = readFileSync(join(here, 'generationConfig.ts'), 'utf8')
     const handlerIndex = source.indexOf('handler: async (ctx, args) => {')
-    const preflightIndex = source.indexOf('getModelConfigurationFailure()', handlerIndex)
+    const preflightIndex = source.indexOf(
+      'getModelConfigurationFailure()',
+      handlerIndex,
+    )
     const runtimeIndex = source.indexOf('runHomepageOrchestrator', handlerIndex)
 
-    expect(source).toContain("import { getModelConfigurationFailure } from './generationConfig'")
-    expect(configSource).toContain('export const getModelConfigurationFailure =')
+    expect(source).toContain(
+      "import { getModelConfigurationFailure } from './generationConfig'",
+    )
+    expect(configSource).toContain(
+      'export const getModelConfigurationFailure =',
+    )
     expect(configSource).toContain('GROQ_API_KEY')
     expect(configSource).toContain('GEMINI_API_KEY')
     expect(preflightIndex).toBeGreaterThan(handlerIndex)
@@ -135,8 +147,11 @@ describe('convex generation action', () => {
 
     expect(source).toContain('const createGenerationTimeoutController =')
     expect(source).toContain('SHIP_FAST_GENERATION_TIMEOUT_MS')
-    expect(source).toContain("new Error('Generation timed out")
-    expect(source).toContain('const generationTimeout = createGenerationTimeoutController()')
+    expect(source).toContain('controller.abort(\n      new Error(')
+    expect(source).toContain('Generation timed out. Please try again')
+    expect(source).toContain(
+      'const generationTimeout = createGenerationTimeoutController()',
+    )
     expect(source).toContain('signal: generationTimeout.controller.signal')
     expect(source).toContain('generationTimeout.clear()')
     expect(source).not.toContain('signal: new AbortController().signal')
