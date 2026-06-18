@@ -31,6 +31,17 @@ describe('dashboard session lookup', () => {
     expect(dashboardSource).toContain("data?.status !== 'preview_ready'")
   })
 
+  it('hydrates ready previews from local cache before live data arrives', () => {
+    const dashboardSource = readProjectFile(
+      'src/features/dashboard/components/Dashboard.tsx',
+    )
+
+    expect(dashboardSource).toContain('readReadySessionPreview')
+    expect(dashboardSource).toContain('readCachedGenerationView(sessionId)')
+    expect(dashboardSource).toContain('rememberReadySessionPreview')
+    expect(dashboardSource).toContain('toDashboardGenerationView(snapshot)')
+  })
+
   it('resolves export ids to their owning session before querying dashboard data', () => {
     const sessionsSource = readProjectFile('convex/sessions.ts')
     const validatorsSource = readProjectFile('convex/lib/session_validators.ts')

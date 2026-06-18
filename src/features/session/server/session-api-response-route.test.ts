@@ -23,6 +23,10 @@ describe('createSessionApiResponse', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toContain('application/json')
     expect(response.headers.get('cache-control')).toContain('private')
+    expect(response.headers.get('cache-control')).toContain('max-age=30')
+    expect(response.headers.get('cache-control')).toContain(
+      'stale-while-revalidate=300',
+    )
     expect(calls).toEqual([{ lookup: 'session_123' }])
     expect(data).toMatchObject({
       id: 'session_123',

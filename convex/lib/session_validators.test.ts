@@ -85,6 +85,9 @@ describe('session validators boundary', () => {
     expect(validatorsSource).toContain('export const generationViewArgs =')
     expect(validatorsSource).toContain('export const eventStreamArgs =')
     expect(validatorsSource).toContain('export const deleteMineArgs =')
+    expect(validatorsSource).toMatch(
+      /export const deleteMineArgs = \{\s+anonymousClientId: v\.optional\(v\.string\(\)\),\s+sessionId: v\.optional\(v\.id\('sessions'\)\),\s+\}/,
+    )
     expect(validatorsSource).toContain(
       'export const createGenerationSessionArgs =',
     )

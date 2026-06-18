@@ -1,6 +1,7 @@
 import { normalizePromptDraft } from '@/features/home/services/home-prompts'
 
 const READY_SESSION_CACHE_PREFIX = 'ship-fast:ready-session:v1:'
+const READY_SESSION_PREVIEW_CACHE_PREFIX = 'ship-fast:ready-session-preview:v1:'
 const READY_SESSION_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 const READY_SESSION_VERIFY_TIMEOUT_MS = 1_800
 
@@ -21,6 +22,40 @@ type ReadySessionApiResponse = {
   openuiReady?: unknown
 }
 
+export type ReadySessionPreviewCacheEntry = {
+  sessionId: string
+  status: 'preview_ready'
+  prompt: string
+  preferredLanguage: string
+  preferredExportTarget?: string
+  previewVersion?: number
+  elapsed?: number | null
+  themeOverride?: string | null
+  homeModule: {
+    moduleKey?: string
+    source: string
+    status?: string
+    updatedAt?: number
+  }
+  preview?: {
+    html?: string
+    openUiSource?: string
+    siteSpecJson?: string
+    version?: number
+  }
+  siteSpec?: {
+    specJson?: string
+    updatedAt?: number
+  }
+  tasks?: Array<{
+    id?: string
+    title: string
+    status: string
+    order?: number
+  }>
+  createdAt: number
+}
+
 const normalizeLanguage = (value: string) =>
   String(value || 'en')
     .trim()
@@ -29,7 +64,7 @@ const normalizeLanguage = (value: string) =>
 const normalizePromptForCache = (value: string) =>
   normalizePromptDraft(value).toLowerCase()
 
-const withTimeout = async <T,>(
+const withTimeout = async <T>(
   promise: Promise<T>,
   timeoutMs: number,
   onTimeout?: () => void,
@@ -107,7 +142,8 @@ export const readReadySessionCache = (
       typeof parsed.prompt !== 'string' ||
       typeof parsed.preferredLanguage !== 'string' ||
       typeof parsed.createdAt !== 'number' ||
-      normalizePromptForCache(parsed.prompt) !== normalizePromptForCache(prompt) ||
+      normalizePromptForCache(parsed.prompt) !==
+        normalizePromptForCache(prompt) ||
       normalizeLanguage(parsed.preferredLanguage) !== preferredLanguage ||
       now - parsed.createdAt > READY_SESSION_CACHE_TTL_MS
     ) {
@@ -131,7 +167,93 @@ export const forgetReadySession = (
   storage: Pick<Storage, 'removeItem'>,
   input: { prompt: string; preferredLanguage?: string },
 ) => {
-  storage.removeItem(getReadySessionCacheKey(input.prompt, input.preferredLanguage))
+  storage.removeItem(
+    getReadySessionCacheKey(input.prompt, input.preferredLanguage),
+  )
+}
+
+const getReadySessionPreviewCacheKey = (sessionId: string): string =>
+  `${READY_SESSION_PREVIEW_CACHE_PREFIX}${sessionId.trim()}`
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+export const rememberReadySessionPreview = (
+  storage: Pick<Storage, 'setItem'>,
+  input: Omit<ReadySessionPreviewCacheEntry, 'createdAt'> & {
+    createdAt?: number
+  },
+) => {
+  const sessionId = input.sessionId.trim()
+  const prompt = normalizePromptDraft(input.prompt)
+  const preferredLanguage = normalizeLanguage(input.preferredLanguage)
+  const source = input.homeModule.source.trim()
+
+  if (!sessionId || input.status !== 'preview_ready' || !prompt || !source) {
+    return
+  }
+
+  const entry: ReadySessionPreviewCacheEntry = {
+    ...input,
+    sessionId,
+    prompt,
+    preferredLanguage,
+    homeModule: {
+      ...input.homeModule,
+      source,
+    },
+    createdAt: input.createdAt ?? Date.now(),
+  }
+
+  storage.setItem(
+    getReadySessionPreviewCacheKey(sessionId),
+    JSON.stringify(entry),
+  )
+}
+
+export const readReadySessionPreview = (
+  storage: Pick<Storage, 'getItem' | 'removeItem'>,
+  input: { sessionId: string; now?: number },
+): ReadySessionPreviewCacheEntry | null => {
+  const sessionId = input.sessionId.trim()
+  if (!sessionId) return null
+
+  const key = getReadySessionPreviewCacheKey(sessionId)
+  const raw = storage.getItem(key)
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw) as unknown
+    const now = input.now ?? Date.now()
+
+    if (
+      !isRecord(parsed) ||
+      parsed.sessionId !== sessionId ||
+      parsed.status !== 'preview_ready' ||
+      typeof parsed.prompt !== 'string' ||
+      typeof parsed.preferredLanguage !== 'string' ||
+      typeof parsed.createdAt !== 'number' ||
+      !isRecord(parsed.homeModule) ||
+      typeof parsed.homeModule.source !== 'string' ||
+      parsed.homeModule.source.trim().length === 0 ||
+      now - parsed.createdAt > READY_SESSION_CACHE_TTL_MS
+    ) {
+      storage.removeItem(key)
+      return null
+    }
+
+    return parsed as ReadySessionPreviewCacheEntry
+  } catch {
+    storage.removeItem(key)
+    return null
+  }
+}
+
+export const forgetReadySessionPreview = (
+  storage: Pick<Storage, 'removeItem'>,
+  input: { sessionId: string },
+) => {
+  storage.removeItem(getReadySessionPreviewCacheKey(input.sessionId))
 }
 
 export const verifyReadySession = async (

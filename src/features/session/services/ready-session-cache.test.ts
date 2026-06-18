@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  forgetReadySessionPreview,
   forgetReadySession,
   getReadySessionCacheKey,
   readReadySessionCache,
+  readReadySessionPreview,
   rememberReadySession,
+  rememberReadySessionPreview,
   verifyReadySession,
 } from './ready-session-cache'
 
@@ -81,6 +84,78 @@ describe('ready session cache', () => {
     expect(storage.getItem(key)).toBeNull()
   })
 
+  it('stores and reads ready preview snapshots by session id', () => {
+    const storage = createStorage()
+
+    rememberReadySessionPreview(storage, {
+      sessionId: ' session_ready_preview ',
+      status: 'preview_ready',
+      prompt: '  Build a cached dashboard ',
+      preferredLanguage: 'EN',
+      homeModule: {
+        moduleKey: 'home',
+        source: ' <html><body>Ready</body></html> ',
+        status: 'succeeded',
+        updatedAt: 1234,
+      },
+      tasks: [{ id: 'homepage', title: 'Homepage', status: 'succeeded' }],
+      createdAt: 1000,
+    })
+
+    expect(
+      readReadySessionPreview(storage, {
+        sessionId: 'session_ready_preview',
+        now: 2000,
+      }),
+    ).toMatchObject({
+      sessionId: 'session_ready_preview',
+      status: 'preview_ready',
+      prompt: 'Build a cached dashboard',
+      preferredLanguage: 'en',
+      homeModule: {
+        source: '<html><body>Ready</body></html>',
+      },
+    })
+  })
+
+  it('expires invalid ready preview snapshots and supports invalidation', () => {
+    const storage = createStorage()
+
+    rememberReadySessionPreview(storage, {
+      sessionId: 'session_ready_preview',
+      status: 'preview_ready',
+      prompt: 'Build a cached dashboard',
+      preferredLanguage: 'en',
+      homeModule: {
+        source: '<html><body>Ready</body></html>',
+      },
+      createdAt: 1000,
+    })
+
+    expect(
+      readReadySessionPreview(storage, {
+        sessionId: 'session_ready_preview',
+        now: 8 * 24 * 60 * 60 * 1000,
+      }),
+    ).toBeNull()
+
+    rememberReadySessionPreview(storage, {
+      sessionId: 'session_ready_preview',
+      status: 'preview_ready',
+      prompt: 'Build a cached dashboard',
+      preferredLanguage: 'en',
+      homeModule: {
+        source: '<html><body>Ready</body></html>',
+      },
+    })
+    forgetReadySessionPreview(storage, { sessionId: 'session_ready_preview' })
+    expect(
+      readReadySessionPreview(storage, {
+        sessionId: 'session_ready_preview',
+      }),
+    ).toBeNull()
+  })
+
   it('verifies a ready session against the session API before reuse', async () => {
     const fetchSession = vi.fn().mockResolvedValue({
       ok: true,
@@ -135,7 +210,6 @@ describe('ready session cache', () => {
   })
 
   it('returns null quickly when ready-session verification stalls', async () => {
-    vi.useFakeTimers()
     const fetchSession = vi.fn(() => new Promise<Response>(() => {}))
 
     const verification = verifyReadySession(
@@ -143,12 +217,10 @@ describe('ready session cache', () => {
         sessionId: 'session_ready',
         prompt: 'a blog about dogs',
         preferredLanguage: 'en',
-        timeoutMs: 25,
+        timeoutMs: 1,
       },
       fetchSession,
     )
-
-    await vi.advanceTimersByTimeAsync(25)
 
     await expect(verification).resolves.toBeNull()
   })

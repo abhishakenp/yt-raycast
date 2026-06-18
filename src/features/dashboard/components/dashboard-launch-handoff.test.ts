@@ -29,10 +29,21 @@ describe('dashboard launch handoff', () => {
       'startedFromGenerationFlow && !isPreviewReady',
     )
     expect(dashboardSource).toContain('playSound={startedFromGenerationFlow}')
-    expect(dashboardSource).toContain('PreviewLoadingState')
     expect(dashboardSource).toContain('cockpit-fade-up')
     expect(dashboardSource).toContain('id="dashboard-cockpit"')
     expect(introSource).toContain('playSound?: boolean')
+  })
+
+  it('does not render a duplicate dashboard preview loading screen', () => {
+    const dashboardSource = readProjectFile(
+      'src/features/dashboard/components/Dashboard.tsx',
+    )
+    const stylesSource = readProjectFile('src/styles/index.css')
+
+    expect(dashboardSource).not.toContain('PreviewLoadingState')
+    expect(dashboardSource).not.toContain('Composing the first screen')
+    expect(dashboardSource).not.toContain('Building your site')
+    expect(stylesSource).not.toContain('preview-loading-state')
   })
 
   it('keeps non-critical dashboard panels out of the initial generation bundle', () => {

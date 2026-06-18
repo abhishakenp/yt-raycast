@@ -101,6 +101,7 @@ export const changeGroups: ChangeGroup[] = [
       /^src\/hooks\//,
       /^src\/lib\/home\//,
       /^src\/shared\/auth\//,
+      /^src\/styles\/index\.css$/,
     ],
   },
   {

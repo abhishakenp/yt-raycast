@@ -74,6 +74,7 @@ export const eventStreamArgs = {
 
 export const deleteMineArgs = {
   anonymousClientId: v.optional(v.string()),
+  sessionId: v.optional(v.id('sessions')),
 }
 
 export const createGenerationSessionArgs = {

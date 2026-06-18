@@ -1,11 +1,15 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react'
+import { act, cleanup, renderHook } from '@testing-library/react'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 type PromptHomeControllerTestState = {
   createSession: ReturnType<typeof vi.fn>
   navigate: ReturnType<typeof vi.fn>
 }
+
+let originalFetch: typeof globalThis.fetch
 
 const getTestState = (): PromptHomeControllerTestState => {
   const testGlobal = globalThis as typeof globalThis & {
@@ -37,7 +41,11 @@ vi.mock('convex/react', () => ({
 }))
 
 vi.mock('../../../../convex/_generated/api', () => ({
-  api: { sessions: { create: 'sessions.create' } },
+  api: {
+    sessions: {
+      create: 'sessions.create',
+    },
+  },
 }))
 
 import { usePromptHomeController } from './usePromptHomeController'
@@ -52,20 +60,20 @@ describe('usePromptHomeController submit guard', () => {
     })
     state.navigate.mockReset()
     state.navigate.mockResolvedValue(undefined)
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ claimed: false }),
-      }),
-    )
+    originalFetch = globalThis.fetch
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ claimed: false }),
+    }) as unknown as typeof globalThis.fetch
     window.localStorage.clear()
     window.sessionStorage.clear()
+    document.body.innerHTML = ''
   })
 
   afterEach(() => {
+    cleanup()
     vi.useRealTimers()
-    vi.unstubAllGlobals()
+    globalThis.fetch = originalFetch
   })
 
   it('guards generation creation against same-tick duplicate submits', async () => {
@@ -128,11 +136,10 @@ describe('usePromptHomeController submit guard', () => {
     )
   })
 
-  it('retries a stalled create call with the same workspace idempotency key', async () => {
-    vi.useFakeTimers()
+  it('retries a failed create call with the same workspace idempotency key', async () => {
     const state = getTestState()
     state.createSession
-      .mockImplementationOnce(() => new Promise(() => {}))
+      .mockRejectedValueOnce(new Error('create_session_timeout'))
       .mockResolvedValueOnce({
         sessionId: 'session_retry_success',
         cached: false,
@@ -143,13 +150,9 @@ describe('usePromptHomeController submit guard', () => {
       result.current.setPrompt('Build a resilient product website')
     })
 
-    const submit = act(async () => {
-      const promise = result.current.submitPrompt()
-      await vi.advanceTimersByTimeAsync(12_000 + 450)
-      await promise
+    await act(async () => {
+      await result.current.submitPrompt()
     })
-
-    await submit
 
     expect(state.createSession).toHaveBeenCalledTimes(2)
     expect(state.createSession.mock.calls[0]?.[0].workspace).toBe(
@@ -161,7 +164,7 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
-  it('navigates directly when a ready prompt cache entry verifies', async () => {
+  it('navigates immediately from a ready prompt cache entry', async () => {
     const state = getTestState()
     window.localStorage.setItem(
       'ship-fast:ready-session:v1:en:build a cached product website',
@@ -205,7 +208,36 @@ describe('usePromptHomeController submit guard', () => {
     })
   })
 
-  it('falls back to create when ready prompt cache verification misses', async () => {
+  it('does not wait for ready prompt cache verification before navigating', async () => {
+    const state = getTestState()
+    window.localStorage.setItem(
+      'ship-fast:ready-session:v1:en:build an instant cached website',
+      JSON.stringify({
+        sessionId: 'session_instant_cache',
+        prompt: 'Build an instant cached website',
+        preferredLanguage: 'en',
+        createdAt: Date.now(),
+      }),
+    )
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise(() => {}))
+    const { result } = renderHook(() => usePromptHomeController())
+
+    act(() => {
+      result.current.setPrompt('Build an instant cached website')
+    })
+
+    await act(async () => {
+      await result.current.submitPrompt()
+    })
+
+    expect(state.createSession).not.toHaveBeenCalled()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: 'session_instant_cache' },
+    })
+  })
+
+  it('forgets stale ready prompt cache verification misses in the background', async () => {
     const state = getTestState()
     window.localStorage.setItem(
       'ship-fast:ready-session:v1:en:build a stale product website',
@@ -234,8 +266,15 @@ describe('usePromptHomeController submit guard', () => {
     await act(async () => {
       await result.current.submitPrompt()
     })
+    await act(async () => {
+      await Promise.resolve()
+    })
 
-    expect(state.createSession).toHaveBeenCalledTimes(1)
+    expect(state.createSession).not.toHaveBeenCalled()
+    expect(state.navigate).toHaveBeenCalledWith({
+      to: '/generate/$sessionId',
+      params: { sessionId: 'session_stale_cache' },
+    })
     expect(
       window.localStorage.getItem(
         'ship-fast:ready-session:v1:en:build a stale product website',
@@ -244,16 +283,10 @@ describe('usePromptHomeController submit guard', () => {
   })
 
   it('does not hydrate share bonus on the homepage load path', async () => {
-    vi.useFakeTimers()
     const fetchMock = vi.mocked(fetch)
 
     renderHook(() => usePromptHomeController())
 
-    expect(fetchMock).not.toHaveBeenCalled()
-
-    await act(async () => {
-      vi.advanceTimersByTime(10_000)
-    })
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
@@ -272,5 +305,15 @@ describe('usePromptHomeController submit guard', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith('/api/share-bonus')
     expect(result.current.shareBonusClaimed).toBe(true)
+  })
+
+  it('keeps generation deletion out of the prompt form controller', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/features/home/hooks/usePromptHomeController.ts'),
+      'utf8',
+    )
+
+    expect(source).not.toContain('sessions.deleteMine')
+    expect(source).not.toContain('ship-fast:generations-deleted')
   })
 })

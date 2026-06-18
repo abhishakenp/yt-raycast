@@ -1,10 +1,14 @@
 import { Link } from '@tanstack/react-router'
+import { useMutation } from 'convex/react'
 import { ArrowRight, ChevronLeft, ChevronRight, Timer } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
+import { createAnonymousClientId } from '@/features/session/services/session-create-payload'
 import { cn } from '@/lib/utils'
+import { api } from '../../../../convex/_generated/api'
+import type { Id } from '../../../../convex/_generated/dataModel'
 
 import { useGalleryController } from '../hooks/useGalleryController'
 
@@ -60,6 +64,11 @@ const getPromptTitle = (prompt?: string) => {
 
   return cleaned
 }
+
+const isEditableElement = (element: Element | null): boolean =>
+  element instanceof HTMLTextAreaElement ||
+  element instanceof HTMLInputElement ||
+  (element as HTMLElement | null)?.isContentEditable === true
 
 const formatGenerationTime = (elapsed?: number | null) => {
   if (typeof elapsed !== 'number' || !Number.isFinite(elapsed) || elapsed < 0)
@@ -160,15 +169,15 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
   const title = getPromptTitle(session.prompt)
   const moduleSource = getModuleSource(session.moduleSource)
   const previewDocument = getPreviewDocument(session.html)
-  const imageSrc =
-    moduleSource === undefined && previewDocument === undefined
-      ? getGalleryImageUrl(session)
-      : ''
+  const imageSrc = getGalleryImageUrl(session)
   const [resolvedImageSrc, setResolvedImageSrc] = useState(() =>
     imageSrc.startsWith('/api/sessions/') ? '' : imageSrc,
   )
+  const [imageFailed, setImageFailed] = useState(false)
 
   useEffect(() => {
+    setImageFailed(false)
+
     if (!imageSrc.startsWith('/api/sessions/')) {
       setResolvedImageSrc(imageSrc)
       return
@@ -186,7 +195,7 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
         objectUrl = URL.createObjectURL(blob)
         setResolvedImageSrc(objectUrl)
       } catch {
-        if (!controller.signal.aborted) setResolvedImageSrc(imageSrc)
+        if (!controller.signal.aborted) setImageFailed(true)
       }
     }
 
@@ -200,7 +209,14 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
 
   return (
     <div className="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-[#050816]">
-      {moduleSource !== undefined ? (
+      {resolvedImageSrc ? (
+        <img
+          src={resolvedImageSrc}
+          alt={title}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
+      ) : imageFailed && moduleSource !== undefined ? (
         <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
           <GeneratedModulePreview
             source={moduleSource}
@@ -211,20 +227,13 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
             isDark
           />
         </div>
-      ) : previewDocument !== undefined ? (
+      ) : imageFailed && previewDocument !== undefined ? (
         <div className="pointer-events-none h-[250%] w-[250%] origin-top-left scale-[0.4] overflow-hidden bg-background text-foreground">
           <div
             className="size-full"
             dangerouslySetInnerHTML={{ __html: previewDocument }}
           />
         </div>
-      ) : resolvedImageSrc ? (
-        <img
-          src={resolvedImageSrc}
-          alt={title}
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="lazy"
-        />
       ) : (
         <div
           className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_34%),radial-gradient(circle_at_78%_30%,rgba(168,85,247,0.16),transparent_36%),linear-gradient(135deg,#050816,#111827)]"
@@ -236,7 +245,15 @@ const GalleryPreview = ({ session }: { session: GallerySession }) => {
   )
 }
 
-const GalleryCard = ({ session }: { session: GallerySession }) => {
+const GalleryCard = ({
+  onHoverEnd,
+  onHoverStart,
+  session,
+}: {
+  onHoverEnd: (sessionId: string) => void
+  onHoverStart: (sessionId: string) => void
+  session: GallerySession
+}) => {
   const generationTime = formatGenerationTime(session.elapsed)
 
   return (
@@ -244,6 +261,9 @@ const GalleryCard = ({ session }: { session: GallerySession }) => {
       className="group block overflow-hidden rounded-[8px] border border-white/10 bg-white/[0.055] shadow-[0_24px_80px_rgba(0,0,0,0.28)] transition-colors hover:border-cyan-200/50 hover:bg-white/[0.075]"
       to="/generate/$sessionId"
       params={{ sessionId: session.sessionId }}
+      data-gallery-session-id={session.sessionId}
+      onPointerEnter={() => onHoverStart(session.sessionId)}
+      onPointerLeave={() => onHoverEnd(session.sessionId)}
     >
       <GalleryPreview session={session} />
       <div className="sf-gallery-card-body p-4">
@@ -324,6 +344,71 @@ export const GalleryGrid = ({
   gallery?: GalleryPayload
   skeletonCount?: number
 }) => {
+  const deleteMine = useMutation(api.sessions.deleteMine)
+  const hoveredSessionIdRef = useRef<string | null>(null)
+  const [deletedSessionIds, setDeletedSessionIds] = useState<Set<string>>(
+    () => new Set(),
+  )
+
+  const handleCardHoverStart = useCallback((sessionId: string) => {
+    hoveredSessionIdRef.current = sessionId
+  }, [])
+
+  const handleCardHoverEnd = useCallback((sessionId: string) => {
+    if (hoveredSessionIdRef.current === sessionId) {
+      hoveredSessionIdRef.current = null
+    }
+  }, [])
+
+  const deleteHoveredSession = useCallback(
+    (sessionId: string) => {
+      const anonymousClientId = createAnonymousClientId(window.localStorage)
+      void deleteMine({
+        anonymousClientId,
+        sessionId: sessionId as Id<'sessions'>,
+      })
+        .then((result) => {
+          if (result.deleted <= 0) return
+          if (hoveredSessionIdRef.current === sessionId) {
+            hoveredSessionIdRef.current = null
+          }
+          setDeletedSessionIds((current) => {
+            const next = new Set(current)
+            next.add(sessionId)
+            return next
+          })
+        })
+        .catch(() => undefined)
+    },
+    [deleteMine],
+  )
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== 'd' ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.repeat ||
+        isEditableElement(document.activeElement)
+      ) {
+        return
+      }
+
+      const hoveredSessionId = hoveredSessionIdRef.current
+      if (hoveredSessionId === null) return
+
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      deleteHoveredSession(hoveredSessionId)
+    }
+
+    window.addEventListener('keydown', handleKeyDown, { capture: true })
+    return () =>
+      window.removeEventListener('keydown', handleKeyDown, { capture: true })
+  }, [deleteHoveredSession])
+
   if (gallery === undefined) {
     return (
       <div
@@ -339,7 +424,9 @@ export const GalleryGrid = ({
     )
   }
 
-  const items = gallery.items
+  const items = gallery.items.filter(
+    (session) => !deletedSessionIds.has(session.sessionId),
+  )
 
   return (
     <div
@@ -349,7 +436,12 @@ export const GalleryGrid = ({
       )}
     >
       {items.map((session) => (
-        <GalleryCard key={session.sessionId} session={session} />
+        <GalleryCard
+          key={session.sessionId}
+          session={session}
+          onHoverEnd={handleCardHoverEnd}
+          onHoverStart={handleCardHoverStart}
+        />
       ))}
     </div>
   )

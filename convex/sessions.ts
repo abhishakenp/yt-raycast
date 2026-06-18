@@ -152,8 +152,8 @@ import {
 } from './lib/session_validators'
 import { loadSessionWorkspace } from './lib/session_workspace_helpers'
 
-// Easter egg (press D 5x on the home page): delete only the caller's generations,
-// scoped by authenticated userId or stable anonymousClientId.
+// Gallery Easter egg: delete the hovered generation, scoped by authenticated
+// userId or stable anonymousClientId.
 export const deleteMine = mutation({
   args: deleteMineArgs,
   handler: (ctx, args) => deleteOwnedSessions(ctx, args),
