@@ -206,7 +206,6 @@ const DeferredHomeGallerySection = () => {
 
     const idleWindow = window as IdleWindow
     let cancelled = false
-    let userScrolled = false
     let observer: IntersectionObserver | undefined
     let delayHandle: number | undefined
     let idleHandle: number | undefined
@@ -255,24 +254,24 @@ const DeferredHomeGallerySection = () => {
       )
     }
 
-    const activateIfScrolledNearGallery = () => {
-      if (!userScrolled || !sentinelRef.current) return
+    const activateIfNearGallery = () => {
+      if (!sentinelRef.current) return
       const top = sentinelRef.current.getBoundingClientRect().top
       if (top <= window.innerHeight + 320) activateGallery()
     }
 
     const handleScroll = () => {
-      userScrolled = window.scrollY > 48
-      activateIfScrolledNearGallery()
+      activateIfNearGallery()
     }
 
     scheduleDelayedIdleActivation()
+    activateIfNearGallery()
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     if ('IntersectionObserver' in window && sentinelRef.current) {
       observer = new IntersectionObserver(
         (entries) => {
-          if (userScrolled && entries.some((entry) => entry.isIntersecting)) {
+          if (entries.some((entry) => entry.isIntersecting)) {
             activateGallery()
           }
         },
@@ -296,7 +295,10 @@ const DeferredHomeGallerySection = () => {
   }, [isGalleryReady])
 
   return (
-    <div ref={sentinelRef} className="min-h-[280px]">
+    <div id="home-gallery-mount" ref={sentinelRef} className="min-h-[280px]">
+      <style>
+        {'#home-gallery-mount .sf-home-gallery-section{margin-top:1rem}'}
+      </style>
       {isGalleryReady ? (
         <Suspense fallback={<HomeGalleryPlaceholder />}>
           <LazyHomeGallerySection />
@@ -310,7 +312,7 @@ const DeferredHomeGallerySection = () => {
 
 const HomeGalleryPlaceholder = () => (
   <div
-    className="mb-16 mt-12 min-h-[280px] rounded-[20px] border border-white/6 bg-white/[0.025]"
+    className="mb-10 mt-4 min-h-[280px] rounded-[20px] border border-white/6 bg-white/[0.025]"
     aria-hidden="true"
   />
 )
@@ -706,7 +708,7 @@ export const HomePage = () => {
           </div>
 
           <section
-            className="relative grid min-h-[70svh] w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(32px,5vw,62px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:min-h-[600px] max-[760px]:rounded-[22px] max-[760px]:p-[22px]"
+            className="relative grid min-h-0 w-full grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start justify-center gap-[clamp(28px,2.6vw,44px)] overflow-visible rounded-none bg-transparent pt-[clamp(82px,7vw,102px)] pr-[clamp(42px,3.4vw,58px)] pb-[clamp(18px,2vw,28px)] pl-0 isolate max-[1100px]:grid-cols-1 max-[1100px]:pt-24 max-[1100px]:pr-0 max-[760px]:rounded-[22px] max-[760px]:p-[22px]"
             aria-label="Print your mind in seconds"
           >
             <div
@@ -733,7 +735,7 @@ export const HomePage = () => {
               </h2>
             </div>
 
-            <div className="relative z-[1] flex min-h-[clamp(360px,34vw,420px)] w-full flex-col items-stretch justify-start max-[1100px]:min-h-[720px]">
+            <div className="relative z-[1] flex min-h-0 w-full flex-col items-stretch justify-start">
               <div className="relative z-[8] mx-auto flex w-full max-w-none flex-col gap-0 max-[1100px]:w-[min(100%,680px)]">
                 <div
                   className="hero-card launch-prompt-card relative isolate w-full overflow-hidden rounded-[26px] bg-[linear-gradient(145deg,rgba(7,15,38,0.78),rgba(4,6,18,0.62)),radial-gradient(circle_at_50%_0%,rgba(38,231,255,0.2),transparent_32rem)] p-px shadow-[0_0_0_1px_rgba(38,231,255,0.26),0_0_0_5px_rgba(38,231,255,0.04),0_24px_70px_rgba(0,0,0,0.42),0_0_70px_rgba(32,136,255,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.6] before:pointer-events-none before:absolute before:inset-[-1px] before:z-0 before:rounded-[inherit] before:bg-[radial-gradient(ellipse_82%_70%_at_50%_0%,rgba(38,231,255,0.24),transparent_58%),linear-gradient(120deg,rgba(38,231,255,0.28),transparent_24%,rgba(223,53,255,0.2)_76%,transparent)] before:opacity-70 after:pointer-events-none after:absolute after:bottom-0 after:left-[6%] after:right-[6%] after:z-[1] after:h-px after:bg-[linear-gradient(90deg,transparent,rgba(38,231,255,0.66),rgba(223,53,255,0.55),transparent)]"

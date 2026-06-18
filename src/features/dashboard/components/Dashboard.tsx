@@ -29,7 +29,12 @@ import { IntroLoader } from '@/components/GenUI/IntroLoader'
 import { GeneratedModulePreview } from '@/features/generation/components/GeneratedModulePreview'
 import { readAnonymousOwnerSecret } from '@/features/session/services/anonymous-owner-secret'
 import { takeGenerationLaunchHandoff } from '@/features/session/services/generation-launch-handoff'
-import { rememberReadySession } from '@/features/session/services/ready-session-cache'
+import {
+  readReadySessionPreview,
+  rememberReadySession,
+  rememberReadySessionPreview,
+  type ReadySessionPreviewCacheEntry,
+} from '@/features/session/services/ready-session-cache'
 import { useEditController } from '@/features/editing/hooks/useEditController'
 import { ImageSwapPopover } from '@/features/editing/components/ImageSwapPopover'
 import { InlineEditToolbar } from '@/features/editing/components/InlineEditToolbar'
@@ -274,66 +279,6 @@ const RailPanelFallback = () => (
   </div>
 )
 
-const PreviewLoadingState = ({
-  progress,
-  hasFailures,
-}: {
-  progress: number
-  hasFailures: boolean
-}) => {
-  const clampedProgress = Math.max(5, Math.min(100, progress))
-  const steps = [
-    ['Brief', progress > 0],
-    ['Layout', progress >= 34],
-    ['Theme', progress >= 67],
-    ['Preview', progress >= 100],
-  ] as const
-
-  return (
-    <div
-      className="preview-loading-state"
-      role="status"
-      aria-live="polite"
-      aria-busy={!hasFailures}
-    >
-      <div className="preview-loading-state__orb" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-      <div className="preview-loading-state__content">
-        <p className="preview-loading-state__eyebrow">
-          {hasFailures ? 'Generation interrupted' : 'Building your site'}
-        </p>
-        <h2>
-          {hasFailures
-            ? 'We could not complete this preview.'
-            : 'Composing the first screen'}
-        </h2>
-        <p>
-          {hasFailures
-            ? 'Check the activity panel for the failed step, then retry generation.'
-            : 'Ship Fast is planning the structure, choosing visual tokens, and streaming components into the preview.'}
-        </p>
-        <div className="preview-loading-state__track" aria-hidden="true">
-          <span style={{ width: `${clampedProgress}%` }} />
-        </div>
-        <ol
-          className="preview-loading-state__steps"
-          aria-label="Generation progress"
-        >
-          {steps.map(([label, active]) => (
-            <li key={label} className={active ? 'is-active' : undefined}>
-              <span />
-              {label}
-            </li>
-          ))}
-        </ol>
-      </div>
-    </div>
-  )
-}
-
 const MissingProjectState = ({ onBackHome }: { onBackHome: () => void }) => (
   <div
     className="grid h-full min-h-[480px] place-items-center bg-[#05070c] px-6 text-center"
@@ -361,6 +306,47 @@ const MissingProjectState = ({ onBackHome }: { onBackHome: () => void }) => (
     </div>
   </div>
 )
+
+const toDashboardGenerationView = (
+  data: ReadySessionPreviewCacheEntry,
+): DashboardGenerationView => ({
+  events: [],
+  homeModule: {
+    moduleKey: data.homeModule.moduleKey ?? 'home',
+    source: data.homeModule.source,
+    status: data.homeModule.status ?? 'succeeded',
+    updatedAt: data.homeModule.updatedAt ?? data.createdAt,
+  },
+  latestPreview: data.preview,
+  session: {
+    sessionId: data.sessionId as Id<'sessions'>,
+    status: data.status,
+    previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
+    prompt: data.prompt,
+    preferredLanguage: data.preferredLanguage,
+    preferredExportTarget: data.preferredExportTarget ?? 'html',
+    elapsed: data.elapsed,
+    isPrivate: false,
+    themeOverride: data.themeOverride ?? null,
+    designReferenceUrls: [],
+    designReferenceNotes: '',
+  },
+  siteSpec: data.siteSpec,
+  tasks: (data.tasks ?? []).map((task) => ({
+    taskKey: task.id,
+    title: task.title,
+    status: task.status,
+    order: task.order ?? 0,
+  })),
+})
+
+const readCachedGenerationView = (
+  sessionId: string,
+): DashboardGenerationView | undefined => {
+  if (typeof window === 'undefined') return undefined
+  const cached = readReadySessionPreview(window.localStorage, { sessionId })
+  return cached === null ? undefined : toDashboardGenerationView(cached)
+}
 
 export function Dashboard({
   sessionId,
@@ -439,6 +425,15 @@ export function Dashboard({
   const editController = useEditController(resolvedSessionId || sessionId)
 
   useEffect(() => {
+    if (liveGenerationView !== undefined) return
+
+    const cached = readCachedGenerationView(sessionId)
+    if (cached === undefined) return
+
+    setFallbackGenerationView((current) => current ?? cached)
+  }, [liveGenerationView, sessionId])
+
+  useEffect(() => {
     if (typeof window === 'undefined') return
     if (liveGenerationView !== undefined) {
       setFallbackGenerationView(undefined)
@@ -465,15 +460,22 @@ export function Dashboard({
           return
         }
 
-        setFallbackGenerationView({
-          events: [],
+        const snapshot: ReadySessionPreviewCacheEntry = {
+          sessionId: data.sessionId,
+          status: 'preview_ready',
+          prompt: data.prompt,
+          preferredLanguage: data.preferredLanguage ?? 'en',
+          preferredExportTarget: data.preferredExportTarget ?? 'html',
+          previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
+          elapsed: data.elapsed ?? undefined,
+          themeOverride: data.themeOverride ?? null,
           homeModule: {
             moduleKey: data.homeModule.moduleKey ?? 'home',
             source: data.homeModule.source,
             status: data.homeModule.status ?? 'succeeded',
             updatedAt: data.homeModule.updatedAt ?? data.updatedAt,
           },
-          latestPreview:
+          preview:
             data.preview === null || data.preview === undefined
               ? undefined
               : {
@@ -482,19 +484,6 @@ export function Dashboard({
                   siteSpecJson: data.preview.siteSpecJson,
                   version: data.preview.version,
                 },
-          session: {
-            sessionId: data.sessionId as Id<'sessions'>,
-            status: data.status,
-            previewVersion: data.previewVersion ?? data.preview?.version ?? 1,
-            prompt: data.prompt,
-            preferredLanguage: data.preferredLanguage ?? 'en',
-            preferredExportTarget: data.preferredExportTarget ?? 'html',
-            elapsed: data.elapsed ?? undefined,
-            isPrivate: false,
-            themeOverride: data.themeOverride ?? null,
-            designReferenceUrls: [],
-            designReferenceNotes: '',
-          },
           siteSpec:
             data.siteSpec === null || data.siteSpec === undefined
               ? undefined
@@ -509,13 +498,17 @@ export function Dashboard({
               status: string
               order?: number
             }) => ({
-              taskKey: task.id,
+              id: task.id,
               title: task.title,
               status: task.status,
               order: task.order ?? 0,
             }),
           ),
-        })
+          createdAt: Date.now(),
+        }
+
+        rememberReadySessionPreview(window.localStorage, snapshot)
+        setFallbackGenerationView(toDashboardGenerationView(snapshot))
       } catch {
         // The live Convex subscription remains the primary path; polling is a
         // best-effort fallback for local/dev WebSocket failures.
@@ -572,6 +565,9 @@ export function Dashboard({
     }
 
     const session = generationView.session
+    const readyHomeModule = generationView.homeModule
+    if (!readyHomeModule?.source) return
+
     const hasReferences =
       (session.designReferenceUrls ?? []).length > 0 ||
       Boolean(session.designReferenceNotes?.trim()) ||
@@ -585,6 +581,30 @@ export function Dashboard({
       sessionId: session.sessionId,
       prompt: session.prompt,
       preferredLanguage: session.preferredLanguage,
+    })
+    rememberReadySessionPreview(window.localStorage, {
+      sessionId: session.sessionId,
+      status: 'preview_ready',
+      prompt: session.prompt,
+      preferredLanguage: session.preferredLanguage ?? 'en',
+      preferredExportTarget: session.preferredExportTarget,
+      previewVersion: session.previewVersion,
+      elapsed: session.elapsed,
+      themeOverride: session.themeOverride ?? null,
+      homeModule: {
+        moduleKey: readyHomeModule.moduleKey,
+        source: readyHomeModule.source,
+        status: readyHomeModule.status,
+        updatedAt: readyHomeModule.updatedAt,
+      },
+      preview: generationView.latestPreview,
+      siteSpec: generationView.siteSpec,
+      tasks: generationView.tasks.map((task) => ({
+        id: task.taskKey ?? task._id,
+        title: task.title,
+        status: task.status,
+        order: task.order,
+      })),
     })
   }, [generationView, isPreviewReady])
 
@@ -642,9 +662,6 @@ export function Dashboard({
     return overrides
   }, [editController.edits])
 
-  const hasFailures =
-    generationView?.session.status === 'failed' ||
-    generationView?.tasks.some((task) => task.status === 'failed') === true
   const aiTheme = useMemo(
     () => readSiteThemeName(generationView?.siteSpec?.specJson),
     [generationView?.siteSpec?.specJson],
@@ -1338,12 +1355,7 @@ export function Dashboard({
                             onImageChange={handleImageChange}
                             onElementActivate={handleElementActivate}
                           />
-                        ) : (
-                          <PreviewLoadingState
-                            progress={progress}
-                            hasFailures={hasFailures}
-                          />
-                        )}
+                        ) : null}
                         {isCommerceTransforming ? (
                           <Suspense fallback={null}>
                             <EcommercifyTransformOverlay />

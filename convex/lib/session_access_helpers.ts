@@ -17,6 +17,7 @@ type AuthCtx = Pick<MutationCtx, 'auth'> | Pick<QueryCtx, 'auth'>
 
 export type DeleteOwnedSessionsInput = {
   anonymousClientId?: string
+  sessionId?: Id<'sessions'>
 }
 
 export type ClaimAnonymousSessionInput = {
@@ -100,6 +101,26 @@ export const deleteOwnedSessions = async (
   args: DeleteOwnedSessionsInput,
 ) => {
   const userId = await getUserId(ctx)
+
+  if (args.sessionId !== undefined) {
+    const session = await ctx.db.get(args.sessionId)
+    if (session === null) return { deleted: 0 }
+
+    if (userId !== undefined) {
+      if (session.userId !== userId) return { deleted: 0 }
+    } else {
+      if (args.anonymousClientId === undefined) return { deleted: 0 }
+      const anonymousClientIdHash = await hashOwnerSecret(
+        args.anonymousClientId,
+      )
+      if (session.anonymousClientIdHash !== anonymousClientIdHash) {
+        return { deleted: 0 }
+      }
+    }
+
+    await ctx.db.delete(session._id)
+    return { deleted: 1 }
+  }
 
   let sessions: Doc<'sessions'>[] = []
   if (userId !== undefined) {

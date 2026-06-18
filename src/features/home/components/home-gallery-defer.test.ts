@@ -15,7 +15,42 @@ const readLaunchBackdropSource = () =>
   )
 
 describe('homepage gallery deferral', () => {
-  it('mounts the public gallery only after viewport or idle readiness', () => {
+  it('keeps the homepage form sized to content with the gallery close behind it', () => {
+    const source = readHomePageSource()
+    const heroSectionStart = source.indexOf(
+      'aria-label="Print your mind in seconds"',
+    )
+    const heroSectionBlock = source.slice(
+      source.lastIndexOf('<section', heroSectionStart),
+      source.indexOf(
+        'aria-label="Print your mind in seconds"',
+        heroSectionStart,
+      ),
+    )
+    const formColumnStart = source.indexOf(
+      'className="relative z-[1] flex',
+      heroSectionStart,
+    )
+    const formColumnBlock = source.slice(
+      formColumnStart,
+      source.indexOf('>', formColumnStart),
+    )
+
+    expect(heroSectionBlock).toContain('min-h-0')
+    expect(heroSectionBlock).not.toMatch(/min-h-\[(?:50|70|100)s?vh\]/)
+    expect(heroSectionBlock).not.toContain('max-[760px]:min-h-')
+    expect(heroSectionBlock).toContain('pb-[clamp(18px,2vw,28px)]')
+    expect(formColumnBlock).toContain('min-h-0')
+    expect(formColumnBlock).not.toContain('min-h-[clamp(360px,34vw,420px)]')
+    expect(formColumnBlock).not.toContain('max-[1100px]:min-h-[720px]')
+    expect(source).toContain('id="home-gallery-mount"')
+    expect(source).toContain(
+      "'#home-gallery-mount .sf-home-gallery-section{margin-top:1rem}'",
+    )
+    expect(source).toContain('className="mb-10 mt-4 min-h-[280px]')
+  })
+
+  it('mounts the public gallery after viewport proximity or idle readiness', () => {
     const source = readHomePageSource()
     const renderBody = source.slice(
       source.indexOf('export const HomePage = () => {'),
@@ -25,6 +60,9 @@ describe('homepage gallery deferral', () => {
     expect(source).toContain('IntersectionObserver')
     expect(source).toContain('requestIdleCallback')
     expect(source).toContain('HOME_GALLERY_IDLE_DELAY_MS')
+    expect(source).toContain('const activateIfNearGallery = () =>')
+    expect(source).toContain('activateIfNearGallery()')
+    expect(source).not.toContain('userScrolled')
     expect(source).toContain('const LazyHomeGallerySection = lazy(')
     expect(source).toContain(
       "import('@/features/gallery/components/PublicGallery')",

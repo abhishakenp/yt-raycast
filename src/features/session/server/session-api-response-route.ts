@@ -30,7 +30,7 @@ export const createSessionApiResponse = async (
 
     return json(data, {
       headers: {
-        'Cache-Control': 'private, max-age=5',
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=300',
       },
     })
   } catch (error) {

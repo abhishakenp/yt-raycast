@@ -217,6 +217,72 @@ describe('session access helpers', () => {
     expect(deletedIds).toEqual([owned._id])
   })
 
+  it('deletes one authenticated session when a matching session id is provided', async () => {
+    const owned = sessionDoc({
+      _id: 'session_owned_single' as Id<'sessions'>,
+      userId: 'token:user',
+    })
+    const otherOwned = sessionDoc({
+      _id: 'session_owned_other' as Id<'sessions'>,
+      userId: 'token:user',
+    })
+    const foreign = sessionDoc({
+      _id: 'session_foreign_single' as Id<'sessions'>,
+      userId: 'token:other',
+    })
+    const { ctx, deletedIds, sessions } = mutationCtxForSessions({
+      identity: identityFor({ tokenIdentifier: 'token:user' }),
+      sessions: [owned, otherOwned, foreign],
+    })
+
+    await expect(
+      deleteOwnedSessions(ctx, { sessionId: owned._id }),
+    ).resolves.toEqual({ deleted: 1 })
+
+    await expect(
+      deleteOwnedSessions(ctx, { sessionId: foreign._id }),
+    ).resolves.toEqual({ deleted: 0 })
+
+    expect(deletedIds).toEqual([owned._id])
+    expect(sessions).toEqual([otherOwned, foreign])
+  })
+
+  it('deletes one anonymous session when the session id and client id match', async () => {
+    const anonymousClientIdHash = await hashOwnerSecret('anon-client')
+    const owned = sessionDoc({
+      _id: 'session_anon_single' as Id<'sessions'>,
+      anonymousClientIdHash,
+    })
+    const otherOwned = sessionDoc({
+      _id: 'session_anon_other_owned' as Id<'sessions'>,
+      anonymousClientIdHash,
+    })
+    const foreign = sessionDoc({
+      _id: 'session_anon_foreign' as Id<'sessions'>,
+      anonymousClientIdHash: 'other_hash',
+    })
+    const { ctx, deletedIds, sessions } = mutationCtxForSessions({
+      sessions: [owned, otherOwned, foreign],
+    })
+
+    await expect(
+      deleteOwnedSessions(ctx, {
+        anonymousClientId: 'anon-client',
+        sessionId: owned._id,
+      }),
+    ).resolves.toEqual({ deleted: 1 })
+
+    await expect(
+      deleteOwnedSessions(ctx, {
+        anonymousClientId: 'anon-client',
+        sessionId: foreign._id,
+      }),
+    ).resolves.toEqual({ deleted: 0 })
+
+    expect(deletedIds).toEqual([owned._id])
+    expect(sessions).toEqual([otherOwned, foreign])
+  })
+
   it('claims anonymous sessions for signed-in owners with the matching secret', async () => {
     const anonOwnerSecretHash = await hashOwnerSecret('owner-secret')
     const { ctx, patches } = mutationCtxForSessions({
