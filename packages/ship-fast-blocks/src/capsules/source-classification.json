@@ -4,10 +4,10 @@
   "sourceRoot": "packages/ship-fast-blocks/src/capsules",
   "summary": {
     "generatedKimiPortFiles": 375,
-    "largeFiles": 180,
+    "largeFiles": 179,
     "maxLines": 1839,
     "totalFiles": 375,
-    "totalLines": 323018,
+    "totalLines": 322914,
     "unmarkedSourceFiles": 0
   },
   "files": [
@@ -1596,8 +1596,8 @@
     {
       "exports": ["MarketplaceKimiPage2"],
       "file": "packages/ship-fast-blocks/src/capsules/marketplace-2.tsx",
-      "large": true,
-      "lines": 1031,
+      "large": false,
+      "lines": 927,
       "origin": "generated-kimi-port"
     },
     {
